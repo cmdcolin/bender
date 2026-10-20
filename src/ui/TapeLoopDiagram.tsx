@@ -7,6 +7,7 @@ import {
   useReadings,
   useSelectedBox,
   card,
+  useOpensOnAim,
 } from './diagram.ts'
 import {
   BoxRows,
@@ -127,6 +128,7 @@ function Head({ x, on }: { x: number; on: boolean }) {
 export function TapeLoopDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
+  useOpensOnAim(pick, OPENS)
   const choice = HEAD_CHOICES[Math.round(r.value('dlyHeads'))] ?? '1'
   const lit = [1, 2, 3].filter(n => choice.includes(String(n)))
   const first = Math.min(...lit)

@@ -8,6 +8,7 @@ import {
   boxMaker,
   chainPaths,
   spread,
+  useOpensOnAim,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
@@ -158,6 +159,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot and the log adder.',
     ),
   ]
+  useOpensOnAim(pick, boxes)
   const open =
     boxes.find(b => b.id === pick.selected) ??
     VOICE_PICKS.find(p => p.id === pick.selected)

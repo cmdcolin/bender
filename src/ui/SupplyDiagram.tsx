@@ -10,6 +10,7 @@ import {
   useSelectedBox,
   type BoxSpec,
   card,
+  useOpensOnAim,
 } from './diagram.ts'
 import {
   Bend,
@@ -85,6 +86,7 @@ function batteryGlyph(x: number, mid: number) {
 export function SupplyDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox(CELLS)
+  useOpensOnAim(pick, BOX_KEYS)
   const flow = useFlow()
 
   const cellsW = glyphBoxWidth(CELLS, GLYPH_W)

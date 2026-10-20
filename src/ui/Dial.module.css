@@ -10,6 +10,17 @@
   border-radius: var(--ctl-radius);
 }
 
+.dial[data-aimed],
+.fader[data-aimed] {
+  animation: aimed 1.2s ease-out;
+}
+
+@keyframes aimed {
+  from {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+}
+
 .dial:focus-visible,
 .fader:focus-visible {
   outline: 1px solid var(--accent);

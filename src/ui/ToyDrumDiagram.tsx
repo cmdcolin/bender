@@ -16,6 +16,7 @@ import {
   type BoxPick,
   type BoxSpec,
   lefts,
+  useOpensOnAim,
 } from './diagram.ts'
 import {
   Bend,
@@ -217,6 +218,7 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
     BOX_H,
   )
   const picks = [pattern, triggers, shots, ...sources, dac, rom]
+  useOpensOnAim(pick, [...picks, { id: PADS, keys: PAD_KEYS }])
   const open = picks.find(b => b.id === pick.selected)
   const close = open ? zoom?.(BOXES[open.id].part) : null
   const fmX = xs[1]! + srcW * 0.3

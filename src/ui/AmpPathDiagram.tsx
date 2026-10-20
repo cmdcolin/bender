@@ -8,6 +8,7 @@ import {
   useSelectedBox,
   type BoxSpec,
   card,
+  useOpensOnAim,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 
@@ -105,6 +106,7 @@ export function AmpPathDiagram() {
       r.value('ampBass'),
       hz,
     )
+  useOpensOnAim(pick, boxes)
   const open = boxes.find(b => b.id === pick.selected)
   const loudest = Array.from(
     { length: POINTS },

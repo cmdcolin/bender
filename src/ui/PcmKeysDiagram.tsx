@@ -9,6 +9,7 @@ import {
   boxMaker,
   chainPaths,
   lefts,
+  useOpensOnAim,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 
@@ -149,6 +150,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       'The eight wires the ROM answers on. A knife through one keeps the pitch and changes the shape of every word.',
     ),
   ]
+  useOpensOnAim(pick, boxes)
   const open = boxes.find(b => b.id === pick.selected)
   const part = open && PARTS[open.id!]
   const close = part ? zoom?.(part) : null

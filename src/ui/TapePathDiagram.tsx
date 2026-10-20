@@ -8,6 +8,7 @@ import {
   useSelectedBox,
   type BoxSpec,
   card,
+  useOpensOnAim,
 } from './diagram.ts'
 import {
   Bend,
@@ -188,6 +189,7 @@ export function TapePathDiagram() {
     ),
   ]
   const tapeKeys = [...TAPE_KEYS]
+  useOpensOnAim(pick, [...boxes, { id: 'tape', keys: tapeKeys }])
   const tapeTouched = r.touched(...tapeKeys)
   const captionTop = (DECK_H - LINE_H) / 2
   const open =

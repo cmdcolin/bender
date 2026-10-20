@@ -14,6 +14,7 @@ import { STRIP_KEYS } from './diagram.ts'
 import { Dial } from './Dial.tsx'
 import { Fold } from './Fold.tsx'
 import styles from './FourTrack.module.css'
+import { useOnAim } from './reveal.ts'
 import { useMovedCount } from './rollBack.ts'
 import { StripDiagram } from './StripDiagram.tsx'
 import { Tip } from './Tip.tsx'
@@ -193,6 +194,7 @@ function Strip({
         <Tip text={source.help}>
           <select
             className={styles.select}
+            data-control={input(track)}
             aria-label={`track ${track} input`}
             value={listens}
             onChange={e => write(input(track), Number(e.currentTarget.value))}
@@ -232,6 +234,7 @@ function Lane({ track }: { track: Track }) {
       >
         <button
           className={armed ? styles.recOn : styles.rec}
+          data-control={rec(track)}
           aria-pressed={armed}
           aria-label={`record track ${track}`}
           onClick={() => arm(track, armed, listens)}
@@ -250,7 +253,7 @@ function Choice({ name }: { name: 'fourSpeed' | 'fourSide' | 'fourDbx' }) {
   const def = sliderFor(name)
   const value = Math.round(useControlValue(name))
   return (
-    <span className={styles.choice}>
+    <span className={styles.choice} data-control={name}>
       <Tip text={def.help}>
         <span className={styles.choiceName}>{def.label}</span>
       </Tip>
@@ -295,6 +298,12 @@ export function FourTrack() {
   const hidden = useBoardValue(
     c => STRIP_OPENERS.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
   )
+  useOnAim(key => {
+    const n = TRACK_NUMBERS.find(t => key.startsWith(`four${t}`))
+    if (n === undefined || !STRIP_KEYS.some(k => k === key)) return
+    setTrack(n)
+    setOpen(true)
+  })
   const [seen, setSeen] = useState(hidden)
   if (hidden !== seen) {
     setSeen(hidden)

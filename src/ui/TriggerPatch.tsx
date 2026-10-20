@@ -2,7 +2,7 @@ import { ChipDrawing } from './ChipDrawing.tsx'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import diagramStyles from './Diagram.module.css'
-import { useReadings, useSelectedBox, card } from './diagram.ts'
+import { useReadings, useSelectedBox, card, useOpensOnAim } from './diagram.ts'
 import { BoxRows, BoxView, Pressable } from './DiagramParts.tsx'
 import styles from './TriggerPatch.module.css'
 
@@ -132,8 +132,11 @@ const source = (x: number, name: string) => (
 // wire that makes one machine strike another. A wire is dashed and grey while
 // its setting is off. Pressing a wire opens its row underneath, and pressing a
 // machine opens both of its rows.
+const HOLDS = Object.fromEntries(OPENS)
+
 export function TriggerPatch() {
   const pick = useSelectedBox()
+  useOpensOnAim(pick, HOLDS)
   const r = useReadings(READ)
   const toKeys = Math.round(useControlValue('trigToKeys'))
   const toDrum = Math.round(useControlValue('trigToDrum'))

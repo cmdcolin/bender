@@ -169,6 +169,7 @@ export function Dial({
     <Tip text={def.help}>
       <div
         className={fader ? styles.fader : styles.dial}
+        data-control={def.key}
         data-held={held ? '' : undefined}
         role="slider"
         tabIndex={0}

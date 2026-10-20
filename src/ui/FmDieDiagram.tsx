@@ -11,6 +11,7 @@ import {
   useSelectedBox,
   card,
   spread,
+  useOpensOnAim,
 } from './diagram.ts'
 import {
   BoxRows,
@@ -64,6 +65,7 @@ const stuckLast = (stuck: number) =>
 export function FmDieDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
+  useOpensOnAim(pick, OPENS)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const flow = useFlow('Glint')
   const alloc = read('fmAlloc')

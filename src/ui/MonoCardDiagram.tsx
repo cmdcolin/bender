@@ -9,6 +9,7 @@ import {
   card,
   spread,
   chainPaths,
+  useOpensOnAim,
 } from './diagram.ts'
 import { BoxRows, Label, Wire } from './DiagramParts.tsx'
 
@@ -49,6 +50,7 @@ const centre = (b: ChipBox) => b.x + b.w / 2
 export function MonoCardDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
+  useOpensOnAim(pick, OPENS)
   const on = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow = useFlow('Growler')
 

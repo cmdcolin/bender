@@ -15,6 +15,7 @@ import {
   type BoxPick,
   chainPaths,
   lefts,
+  useOpensOnAim,
 } from './diagram.ts'
 import { BoxRows, GlyphBox, OpenBox, PickPart, Wire } from './DiagramParts.tsx'
 import { rollGlyph, ROLL_GLYPH_W } from './rollGlyph.tsx'
@@ -198,6 +199,12 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
   const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
   const written = useReadings(WRITTEN_KEYS).touched(...WRITTEN_KEYS)
   const pick = useSelectedBox(KEYBOARD)
+  useOpensOnAim(pick, {
+    ...NODE_KEYS,
+    bus: BUS_KEYS,
+    [KEYBOARD]: KEYBOARD_KEYS,
+    [ROLL]: MEMORY_KEYS,
+  })
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow = useFlow('Plinky')

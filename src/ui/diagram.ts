@@ -8,6 +8,7 @@ import {
 import { engine } from '../engine/engine.ts'
 import { CHANNELS, GROUPS, sliderFor, TRACK_NUMBERS } from './controls/index.ts'
 import { useBoardValue, useStoreSelect } from './ControlsContext.ts'
+import { useOnAim } from './reveal.ts'
 
 // CROSS_REPO_SYNC(diagram-boxes)
 export const LINE_H = 13
@@ -67,6 +68,22 @@ export const boxHeight = (name: string) =>
 export const ONE_LINE_H = boxHeight('')
 
 export type BoxPick = ReturnType<typeof useSelectedBox>
+
+export function useOpensOnAim(
+  pick: BoxPick,
+  holds:
+    | readonly { id?: string; keys?: readonly ControlKey[] }[]
+    | Readonly<Record<string, readonly ControlKey[]>>,
+) {
+  useOnAim(key => {
+    const boxes: readonly { id?: string; keys?: readonly ControlKey[] }[] =
+      Array.isArray(holds)
+        ? holds
+        : Object.entries(holds).map(([id, keys]) => ({ id, keys }))
+    const box = boxes.find(b => b.id && b.keys?.some(k => k === key))
+    if (box && pick.selected !== box.id) pick.toggle(box.id!)
+  })
+}
 
 export const card = (pick: BoxPick, name = pick.selected) =>
   pick.selected === null || name === null

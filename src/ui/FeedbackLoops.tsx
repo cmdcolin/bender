@@ -7,6 +7,7 @@ import {
   useSelectedBox,
   type BoxSpec,
   card,
+  useOpensOnAim,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 import styles from './FeedbackLoops.module.css'
@@ -90,6 +91,7 @@ export function FeedbackLoops() {
     help: 'Where the return wire is soldered.',
   }
   const boxes = [...strips, amps, dest]
+  useOpensOnAim(pick, [...boxes, { id: 'cross', keys: ['fbCross'] }])
   const open =
     pick.selected === 'cross'
       ? crossed

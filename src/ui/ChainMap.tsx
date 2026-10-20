@@ -21,7 +21,7 @@ import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
 import { watchRail } from './railWatch.ts'
-import { scrollIntoPanel } from './reveal.ts'
+import { aimAt } from './reveal.ts'
 import { Shelf } from './Shelf.tsx'
 import { formerName } from './stageNames.ts'
 import { watchTriggers } from './triggerWatch.ts'
@@ -68,22 +68,6 @@ function useSettledControls(): Controls {
     }
   }, [])
   return controls
-}
-
-const AIM_MS = 1200
-
-function aimAt(key: string, from: Element | null) {
-  requestAnimationFrame(() =>
-    requestAnimationFrame(() => {
-      const row = (
-        from?.closest('aside') ?? document
-      ).querySelector<HTMLElement>(`[data-control="${key}"]`)
-      if (!row) return
-      scrollIntoPanel(row)
-      row.dataset.aimed = ''
-      setTimeout(() => delete row.dataset.aimed, AIM_MS)
-    }),
-  )
 }
 
 function mount(node: El | string, key: number): ReactNode {

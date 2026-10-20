@@ -15,6 +15,7 @@ import {
   card,
   type BoxPick,
   lefts,
+  useOpensOnAim,
 } from './diagram.ts'
 import { Bend, BoxRows, Dot, Label, Wire } from './DiagramParts.tsx'
 
@@ -270,6 +271,10 @@ export function KitWiringDiagram() {
     w: widths[i]!,
     h: CHIP_H,
   }))
+  useOpensOnAim(
+    pick,
+    Object.entries(OPENS).map(([id, o]) => ({ id, keys: o.keys })),
+  )
   const open = pick.selected ? OPENS[pick.selected] : undefined
   const node = (box: ChipBox, lit?: boolean) => (
     <Chip

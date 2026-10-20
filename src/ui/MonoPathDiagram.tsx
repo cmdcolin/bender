@@ -13,6 +13,7 @@ import {
   type BoxSpec,
   spread,
   chainPaths,
+  useOpensOnAim,
 } from './diagram.ts'
 import {
   Bend,
@@ -185,6 +186,12 @@ export function MonoPathDiagram({
     { id: 'FM', keys: ['monoFm'] as const },
     { id: 'out', keys: OUT_KEYS },
   ]
+  useOpensOnAim(pick, [
+    ...boxes,
+    oscs,
+    ...words,
+    { id: ROLL, keys: MEMORY_KEYS },
+  ])
   const rollOpen = pick.selected === ROLL
   const drawn = [...boxes, oscs].find(b => b.id === pick.selected)
   const open = drawn ?? words.find(w => w.id === pick.selected)

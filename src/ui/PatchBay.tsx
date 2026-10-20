@@ -2,7 +2,7 @@ import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
-import { useSelectedBox } from './diagram.ts'
+import { useSelectedBox, useOpensOnAim } from './diagram.ts'
 import { BoxRows } from './DiagramParts.tsx'
 import styles from './PatchBay.module.css'
 import { coherePatch, wireFault } from './presets/patch.ts'
@@ -46,8 +46,14 @@ const cy = (y: number) => y + ROW_H / 2
 // dashed when nothing is patched, and a destination box. A destination that is
 // another wire's depth gets a curved lead out to that wire's row. Pressing a
 // wire opens its from, to and depth rows underneath.
+const HOLDS = MOD_KEYS.map((k, i) => ({
+  id: String(i),
+  keys: [k.src, k.dest, k.depth],
+}))
+
 export function PatchBay() {
   const pick = useSelectedBox()
+  useOpensOnAim(pick, HOLDS)
   const raw = useBoardValue(c =>
     MOD_KEYS.flatMap(k => [c[k.src], c[k.dest], c[k.depth]]).join(','),
   )

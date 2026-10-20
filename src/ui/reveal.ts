@@ -1,3 +1,8 @@
+import { useState } from 'react'
+
+import { createStore } from '../listeners.ts'
+import { useStoreValue } from './ControlsContext.ts'
+
 function scrollParent(el: HTMLElement): HTMLElement | undefined {
   for (let p = el.parentElement; p; p = p.parentElement) {
     const overflow = getComputedStyle(p).overflowY
@@ -47,9 +52,24 @@ export function scrollIntoPanel(el: HTMLElement) {
 
 const AIM_MS = 1200
 
+export const aimed = createStore<{ key: string; at: number } | null>(null)
+
+const FRESH_AIM_MS = 1000
+
+export function useOnAim(act: (key: string) => void) {
+  const aim = useStoreValue(aimed)
+  const [taken, setTaken] = useState(() =>
+    aim && performance.now() - aim.at < FRESH_AIM_MS ? null : aim,
+  )
+  if (aim === taken) return
+  setTaken(aim)
+  if (aim) act(aim.key)
+}
+
 /** Scrolls to the row of `key` and flashes it, two frames on so a stage that
     has just opened has laid itself out. */
 export function aimAt(key: string, from: Element | null = null) {
+  aimed.set({ key, at: performance.now() })
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       const row = (

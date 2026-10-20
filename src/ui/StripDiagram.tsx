@@ -7,6 +7,7 @@ import {
   useSelectedBox,
   type BoxSpec,
   card,
+  useOpensOnAim,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 
@@ -175,6 +176,7 @@ export function StripDiagram({ track }: { track: Track }) {
     touched: touched('Send'),
     help: 'How much of the channel, after its fader, goes to the aux bus.',
   }
+  useOpensOnAim(pick, [...boxes, sendBox])
   const open = [...boxes, sendBox].find(b => b.id === pick.selected)
   const recording = val('Rec') > 0 ? 'on' : 'plain'
 
