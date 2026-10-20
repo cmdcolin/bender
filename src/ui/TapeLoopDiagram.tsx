@@ -236,10 +236,15 @@ export function TapeLoopDiagram() {
                   className={styles.tapeOn}
                 />
               )}
-              <Head x={REC_X} on={flowing} />
-              <Label x={REC_X} y={INSIDE_Y} anchor="middle">
-                rec
-              </Label>
+              <Pressable {...pickOf('send')} name="rec head">
+                <title>
+                  rec head — Records what the send puts on the tape.
+                </title>
+                <Head x={REC_X} on={flowing} />
+                <Label x={REC_X} y={INSIDE_Y} anchor="middle">
+                  rec
+                </Label>
+              </Pressable>
               <Pressable {...pickOf('heads')}>
                 <title>heads — Which play heads the echo comes off.</title>
                 {[1, 2, 3].map(n => (

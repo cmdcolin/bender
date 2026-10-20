@@ -108,7 +108,9 @@ test('a bridge lights the knifed trace and its neighbour', () => {
 })
 
 const titles = (svg: Element) =>
-  [...svg.querySelectorAll('title')].map(t => t.textContent)
+  [...svg.querySelectorAll('title')].map(t =>
+    t.textContent?.replace(/: press .*$/, ''),
+  )
 
 test('the loop wire is labelled the same whatever it joins, a reset pin included', () => {
   set({ chipLoopFrom: 2, chipLoopTo: 1 })
@@ -165,6 +167,23 @@ test('pressing a trace knifes it, and pressing it again walks the faults', () =>
   fireEvent.click(line('A2'))
   expect(engine.controls.get().chipAddrLine).toBe(0)
   expect(engine.controls.get().chipAddrFault).toBe(0)
+})
+
+test('pressing a soldered wire moves its knob on, and the last setting lifts it', () => {
+  set({ drumReset: 1, drumSlip: 0 })
+  open('Clatter')
+  if (!screen.queryByRole('group', { name: 'drum machine bus wiring' }))
+    press('pattern')
+  const wire = (name: string) =>
+    screen.getByRole('button', { name: `${name} wire` })
+  fireEvent.click(wire('reset'))
+  expect(engine.controls.get().drumReset).toBe(2)
+  fireEvent.click(wire('clock'))
+  expect(engine.controls.get().drumSlip).toBe(0.25)
+  for (let i = 0; i < 4; i++) fireEvent.click(wire('clock'))
+  expect(engine.controls.get().drumSlip).toBe(0)
+  set({ drumReset: 0 })
+  expect(screen.queryByRole('button', { name: 'reset wire' })).toBeNull()
 })
 
 test('the arrow keys move the knife along a focused ribbon', () => {

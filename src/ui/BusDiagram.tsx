@@ -11,10 +11,12 @@ import {
   type Tap,
 } from './busSpecs.ts'
 import { sliderFor } from './controls/index.ts'
+import diagram from './Diagram.module.css'
 import { boxHeight, boxWidth, useReadings, type BoxPick } from './diagram.ts'
 import { BoxView, Diagram, Dot, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
+import type { ReactNode } from 'react'
 
 const WIDTH = 420
 const PITCH = 4
@@ -148,6 +150,55 @@ function nudge(r: Ribbon, by: number) {
   const n = sliderFor(r.line).choices!.length - 1
   const on = Math.round(engine.controls.get()[r.line])
   engine.set(r.line, Math.min(n, Math.max(1, on + by)))
+}
+
+const STEP = 0.25
+
+// Pressing a soldered wire moves its knob one setting on; past the last it
+// lifts the wire.
+function step(key: ControlKey) {
+  const def = sliderFor(key)
+  const now = engine.controls.get()[key]
+  const by = def.step >= 1 ? 1 : STEP
+  const next = Math.round((now + by) * 100) / 100
+  engine.set(key, next > def.max ? def.min : next)
+}
+
+function Moves({
+  name,
+  says,
+  stepKey,
+  hit,
+  children,
+}: {
+  name: string
+  says: string
+  stepKey: ControlKey
+  hit: string
+  children: ReactNode
+}) {
+  return (
+    <g
+      className={styles.wirePick}
+      role="button"
+      tabIndex={0}
+      aria-label={`${name} wire`}
+      onClick={e => {
+        e.stopPropagation()
+        step(stepKey)
+      }}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          step(stepKey)
+        }
+      }}
+    >
+      <title>{`${says}: press to move it on`}</title>
+      <path d={hit} className={diagram.wireHit} />
+      {children}
+    </g>
+  )
 }
 
 function Trace({
@@ -334,13 +385,15 @@ function TapWire({
           const to = links[onto.link]!.at(-1)!
           return { x: along(to, TAP_AT), y: lineY(to, onto.line), pin: '' }
         })()
+  const d = `M${fx} ${fy} V${routeY} H${end.x} V${end.y}`
   return (
-    <g>
-      <title>{tap.says(value, also)}</title>
-      <path
-        d={`M${fx} ${fy} V${routeY} H${end.x} V${end.y}`}
-        className={styles.jumper}
-      />
+    <Moves
+      name={tap.name}
+      says={tap.says(value, also)}
+      stepKey={tap.key}
+      hit={d}
+    >
+      <path d={d} className={styles.jumper} />
       <Dot x={fx} y={fy} look="alarm" />
       {end.pin ? (
         <text x={end.x + 4} y={end.y + 10} className={styles.knifed}>
@@ -357,7 +410,7 @@ function TapWire({
       >
         {tap.name}
       </text>
-    </g>
+    </Moves>
   )
 }
 
@@ -376,13 +429,15 @@ function InjectWire({
   const p = links[inject.link]![0]!
   const x = along(p, INJECT_AT)
   const lines = Array.from({ length: value }, (_, i) => lineY(p, i))
+  const d = `M${x} ${rowTop + 2} V${lines.at(-1)}`
   return (
-    <g>
-      <title>{inject.says(value)}</title>
-      <path
-        d={`M${x} ${rowTop + 2} V${lines.at(-1)}`}
-        className={styles.jumper}
-      />
+    <Moves
+      name={inject.name}
+      says={inject.says(value)}
+      stepKey={inject.key}
+      hit={d}
+    >
+      <path d={d} className={styles.jumper} />
       {lines.map(y => (
         <Dot key={y} x={x} y={y} look="alarm" />
       ))}
@@ -394,7 +449,7 @@ function InjectWire({
       >
         {inject.name}
       </text>
-    </g>
+    </Moves>
   )
 }
 
@@ -429,13 +484,16 @@ function FeedWire({
       {feed.name}
     </text>
   )
+  const moves = (d: string, label: ReactNode) => (
+    <Moves name={feed.name} says={feed.says(value)} stepKey={feed.key} hit={d}>
+      <Wire arrow={arrow} d={d} look={look} />
+      {label}
+    </Moves>
+  )
   if (!feed.from)
-    return (
-      <g>
-        <title>{feed.says(value)}</title>
-        <Wire arrow={arrow} d={`M${tx} ${rowTop + 2} V${to.y}`} look={look} />
-        {say(tx + 4, rowTop + 12, 'start')}
-      </g>
+    return moves(
+      `M${tx} ${rowTop + 2} V${to.y}`,
+      say(tx + 4, rowTop + 12, 'start'),
     )
   const sx =
     'chip' in feed.from
@@ -446,16 +504,9 @@ function FeedWire({
       : along(links[feed.from.link]![0]!, LOOP_AT)
   const sy = 'chip' in feed.from ? boxTop : links[feed.from.link]![0]!.top
   const over = rowTop + 14
-  return (
-    <g>
-      <title>{feed.says(value)}</title>
-      <Wire
-        arrow={arrow}
-        d={`M${sx} ${sy} V${over} H${tx} V${to.y}`}
-        look={look}
-      />
-      {say((sx + tx) / 2, over - 3, 'middle')}
-    </g>
+  return moves(
+    `M${sx} ${sy} V${over} H${tx} V${to.y}`,
+    say((sx + tx) / 2, over - 3, 'middle'),
   )
 }
 

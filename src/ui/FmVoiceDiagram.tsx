@@ -146,17 +146,17 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
               >
                 brightness
               </text>
+              {indexBoost && (
+                <text
+                  x={wireMid}
+                  y={MID + 14}
+                  textAnchor="middle"
+                  className={bus.knifed}
+                >
+                  booster
+                </text>
+              )}
             </Bend>
-            {indexBoost && (
-              <text
-                x={wireMid}
-                y={MID + 14}
-                textAnchor="middle"
-                className={bus.knifed}
-              >
-                booster
-              </text>
-            )}
             <Wire
               arrow={arrow}
               d={`M${car.x + car.w} ${MID} H${X0 + SPAN_W - 2}`}

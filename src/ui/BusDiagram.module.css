@@ -88,3 +88,13 @@
 .line:hover .traceCut {
   stroke-width: 2;
 }
+
+.wirePick {
+  cursor: pointer;
+  outline: none;
+}
+
+.wirePick:hover path:not([class*='wireHit']),
+.wirePick:focus-visible path:not([class*='wireHit']) {
+  stroke: var(--fg);
+}

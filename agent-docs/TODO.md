@@ -21,4 +21,3 @@ remove a row here when you add or remove an entry.
 | [OpenBox to videoskillet](todo/open-box-to-videoskillet.md)           | diagrams, cross-repo | merge the two BoxRows forks, then share OpenBox                   |
 | [Layout helpers](todo/diagram-layout-helpers.md)                      | diagrams             | write spreadRow(widths, span) and port BusDiagram and FmDie       |
 | [Patch drawings on shared parts](todo/patch-drawings-shared-parts.md) | diagrams             | swap TriggerPatch's raw svg and press() for Diagram and Pressable |
-| [Inert diagram parts](todo/inert-diagram-parts.md)                    | diagrams             | make BusDiagram's tap, inject and feed wires Bends                |
