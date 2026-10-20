@@ -68,6 +68,12 @@ const SHOTS: Shot[] = [
     board: { fourLevel: 0.6 },
     select: ['[aria-label="layercake"]'],
   },
+  {
+    file: 'guide-spool.jpg',
+    board: { sampleLevel: 1, loopIn: 0.25, loopOut: 0.7 },
+    act: page => dropTape(page, 'bursts.wav'),
+    select: ['[aria-label="spool"]'],
+  },
   ...[
     ['guide-die.jpg', 'Plinky', 'toy chip die', {}],
     ['guide-drum-voices.jpg', 'Clatter', 'toy drum voices', {}],
@@ -157,6 +163,32 @@ const clickText = (page: Page, text: string) =>
     page,
     `[...document.querySelectorAll('button')].find(e => (e.textContent ?? '').trim().toLowerCase().includes(${JSON.stringify(text)}))?.click()`,
   )
+
+// Spool draws its reel only once a tape is on, so the shot drops four seconds
+// of decaying tone bursts onto the page, built in the page as a 16-bit wav.
+const dropTape = async (page: Page, name: string) => {
+  await ask(
+    page,
+    `(() => {
+      const rate = 22050, frames = rate * 4
+      const wav = new DataView(new ArrayBuffer(44 + frames * 2))
+      const text = (at, s) => [...s].forEach((c, i) => wav.setUint8(at + i, c.charCodeAt(0)))
+      text(0, 'RIFF'); wav.setUint32(4, 36 + frames * 2, true); text(8, 'WAVEfmt ')
+      wav.setUint32(16, 16, true); wav.setUint16(20, 1, true); wav.setUint16(22, 1, true)
+      wav.setUint32(24, rate, true); wav.setUint32(28, rate * 2, true)
+      wav.setUint16(32, 2, true); wav.setUint16(34, 16, true)
+      text(36, 'data'); wav.setUint32(40, frames * 2, true)
+      for (let i = 0; i < frames; i++) {
+        const t = i / rate, beat = t % 0.5, n = Math.floor(t / 0.5)
+        const v = Math.exp(-beat * (4 + (n % 3) * 3)) * (0.4 + 0.5 * ((n * 5) % 7) / 6) * Math.sin(2 * Math.PI * 110 * (1 + (n % 4)) * t)
+        wav.setInt16(44 + i * 2, v * 32767, true)
+      }
+      const files = new DataTransfer()
+      files.items.add(new File([wav.buffer], ${JSON.stringify(name)}, { type: 'audio/wav' }))
+      document.querySelector('main').dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: files }))
+    })()`,
+  )
+}
 
 // A board carrying anything off stock reads to the app as a link somebody
 // sent, which puts the 'click to start' dialog up over the whole page, and a

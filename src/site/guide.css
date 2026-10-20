@@ -26,21 +26,17 @@
 }
 
 .doc h2 {
-  margin: 2.5rem 0 0.75rem;
-  font-size: 1.25rem;
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--border-faint);
-}
-
-.doc h2:first-of-type {
-  margin-top: var(--space-2xl);
-  padding-top: 0;
-  border-top: none;
+  margin: 4rem 0 1rem;
+  padding-top: 1.25rem;
+  font-size: 1.5rem;
+  border-top: 2px solid var(--border);
 }
 
 .doc h3 {
-  margin: 1.5rem 0 0.5rem;
-  font-size: 1.05rem;
+  margin: 3rem 0 0.75rem;
+  padding-left: 0.6rem;
+  font-size: 1.15rem;
+  border-left: 3px solid var(--accent);
 }
 
 .doc code {

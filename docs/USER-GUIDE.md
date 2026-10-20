@@ -71,11 +71,62 @@ four-pole transistor ladder filter that self-oscillates.
 A cassette four-track. Four tape loops of different lengths run behind a desk
 with EQ and an aux send, and the desk squeals with nothing plugged in.
 
-### Also on the bench
+### Spool
 
-- **Spool:** a tape loop. Drop an audio file on the page
-- **Mic:** your microphone, soldered into the board. **Mic into** on the bench
-  bar, or the mic cap on a machine, picks the jack
+![Spool's deck: load and mic keys, the tape transport, rec and undo, the speed key, and the reel with its two loop markers.](../public/guide/guide-spool.jpg)
+
+A tape loop that records onto itself. Whatever is on the reel plays through the
+whole board, and the record head lays the board's output back down at the play
+head, so each lap goes through every bend, pedal and tape machine again.
+
+Put a tape on:
+
+- **Drop an audio file** anywhere on the page
+- **load** pulls a random tape off an archive.org shelf: 78s, numbers stations,
+  old-time radio, NASA audio or spoken word. The drawer also searches
+  archive.org
+- **rec** with nothing loaded threads a blank reel. Press it again to close the
+  loop at the length you played
+
+Play it:
+
+- **rev**, **play** and **stop** run the transport
+- **The speed key** steps through ¼, ½, ¾, 1 and 2×. The arrow beside it opens a
+  knob from 4× reverse through a stop to 4× forward
+- **Drag the two markers** on the reel to loop one bar of a long recording.
+  Pinch them together and the loop sounds as a pitch. **whole reel** puts them
+  back at the ends
+- **Drag the tape** to move the head. The counter beside the reel reads whole
+  seconds into it
+- **Restarts the file on** and **Ending: one-shot** in the panel turn the file
+  into a seventh drum voice, struck by a kit voice, a key or a shout in the mic
+
+Record over it:
+
+- **rec** overdubs the board's output onto the reel. **undo** takes the last
+  overdub back off, and nothing restores anything older
+- **The arrow beside rec** opens the record head's knobs
+- **Erase** all the way up replaces each lap with the next, a delay the length
+  of the reel. All the way down, the laps pile up
+- **Wear** takes a little more top end off every lap, and **Hiss** lays a new
+  layer of noise down each time round
+- **Hold** turns the write level up by what each lap lost, so the loop stays at
+  its level
+- **A bend in the path** changes the loop a little more on every pass
+
+Wire it in:
+
+- **Mic into → tape motor:** the tape runs as fast as you are loud and stops in
+  silence
+- **The patch bay** reaches the capstan and both loop markers, to bend the
+  reel's pitch or slide the loop window along the recording
+- **Parlor's sampled voice** plays the reel across its keys, with the loop
+  markers as its loop
+
+### Mic
+
+Your microphone, soldered into the board. **Mic into** on the bench bar, or the
+mic cap on a machine, picks the jack.
 
 ## The trigger patch
 
