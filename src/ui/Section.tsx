@@ -950,9 +950,7 @@ function ShelfPart({
 export function PathHint() {
   return (
     <p className={styles.hint}>
-      click a stage for its controls — a dot on it means something in there has
-      moved. The drawing is the path the sound takes through the stages on the
-      board; random, mutate and drift change only those.
+      Click a stage for its controls. A dot marks a stage with moved controls.
     </p>
   )
 }

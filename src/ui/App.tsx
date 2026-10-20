@@ -423,7 +423,7 @@ export function App(props: { openedFromLink?: boolean }) {
               onSignIn={lib.signIn}
               onSignOut={lib.signOut}
             />
-            <Tip text="About this build, and where the docs and source are.">
+            <Tip text="The simple version, computer keys and the rest of the settings.">
               <button
                 ref={setMenuBtn}
                 className={styles.menuBtn}
@@ -455,16 +455,6 @@ export function App(props: { openedFromLink?: boolean }) {
                     why sign in?
                   </button>
                 )}
-                <button
-                  role="menuitem"
-                  className={menuItem(false)}
-                  onClick={() => {
-                    setShowMenu(false)
-                    setShowAbout(true)
-                  }}
-                >
-                  about
-                </button>
                 <button
                   role="menuitem"
                   className={menuItem(false)}
