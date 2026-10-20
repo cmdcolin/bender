@@ -59,7 +59,7 @@ export const RIGS: RigDef[] = [
     group: 'Feedback bus',
     name: 'one squeal',
     blurb:
-      'The whole of the no-input mixer in four controls — one send round a short cord, tilted bright, into amps that saturate rather than square off',
+      'The whole of the no-input mixer in four controls — one send round a short cord, tilted bright, into amps that saturate',
     patch: {
       fbAmt: 0.5,
       fbDelayMs: 1.7,
@@ -71,7 +71,7 @@ export const RIGS: RigDef[] = [
     group: 'Feedback bus',
     name: 'slow throb',
     blurb:
-      'Two strips a few tenths of a millisecond apart, which is close enough to fight over the same note and far enough that neither wins — the beat is the difference between the two cords',
+      'Two strips a few tenths of a millisecond apart, so the two squeals sit close in pitch without locking together — the beat is the difference between the two cords',
     patch: {
       fbAmt: 0.4,
       fbDelayMs: 3.4,
@@ -86,7 +86,7 @@ export const RIGS: RigDef[] = [
     group: 'Feedback bus',
     name: 'never settles',
     blurb:
-      'Three cords of no common length wired into a ring, each recirculating its neighbour — a squeal, a flutter and an echo with no mode any of them can hold, wandering untouched',
+      'Three cords of no common length wired into a ring, each recirculating its neighbour — a squeal, a flutter and an echo with no mode that any of them settles into, wandering untouched',
     patch: {
       fbAmt: 0.32,
       fbDelayMs: 2.6,
@@ -106,7 +106,7 @@ export const RIGS: RigDef[] = [
     group: 'Feedback bus',
     name: 'motorboat',
     blurb:
-      'A dried-out coupling cap on the return: the loop climbs, walks its own bias to cutoff, dies, drains and does it again — a rhythm out of a desk with no clock on it',
+      'A dried-out coupling cap on the return: the loop climbs, walks its bias to cutoff, dies, drains and does it again — a rhythm out of a desk with no clock on it',
     patch: {
       fbAmt: 1.2,
       fbDelayMs: 9,
@@ -132,7 +132,7 @@ export const RIGS: RigDef[] = [
     group: 'Feedback bus',
     name: 'hash',
     blurb:
-      'Three squeals a hair apart through amps too slow to draw any of them — what a slew limiter does to a sum is not what it does to either part, and none of it has harmonics',
+      'Three squeals a hair apart through amps too slow to follow any of them — the slew limiter acts on the sum, so the result differs from limiting either part, and none of it has harmonics',
     patch: {
       fbAmt: 0.32,
       fbDelayMs: 1.9,
@@ -153,7 +153,7 @@ export const RIGS: RigDef[] = [
     group: 'Feedback bus',
     name: 'browns out the toy',
     blurb:
-      'The return soldered to the supply rail the toy runs on — the louder the desk screams the less there is to make the tune out of, and the tune is what is feeding it',
+      'The return soldered to the supply rail the toy runs on — the louder the desk squeals the less rail is left to make the tune from, and the tune feeds the desk',
     patch: {
       chipLevel: 0.85,
       fbAmt: 1.1,
@@ -168,7 +168,7 @@ export const RIGS: RigDef[] = [
     group: 'Feedback bus',
     name: 'the loop picks the note',
     blurb:
-      'The return on oscillator A’s FM pin, on a cord long enough to hear go round — the loop is no longer a squeal at a pitch, it is what sets the pitch',
+      'The return on oscillator A’s FM pin, on a cord long enough to hear go round — the loop sets the pitch',
     patch: {
       oscLevel: 0.7,
       fbAmt: 0.55,
@@ -183,7 +183,7 @@ export const RIGS: RigDef[] = [
     group: 'Signal order',
     name: 'crush, then filter',
     blurb:
-      'A five-bit decimator with the filter after it — everything the crusher folded down comes back through 900 Hz, so the aliasing is inside the growl rather than on top of it',
+      'A five-bit decimator with the filter after it — everything the crusher folded down comes back through 900 Hz, so the aliasing is inside the growl',
     patch: {
       bendSlot0: slot('crush'),
       bendSlot1: slot('filt'),
@@ -199,7 +199,7 @@ export const RIGS: RigDef[] = [
     group: 'Signal order',
     name: 'filter, then crush',
     blurb:
-      'The same two stages the other way round: the filter picks a band and the crusher folds *that* down, so the aliases land above the filter and nothing takes them off again — the pair to hear against the one before it',
+      'The same two stages the other way round: the filter passes a band and the crusher folds *that* down, so the aliases sit above the filter and reach the output — the pair to hear against *crush, then filter*',
     patch: {
       bendSlot0: slot('filt'),
       bendSlot1: slot('crush'),
@@ -231,7 +231,7 @@ export const RIGS: RigDef[] = [
     group: 'Signal order',
     name: 'comb into the fuzz',
     blurb:
-      'The comb first, so what reaches the fuzz is a handful of loud resonant peaks — they intermodulate against each other in the clipper and come out as a chord nothing played',
+      'The comb first, so what reaches the fuzz is a handful of loud resonant peaks — they intermodulate against each other in the clipper and come out as a chord absent from the input',
     patch: {
       bendSlot0: slot('comb'),
       bendSlot1: slot('dist'),
@@ -263,7 +263,7 @@ export const RIGS: RigDef[] = [
     group: 'Signal order',
     name: 'rung, then chopped',
     blurb:
-      'The stutter after the comb, so what gets sliced and played backwards is the ring itself — the same two stages, and the repeats now cut across the decay instead of starting it',
+      'The stutter after the comb, so what gets sliced and played backwards is the ring itself — the same two stages, and the repeats now cut across the decay',
     patch: {
       bendSlot0: slot('comb'),
       bendSlot1: slot('glitch'),
@@ -317,7 +317,7 @@ export const RIGS: RigDef[] = [
     group: 'Layercake',
     name: 'no-input mixer',
     blurb:
-      'Track 1 hears the desk’s own aux return and sends to it, with its mid boosted at 700 Hz: the loop squeals there. Sweep track 1’s Mid freq to retune it, and Aux master to bring it in',
+      'Track 1 takes its input from the desk’s aux return and sends to it, with its mid boosted at 700 Hz: the loop squeals there. Sweep track 1’s Mid freq to retune it, and Aux master to bring it in',
     patch: {
       fourLevel: 0.5,
       fourAux: 1,
@@ -332,7 +332,7 @@ export const RIGS: RigDef[] = [
     group: 'Layercake',
     name: 'squeal through the echo',
     blurb:
-      'The same squeal, with track 2 listening to the board: what the desk sends comes back through the delay pedal and onto the bus again, so the squeal leaves echoes and the echoes feed it. Brings the delay pedal up',
+      'Track 1 squeals as in *no-input mixer*, with track 2 taking its input from the board: what the desk sends comes back through the delay pedal and onto the bus again, so the squeal leaves echoes and the echoes feed it. The rig brings the delay pedal up',
     patch: {
       fourLevel: 0.5,
       fourAux: 1,
@@ -381,7 +381,7 @@ export const RIGS: RigDef[] = [
     group: 'Ember',
     name: 'microphonic',
     blurb:
-      'The first tube hears the cabinet through its own mechanical resonance, so every loud note leaves a howl behind it',
+      'The first tube picks up the cabinet through the tube’s mechanical resonance, so every loud note leaves a howl behind it',
     patch: {
       ampVoice: AMP_VOICE.marshall,
       ampGain: 0.5,

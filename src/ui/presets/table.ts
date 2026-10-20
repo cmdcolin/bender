@@ -82,7 +82,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bent sampler',
     blurb:
-      'Whatever you dropped, played across the keyboard off the sample memory with a data line on the rail and the address bus bridged — the tape loop’s own fader down, so the only copy you hear is the keyed one',
+      'Whatever you dropped, played across the keyboard off the sample memory with a data line on the rail and the address bus bridged — the tape loop’s fader down, so the only copy you hear is the keyed one',
     patch: {
       pcmLevel: 0.9,
       pcmVoice: keys('sampled'),
@@ -170,8 +170,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'half a tune',
-    blurb:
-      'An address line on the floor: the song folds into its own first half',
+    blurb: 'An address line on the floor: the song folds into its first half',
     patch: {
       chipLevel: 0.9,
       chipAccomp: 0.5,
@@ -184,7 +183,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'stuck key',
-    blurb: 'Glint never told the key came up, so nothing it plays ends',
+    blurb:
+      'The key-up write reaches Glint with its key bit held high, so nothing it plays ends',
     patch: {
       chipLevel: 0,
       drumLevel: 0.5,
@@ -217,7 +217,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'dawn chorus',
-    blurb: 'Bird calls off the effect ROM, every write of them arriving wrong',
+    blurb: 'Bird calls off the effect ROM, every write of them corrupted',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -241,7 +241,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'air raid',
-    blurb: 'A siren filed under the wrong registers as it climbs',
+    blurb: 'A siren written to the wrong registers as it climbs',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -255,7 +255,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'stuck cricket',
     blurb:
-      'The key-up lands next door, so the chirps never stop being one note',
+      'A write strobe that sometimes misses sends the key-up to the previous register, so the chirps never stop being one note',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -267,7 +267,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'never finishes booting',
     blurb:
-      'Glint cold-boots into garbage and the write that clears its test register lands next door, so it plays the song wide open, skewed and rectified',
+      'Glint cold-boots into garbage, and with an address wire grounded the write that clears its test register goes to another register, so it plays the song wide open, skewed and rectified',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -311,7 +311,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bird fight',
     blurb:
-      'The allocator stuck on the effect’s channel: the song and a bird call write the same registers and tear each other apart',
+      'The allocator stuck on the effect’s channel: the song and a bird call write the same registers and overwrite each other',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -334,7 +334,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'gravel dac',
-    blurb: 'The kit’s converter built from resistors nobody measured',
+    blurb: 'The kit’s converter built from resistors off an unmeasured reel',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -456,7 +456,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'nobody at the keys',
     blurb:
-      'The bay plays the oscillator: pitch off a sample-and-hold, time off its own starving rail',
+      'The bay plays the oscillator: pitch off a sample-and-hold, time off the oscillator’s starving rail',
     patch: {
       chipLevel: 0,
       oscLevel: 0.8,
@@ -586,7 +586,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'nothing plugged in',
     blurb:
-      'Two channels of the four-track on their own aux return, each boosted at a different mid: a no-input desk squealing on its op-amp rails',
+      'Two channels of the four-track on the desk’s aux return, each boosted at a different mid: a no-input desk squealing on its op-amp rails',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -658,7 +658,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'the desk lets go',
     blurb:
-      'Three cross-fed loops through amps that block — erupts and dies on its own',
+      'Three cross-fed loops through amps that block — the output builds up and collapses with no notes played',
     patch: {
       chipLevel: 0,
       crackleAmp: 0.2,
@@ -931,7 +931,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'barber pole',
-    blurb: 'Every lap through the shifter climbs again, so nothing lands',
+    blurb: 'Every lap through the shifter climbs again, so no pitch settles',
     patch: {
       chipLevel: 0.5,
       bendSlot0: 7,
@@ -1019,8 +1019,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'boom bap',
-    blurb:
-      'The kit sampled by itself, twelve bits and shuffled — the drum machine those records were made on',
+    blurb: 'The kit sampled by itself, twelve bits and shuffled',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1063,7 +1062,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'pitched down',
     blurb:
-      'Every slab read at half speed — the long ones smear into each other and the kit arrives an octave under',
+      'Every slab read at half speed — the long ones smear into each other and the kit sounds an octave under',
     patch: {
       chipLevel: 0,
       drumLevel: 0.85,
@@ -1116,7 +1115,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'inside out',
     blurb:
-      'The accent wire held high — every step asks the bus for one, and the crowded steps fold over the top of the converter',
+      'The accent wire held high — the bus carries an accent request on every step, and the crowded steps fold over the top of the converter',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1135,7 +1134,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'never comes round',
     blurb:
-      'A counter missing an edge here and there, under rows of five and seven — nothing lands where it did last bar',
+      'A counter missing an edge here and there, under rows of five and seven — nothing falls where it did last bar',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1184,7 +1183,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'two clocks',
     blurb:
-      'The toy locked to the kit’s tempo and the kit’s counter slipping out from under it — a lock follows a tempo, never a downbeat',
+      'The toy locked to the kit’s tempo while the kit’s counter slips out from under it, so the downbeat drifts',
     patch: {
       chipLevel: 0.7,
       drumLevel: 0.9,
@@ -1199,7 +1198,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'rusted bell',
     blurb:
-      'The metal bank on a starved supply of its own, three octaves down — the cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays where it was',
+      'The metal bank’s supply starved through a resistor, three octaves down — the cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays where it was',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1215,7 +1214,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'metal under the kick',
     blurb:
-      'The metal bank’s supply soldered to the kick’s trigger line — sixteenth hats and a cymbal that only speak while a kick rings, and freeze in the gaps between',
+      'The metal bank’s supply soldered to the kick’s trigger line — sixteenth hats and a cymbal that only sound while a kick rings, and freeze in the gaps between',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1294,7 +1293,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'lone kicks zap',
     blurb:
-      'The one-shots on one timing rail with the sweep trimmer wound up — a kick alone zaps down from the top, and a kick under hats and a clap lands short, thin and flat',
+      'The one-shots on one timing rail with the sweep trimmer wound up — a kick alone zaps down from the top, and a kick under hats and a clap sounds short, thin and flat',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1400,7 +1399,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'call and answer',
-    blurb: 'The snare strikes a chord, and every note it strikes claps back',
+    blurb: 'The snare triggers a chord, and each note of it triggers a clap',
     patch: {
       chipLevel: 0.75,
       drumLevel: 0.7,
@@ -1496,7 +1495,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'spliced reel',
     blurb:
-      'A loop joined badly and an erase head that gave up — the last lap bleeds through',
+      'A loop joined badly and an erase head that failed — the last lap bleeds through',
     patch: {
       chipLevel: 0.7,
       chipAccomp: 0.4,
@@ -1523,7 +1522,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'played backwards',
-    blurb: 'Half a second at a time, each one handed back the other way round',
+    blurb: 'Half a second at a time, each played back reversed',
     patch: {
       chipLevel: 0.8,
       echoMode: 2,
@@ -1575,7 +1574,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'clockwork',
     blurb:
-      'The counter walking your hand — hold a chord, or latch it with hold',
+      'The counter stepping through the notes you hold — hold a chord, or latch it with hold',
     patch: {
       chipLevel: 0.8,
       chipArp: arp('up-down'),
@@ -1605,7 +1604,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'ghost bassline',
     blurb:
-      'The ring mod’s carrier is the toy a step ago, so every pair of notes writes its difference underneath — a bass line nobody wrote, wobbling with a drifting crystal',
+      'The ring mod’s carrier is the toy a step ago, so every pair of notes sounds at its difference underneath — a bass line that is not in the tune, wobbling with a drifting crystal',
     patch: {
       chipLevel: 0.8,
       chipDrift: 0.6,
@@ -1752,7 +1751,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'tape stop',
-    blurb: 'A heavy platter under a running board — Varispeed is a stop lever',
+    blurb:
+      'A heavy platter under a running board — Varispeed at 0 stops the tape',
     patch: {
       deckSpeed: 1,
       deckInertia: 1.5,
@@ -2169,7 +2169,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'tearing sync',
     blurb:
-      'Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so each note of the tune tears down through the harmonics',
+      'Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so each note of the tune sweeps down through the harmonics',
     patch: {
       monoLevel: 1,
       chipLevel: 0,

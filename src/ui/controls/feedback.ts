@@ -58,7 +58,7 @@ export const FEEDBACK_GROUPS: Group[] = [
           v === 0
             ? 'flat'
             : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'dark' : 'bright'}`,
-        help: 'Darkens or brightens the loop — decides which register the squeal settles into.',
+        help: 'Darkens or brightens the loop — sets which register the squeal settles into.',
       },
       {
         key: 'fbDest',
@@ -78,7 +78,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         needs: c => c.fb2Amt > 0 || c.fb3Amt > 0,
-        help: 'Sends each strip round the next one’s delay instead of its own. Separate loops each find a squeal and hold it; a ring of them has nothing to settle on, and wanders between modes untouched. Needs two strips up.',
+        help: 'Sends each strip round the next strip’s delay. Separate loops each find a squeal and hold it; a ring of them has nothing to settle on, and wanders between modes untouched. Needs two strips up.',
       },
       {
         key: 'fb2Amt',
@@ -89,7 +89,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'A second send and return, on its own fader. Two loops of different lengths on one bus beat against each other rather than agreeing, so the squeal gets a slow throb the single loop could never have.',
+        help: 'A second send and return on a separate fader. Two loops of different lengths on one bus beat against each other rather than agreeing, so the squeal gets a slow throb the single loop could never have.',
       },
       {
         key: 'fb2Ms',
@@ -100,7 +100,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         step: 0.05,
         unit: 'ms',
         curve: 'log',
-        help: 'How long strip 2’s cord and its circuit take. The stock times are deliberately not multiples of each other: set two strips to the same number and they lock into one loud loop, and everything interesting here is the two of them refusing to.',
+        help: 'How long strip 2’s cord and its circuit take. The stock times are not multiples of each other; two strips set to the same number lock into one loud loop.',
       },
       {
         key: 'fb2Tone',
@@ -115,7 +115,7 @@ export const FEEDBACK_GROUPS: Group[] = [
           v === 0
             ? 'flat'
             : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'dark' : 'bright'}`,
-        help: 'Strip 2’s own tilt. Tilt the strips apart and they scream in different registers — a top-end shriek over a bottom-end growl, off one bus.',
+        help: 'Strip 2’s tilt. Tilt the strips apart and they scream in different registers — a top-end shriek over a bottom-end growl, off one bus.',
       },
       {
         key: 'fb3Amt',
@@ -126,7 +126,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'The third send and return. Two loops beat; three cross-fed loops stop being predictable at all, which is what Cross is for.',
+        help: 'The third send and return. Two loops beat, and three loops cross-fed with Cross stop being predictable.',
       },
       {
         key: 'fb3Ms',
@@ -152,7 +152,7 @@ export const FEEDBACK_GROUPS: Group[] = [
           v === 0
             ? 'flat'
             : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'dark' : 'bright'}`,
-        help: 'Strip 3’s own tilt.',
+        help: 'Strip 3’s tilt.',
       },
       {
         key: 'fbRails',
@@ -197,7 +197,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the return amps pull their own rail down. They scream, take out their own supply, and have to find somewhere quieter to run — current goes in milliseconds, back over a third of a second. Same rail the toy is on.',
+        help: 'How far the return amps pull their rail down. They scream, take out their own supply, and have to find somewhere quieter to run — current goes in milliseconds, back over a third of a second. Same rail the toy is on.',
       },
       {
         key: 'fbBlock',

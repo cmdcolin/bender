@@ -53,7 +53,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_SHAPES,
-        help: 'Square carrier chops instead of gliding — harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only one that answers to how hard you play it: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply.',
+        help: 'A square carrier chops the signal, which adds harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only shape whose output depends on how hard you play: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply.',
       },
       {
         key: 'ringTrack',
@@ -73,7 +73,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_FROM,
-        help: 'Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it. The kit is a gate — the programme only sounds through the hits, and Mix hands the dry back underneath; the chaos oscillator never comes round again, so nothing about the next second is in the last; Glint and the toy are pitched, so what comes out is intermodulation on a grid rather than a clang. Whichever you pick has to be up in the mix to make a carrier at all, so it is in the programme it is multiplying too. The two late ones are the toy against itself a step or a beat ago: two notes multiplied, so their difference tone comes out as a bass line under the tune.',
+        help: 'Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect. The kit is a gate — the programme only sounds through the hits, and Mix hands the dry back underneath; the chaos oscillator never comes round again, so nothing about the next second is in the last; Glint and the toy are pitched, so what comes out is intermodulation on a grid rather than a clang. Whichever you pick has to be up in the mix to make a carrier at all, so it is in the programme it is multiplying too. The two late ones are the toy against itself a step or a beat ago: two notes multiplied, so their difference tone comes out as a bass line under the tune.',
       },
       {
         key: 'ringMix',
@@ -84,7 +84,7 @@ export const BEND_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it: the travel runs from clean, through amplitude modulation with the note still audible under the sidebands, to the suppressed-carrier ring at the top. A wire on it is therefore a VCA on the carrier — drum hit clangs every kick and fades back to the clean note, output envelope rings only the loud passages.',
+        help: 'Dry/wet, which on a ring modulator sets the depth of the modulation: the travel runs from clean, through amplitude modulation with the note still audible under the sidebands, to the suppressed-carrier ring at the top. A wire on it is therefore a VCA on the carrier — drum hit clangs every kick and fades back to the clean note, output envelope rings only the loud passages.',
       },
     ],
   },
@@ -221,7 +221,7 @@ export const BEND_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'Past 1.0 it self-oscillates and the saturation holds the scream instead of exploding.',
+        help: 'Past 1.0 it self-oscillates, and the saturation limits the scream.',
       },
       {
         key: 'combDampHz',
@@ -270,7 +270,7 @@ export const BEND_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation. Ping it with crackle, or park it in the feedback loop and let it pick the squeal.',
+        help: 'Past 1.0 the filter self-oscillates at the cutoff, and saturation limits the amplitude. Ping it with crackle, or park it in the feedback loop and let it pick the squeal.',
       },
       {
         key: 'filtMode',
@@ -365,7 +365,7 @@ export const BEND_GROUPS: Group[] = [
         max: 8,
         step: 1,
         unit: '×',
-        help: 'Maximum stutter count per event; each event rolls its own.',
+        help: 'Maximum stutter count per event; each event picks a random count up to it.',
       },
       {
         key: 'glitchRevProb',
@@ -421,7 +421,7 @@ export const BEND_GROUPS: Group[] = [
         step: 0.1,
         unit: 'Hz',
         curve: 'log',
-        help: 'Moves every partial by the same number of Hz instead of the same ratio, so harmonics stop being harmonics. Under 5 Hz it is a slow inharmonic drift; up high everything turns to clangour.',
+        help: 'Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic. Under 5 Hz it is a slow inharmonic drift; up high everything turns to clangour.',
       },
       {
         key: 'shiftDir',

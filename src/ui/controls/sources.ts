@@ -221,7 +221,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: 'Hz',
         curve: 'log',
         needs: playingYours,
-        help: 'How fast the memory plays its steps back, which the ROM songs each carry for themselves. It is a rate rather than a tempo because it is the same clock the envelopes come off — wind it up and the notes shorten with it, exactly as they do on the ROM that runs at nine.',
+        help: 'How fast the memory plays its steps back; each ROM song has its own rate. It is a rate rather than a tempo because it is the same clock the envelopes come off — wind it up and the notes shorten with it, exactly as they do on the ROM that runs at nine.',
       },
       {
         key: 'tunePoly',
@@ -285,7 +285,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: 'oct',
         needs: c => c.chipArp > 0,
-        help: 'How many octaves the figure climbs before it starts again. The chip has four voices and the keys reach two octaves under its bottom A, so a wide range on a big chord is a chip stealing from itself — which is what it sounded like.',
+        help: 'How many octaves the figure climbs before it starts again. The chip has four voices and the keys reach two octaves under its bottom A, so a wide range on a big chord is a chip stealing from itself, and it sounded that way.',
       },
       {
         key: 'chipArpSync',
@@ -332,7 +332,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: SYNC_MODES,
-        help: 'A wire from the drum machine’s step clock to the toy’s timing chain, so the tune counts off the kit’s tempo instead of its own crystal. Pick how much of a beat one step of the tune is worth. It replaces the rate the song was written at and nothing else: Clock, a pot on the timing pin, crystal drift and a rail going flat all still drag the tune, so a locked toy on dying batteries still goes low, late and long — it is a wire on the timing pin, not a phase detector. Off is the crystal, which is what every board made before the wire went in has. The kit’s tempo is a control like any other, so a MIDI clock coming in writes it and the tune follows the room through the same wire.',
+        help: 'A wire from the drum machine’s step clock to the toy’s timing chain, so the tune counts off the kit’s tempo. Pick how much of a beat one step of the tune is worth. It replaces the rate the song was written at and nothing else: Clock, a pot on the timing pin, crystal drift and a rail going flat all still drag the tune, so a locked toy on dying batteries still goes low, late and long — it is a wire on the timing pin, not a phase detector. Off leaves the crystal setting the tempo, as on every board made before the wire went in. The kit’s tempo is a control like any other, so a MIDI clock coming in writes it and the tune follows the room through the same wire.',
       },
       {
         key: 'chipClockX',
@@ -382,7 +382,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the chip’s clock wanders off the ratio you set it to. The toy runs on its own crystal, so it drifts against the drum machine and never quite locks — two rates a hair apart, phasing in and out for as long as you leave it.',
+        help: 'How far the chip’s clock frequency deviates from the ratio you set. The toy runs on its own crystal, so it drifts against the drum machine and never quite locks — two rates a hair apart, phasing in and out for as long as you leave it.',
       },
       {
         key: 'chipCrosstalk',
@@ -600,7 +600,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('D', ROM_DATA_LINES),
         ordered: true,
         shy: true,
-        help: 'Which wire between the ROM and the divider the knife found. The chip stores a note code rather than a pitch, so low lines are small intervals and high ones octaves. One wire wrong is the same wrong note every time — the song keeps its rhythm and becomes a different song.',
+        help: 'Which wire between the ROM and the divider the knife is on. The chip stores a note code rather than a pitch, so low lines are small intervals and high ones octaves. One wire wrong is the same wrong note every time — the song keeps its rhythm and becomes a different song.',
       },
       {
         key: 'chipDataFault',
@@ -627,7 +627,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('A', ROM_ADDR_LINES),
         ordered: true,
         shy: true,
-        help: 'Which wire between the program counter and the ROM the knife found. The counter still counts and the tempo never moves — the ROM is simply handed the wrong step. A0 plays the tune in swapped pairs; A3 held low locks it into the bottom eight for good.',
+        help: 'Which wire between the program counter and the ROM the knife is on. The counter still counts and the tempo never moves — the ROM is simply handed the wrong step. A0 plays the tune in swapped pairs; A3 held low locks it into the bottom eight for good.',
       },
       {
         key: 'chipAddrFault',
@@ -651,7 +651,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far through the trace the knife went — only the cut fault reads it. All the way and the pin floats for good, and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the melody flickers between two versions of itself.',
+        help: 'How far through the trace the knife cuts; only the cut fault uses it. All the way and the pin floats for good, and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the melody flickers between two versions of itself.',
       },
       {
         key: 'chipLoopFrom',
@@ -692,7 +692,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('S', BANK_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the wires that pick the song the knife found. A wrong bit sends each read to another song, at the same step, so the tune plays a neighbouring song’s notes in its own rhythm. A cut wire flickers between the two songs.',
+        help: 'Which of the wires that pick the song the knife is on. A wrong bit sends each read to another song, at the same step, so the tune plays a neighbouring song’s notes in its own rhythm. A cut wire flickers between the two songs.',
       },
       {
         key: 'chipBankFault',
@@ -719,7 +719,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('N', DIV_LINES),
         ordered: true,
         shy: true,
-        help: 'Which wire of the pitch divider the knife found. Each note loads a whole number and the pitch is the master clock divided by it, so a wrong bit puts notes between the keys. A low wire nudges the top of the keyboard out of tune, and a high wire moves notes by octaves. With any wire picked, every note sits a few cents off true, because the divider counts whole numbers.',
+        help: 'Which wire of the pitch divider the knife is on. Each note loads a whole number and the pitch is the master clock divided by it, so a wrong bit puts notes between the keys. A low wire nudges the top of the keyboard out of tune, and a high wire moves notes by octaves. With any wire picked, every note sits a few cents off true, because the divider counts whole numbers.',
       },
       {
         key: 'chipDivFault',
@@ -847,7 +847,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much of each swing the transistor around the kick, tom and snare hands back. Up the travel the hits stop stopping and start ringing; past nine tenths of it the networks hand back more than they took and never run down at all, so the pitched voices become notes the pattern retunes rather than drums it restrikes. The floor under the trigger holds them there: a network that never drains is a network the sequencer cannot strike again.',
+        help: 'How much of each swing the transistor around the kick, tom and snare feeds back. Up the travel the hits stop stopping and start ringing; past nine tenths of it the networks hand back more than they took and never run down at all, so the pitched voices become notes the pattern retunes rather than drums it restrikes. The floor under the trigger holds them there: a network that never drains is a network the sequencer cannot strike again.',
       },
       {
         key: 'drumSweep',
@@ -913,7 +913,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The one-shots all charge off one timing rail, and this is how much a one-shot fired alongside others loses to them. Each runs short at the same height, so a crowded step hands every voice on it less charge: the kick under a hat and a clap loses most of its body and its swoop starts a fourth lower, while a lone kick keeps all of it. Accent sag darkens a busy pattern; this thins it.',
+        help: 'How much charge a one-shot fired alongside others loses to them, since the one-shots all charge off one timing rail. Each runs short at the same height, so a crowded step hands every voice on it less charge: the kick under a hat and a clap loses most of its body and its swoop starts a fourth lower, while a lone kick keeps all of it. Accent sag darkens a busy pattern; this thins it.',
       },
       {
         key: 'drumTrigLoad',
@@ -968,7 +968,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How hard the kit’s one noise transistor is biased. It is a junction run backwards until it avalanches, which is where every bit of hiss on this board comes from — but a junction near the edge of avalanching does not conduct steadily. It latches in and out at random, holding each for anywhere between a third of a millisecond and a tenth of a second, which is what a marginal part does and is called popcorn noise for what it sounds like. The snare, both hats and the clap are all hanging off the one transistor, so they break up together and mid-hit rather than a voice at a time: down the travel the kit’s noise stutters, and near the bottom it only spits. What is left is the half of each voice that isn’t hiss — the snare’s tuned networks and the hats’ metal bank — so the pots beside this decide what a spitting kit still has to say.',
+        help: 'How hard the kit’s one noise transistor is biased. It is a junction run backwards until it avalanches, which is where every bit of hiss on this board comes from — but a junction near the edge of avalanching does not conduct steadily. It latches in and out at random, holding each for anywhere between a third of a millisecond and a tenth of a second, as a marginal part does; the result is called popcorn noise. The snare, both hats and the clap are all hanging off the one transistor, so they break up together and mid-hit rather than a voice at a time: down the travel the kit’s noise stutters, and near the bottom it only spits. What is left is the half of each voice that isn’t hiss — the snare’s tuned networks and the hats’ metal bank — so the pots beside this set what a spitting kit still plays.',
       },
       {
         key: 'drumDice',
@@ -1013,7 +1013,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'One resistor chain sets all six oscillators, and this leans on it. The ends of the chain move and the middle stays, so the bank widens rather than transposes — which is Tune’s job. Every metal voice moves together because they are the same six parts: wind it up and the cowbell detunes, the cymbal turns to glass, and the hats get grittier.',
+        help: 'Moves the ends of the one resistor chain that sets all six oscillators and leaves the middle, so the bank widens where Tune transposes it. Every metal voice moves together because they are the same six parts: wind it up and the cowbell detunes, the cymbal turns to glass, and the hats get grittier.',
       },
       {
         key: 'drumSquare',
@@ -1174,7 +1174,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('A', KIT_ROM_ADDR_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the wires carrying an address to the sample ROM the knife found. Every voice’s counter reads over these wires, so a fault lands one voice’s counter in another voice’s slab. A0 held low reads every word twice; A16 held high lands the kick’s counter in the cymbal’s slab.',
+        help: 'Which of the wires carrying an address to the sample ROM the knife is on. Every voice’s counter reads over these wires, so a fault lands one voice’s counter in another voice’s slab. A0 held low reads every word twice; A16 held high lands the kick’s counter in the cymbal’s slab.',
       },
       {
         key: 'drumRomAddrFault',
@@ -1201,7 +1201,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('D', KIT_ROM_DATA_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the twelve wires carrying each word out of the sample ROM the knife found. A fault on a low line puts faint grit under the quiet tails. D11 is the top bit of every word, and a fault on it folds each hit into a square-edged blat.',
+        help: 'Which of the twelve wires carrying each word out of the sample ROM the knife is on. A fault on a low line puts faint grit under the quiet tails. D11 is the top bit of every word, and a fault on it folds each hit into a square-edged blat.',
       },
       {
         key: 'drumRomDataFault',
@@ -1266,7 +1266,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The accent is one cap feeding every voice, and this is how much each accented step takes off it. At nothing the bus is stiff and every accent is the full one. Wound up, a step stacking four voices hands each of them less than a step stacking one, and a second accent before the cap has caught up lands softer than the first — so a roll comes out shaped without a knob moving.',
+        help: 'How much each accented step takes off the accent cap, which feeds every voice. At nothing the bus is stiff and every accent is the full one. Wound up, a step stacking four voices hands each of them less than a step stacking one, and a second accent before the cap has caught up lands softer than the first — so a roll comes out shaped without a knob moving.',
       },
       {
         key: 'drumChoke',
@@ -1277,7 +1277,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: CHOKE_NAMES,
-        help: 'Where the board’s one choke resistor is soldered. It sits across the hats’ shared cap to begin with, which is what a hi-hat pedal is: a closed step does not silence a ringing open hat, it drains what is left of it in a hurry. Move the wire and any voice can do that to any other — the hats keep their pedal either way, because that pair is wired in the metal rather than on the panel. It is the trigger line it listens to, so a pad, the mic and a bridged wire all choke as well as the sequencer does.',
+        help: 'Where the board’s one choke resistor is soldered. It sits across the hats’ shared cap to begin with, the arrangement of a hi-hat pedal: a closed step does not silence a ringing open hat, it drains what is left of it in a hurry. Move the wire and any voice can do that to any other — the hats keep their pedal either way, because that pair is wired in the metal rather than on the panel. It is the trigger line it listens to, so a pad, the mic and a bridged wire all choke as well as the sequencer does.',
       },
       {
         key: 'drumRingTrig',
@@ -1306,7 +1306,7 @@ export const SOURCE_GROUPS: Group[] = [
           'rotate',
           'whole kit',
         ],
-        help: 'Bridges two voices’ envelope pins so each amplifier hears the wrong envelope. Rotate passes the original three around the ring; whole kit passes every voice, so the cowbell rings on a kick and the clap answers a tom. It is a wire between two amplifiers, so the sampled kit is the one place on this board it does nothing: a slab carries its own envelope baked into it and has no pin to bridge.',
+        help: 'Bridges two voices’ envelope pins so each amplifier follows the wrong envelope. Rotate passes the original three around the ring; whole kit passes every voice, so the cowbell rings on a kick and the clap answers a tom. It is a wire between two amplifiers, so the sampled kit is the one place on this board it does nothing: a slab carries its own envelope baked into it and has no pin to bridge.',
       },
       {
         key: 'drumCrossAmt',
@@ -1318,7 +1318,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far each amplifier leans across. All the way over is a full swap — the kick fires on snare steps, the noise swells on kicks, and a hat tick puts a pitch blip through the kick.',
+        help: 'How much of the other voice’s envelope each amplifier follows. All the way over is a full swap — the kick fires on snare steps, the noise swells on kicks, and a hat tick puts a pitch blip through the kick.',
       },
       {
         key: 'drumSlip',
@@ -1367,7 +1367,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('A', ADDR_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the four wires carrying a step number to the pattern memory the knife found. Nothing malfunctions: the counter still counts and a different cell answers. A0 held low plays every step twice; A3 held high hands you the back half of the bar and never the front.',
+        help: 'Which of the four wires carrying a step number to the pattern memory the knife is on. Nothing malfunctions: the counter still counts and a different cell answers. A0 held low plays every step twice; A3 held high hands you the back half of the bar and never the front.',
       },
       {
         key: 'drumAddrFault',
@@ -1394,7 +1394,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('D', DATA_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the wires carrying the word back the knife found — one wire a row, in the order of the grid, so D8 is the accent. To +V is that voice on every step, which is the machine-gun; to ground is a row you can see and cannot hear. On the accent wire it is every step accented, and with Accent sag up that is a kit weighted by how many voices each step strikes rather than a loud one. It is the trigger bus, so a bit forced high reaches the sampler, keyboard and Glint too.',
+        help: 'Which of the wires carrying the word back the knife is on — one wire a row, in the order of the grid, so D8 is the accent. To +V is that voice on every step, which is the machine-gun; to ground is a row you can see and cannot hear. On the accent wire it is every step accented, and with Accent sag up that is a kit weighted by how many voices each step strikes rather than a loud one. It is the trigger bus, so a bit forced high reaches the sampler, keyboard and Glint too.',
       },
       {
         key: 'drumDataFault',
@@ -1418,7 +1418,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far through the trace the knife went — only the cut fault reads it. It bites less here than anywhere else on the board: every row fetches its own step through these same wires inside one tick, so a floating bit is mostly holding the value it was about to be handed anyway.',
+        help: 'How far through the trace the knife cuts; only the cut fault uses it. It bites less here than anywhere else on the board: every row fetches its own step through these same wires inside one tick, so a floating bit is mostly holding the value it was about to be handed anyway.',
       },
     ],
   },
@@ -1505,7 +1505,7 @@ export const SOURCE_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control: down is a sine, up is the harmonics piling on. It rides out with the patch as one of those eight bytes, so moving it is another write for a fault to catch. Past 1 a booster wired around the chip multiplies the modulation index by four per unit, up to 64 times at the top, and the tone breaks up into noise. The booster does nothing while an effect runs.',
+        help: 'How loud the modulator is into the carrier, which sets the whole tone of a two-operator chip: down is a sine, up is the harmonics piling on. It rides out with the patch as one of those eight bytes, so moving it is another write for a fault to catch. Past 1 a booster wired around the chip multiplies the modulation index by four per unit, up to 64 times at the top, and the tone breaks up into noise. The booster does nothing while an effect runs.',
       },
       {
         key: 'fmFeedback',
@@ -1534,7 +1534,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FM_LFO_NAMES,
-        help: 'The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it. It has been running since the board came up and all this button does is solder the operators to it, two bits in each of two patch bytes. It counts off the same divider as the pitch, so starving the toy slows the wobble down too. Voices that came with their own keep it whatever the button says.',
+        help: 'The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it. It has been running since the board came up and the button solders the operators to it, two bits in each of two patch bytes. It counts off the same divider as the pitch, so starving the toy slows the wobble down too. Voices that came with their own keep it whatever the button says.',
       },
       {
         key: 'fmLength',
@@ -1578,7 +1578,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['off', 'kit'],
-        help: 'The percussion bank, which is a second thing the die can be: press it and the top two channels stop belonging to the keyboard, re-tapped onto a bass drum and a pair of slots fed by a shift register running since power-on. That register is the only noise on the chip — everything else it makes is a sine. Every note strikes the bass drum; for the snare and the hat, clip the kit’s lines on with Struck by. Costs two voices, and an effect wants the same ones.',
+        help: 'The percussion bank, which is a second thing the die can be: press it and the keyboard loses its top two channels, which are re-tapped onto a bass drum and a pair of slots fed by a shift register running since power-on. That register is the only noise on the chip — everything else it makes is a sine. Every note strikes the bass drum; for the snare and the hat, clip the kit’s lines on with Struck by. Costs two voices, and an effect wants the same ones.',
       },
       {
         key: 'fmClockX',
@@ -1654,7 +1654,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: RATIO_CHOICES,
         ordered: true,
-        help: 'The same table on the carrier, which moves the note itself rather than its colour — 2 is the same patch an octave up. Set both and what matters is the interval: 1 against 2 is a hollow octave, 2 against 3 a fifth, and anything not a whole multiple clangs.',
+        help: 'The same table on the carrier, which moves the note itself — 2 is the same patch an octave up. Set both and what matters is the interval: 1 against 2 is a hollow octave, 2 against 3 a fifth, and anything not a whole multiple clangs.',
       },
       {
         key: 'fmModDecay',
@@ -1666,7 +1666,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: DECAY_CHOICES,
         ordered: true,
-        help: 'How long the modulator takes to fall away, which is what makes an FM note a bell or an organ. Sixteen rates, counted off the same divider as the tempo and the pitch — so starving the rail stretches these along with everything else.',
+        help: 'How long the modulator takes to fall away, which makes an FM note a bell or an organ. Sixteen rates, counted off the same divider as the tempo and the pitch — so starving the rail stretches these along with everything else.',
       },
       {
         key: 'fmDataLine',
@@ -1680,7 +1680,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('D', 8),
         ordered: true,
         shy: true,
-        help: 'Which of the eight wires carrying bytes to the register file the knife found. A register holds what it was last told, so a fault here does not pass — it accumulates. Patches come out wrong and stay wrong, and if the bit carrying the key going up cannot go low, the note never ends.',
+        help: 'Which of the eight wires carrying bytes to the register file the knife is on. A register holds what it was last told, so a fault here does not pass — it accumulates. Patches come out wrong and stay wrong, and if the bit carrying the key going up cannot go low, the note never ends.',
       },
       {
         key: 'fmDataFault',
@@ -1707,7 +1707,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('A', 6),
         ordered: true,
         shy: true,
-        help: 'Which of the six wires choosing the register the knife found. The byte arrives intact and is filed in the wrong place — a frequency into an envelope register, a key-on into a waveform — and whatever should have gone there never did, so the chip plays on with the last value it was told.',
+        help: 'Which of the six wires choosing the register the knife is on. The byte arrives intact and is filed in the wrong place — a frequency into an envelope register, a key-on into a waveform — and whatever should have gone there never did, so the chip plays on with the last value it was told.',
       },
       {
         key: 'fmAddrFault',
@@ -1734,7 +1734,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('W', 10),
         ordered: true,
         shy: true,
-        help: 'Which of the ten wires addressing the sine table the knife found. Nothing here computes a sine — it looks one up — so the waveform is an address, and nothing accumulates. W8 runs the quarter wave twice, an octave up with a cliff in it; W9 is the sign, so cutting it leaves all octave and no fundamental.',
+        help: 'Which of the ten wires addressing the sine table the knife is on. Nothing here computes a sine — it looks one up — so the waveform is an address, and nothing accumulates. W8 runs the quarter wave twice, an octave up with a cliff in it; W9 is the sign, so cutting it leaves all octave and no fundamental.',
       },
       {
         key: 'fmWaveFault',
@@ -1762,7 +1762,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('T', 8),
         ordered: true,
         shy: true,
-        help: 'Which of the eight wires the sine table answers on the knife found. The address side picks a different correct sample; this side corrupts the one that was picked — a step cut into the amplitude at one bit position, on every operator’s turn on the one datapath. The table keeps a magnitude and takes the sign off the phase, so nothing here moves a note.',
+        help: 'Which of the eight wires carrying the sine table’s output the knife is on. The address side picks a different correct sample; this side corrupts the one that was picked — a step cut into the amplitude at one bit position, on every operator’s turn on the one datapath. The table keeps a magnitude and takes the sign off the phase, so nothing here moves a note.',
       },
       {
         key: 'fmWaveDataFault',
@@ -1790,7 +1790,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('P', PATCH_ADDR_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the seven wires addressing the patch table the knife found. Three pick one of a patch’s eight bytes and four pick the row: row zero is the register file the processor writes, and the other fifteen are the die’s own bank. A byte line hands an operator another byte of the same patch; a row line held high swaps every channel onto one of the die’s patches, past every knob that wrote this one.',
+        help: 'Which of the seven wires addressing the patch table the knife is on. Three pick one of a patch’s eight bytes and four pick the row: row zero is the register file the processor writes, and the other fifteen are the die’s own bank. A byte line hands an operator another byte of the same patch; a row line held high swaps every channel onto one of the die’s patches, past every knob that wrote this one.',
       },
       {
         key: 'fmPatchFault',
@@ -1818,7 +1818,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('B', PATCH_DATA_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the eight wires the patch table answers on the knife found. The register file’s data line stores a wrong byte; this one reads the right byte wrong, on every fetch, and the patch comes back the moment the knife comes off. B0 is the bottom of both multipliers and can drop the note an octave; B5 is the hold bit, so a struck voice rings for as long as the key is down.',
+        help: 'Which of the eight wires carrying the patch table’s output the knife is on. The register file’s data line stores a wrong byte; this one reads the right byte wrong, on every fetch, and the patch comes back the moment the knife comes off. B0 is the bottom of both multipliers and can drop the note an octave; B5 is the hold bit, so a struck voice rings for as long as the key is down.',
       },
       {
         key: 'fmPatchDataFault',
@@ -1844,7 +1844,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the bit holds whatever was last on it. Back it off and the line still carries some of the time, so most writes land and the occasional one does not: a patch that is nearly right, a note in ten that hangs.',
+        help: 'How far through the trace the knife cuts; only the cut fault uses it. All the way and the bit holds whatever was last on it. Back it off and the line still carries some of the time, so most writes land and the occasional one does not: a patch that is nearly right, a note in ten that hangs.',
       },
       {
         key: 'fmStrobe',
@@ -2001,7 +2001,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: PCM_VOICE_NAMES,
-        help: 'Which recording in the ROM the address counter walks. None of them is a sample of anything: each is a handful of partials and an attack shape cut into eight-bit words when the chip was built, an attack segment and then a loop the counter drops back into and stays in. *sampled* is the exception and the whole reason a keyboard like this is famous — it walks whatever you dropped on the sampler instead.',
+        help: 'Which recording in the ROM the address counter walks. None of them is a sample of anything: each is a handful of partials and an attack shape cut into eight-bit words when the chip was built, an attack segment and then a loop the counter drops back into and stays in. *sampled* is the exception — it walks whatever you dropped on the sampler instead.',
       },
       {
         key: 'pcmEnv',
@@ -2041,7 +2041,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: PCM_VIBRATO_NAMES,
-        help: 'One LFO on the die with no rate register, no depth register and nothing that can stop it — the button only decides whether a voice is wired to it. *delayed* is the same wire behind a lag, so a note arrives straight and comes into the wobble a moment later. It counts off the same divider as everything else, so a starving board slows the wobble too.',
+        help: 'One LFO on the die with no rate register, no depth register and nothing that can stop it — the button sets whether a voice is wired to it. *delayed* is the same wire behind a lag, so a note arrives straight and comes into the wobble a moment later. It counts off the same divider as everything else, so a starving board slows the wobble too.',
       },
       {
         key: 'pcmChord',
@@ -2051,7 +2051,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: PCM_CHORD_NAMES,
-        help: 'One key, a whole voicing under it. The chip has four voices, so a four-note chord is the entire instrument — press a second key and the first one is stolen out from under you, which is what a home keyboard with a chord button has always done. It reaches whatever strikes the key input, so the toy’s demo song comes out harmonised.',
+        help: 'Puts a whole voicing under one key. The chip has four voices, so a four-note chord uses the entire instrument — press a second key and the first one is stolen, as on a home keyboard with a chord button. It reaches whatever strikes the key input, so the toy’s demo song comes out harmonised.',
       },
       {
         key: 'pcmClockX',
@@ -2098,7 +2098,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('A', PCM_ADDR_LINES),
         ordered: true,
         shy: true,
-        help: `Which of the wires the counter addresses the ROM on the knife found. Nothing here is corrupted — every word that comes back is a real word, from the wrong place. A low line held reads every other sample twice and drops an octave; a high one folds the voice onto its own first half and loops there. The top two only ever go high on the sampled voice: the counter is wider than the wave ROM, and only ${SAMPLE_SECS} seconds of sample memory fills it.`,
+        help: `Which of the counter’s wires to the ROM the knife is on. Nothing here is corrupted — every word that comes back is a real word, from the wrong place. A low line held reads every other sample twice and drops an octave; a high one folds the voice onto its own first half and loops there. The top two only ever go high on the sampled voice: the counter is wider than the wave ROM, and only ${SAMPLE_SECS} seconds of sample memory fills it.`,
       },
       {
         key: 'pcmAddrFault',
@@ -2125,7 +2125,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('D', PCM_DATA_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the eight wires the ROM answers on the knife found — the famous one. The address is right and the word is not, on every sample of every voice, so the note keeps its pitch and loses its shape. D7 is the top of the word and carries the sign; the low wires are a floor under the quiet parts of a wave, which is what turns a choir into gravel.',
+        help: 'Which of the eight wires carrying the ROM’s output the knife is on. The address is right and the word is not, on every sample of every voice, so the note keeps its pitch and loses its shape. D7 is the top of the word and carries the sign; the low wires are a floor under the quiet parts of a wave, so a fault there turns a choir into gravel.',
       },
       {
         key: 'pcmDataFault',
@@ -2138,7 +2138,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'To +V is the bend everybody knows: that bit is set in every word the ROM hands back, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was. To ground punches a notch through every word. Bridged collapses two wires onto each other, and the voice comes out in steps.',
+        help: 'To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was. To ground punches a notch through every word. Bridged collapses two wires onto each other, and the voice comes out in steps.',
       },
       {
         key: 'pcmBusCut',
@@ -2149,7 +2149,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the pin floats free. Back it off and the line conducts some of the time, so most words arrive and the rest come off the wire next door: a voice that flickers between itself and something else, at the rate the ROM is being read.',
+        help: 'How far through the trace the knife cuts; only the cut fault uses it. All the way and the pin floats free. Back it off and the line conducts some of the time, so most words arrive and the rest come off the wire next door: a voice that flickers between itself and something else, at the rate the ROM is being read.',
       },
     ],
   },
@@ -2999,7 +2999,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Makes up what each lap costs, up to double the level, so a loop locked into a jam stays where it is. The head compares what it lays down with what was on the tape under it and turns the write up by the shortfall, slowly, so a new layer still goes on over the old. Up, it also works against a low Record or Erase, which are there to fade the loop.',
+        help: 'Raises the level to make up what each lap loses, up to double, so a loop locked into a jam stays where it is. The head compares what it lays down with what was on the tape under it and turns the write up by the shortfall, slowly, so a new layer still goes on over the old. Up, it also works against a low Record or Erase, which are there to fade the loop.',
       },
       {
         key: 'loopWear',

@@ -28,7 +28,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 60,
         step: 0.5,
         unit: 'dB',
-        help: 'Gain into the clipping stage — and how hard the pedal leans on its own battery.',
+        help: 'Gain into the clipping stage — and how hard the pedal loads its battery.',
       },
       {
         key: 'stompTone',
@@ -37,7 +37,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Each circuit’s tone control is a different network, so the knob means something different on each: a low-pass on most, the scoop blend on the muff, where the transformer rings on the octave, and what pitch the starved one squeals at.',
+        help: 'Each circuit’s tone control is a different network, so the knob does something different on each: a low-pass on most, the scoop blend on the muff, where the transformer rings on the octave, and what pitch the starved one squeals at.',
       },
       {
         key: 'stompBias',
@@ -47,7 +47,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         split: { at: 0 },
-        help: 'Shifts the clipper off centre — the classic starve mod. Quiet passages gate out, loud ones come through one-sided and full of even harmonics. On the gate circuit this is what walks it toward cutoff, so it shuts higher and higher up.',
+        help: 'Shifts the clipper off centre — the starve mod. Quiet passages gate out, loud ones come through one-sided and full of even harmonics. On the gate circuit this moves it toward cutoff, so it shuts higher and higher up.',
       },
       {
         key: 'stompSag',
@@ -56,7 +56,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How dead the 9V is. The rail falls as the pedal works, so notes bloom and collapse; it also shares the board’s supply, so Starve and Brownout drag it down. On the gate circuit a flat battery is what makes it howl on its own.',
+        help: 'How dead the 9V is. The rail falls as the pedal works, so notes bloom and collapse; it also shares the board’s supply, so Starve and Brownout drag it down. On the gate circuit a flat battery makes it howl on its own.',
       },
       {
         key: 'stompLevel',
@@ -184,7 +184,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it — turning this up never quietens the dry, and repeats only ever add on top of the board.',
+        help: 'Volume of the repeats, added on top of the dry signal. Turning this up never quietens the dry.',
       },
       {
         key: 'wowDepthMs',
@@ -308,7 +308,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 0.1,
         unit: 'Hz',
         curve: 'log',
-        help: 'A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy. At unison with the note it fills in the even harmonics the toy’s square hasn’t got, a lap at a time; an octave under writes a new fundamental into the echoes only, while what you played stays clean; a few hertz puts each repeat a little further out of tune with the last.',
+        help: 'A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice. At unison with the note it fills in the even harmonics the toy’s square hasn’t got, a lap at a time; an octave under writes a new fundamental into the echoes only, while what you played stays clean; a few hertz puts each repeat a little further out of tune with the last.',
       },
       {
         key: 'dlyRing',
@@ -385,7 +385,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 0.1,
         unit: 'st',
         needs: c => Math.round(c.echoMode) === ECHO_MODE.shift,
-        help: 'How far each repeat moves in pitch, and since the repeat is what goes back round, each lap moves again: up the travel the echoes climb a staircase out of hearing, down it they spiral into the floor. A fraction of a semitone is a smear that drifts a little further every lap.',
+        help: 'How far each repeat moves in pitch, and each lap moves again because the repeat goes back round: up the travel the echoes climb a staircase out of hearing, down it they spiral into the floor. A fraction of a semitone is a smear that drifts a little further every lap.',
       },
       {
         key: 'echoMute',
@@ -405,7 +405,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it — turning this up never quietens the dry. At zero the pedal is off the board entirely.',
+        help: 'Volume of the repeats, added on top of the dry signal. Turning this up never quietens the dry. At zero the pedal is off the board entirely.',
       },
     ],
   },
@@ -422,7 +422,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 0.1,
         unit: 's',
         curve: 'log',
-        help: 'How long the springs ring. The top of the travel is longer than a tank of this size has any business ringing for — a half-minute tail is the room the springs are in, not the springs.',
+        help: 'How long the springs ring. The top of the travel gives a half-minute tail, longer than a tank of this size rings, so it sounds like the room the springs are in.',
       },
       {
         key: 'revWarble',
@@ -432,7 +432,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Swings the length of each spring on its own slow sine, so a long tail stops ringing on the same few notes. Low down it drifts; at the top every lap round the tank bends the pitch again and the tail goes seasick.',
+        help: 'Swings the length of each spring on a slow sine, so a long tail stops ringing on the same few notes. Low down it drifts; at the top every lap round the tank bends the pitch again and the tail goes seasick.',
       },
       {
         key: 'revToneHz',
@@ -507,7 +507,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ENS_MODE_NAMES,
-        help: 'How many heads are on the line and where they sit. Chorus is one, swept slowly, with the wet on one side and dry plus wet on the other — the way the first of these pedals wired its two jacks. Ensemble is three, 120° apart, on a slow sway with a fast shimmer over it: that is the circuit that turned a divider organ into a string section, and it is the one this board was missing. Dimension is two swept against each other, one to each side with the dry up the middle, so the wobble cancels the moment you sum to mono and only the width is left. Vibrato takes the dry away and leaves the moving copy on its own. Flange is the same line an order of magnitude shorter, with feedback.',
+        help: 'How many heads are on the line and where they sit. Chorus is one, swept slowly, with the wet on one side and dry plus wet on the other — the way the first of these pedals wired its two jacks. Ensemble is three, 120° apart, on a slow sway with a fast shimmer over it: that is the circuit that turned a divider organ into a string section. Dimension is two swept against each other, one to each side with the dry up the middle, so the wobble cancels the moment you sum to mono and only the width is left. Vibrato takes the dry away and leaves the moving copy on its own. Flange is the same line an order of magnitude shorter, with feedback.',
       },
       {
         key: 'ensRate',
@@ -519,7 +519,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 0.01,
         unit: 'Hz',
         curve: 'log',
-        help: 'How fast the clock sweeps. On ensemble a second oscillator runs ten times this and a third as far, which is what the string machines did — at the stock setting that is a 0.6 Hz sway with a 6 Hz shimmer on it.',
+        help: 'How fast the clock sweeps. On ensemble a second oscillator runs ten times this and a third as far, as the string machines did. At the stock setting that is a 0.6 Hz sway with a 6 Hz shimmer on it.',
       },
       {
         key: 'ensDepth',
@@ -559,7 +559,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 0.1,
         unit: 'ms',
         curve: 'log',
-        help: 'How long the line runs, which on a bucket brigade is the same knob as how much top end survives it: the clock has to walk the charge through every bucket inside the delay, so long is slow, slow is dark, and at the top of the travel the clock itself is in the take. Each mode takes what it can use of this travel — a flanger wants the short end, an ensemble the long.',
+        help: 'How long the line runs, which on a bucket brigade also sets how much top end survives it: the clock has to walk the charge through every bucket inside the delay, so long is slow, slow is dark, and at the top of the travel the clock itself is in the take. Each mode takes what it can use of this travel — a flanger wants the short end, an ensemble the long.',
       },
       {
         key: 'ensFeedback',
@@ -570,7 +570,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         needs: c => Math.round(c.ensMode) === ENS_MODE.flange,
-        help: 'How much of the line goes back into it, which is what turns a short delay into a flanger: the notches get deeper and start ringing at their own spacing. Only flange has anything going round.',
+        help: 'How much of the line goes back into it, which turns a short delay into a flanger: the notches get deeper and start ringing at their own spacing. Only flange has anything going round.',
       },
       {
         key: 'ensTone',
@@ -591,7 +591,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the lines spread across the stereo field. At zero the pedal is mono, which is the honest way to hear what dimension is doing: its two lines swing against each other, so summed they cancel and what is left is the same board you had.',
+        help: 'How far the lines spread across the stereo field. At zero the pedal is mono, which shows what dimension does: its two lines swing against each other, so summed they cancel and what is left is the same board you had.',
       },
     ],
   },
@@ -767,7 +767,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The first tube hears the cabinet’s air through its own mechanical resonance, near 900 Hz. Below a threshold that depends on Gain and Master the note leaves a ringing behind it. Above it the loop holds a howl after the note is gone, and the two channels howl a little apart.',
+        help: 'The first tube picks up the cabinet’s sound through its mechanical resonance, near 900 Hz. Below a threshold that depends on Gain and Master the note leaves a ringing behind it. Above it the loop holds a howl after the note is gone, and the two channels howl a little apart.',
       },
     ],
   },

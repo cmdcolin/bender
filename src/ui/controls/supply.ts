@@ -51,7 +51,7 @@ export const SUPPLY_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much of the board’s capacitance sits behind whatever the starve is pulling on. It moves no voltage — it decides how long the rail takes to get there. At zero starve is a step you land on; wound up you hear the whole dive, slowing as it goes.',
+        help: 'How much of the board’s capacitance sits behind whatever the starve is pulling on. It moves no voltage; it sets how long the rail takes to get there. At zero starve is a step you land on; wound up you hear the whole dive, slowing as it goes.',
       },
       {
         key: 'chipWatchdog',
@@ -61,7 +61,7 @@ export const SUPPLY_GROUPS: Group[] = [
         max: 0.6,
         step: 0.005,
         unit: 'V',
-        help: 'Where the reset chip decides the supply has failed. At the bottom the reboot is the last thing to happen on the way down and you hear the whole dive first; at the top the toy resets while it could still run, so the tune just restarts.',
+        help: 'The voltage at which the reset chip treats the supply as failed. At the bottom the reboot is the last thing to happen on the way down and you hear the whole dive first; at the top the toy resets while it could still run, so the tune just restarts.',
       },
       {
         key: 'chipLatch',
@@ -72,7 +72,7 @@ export const SUPPLY_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         shy: true,
-        help: 'How often a brownout jams the chip instead of rebooting it. A latched CMOS die holds whatever note was sounding and keeps drawing current, so it screams one note into the floor until the rail gives out under it and the watchdog gets its power cycle.',
+        help: 'How often a brownout jams the chip instead of rebooting it. A latched CMOS die holds whatever note was sounding and keeps drawing current, so it screams one note until the rail collapses and the watchdog power-cycles it.',
       },
       {
         key: 'chipLatchHold',
@@ -103,7 +103,7 @@ export const SUPPLY_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Whether the clip lands on the timing pin instead of the supply, which is the difference between a sag and a dive. Starving the rail is worth two thirds of an octave; dividing the clock has no such ceiling — four at the top, whole timebase with it. Needs Clip chatter.',
+        help: 'Whether the clip lands on the timing pin, which gives a dive, or on the supply, which gives a sag. Starving the rail is worth two thirds of an octave; dividing the clock has no such ceiling — four at the top, whole timebase with it. Needs Clip chatter.',
       },
       {
         key: 'chipClipBite',
@@ -114,7 +114,7 @@ export const SUPPLY_GROUPS: Group[] = [
         step: 0.05,
         unit: '',
         shy: true,
-        help: 'How hard bare metal chokes the supply when it lands. Low is a lean on the pitch; high is a full brownout on every touch. Crank it and each contact trips the watchdog, so Clip chatter becomes a reboot machine.',
+        help: 'How hard bare metal chokes the supply when it lands. Low is a lean on the pitch; high is a full brownout on every touch. Crank it and each contact trips the watchdog, so Clip chatter reboots the chip.',
       },
       {
         key: 'chipClipHold',
@@ -147,7 +147,7 @@ export const SUPPLY_GROUPS: Group[] = [
         step: 1,
         unit: '/s',
         curve: 'log',
-        help: 'How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate. That asymmetry is why the bend reads as a dive; even it up and dives turn into a warble.',
+        help: 'How fast the clock comes back when the metal lifts, which disconnects the pin and stock runs ten times the charge rate. That asymmetry makes the bend a dive; even it up and dives turn into a warble.',
       },
     ],
   },

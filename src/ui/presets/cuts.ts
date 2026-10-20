@@ -43,7 +43,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'melody in clumps',
     blurb:
-      'Two note wires soldered to each other, so the tune lands on a lattice instead of on its own intervals',
+      'Two note wires soldered to each other, so the tune’s pitches fall on a lattice instead of on its intervals',
     patch: {
       chipDataLine: pick('chipDataLine', 'D1'),
       chipDataFault: pick('chipDataFault', 'bridged'),
@@ -54,7 +54,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'the tune in the bass',
     blurb:
-      'The two wires carrying the big intervals soldered to each other — a note asking for one of them gets neither, and the melody keeps its shape an octave or two underneath itself',
+      'The two wires carrying the big intervals soldered to each other — a note that needs one of them gets neither, and the melody keeps its shape an octave or two lower',
     patch: {
       chipDataLine: pick('chipDataLine', 'D3'),
       chipDataFault: pick('chipDataFault', 'bridged'),
@@ -65,7 +65,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'half a tune',
     blurb:
-      'The top address wire on the floor — the song folds into its own first half and stays there',
+      'The top address wire on the floor — the song folds into its first half and stays there',
     patch: {
       chipAddrLine: pick('chipAddrLine', 'A3'),
       chipAddrFault: pick('chipAddrFault', 'to ground'),
@@ -99,7 +99,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'machine-gun',
     blurb:
-      'The hat’s trigger wire held high — it fires on every step the machine fetches, and everything soldered to the trigger bus hears it',
+      'The hat’s trigger wire held high — it fires on every step the machine fetches, and everything soldered to the trigger bus receives the trigger',
     patch: {
       drumDataLine: pick('drumDataLine', 'D2'),
       drumDataFault: pick('drumDataFault', 'to +V'),
@@ -110,7 +110,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'kick on every step',
     blurb:
-      'The same knife one wire along — the kick fires on every step the machine fetches, and the bar goes under everything else rather than over it',
+      'The kick’s trigger wire held high — the kick fires on every step the machine fetches, and the bar goes under everything else',
     patch: {
       drumDataLine: pick('drumDataLine', 'D0'),
       drumDataFault: pick('drumDataFault', 'to +V'),
@@ -132,7 +132,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'accent on everything',
     blurb:
-      'The wire above the voices held high — the accent bus is asked for every step, so with Accent sag up the kit is weighed by how many voices each step strikes',
+      'The wire above the voices held high — the accent bus fires on every step, so with Accent sag up each step’s weight depends on how many voices it strikes',
     patch: {
       drumDataLine: pick('drumDataLine', 'D8'),
       drumDataFault: pick('drumDataFault', 'to +V'),
@@ -177,7 +177,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'the bar walks',
     blurb:
-      'The counter’s own clock, missing an edge here and there — every step still fires, but one in six of them fires twice and the bar never comes back to where it started',
+      'The counter’s clock, missing an edge here and there — every step still fires, but one in six of them fires twice and the bar never comes back to where it started',
     patch: { drumSlip: 0.16 },
   },
   {
@@ -209,7 +209,7 @@ export const CUTS: CutDef[] = [
     part: SAMPLE_ROM,
     name: 'the kick plays the kit',
     blurb:
-      'The end stop on the slab counter cut, so the counter carries on through every slab after the voice’s own and one kick hit holds four seconds of the kit',
+      'The end stop on the slab counter cut, so the counter continues through every slab after the voice’s slab and one kick hit plays four seconds of the kit',
     patch: {
       drumRom: 1,
       drumRomCount: pick('drumRomCount', 'runs on through the ROM'),
@@ -228,7 +228,7 @@ export const CUTS: CutDef[] = [
     part: SAMPLE_ROM,
     name: 'folded blat',
     blurb:
-      'The top data wire on the sample ROM held high, so every word lands in the top half and each hit folds into a square-edged blat',
+      'The top data wire on the sample ROM held high, so every word sits in the top half and each hit folds into a square-edged blat',
     patch: {
       drumRom: 1,
       drumRomDataLine: pick('drumRomDataLine', 'D11'),
@@ -240,7 +240,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'the note never ends',
     blurb:
-      'The bit carrying the key coming back up cannot go low, so nothing the chip is told to play ever stops',
+      'The data bit that sets the key cannot go low, so the processor’s key-off write leaves the key on and no note ever stops',
     patch: {
       fmDataLine: pick('fmDataLine', 'D4'),
       fmDataFault: pick('fmDataFault', 'to +V'),
@@ -251,7 +251,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'sub, not bells',
     blurb:
-      'The top two octave bits soldered together, so the chip cannot be told a high octave unless it asks for the very top — every voice lands in the bottom of its range and the sub comes up with it',
+      'The top two octave bits soldered together, so the processor can write a high octave only by writing the very top one — every voice lands in the bottom of its range and the sub comes up with it',
     patch: {
       fmDataLine: pick('fmDataLine', 'D2'),
       fmDataFault: pick('fmDataFault', 'bridged'),
@@ -273,7 +273,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'an instrument with no button',
     blurb:
-      'The top wire high, so the number naming which instrument a channel plays stops being zero — the channels leave the patch the panel sent and read the die\u2019s own ROM, where seven of the fifteen sounds have no button on the case',
+      'The top wire high, so the number naming which instrument a channel plays stops being zero — the channels leave the patch the panel sent and read the ROM on the die, where seven of the fifteen sounds have no button on the case',
     patch: {
       fmDataLine: pick('fmDataLine', 'D7'),
       fmDataFault: pick('fmDataFault', 'to +V'),
@@ -296,7 +296,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'wrong register',
     blurb:
-      'Every odd register filed on top of the even one below it — the four voices stop having frequencies of their own',
+      'Every odd register filed on top of the even one below it — the four voices no longer have separate frequencies',
     patch: {
       fmAddrLine: pick('fmAddrLine', 'A0'),
       fmAddrFault: pick('fmAddrFault', 'to ground'),
@@ -307,7 +307,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'octave up, with a cliff',
     blurb:
-      'The wire that mirrors the quarter wave held, so the quarter simply runs twice — the note is right and the wave has a step in it',
+      'The wire that mirrors the quarter wave held, so the quarter runs twice — the note is right and the wave has a step in it',
     patch: {
       fmWaveLine: pick('fmWaveLine', 'W8'),
       fmWaveFault: pick('fmWaveFault', 'to ground'),
@@ -318,7 +318,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'sine into noise',
     blurb:
-      'The sign wire of the sine table parted most of the way. Nothing drives a floating pin, and this bus is read eight times a sample by a different operator each turn, so it never settles anywhere — the one knife on this chip that comes out louder than no knife at all',
+      'The sign wire of the sine table parted most of the way. A floating pin has no driver, and this bus is read eight times a sample by a different operator each turn, so it never settles anywhere — the one knife on this chip that comes out louder than no knife at all',
     patch: {
       fmWaveLine: pick('fmWaveLine', 'W9'),
       fmWaveFault: pick('fmWaveFault', 'cut'),
@@ -330,7 +330,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'no fundamental',
     blurb:
-      'The sign bit of the sine table nailed — a rectified wave, all octave and nothing underneath it',
+      'The sign bit of the sine table held to ground — a rectified wave, all octave and nothing underneath it',
     patch: {
       fmWaveLine: pick('fmWaveLine', 'W9'),
       fmWaveFault: pick('fmWaveFault', 'to ground'),
@@ -352,7 +352,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'the table goes stale',
     blurb:
-      'The same wire parted instead. Eight operators a sample take turns on this one datapath, so the pin is left holding whichever of them went last — the amplitude arrives from a different operator every turn and the chip turns to gravel',
+      'The top wire out of the sine table parted instead. Eight operators a sample take turns on this one datapath, so the pin holds whichever of them drove it last — the amplitude arrives from a different operator every turn and the chip turns to gravel',
     patch: {
       fmWaveDataLine: pick('fmWaveDataLine', 'T7'),
       fmWaveDataFault: pick('fmWaveDataFault', 'cut'),
@@ -363,7 +363,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'a patch that will not hold still',
     blurb:
-      'The patch table’s P2 parted most of the way. It picks a patch’s tone bytes or its envelope bytes, and it only carries some of the time, so every few milliseconds the operators read a different mix of the two and the note smears into static',
+      'The patch table’s P2 parted most of the way. That wire selects a patch’s tone bytes or its envelope bytes, and it carries a signal only some of the time, so every few milliseconds the operators read a different mix of the two and the note smears into static',
     patch: {
       fmPatchLine: pick('fmPatchLine', 'P2'),
       fmPatchFault: pick('fmPatchFault', 'cut'),
@@ -386,7 +386,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'the top bit sticks',
     blurb:
-      'The top wire out of the sample ROM held high — the bottom half of every wave folds up onto the top of it, and the pad comes back as a rectified buzz at the pitch it always was. The bend everybody knows',
+      'The top wire out of the sample ROM held high — the bottom half of every wave folds up onto the top of it, and the pad comes back as a rectified buzz at the pitch it always was',
     patch: {
       pcmDataLine: pick('pcmDataLine', 'D7'),
       pcmDataFault: pick('pcmDataFault', 'to +V'),
@@ -408,7 +408,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'the voice in clumps',
     blurb:
-      'Two of the top wires the ROM answers on soldered to each other — the words collapse onto a lattice and a voice that was a curve comes out in steps',
+      'Two of the top wires the ROM answers on soldered to each other — the words snap to a lattice and a voice that was a curve comes out in steps',
     patch: {
       pcmDataLine: pick('pcmDataLine', 'D6'),
       pcmDataFault: pick('pcmDataFault', 'bridged'),
@@ -419,7 +419,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'half the wave',
     blurb:
-      'The top address wire on the floor. The counter walks the whole recording and the ROM keeps handing back its first half, so every voice loops inside its own attack',
+      'The top address wire on the floor. The counter walks the whole recording and the ROM keeps handing back its first half, so every voice loops inside the attack',
     patch: {
       pcmAddrLine: pick('pcmAddrLine', 'A11'),
       pcmAddrFault: pick('pcmAddrFault', 'to ground'),
@@ -441,7 +441,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'the loop goes stale',
     blurb:
-      'An address trace parted most of the way. Nothing drives that pin, so it holds whatever the last address left on it and then starts drifting after its neighbour — the one knife on this chip that never stands still',
+      'An address trace parted most of the way. The pin has no driver, so it holds whatever the last address left on it and then starts drifting after its neighbour — the one knife on this chip that never stands still',
     patch: {
       pcmAddrLine: pick('pcmAddrLine', 'A7'),
       pcmAddrFault: pick('pcmAddrFault', 'cut'),
@@ -469,7 +469,7 @@ export const CUTS: CutDef[] = [
     part: DIE,
     name: 'the song upside down',
     blurb:
-      'The slot counter running at half speed, so every other sample carries two channels twice and two not at all — the song comes back mirrored about 12 kHz, low notes high and high notes low',
+      'The slot counter running at half speed, so every other sample contains two channels twice and two not at all — the song comes back mirrored about 12 kHz, low notes high and high notes low',
     patch: { fmDacSlip: 0.82 },
   },
   {
@@ -485,7 +485,7 @@ export const CUTS: CutDef[] = [
     part: DIE,
     name: 'garbage at power-on',
     blurb:
-      'The chip power-cycles into a register file of random bytes — channels that came up keyed drone at random pitches on instruments nobody chose, until a note lands on them',
+      'The chip power-cycles into a register file of random bytes — channels that came up keyed drone at random pitches on instruments nobody chose, until a note is played on them',
     patch: { fmColdBoot: pick('fmColdBoot', 'garbage') },
   },
   {
@@ -501,7 +501,7 @@ export const CUTS: CutDef[] = [
     part: DIE,
     name: 'sines folded to grit',
     blurb:
-      'The same adder cut to 7 bits, so anything 3 dB down wraps back to the top — the quiet middle of every wave folds up into a harsh digital buzz at the pitch it always had',
+      'The log adder cut to 7 bits, so anything 3 dB down wraps back to the top — the quiet middle of every wave folds up into a harsh digital buzz at the pitch it always had',
     patch: { fmAdder: pick('fmAdder', '7 bits') },
   },
 ]

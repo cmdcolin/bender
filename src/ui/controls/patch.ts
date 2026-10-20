@@ -26,7 +26,7 @@ export const PATCH_GROUPS: Group[] = [
         step: 0.01,
         unit: 'Hz',
         curve: 'log',
-        help: 'The bay’s own oscillator, free-running. Slow is a sweep; fast, wired onto a pitch, is modulation rather than vibrato. Chaos is the exception — it runs out of speed around 160 Hz.',
+        help: 'The bay’s oscillator, free-running. Slow is a sweep; fast, wired onto a pitch, is modulation rather than vibrato. Chaos is the exception — it runs out of speed around 160 Hz.',
       },
       {
         key: 'modLfoShape',
@@ -36,7 +36,7 @@ export const PATCH_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['sine', 'ramp', 'square', 'S&H', 'chaos', 'drunk'],
-        help: 'Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle. Chaos and drunk never come round again — rate sets roughly how fast, but nothing about the next cycle is in the last.',
+        help: 'Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle. Chaos and drunk never repeat; rate sets roughly how fast.',
       },
       ...([0, 1, 2, 3] as const).flatMap(i => [
         {
@@ -360,7 +360,7 @@ export const PATCH_GROUPS: Group[] = [
             },
             { name: 'Output', choices: ['deck speed'] },
           ],
-          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once; osc starve is the chaos oscillator’s own pot, which is a different supply. The seven levels are a VCA on that machine’s channel: a full push either way takes it from silent to twice the fader. The knife selectors hop: a push of one is a lap of the list, so an S&H cuts a different wire every cycle. FM cut depth and FM noise blob are the knife itself rather than a knob the factory fitted — a wire on the first is a fault that comes and goes in time. Four land on a wire’s own depth, so one wire decides how hard another pushes. Drum hit onto kit chance: fills that feed themselves.',
+          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once; osc starve is the chaos oscillator’s own pot, which is a different supply. The seven levels are a VCA on that machine’s channel: a full push either way takes it from silent to twice the fader. The knife selectors hop: a push of one is a lap of the list, so an S&H cuts a different wire every cycle. FM cut depth and FM noise blob are the knife itself rather than a knob the factory fitted — a wire on the first is a fault that comes and goes in time. Four target another wire’s depth, so one wire sets how hard another pushes. Drum hit onto kit chance gives fills that feed themselves.',
         },
         {
           key: `mod${i}Depth` as const,

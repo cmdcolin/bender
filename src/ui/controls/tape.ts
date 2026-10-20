@@ -30,7 +30,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much of the board you hear through the machine rather than straight off the bus. The dry side runs down the same nominal head delay, so this only combs once the transport wobbles.',
+        help: 'How much of the board you hear through the machine, with the rest straight off the bus. The dry side runs down the same nominal head delay, so this only combs once the transport wobbles.',
       },
       {
         key: 'tapeSpeed',
@@ -79,7 +79,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Noise laid on the medium, not on the mix — the playback head colours it, the speed sets how loud it is, and it breathes a little with the signal.',
+        help: 'Noise laid on the medium. The playback head colours it, the speed sets how loud it is, and it breathes a little with the signal.',
       },
       {
         key: 'tapeWow',
@@ -97,7 +97,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The fast wobble, plus the scrape grain of tape dragging past the head. Same span and friction the Squeal knob takes over the edge — this is under the line, where it only rattles.',
+        help: 'The fast wobble, plus the scrape grain of tape dragging past the head. Same span and friction as the Squeal knob, below the threshold where Squeal starts; here it only rattles.',
       },
       {
         key: 'tapeDrop',
@@ -106,7 +106,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Shed oxide. Highs go before level does, which is what makes these sound like tape rather than like the power cutting — and a patch of it sits on one track, so a dropout takes a channel with it rather than the whole record.',
+        help: 'Shed oxide. Highs go before level does, so dropouts sound like tape. A patch of it sits on one track, so a dropout takes a channel with it.',
       },
       {
         key: 'tapePrint',
@@ -124,7 +124,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal. Speed sets the note, tension how hard. You hear it twice — the scream, and everything on the tape wobbling with it.',
+        help: 'Sticky shed: the tape grabs the head, slips and grabs again, and the stick-slip grows into a squeal. Speed sets the note, tension how hard. You hear it twice — the scream, and everything on the tape wobbling with it.',
       },
       {
         key: 'tapeBias',
@@ -147,7 +147,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Tape reaches the gap already magnetised, so a wave’s two halves saturate differently. That asymmetry is the second harmonic — warmth, not breakup — and it blooms as you play in and fades as you back off.',
+        help: 'Tape reaches the gap already magnetised, so a wave’s two halves saturate differently. That asymmetry makes the second harmonic, which adds warmth. It grows as you play in and fades as you back off.',
       },
       {
         key: 'tapeBump',
@@ -157,7 +157,7 @@ export const TAPE_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'The lift where the wavelength past the replay head is the size of the head — the low end every tape machine adds unasked, paid for by a scoop above it. Speed moves where both sit; this is how much comes back.',
+        help: 'The lift where the wavelength past the replay head is the size of the head — the low end every tape machine adds, with a scoop above it. Speed moves where both sit; this is how much comes back.',
       },
       {
         key: 'tapeAzimuth',
@@ -166,7 +166,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Head misalignment: the right channel lags and loses top end. Collapses to mono badly, on purpose.',
+        help: 'Head misalignment: the right channel lags and loses top end, and the mix sums to mono badly.',
       },
       {
         key: 'tapeNrRec',

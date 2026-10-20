@@ -2,11 +2,10 @@
 
 # What is in the box
 
-A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 494 knobs and switches in 35 groups, seven bends competing for six slots,
-18 ROM tunes, 125 presets, 23 stage settings and 46 named cuts — and everything
-below comes off the control tables themselves, so the list cannot drift from the
-instrument.
+A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
+494 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+125 presets, 23 stage settings and 46 named cuts. The generator reads everything
+below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
 
@@ -15,101 +14,100 @@ Try it: **https://cmdcolin.github.io/bender/app/**
   <img alt="The signal path: six sources sum into the mix bus, run through six reorderable bend slots and the pedals, then brownout, the tape machine and the output, with the feedback bus wired from the output back to the mix" src="../img/chain-light.svg" width="520">
 </picture>
 
-The panel draws that live as you play, from the chain itself — the bends appear
-in whatever order you patched them and dead stages grey out. `pnpm diagram`
-renders it with the same layout the app uses.
+The signal-path map in the panel draws this diagram live as you play, from the
+chain itself: the bends appear in the order you patched them and dead stages
+grey out. `pnpm diagram` renders it with the same layout the app uses.
 
 ## The tour
 
-- **Nothing here is a sample.** The reboots, the pitch dives and the screams
-  fall out of the mechanisms. One RC oscillator clocks the whole toy chip, so
-  pitch, tempo and envelopes are the same thing divided — starve the rail and
-  they all go down together, and no setting pulls them apart.
+- **The sounds come from circuit models.** The reboots, the pitch dives and the
+  screams come from the mechanisms. One RC oscillator clocks the whole toy chip,
+  so pitch, tempo and envelopes are the same thing divided: starve the rail and
+  they all go down together, and no setting can separate them.
 - **Solder a pot onto the die.** _Bend spot_ picks the clock, the counter, the
   bias or the gate; _Bend pot_ is how far you turn it. _Clip chatter_ is the
-  paperclip: bare metal dragged across the pads, biting the supply a few times a
-  second, each touch a dive the board has to climb back out of.
+  paperclip: bare metal dragged across the pads, touching the supply a few times
+  a second. Each touch pulls the rail down, and the board recovers before the
+  next.
 - **Put a knife through the bus.** Cut, ground, bridge or pull up a data or
-  address line — on the toy, the drum machine or Glint — and the wrong byte
-  lands; on Glint it _stays_ wrong until the processor writes that register
-  again. Which wire and what happened to it only mean anything together, so each
-  chip's _knife on the bus_ opens on a row of named cuts: press **machine-gun**
-  or **the note never ends** and the rows under it say what that was. **Random
-  knife** under random ▾ draws from the same table.
+  address line, on the toy, the drum machine or Glint, and the chip reads the
+  wrong byte; on Glint it _stays_ wrong until the processor writes that register
+  again. The wire, the fault and its depth only work together, so each chip's
+  _knife on the bus_ opens on a row of named cuts: press **machine-gun** or
+  **the note never ends** and the rows under it show which controls it set.
+  **Random knife** under random ▾ draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
-  so one always sits out. A mix at zero takes the stage out of the path rather
-  than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 121 destinations — among
-  them the supply rail, the tape loop's capstan, and the other wires' own
-  depths.
+  so one always sits out. A mix at zero takes the stage out of the path.
+- **A patch bay that modulates itself.** Four wires, 121 destinations, among
+  them the supply rail, the tape loop's capstan, and the depths of the other
+  wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
-  saturates in-loop. Runaway is a feature; a fixed safety tail means no setting
-  can blow up the output.
-- **The board ages while you play.** Heat builds off whatever you make it
-  dissipate, dry joints drop a bend out of the path mid-note, and _Re-solder_
-  rewires the signal chain on its own.
+  saturates in-loop. A fixed safety tail keeps any setting from blowing up the
+  output.
+- **The board ages while you play.** Heat builds with the power the board
+  dissipates, _Dry joints_ drop a bend out of the path mid-note, and _Re-solder_
+  reorders the signal chain without a hand on a control.
 - **The tape loop re-records itself.** Drop an audio file anywhere on the page,
   or roll one off archive.org, and it plays at any speed either way round. Press
-  _rec_ on the deck, or raise _Record_, and the board lays its own output back
-  onto the reel where the play head is reading. With nothing loaded, _rec_
-  starts a first take on a blank reel, and a second press closes the loop at the
-  length you played and sets it going round. Each later press overdubs, and
-  _undo_ takes the last overdub off again. What comes past next lap has been
-  through the mix bus, the bends, the pedals and the tape machine, and goes
-  through all of them again. Nothing stands in for generation loss — the loop
-  really is re-recorded every lap, which is why a bend in the path makes it
-  diverge rather than fade. The reel under the keys is drawn off the tape as the
-  head reads it: drag its two markers to trim the loop, drag the tape itself to
-  move the head. _Wear_ and _Hiss_ add the head's own cost to each lap. The top
-  end goes a little more every pass, and a layer of noise goes down under the
-  last. _Hold_ turns the write up by what a lap lost, so a loop stays at its
-  level.
-- **A microphone into the middle of the board.** _Mic patch_ is not a channel —
-  on one setting the mic reaches the mix, on the other six it is soldered onto
-  the chip's rail, an oscillator's FM input or the delay's feedback. The body
-  contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 125 presets, and dice on every heading as
-  well as on the whole board; **morph** travels between two boards over up to
-  thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
-  the one closest to the edge; **drift** nudges the board along on a timer. All
-  of it lands in a walk you can ctrl+z back down.
-- **A link is a patch.** The board packs into the URL short enough to survive a
-  chat window, and a long `#set=` form names the controls if you would rather
-  type one. Play it over MIDI, record it to wav.
+  _rec_ on the deck, or raise _Record_, and the deck records the board's output
+  onto the reel at the play head. With nothing loaded, _rec_ starts a first take
+  on a blank reel, and a second press closes the loop at the length you played
+  and starts it looping. Each later press overdubs, and _undo_ removes the last
+  overdub off again. The audio on the next lap has already been through the mix
+  bus, the bends, the pedals and the tape machine, and goes through all of them
+  again. The loop is re-recorded on every lap, so generation loss is real, and a
+  bend in the path makes the loop diverge instead of fading. The reel under the
+  keys shows the tape as the head reads it: drag its two markers to trim the
+  loop, drag the tape itself to move the head. _Wear_ and _Hiss_ add the head's
+  loss to each lap. The top end falls a little more every pass, and a layer of
+  noise goes down under the last. _Hold_ raises the write level by what a lap
+  lost, so a loop stays at its level.
+- **A microphone into the middle of the board.** _Mic patch_ sets where the mic
+  connects: on one setting the mic reaches the mix, on the other six it is
+  soldered onto the chip's rail, an oscillator's FM input or the delay's
+  feedback. The body contact pad uses the same idea with your finger as the
+  resistor.
+- **Whole boards.** 125 presets, and a roll button on every heading as well as
+  on the whole board; **morph** moves between two boards over up to thirty
+  seconds; **hunt** plays six candidates and keeps the one that spends the most
+  time arriving at the limiter and backing off; **drift** shifts the board on a
+  timer. Presets, rolls, morphs and hunts enter a walk that ctrl+z steps back
+  through; drift does not.
+- **A link is a patch.** The URL holds the board in a form short enough to
+  survive a chat window, and a long `#set=` form names the controls if you would
+  rather type one. Play it over MIDI, record it to wav.
 
-[Bends](BENDS.md) explains how the interesting parts work and why they behave as
-they do. What follows is the list, for finding out whether something exists and
-what it is called.
+[Bends](BENDS.md) explains how the bends work. The sections below list every
+control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
-effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 46 of them, mostly the ones that cover the
-board rather than joining it.
+effect buries the board. Your hand can still set it anywhere, and a preset that
+names it still sets it. 46 controls are shy, mostly the ones that act on the
+whole board.
 
 ## Sources
 
 ### Plinky
 
-The instrument the whole thing is named after: a square-wave divider chip
-running a ROM, with a tone control that taps the divider at a different width,
-an auto bass-chord section and playable voices over the top. Its clock, counter,
-bias and gate are each a place to solder a pot onto — _Bend spot_ picks which,
-_Bend pot_ how far. The battery rail it shares with four other machines has its
-own panel, _Power supply_.
+A square-wave divider chip running a ROM, with a tone control that taps the
+divider at a different width, an auto bass-chord section and playable voices
+over the top. Its clock, counter, bias and gate are each a place to solder a pot
+onto: _Bend spot_ picks which and _Bend pot_ sets how far. The panel _Power
+supply_ holds the battery rail that Plinky shares with four other machines.
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each under _knife on the bus_, as in the panel. A press
+puts the knife on, and the rows under it show the controls it set:
 
 - **rests fill in**: A note wire held high — the song keeps its rhythm and its
   silences become notes
-- **melody in clumps**: Two note wires soldered to each other, so the tune lands
-  on a lattice instead of on its own intervals
+- **melody in clumps**: Two note wires soldered to each other, so the tune’s
+  pitches fall on a lattice instead of on its intervals
 - **the tune in the bass**: The two wires carrying the big intervals soldered to
-  each other — a note asking for one of them gets neither, and the melody keeps
-  its shape an octave or two underneath itself
+  each other — a note that needs one of them gets neither, and the melody keeps
+  its shape an octave or two lower
 - **half a tune**: The top address wire on the floor — the song folds into its
-  own first half and stays there
+  first half and stays there
 - **every step twice**: The bottom address wire low — the counter counts as it
   always did and the ROM hands back each step twice
 - **two songs at once**: A trace half cut — most steps arrive, and the rest come
@@ -124,7 +122,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Level               | 0 to 4, normal 0 to 1                                                                                                          | How loud Plinky is in the source mix                                                                                                                                                          |
 | Mute                | live or muted                                                                                                                  | Silences Plinky on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness                                                                             |
 | Tune                | 19 of them, lullaby through yours                                                                                              | Which song the chip plays                                                                                                                                                                     |
-| Memory rate         | 0.2 to 24 Hz                                                                                                                   | How fast the memory plays its steps back, which the ROM songs each carry for themselves                                                                                                       |
+| Memory rate         | 0.2 to 24 Hz                                                                                                                   | How fast the memory plays its steps back; each ROM song has its own rate                                                                                                                      |
 | Memory notes        | mono or poly                                                                                                                   | Whether the chip reads the two memory chips stacked on the first one                                                                                                                          |
 | Tone                | organ 1/2, reed 1/4, clav 1/8, buzz 1/16                                                                                       | Which width of pulse the tone selector taps off the divider chain                                                                                                                             |
 | Auto bass-chord     | off to full                                                                                                                    | The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running                                                                                  |
@@ -134,11 +132,11 @@ too — the knife goes on and the rows under it say which controls that was:
 | Arp sync            | off, quarters, eighths, eighth triplets, sixteenths, sixteenth triplets, thirty-seconds, thirty-second triplets, sixty-fourths | Kit sync for the arpeggio                                                                                                                                                                     |
 | Key lock            | off, major, minor, dorian, mixolydian, pent major, pent minor, blues, whole tone                                               | A diode matrix across the key contacts                                                                                                                                                        |
 | Key                 | C, C#, D, D#, E, F, F#, G, G#, A, A#, B                                                                                        | Which note the matrix is wired around                                                                                                                                                         |
-| Kit sync            | off, sixteenths, eighths, quarters                                                                                             | A wire from the drum machine’s step clock to the toy’s timing chain, so the tune counts off the kit’s tempo instead of its own crystal                                                        |
+| Kit sync            | off, sixteenths, eighths, quarters                                                                                             | A wire from the drum machine’s step clock to the toy’s timing chain, so the tune counts off the kit’s tempo                                                                                   |
 | Clock               | 0.05× to 16×                                                                                                                   | Drags the master clock crystal                                                                                                                                                                |
 | Bend spot           | off, clock, counter, bias, gate                                                                                                | Where the virtual pot is soldered onto the die: clock feedback, program counter, DAC bias, or the gate line                                                                                   |
 | Bend pot            | off to full                                                                                                                    | Turns the pot on the chosen bend spot                                                                                                                                                         |
-| Crystal drift       | off to full                                                                                                                    | How far the chip’s clock wanders off the ratio you set it to                                                                                                                                  |
+| Crystal drift       | off to full                                                                                                                    | How far the chip’s clock frequency deviates from the ratio you set                                                                                                                            |
 | Crosstalk           | off to full                                                                                                                    | How much of the output trace leaks onto the timing pin beside it                                                                                                                              |
 | Scan                | off to full                                                                                                                    | All the voices share one output pin, and a scan counter connects it to each sounding voice in turn                                                                                            |
 | Volume PWM          | off to full                                                                                                                    | The chip sets each voice’s volume by switching it on and off faster than you can hear, for a share of each cycle set by the envelope                                                          |
@@ -157,16 +155,16 @@ too — the knife goes on and the rows under it say which controls that was:
 | Voice XOR           | off to full                                                                                                                    | Replaces the voice mix with an XOR of the voices’ squares: the first voice flips each time another voice is low                                                                               |
 | Envelope bits       | off to full                                                                                                                    | Shortens the envelope counter so every fade runs in steps                                                                                                                                     |
 | Duty on envelope    | off to full                                                                                                                    | Ties the pulse width to the envelope                                                                                                                                                          |
-| Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the knife found                                                                                                                                    |
+| Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the knife is on                                                                                                                                    |
 | Data fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the wire                                                                                                                                                                     |
-| Address line †      | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the knife found                                                                                                                            |
+| Address line †      | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the knife is on                                                                                                                            |
 | Address fault       | cut, to ground, to +V, bridged                                                                                                 | The same four things, on the address side                                                                                                                                                     |
-| Cut depth           | off to full                                                                                                                    | How far through the trace the knife went — only the cut fault reads it                                                                                                                        |
+| Cut depth           | off to full                                                                                                                    | How far through the trace the knife cuts; only the cut fault uses it                                                                                                                          |
 | Loop wire †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | A jumper from one pin of the note latch back to the address side of the ROM                                                                                                                   |
 | Loop onto           | A0, A1, A2, A3, A4, reset                                                                                                      | Where the jumper lands                                                                                                                                                                        |
-| Song line †         | off, S0, S1, S2, S3, S4                                                                                                        | Which of the wires that pick the song the knife found                                                                                                                                         |
+| Song line †         | off, S0, S1, S2, S3, S4                                                                                                        | Which of the wires that pick the song the knife is on                                                                                                                                         |
 | Song fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the song wire                                                                                                                                                                |
-| Divider line †      | 13 of them, off through N11                                                                                                    | Which wire of the pitch divider the knife found                                                                                                                                               |
+| Divider line †      | 13 of them, off through N11                                                                                                    | Which wire of the pitch divider the knife is on                                                                                                                                               |
 | Divider fault       | cut, to ground, to +V, bridged                                                                                                 | What happened to the divider wire                                                                                                                                                             |
 
 </details>
@@ -174,41 +172,40 @@ too — the knife goes on and the rows under it say which controls that was:
 ### Clatter
 
 A step grid with a length per row, so a five-step hat runs against a
-sixteen-step kick until they line back up. _Retrigger_ hammers the current step
-at audio rate; _Cross-patch_ leans one voice’s amplifier onto another’s
+sixteen-step kick until they line back up. _Retrigger_ repeats the current step
+at audio rate. _Cross-patch_ connects one voice’s amplifier to another’s
 envelope, so a hit you can hear opens a voice nothing struck. _Address line_ and
-_Data line_ knife the wires between the step counter and the pattern memory: the
-counter goes on counting, the grid goes on chasing it, and the machine plays
-somebody else’s pattern.
+_Data line_ cut the wires between the step counter and the pattern memory: the
+counter keeps counting, the memory returns the wrong steps, and the machine
+plays a pattern nobody wrote.
 
-The pattern grid is a widget rather than a row of sliders, so the table below
-leaves it out: ten rows (the eight voices, an accent and an echo row), each
-carrying 16 steps and a length of its own, and a second 16-step mask on every
-voice for the steps that only sometimes fire. That is 28 more controls, and they
-ride in a link like the rest.
+The pattern grid is a widget, so the table below leaves it out. It has ten rows
+(the eight voices, an accent and an echo row), each with 16 steps and a length,
+and a second 16-step mask on every voice for the steps that sometimes fire. That
+is 28 more controls, and a link stores them like the rest.
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each under _knife on the bus_, as in the panel. A press
+puts the knife on, and the rows under it show the controls it set:
 
 - **machine-gun**: The hat’s trigger wire held high — it fires on every step the
-  machine fetches, and everything soldered to the trigger bus hears it
-- **kick on every step**: The same knife one wire along — the kick fires on
-  every step the machine fetches, and the bar goes under everything else rather
-  than over it
+  machine fetches, and everything soldered to the trigger bus receives the
+  trigger
+- **kick on every step**: The kick’s trigger wire held high — the kick fires on
+  every step the machine fetches, and the bar goes under everything else
 - **what both rows agree on**: Kick and snare soldered together — a busy pattern
   thins to the steps the pair have in common
 - **accent on everything**: The wire above the voices held high — the accent bus
-  is asked for every step, so with Accent sag up the kit is weighed by how many
-  voices each step strikes
+  fires on every step, so with Accent sag up each step’s weight depends on how
+  many voices it strikes
 - **every step twice**: The bottom address wire low — the playhead runs the bar
   you wrote and the memory answers with half of it, twice over
 - **back half of the bar**: The top address wire high — you get the second half
   of the pattern and never the first
 - **coming apart**: A trace half cut — most fetches land, the occasional one
   does not, and the pattern comes apart a step at a time
-- **the bar walks**: The counter’s own clock, missing an edge here and there —
-  every step still fires, but one in six of them fires twice and the bar never
-  comes back to where it started
+- **the bar walks**: The counter’s clock, missing an edge here and there — every
+  step still fires, but one in six of them fires twice and the bar never comes
+  back to where it started
 - **five-step bar**: The snare’s trigger line on the counter’s clear pin. The
   first snare sends the counter back to step one, so the rock beat comes round
   every five steps
@@ -219,12 +216,12 @@ too — the knife goes on and the rows under it say which controls that was:
   lap plays the last one’s gaps, so a sparse bar and a bar of every voice on
   nearly every step take turns
 - **the kick plays the kit**: The end stop on the slab counter cut, so the
-  counter carries on through every slab after the voice’s own and one kick hit
-  holds four seconds of the kit
+  counter continues through every slab after the voice’s slab and one kick hit
+  plays four seconds of the kit
 - **every hit backwards**: The up/down pin on the slab counter wired, so each
   slab plays from its tail to its attack
 - **folded blat**: The top data wire on the sample ROM held high, so every word
-  lands in the top half and each hit folds into a square-edged blat
+  sits in the top half and each hit folds into a square-edged blat
 
 <details>
 <summary>57 controls</summary>
@@ -238,13 +235,13 @@ too — the knife goes on and the rows under it say which controls that was:
 | Chance          | off to full                                                                                                        | How often a maybe step closes                                                                                                                           |
 | Tune            | 0.125× to 8×                                                                                                       | The pitch trimmer inside the kit: every struck voice moves together                                                                                     |
 | Decay           | 0.25× to 16×                                                                                                       | Stretches or chokes every envelope at once                                                                                                              |
-| Ring            | off to full                                                                                                        | How much of each swing the transistor around the kick, tom and snare hands back                                                                         |
+| Ring            | off to full                                                                                                        | How much of each swing the transistor around the kick, tom and snare feeds back                                                                         |
 | Sweep           | −1× to +8×                                                                                                         | The bias trimmer behind the swoop: how far above their resting pitch the kick, tom and snare networks start on a hard hit                               |
 | Bank FM         | off to full                                                                                                        | A wire from the metal bank’s squarer into the bias of the kick, tom and snare networks                                                                  |
 | Bank sync       | off, to the kick, to the tom                                                                                       | Resets all six metal oscillators each time the kick or tom network swings up through zero                                                               |
 | Tank coupling   | off to full                                                                                                        | A wire from the kick’s network into the tom’s drive                                                                                                     |
 | Trigger pulse   | 0.05 to 8 ms                                                                                                       | How long the one-shot holds the trigger line down                                                                                                       |
-| Pulse sharing   | off to full                                                                                                        | The one-shots all charge off one timing rail, and this is how much a one-shot fired alongside others loses to them                                      |
+| Pulse sharing   | off to full                                                                                                        | How much charge a one-shot fired alongside others loses to them, since the one-shots all charge off one timing rail                                     |
 | Trigger load    | off to full                                                                                                        | How much the one-shots’ charge costs the supply                                                                                                         |
 | Snappy          | off to full                                                                                                        | What the snare is made of                                                                                                                               |
 | Clap gap        | 0.5 to 250 ms                                                                                                      | The period of the small oscillator that fires the clap’s bursts                                                                                         |
@@ -253,7 +250,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Dice            | free or on the junction                                                                                            | What the kit’s dice is a comparator on                                                                                                                  |
 | Metal           | off to full                                                                                                        | What the hat and the open hat are fed from                                                                                                              |
 | Cymbal tone     | off to full                                                                                                        | Where the bottom of the cymbal’s band sits                                                                                                              |
-| Bank spread     | off to full                                                                                                        | One resistor chain sets all six oscillators, and this leans on it                                                                                       |
+| Bank spread     | off to full                                                                                                        | Moves the ends of the one resistor chain that sets all six oscillators and leaves the middle, so the bank widens where Tune transposes it               |
 | Squarer bias    | off to full                                                                                                        | The one resistor that makes the bank a clatter                                                                                                          |
 | Bank starve     | off to full                                                                                                        | A resistor into the metal bank’s own supply                                                                                                             |
 | Bank gate       | off, on the kick, on the snare, on the hat, on the clap, on the tom, on the bell, on the open hat, on the cymbal   | Solders a trigger line onto the metal bank’s supply, so the six run only while that voice sounds and hold their phases between its hits                 |
@@ -267,53 +264,52 @@ too — the knife goes on and the rows under it say which controls that was:
 | Kit             | analog or sampled                                                                                                  | Which kit is on the output                                                                                                                              |
 | ROM clock       | 8 to 44.1 kHz                                                                                                      | How fast the slabs are read back                                                                                                                        |
 | Slab counter †  | stops at its slab’s end, runs on through the ROM, counts down, counts down and runs on                             | The two pins on the counter that walks a slab                                                                                                           |
-| ROM address †   | 18 of them, off through A16                                                                                        | Which of the wires carrying an address to the sample ROM the knife found                                                                                |
+| ROM address †   | 18 of them, off through A16                                                                                        | Which of the wires carrying an address to the sample ROM the knife is on                                                                                |
 | Address fault † | cut, to ground, to +V, bridged                                                                                     | What the knife did to that address wire                                                                                                                 |
-| ROM data †      | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the knife found                                                                      |
+| ROM data †      | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the knife is on                                                                      |
 | Data fault †    | cut, to ground, to +V, bridged                                                                                     | What the knife did to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                |
 | Retrigger       | 0 Hz to 4 kHz                                                                                                      | Retriggers the current step at this rate                                                                                                                |
 | Trigger floor   | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                                                    |
 | Scan            | 0 to 40 ms                                                                                                         | The chip strikes one voice per scan                                                                                                                     |
 | Accent          | 1× to 4×                                                                                                           | How far the accent bus swings when it is rested                                                                                                         |
-| Accent sag      | off to full                                                                                                        | The accent is one cap feeding every voice, and this is how much each accented step takes off it                                                         |
+| Accent sag      | off to full                                                                                                        | How much each accented step takes off the accent cap, which feeds every voice                                                                           |
 | Choke           | off, hat cuts cymbal, kick cuts tom, snare cuts clap, each cuts the next, kick cuts the kit                        | Where the board’s one choke resistor is soldered                                                                                                        |
 | Ring trigger    | off, kick fires hat, kick fires snare, kick fires itself, tom fires bell, snare fires open hat, kick fires the kit | A comparator on one tank’s ring, soldered onto other voices’ trigger lines                                                                              |
-| Cross-patch     | off, kick/snare, snare/hat, kick/hat, rotate, whole kit                                                            | Bridges two voices’ envelope pins so each amplifier hears the wrong envelope                                                                            |
-| Cross bleed     | off to full                                                                                                        | How far each amplifier leans across                                                                                                                     |
+| Cross-patch     | off, kick/snare, snare/hat, kick/hat, rotate, whole kit                                                            | Bridges two voices’ envelope pins so each amplifier follows the wrong envelope                                                                          |
+| Cross bleed     | off to full                                                                                                        | How much of the other voice’s envelope each amplifier follows                                                                                           |
 | Clock slip †    | off to full                                                                                                        | The wire clocking the step counter, and how often an edge comes out too slow to get over the threshold                                                  |
 | Pattern loop †  | off, return inverted, return a step late, each row into the next, return through an XOR                            | Puts a knife in the shift register the bar circulates through, so every step re-enters the loop changed and the pattern rewrites itself a lap at a time |
 | Counter reset † | off, on the kick, on the snare, on the hat, on the clap, on the tom, on the bell, on the open hat, on the cymbal   | Which voice’s trigger line is soldered to the step counter’s clear pin                                                                                  |
-| Address line †  | off, A0, A1, A2, A3                                                                                                | Which of the four wires carrying a step number to the pattern memory the knife found                                                                    |
+| Address line †  | off, A0, A1, A2, A3                                                                                                | Which of the four wires carrying a step number to the pattern memory the knife is on                                                                    |
 | Address fault † | cut, to ground, to +V, bridged                                                                                     | What the knife did to that address wire                                                                                                                 |
-| Data line †     | off, D0, D1, D2, D3, D4, D5, D6, D7, D8                                                                            | Which of the wires carrying the word back the knife found — one wire a row, in the order of the grid, so D8 is the accent                               |
+| Data line †     | off, D0, D1, D2, D3, D4, D5, D6, D7, D8                                                                            | Which of the wires carrying the word back the knife is on — one wire a row, in the order of the grid, so D8 is the accent                               |
 | Data fault †    | cut, to ground, to +V, bridged                                                                                     | What the knife did to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                |
-| Cut depth       | off to full                                                                                                        | How far through the trace the knife went — only the cut fault reads it                                                                                  |
+| Cut depth       | off to full                                                                                                        | How far through the trace the knife cuts; only the cut fault uses it                                                                                    |
 
 </details>
 
 ### Glint
 
-The other synthesiser on the board: two operators a voice, four voices, on the
-same rail. It has no sequencer — its key input is soldered onto the toy’s gate
-line, so out of the box it plays whatever strikes a note over there, _Struck by_
-clips the kit’s trigger lines on beside it, and _Follows toy_ cuts that jumper
-(it then reads _own keys only_) so it answers only the keybed screwed to its own
-board. That bed is drawn under the toy’s the moment the chip is up in the mix,
-with its own hold and octave, and the _keys_ switch on either deck says which of
-the two the computer’s letter keys are wired to. It is not played but
-_configured_, a byte at a time over a bus, which is what _Data line_ and
-_Address line_ are for: a byte that lands wrong stays wrong until the processor
-writes that register again, and if the wire carrying the key back up cannot go
-low, the note never ends. _Wave line_ is the other bus, the one the processor
-never touches — the sine is a table and a table is an address, so a knife there
-reshapes the wave under your hand and leaves nothing behind. _Effect_ is the
-ROM’s other job: a bird, surf, wind, a siren or crickets, each a program
-spraying register writes rather than a sample, and the busiest thing the bus
+The board’s FM synthesiser: two operators a voice, four voices, on the same
+rail. It has no sequencer: its key input is soldered onto the toy’s gate line,
+so out of the box it plays whatever strikes a note there. _Struck by_ also clips
+the kit’s trigger lines on, and _Follows toy_ cuts the gate jumper (it then
+reads _own keys only_), so Glint plays only from the keybed on its board. Once
+the chip is up in the mix, the panel draws that keybed under the toy’s, with a
+hold and octave for each, and the _keys_ switch on either deck sets which of the
+two the computer’s letter keys play. A processor configures Glint a byte at a
+time over a bus, and _Data line_ and _Address line_ cut that bus: a byte that
+lands wrong stays wrong until the processor writes that register again, and if
+the wire carrying the key back up cannot go low, the note never ends. _Wave
+line_ cuts the other bus, which the processor never touches. The sine is a table
+and a table is an address, so a knife there reshapes the wave as you play and
+leaves nothing behind. _Effect_ plays a bird, surf, wind, a siren or crickets
+from the ROM. Each is a program of register writes, the busiest traffic the bus
 ever carries.
 
-Named settings, one press each at the head of the panel — the stage goes back to
-stock and the setting is written over it, so the rows underneath say what it
-became:
+Named settings, one press each at the head of the panel. A press resets the
+stage to stock and writes the setting over it, and the rows underneath show the
+result:
 
 - **below the keybed**: The chip’s crystal at a twentieth of its speed — the
   song drops four octaves into a sub-bass rumble, every envelope twenty times as
@@ -322,46 +318,45 @@ became:
   script writes faster than the envelopes can follow, and the call turns to
   static over a chip still in tune
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each under _knife on the bus_, as in the panel. A press
+puts the knife on, and the rows under it show the controls it set:
 
-- **the note never ends**: The bit carrying the key coming back up cannot go
-  low, so nothing the chip is told to play ever stops
-- **sub, not bells**: The top two octave bits soldered together, so the chip
-  cannot be told a high octave unless it asks for the very top — every voice
-  lands in the bottom of its range and the sub comes up with it
+- **the note never ends**: The data bit that sets the key cannot go low, so the
+  processor’s key-off write leaves the key on and no note ever stops
+- **sub, not bells**: The top two octave bits soldered together, so the
+  processor can write a high octave only by writing the very top one — every
+  voice lands in the bottom of its range and the sub comes up with it
 - **the bottom of every octave**: The bottom bit of every byte on the floor: the
   frequency loses its top bit, the operators lose the bottom of their
   multipliers, and a chip that was ringing sits down
 - **an instrument with no button**: The top wire high, so the number naming
   which instrument a channel plays stops being zero — the channels leave the
-  patch the panel sent and read the die’s own ROM, where seven of the fifteen
+  patch the panel sent and read the ROM on the die, where seven of the fifteen
   sounds have no button on the case
 - **a patch nearly right**: A byte wire half cut — most writes land and the odd
   one arrives off the wire next door, so patches come out wrong and stay wrong
 - **wrong register**: Every odd register filed on top of the even one below it —
-  the four voices stop having frequencies of their own
+  the four voices no longer have separate frequencies
 - **octave up, with a cliff**: The wire that mirrors the quarter wave held, so
-  the quarter simply runs twice — the note is right and the wave has a step in
-  it
-- **sine into noise**: The sign wire of the sine table parted most of the way.
-  Nothing drives a floating pin, and this bus is read eight times a sample by a
+  the quarter runs twice — the note is right and the wave has a step in it
+- **sine into noise**: The sign wire of the sine table parted most of the way. A
+  floating pin has no driver, and this bus is read eight times a sample by a
   different operator each turn, so it never settles anywhere — the one knife on
   this chip that comes out louder than no knife at all
-- **no fundamental**: The sign bit of the sine table nailed — a rectified wave,
-  all octave and nothing underneath it
+- **no fundamental**: The sign bit of the sine table held to ground — a
+  rectified wave, all octave and nothing underneath it
 - **nothing is ever quiet**: The top wire out of the sine table held high, so no
   sample the chip reads is worth less than half of full scale — the quiet parts
   of every wave fill in and the note comes out square-edged and buzzing, at the
   same pitch it always was
-- **the table goes stale**: The same wire parted instead. Eight operators a
-  sample take turns on this one datapath, so the pin is left holding whichever
-  of them went last — the amplitude arrives from a different operator every turn
-  and the chip turns to gravel
+- **the table goes stale**: The top wire out of the sine table parted instead.
+  Eight operators a sample take turns on this one datapath, so the pin holds
+  whichever of them drove it last — the amplitude arrives from a different
+  operator every turn and the chip turns to gravel
 - **a patch that will not hold still**: The patch table’s P2 parted most of the
-  way. It picks a patch’s tone bytes or its envelope bytes, and it only carries
-  some of the time, so every few milliseconds the operators read a different mix
-  of the two and the note smears into static
+  way. That wire selects a patch’s tone bytes or its envelope bytes, and it
+  carries a signal only some of the time, so every few milliseconds the
+  operators read a different mix of the two and the note smears into static
 - **nine times the note**: B3 out of the patch table held high: the top bit of
   both multipliers, so both operators run at nine times the note and the song
   comes out three octaves up as a whistle, on half a sine, every decay cut short
@@ -372,17 +367,17 @@ too — the knife goes on and the rows under it say which controls that was:
   first channel — that voice goes out in all four slots, four times as loud into
   the output stage, and every note that landed elsewhere is gone
 - **the song upside down**: The slot counter running at half speed, so every
-  other sample carries two channels twice and two not at all — the song comes
+  other sample contains two channels twice and two not at all — the song comes
   back mirrored about 12 kHz, low notes high and high notes low
 - **one finger**: The driver’s allocator stuck on the first channel: a
   four-voice chip plays one note at a time, every note chopping the last one’s
   tail off
 - **garbage at power-on**: The chip power-cycles into a register file of random
   bytes — channels that came up keyed drone at random pitches on instruments
-  nobody chose, until a note lands on them
+  nobody chose, until a note is played on them
 - **fades that explode**: The part’s log arithmetic on a 10-bit adder that wraps
   — every note that decays 24 dB comes back at full scale and decays again
-- **sines folded to grit**: The same adder cut to 7 bits, so anything 3 dB down
+- **sines folded to grit**: The log adder cut to 7 bits, so anything 3 dB down
   wraps back to the top — the quiet middle of every wave folds up into a harsh
   digital buzz at the pitch it always had
 
@@ -394,7 +389,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Level                          | 0 to 4, normal 0 to 1                                                           | How loud Glint is in the source mix                                                                                  |
 | Mute                           | live or muted                                                                   | Silences Glint on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness     |
 | Voice                          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                   | Which of the eight patches under the voice buttons the processor sends the chip                                      |
-| Brightness                     | 0 to 4, normal 0 to 1                                                           | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
+| Brightness                     | 0 to 4, normal 0 to 1                                                           | How loud the modulator is into the carrier, which sets the whole tone of a two-operator chip                         |
 | Feedback                       | 0 to 11, normal 0 to 7                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
 | Drive                          | 0 to 36 dB                                                                      | How hard the four voices drive the one output stage on the chip                                                      |
 | Vibrato                        | off, vibrato, tremolo, both                                                     | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
@@ -407,21 +402,21 @@ too — the knife goes on and the rows under it say which controls that was:
 | Kit voice that plays this chip | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
 | Plays Plinky’s notes           | yes, soldered or no, cut                                                        | The jumper from the toy’s gate line onto this chip’s key input                                                       |
 | Mod ratio                      | 17 of them, as patched through 15×                                              | What the modulator runs at against the note, as a multiple of it                                                     |
-| Car ratio                      | 17 of them, as patched through 15×                                              | The same table on the carrier, which moves the note itself rather than its colour — 2 is the same patch an octave up |
-| Mod decay                      | 17 of them, as patched through 2.52 s                                           | How long the modulator takes to fall away, which is what makes an FM note a bell or an organ                         |
-| Data line †                    | off, D0, D1, D2, D3, D4, D5, D6, D7                                             | Which of the eight wires carrying bytes to the register file the knife found                                         |
+| Car ratio                      | 17 of them, as patched through 15×                                              | The same table on the carrier, which moves the note itself — 2 is the same patch an octave up                        |
+| Mod decay                      | 17 of them, as patched through 2.52 s                                           | How long the modulator takes to fall away, which makes an FM note a bell or an organ                                 |
+| Data line †                    | off, D0, D1, D2, D3, D4, D5, D6, D7                                             | Which of the eight wires carrying bytes to the register file the knife is on                                         |
 | Data fault                     | cut, to ground, to +V, bridged                                                  | What happened to the wire — the same four things a knife does to any trace                                           |
-| Address line †                 | off, A0, A1, A2, A3, A4, A5                                                     | Which of the six wires choosing the register the knife found                                                         |
+| Address line †                 | off, A0, A1, A2, A3, A4, A5                                                     | Which of the six wires choosing the register the knife is on                                                         |
 | Address fault                  | cut, to ground, to +V, bridged                                                  | The same four things, on the address side                                                                            |
-| Wave line †                    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                     | Which of the ten wires addressing the sine table the knife found                                                     |
+| Wave line †                    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                     | Which of the ten wires addressing the sine table the knife is on                                                     |
 | Wave fault †                   | cut, to ground, to +V, bridged                                                  | The same four things, on the wave ROM’s address                                                                      |
-| Wave data line †               | off, T0, T1, T2, T3, T4, T5, T6, T7                                             | Which of the eight wires the sine table answers on the knife found                                                   |
+| Wave data line †               | off, T0, T1, T2, T3, T4, T5, T6, T7                                             | Which of the eight wires carrying the sine table’s output the knife is on                                            |
 | Wave data fault †              | cut, to ground, to +V, bridged                                                  | The same four things, on the table’s way out                                                                         |
-| Patch line †                   | off, P0, P1, P2, P3, P4, P5, P6                                                 | Which of the seven wires addressing the patch table the knife found                                                  |
+| Patch line †                   | off, P0, P1, P2, P3, P4, P5, P6                                                 | Which of the seven wires addressing the patch table the knife is on                                                  |
 | Patch fault †                  | cut, to ground, to +V, bridged                                                  | The same four things, on the table’s address                                                                         |
-| Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                             | Which of the eight wires the patch table answers on the knife found                                                  |
+| Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                             | Which of the eight wires carrying the patch table’s output the knife is on                                           |
 | Patch data fault †             | cut, to ground, to +V, bridged                                                  | The same four things, on the table’s way out                                                                         |
-| Cut depth                      | off to full                                                                     | How far through the trace the knife went — the cut fault is the only one that reads it                               |
+| Cut depth                      | off to full                                                                     | How far through the trace the knife cuts; only the cut fault uses it                                                 |
 | Strobe slip †                  | off to full                                                                     | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
 | DAC slot †                     | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4                        | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot           |
 | Slot slip †                    | off to full                                                                     | The slot counter running slow against the converter, so now and then it reads one channel twice and skips the next   |
@@ -434,83 +429,81 @@ too — the knife goes on and the rows under it say which controls that was:
 
 ### Parlor
 
-The eight-bit sampling home keyboard, and the only thing on this board that
-makes pads, strings, choirs and bells. There is no oscillator in it: a ROM holds
-one short recording of each voice — an attack and then a loop — and a counter
-walks that ROM at whatever rate the note asks for, which is the whole
-architecture and the whole reason it is the most bent instrument ever built. The
-ROM was cut at 9.9 kHz with nothing interpolating on the way out, so every voice
-comes back with its own images over it and _Tone_ is the two-pole reconstruction
-filter that decides how much of that you hear. The rate is a twelve-bit divider
-rather than a frequency, so the top octave arrives a few cents sharp and the
-bottom is dead in tune. _Address line_ is the counter’s own wires — a real word
-from the wrong place, so a voice folds onto its own first half or reads every
-sample twice — and _Data line_ is the famous one: the top wire held high and the
-bottom half of every wave folds up onto the top of it. _Chord memory_ puts a
-voicing under one key and fills all four voices doing it, and _sampled_ plays
-whatever you dropped on the sampler across the keyboard, out of a second and a
-half of memory with the reel’s own loop markers as its loop.
+An eight-bit sampling home keyboard, and the only machine on this board that
+makes pads, strings, choirs and bells. It has no oscillator: a ROM holds one
+short recording of each voice, an attack and then a loop, and a counter steps
+through that ROM at the rate the note asks for. The ROM was cut at 9.9 kHz and
+nothing interpolates on the way out, so every voice has its images over it, and
+_Tone_, a two-pole reconstruction filter, sets how much of that you hear. The
+rate is a twelve-bit divider, so the top octave comes out a few cents sharp and
+the bottom is in tune. _Address line_ cuts the counter’s wires, so each word is
+real but read from the wrong place and a voice folds onto its first half or
+reads every sample twice. _Data line_ cuts the wires out of the ROM; held high,
+the top wire folds the bottom half of every wave up onto the top of it. _Chord
+memory_ puts a voicing under one key and fills all four voices with it.
+_sampled_ plays whatever you dropped on the sampler across the keyboard, from a
+second and a half of memory, with the reel’s loop markers as its loop.
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each under _knife on the bus_, as in the panel. A press
+puts the knife on, and the rows under it show the controls it set:
 
 - **the top bit sticks**: The top wire out of the sample ROM held high — the
   bottom half of every wave folds up onto the top of it, and the pad comes back
-  as a rectified buzz at the pitch it always was. The bend everybody knows
+  as a rectified buzz at the pitch it always was
 - **gravel**: A notch punched through every word the ROM hands back. The address
   is right and the sample is not, on every voice, so the note keeps its pitch
   and loses its surface
 - **the voice in clumps**: Two of the top wires the ROM answers on soldered to
-  each other — the words collapse onto a lattice and a voice that was a curve
-  comes out in steps
+  each other — the words snap to a lattice and a voice that was a curve comes
+  out in steps
 - **half the wave**: The top address wire on the floor. The counter walks the
   whole recording and the ROM keeps handing back its first half, so every voice
-  loops inside its own attack
+  loops inside the attack
 - **a word in four**: Two address wires soldered to each other, so the counter
   can only name one word in four — it walks the recording at the rate it always
   did and gets a staircase back
-- **the loop goes stale**: An address trace parted most of the way. Nothing
-  drives that pin, so it holds whatever the last address left on it and then
-  starts drifting after its neighbour — the one knife on this chip that never
-  stands still
+- **the loop goes stale**: An address trace parted most of the way. The pin has
+  no driver, so it holds whatever the last address left on it and then starts
+  drifting after its neighbour — the one knife on this chip that never stands
+  still
 
 <details>
 <summary>16 controls</summary>
 
-| control                            | range                                                                                                     | what it does                                                                                                                  |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Level                              | 0 to 4, normal 0 to 1                                                                                     | How loud Parlor is in the source mix                                                                                          |
-| Mute                               | live or muted                                                                                             | Silences Parlor on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness             |
-| Voice                              | strings, choir, pipe organ, e.piano, flute, brass, vibes, chime, music box, glass pad, synth pad, sampled | Which recording in the ROM the address counter walks                                                                          |
-| Envelope                           | piano, organ, pad, chime                                                                                  | The four buttons down the side of the case                                                                                    |
-| Release                            | 0.02 to 8 s                                                                                               | The one capacitor the envelope generator has that the buttons do not pick: how long a note takes to die once the key comes up |
-| Tone                               | 1 to 8 kHz                                                                                                | The reconstruction filter behind the DAC — two poles and no more, which is all a keyboard at this price ever had              |
-| Vibrato                            | off, vibrato, delayed                                                                                     | One LFO on the die with no rate register, no depth register and nothing that can stop it                                      |
-| Chord memory                       | off, maj7, min7, min9, sus4, add9, power                                                                  | One key, a whole voicing under it                                                                                             |
-| ROM clock                          | 0.05× to 16×                                                                                              | Drags the counter that walks the ROM                                                                                          |
-| Kit voice that plays this keyboard | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                         | The kit’s trigger lines, clipped onto this keyboard’s key input                                                               |
-| Plays Plinky’s notes               | yes, soldered or no, cut                                                                                  | The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input                                             |
-| Address line †                     | 15 of them, off through A13                                                                               | Which of the wires the counter addresses the ROM on the knife found                                                           |
-| Address fault                      | cut, to ground, to +V, bridged                                                                            | The same four things a knife does to any trace                                                                                |
-| Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires the ROM answers on the knife found — the famous one                                                  |
-| Data fault                         | cut, to ground, to +V, bridged                                                                            | To +V is the bend everybody knows                                                                                             |
-| Cut depth                          | off to full                                                                                               | How far through the trace the knife went — the cut fault is the only one that reads it                                        |
+| control                            | range                                                                                                     | what it does                                                                                                                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Level                              | 0 to 4, normal 0 to 1                                                                                     | How loud Parlor is in the source mix                                                                                                                                        |
+| Mute                               | live or muted                                                                                             | Silences Parlor on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness                                                           |
+| Voice                              | strings, choir, pipe organ, e.piano, flute, brass, vibes, chime, music box, glass pad, synth pad, sampled | Which recording in the ROM the address counter walks                                                                                                                        |
+| Envelope                           | piano, organ, pad, chime                                                                                  | The four buttons down the side of the case                                                                                                                                  |
+| Release                            | 0.02 to 8 s                                                                                               | The one capacitor the envelope generator has that the buttons do not pick: how long a note takes to die once the key comes up                                               |
+| Tone                               | 1 to 8 kHz                                                                                                | The reconstruction filter behind the DAC — two poles and no more, which is all a keyboard at this price ever had                                                            |
+| Vibrato                            | off, vibrato, delayed                                                                                     | One LFO on the die with no rate register, no depth register and nothing that can stop it                                                                                    |
+| Chord memory                       | off, maj7, min7, min9, sus4, add9, power                                                                  | Puts a whole voicing under one key                                                                                                                                          |
+| ROM clock                          | 0.05× to 16×                                                                                              | Drags the counter that walks the ROM                                                                                                                                        |
+| Kit voice that plays this keyboard | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                         | The kit’s trigger lines, clipped onto this keyboard’s key input                                                                                                             |
+| Plays Plinky’s notes               | yes, soldered or no, cut                                                                                  | The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input                                                                                           |
+| Address line †                     | 15 of them, off through A13                                                                               | Which of the counter’s wires to the ROM the knife is on                                                                                                                     |
+| Address fault                      | cut, to ground, to +V, bridged                                                                            | The same four things a knife does to any trace                                                                                                                              |
+| Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires carrying the ROM’s output the knife is on                                                                                                          |
+| Data fault                         | cut, to ground, to +V, bridged                                                                            | To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was |
+| Cut depth                          | off to full                                                                                               | How far through the trace the knife cuts; only the cut fault uses it                                                                                                        |
 
 </details>
 
 ### Growler
 
 A three-oscillator monosynth voice card after the Model D, soldered onto the
-toy’s supply and its gate line. Three band-limited oscillators with hard sync
+toy’s supply and gate line. It has three band-limited oscillators with hard sync
 and a sweep for osc 2, a mixer with noise and the output looped back in, and a
-four-pole transistor ladder filter that saturates and self-oscillates. Two
-contour generators, glide, and osc 3 as a modulator at audio rate or below. Out
-of the box the toy’s tune plays it two octaves down; _Gate_ sets how long each
-struck note stays down, and at 1 the tune plays legato and slides. _Struck by_
-clips the kit’s trigger lines on, so a kick can restart the bass. The faults are
-on the voice card: a converter with no heater, a VCA that leaks, oversized
-contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck bit on
-the key DAC and a weak regulator.
+four-pole transistor ladder filter that saturates and self-oscillates. It also
+has two contour generators, glide, and osc 3 as a modulator at audio rate or
+below. Out of the box the toy’s tune plays it two octaves down; _Gate_ sets how
+long each struck note stays down, and at 1 the tune plays legato and slides.
+_Struck by_ clips the kit’s trigger lines on, so a kick can restart the bass.
+The voice card has these faults: a converter with no heater, a VCA that leaks,
+oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck
+bit on the key DAC and a weak regulator.
 
 <details>
 <summary>50 controls</summary>
@@ -572,9 +565,9 @@ the key DAC and a weak regulator.
 
 ### Chaos osc
 
-Two oscillators on one starving supply. B drags A’s frequency around, the output
-current drains the rail, the rail drags pitch and amplitude, and the
-stall-and-recover cycle motorboats on its own.
+Two oscillators share one starving supply: B modulates A’s frequency, the output
+current drains the rail, the rail modulates pitch and amplitude, and the
+stall-and-recover cycle motorboats without any input.
 
 <details>
 <summary>6 controls</summary>
@@ -592,7 +585,7 @@ stall-and-recover cycle motorboats on its own.
 
 ### Noise & crackle
 
-Hiss with a colour control, and sparse crackle with a rate of its own.
+Hiss with a colour control, and sparse crackle with a rate control.
 
 <details>
 <summary>4 controls</summary>
@@ -608,11 +601,11 @@ Hiss with a colour control, and sparse crackle with a rate of its own.
 
 ### Spool
 
-A loaded audio file, looping through the chain — or, with _Struck by_ on a voice
-and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped. The
-bay reaches its capstan and both loop markers, so a wire drags the reel’s pitch
-the way a starve drags the toy’s, or walks the loop window around the recording
-while the head plays on.
+A loaded audio file, looping through the chain. With _Struck by_ on a voice and
+_Ending_ on one-shot, it plays whatever you dropped as a seventh drum voice. A
+bay wire can connect to the reel’s capstan and both loop markers, so it can
+shift the reel’s pitch as a starve shifts the toy’s, or move the loop window
+around the recording while the head plays on.
 
 <details>
 <summary>12 controls</summary>
@@ -628,7 +621,7 @@ while the head plays on.
 | Record               | off to full                                                                 | How much of the board’s own output the record head lays back down, on the spot the play head is reading                                             |
 | Erase                | off to full                                                                 | How much of what is already on the tape the erase head takes off on the way past, permanently, and only while Record above is doing anything at all |
 | Reel length          | 0.25 to 20 s                                                                | The longest first take                                                                                                                              |
-| Hold                 | off to full                                                                 | Makes up what each lap costs, up to double the level, so a loop locked into a jam stays where it is                                                 |
+| Hold                 | off to full                                                                 | Raises the level to make up what each lap loses, up to double, so a loop locked into a jam stays where it is                                        |
 | Wear                 | off to full                                                                 | The oxide takes the top off whatever the record head lays down, every time it does                                                                  |
 | Hiss                 | off to full                                                                 | Noise laid onto the tape itself, where it stays                                                                                                     |
 
@@ -636,28 +629,28 @@ while the head plays on.
 
 ### Layercake
 
-A cassette four-track: a desk of four channel strips, with knobs and a fader
-down each strip, in front of four tape loops, each cut to its own length and all
-on one capstan. A channel hears its own loop, the board, the mic or the desk’s
-aux return, through a trim preamp and three bands of EQ into a fader and an aux
-send, and records onto its loop over whatever the erase head left. Input on the
-board with a loop recording is a loop round the whole board, so each lap comes
-back through every bend again. Input on the aux with its send up is a mixer with
-nothing plugged in: the sweepable mid tunes the squeal and the op-amp rails clip
-it. _Wear_ sheds oxide at the same places every lap, and _Batteries_ drags the
-motor and the rails down together.
+A cassette four-track: a desk of four channel strips, each with knobs and a
+fader, in front of four tape loops, each cut to a separate length and all on one
+capstan. A channel takes its input from its loop, the board, the mic or the
+desk’s aux return, passes it through a trim preamp and three bands of EQ into a
+fader and an aux send, and records onto its loop over whatever the erase head
+left. With input on the board and a loop recording, the signal loops round the
+whole board, so each lap comes back through every bend again. With input on the
+aux and its send up, the desk is a mixer with nothing plugged in: the sweepable
+mid tunes the squeal and the op-amp rails clip it. _Wear_ sheds oxide at the
+same places every lap, and _Batteries_ lowers the motor and the rails together.
 
-Named settings, one press each at the head of the panel — the stage goes back to
-stock and the setting is written over it, so the rows underneath say what it
-became:
+Named settings, one press each at the head of the panel. A press resets the
+stage to stock and writes the setting over it, and the rows underneath show the
+result:
 
-- **no-input mixer**: Track 1 hears the desk’s own aux return and sends to it,
-  with its mid boosted at 700 Hz: the loop squeals there. Sweep track 1’s Mid
-  freq to retune it, and Aux master to bring it in
-- **squeal through the echo**: The same squeal, with track 2 listening to the
-  board: what the desk sends comes back through the delay pedal and onto the bus
-  again, so the squeal leaves echoes and the echoes feed it. Brings the delay
-  pedal up
+- **no-input mixer**: Track 1 takes its input from the desk’s aux return and
+  sends to it, with its mid boosted at 700 Hz: the loop squeals there. Sweep
+  track 1’s Mid freq to retune it, and Aux master to bring it in
+- **squeal through the echo**: Track 1 squeals as in _no-input mixer_, with
+  track 2 taking its input from the board: what the desk sends comes back
+  through the delay pedal and onto the bus again, so the squeal leaves echoes
+  and the echoes feed it. The rig brings the delay pedal up
 
 <details>
 <summary>64 controls</summary>
@@ -676,7 +669,7 @@ became:
 | Flutter    | off to full               | The capstan and the pinch roller, at the rates they turn at                                                                |
 | Wear       | off to full               | How fast the loops shed oxide                                                                                              |
 | Batteries  | off to full               | How flat the cells are                                                                                                     |
-| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Input      | tape, board, mic, aux     | The source of channel 1                                                                                                    |
 | Trim       | off to +40.0 dB           | The preamp                                                                                                                 |
 | Low        | −15 to +15 dB             | A shelf at 100 Hz                                                                                                          |
 | Mid freq   | 250 Hz to 5 kHz           | Where the sweepable mid sits, 250 Hz to 5 kHz                                                                              |
@@ -689,15 +682,15 @@ became:
 | Erase      | off to full               | How much of what is already on the loop the erase head takes off while recording                                           |
 | Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
 | Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
-| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Input      | tape, board, mic, aux     | The source of channel 1                                                                                                    |
 | Record     | off to full               | How much of the channel, after its EQ, the record head lays onto loop 1                                                    |
 | Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
 | Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
-| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Input      | tape, board, mic, aux     | The source of channel 1                                                                                                    |
 | Record     | off to full               | How much of the channel, after its EQ, the record head lays onto loop 1                                                    |
 | Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
 | Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
-| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Input      | tape, board, mic, aux     | The source of channel 1                                                                                                    |
 | Record     | off to full               | How much of the channel, after its EQ, the record head lays onto loop 1                                                    |
 | Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
 | Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
@@ -706,11 +699,10 @@ became:
 
 ### Mic
 
-A live microphone, and the one source that does not have to reach the mix. _Mic
-patch_ is the whole of it: the wire can land on the chip’s supply rail instead,
-or the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier
-or a trigger line — so a shout browns the toy out or fires the kit rather than
-simply being loud.
+A live microphone, the one source that need not reach the mix. _Mic patch_ sets
+where the mic wire connects. Instead of the mix it can go to the chip’s supply
+rail, the oscillator’s FM input, the delay’s feedback, the ring modulator’s
+carrier or a trigger line, so a shout can brown the toy out or fire the kit.
 
 <details>
 <summary>2 controls</summary>
@@ -724,50 +716,50 @@ simply being loud.
 
 ### Power supply
 
-The battery rail Plinky, drums, Glint, Parlor and Growler all run off, so a sag
-here bends all five at once. _Starve_ pulls the rail down, _Batteries_ leaves it
-flat, _Lead resistance_ makes every note sag it on the attack, and _Reservoir_
-sets how long it takes to get there. The reset chip decides where the board
-gives up: _Watchdog_ is the voltage that reboots the chips and _Latch-up_ how
-often a brownout jams one instead. The _Clip_ knobs are the paperclip: how often
-it touches, how hard it bites, how long it stays, and the charge and release
-that make a dive a dive rather than a warble.
+Plinky, drums, Glint, Parlor and Growler all run off this battery rail, so a sag
+here bends all five at once. _Starve_ pulls the rail down, _Batteries_ keeps it
+below full, _Lead resistance_ makes every note sag it on the attack, and
+_Reservoir_ sets how long the rail takes to get there. _Watchdog_ is the voltage
+at which the reset chip reboots the chips, and _Latch-up_ is how often a
+brownout jams one instead. The _Clip_ knobs set the paperclip: how often it
+touches, how hard it bites, how long it stays, and the charge and release rates.
+A release faster than the charge makes the touch a dive.
 
 <details>
 <summary>13 controls</summary>
 
-| control         | range                | what it does                                                                                                                      |
-| --------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Starve †        | off to full          | Sags the shared toy supply rail                                                                                                   |
-| Batteries †     | off to full          | How flat the cells are                                                                                                            |
-| Lead resistance | off to full          | A resistor in series with the cells                                                                                               |
-| Reservoir       | off to full          | How much of the board’s capacitance sits behind whatever the starve is pulling on                                                 |
-| Watchdog        | 0.2 to 0.6 V         | Where the reset chip decides the supply has failed                                                                                |
-| Latch-up †      | off to full          | How often a brownout jams the chip instead of rebooting it                                                                        |
-| Latch hold      | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                                 |
-| Clip chatter    | 0 to 40 Hz           | Bare metal dragged across the pads, and how often it finds one                                                                    |
-| Clip on clock   | off to full          | Whether the clip lands on the timing pin instead of the supply, which is the difference between a sag and a dive                  |
-| Clip bite †     | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
-| Clip dwell      | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                                         |
-| Clip charge     | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down                |
-| Clip release    | 2 to 2000 per second | How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate |
+| control         | range                | what it does                                                                                                           |
+| --------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Starve †        | off to full          | Sags the shared toy supply rail                                                                                        |
+| Batteries †     | off to full          | How flat the cells are                                                                                                 |
+| Lead resistance | off to full          | A resistor in series with the cells                                                                                    |
+| Reservoir       | off to full          | How much of the board’s capacitance sits behind whatever the starve is pulling on                                      |
+| Watchdog        | 0.2 to 0.6 V         | The voltage at which the reset chip treats the supply as failed                                                        |
+| Latch-up †      | off to full          | How often a brownout jams the chip instead of rebooting it                                                             |
+| Latch hold      | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                      |
+| Clip chatter    | 0 to 40 Hz           | Bare metal dragged across the pads, and how often it finds one                                                         |
+| Clip on clock   | off to full          | Whether the clip lands on the timing pin, which gives a dive, or on the supply, which gives a sag                      |
+| Clip bite †     | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                    |
+| Clip dwell      | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                              |
+| Clip charge     | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down     |
+| Clip release    | 2 to 2000 per second | How fast the clock comes back when the metal lifts, which disconnects the pin and stock runs ten times the charge rate |
 
 </details>
 
 ### Mix bus
 
-The desk the seven sources meet at, and the only place their balance against
-each other is a thing you can see. Every fader is drawn here as well as on its
-own machine’s panel, under the machine’s name, with a meter beside it reading
-what that channel is putting on the bus and the bus’s own meter under the lot. A
-fader says how far it is up, not whether anything is coming out — Glint is the
-reason: it boots at zero, and turned up with nothing striking it — no hand on
-its keys, no tune next door — it is three quarters and silence. _Bus drive_ is
-the summing amp: a wire at unity, and the one saturation ahead of the bends.
+The seven sources meet at this desk, and every fader appears here as well as on
+its machine’s panel, under the machine’s name, with a meter beside it that reads
+what that channel puts on the bus, and the bus’s own meter under the lot. A
+fader’s position does not show whether sound is coming out. Glint shows the
+difference: it boots at zero, and turned up with nothing striking it (no hand on
+its keys, no tune next door) it sits at three quarters and plays silence. _Bus
+drive_ is the summing amp, at unity gain at 0 dB and the one saturation ahead of
+the bends.
 
-The desk is a widget rather than a row of sliders, and its ten faders are
-counted under the machines they belong to: each is the first knob on that
-machine's panel and one strip of this one.
+The desk is a widget, and its ten faders are counted under the machines they
+belong to: each is the first knob on that machine's panel and one strip of this
+one.
 
 <details>
 <summary>1 control</summary>
@@ -780,9 +772,8 @@ machine's panel and one strip of this one.
 
 ## Bends
 
-Seven for six slots, so one always sits out, and the slots are ordered. Each has
-a mix, and a mix at zero takes the stage out of the path rather than merely
-silencing it.
+Seven bends compete for six ordered slots, so one always sits out. Each has a
+mix, and a mix at zero takes the stage out of the path.
 
 ### Ring mod
 
@@ -791,20 +782,20 @@ Amplitude modulation by a carrier, sine or square.
 <details>
 <summary>5 controls</summary>
 
-| control       | range                                                                                                    | what it does                                                                                                                               |
-| ------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Carrier       | 0.1 Hz to 8 kHz                                                                                          | Carrier frequency                                                                                                                          |
-| Carrier shape | sine, square, diode                                                                                      | Square carrier chops instead of gliding — harsh AM-radio ghosts                                                                            |
-| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64            | Solders the carrier to the note the toy is sounding                                                                                        |
-| Carrier from  | knob, toy, kit, glint, chaos osc, noise, sampler, keys, growler, toy step late, toy beat late, layercake | Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it |
-| Mix           | off to full                                                                                              | Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it                                          |
+| control       | range                                                                                                    | what it does                                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Carrier       | 0.1 Hz to 8 kHz                                                                                          | Carrier frequency                                                                                                                      |
+| Carrier shape | sine, square, diode                                                                                      | A square carrier chops the signal, which adds harsh AM-radio ghosts                                                                    |
+| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64            | Solders the carrier to the note the toy is sounding                                                                                    |
+| Carrier from  | knob, toy, kit, glint, chaos osc, noise, sampler, keys, growler, toy step late, toy beat late, layercake | Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect |
+| Mix           | off to full                                                                                              | Dry/wet, which on a ring modulator sets the depth of the modulation                                                                    |
 
 </details>
 
 ### Crusher
 
-Bit depth and sample rate, both down far enough to fall apart, with jitter on
-the rate.
+Bit depth and sample rate, both reducible until the signal breaks up, with
+jitter on the rate.
 
 <details>
 <summary>4 controls</summary>
@@ -843,23 +834,23 @@ A tuned delay with feedback past unity — a pitch you can drive into oscillatio
 <details>
 <summary>4 controls</summary>
 
-| control  | range                 | what it does                                                                         |
-| -------- | --------------------- | ------------------------------------------------------------------------------------ |
-| Pitch    | 20 Hz to 4 kHz        | The comb’s resonant pitch — it plays like a string                                   |
-| Feedback | 0 to 2, normal 0 to 1 | Past 1.0 it self-oscillates and the saturation holds the scream instead of exploding |
-| Damping  | 500 Hz to 15 kHz      | In-loop low-pass                                                                     |
-| Mix      | off to full           | Dry/wet                                                                              |
+| control  | range                 | what it does                                                      |
+| -------- | --------------------- | ----------------------------------------------------------------- |
+| Pitch    | 20 Hz to 4 kHz        | The comb’s resonant pitch — it plays like a string                |
+| Feedback | 0 to 2, normal 0 to 1 | Past 1.0 it self-oscillates, and the saturation limits the scream |
+| Damping  | 500 Hz to 15 kHz      | In-loop low-pass                                                  |
+| Mix      | off to full           | Dry/wet                                                           |
 
 </details>
 
 ### Screech filter
 
-Resonant filter with drive, taken past self-oscillation so it screams on its
-own.
+Resonant filter with drive, taken past self-oscillation so it rings without
+input.
 
-Named settings, one press each at the head of the panel — the stage goes back to
-stock and the setting is written over it, so the rows underneath say what it
-became:
+Named settings, one press each at the head of the panel. A press resets the
+stage to stock and writes the setting over it, and the rows underneath show the
+result:
 
 - **dropped in the post**: A dark low-pass that crackles along with whatever
   goes through it
@@ -868,16 +859,16 @@ became:
 <details>
 <summary>8 controls</summary>
 
-| control    | range                 | what it does                                                                  |
-| ---------- | --------------------- | ----------------------------------------------------------------------------- |
-| Cutoff     | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1  |
-| Resonance  | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
-| Mode       | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
-| Drive      | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance             |
-| Mix        | off to full           | Dry/wet                                                                       |
-| Popcorn †  | off to full           | A bad junction inside the filter                                              |
-| Arcing cap | off to full           | The cap shorts when its swing gets too big                                    |
-| Dirty pot  | off to full           | The cutoff pot loses contact while it moves                                   |
+| control    | range                 | what it does                                                                           |
+| ---------- | --------------------- | -------------------------------------------------------------------------------------- |
+| Cutoff     | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1           |
+| Resonance  | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, and saturation limits the amplitude |
+| Mode       | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle              |
+| Drive      | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance                      |
+| Mix        | off to full           | Dry/wet                                                                                |
+| Popcorn †  | off to full           | A bad junction inside the filter                                                       |
+| Arcing cap | off to full           | The cap shorts when its swing gets too big                                             |
+| Dirty pot  | off to full           | The cutoff pot loses contact while it moves                                            |
 
 </details>
 
@@ -889,15 +880,15 @@ sometimes held.
 <details>
 <summary>7 controls</summary>
 
-| control | range                | what it does                                                          |
-| ------- | -------------------- | --------------------------------------------------------------------- |
-| Chance  | off to full          | Probability that each slice boundary fires a glitch event             |
-| Slice   | 10 ms to 1 s         | Slice length                                                          |
-| Repeats | 1× to 8×             | Maximum stutter count per event; each event rolls its own             |
-| Reverse | off to full          | Chance a stutter plays backwards                                      |
-| Pitch   | norm, down, up, rand | Replay stutters at pitch, an octave away, or a random pick each event |
-| Freeze  | off or hold          | Holds the current slice forever — the CD stuck on a note              |
-| Mix     | off to full          | Dry/wet                                                               |
+| control | range                | what it does                                                              |
+| ------- | -------------------- | ------------------------------------------------------------------------- |
+| Chance  | off to full          | Probability that each slice boundary fires a glitch event                 |
+| Slice   | 10 ms to 1 s         | Slice length                                                              |
+| Repeats | 1× to 8×             | Maximum stutter count per event; each event picks a random count up to it |
+| Reverse | off to full          | Chance a stutter plays backwards                                          |
+| Pitch   | norm, down, up, rand | Replay stutters at pitch, an octave away, or a random pick each event     |
+| Freeze  | off or hold          | Holds the current slice forever — the CD stuck on a note                  |
+| Mix     | off to full          | Dry/wet                                                                   |
 
 </details>
 
@@ -910,30 +901,28 @@ again and partials climb forever.
 <details>
 <summary>4 controls</summary>
 
-| control   | range                 | what it does                                                                                              |
-| --------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
-| Shift     | 0.1 Hz to 2 kHz       | Moves every partial by the same number of Hz instead of the same ratio, so harmonics stop being harmonics |
-| Direction | up or down            | Which sideband survives                                                                                   |
-| Feedback  | 0 to 2, normal 0 to 1 | Each lap shifts again, so partials climb (or fall) forever — the barber pole                              |
-| Mix       | off to full           | Dry/wet                                                                                                   |
+| control   | range                 | what it does                                                                                                   |
+| --------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Shift     | 0.1 Hz to 2 kHz       | Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic |
+| Direction | up or down            | Which sideband survives                                                                                        |
+| Feedback  | 0 to 2, normal 0 to 1 | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                   |
+| Mix       | off to full           | Dry/wet                                                                                                        |
 
 </details>
 
 ## Pedals
 
-Six boxes after the bends, in an order of their own. Not the same kind of order
-as the rack upstream: there are no sockets and nothing sits out — all six are
-always on the board, and a pedal comes out of the path on its own mix rather
-than by leaving the run.
+Six pedals follow the bends, and their order is not a rack: there are no
+sockets, all six are always on the board, and a pedal at zero mix leaves the
+path.
 
 ### Gnash
 
-Each circuit is its own model rather than one circuit with a knob on it.
-_Screamer_ clips inside the feedback loop so the dry note walks under it; _rat_
-clips to ground behind a slew-limited op-amp; _muff_ is two clipping stages and
-a scooped tone stack; _germanium_ is the lopsided one, riding its bias down on
-the signal; _octave_ rectifies into a ringing transformer; _gate_ is misbiased
-to the edge of cutoff.
+Gnash models each circuit separately: _Screamer_ clips inside the feedback loop
+so the dry note passes under it; _rat_ clips to ground behind a slew-limited
+op-amp; _muff_ is two clipping stages and a scooped tone stack; _germanium_
+clips asymmetrically, with its bias moving down under the signal; _octave_
+rectifies into a ringing transformer; _gate_ is misbiased to the edge of cutoff.
 
 <details>
 <summary>8 controls</summary>
@@ -941,9 +930,9 @@ to the edge of cutoff.
 | control | range                                        | what it does                                                                                                       |
 | ------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Circuit | screamer, rat, muff, germanium, octave, gate | Which dirt box is on the board                                                                                     |
-| Drive   | 0 to 60 dB                                   | Gain into the clipping stage — and how hard the pedal leans on its own battery                                     |
-| Tone    | off to full                                  | Each circuit’s tone control is a different network, so the knob means something different on each                  |
-| Bias    | −1 to +1                                     | Shifts the clipper off centre — the classic starve mod                                                             |
+| Drive   | 0 to 60 dB                                   | Gain into the clipping stage — and how hard the pedal loads its battery                                            |
+| Tone    | off to full                                  | Each circuit’s tone control is a different network, so the knob does something different on each                   |
+| Bias    | −1 to +1                                     | Shifts the clipper off centre — the starve mod                                                                     |
 | Battery | off to full                                  | How dead the 9V is                                                                                                 |
 | Level   | −24 to +12 dB                                | Makeup gain out of the pedal                                                                                       |
 | Bypass  | on or bypassed                               | Takes Gnash out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
@@ -953,54 +942,53 @@ to the edge of cutoff.
 
 ### Wraith
 
-The capstan is a real motor: it has weight, it answers the brake slowly, and
-_Supply drag_ wires it to the same dying rail as the toy, so the repeats dive in
-pitch as the board browns out. Three play heads sit along the tape at one, two
-and three spacings, and _Heads_ is which of them are up. The tape is a
-five-second loop joined once: _Splice_ is how bad the join is, and _Erase_ how
-much of the last lap the erase head lets through under the new one.
+The capstan motor has inertia and answers the brake slowly, and _Supply drag_
+connects it to the same sagging rail as the toy, so the repeats dive in pitch as
+the board browns out. Three play heads sit along the tape at one, two and three
+spacings, and _Heads_ sets which of them are engaged. The tape is a five-second
+loop joined once: _Splice_ sets how bad the join is, and _Erase_ sets how much
+of the last lap the erase head lets through under the new one.
 
 <details>
 <summary>21 controls</summary>
 
-| control        | range                   | what it does                                                                                                                                        |
-| -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Time           | 20 ms to 4 s            | Delay time                                                                                                                                          |
-| Heads          | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                                                             |
-| Feedback       | 0 to 2, normal 0 to 1   | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
-| Tone           | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
-| Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                                      |
-| Bypass         | on or bypassed          | Takes Wraith out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                 |
-| Echo level     | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
-| Wow            | 0 to 50 ms              | Slow speed wobble of the transport                                                                                                                  |
-| Wow rate       | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                                          |
-| Flutter        | off to full             | Fast random speed jitter — worn pinch roller                                                                                                        |
-| Brake          | off to full             | Drags the capstan                                                                                                                                   |
-| Supply drag    | off to full             | Wires the motor to the same dying supply as the toy                                                                                                 |
-| Splice         | off to full             | How bad the join in the loop is                                                                                                                     |
-| Erase          | off to full             | How much the erase head misses                                                                                                                      |
-| Loop filter    | off, LP, BP, HP         | A resonant filter inside the feedback, so every lap goes through it again                                                                           |
-| Loop cutoff    | 60 Hz to 8 kHz          | Sweep it while the repeats ring                                                                                                                     |
-| Loop resonance | 0 to 1.3, normal 0 to 1 | Past 1 the loop whistles at the cutoff on its own                                                                                                   |
-| Lamp           | off to full             | A bulb that dims the loop as it heats                                                                                                               |
-| Filament       | 0.02 to 3 s             | How slowly the bulb heats and cools                                                                                                                 |
-| Ring           | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy |
-| Ring depth     | off to full             | How much of the tap goes through the carrier                                                                                                        |
+| control        | range                   | what it does                                                                                                                     |
+| -------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Time           | 20 ms to 4 s            | Delay time                                                                                                                       |
+| Heads          | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                                          |
+| Feedback       | 0 to 2, normal 0 to 1   | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                        |
+| Tone           | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                            |
+| Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                   |
+| Bypass         | on or bypassed          | Takes Wraith out of the path and leaves its knobs where you set them, so switching it back on brings the same sound              |
+| Echo level     | off to full             | Volume of the repeats, added on top of the dry signal                                                                            |
+| Wow            | 0 to 50 ms              | Slow speed wobble of the transport                                                                                               |
+| Wow rate       | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                       |
+| Flutter        | off to full             | Fast random speed jitter — worn pinch roller                                                                                     |
+| Brake          | off to full             | Drags the capstan                                                                                                                |
+| Supply drag    | off to full             | Wires the motor to the same dying supply as the toy                                                                              |
+| Splice         | off to full             | How bad the join in the loop is                                                                                                  |
+| Erase          | off to full             | How much the erase head misses                                                                                                   |
+| Loop filter    | off, LP, BP, HP         | A resonant filter inside the feedback, so every lap goes through it again                                                        |
+| Loop cutoff    | 60 Hz to 8 kHz          | Sweep it while the repeats ring                                                                                                  |
+| Loop resonance | 0 to 1.3, normal 0 to 1 | Past 1 the loop whistles at the cutoff on its own                                                                                |
+| Lamp           | off to full             | A bulb that dims the loop as it heats                                                                                            |
+| Filament       | 0.02 to 3 s             | How slowly the bulb heats and cools                                                                                              |
+| Ring           | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice |
+| Ring depth     | off to full             | How much of the tap goes through the carrier                                                                                     |
 
 </details>
 
 ### Ricochet
 
-The normal box on a board of abused ones, and the one thing here that behaves.
-_Standard_ moves its time by crossing between two read heads rather than
-dragging one, so the repeats already in the buffer keep their pitch while your
-hand is on the knob — the whole difference between this and the tape machine
-next to it. _Analog_ is a bucket brigade whose clock sets the delay and the
-bandwidth together — and the line really is clocked, so past a second the
-repeats turn to grit before they turn to mud, the clock itself whistles through,
-and the compander breathes behind it all. _Reverse_ plays each window backwards,
-relocking at the seam. _Hold_ lifts the record head on every hit and goes round
-the window it just took, which with the kit running is a beat repeat.
+A conventional delay pedal, whose _Standard_ mode changes its time by crossing
+between two read heads, so the repeats already in the buffer keep their pitch
+while you turn the knob. Wraith moves a single head instead, and its repeats
+change pitch. _Analog_ is a bucket brigade whose clock sets the delay and the
+bandwidth together. Past a second the repeats turn to grit before they turn to
+mud, the clock itself whistles through, and the compander breathes behind it
+all. _Reverse_ plays each window backwards, relocking at the seam. _Hold_ lifts
+the record head on every hit and loops the window it just recorded, which with
+the kit running is a beat repeat.
 
 <details>
 <summary>8 controls</summary>
@@ -1012,18 +1000,18 @@ the window it just took, which with the kit running is a beat repeat.
 | Feedback  | 0 to 2, normal 0 to 1                            | How much of the repeat goes back in                                                                                   |
 | Tone      | 800 Hz to 16 kHz                                 | High cut in the loop, so each lap comes back darker than the last                                                     |
 | Mod depth | off to full                                      | How far the read head swings, up to six milliseconds at 0.7 Hz                                                        |
-| Shift     | −24 to +24 st                                    | How far each repeat moves in pitch, and since the repeat is what goes back round, each lap moves again                |
+| Shift     | −24 to +24 st                                    | How far each repeat moves in pitch, and each lap moves again because the repeat goes back round                       |
 | Bypass    | on or bypassed                                   | Takes Ricochet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| E. level  | off to full                                      | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it            |
+| E. level  | off to full                                      | Volume of the repeats, added on top of the dry signal                                                                 |
 
 </details>
 
 ### Boing
 
-Dispersive allpass cascade into short parallel combs — metallic, boingy,
-deliberately cheap. The springs can only swing so far before they meet the box,
-and _Kick_ is how easily they are thrown against it: a slam at the input or a
-hit from the kit crashes the tank, the sound of kicking the amp.
+A dispersive allpass cascade into short parallel combs, which sounds metallic
+and boingy and is deliberately cheap. The springs swing until they meet the box,
+and _Kick_ sets how easily a slam at the input or a hit from the kit throws them
+against it. That crashes the tank, the sound of kicking the amp.
 
 <details>
 <summary>8 controls</summary>
@@ -1031,7 +1019,7 @@ hit from the kit crashes the tank, the sound of kicking the amp.
 | control      | range            | what it does                                                                                                       |
 | ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Decay        | 0.1 to 30 s      | How long the springs ring                                                                                          |
-| Warble       | off to full      | Swings the length of each spring on its own slow sine, so a long tail stops ringing on the same few notes          |
+| Warble       | off to full      | Swings the length of each spring on a slow sine, so a long tail stops ringing on the same few notes                |
 | Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                                            |
 | Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                                               |
 | Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp                 |
@@ -1043,18 +1031,16 @@ hit from the kit crashes the tank, the sound of kicking the amp.
 
 ### Chorale
 
-One circuit at five clock rates. The lines are bucket brigades, so the delay
-knob and the bandwidth knob are the same knob: short is clean and long is dark,
-and at the top of the travel the clock itself is in the take with the compander
-breathing behind it. _Chorus_ is one line swept slowly, wired as the first of
-these pedals wired its two jacks — the wet on one side, dry and wet on the
-other. _Ensemble_ is three lines 120° apart on a slow sway with a fast shimmer
-over it, which is the circuit that turned a divider organ into a string section
-and the one thing this board had no way of doing. _Dimension_ is two lines swept
+Chorale is one circuit at five clock rates, and its lines are bucket brigades,
+so one control sets the delay and the bandwidth: short is clean and long is
+dark, and at the top of the travel the clock itself is audible with the
+compander breathing behind it. _Chorus_ is one line swept slowly, with the wet
+on one output and dry plus wet on the other. _Ensemble_ is three lines 120°
+apart on a slow sway with a fast shimmer over it. _Dimension_ is two lines swept
 against each other, one to each side with the dry up the middle, so the wobble
-cancels the moment you sum to mono and only the width is left. _Vibrato_ takes
-the dry away. _Flange_ is the same line an order of magnitude shorter with
-feedback round it.
+cancels when you sum to mono and only the width remains. _Vibrato_ removes the
+dry signal. _Flange_ uses the same line, an order of magnitude shorter, with
+feedback around it.
 
 <details>
 <summary>9 controls</summary>
@@ -1066,8 +1052,8 @@ feedback round it.
 | Depth    | off to full                                  | How far the sweep pushes the clock either side of where Delay leaves it                                              |
 | Bypass   | on or bypassed                               | Takes Chorale out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
 | Mix      | off to full                                  | Dry/wet — at zero the pedal is off the board                                                                         |
-| Delay    | 0.3 to 25 ms                                 | How long the line runs, which on a bucket brigade is the same knob as how much top end survives it                   |
-| Feedback | 0 to 0.95                                    | How much of the line goes back into it, which is what turns a short delay into a flanger                             |
+| Delay    | 0.3 to 25 ms                                 | How long the line runs, which on a bucket brigade also sets how much top end survives it                             |
+| Feedback | 0 to 0.95                                    | How much of the line goes back into it, which turns a short delay into a flanger                                     |
 | Tone     | 800 Hz to 16 kHz                             | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken                      |
 | Width    | off to full                                  | How far the lines spread across the stereo field                                                                     |
 
@@ -1079,27 +1065,27 @@ Gain stages, a passive tone stack, a push-pull power stage on a supply that
 sags, an output transformer and a speaker, run at twice the board’s rate so the
 clipping does not alias. Each triode clips its two halves differently, and a
 conducting grid charges its coupling cap, so a hard chord squashes the next note
-for a moment. The tone stack is the real network of three pots that load each
-other, solved from its netlist, so each knob also changes what the other two do.
+for a moment. The tone stack is the network of three pots that load each other,
+solved from its netlist, so each knob also changes what the other two do.
 _Fender_ is one gain stage into the stack and a recovery stage; _marshall_
 cascades two ahead of it, with small cathode caps that thin the bass. A cold
 _Bias_ leaves the output pair crossing over on quiet notes, and _Sag_ pulls the
-rail down under load and shares it with the board’s own dying supply. Three
-faults sit on the stages: a _Dry cathode cap_ that thins the bass and costs
+rail down under load, with the board’s sagging supply pulling it down too. Three
+faults sit on the stages: a _Dry cathode cap_ that thins the bass and loses
 gain, a _Weak tube_ that loses its even-harmonic cancellation and then arcs, and
-a _Microphonic_ first tube that hears the cabinet and howls at its own
-resonance. The panel draws the path, with the tone stack’s response underneath.
+a _Microphonic_ first tube that picks up the cabinet and howls at its resonance.
+The panel draws the path, with the tone stack’s response underneath.
 
-Named settings, one press each at the head of the panel — the stage goes back to
-stock and the setting is written over it, so the rows underneath say what it
-became:
+Named settings, one press each at the head of the panel. A press resets the
+stage to stock and writes the setting over it, and the rows underneath show the
+result:
 
 - **dried-out cap**: The cathode caps have lost their value: thin, bright and a
   third of the gain, with the knobs turned up to make it back
 - **dying output tube**: One output tube gone weak and arcing: lopsided, full of
   even harmonics, and frying between notes
-- **microphonic**: The first tube hears the cabinet through its own mechanical
-  resonance, so every loud note leaves a howl behind it
+- **microphonic**: The first tube picks up the cabinet through the tube’s
+  mechanical resonance, so every loud note leaves a howl behind it
 
 <details>
 <summary>16 controls</summary>
@@ -1121,7 +1107,7 @@ became:
 | Level             | −24 to +12 dB                  | Makeup gain out of the amp                                                                                           |
 | Dry cathode cap † | off to full                    | The cathode caps lose their value                                                                                    |
 | Weak tube †       | off to full                    | One of the two output tubes goes weak                                                                                |
-| Microphonic †     | off to full                    | The first tube hears the cabinet’s air through its own mechanical resonance, near 900 Hz                             |
+| Microphonic †     | off to full                    | The first tube picks up the cabinet’s sound through its mechanical resonance, near 900 Hz                            |
 
 </details>
 
@@ -1129,16 +1115,16 @@ became:
 
 ### Patch bay
 
-Wires, each from a source to a destination at a signed depth. A wire can land on
-the toy’s supply rail, on the tape loop’s capstan and loop markers, or on
-another wire’s depth — which is how the bay modulates itself.
+The bay holds wires, each from a source to a destination at a signed depth. A
+wire can connect to the toy’s supply rail, the tape loop’s capstan and loop
+markers, or another wire’s depth, so the bay can modulate itself.
 
 <details>
 <summary>14 controls</summary>
 
 | control        | range                                                                                      | what it does                                                                   |
 | -------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
+| LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s oscillator, free-running                                             |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
 | Wire 1–4 to    | 121 of them, filt cut through toy duty on envelope                                         | Where the other end is soldered                                                |
@@ -1148,10 +1134,10 @@ another wire’s depth — which is how the bay modulates itself.
 
 ### Trigger patch
 
-Which machine plays which. The kit can play Plinky and the keyboard can play the
-kit, and Glint, Parlor and Growler each take the kit’s hits through _Kit voice
-that plays this…_ and Plinky’s notes through a jumper that is soldered out of
-the box.
+The Trigger patch panel sets which machine plays which. The kit can play Plinky
+and the keyboard can play the kit, and Glint, Parlor and Growler each take the
+kit’s hits through _Kit voice that plays this…_ and Plinky’s notes through a
+jumper that is soldered out of the box.
 
 <details>
 <summary>3 controls</summary>
@@ -1166,7 +1152,7 @@ the box.
 
 ### Body contact
 
-Two axes, for the hand on the circuit.
+Two axes that put a hand on the circuit.
 
 <details>
 <summary>2 controls</summary>
@@ -1182,37 +1168,35 @@ Two axes, for the hand on the circuit.
 
 ### Feedback bus
 
-The output fed back in, at a loop time short enough for kHz mixer squeal.
-_Patched into_ decides where the return lands.
+The output feeds back in, with a loop time short enough for kHz mixer squeal.
+_Patched into_ sets where the return connects.
 
-Named settings, one press each at the head of the panel — the stage goes back to
-stock and the setting is written over it, so the rows underneath say what it
-became:
+Named settings, one press each at the head of the panel. A press resets the
+stage to stock and writes the setting over it, and the rows underneath show the
+result:
 
 - **one squeal**: The whole of the no-input mixer in four controls — one send
-  round a short cord, tilted bright, into amps that saturate rather than square
-  off
-- **slow throb**: Two strips a few tenths of a millisecond apart, which is close
-  enough to fight over the same note and far enough that neither wins — the beat
-  is the difference between the two cords
+  round a short cord, tilted bright, into amps that saturate
+- **slow throb**: Two strips a few tenths of a millisecond apart, so the two
+  squeals sit close in pitch without locking together — the beat is the
+  difference between the two cords
 - **never settles**: Three cords of no common length wired into a ring, each
-  recirculating its neighbour — a squeal, a flutter and an echo with no mode any
-  of them can hold, wandering untouched
+  recirculating its neighbour — a squeal, a flutter and an echo with no mode
+  that any of them settles into, wandering untouched
 - **motorboat**: A dried-out coupling cap on the return: the loop climbs, walks
-  its own bias to cutoff, dies, drains and does it again — a rhythm out of a
-  desk with no clock on it
+  its bias to cutoff, dies, drains and does it again — a rhythm out of a desk
+  with no clock on it
 - **buzzsaw octave**: One loud strip into hard rails set well apart — the wave
   squares off on one half before the other, so what comes back is an octave
   under the squeal and a pile of dc
-- **hash**: Three squeals a hair apart through amps too slow to draw any of them
-  — what a slew limiter does to a sum is not what it does to either part, and
-  none of it has harmonics
+- **hash**: Three squeals a hair apart through amps too slow to follow any of
+  them — the slew limiter acts on the sum, so the result differs from limiting
+  either part, and none of it has harmonics
 - **browns out the toy**: The return soldered to the supply rail the toy runs on
-  — the louder the desk screams the less there is to make the tune out of, and
-  the tune is what is feeding it
+  — the louder the desk squeals the less rail is left to make the tune from, and
+  the tune feeds the desk
 - **the loop picks the note**: The return on oscillator A’s FM pin, on a cord
-  long enough to hear go round — the loop is no longer a squeal at a pitch, it
-  is what sets the pitch
+  long enough to hear go round — the loop sets the pitch
 
 <details>
 <summary>16 controls</summary>
@@ -1221,19 +1205,19 @@ became:
 | ------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | Amount       | 0 to 2, normal 0 to 1           | Output patched back into the source mix                                                                                |
 | Loop time    | 0.05 to 500 ms                  | The loop’s own comb delay                                                                                              |
-| Tilt         | 1.00 dark to 1.00 bright        | Darkens or brightens the loop — decides which register the squeal settles into                                         |
+| Tilt         | 1.00 dark to 1.00 bright        | Darkens or brightens the loop — sets which register the squeal settles into                                            |
 | Patched into | mix, osc FM, chip rail, delay   | Where the return wire is soldered                                                                                      |
-| Cross        | off to full                     | Sends each strip round the next one’s delay instead of its own                                                         |
-| Strip 2      | 0 to 2, normal 0 to 1           | A second send and return, on its own fader                                                                             |
+| Cross        | off to full                     | Sends each strip round the next strip’s delay                                                                          |
+| Strip 2      | 0 to 2, normal 0 to 1           | A second send and return on a separate fader                                                                           |
 | Strip 2 time | 0.05 to 500 ms                  | How long strip 2’s cord and its circuit take                                                                           |
-| Strip 2 tilt | 1.00 dark to 1.00 bright        | Strip 2’s own tilt                                                                                                     |
+| Strip 2 tilt | 1.00 dark to 1.00 bright        | Strip 2’s tilt                                                                                                         |
 | Strip 3      | 0 to 2, normal 0 to 1           | The third send and return                                                                                              |
 | Strip 3 time | 0.05 to 500 ms                  | How long strip 3’s cord takes                                                                                          |
-| Strip 3 tilt | 1.00 dark to 1.00 bright        | Strip 3’s own tilt                                                                                                     |
+| Strip 3 tilt | 1.00 dark to 1.00 bright        | Strip 3’s tilt                                                                                                         |
 | Rails        | off to full                     | How hard the return amps hit their supply                                                                              |
 | Rail balance | 1.00 low rail to 1.00 high rail | How far apart the two supplies are                                                                                     |
 | Slew         | off to full                     | How slow the return amps are                                                                                           |
-| Supply       | off to full                     | How far the return amps pull their own rail down                                                                       |
+| Supply       | off to full                     | How far the return amps pull their rail down                                                                           |
 | Blocking     | off to full                     | The coupling cap driven past its rails: charge walks the bias to cutoff, the stage stops conducting, and the loop dies |
 
 </details>
@@ -1242,30 +1226,30 @@ became:
 
 ### Tape machine
 
-The whole instrument printed to tape, after everything else. Speed moves gap
+Prints the whole instrument to tape, after everything else. Speed moves gap
 loss, head bump, hiss, wow rate and print-through together, because on a real
-machine they are one thing.
+machine they all depend on tape speed.
 
 <details>
 <summary>17 controls</summary>
 
 | control       | range                                     | what it does                                                                                          |
 | ------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| To tape       | off to full                               | How much of the board you hear through the machine rather than straight off the bus                   |
+| To tape       | off to full                               | How much of the board you hear through the machine, with the rest straight off the bus                |
 | Speed         | 15⁄16 ips, 1⅞ ips, 3¾ ips, 7½ ips, 15 ips | Moves the whole machine at once                                                                       |
 | Tape at       | the end, the pedals, the bends            | Where the machine sits in the signal path                                                             |
 | Format        | open reel, cassette, microcassette        | Picks the tape and heads; Speed sets how fast they run                                                |
 | Level         | −12 to +15 dB                             | Record level                                                                                          |
-| Hiss          | off to full                               | Noise laid on the medium, not on the mix                                                              |
+| Hiss          | off to full                               | Noise laid on the medium                                                                              |
 | Wow           | off to full                               | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
 | Flutter       | off to full                               | The fast wobble, plus the scrape grain of tape dragging past the head                                 |
 | Dropouts      | off to full                               | Shed oxide                                                                                            |
 | Print-through | off to full                               | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
-| Squeal        | off to full                               | Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal      |
+| Squeal        | off to full                               | Sticky shed: the tape grabs the head, slips and grabs again, and the stick-slip grows into a squeal   |
 | Bias          | 1.00 under to 1.00 over                   | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
 | Hysteresis    | off to full                               | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
 | Head bump     | 0 to 1.5, normal 0 to 1                   | The lift where the wavelength past the replay head is the size of the head                            |
-| Azimuth       | off to full                               | Head misalignment: the right channel lags and loses top end                                           |
+| Azimuth       | off to full                               | Head misalignment: the right channel lags and loses top end, and the mix sums to mono badly           |
 | NR record     | off, Dolby B, dbx                         | The noise reduction that encodes the board on its way to the record head                              |
 | NR play       | off, Dolby B, dbx                         | The decoder after the replay head                                                                     |
 
@@ -1301,19 +1285,18 @@ Gain, ahead of a dc block, soft clip and limiter that always run.
 | ------------ | ---------------------- | -------------------------------------------------------------- |
 | Gain         | −60 to +12 dB          | Master gain before the safety clipper and limiter              |
 | Varispeed    | stopped to 2.000× fast | The capstan trimmer on the deck the whole instrument comes off |
-| Motor weight | 0 to 3 s               | How much weight the deck’s motor carries                       |
+| Motor weight | 0 to 3 s               | How much weight the deck’s motor has                           |
 
 </details>
 
 ### Board parts
 
-What the toy board is made of, rather than what you are doing to it. Every one
-of these was a number compiled into the model until somebody wanted the other
-value, and every default is the one that shipped, so a board nobody has been at
-here is the stock board. _Timing pin_ decides which sags the tempo notices.
-_Clock drag_ is how deep the cap on the oscillator can divide. _Part spread_ is
-how far apart the four output stages came out of the bin — whether a chord
-collapses raggedly or all at once.
+Each control here sets a part of the toy board itself, and each default is the
+stock value, so an untouched board here is the stock board. _Timing pin_ sets
+which sags change the tempo. _Clock drag_ sets how deep the cap on the
+oscillator can divide. _Part spread_ sets how far apart the four output stages
+came out of the bin, which decides whether a chord collapses raggedly or all at
+once.
 
 <details>
 <summary>4 controls</summary>
@@ -1329,16 +1312,16 @@ collapses raggedly or all at once.
 
 ### Wear
 
-The slow ones, and the board-wide ones. _Heat_ builds with what the board is
-dissipating and takes the rail down with it. _Fault clustering_ redistributes
-every fault on the board from a flat rate into bursts. _Cross-coupling_ is how
-much the brightness bus feeds back into the supply. _Dry joints_ drops the bend
-on a slot out of the path mid-note — a click on the way out, another on the way
-back, and whatever it was ringing left mid-ring. _Re-solder_ swaps two slots
-outright while you play, or moves the feedback return to a different pin, so the
-order changes with nobody’s hand on it. Neither of the last two writes to a
-control — the settings stay exactly where you left them and the path moves
-underneath — so the rack on the Signal order panel is where you watch it happen.
+The slow, board-wide faults start with _Heat_, which builds with what the board
+dissipates and lowers the rail. _Fault clustering_ redistributes every fault on
+the board from a flat rate into bursts. _Cross-coupling_ sets how much the
+brightness bus feeds back into the supply. _Dry joints_ drops the bend in a slot
+out of the path mid-note: a click on the way out, another on the way back, and
+whatever it was ringing cut off mid-ring. _Re-solder_ swaps two slots while you
+play, or moves the feedback return to a different pin, so the order changes
+without a hand on a control. _Dry joints_ and _Re-solder_ write to no control,
+so the settings stay where you left them while the path changes underneath, and
+the rack on the Signal order panel shows it happening.
 
 <details>
 <summary>5 controls</summary>
@@ -1355,53 +1338,51 @@ underneath — so the rack on the Signal order panel is where you watch it happe
 
 ### Signal order
 
-One door for both runs that are yours to order — the six positions the bends
-compete for, on their way from the mix bus to the pedals, and the six pedals
-waiting downstream of them. Two sections, drawn as two racks: _onboard effects_
-first, then _pedals_. Drag a box to move it, or take it with the arrow keys;
-drag or press a bend riding off the board, in the first section, to bring it in.
-Order is most of what a chain of effects sounds like: a crusher into a filter
-and a filter into a crusher are the same two stages and two different sounds,
-and fuzz into a reverb is a wall with a room behind it where a reverb into fuzz
-is the room itself distorting. Seven bends for six positions, so one always sits
-out; the six pedals never do — a pedal leaves the path on its own mix instead.
+The Signal order panel orders both runs: the six positions the bends compete
+for, between the mix bus and the pedals, and the six pedals downstream of them.
+It draws two racks, _onboard effects_ first and _pedals_ second. Drag a box to
+move it, or move it with the arrow keys. To bring in a bend that is off the
+board, drag it or press it in the first section. A crusher into a filter and a
+filter into a crusher use the same two stages and sound different, and fuzz into
+a reverb gives a wall with a room behind it where a reverb into fuzz gives the
+room itself distorting. Seven bends compete for six positions, so one always
+sits out. All six pedals stay on the board, and a pedal leaves the path when its
+mix is at zero.
 
-Two racks, not a row of sliders: the six bend-slot controls under _onboard
-effects_, and the one order control under _pedals_ — 720 orders rather than a
-socket per pedal, so a roll, a link and a preset all reach it and none of them
-can leave it saying something that is not an order. Both racks draw their own
-controls, so the panel does not draw either a second time as dropdowns. Order is
-only half of what the onboard-effects run is: a bend can sit in a position and
-still be inaudible, either because its own dry/wet is at zero or because it
-already ran higher up, and the row it is on says which. The rows also read back
-what _Solder_ is doing to the path while you play — a position the relay has
-moved says where the board is running it, and one whose joint has opened says it
-is out of the path altogether. Neither of those is a control, so this is the
-only place either of them can be seen. The pedal rows have no equivalent to read
-back: all six are always on the board.
+The panel draws two racks in place of a row of sliders: the six bend-slot
+controls under _onboard effects_, and the one order control under _pedals_. The
+pedal order is a single control with 720 values instead of a socket per pedal,
+so a roll, a link and a preset can all set it and every value is a valid order.
+Because the racks draw these controls, the panel shows no dropdown for either. A
+bend can sit in a position and still be inaudible, either because its dry/wet is
+at zero or because it already ran higher up, and its row shows which. The rows
+also show what _Solder_ is doing to the path while you play: a position the
+relay has moved shows where the board is running it, and one whose joint has
+opened shows that it is out of the path. Neither of those is a control, so these
+rows are the only place to see them. The pedal rows show nothing extra, because
+all six pedals are always on the board.
 
-Named settings, one press each at the head of the panel — the stage goes back to
-stock and the setting is written over it, so the rows underneath say what it
-became:
+Named settings, one press each at the head of the panel. A press resets the
+stage to stock and writes the setting over it, and the rows underneath show the
+result:
 
 - **crush, then filter**: A five-bit decimator with the filter after it —
   everything the crusher folded down comes back through 900 Hz, so the aliasing
-  is inside the growl rather than on top of it
+  is inside the growl
 - **filter, then crush**: The same two stages the other way round: the filter
-  picks a band and the crusher folds _that_ down, so the aliases land above the
-  filter and nothing takes them off again — the pair to hear against the one
-  before it
+  passes a band and the crusher folds _that_ down, so the aliases sit above the
+  filter and reach the output — the pair to hear against _crush, then filter_
 - **fuzz into the comb**: Fuzz first, so the comb is given a wave that is
   already square and rings on its harmonics — a tuned string plucked by a
   distortion pedal
 - **comb into the fuzz**: The comb first, so what reaches the fuzz is a handful
   of loud resonant peaks — they intermodulate against each other in the clipper
-  and come out as a chord nothing played
+  and come out as a chord absent from the input
 - **chopped, then rung**: The stutter ahead of the comb, so every repeat arrives
   at the string as a fresh pluck and the ring restarts with it
 - **rung, then chopped**: The stutter after the comb, so what gets sliced and
   played backwards is the ring itself — the same two stages, and the repeats now
-  cut across the decay instead of starting it
+  cut across the decay
 
 <details>
 <summary>7 controls</summary>
@@ -1415,29 +1396,27 @@ became:
 
 ## Around the instrument
 
-- **Roll** randomises the board with a bias toward leaving something audible;
-  the controls marked † come on rarely and low, so a roll does not bury the
-  board under one effect. **Mutate** shakes the board you have rather than
-  replacing it.
-- **Dice on every heading**, not only on the stage, with a _reset_ beside them
-  that says how many controls it would put back. A heading is where the controls
-  that only mean anything together live, so you can roll a knife on the toy's
-  bus without re-rolling its clock and its bend pot underneath you.
-- **Morph** travels between two boards rather than jumping, and pressing it
-  mid-flight keeps the half-way board — a board like any other. **Hunt**
-  auditions candidates and keeps whichever spends the most time arriving at the
-  limiter and backing off, which is what the edge sounds like from outside.
-  **Drift** sets the board off for somewhere near where it stands every fifteen
-  seconds and never lets it arrive; it banks none of it, so the board you set
-  drifting is one undo away.
-- **The walk**: every gesture that lands a board — a preset, a roll, a stage
-  reset, a sweep of one knob — is a step, and ctrl+z and ctrl+shift+z go back
-  and forward through them.
-- **The board rides in the URL**, so a link is a patch: `#p=` packs it into a
-  few dozen characters, `#set=` spells the moved controls out by name for typing
-  at the address bar, and arriving on one keeps the bar writing that form. A
-  link never presses play; a reload of your own tab comes back running whatever
-  it was running.
+- **Roll** randomises the board, weighted toward leaving something audible; the
+  controls marked † come on rarely and low, so no single effect buries the
+  board. **Mutate** perturbs the board you have instead of replacing it.
+- **A roll button on every heading**, with a _reset_ beside it that shows how
+  many controls it would put back. A heading groups controls that only work
+  together, so you can roll a knife on the toy's bus without re-rolling the
+  toy's clock and bend pot.
+- **Morph** moves between two boards over time, and pressing it mid-flight keeps
+  the half-way board as an ordinary board. **Hunt** plays candidates and keeps
+  the one that spends the most time arriving at the limiter and backing off.
+  **Drift** moves the board to somewhere near where it stands every fifteen
+  seconds, indefinitely. Drift adds no step to the walk, so one undo restores
+  the board you set drifting.
+- **The walk**: every gesture that sets a board, such as a preset, a roll, a
+  stage reset or a sweep of one knob, is a step, and ctrl+z and ctrl+shift+z go
+  back and forward through the steps.
+- **The board is stored in the URL**, so a link is a patch: `#p=` packs it into
+  a few dozen characters, `#set=` lists the moved controls by name for typing at
+  the address bar, and after you open a `#set=` link the app keeps writing that
+  form. Opening a link never starts playback, and reloading your own tab resumes
+  whatever it was running.
 - **Play it from the computer keyboard** — `a s d f` for the keys, `z` and `x`
   for octaves, `1`–`6` for the kit, space for both machines.
 - **MIDI in** — notes, velocity, and knobs that map onto the panel, including
@@ -1445,17 +1424,16 @@ became:
 - **Record to wav**, straight off the output.
 - **A live signal-path map** that greys out whatever is not in the path, and is
   the way into every stage's controls.
-- **A desk** with every source's fader and a meter beside it, because how far a
-  fader is up and whether anything is coming out of that machine are not the
-  same question.
-- **The reel**, drawn off the tape as it plays: the loop's two markers, the play
-  head and which way it is going.
+- **A desk** with every source's fader and a meter beside it, since a fader's
+  position does not show whether that machine is producing sound.
+- **The reel**, drawn from the tape as it plays, shows the loop's two markers,
+  the play head and its direction.
 - **Scope, meters and a rail lamp**, all fed by the meter message.
 
 ### Presets
 
-125 boards worth keeping. Every name is a link that opens the app with that
-board on it — a link never presses play, so it is loaded and waiting.
+125 presets. Each name is a link that opens the app with that board loaded, and
+the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
   — Parlor on strings with the toy’s gate still soldered on, so the demo song
@@ -1465,8 +1443,8 @@ board on it — a link never presses play, so it is loaded and waiting.
   delay pedal
 - [**bent sampler**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.3,pcmLevel:0.9,pcmVoice:11,pcmEnv:1,pcmRelease:0.4,pcmTone:5000,pcmAddrLine:2,pcmAddrFault:3,pcmDataLine:8,pcmDataFault:2,delayMs:260,dlyMix:0.3)
   — Whatever you dropped, played across the keyboard off the sample memory with
-  a data line on the rail and the address bus bridged — the tape loop’s own
-  fader down, so the only copy you hear is the keyed one
+  a data line on the rail and the address bus bridged — the tape loop’s fader
+  down, so the only copy you hear is the keyed one
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
   — Starved rail, sagging pitch, watchdog reboots mid-tune
 - [**paperclip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.5,chipStarve:0.3,chipCap:0.6,chipClipHz:3,chipClipClock:0.45,drumLevel:0.25,brownAmt:0.25,humLevel:0.2,faultCluster:0.55)
@@ -1478,22 +1456,25 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**wrong song**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipAccomp:0.7,chipClockX:1.2,chipDataLine:3,chipDataFault:2)
   — A data line held high — the tune keeps its rhythm and its rests fill in
 - [**half a tune**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipAccomp:0.5,chipAddrLine:4,chipAddrFault:1,delayMs:260,dlyFb:0.4,dlyMix:0.25)
-  — An address line on the floor: the song folds into its own first half
+  — An address line on the floor: the song folds into its first half
 - [**stuck key**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.5,fmLevel:0.8,fmVoice:1,fmBright:0.6,fmLength:0.3,fmDataLine:5,fmDataFault:2)
-  — Glint never told the key came up, so nothing it plays ends
+  — The key-up write reaches Glint with its key bit held high, so nothing it
+  plays ends
 - [**drum machine on the die**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.35,drumBpm:132,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmKeyGate:1,fmRhythm:1,fmBusCut:0.85,fmWaveLine:9,revMix:0.2)
   — The chip’s own percussion bank, run through a half-parted wave line
 - [**dawn chorus**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmDataLine:3,fmBusCut:0.55)
-  — Bird calls off the effect ROM, every write of them arriving wrong
+  — Bird calls off the effect ROM, every write of them corrupted
 - [**weather station**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:3,fmStrobe:0.15)
   — Wind, with the address latch missing one pulse in seven
 - [**air raid**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:4,fmAddrLine:6,fmBusCut:0.5)
-  — A siren filed under the wrong registers as it climbs
+  — A siren written to the wrong registers as it climbs
 - [**stuck cricket**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:5,fmStrobe:0.4)
-  — The key-up lands next door, so the chirps never stop being one note
+  — A write strobe that sometimes misses sends the key-up to the previous
+  register, so the chirps never stop being one note
 - [**never finishes booting**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmAddrLine:1,fmAddrFault:1,fmColdBoot:1)
-  — Glint cold-boots into garbage and the write that clears its test register
-  lands next door, so it plays the song wide open, skewed and rectified
+  — Glint cold-boots into garbage, and with an address wire grounded the write
+  that clears its test register goes to another register, so it plays the song
+  wide open, skewed and rectified
 - [**reboot loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmKeyGate:1,modLfoHz:6,modLfoShape:2,mod0Src:1,mod0Dest:102,mod0Depth:1)
   — A square wave on Glint’s cold boot: it power-cycles six times a second, each
   time into a different chord of garbage
@@ -1502,12 +1483,12 @@ board on it — a link never presses play, so it is loaded and waiting.
   every note of the song retunes and strikes the die’s bass drum
 - [**bird fight**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmAlloc:4)
   — The allocator stuck on the effect’s channel: the song and a bird call write
-  the same registers and tear each other apart
+  the same registers and overwrite each other
 - [**standing ovation**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:9,fmAdder:3)
   — Applause off the effect ROM through a 9-bit log adder that wraps, until the
   room is a wall of white noise
 - [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9)
-  — The kit’s converter built from resistors nobody measured
+  — The kit’s converter built from resistors off an unmeasured reel
 - [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)
   — Drum machine retriggered into rolls
 - [**drum scream**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.95,drumBpm:45,drumRetrigHz:700,bits:6,crushMix:0.5,revDecayS:3,revMix:0.3)
@@ -1525,8 +1506,8 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**dogfight**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,oscLevel:0.85,oscBHz:2.2,oscXmod:900,oscStarve:0.5,ringHz:40,ringMix:0.3)
   — Cross-modulated oscillators starving themselves
 - [**nobody at the keys**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,oscLevel:0.8,oscStarve:0.45,delayMs:240,dlyFb:0.45,dlyMix:0.35,modLfoHz:4,modLfoShape:3,mod0Src:1,mod0Dest:26)
-  — The bay plays the oscillator: pitch off a sample-and-hold, time off its own
-  starving rail
+  — The bay plays the oscillator: pitch off a sample-and-hold, time off the
+  oscillator’s starving rail
 - [**ground loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.55,chipStarve:0.5,revDecayS:3,revMix:0.3,brownAmt:0.5,brownCrackle:0.4,humLevel:0.8)
   — Bad power: hum, sag and a straining supply
 - [**fm howl**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
@@ -1541,7 +1522,7 @@ board on it — a link never presses play, so it is loaded and waiting.
   — Four loops that never erase, piling the bent board onto oxide that is coming
   away in patches, the same patches every lap
 - [**nothing plugged in**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fourLevel:0.25,fourAux:1.1,four1In:3,four1MidHz:900,four1Mid:12,four1Send:0.9,four1Pan:-0.5,four1Fader:0.8,four2In:3,four2Low:-10,four2MidHz:2600,four2Mid:10,four2Send:0.7,four2Pan:0.5,four2Fader:0.6)
-  — Two channels of the four-track on their own aux return, each boosted at a
+  — Two channels of the four-track on the desk’s aux return, each boosted at a
   different mid: a no-input desk squealing on its op-amp rails
 - [**a four-track on its last cells**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.55,fourLevel:0.9,fourDbx:1,fourBattery:0.75,four1In:1,four1Rec:0.5,four1Erase:0.4,four1Len:3.2)
   — A loop of the board on a four-track whose cells are going: it drags flat
@@ -1553,7 +1534,8 @@ board on it — a link never presses play, so it is loaded and waiting.
   — A cassette recorded through dbx and played back on a deck without it:
   squeezed 2:1, the top end shouting and the hiss riding every note
 - [**the desk lets go**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.2,mixDrive:8,fbAmt:1.2,fbTone:0.3,fb2Amt:1.1,fb2Tone:-0.4,fb3Amt:1,fb3Tone:0.1,fbCross:0.55,fbRails:1,fbAsym:0.4,fbSlew:0.35,fbBlock:0.9,fbSag:0.5)
-  — Three cross-fed loops through amps that block — erupts and dies on its own
+  — Three cross-fed loops through amps that block — the output builds up and
+  collapses with no notes played
 - [**divider fuzz**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,driveDb:18,distMode:2,distToneHz:4000,subLevel:0.9,distMix:0.8)
   — A flip-flop octave under the tune, clipped along with it
 - [**wall of muff**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,stompCircuit:2,stompDrive:34,stompTone:0.35,stompLevel:-6,stompMix:1,revDecayS:3,revMix:0.3)
@@ -1589,7 +1571,7 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**motor sag**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,delayMs:320,dlyFb:0.8,dlyToneHz:3200,tapeMotorRail:1,dlyMix:0.6,brownAmt:0.85,brownRate:3)
   — Tape motor wired to the same failing supply as the toy
 - [**barber pole**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.5,bendSlot0:7,shiftHz:3,shiftFb:0.92,shiftMix:0.85,revDecayS:4,revMix:0.35)
-  — Every lap through the shifter climbs again, so nothing lands
+  — Every lap through the shifter climbs again, so no pitch settles
 - [**bell metal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:7,shiftHz:380,shiftMix:1,delayMs:180,dlyFb:0.45,dlyMix:0.3)
   — Shifted far enough that the harmonics stop being harmonics
 - [**lean on it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
@@ -1602,14 +1584,13 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**backbeat**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumSnare:0,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
   — Claps on two and four, shuffled hard, through four bits of DAC
 - [**boom bap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:88,drumSwing:0.6,drumBits:12,drumRom:1,drumRomHz:22000,drumKick:33312,drumHat:43690,drumAccent:2056,revMix:0.18,tapeMix:0.5,tapeHiss:0.55,tapeWow:0.3)
-  — The kit sampled by itself, twelve bits and shuffled — the drum machine those
-  records were made on
+  — The kit sampled by itself, twelve bits and shuffled
 - [**dusty kit**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:84,drumSwing:0.4,drumDecay:0.5,drumRom:1,drumRomHz:12000,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,bendSlot0:2,bits:6,srHz:12000,crushMix:0.3,revDecayS:1.2,revMix:0.25)
   — The ROM clock down at 12 k and every hit truncated — a sampler running out
   of seconds
 - [**pitched down**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:76,drumTune:0.5,drumRom:1,drumKick:34952,drumHat:34952,drumOpen:514,drumCym:32768,drumAccent:32896,revDecayS:3,revMix:0.3)
   — Every slab read at half speed — the long ones smear into each other and the
-  kit arrives an octave under
+  kit sounds an octave under
 - [**struck metal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:92,drumDecay:2.4,drumMetal:1,drumCymTone:0.2,drumSpread:0.4,drumSquare:0.06,drumKick:34952,drumHat:34952,drumOpen:8738,drumCym:32768,drumAccent:32896,revDecayS:2.4,revMix:0.32)
   — The squarer biased out of the way — the hats and the cymbal come back as the
   six tones they are made of
@@ -1617,11 +1598,11 @@ board on it — a link never presses play, so it is loaded and waiting.
   — The noise transistor back at its knee: snare, hats and clap all missing the
   same gaps
 - [**inside out**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:124,drumOverflow:1,drumAccentAmt:2.2,drumDataLine:9,drumDataFault:2,drumKick:33312,drumSnare:2312,drumHat:44718,drumBell:16,drumOpen:512,drumAccent:2056,revMix:0.22)
-  — The accent wire held high — every step asks the bus for one, and the crowded
-  steps fold over the top of the converter
+  — The accent wire held high — the bus carries an accent request on every step,
+  and the crowded steps fold over the top of the converter
 - [**never comes round**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:124,drumSlip:0.18,drumKick:33312,drumSnare:2312,drumHat:44718,drumBell:16,drumOpen:512,drumAccent:2056,drumHatLen:5,drumBellLen:7,revDecayS:2.4,revMix:0.28)
   — A counter missing an edge here and there, under rows of five and seven —
-  nothing lands where it did last bar
+  nothing falls where it did last bar
 - [**coarse and late**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:124,drumDecay:1.4,drumBits:5,drumSlot:40,drumSlip:0.3,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,revMix:0.2)
   — The clock slipping and the converter working a voice at a time — the doubled
   steps are the crowded ones, so they come out grittier than the steps either
@@ -1630,15 +1611,15 @@ board on it — a link never presses play, so it is loaded and waiting.
   — No edge ever gets over the threshold: the machine stands on one step and the
   retrigger turns it into a note
 - [**two clocks**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipSync:1,drumLevel:0.9,drumBpm:124,drumSlip:0.2,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,delayMs:288,dlyMix:0.22)
-  — The toy locked to the kit’s tempo and the kit’s counter slipping out from
-  under it — a lock follows a tempo, never a downbeat
+  — The toy locked to the kit’s tempo while the kit’s counter slips out from
+  under it, so the downbeat drifts
 - [**rusted bell**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumDecay:2.5,drumMetal:1,drumBankStarve:1,drumKick:37412,drumSnare:0,drumHat:9362,drumBell:37416,drumCym:32768,drumAccent:32768,revMix:0.3)
-  — The metal bank on a starved supply of its own, three octaves down — the
+  — The metal bank’s supply starved through a resistor, three octaves down — the
   cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays
   where it was
 - [**metal under the kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:120,drumDecay:0.4,drumMetal:1,drumBankGate:1,drumKick:32928,drumHat:65535,drumCym:32768)
   — The metal bank’s supply soldered to the kick’s trigger line — sixteenth hats
-  and a cymbal that only speak while a kick rings, and freeze in the gaps
+  and a cymbal that only sound while a kick rings, and freeze in the gaps
   between
 - [**buzzing hands**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:108,drumClapGap:2,drumClapCount:60,drumKick:37008,drumSnare:0,drumClap:2088,drumBell:2,drumAccent:32896,revMix:0.2)
   — The clap’s burst oscillator run up to 500 Hz for sixty bursts — every clap a
@@ -1655,7 +1636,7 @@ board on it — a link never presses play, so it is loaded and waiting.
   goes quiet when the toy does
 - [**lone kicks zap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumMetal:0.8,drumSweep:6,drumPulseShare:1,drumKick:37514,drumSnare:0,drumHat:4618,drumClap:4104)
   — The one-shots on one timing rail with the sweep trimmer wound up — a kick
-  alone zaps down from the top, and a kick under hats and a clap lands short,
+  alone zaps down from the top, and a kick under hats and a clap sounds short,
   thin and flat
 - [**every hit dives**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.9,drumBpm:100,drumDecay:3,drumMetal:1,drumTrigLoad:1,drumKick:34952,drumHat:34952,drumBell:8738,drumOpen:8738,drumCym:32896,drumAccent:32896)
   — The one-shots’ charge pulled straight off the supply — a ringing cymbal and
@@ -1670,7 +1651,7 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**kit on keys**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipAccomp:0.35,drumLevel:0.6,drumBpm:104,delayMs:288,dlyMix:0.22,trigToKeys:1,trigKeysNote:1)
   — Kick soldered onto the keyboard’s gate: one hit, one step of the ROM
 - [**call and answer**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumBpm:92,revDecayS:2.4,revMix:0.3,trigToKeys:2,trigKeysNote:3,trigToDrum:4)
-  — The snare strikes a chord, and every note it strikes claps back
+  — The snare triggers a chord, and each note of it triggers a clap
 - [**hit gate**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,drumLevel:0.8,filtHz:180,filtRes:0.85,filtMix:1,mod0Src:9,mod0Depth:0.85)
   — A wire off the kit’s trigger line onto the cutoff — shut between hits
 - [**slapback**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,drumLevel:0.5,echoMs:110,echoFb:0.15,echoToneHz:6000,echoLevel:0.45)
@@ -1684,25 +1665,26 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**clock whine**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,echoMode:1,echoMs:1400,echoFb:0.8,echoToneHz:12000,echoLevel:0.7)
   — A bucket brigade clocked too slow to hide it — grit, fold and whistle
 - [**spliced reel**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.4,delayMs:380,dlyFb:0.55,flutter:0.25,dlySplice:0.8,dlyErase:0.7,dlyMix:0.5)
-  — A loop joined badly and an erase head that gave up — the last lap bleeds
+  — A loop joined badly and an erase head that failed — the last lap bleeds
   through
 - [**kicked amp**](https://cmdcolin.github.io/bender/app/#set=drumBpm:96,revDecayS:3,revBoing:0.8,revKick:0.7,revMix:0.6)
   — Every hit from the kit throws the springs against the housing
 - [**played backwards**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,echoMode:2,echoMs:500,echoLevel:0.75,revMix:0.25)
-  — Half a second at a time, each one handed back the other way round
+  — Half a second at a time, each played back reversed
 - [**wandering loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.45,sampleLevel:1,loopRec:0.7,loopErase:0.3,loopSecs:4,loopOut:0.14,modLfoHz:0.06,mod0Src:1,mod0Dest:23,mod0Depth:0.9,tapeMix:0.6)
   — A blank reel, a short loop walking over what the toy put on it — press play
 - [**seasick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,echoMs:300,echoFb:0.55,echoLevel:0.6,modLfoHz:0.35,mod0Src:1,mod0Dest:21,mod0Depth:0.3)
   — A wire off the bay onto the pedal’s time — the repeats never settle
 - [**clockwork**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipArp:3,chipArpOct:2,delayMs:240,dlyMix:0.25,revMix:0.2)
-  — The counter walking your hand — hold a chord, or latch it with hold
+  — The counter stepping through the notes you hold — hold a chord, or latch it
+  with hold
 - [**hailstorm**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipArp:4,chipArpOct:4,chipArpSync:8,drumLevel:0.6,drumBpm:140,revMix:0.25)
   — Hold a chord: the arpeggio counts sixty-fourths off the kit, four octaves in
   no order, a hail of notes at the drums’ tempo
 - [**ghost bassline**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipDrift:0.6,ringFrom:9,ringMix:0.85)
-  — The ring mod’s carrier is the toy a step ago, so every pair of notes writes
-  its difference underneath — a bass line nobody wrote, wobbling with a drifting
-  crystal
+  — The ring mod’s carrier is the toy a step ago, so every pair of notes sounds
+  at its difference underneath — a bass line that is not in the tune, wobbling
+  with a drifting crystal
 - [**tank at sea**](https://cmdcolin.github.io/bender/app/#set=revDecayS:20,revWarble:1,revBoing:0.7,revMix:0.8,revDry:0.6)
   — Twenty seconds of spring with every comb swinging, so the tail rolls in
   pitch like a boat
@@ -1725,7 +1707,7 @@ board on it — a link never presses play, so it is loaded and waiting.
   — The whole instrument printed to a deck running under speed, drowned in
   spring
 - [**tape stop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.6,drumLevel:0.6,drumBpm:104,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,revMix:0.2,deckInertia:1.5)
-  — A heavy platter under a running board — Varispeed is a stop lever
+  — A heavy platter under a running board — Varispeed at 0 stops the tape
 - [**dropped in the post**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumTune:0.7,drumDecay:1.6,drumKick:34952,drumSnare:0,drumClap:2056,drumThrow:8,filtHz:650,filtRes:0.8,filtPop:0.45,filtMix:1,delayMs:381,dlyFb:0.72,dlyToneHz:2500,dlySend:0,dlyLoopMode:2,dlyLoopRes:0.55,dlyMix:0.7,revDecayS:3,revKick:0.3,revMix:0.25,modLfoHz:0.12,mod0Src:1,mod0Dest:67)
   — A dub kit through a crackling filter, the last clap thrown into a dark echo
 - [**breathing echo**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.3,delayMs:330,dlyFb:1.35,wowDepthMs:1.5,dlyToneHz:3500,dlyLamp:0.8,dlyLampS:1.4,dlyMix:0.6)
@@ -1782,13 +1764,13 @@ board on it — a link never presses play, so it is loaded and waiting.
   kick, so the filter contour drops a sine two octaves on each hit
 - [**tearing sync**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.8,monoGlide:0.05,monoRange1:-1,monoRange2:-1,monoTune2:0,monoSync:1,monoSweep:24,monoMix1:0,monoMix2:1,monoMix3:0.4,monoCutoff:700,monoContour:2,monoFD:0.4,monoFS:0.3)
   — Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so
-  each note of the tune tears down through the harmonics
+  each note of the tune sweeps down through the harmonics
 
 ### Kit voices
 
-What each voice is made of, which is what _Kit_ switches away from: on the
-sampled setting the machine has struck all eight of these once through these
-same circuits and is playing the recording back.
+Each of the eight kit voices is a circuit. On the sampled _Kit_ setting, the
+machine strikes all eight once through these circuits and plays the recordings
+back.
 
 - **kick** — A bridged-T network, shocked and left to ring. It pitches down as
   it runs down, so how hard you hit it is how far it swoops.
@@ -1811,54 +1793,53 @@ same circuits and is playing the recording back.
 <details>
 <summary>43 commands</summary>
 
-| command              | what it does                                                                                                                                                                            |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`           | the app                                                                                                                                                                                 |
-| `pnpm blog:draft`    | drafts a blog post from the feat commits since the last one                                                                                                                             |
-| `pnpm build`         | typecheck and bundle                                                                                                                                                                    |
-| `pnpm ab`            | this tree against a git ref, as a paired comparison                                                                                                                                     |
-| `pnpm agent`         | drives window.bender in headless Chrome and checks what bender.listen reports                                                                                                           |
-| `pnpm agent:eval`    | runs claude -p --chrome sessions against the app, one per task, and grades the board each one leaves                                                                                    |
-| `pnpm arrive`        | opens a link in headless Chrome and checks that the board arrives, the overlay says where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url |
-| `pnpm audible`       | takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible                                        |
-| `pnpm bench`         | what the chain costs per block, stage by stage                                                                                                                                          |
-| `pnpm bend-ends`     | renders each control at both ends of its travel and writes down the ends a bend key can be heard at                                                                                     |
-| `pnpm blocks`        | the distribution — p50 to p99.9, and how many blocks went over budget                                                                                                                   |
-| `pnpm cold`          | the first seconds, before anything has tiered up                                                                                                                                        |
-| `pnpm controls`      | lists every button and select on the panel by rendered height, with `--touch` for a finger                                                                                              |
-| `pnpm cpu`           | CPU time on every Chrome thread, and the underruns Chrome counted                                                                                                                       |
-| `pnpm dash`          | re-shoots the why-sign-in card's screenshot of the signed-in home page                                                                                                                  |
-| `pnpm demos`         | writes demos.json into the README's Demos block                                                                                                                                         |
-| `pnpm reel`          | renders the showcase demos to mp3 for the landing page's Demos section                                                                                                                  |
-| `pnpm diagram`       | re-renders the README's signal path                                                                                                                                                     |
-| `pnpm features`      | rewrites docs/features.md — this file                                                                                                                                                   |
-| `pnpm guide-shots`   | re-shoots the six pictures in docs/USER-GUIDE.md                                                                                                                                        |
-| `pnpm diagram-shots` | shoots every schematic in the panel to a directory, one png each                                                                                                                        |
-| `pnpm ink`           | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                         |
-| `pnpm knife`         | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                 |
-| `pnpm panel`         | what the panel costs the browser per frame, in a real Chrome                                                                                                                            |
-| `pnpm soak`          | whether any stage gets slower the longer it runs                                                                                                                                        |
-| `pnpm spectrum`      | sweeps the same space and reports what each fault sounds like, by frequency                                                                                                             |
-| `pnpm preview`       | serves the built bundle                                                                                                                                                                 |
-| `pnpm test`          | the suite without the sixteen slowest files, with a two-second torture test that pins every feedback past unity at once, and the panel in jsdom                                         |
-| `pnpm test:full`     | the suite plus the sixteen files that take fifteen seconds or more of audio rendering; CI runs this                                                                                     |
-| `pnpm test:changed`  | only the test files that import something changed since main                                                                                                                            |
-| `pnpm check`         | lint, typecheck and the changed tests, for the edit loop                                                                                                                                |
-| `pnpm denormal`      | the DSP sweep for denormals, run on demand rather than with the suite                                                                                                                   |
-| `pnpm typecheck`     | types only                                                                                                                                                                              |
-| `pnpm sync:check`    | compare the regions shared with videoskillet                                                                                                                                            |
-| `pnpm pat`           | release: patch                                                                                                                                                                          |
-| `pnpm min`           | release: minor                                                                                                                                                                          |
-| `pnpm maj`           | release: major                                                                                                                                                                          |
-| `pnpm format`        | oxfmt, and prettier for .astro                                                                                                                                                          |
-| `pnpm prepare`       | points git at .githooks                                                                                                                                                                 |
-| `pnpm format:check`  | the same, checking only                                                                                                                                                                 |
-| `pnpm lint`          | oxlint, type-aware                                                                                                                                                                      |
-| `pnpm lint:fix`      | oxlint, fixing what it can                                                                                                                                                              |
-| `pnpm version`       | writes CHANGELOG.md for the release commit (npm runs it)                                                                                                                                |
+| command              | what it does                                                                                                                                                                           |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`           | the app                                                                                                                                                                                |
+| `pnpm blog:draft`    | drafts a blog post from the feat commits since the last one                                                                                                                            |
+| `pnpm build`         | typecheck and bundle                                                                                                                                                                   |
+| `pnpm ab`            | this tree against a git ref, as a paired comparison                                                                                                                                    |
+| `pnpm agent`         | drives window.bender in headless Chrome and checks what bender.listen reports                                                                                                          |
+| `pnpm agent:eval`    | runs claude -p --chrome sessions against the app, one per task, and grades the board each one leaves                                                                                   |
+| `pnpm arrive`        | opens a link in headless Chrome and checks that the board loads, the overlay shows where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url |
+| `pnpm audible`       | takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible                                       |
+| `pnpm bench`         | what the chain costs per block, stage by stage                                                                                                                                         |
+| `pnpm bend-ends`     | renders each control at both ends of its travel and writes down the ends a bend key can be heard at                                                                                    |
+| `pnpm blocks`        | the distribution — p50 to p99.9, and how many blocks went over budget                                                                                                                  |
+| `pnpm cold`          | the first seconds, before anything has tiered up                                                                                                                                       |
+| `pnpm controls`      | lists every button and select on the panel by rendered height, with `--touch` for a finger                                                                                             |
+| `pnpm cpu`           | CPU time on every Chrome thread, and the underruns Chrome counted                                                                                                                      |
+| `pnpm dash`          | re-shoots the why-sign-in card's screenshot of the signed-in home page                                                                                                                 |
+| `pnpm demos`         | writes demos.json into the README's Demos block                                                                                                                                        |
+| `pnpm reel`          | renders the showcase demos to mp3 for the landing page's Demos section                                                                                                                 |
+| `pnpm diagram`       | re-renders the README's signal path                                                                                                                                                    |
+| `pnpm features`      | rewrites docs/features.md — this file                                                                                                                                                  |
+| `pnpm guide-shots`   | re-shoots the six pictures in docs/USER-GUIDE.md                                                                                                                                       |
+| `pnpm diagram-shots` | shoots every schematic in the panel to a directory, one png each                                                                                                                       |
+| `pnpm ink`           | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                        |
+| `pnpm knife`         | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                |
+| `pnpm panel`         | what the panel costs the browser per frame, in a real Chrome                                                                                                                           |
+| `pnpm soak`          | whether any stage gets slower the longer it runs                                                                                                                                       |
+| `pnpm spectrum`      | sweeps every wire and fault on every bus and reports what each sounds like, by frequency                                                                                               |
+| `pnpm preview`       | serves the built bundle                                                                                                                                                                |
+| `pnpm test`          | the suite without the sixteen slowest files, with a two-second torture test that pins every feedback past unity at once, and the panel in jsdom                                        |
+| `pnpm test:full`     | the suite plus the sixteen files that take fifteen seconds or more of audio rendering; CI runs this                                                                                    |
+| `pnpm test:changed`  | only the test files that import something changed since main                                                                                                                           |
+| `pnpm check`         | lint, typecheck and the changed tests, for the edit loop                                                                                                                               |
+| `pnpm denormal`      | the DSP sweep for denormals, run on demand and outside the suite                                                                                                                       |
+| `pnpm typecheck`     | types only                                                                                                                                                                             |
+| `pnpm sync:check`    | compare the regions shared with videoskillet                                                                                                                                           |
+| `pnpm pat`           | release: patch                                                                                                                                                                         |
+| `pnpm min`           | release: minor                                                                                                                                                                         |
+| `pnpm maj`           | release: major                                                                                                                                                                         |
+| `pnpm format`        | oxfmt, and prettier for .astro                                                                                                                                                         |
+| `pnpm prepare`       | points git at .githooks                                                                                                                                                                |
+| `pnpm format:check`  | oxfmt and prettier, checking without writing                                                                                                                                           |
+| `pnpm lint`          | oxlint, type-aware                                                                                                                                                                     |
+| `pnpm lint:fix`      | oxlint, fixing what it can                                                                                                                                                             |
+| `pnpm version`       | writes CHANGELOG.md for the release commit (npm runs it)                                                                                                                               |
 
 </details>
 
-What the performance numbers mean, and which of them are trustworthy, is
-[optimizations.md](optimizations.md). How a block gets rendered at all is
-[dataflow.md](dataflow.md).
+[optimizations.md](optimizations.md) explains the performance numbers and which
+of them to trust. [dataflow.md](dataflow.md) explains how a block gets rendered.

@@ -97,7 +97,7 @@ export const MASTER_GROUPS: Group[] = [
           // hand riding the deck actually works.
           normal: 0.9,
         },
-        help: 'The capstan trimmer on the deck the whole instrument comes off. Everything on the board is printed to it — the tape machine and the output limiter included — and this is the speed you are hearing that printing played back at: pitch, tempo, every envelope, every delay time and every reverb tail stretch together, and nothing upstream knows it is running slow. A wire from the bay lands here too, so one LFO wobbles the whole board at once. At the stop the deck stops.',
+        help: 'The capstan trimmer on the deck the whole instrument comes off. Everything on the board is printed to it — the tape machine and the output limiter included — and this is the speed you are hearing that printing played back at: pitch, tempo, every envelope, every delay time and every reverb tail stretch together, and the stages upstream are unaffected. A wire from the bay lands here too, so one LFO wobbles the whole board at once. At the stop the deck stops.',
       },
       {
         key: 'deckInertia',
@@ -107,7 +107,7 @@ export const MASTER_GROUPS: Group[] = [
         step: 0.01,
         unit: 's',
         curve: 'log',
-        help: 'How much weight the deck’s motor carries. Varispeed says where the trimmer is set; this is how long the platter takes to arrive, so winding the knob to the stop is a tape stop that runs down over that long and letting it back up is a spin-up rather than a cut.',
+        help: 'How much weight the deck’s motor has. Varispeed sets the trimmer; this is how long the platter takes to reach that speed, so winding the knob to the stop is a tape stop that runs down over that long and letting it back up is a spin-up rather than a cut.',
       },
     ],
   },
@@ -125,7 +125,7 @@ export const MASTER_GROUPS: Group[] = [
         step: 0.1,
         unit: 'ms',
         curve: 'log',
-        help: 'The decoupling cap on the oscillator, as the time it averages the rail over. It decides which sags the timebase notices: at the stock 120 ms a chord sags without the beat stumbling. Scrape it off and every note trips the tune.',
+        help: 'The decoupling cap on the oscillator, as the time it averages the rail over. It sets which sags move the timebase: at the stock 120 ms a chord sags without the beat stumbling. Scrape it off and every note trips the tune.',
       },
       {
         key: 'chipDragOct',
@@ -171,7 +171,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the board’s own temperature drags its thresholds. It climbs over a minute off whatever you are making it dissipate: the rail holds less, the watchdog trips sooner, the capstan wanders further. Nothing reads it out.',
+        help: 'How far the board’s own temperature drags its thresholds. It climbs over a minute off whatever you are making it dissipate: the rail holds less, the watchdog trips sooner, the capstan wanders further. It has no readout.',
       },
       {
         key: 'faultCluster',
@@ -207,7 +207,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin. Every bend keeps the values you gave it — the order and the routing are what move. The one roll that changes topology rather than numbers.',
+        help: 'How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin. Every bend keeps the values you gave it — the order and the routing move. The one roll that changes topology.',
       },
     ],
   },

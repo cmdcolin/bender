@@ -31,7 +31,7 @@ export const ORDER_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['—', ...BENDS.map(b => b.label)],
-        help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one. The pedals downstream order themselves too, but they are not this: six boxes that are always all on the board, where these are six sockets seven bends compete for.',
+        help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one. The pedals downstream have their own order control: six boxes that are always all on the board, where these are six sockets that seven bends compete for.',
       })),
       {
         key: 'pedalOrder',
@@ -41,7 +41,7 @@ export const ORDER_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: PEDAL_ORDER_NAMES,
-        help: 'What order the signal meets the six pedals in. It matters most where one of them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb into fuzz is the room itself distorting. Unlike the bends upstream, all six are always on the board — a pedal comes out of the path on its own mix, not by leaving the order.',
+        help: 'What order the signal meets the six pedals in. It matters most where one of them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb into fuzz is the room itself distorting. Unlike the bends upstream, all six are always on the board — a pedal comes out of the path when its mix is at zero.',
       },
     ],
   },

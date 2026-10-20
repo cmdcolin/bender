@@ -75,7 +75,7 @@ export const MIX_GROUPS: Group[] = [
         max: 24,
         step: 0.5,
         unit: 'dB',
-        help: 'The summing amp the seven sources meet in. At unity it is a wire, so nothing happens here until you move it. Wound up it is the one saturation ahead of the bends, so the whole board arrives at them driven together — and whatever is loudest is what ducks the rest.',
+        help: 'The summing amp the seven sources meet in. At unity it is a wire, so nothing happens here until you move it. Wound up it is the one saturation ahead of the bends, so the whole board arrives at them driven together — and whatever is loudest ducks the rest.',
       },
     ],
   },

@@ -35,7 +35,7 @@ function track(k: Track): SliderDef[] {
       step: 1,
       unit: '',
       choices: ['tape', 'board', 'mic', 'aux'],
-      help: `What channel ${k} hears. Tape is loop ${k}’s own playback, so recording puts it back on itself through the strip; board is the whole board’s output, a block behind; mic is the microphone; aux is the desk’s own aux return, which with this channel’s aux send up is a mixer with nothing plugged into it.`,
+      help: `The source of channel ${k}. Tape is loop ${k}’s playback, so recording puts it back on itself through the strip; board is the whole board’s output, a block behind; mic is the microphone; aux is the desk’s aux return, which with this channel’s aux send up is a mixer with nothing plugged into it.`,
     },
     {
       key: `four${k}Trim` as const,
@@ -241,7 +241,7 @@ export const FOUR_TRACK_GROUP: Group = {
       max: 15,
       step: 0.5,
       unit: 'dB',
-      help: 'How hard the record heads hit the oxide. A tone at the line-up level comes back the level it went in at wherever this sits; what the knob changes is how much the tape squashes and blooms on the way.',
+      help: 'How hard the record heads hit the oxide. A tone at the line-up level comes back the level it went in at wherever this sits; the knob changes how much the tape squashes and blooms on the way.',
     },
     {
       key: 'fourHiss',
