@@ -21,10 +21,10 @@ const openKeyboard = () => {
   return view
 }
 
-// The drawing's memory box holds the roll.
+// The drawing's piano roll box holds the roll.
 const openMemory = () => {
-  if (!screen.queryByRole('region', { name: 'memory' }))
-    fireEvent.click(screen.getByRole('button', { name: 'memory controls' }))
+  if (!screen.queryByRole('region', { name: 'piano roll' }))
+    fireEvent.click(screen.getByRole('button', { name: 'piano roll controls' }))
 }
 
 const cell = (name: string) => screen.getByRole('button', { name })

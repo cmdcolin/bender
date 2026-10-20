@@ -49,7 +49,7 @@ const GROUP = GROUPS.find(g => g.name === 'Plinky')!
 const BUS = 'knife on the bus'
 const DIE = 'inside the die'
 const KEYBOARD = 'keyboard'
-const MEMORY = 'memory'
+const ROLL = 'piano roll'
 
 const BUS_KEYS = partKeys('Plinky', BUS)
 
@@ -204,9 +204,9 @@ function ClockTag({ x, y, pick }: { x: number; y: number; pick: BoxPick }) {
 
 // The parts of the toy chip the pin bends reach. The key matrix and the tune ROM
 // strike the voices, each voice's envelope sets its level, and the output pin
-// carries every voice off the chip. The melody memory rides the ROM's bus and
-// opens the piano roll. One clock times the voices, the scan counter and the
-// PWM carrier. Bends that are on show as the keys under the drawing.
+// carries every voice off the chip. The piano roll writes a melody memory on
+// the ROM's bus. One clock times the voices, the scan counter and the PWM
+// carrier. Bends that are on show as the keys under the drawing.
 export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
   const own = useReadings(BOX_KEYS)
@@ -263,10 +263,10 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
     h: BOX_H,
   }
   const memory: ChipBox = {
-    name: MEMORY,
+    name: ROLL,
     x: rom.x + rom.w + MEMORY_GAP,
     y: TOP,
-    w: glyphBoxWidth(MEMORY, ROLL_GLYPH_W),
+    w: glyphBoxWidth(ROLL, ROLL_GLYPH_W),
     h: BOX_H,
   }
   const memoryDrop = memory.x + 12
@@ -385,8 +385,8 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
               {...memory}
               help="the song the chip plays, and your own melody on a piano roll"
               lit={written}
-              selected={pick.selected === MEMORY}
-              onSelect={() => pick.toggle(MEMORY)}
+              selected={pick.selected === ROLL}
+              onSelect={() => pick.toggle(ROLL)}
               glyphW={ROLL_GLYPH_W}
               glyph={rollGlyph}
             />
@@ -421,7 +421,7 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
           {open === 'bus' && zoom?.(BUS)}
           {open === KEYBOARD ? (
             <BoxRows title={open} keys={KEYBOARD_KEYS} />
-          ) : open === MEMORY ? (
+          ) : open === ROLL ? (
             <BoxRows
               title={open}
               keys={MEMORY_KEYS}

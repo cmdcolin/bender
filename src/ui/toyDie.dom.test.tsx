@@ -174,15 +174,15 @@ test('the stage draws no folds and no rows outside the drawing', () => {
   expect(screen.queryByText('Level')).toBeNull()
 })
 
-test('the memory box holds the tune picker and the piano roll', () => {
+test('the piano roll box holds the tune picker and the piano roll', () => {
   open()
   expect(screen.queryByRole('button', { name: 'show piano roll' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'keyboard controls' }))
   expect(screen.queryByText('Tune')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'memory controls' }))
+  fireEvent.click(screen.getByRole('button', { name: 'piano roll controls' }))
   expect(screen.getByText('Tune')).not.toBeNull()
   expect(screen.getByRole('button', { name: 'C4 step 1' })).not.toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'memory controls' }))
+  fireEvent.click(screen.getByRole('button', { name: 'piano roll controls' }))
 })
 
 test('the bend spot row opens from the boxes it solders to', () => {

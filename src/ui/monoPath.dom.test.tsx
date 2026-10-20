@@ -39,14 +39,14 @@ test('each box opens its fold’s rows, drawn once', () => {
   expect(screen.getAllByText('Cutoff')).toHaveLength(1)
 })
 
-test('the memory box opens the melody rows and the piano roll', () => {
+test('the piano roll box opens the melody rows and the piano roll', () => {
   open()
   expect(screen.queryByText('melody')).toBeNull()
   expect(screen.queryByRole('button', { name: 'show piano roll' })).toBeNull()
-  press('memory')
+  press('piano roll')
   expect(screen.getAllByText('Plays on')).toHaveLength(1)
   expect(screen.getByRole('button', { name: 'C4 step 1' })).not.toBeNull()
-  press('memory')
+  press('piano roll')
 })
 
 test('the sync wire lights once Sync is on', () => {

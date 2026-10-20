@@ -71,7 +71,7 @@ const PARTS = new Map<string, string>(
   Object.entries(BOXES).map(([id, b]) => [id, b.part]),
 )
 
-const MEMORY = 'memory'
+const ROLL = 'piano roll'
 const MEMORY_KEYS = keysOf('melody')
 const WRITTEN_KEYS: ControlKey[] = [
   ...MEMORY_KEYS,
@@ -114,7 +114,7 @@ const HEIGHT = ROW2 + BOX_H + 4
 // three oscillators, the mixer sums them with noise and the output fed back,
 // and the ladder filter and the VCA follow, each with its own contour. Osc 3 or
 // noise feeds the modulation bus, back to the oscillators and the cutoff. The
-// melody memory under the keys opens the piano roll.
+// piano roll under the keys holds the melody memory.
 export function MonoPathDiagram({
   verbs,
   zoom,
@@ -163,7 +163,7 @@ export function MonoPathDiagram({
   const memory = {
     x: 0,
     y: ROW2,
-    w: glyphBoxWidth(MEMORY, ROLL_GLYPH_W),
+    w: glyphBoxWidth(ROLL, ROLL_GLYPH_W),
     h: BOX_H,
   }
   const playsHere = up('monoSeqOn') && r.value('monoSeqTo') === 0
@@ -174,7 +174,7 @@ export function MonoPathDiagram({
     { id: 'sync', keys: ['monoSync'] as const },
     { id: 'FM', keys: ['monoFm'] as const },
   ]
-  const memoryOpen = pick.selected === MEMORY
+  const rollOpen = pick.selected === ROLL
   const drawn = [...boxes, oscs].find(b => b.id === pick.selected)
   const open = drawn ?? words.find(w => w.id === pick.selected)
   const part = open && PARTS.get(open.id!)
@@ -360,21 +360,21 @@ export function MonoPathDiagram({
             ))}
             <GlyphBox
               {...memory}
-              name={MEMORY}
+              name={ROLL}
               help="the second melody memory and its piano roll, and which machine it plays"
               lit={r.touched(...WRITTEN_KEYS)}
-              selected={memoryOpen}
-              onSelect={() => pick.toggle(MEMORY)}
+              selected={rollOpen}
+              onSelect={() => pick.toggle(ROLL)}
               glyphW={ROLL_GLYPH_W}
               glyph={rollGlyph}
             />
           </>
         )}
       </ChipDrawing>
-      {memoryOpen && (
-        <OpenBox name={MEMORY} onHide={() => pick.toggle(MEMORY)}>
+      {rollOpen && (
+        <OpenBox name={ROLL} onHide={() => pick.toggle(ROLL)}>
           <BoxRows
-            title={MEMORY}
+            title={ROLL}
             keys={MEMORY_KEYS}
             inOrder
             verbs={verbs('melody')}
