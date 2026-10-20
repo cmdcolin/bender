@@ -364,6 +364,10 @@ export const PARAM_DEFS = [
   ['pcmDataLine', 'step'],
   ['pcmDataFault', 'step'],
   ['pcmBusCut', 'slew'],
+  ['pcmRunOn', 'slew'],
+  ['pcmWrite', 'slew'],
+  ['pcmSignDir', 'slew'],
+  ['pcmLatch', 'slew'],
 
   ['monoLevel', 'slew'],
   ['monoMute', 'ramp'],

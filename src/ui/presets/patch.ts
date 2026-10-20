@@ -167,6 +167,10 @@ const LANDINGS: Landing[] = [
   at('toy voice XOR', ['chipLevel']),
   at('toy envelope bits', ['chipLevel']),
   at('toy duty on envelope', ['chipLevel']),
+  at('keys loop overrun', ['pcmLevel']),
+  at('keys write strobe', ['pcmLevel']),
+  at('keys sign on up/down', ['pcmLevel']),
+  at('keys shared latch', ['pcmLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

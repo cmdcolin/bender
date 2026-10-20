@@ -4,6 +4,7 @@ import { Bus, FAULT_NAMES } from '../bus.ts'
 import { DEST, hop } from '../modbus.ts'
 import { KEY_BIAS, SEQ_TO_PCM, voiceMask } from '../trigbus.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
+import { mulberry32 } from '../util/rng.ts'
 import {
   buildPcmRom,
   CHORDS,
@@ -22,25 +23,6 @@ import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { ToyRail } from '../toyRail.ts'
 import type { Sampler } from './sampler.ts'
 
-// The third machine on the rail: the eight-bit home keyboard, and the only one
-// on this board that makes pads, strings, choirs and bells.
-//
-// There is no oscillator in it. There is a ROM holding one short recording of
-// each voice and a counter walking that ROM at whatever rate the note asks for,
-// and that is the whole architecture — which is also why it is the most bent
-// instrument ever built. The counter is an address bus and the ROM answers on a
-// data bus, so both halves of the thing are wires a knife can reach. A data
-// line held high fills in the quiet part of every word, and that is the sound
-// on every circuit-bent record anybody has made.
-//
-// Two things about the clock are as much of the sound as the ROM is. It was cut
-// at a fifth of the board's rate and nothing interpolates on the way out, so
-// every voice comes back with its own images sitting over it — the grit is the
-// part rather than an effect on it. And the rate is a twelve-bit *divider*, so
-// what comes out is the nearest number the counter can be told rather than the
-// note: dead in tune at the bottom of the keyboard and a few cents sharp at the
-// top, exactly as the part was.
-
 const N_VOICES = 4
 
 const IDLE = 0
@@ -51,9 +33,6 @@ const RELEASE = 4
 
 const ENV_FLOOR = 0.0005
 
-// The four shapes behind the four buttons. `sustain` is where the decay stops
-// and whether it stops at all: a piano's does not, so the loop only ever sounds
-// underneath a fall that is already on its way to nothing.
 const ENV_SHAPE = [
   { attack: 0.004, decay: 1.7, sustain: 0 },
   { attack: 0.012, decay: 0.12, sustain: 0.85 },
@@ -61,9 +40,6 @@ const ENV_SHAPE = [
   { attack: 0.002, decay: 3.6, sustain: 0 },
 ]
 
-// The one LFO on the die. No rate register, no depth register and no way to
-// stop it — the button picks whether a voice is wired to it and whether that
-// wire waits, and that is the whole of the vibrato circuit.
 const VIB_HZ = 6.2
 const VIB_CENTS = 14
 const VIB_DELAY = 0.45
@@ -72,40 +48,42 @@ const VIB_FACTOR = Float64Array.from({ length: VIB_STEPS }, (_, i) =>
   Math.pow(2, (VIB_CENTS * Math.sin((2 * Math.PI * i) / VIB_STEPS)) / 1200),
 )
 
-/** The DAC's word, which is the ROM's word: eight bits and no more. */
 const DAC_STEPS = 128
-
-/** One voice against the one output stage the four of them share. */
 const VOICE_GAIN = 0.38
-
-/** And the trim between that stage and the mix bus. */
 const OUT_TRIM = 0.8
 
-/** Which way a stale bit falls on each of the two buses. */
 const ADDR_SEED = 0x39
 const DATA_SEED = 0x8e
+const FAULT_SEED = 0x5a1
+
+const LATCH_KEEPS = 5
+
+const SAMPLE_WORDS = Math.round(SAMPLE_SECS * ROM_HZ)
 
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 
+const knob = (base: number, lane: Float32Array | null, i: number) =>
+  clamp01(lane ? base + lane[i]! : base)
+
+const bitsFor = (len: number) => Math.max(1, Math.ceil(Math.log2(len)))
+
 interface Voice {
-  /** what this voice plays, which a chord makes different from the key */
   note: number
-  /** the key that struck it, so letting that key go lets the voicing go */
   root: number
   pos: number
-  /** ROM words an output sample, before the rail and the clock knob */
   inc: number
   reg: number
   env: number
   stage: number
   started: number
-  /** samples since the strike, which is all the delayed vibrato needs */
   age: number
-  /** whether a hand is still on it. A gate edge is not, so it lets go at once */
   held: boolean
-  /** struck off the toy's gate, so the toy's key-up is the one that ends it */
   gated: boolean
   gain: number
+  dir: number
+  runOn: boolean
+  low: boolean
+  at: number
 }
 
 const newVoice = (): Voice => ({
@@ -121,7 +99,23 @@ const newVoice = (): Voice => ({
   held: false,
   gated: false,
   gain: 1,
+  dir: 1,
+  runOn: false,
+  low: false,
+  at: 0,
 })
+
+function flatten(rom: { data: Int8Array }[]) {
+  const flat = new Int8Array(rom.reduce((n, w) => n + w.data.length, 0))
+  const base: number[] = []
+  let at = 0
+  for (const w of rom) {
+    base.push(at)
+    flat.set(w.data, at)
+    at += w.data.length
+  }
+  return { flat, base }
+}
 
 export class PcmKeys implements Stage {
   label = 'pcmKeys'
@@ -134,12 +128,18 @@ export class PcmKeys implements Stage {
   private lastReboot = 0
   private queued: { note: number; gain: number; held: boolean }[] = []
 
-  // What the address counter is walking this block: the ROM's own words, or the
-  // sample memory — which is not an array here at all. It is the sampler's
-  // reel, read a fifth as often and squared off to eight bits on the way past.
-  private romData: Int8Array | null = null
+  private flat: Int8Array
+  private romBase: number[]
+  private romRam: Int8Array
+  private sampleRam = new Int8Array(SAMPLE_WORDS)
+  private ramFor: unknown = null
+
+  private mem: Int8Array | null = null
   private mono: Float32Array | null = null
+  private base = 0
+  private memLen = 0
   private romLen = 0
+  private romBits = 1
   private loopStart = 0
   private loopEnd = 0
   private decim: number
@@ -151,6 +151,10 @@ export class PcmKeys implements Stage {
   private dataLine = -1
   private dataFault = 0
   private busCut = 1
+
+  private rng = mulberry32(FAULT_SEED)
+  private latched = 0
+  private keepMask = -1
 
   private vibPhase = 0
   private vibFactor = 1
@@ -172,28 +176,28 @@ export class PcmKeys implements Stage {
     this.rail = rail
     this.sampler = sampler
     this.decim = sr / ROM_HZ
+    const { flat, base } = flatten(this.rom)
+    this.flat = flat
+    this.romBase = base
+    this.romRam = new Int8Array(flat.length)
   }
 
   when(p: Float32Array) {
     return p[IDX.pcmLevel]! > 0
   }
 
-  /** A key going down, from the bed drawn under the toy's or off a controller.
-      A hand is a hand, so nothing here decides a length. */
+  /** A key going down, from the bed drawn under the toy's or off a controller. */
   noteOn(note: number, gain = 1) {
     if (this.queued.length >= N_VOICES) this.queued.shift()
     this.queued.push({ note, gain, held: true })
   }
 
-  // A key that came up before its block began lands as an edge, so it still
-  // sounds and lets go of itself.
   noteOff(note: number) {
     for (const q of this.queued) if (q.note === note) q.held = false
     this.release(note, false)
   }
 
-  /** The toy's key coming up. It ends only what the gate struck, so it still
-      reaches a note held across a cut jumper and never one on these keys. */
+  /** The toy's key coming up. It ends only what the gate struck. */
   gateOff(note: number) {
     this.release(note, true)
   }
@@ -212,9 +216,6 @@ export class PcmKeys implements Stage {
     return n
   }
 
-  // Which voice takes a note. The same note again keeps its own voice, an idle
-  // one is free, and a full part gives up whatever went down first — four
-  // voices with a chord button on them means the part is always nearly full.
   private pick(note: number): Voice {
     for (const v of this.voices) {
       if (v.note === note && v.stage !== IDLE) return v
@@ -243,15 +244,13 @@ export class PcmKeys implements Stage {
     v.pos = 0
     v.env = 0
     v.stage = ATTACK
+    v.dir = 1
+    v.runOn = false
+    v.low = false
     v.reg = rateReg(noteHz(note))
-    // The counter's step, straight off the register rather than off the note
-    // that was asked for, which is where the sharp top octave comes from.
     v.inc = (ROM_PER_CYCLE * regHz(v.reg)) / this.sr
   }
 
-  // One key, and whatever the chord button puts under it. A four-note voicing
-  // is the whole part, and that is not the panel being mean: the chip has four
-  // voices and the button has no way to ask for a fifth.
   private strike(
     note: number,
     gain: number,
@@ -265,28 +264,31 @@ export class PcmKeys implements Stage {
     }
   }
 
-  // The word at one address. Both buses are in the path and neither is in it on
-  // a board nobody has been at, so an unbent chip reads the ROM as an array and
-  // pays for nothing it is not using.
-  private word(i: number): number {
-    if (this.romData) return this.romData[i]! + DAC_STEPS
-    const v = this.mono![Math.round(i * this.decim)] ?? 0
+  private word(at: number): number {
+    if (this.mem) return this.mem[at]! + DAC_STEPS
+    const v = this.mono![Math.round(at * this.decim)] ?? 0
     const q = Math.round(v * (DAC_STEPS - 1))
     return (q < -127 ? -127 : q > 127 ? 127 : q) + DAC_STEPS
   }
 
-  private read(pos: number): number {
-    let a = pos | 0
+  private read(v: Voice): number {
+    let a = v.pos | 0
+    if (this.keepMask !== -1) {
+      const own = a
+      a = (a & this.keepMask) | (this.latched & ~this.keepMask)
+      this.latched = own
+    }
     if (this.addrLine >= 0) {
       a = this.addrBus.read(a, this.addrLine, this.addrFault, this.busCut)
-      // A line held high addresses past the end of a part that never had one:
-      // the counter is wider than the memory it is walking, so what comes back
-      // is the same words again from underneath. It folds rather than stops.
-      a %= this.romLen
     }
-    if (this.dataLine < 0) return (this.word(a) - DAC_STEPS) / DAC_STEPS
+    const lim = v.runOn ? this.memLen : this.romLen
+    if (a >= lim) a %= lim
+    let at = this.base + a
+    if (at >= this.memLen) at -= this.memLen
+    v.at = at
+    if (this.dataLine < 0) return (this.word(at) - DAC_STEPS) / DAC_STEPS
     const d = this.dataBus.read(
-      this.word(a),
+      this.word(at),
       this.dataLine,
       this.dataFault,
       this.busCut,
@@ -305,8 +307,6 @@ export class PcmKeys implements Stage {
         break
       case DECAY:
         v.env *= this.decayCoef
-        // A key nobody is holding never reaches the sustain: a gate is an edge,
-        // and an edge has let go of the key before the attack is even over.
         if (v.env <= this.decayTo) {
           v.stage = v.held && this.sustainAt > 0 ? SUSTAIN : RELEASE
         }
@@ -324,42 +324,48 @@ export class PcmKeys implements Stage {
     }
   }
 
-  // Which memory the counter walks, settled once a block. The wave ROM was cut
-  // when the chip was built; the sample memory is whatever is threaded on the
-  // sampler, and its loop is the two markers on that reel — so dropping a file
-  // on the page and pressing a key is the whole of what this keyboard is
-  // famous for.
-  private selectVoice(voice: number, p: Float32Array): boolean {
+  private selectVoice(voice: number, p: Float32Array, writing: boolean) {
     if (voice !== SAMPLED) {
       const wave = this.rom[voice] ?? this.rom[0]!
-      this.romData = wave.data
+      if (writing && this.ramFor !== this.flat) {
+        this.romRam.set(this.flat)
+        this.ramFor = this.flat
+      }
+      this.mem = writing ? this.romRam : this.flat
       this.mono = null
+      this.base = this.romBase[voice] ?? 0
+      this.memLen = this.flat.length
       this.romLen = wave.data.length
+      this.romBits = bitsFor(this.romLen)
       this.loopStart = wave.loopStart
       this.loopEnd = wave.loopEnd
       return true
     }
     const mono = this.sampler.mono
-    // A second and a half is what the memory holds, and past that the part
-    // never recorded anything — so the markers stop where the memory does.
     const len = mono
-      ? Math.min(
-          Math.round(SAMPLE_SECS * ROM_HZ),
-          Math.floor(mono.length / this.decim),
-        )
+      ? Math.min(SAMPLE_WORDS, Math.floor(mono.length / this.decim))
       : 0
     if (!mono || len < 4) {
-      this.romData = null
+      this.mem = null
       this.mono = null
       return false
+    }
+    if (writing && this.ramFor !== mono) {
+      this.mono = mono
+      this.mem = null
+      for (let i = 0; i < len; i++) this.sampleRam[i] = this.word(i) - DAC_STEPS
+      this.ramFor = mono
     }
     const at = (frac: number) =>
       Math.min(Math.max(Math.round((frac * mono.length) / this.decim), 0), len)
     const lo = at(Math.min(p[IDX.loopIn]!, p[IDX.loopOut]!))
     const hi = at(Math.max(p[IDX.loopIn]!, p[IDX.loopOut]!))
-    this.romData = null
+    this.mem = writing ? this.sampleRam : null
     this.mono = mono
+    this.base = 0
+    this.memLen = len
     this.romLen = len
+    this.romBits = bitsFor(len)
     this.loopStart = Math.min(lo, len - 2)
     this.loopEnd = Math.max(hi, this.loopStart + 2)
     return true
@@ -368,8 +374,6 @@ export class PcmKeys implements Stage {
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.pcmLevel]!
     const rail = this.rail
-    // A reboot is not a note ending — it is the chip losing power in the middle
-    // of one, so what was down comes back up with nothing on it.
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
       for (const v of this.voices) {
@@ -377,6 +381,7 @@ export class PcmKeys implements Stage {
         v.env = 0
       }
       this.queued.length = 0
+      this.ramFor = null
     }
 
     const bay = ctx.mod
@@ -398,15 +403,24 @@ export class PcmKeys implements Stage {
     )
     this.busCut = clamp01(p[IDX.pcmBusCut]!)
 
+    const runOnBase = p[IDX.pcmRunOn]!
+    const writeBase = p[IDX.pcmWrite]!
+    const signBase = p[IDX.pcmSignDir]!
+    const latchBase = p[IDX.pcmLatch]!
+    const modRunOn = bay.read(DEST.pcmRunOn)
+    const modWrite = bay.read(DEST.pcmWrite)
+    const modSign = bay.read(DEST.pcmSignDir)
+    const modLatch = bay.read(DEST.pcmLatch)
+    const writing = writeBase > 0 || modWrite !== null
+    if (!writing) this.ramFor = null
+
     const chord = Math.round(p[IDX.pcmChord]!)
     const vibrato = Math.round(p[IDX.pcmVibrato]!)
     const gateOn = p[IDX.pcmKeyGate]! < 0.5
     const sings = Math.round(p[IDX.monoSeqTo]!) === SEQ_TO_PCM
     const drumMask = voiceMask(Math.round(p[IDX.pcmStruck]!))
-    const loaded = this.selectVoice(Math.round(p[IDX.pcmVoice]!), p)
+    const loaded = this.selectVoice(Math.round(p[IDX.pcmVoice]!), p, writing)
 
-    // Every rate on this chip counts off the divider the pitch does, so a
-    // starving rail stretches the envelopes along with the notes.
     const scale = Math.max(rail.clockFactor, 0.05)
     const shape = ENV_SHAPE[Math.round(p[IDX.pcmEnv]!)] ?? ENV_SHAPE[0]!
     this.attackCoef = 1 - Math.exp(-1 / ((shape.attack / scale) * this.sr))
@@ -420,12 +434,11 @@ export class PcmKeys implements Stage {
     const clock = scale * p[IDX.pcmClockX]!
     const amp = rail.ampFactor * level * OUT_TRIM
 
-    // The keys, before the block: a hand is holding them, so they land with the
-    // voice this block is about to run rather than the one the last one left.
     for (const q of this.queued) this.strike(q.note, q.gain, q.held, chord)
     this.queued.length = 0
 
     const span = this.loopEnd - this.loopStart
+    const voices = this.voices
     let load = 0
 
     for (let i = 0; i < io.n; i++) {
@@ -433,9 +446,6 @@ export class PcmKeys implements Stage {
       while (this.vibPhase >= VIB_STEPS) this.vibPhase -= VIB_STEPS
       this.vibFactor = vibrato > 0 ? VIB_FACTOR[this.vibPhase | 0]! : 1
 
-      // The toy's gate line, which is every note anything on this board strikes.
-      // Somebody soldered it onto this keyboard's key input the way they did the
-      // FM chip's, so out of the box the demo song plays the strings.
       const struck = gateOn ? ctx.trig.key[i]! : 0
       if (struck !== 0) {
         this.strike(struck - KEY_BIAS, 1, ctx.trig.keyHeld[i]! > 0, chord, true)
@@ -443,9 +453,6 @@ export class PcmKeys implements Stage {
       const sung = sings ? ctx.trig.seqKey[i]! : 0
       if (sung !== 0) this.strike(sung - KEY_BIAS, 1, false, chord, true)
 
-      // And the kit's own lines, for whoever clipped them on here. A trigger
-      // carries a strike and nothing else, so the note is the one the keyboard
-      // last played — a drum pattern rekeying whatever chord you left standing.
       if (drumMask !== 0) {
         const bits = Math.round(ctx.trig.drumBits[i]!) & drumMask
         if (bits !== 0) {
@@ -456,25 +463,59 @@ export class PcmKeys implements Stage {
 
       if (!loaded) continue
 
+      const runOn = knob(runOnBase, modRunOn, i) ** 2
+      const flip = knob(signBase, modSign, i) ** 2
+      const latch = knob(latchBase, modLatch, i)
+      this.keepMask =
+        latch > 0
+          ? (1 <<
+              (this.romBits -
+                Math.ceil(latch * (this.romBits - LATCH_KEEPS)))) -
+            1
+          : -1
+
       let sum = 0
-      for (const v of this.voices) {
+      let raw = 0
+      for (const v of voices) {
         if (v.stage === IDLE) continue
         this.stepEnv(v)
         v.age++
-        // Delayed is the same LFO behind a wire that waits: the chip has one
-        // oscillator, and the button decides when a voice starts listening.
         const depth =
           vibrato === 2 ? Math.min(v.age / vibDelay, 1) : vibrato > 0 ? 1 : 0
-        v.pos += v.inc * clock * (1 + (this.vibFactor - 1) * depth)
-        if (v.pos >= this.loopEnd) {
-          v.pos = this.loopStart + ((v.pos - this.loopStart) % span)
+        if (flip === 0) v.dir = 1
+        v.pos += v.inc * clock * (1 + (this.vibFactor - 1) * depth) * v.dir
+        if (v.pos < this.loopStart && v.dir < 0) v.pos += span
+        if (v.pos >= this.loopEnd && !v.runOn) {
+          if (runOn > 0 && this.rng() < runOn) v.runOn = true
+          else v.pos = this.loopStart + ((v.pos - this.loopStart) % span)
         }
-        sum += this.read(v.pos) * v.env * v.gain * VOICE_GAIN
+        if (v.runOn && v.pos >= this.memLen) {
+          v.pos -= this.memLen
+          v.runOn = false
+        }
+        const s = this.read(v)
+        if (flip > 0) {
+          const low = s < 0
+          if (v.low && !low && v.pos >= this.loopStart && this.rng() < flip)
+            v.dir = -v.dir
+          v.low = low
+        }
+        raw += s
+        sum += s * v.env * v.gain * VOICE_GAIN
       }
 
-      // One output stage for four voices, eight bits wide, with the
-      // reconstruction filter behind it: two poles and no more, which is why a
-      // part cut at a fifth of the rate sounds like this rather than clean.
+      if (this.mem && this.ramFor !== null) {
+        const chance = knob(writeBase, modWrite, i) ** 2
+        if (chance > 0) {
+          const q = Math.round(
+            (raw < -1 ? -1 : raw > 1 ? 1 : raw) * (DAC_STEPS - 1),
+          )
+          for (const v of voices) {
+            if (v.stage !== IDLE && this.rng() < chance) this.mem[v.at] = q
+          }
+        }
+      }
+
       const railed = sum < -1 ? -1 : sum > 1 ? 1 : sum
       const word = Math.round(railed * DAC_STEPS) / DAC_STEPS
       const out =
@@ -483,8 +524,6 @@ export class PcmKeys implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
-    // Three chips on one supply are three chips' worth of current: the kit
-    // writes this first and the other two add to it.
     rail.reported += load / io.n
   }
 
@@ -493,6 +532,8 @@ export class PcmKeys implements Stage {
       v.stage = IDLE
       v.env = 0
       v.pos = 0
+      v.dir = 1
+      v.runOn = false
     }
     this.queued.length = 0
     this.clock = 0
@@ -503,5 +544,8 @@ export class PcmKeys implements Stage {
     this.toneB.reset()
     this.addrBus.reset()
     this.dataBus.reset()
+    this.rng = mulberry32(FAULT_SEED)
+    this.latched = 0
+    this.ramFor = null
   }
 }

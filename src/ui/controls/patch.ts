@@ -193,6 +193,10 @@ export const PATCH_GROUPS: Group[] = [
             'toy voice XOR',
             'toy envelope bits',
             'toy duty on envelope',
+            'keys loop overrun',
+            'keys write strobe',
+            'keys sign on up/down',
+            'keys shared latch',
           ],
           groups: [
             {
@@ -287,6 +291,10 @@ export const PATCH_GROUPS: Group[] = [
                 'keys addr fault',
                 'keys data line',
                 'keys data fault',
+                'keys loop overrun',
+                'keys write strobe',
+                'keys sign on up/down',
+                'keys shared latch',
               ],
             },
             {

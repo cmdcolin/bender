@@ -275,6 +275,10 @@ test('nothing on the keyboard can be made to put out something that is not a num
     'pcmDataLine',
     'pcmDataFault',
     'pcmBusCut',
+    'pcmRunOn',
+    'pcmWrite',
+    'pcmSignDir',
+    'pcmLatch',
   ]
   for (const key of knobs) {
     for (const at of [0, 0.5, 1]) {
@@ -288,4 +292,57 @@ test('nothing on the keyboard can be made to put out something that is not a num
       expect(x.every(Number.isFinite), `${key} at ${at}`).toBe(true)
     }
   }
+})
+
+const differs = (a: Float32Array, b: Float32Array) =>
+  rms(a.map((v, i) => v - b[i]!)) / rms(a)
+
+test('an overrunning loop runs on through the rest of the ROM', () => {
+  const plain = tail(held({}, 12, 1.5), 0.6)
+  const overrun = tail(held({ pcmRunOn: 1 }, 12, 1.5), 0.6)
+  expect(differs(plain, overrun)).toBeGreaterThan(0.3)
+  expect(rms(overrun)).toBeGreaterThan(0.01)
+})
+
+test('the write strobe rewrites a chord, and clean memory comes back at zero', () => {
+  const chord = { pcmChord: 1, pcmEnv: ORGAN }
+  const run = (write: number) =>
+    play({ ...ALONE, ...chord, pcmWrite: write }, 0.6, b =>
+      b.pcmKeys.noteOn(12),
+    )
+  const plain = run(0)
+  const written = run(1)
+  expect(differs(tail(plain.out, 0.3), tail(written.out, 0.3))).toBeGreaterThan(
+    0.05,
+  )
+  const p = packParams({ ...DEFAULT_CONTROLS, ...ALONE, ...chord })
+  const io = makeIo()
+  const after = (b: BuiltChain) => {
+    b.chain.process(io, p)
+    return io.l.slice(0, BLOCK)
+  }
+  for (let b = 0; b < 40; b++) after(written.built)
+  const healed = after(written.built)
+  for (let b = 0; b < 40; b++) after(plain.built)
+  const clean = after(plain.built)
+  expect(
+    Math.max(...healed.map((v, i) => Math.abs(v - clean[i]!))),
+  ).toBeLessThan(0.01)
+})
+
+test('the sign bit on the up/down pin rocks a voice back and forth', () => {
+  const plain = tail(held({}, 12, 0.6), 0.3)
+  const rocked = tail(held({ pcmSignDir: 1 }, 12, 0.6), 0.3)
+  expect(differs(plain, rocked)).toBeGreaterThan(0.3)
+  expect(rms(rocked)).toBeGreaterThan(0.005)
+})
+
+test('a shared latch reads each voice of a chord from its neighbour’s place', () => {
+  const chord = { pcmChord: 1 }
+  const plain = tail(held(chord, 12, 0.6), 0.3)
+  const latched = tail(held({ ...chord, pcmLatch: 0.6 }, 12, 0.6), 0.3)
+  const lone = tail(held({ pcmLatch: 1 }, 12, 0.6), 0.3)
+  expect(differs(plain, latched)).toBeGreaterThan(0.3)
+  expect(rms(latched)).toBeGreaterThan(0.005)
+  expect(differs(tail(held({}, 12, 0.6), 0.3), lone)).toBeLessThan(0.15)
 })

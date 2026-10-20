@@ -481,6 +481,29 @@ reaches the counter and the data.
   was cut at 9.9 kHz with no interpolation.
 - _ROM clock:_ drags the counter, so pitch and aliasing move together.
 
+Four bends sit inside the die, between the counter and the memory.
+
+- **Loop overrun:** the loop comparator may miss at each loop end. The counter
+  then runs on through every voice after it in the ROM, round the memory and
+  back into its own attack, at the note's pitch. At full every voice plays the
+  whole ROM end to end.
+- **Write strobe:** the memory's write strobe fires on the DAC clock, so the mix
+  word lands back at the address each voice just read.
+  - The strobe writes a lone voice back unchanged.
+  - With a chord down, it writes each voice into the others' waves, and the sum
+    clips, so the loops thicken toward squares lap by lap.
+  - A data line fault burns into memory and compounds each lap.
+  - The chip reads clean memory again when the knob returns to zero or the rail
+    reboots.
+- **Sign on up/down:** each word's sign bit clocks a marginal flip-flop on the
+  counter's up/down pin. When a wave climbs back above zero inside the loop, the
+  counter may turn round, so a voice wanders back and forth through its loop. At
+  full it rocks inside one lobe.
+- **Shared latch:** the four voices share one address latch, and a slow one
+  hands each voice the top address bits of the voice serviced before it. With a
+  chord down, each voice reads from its neighbour's place at its own pitch. A
+  lone note plays unchanged.
+
 ## Growler's voice card
 
 Seven voice-card parts fail the way analog synth parts do. The drawing under the

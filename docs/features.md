@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-499 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+503 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 125 presets, 23 stage settings and 46 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 121 destinations, among
+- **A patch bay that modulates itself.** Four wires, 125 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -474,7 +474,7 @@ puts the knife on, and the rows under it show the controls it set:
   still
 
 <details>
-<summary>16 controls</summary>
+<summary>20 controls</summary>
 
 | control                            | range                                                                                                     | what it does                                                                                                                                                                |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -494,6 +494,10 @@ puts the knife on, and the rows under it show the controls it set:
 | Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires carrying the ROM’s output the knife is on                                                                                                          |
 | Data fault                         | cut, to ground, to +V, bridged                                                                            | To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was |
 | Cut depth                          | off to full                                                                                               | How far through the trace the knife cuts; only the cut fault uses it                                                                                                        |
+| Loop overrun                       | off to full                                                                                               | Weakens the comparator that sends the counter back to the loop start                                                                                                        |
+| Write strobe                       | off to full                                                                                               | Bridges the memory’s write strobe to the DAC clock, so the mix word ahead of the envelopes lands back in memory at the address a voice just read                            |
+| Sign on up/down                    | off to full                                                                                               | Wires the sign bit of each word through a marginal flip-flop to the counter’s up/down pin                                                                                   |
+| Shared latch                       | off to full                                                                                               | Slows the address latch the four voices share, so the top bits of each voice’s address come from the voice before it                                                        |
 
 </details>
 
@@ -1135,7 +1139,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s oscillator, free-running                                             |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 121 of them, filt cut through toy duty on envelope                                         | Where the other end is soldered                                                |
+| Wire 1–4 to    | 125 of them, filt cut through keys shared latch                                            | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

@@ -31,6 +31,10 @@ const KEYS = [
   'pcmTone',
   'pcmLevel',
   'pcmMute',
+  'pcmRunOn',
+  'pcmWrite',
+  'pcmSignDir',
+  'pcmLatch',
 ] as const
 
 type Key = (typeof KEYS)[number]
@@ -69,13 +73,13 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     ],
     [
       'counter',
-      ['pcmClockX'],
-      'The address counter. It walks the ROM at the rate the note asks for, so its clock sets the pitch and the aliasing together.',
+      ['pcmClockX', 'pcmSignDir', 'pcmLatch'],
+      'The address counter. It walks the ROM at the rate the note asks for, so its clock sets the pitch and the aliasing together. Its up/down pin and the latch the four voices share sit here too.',
     ],
     [
       'ROM',
-      ['pcmVoice'],
-      'The recordings: one short loop per voice, cut into eight-bit words. The sampled voice reads the sampler’s reel instead.',
+      ['pcmVoice', 'pcmRunOn', 'pcmWrite'],
+      'The recordings: one short loop per voice, cut into eight-bit words. The sampled voice reads the sampler’s reel instead. The loop comparator and the write strobe sit here too.',
     ],
     [
       'envelope',
