@@ -53,34 +53,14 @@ import { dragging } from './tapeDrop.ts'
 import { Tip } from './Tip.tsx'
 import { useBoardUrl } from './useBoardUrl.ts'
 import { useCurrentSession } from './useCurrentSession.ts'
-import { useSavedVoices } from './useSavedVoices.ts'
+import { useSavedVoices, type VoiceFlash } from './useSavedVoices.ts'
 import { useSyncedPrefs } from './useSyncedPrefs.ts'
 import { suggestVoiceName, type SavedVoice } from './voiceModel.ts'
 import { WhySignInDialog } from './WhySignInDialog.tsx'
 
-// One slot holding either the duration a new board *will* take to arrive or,
-// while one travels, how far along it is and the way to stop it. They are one
-// widget read two ways, and the actions row has no sixth place to give.
-//
-// The flight readout earns its place because a long morph is otherwise
-// indistinguishable from an app that ignored you: at 30s the first second moves
-// almost nothing. Pressing it says "I liked it better half way", which until now
-// you could only say by grabbing a slider — that is, by changing the board you
-// wanted to keep.
-//
-// The only thing here that subscribes to the morph, deliberately: progress moves
-// every frame, and held in App it would re-render the whole panel at that rate.
-//
-// A drift travels too, and this stays the duration picker through it: the leg
-// is the drift's own length rather than the one this names, stopping it here
-// keeps the board for fifteen seconds and no longer, and the picker is the only
-// place the next roll's duration is set — so a drift must not take it away for
-// as long as it runs. Drift's own button is what stops a drift.
 const MUTATE_HELP =
   'Keeps this board and nudges the controls of the stages on it a little way off where they sit. The tempo stays put and the timed things land back on the grid — shift for a wild nudge, alt for a gentle one.'
 
-// Beside mutate, because that is what it is: the same nudge, gentle, on a
-// timer, forever. Nothing else on the board plays itself.
 const DRIFT_HELP =
   'Lets the stages on the board nudge themselves somewhere near where they stand, every fifteen seconds, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
 
@@ -89,14 +69,9 @@ const nudged = (amount: number) => {
   return confine(mutate(current, amount, Math.random), current, Math.random)
 }
 
-// Save sits in the row of verbs, among the other things you do to the board on
-// screen. Beside the nameplate, `saved` holds the list and the avatar holds the
-// account.
 const SAVE_HELP =
   'Keeps the board on screen as a voice, under the name the saved menu is offering. ctrl+S does the same. Saving again under that name overwrites that voice.'
 
-// The same button with nobody signed in. It stays live, and a press opens the
-// card that says what an account is for.
 const SAVE_SIGNED_OUT_HELP =
   'Keeps the board on screen under a name, on your account. Press it to read what an account is for; the board you are looking at is saved as soon as you sign in.'
 
@@ -148,6 +123,203 @@ function MorphControl(props: {
   )
 }
 
+function SteadyLabel({
+  widest,
+  children,
+}: {
+  widest: string
+  children: string
+}) {
+  return (
+    <span className={styles.holdsWidest}>
+      {children !== widest && (
+        <span className={styles.widest} aria-hidden>
+          {widest}
+        </span>
+      )}
+      <span>{children}</span>
+    </span>
+  )
+}
+
+function AppMenu({
+  signedIn,
+  coarse,
+  onWhy,
+  onMidi,
+}: {
+  signedIn: boolean
+  coarse: boolean
+  onWhy: () => void
+  onMidi: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [button, setButton] = useState<HTMLButtonElement | null>(null)
+  const pick = (then: () => void) => () => {
+    setOpen(false)
+    then()
+  }
+  return (
+    <>
+      <Tip text="The simple version, computer keys and the rest of the settings.">
+        <button
+          ref={setButton}
+          className={styles.menuBtn}
+          aria-label="menu"
+          aria-expanded={open}
+          onClick={() => setOpen(o => !o)}
+        >
+          ☰
+        </button>
+      </Tip>
+      {open && (
+        <Menu
+          anchor={button}
+          toggle={button}
+          role="menu"
+          onClose={() => setOpen(false)}
+        >
+          {signedIn || (
+            <button
+              role="menuitem"
+              className={menuItem(false)}
+              onClick={pick(onWhy)}
+            >
+              why sign in?
+            </button>
+          )}
+          <button
+            role="menuitem"
+            className={menuItem(false)}
+            onClick={() => {
+              window.location.href = `${pocketUrl}${window.location.hash}`
+            }}
+          >
+            simple version
+          </button>
+          {coarse || (
+            <button
+              role="menuitem"
+              className={menuItem(false)}
+              onClick={pick(() => remapOpen.set(true))}
+            >
+              computer keys
+            </button>
+          )}
+          <MidiMenuItem className={menuItem(false)} onPick={pick(onMidi)} />
+        </Menu>
+      )}
+    </>
+  )
+}
+
+function BoardVerbs({
+  seconds,
+  drifting,
+  saveFlash,
+  signedIn,
+  onLanded,
+  onSave,
+}: {
+  seconds: MorphSeconds
+  drifting: boolean
+  saveFlash: VoiceFlash['kind'] | undefined
+  signedIn: boolean
+  onLanded: (landed: boolean) => void
+  onSave: () => void
+}) {
+  const walk = useStoreValue(engine.history)
+  return (
+    <div className={styles.actions}>
+      <Dice seconds={seconds} onLanded={onLanded} />
+      <Tip text={MUTATE_HELP}>
+        <button
+          className={styles.btn}
+          onClick={e =>
+            engine.morphTo(
+              nudged(e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12),
+              seconds,
+            )
+          }
+        >
+          mutate
+        </button>
+      </Tip>
+      <Tip
+        text={
+          drifting
+            ? 'stop drifting and keep the board wherever it has got to'
+            : DRIFT_HELP
+        }
+      >
+        <button
+          className={drifting ? styles.btnOn : styles.btn}
+          onClick={() =>
+            drifting
+              ? engine.stopDrift()
+              : engine.startDrift(() => nudged(0.05))
+          }
+        >
+          <SteadyLabel widest="drifting…">
+            {drifting ? 'drifting…' : 'drift'}
+          </SteadyLabel>
+        </button>
+      </Tip>
+      {drifting && (
+        <Tip text="Stop drifting and go back to where it was ten seconds ago.">
+          <button
+            className={styles.btn}
+            onClick={() => engine.driftBack(10, seconds)}
+          >
+            ⟲ 10s
+          </button>
+        </Tip>
+      )}
+      <Tip text="Back to the board the toy ships with, and every stage you added off the map. It lands in the walk, so undo brings back the controls you were on.">
+        <button
+          className={styles.btnQuiet}
+          onClick={() => {
+            clearAdded()
+            engine.morphTo({ ...DEFAULT_CONTROLS }, seconds)
+          }}
+        >
+          reset
+        </button>
+      </Tip>
+      <Tip text={signedIn ? SAVE_HELP : SAVE_SIGNED_OUT_HELP}>
+        <button
+          className={saveFlash === 'failed' ? styles.btnBad : styles.btn}
+          onClick={onSave}
+        >
+          <SteadyLabel widest="saved ✓">
+            {saveFlash === 'saved'
+              ? 'saved ✓'
+              : saveFlash === 'failed'
+                ? 'save ✕'
+                : 'save'}
+          </SteadyLabel>
+        </button>
+      </Tip>
+      <Tip text="Steps back through the boards you have been through (ctrl+z).">
+        <button
+          className={walk.past.length ? styles.btn : styles.btnOff}
+          onClick={() => engine.undo(seconds)}
+          disabled={!walk.past.length}
+        >
+          undo
+        </button>
+      </Tip>
+      {walk.future.length > 0 && (
+        <Tip text="Steps forward again (ctrl+shift+z).">
+          <button className={styles.btn} onClick={() => engine.redo(seconds)}>
+            redo
+          </button>
+        </Tip>
+      )}
+    </div>
+  )
+}
+
 // The board as the address bar spells it, which is what a voice holds.
 const boardQuery = () => boardHash(window.location.hash, engine.controls.get())
 
@@ -186,7 +358,6 @@ export function App(props: { openedFromLink?: boolean }) {
   const toggle = (name: string) => show(open === name ? null : name)
   const listed = useStoreValue(listView)
   const morphSeconds = useStoreValue(morphSetting)
-  const walk = useStoreValue(engine.history)
   const drifting = useStoreValue(engine.drifting)
   // Whether the last hunt reached the end and kept a board, as against being
   // called off, which is what the dialog stays up to say. A hunt that was
@@ -202,9 +373,7 @@ export function App(props: { openedFromLink?: boolean }) {
   // shut, and `{ pending: null }` is the card opened from the menu with no save
   // behind it.
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
-  const [showMenu, setShowMenu] = useState(false)
   const [showMidi, setShowMidi] = useState(false)
-  const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
 
   const lib = useSavedVoices()
   const libUid = lib.user?.uid ?? null
@@ -362,19 +531,8 @@ export function App(props: { openedFromLink?: boolean }) {
       </main>
 
       <aside className={styles.panel} aria-label="the board">
-        {/* Pinned to the top of the panel while the rest of it scrolls: panic
-            and undo are the two ways out of a board gone wrong, and both used
-            to leave the screen the moment a stage was opened under the map. */}
         <div className={styles.chrome}>
-          {/* The nameplate, and beside it how a board arrives and how to stop one
-            that has arrived badly. Neither of those picks a board, so they stay
-            out of the rows that do — and a duration picker is not worth a line
-            of the panel's height on its own. */}
           <div className={styles.head}>
-            {/* The nameplate is the way in to what this is: a link to the source
-              and the docs has nowhere else to live on a panel made of stages,
-              and the build it names is the first thing a bug report is asked
-              for. */}
             <Tip text="What this is, where the docs and the source are, and which build you are on.">
               <button
                 className={styles.nameplate}
@@ -389,15 +547,12 @@ export function App(props: { openedFromLink?: boolean }) {
               drifting={drifting}
               onSet={setMorph}
             />
-            {/* About the board as a whole rather than any one stage of it. */}
             <MidiPanel
               open={showMidi}
               onToggle={() => setShowMidi(o => !o)}
               onClose={() => setShowMidi(false)}
             />
             <ShareButton onCopy={() => copyLink(boardQuery())} />
-            {/* Beside the MIDI drawer for the same reason it is: a fact about
-              the session rather than a verb over the board. */}
             <SavedVoices
               voices={lib.voices}
               recent={lib.recent}
@@ -415,190 +570,28 @@ export function App(props: { openedFromLink?: boolean }) {
               status={lib.status}
               error={lib.error}
             />
-            {/* The account, beside the library. The two shared one button,
-                whose label alternated between `saved` and `sign in`. */}
             <Account
               user={lib.user}
               status={lib.status}
               onSignIn={lib.signIn}
               onSignOut={lib.signOut}
             />
-            <Tip text="The simple version, computer keys and the rest of the settings.">
-              <button
-                ref={setMenuBtn}
-                className={styles.menuBtn}
-                aria-label="menu"
-                aria-expanded={showMenu}
-                onClick={() => setShowMenu(o => !o)}
-              >
-                ☰
-              </button>
-            </Tip>
-            {showMenu && (
-              <Menu
-                anchor={menuBtn}
-                toggle={menuBtn}
-                role="menu"
-                onClose={() => setShowMenu(false)}
-              >
-                {/* Only with nobody signed in; a signed-in reader has the
-                    answer already. */}
-                {signedIn || (
-                  <button
-                    role="menuitem"
-                    className={menuItem(false)}
-                    onClick={() => {
-                      setShowMenu(false)
-                      setWhy({ pending: null })
-                    }}
-                  >
-                    why sign in?
-                  </button>
-                )}
-                <button
-                  role="menuitem"
-                  className={menuItem(false)}
-                  onClick={() => {
-                    window.location.href = `${pocketUrl}${window.location.hash}`
-                  }}
-                >
-                  simple version
-                </button>
-                {coarse || (
-                  <button
-                    role="menuitem"
-                    className={menuItem(false)}
-                    onClick={() => {
-                      setShowMenu(false)
-                      remapOpen.set(true)
-                    }}
-                  >
-                    computer keys
-                  </button>
-                )}
-                <MidiMenuItem
-                  className={menuItem(false)}
-                  onPick={() => {
-                    setShowMenu(false)
-                    setShowMidi(true)
-                  }}
-                />
-              </Menu>
-            )}
+            <AppMenu
+              signedIn={signedIn}
+              coarse={coarse}
+              onWhy={() => setWhy({ pending: null })}
+              onMidi={() => setShowMidi(true)}
+            />
           </div>
 
-          <div className={styles.actions}>
-            <Dice seconds={morphSeconds} onLanded={setLanded} />
-            <Tip text={MUTATE_HELP}>
-              <button
-                className={styles.btn}
-                onClick={e =>
-                  engine.morphTo(
-                    nudged(e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12),
-                    morphSeconds,
-                  )
-                }
-              >
-                mutate
-              </button>
-            </Tip>
-            {/* Beside mutate, because that is what it is: the same nudge, gentle,
-              on a timer, forever. Nothing else on the board plays itself. */}
-            <Tip
-              text={
-                drifting
-                  ? 'stop drifting and keep the board wherever it has got to'
-                  : DRIFT_HELP
-              }
-            >
-              <button
-                className={drifting ? styles.btnOn : styles.btn}
-                onClick={() =>
-                  drifting
-                    ? engine.stopDrift()
-                    : engine.startDrift(() => nudged(0.05))
-                }
-              >
-                <span className={styles.holdsWidest}>
-                  {drifting || (
-                    <span className={styles.widest} aria-hidden>
-                      drifting…
-                    </span>
-                  )}
-                  <span>{drifting ? 'drifting…' : 'drift'}</span>
-                </span>
-              </button>
-            </Tip>
-            {drifting && (
-              <Tip text="Stop drifting and go back to where it was ten seconds ago.">
-                <button
-                  className={styles.btn}
-                  onClick={() => engine.driftBack(10, morphSeconds)}
-                >
-                  ⟲ 10s
-                </button>
-              </Tip>
-            )}
-            <Tip text="Back to the board the toy ships with, and every stage you added off the map. It lands in the walk, so undo brings back the controls you were on.">
-              <button
-                className={styles.btnQuiet}
-                onClick={() => {
-                  clearAdded()
-                  engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
-                }}
-              >
-                reset
-              </button>
-            </Tip>
-            {/* Between the verbs that change the board and the two that step
-              back through it. The label holds the width of its own ✓, so the
-              row keeps still as a save lands. */}
-            <Tip text={signedIn ? SAVE_HELP : SAVE_SIGNED_OUT_HELP}>
-              <button
-                className={
-                  lib.flash?.kind === 'failed' ? styles.btnBad : styles.btn
-                }
-                onClick={askSave}
-              >
-                <span className={styles.holdsWidest}>
-                  <span className={styles.widest} aria-hidden>
-                    saved ✓
-                  </span>
-                  <span>
-                    {lib.flash?.kind === 'saved'
-                      ? 'saved ✓'
-                      : lib.flash?.kind === 'failed'
-                        ? 'save ✕'
-                        : 'save'}
-                  </span>
-                </span>
-              </button>
-            </Tip>
-            {/* Beside reset, because what undo has in common with it is what a
-              hand reaching for either one wants: out of here. */}
-            <Tip text="Steps back through the boards you have been through (ctrl+z).">
-              <button
-                className={walk.past.length ? styles.btn : styles.btnOff}
-                onClick={() => engine.undo(morphSeconds)}
-                disabled={!walk.past.length}
-              >
-                undo
-              </button>
-            </Tip>
-            {/* Only once there is a walk to step forward into: a permanently
-              greyed redo would cost a slot in the row on every session that
-              never undid anything. */}
-            {walk.future.length > 0 && (
-              <Tip text="Steps forward again (ctrl+shift+z).">
-                <button
-                  className={styles.btn}
-                  onClick={() => engine.redo(morphSeconds)}
-                >
-                  redo
-                </button>
-              </Tip>
-            )}
-          </div>
+          <BoardVerbs
+            seconds={morphSeconds}
+            drifting={drifting}
+            saveFlash={lib.flash?.kind}
+            signedIn={signedIn}
+            onLanded={setLanded}
+            onSave={askSave}
+          />
         </div>
 
         {/* What the hunt is doing while it does it, and the only way to call

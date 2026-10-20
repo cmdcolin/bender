@@ -15,7 +15,6 @@ export function Fold({
   children,
 }: {
   name: string
-  /** What has moved inside, when anything has. */
   badge?: string
   startOpen: boolean
   /** Whoever else can open the fold — a lane naming its strip — holds the

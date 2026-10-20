@@ -252,7 +252,6 @@ function MoreMenu({
   group: Group
   seconds: number
   onClose: () => void
-  /** Whether the stage lists its rows in place of its drawing; absent when it has no drawing to swap. */
   listed?: boolean
   onList: (listed: boolean) => void
 }) {
