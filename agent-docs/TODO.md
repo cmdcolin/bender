@@ -22,7 +22,6 @@ remove a row here when you add or remove an entry.
 
 | Item                                                                  | Area                 | First move                                                        |
 | --------------------------------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
-| [Split `buildMap`](todo/build-map-split.md)                           | map                  | lift pickParts and measure out of buildMap behind one context     |
 | [Fold line for gated rows](todo/fold-line-port.md)                    | diagrams             | read videoskillet diagram.ts shutBy/boxFold and its test          |
 | [Box key registry test](todo/box-key-registry-test.md)                | diagrams, tests      | copy videoskillet schematicKeys.test.ts onto drawingFor.tsx       |
 | [OpenBox + Bend to videoskillet](todo/open-box-to-videoskillet.md)    | diagrams, cross-repo | move OpenBox, PickPart and Bend into the diagram-parts region     |
