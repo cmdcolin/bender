@@ -9,7 +9,7 @@
   position: relative;
 }
 
-/* A wire on the map pressed to reach this knob. */
+/* Flashes when a wire on the map aims at this row. */
 .row[data-aimed],
 .rowSplit[data-aimed] {
   animation: aimed 1.2s ease-out;

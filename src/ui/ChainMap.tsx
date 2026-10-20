@@ -166,8 +166,8 @@ export function ChainMap({
   const offIt = GROUPS.filter(g => !shown.has(g.name))
 
   // Clicking a stage's door opens its panel. The touched dot beside a box is
-  // signage rather than a control, so it takes no click of its own. A wire
-  // that sets one knob also brings that knob's row into view.
+  // signage rather than a control, so it takes no click of its own. A door
+  // with a data-key also scrolls the panel to that control's row.
   const press = (target: Element): boolean => {
     const door = target.closest('[data-door]')
     const group = GROUP_BY_NAME.get(door?.getAttribute('data-door') ?? '')

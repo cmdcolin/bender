@@ -423,7 +423,7 @@ export interface MapNode {
   benched?: boolean
   /** the control the door aims at inside its stage */
   key?: ControlKey
-  /** 'label' only: a reading that opens somewhere of its own */
+  /** 'label' only: the group the reading opens, when the name opens another */
   valueDoor?: string
   valueKey?: ControlKey
 }
@@ -706,8 +706,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const loose = BENDS.filter(b => !slotted.includes(b.group) && has(b.group))
   const chipW = loose.map(b => nameWidth(b.label) + CHIP_PAD * 2)
   for (const b of loose) doors.add(b.group)
-  // No box, name or door: the rack only anchors the loose chips and the run
-  // down to the first bend.
+  // The rack draws nothing. Its bounds anchor the loose chips and the run down
+  // to the first bend.
   const rack = node('rack', 'rack', '')
   const tapeAt = Math.round(c.tapeAt)
   const tape = () => stage('Tape machine', c.tapeMix > 0)
