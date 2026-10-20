@@ -5,6 +5,7 @@ import { engine } from '../engine/engine.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { DeckKey } from './DeckKey.tsx'
 import { Faceplate } from './Faceplate.tsx'
+import { toggleMic } from './plugMic.ts'
 import { SampleReel } from './SampleReel.tsx'
 import { dragging } from './tapeDrop.ts'
 import styles from './TapeLoopFace.module.css'
@@ -61,7 +62,7 @@ export function TapeLoopFace({
                   legend="mic"
                   red
                   latched={micOn}
-                  onClick={() => engine.toggleMic()}
+                  onClick={toggleMic}
                 />
               </Tip>
             </>

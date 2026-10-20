@@ -1,0 +1,65 @@
+.cap {
+  composes: cap from './button.module.css';
+}
+
+.capOn {
+  composes: capOn from './button.module.css';
+}
+
+.glyph {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  vertical-align: -0.125em;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: min(70vh, 32rem);
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  max-width: 22rem;
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--fs-sm);
+  line-height: 1.2;
+  text-align: left;
+  color: var(--fg2);
+  background: none;
+  border: none;
+  border-radius: var(--ctl-radius);
+  cursor: pointer;
+}
+
+.item:hover,
+.item:focus-visible {
+  color: var(--fg);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.itemOn {
+  composes: item;
+  color: var(--accent);
+}
+
+.itemOn:hover,
+.itemOn:focus-visible {
+  color: var(--accent);
+}
+
+.stage {
+  color: var(--fg3);
+}
+
+.says {
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}

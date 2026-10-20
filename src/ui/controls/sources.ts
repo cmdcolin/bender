@@ -69,6 +69,7 @@ import type { Controls } from '../../controls.ts'
 
 /** True while the chip is playing the memory rather than one of its own songs. */
 const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS
+import { MIC_JACKS } from '../micWiring.ts'
 import { FOUR_TRACK_GROUP } from './fourTrack.ts'
 
 import type { Group, SliderDef } from './types.ts'
@@ -3097,15 +3098,13 @@ export const SOURCE_GROUPS: Group[] = [
       },
     ],
   },
-  // Not a channel. On one of its seven settings the mic reaches the mix, and on
-  // the other six it is soldered into the middle of the board — so it gets a
-  // group of its own, and the map draws it as the patch wire it actually is.
+  // The mic gets a group of its own: on one jack it reaches the mix, and on the
+  // rest it is soldered into a stage, so the map draws it as a patch wire.
   FOUR_TRACK_GROUP,
   {
     name: 'Mic',
     place: 'Sources',
-    // The picture in MicPatch is the way to move the wire: the mic against all
-    // seven jacks, and pressing one solders it there.
+    // MicPatch draws every jack, and pressing one solders the mic there.
     editor: { kind: 'mic' },
     handled: ['micPatch'],
     sliders: [
@@ -3124,19 +3123,11 @@ export const SOURCE_GROUPS: Group[] = [
         key: 'micPatch',
         label: 'Mic patch',
         min: 0,
-        max: 6,
+        max: 13,
         step: 1,
         unit: '',
-        choices: [
-          'mix',
-          'chip rail',
-          'osc FM',
-          'delay fb',
-          'ring car',
-          'drum trig',
-          'glitch trig',
-        ],
-        help: 'Where the mic wire is soldered: the mix bus, the toy supply rail (yell to brown it out), oscillator A’s FM input, the delay feedback path, the ring mod carrier, or the trigger line of the drum machine or glitch buffer — clap at it and the circuit fires.',
+        choices: MIC_JACKS.map(j => j.name),
+        help: 'Where the mic wire is soldered. Each jack lists what your voice does there.',
       },
     ],
   },

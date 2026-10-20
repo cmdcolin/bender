@@ -15,6 +15,7 @@ import { FourTrack } from './FourTrack.tsx'
 import { GateBench } from './GateCables.tsx'
 import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
+import { MicMenu } from './MicJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal, PedalShelf, usePedalStages } from './Pedals.tsx'
@@ -143,6 +144,7 @@ export function Instruments({
           onPick={bringUp}
         />
         <AddPedal />
+        <MicMenu className={styles.add} />
         <BendKeysSwitch />
       </div>
       <BendKeys morphSeconds={seconds} />

@@ -597,9 +597,20 @@ See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for wiring.
 - _Triggers and cross-patch_ fold: dashed red wires run from a choking trigger
   line to its voice, solid red from a ring-trigger voice to the lines it fires,
   and red from a cross-patched voice to the amp it drives.
-- **Mic patch:** wires the mic past the mixer onto the chip's supply rail, the
-  oscillator's FM input, the delay's feedback path, the ring modulator's
-  carrier, or a drum machine or glitch buffer trigger line.
+- **Mic patch:** wires the mic past the mixer into the circuit.
+  - Plinky's supply rail: yelling browns the toy out.
+  - Plinky's clock pin: the pitch of your voice sets the tempo and tuning, and
+    silence slows the toy to clicks.
+  - Plinky's address bus: louder sounds jump further through the song.
+  - Plinky's data bus: talking shifts the notes and yelling scrambles them.
+  - The oscillator's FM input, or its sync input, where each cycle of your voice
+    restarts oscillator A.
+  - The delay's feedback path, the ring modulator's carrier, or a drum machine
+    or glitch buffer trigger line.
+  - Spool's capstan motor: the tape runs as fast as you are loud.
+  - Growler's external input, under its filter and envelope.
+  - Glint's data bus: your voice overwrites registers, and they stay
+    overwritten.
 - **Restarts the file on:** puts a dropped audio file on a kit voice, any hit, a
   keyboard note or the mic.
   - **Ending** one-shot: the file plays as one more drum voice, retriggered on

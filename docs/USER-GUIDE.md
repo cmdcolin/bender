@@ -74,7 +74,8 @@ with EQ and an aux send, and the desk squeals with nothing plugged in.
 ### Also on the bench
 
 - **Spool:** a tape loop. Drop an audio file on the page
-- **Mic:** your microphone, soldered into the board
+- **Mic:** your microphone, soldered into the board. **Mic into** on the bench
+  bar, or the mic cap on a machine, picks the jack
 
 ## The trigger patch
 

@@ -7,6 +7,7 @@ import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
+import { MicCap } from './MicJacks.tsx'
 import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import { ControlSlider } from './Slider.tsx'
@@ -267,8 +268,8 @@ export function DrawerSlider({ control }: { control: ControlKey }) {
 }
 
 // The caps on every instrument and pedal on the bench: mute or bypass, an
-// instrument's level, roll the stage somewhere new, and a close cap where the
-// machine can be put away.
+// instrument's level, the mic jacks on it, roll the stage somewhere new, and a
+// close cap where the machine can be put away.
 export function DeviceVerbs({
   stage,
   seconds = 0,
@@ -296,6 +297,7 @@ export function DeviceVerbs({
       {level && <StillHeard stage={stage} level={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !noLevel && <FaceLevel control={level} />}
+      <MicCap stage={stage} />
       <Rolls group={group} seconds={seconds} more={more} />
       {onClose && (
         <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>

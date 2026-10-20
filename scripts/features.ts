@@ -8,6 +8,7 @@ import { PEDAL_ORDERS } from '../src/pedals.ts'
 import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends.ts'
 import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls/index.ts'
 import { STAGE_ORDER } from '../src/ui/controls/types.ts'
+import { MIC_JACKS } from '../src/ui/micWiring.ts'
 import { CUTS } from '../src/ui/presets/cuts.ts'
 import { RIGS } from '../src/ui/presets/rigs.ts'
 import { PRESETS } from '../src/ui/presets/table.ts'
@@ -43,7 +44,7 @@ const BLURBS: Record<string, string> = {
     'A loaded audio file, looping through the chain. With *Struck by* on a voice and *Ending* on one-shot, it plays whatever you dropped as a seventh drum voice. A bay wire can connect to the reel’s capstan and both loop markers, so it can shift the reel’s pitch as a starve shifts the toy’s, or move the loop window around the recording while the head plays on.',
   Layercake:
     'A cassette four-track: a desk of four channel strips, each with knobs and a fader, in front of four tape loops, each cut to a separate length and all on one capstan. A channel takes its input from its loop, the board, the mic or the desk’s aux return, passes it through a trim preamp and three bands of EQ into a fader and an aux send, and records onto its loop over whatever the erase head left. With input on the board and a loop recording, the signal loops round the whole board, so each lap comes back through every bend again. With input on the aux and its send up, the desk is a mixer with nothing plugged in: the sweepable mid tunes the squeal and the op-amp rails clip it. *Wear* sheds oxide at the same places every lap, and *Batteries* lowers the motor and the rails together.',
-  Mic: 'A live microphone, the one source that need not reach the mix. *Mic patch* sets where the mic wire connects. Instead of the mix it can go to the chip’s supply rail, the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier or a trigger line, so a shout can brown the toy out or fire the kit.',
+  Mic: 'A live microphone, the one source that need not reach the mix. *Mic patch* picks the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus, the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s carrier, a trigger line, Spool’s capstan motor, Growler’s external input or Glint’s data bus. *Mic into* on the bench bar and the mic cap on each machine list the jacks with what a voice does at each.',
   'Mix bus':
     'The seven sources meet at this desk, and every fader appears here as well as on its machine’s panel, under the machine’s name, with a meter beside it that reads what that channel puts on the bus, and the bus’s own meter under the lot. A fader’s position does not show whether sound is coming out. Glint shows the difference: it boots at zero, and turned up with nothing striking it (no hand on its keys, no tune next door) it sits at three quarters and plays silence. *Bus drive* is the summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
@@ -399,11 +400,11 @@ grey out. \`pnpm diagram\` renders it with the same layout the app uses.
   loss to each lap. The top end falls a little more every pass, and a layer of
   noise goes down under the last. *Hold* raises the write level by what a lap
   lost, so a loop stays at its level.
-- **A microphone into the middle of the board.** *Mic patch* sets where the mic
-  connects: on one setting the mic reaches the mix, on the other six it is
-  soldered onto the chip's rail, an oscillator's FM input or the delay's
-  feedback. The body contact pad uses the same idea with your finger as the
-  resistor.
+- **A microphone into the middle of the board.** *Mic into* on the bench bar
+  solders the mic to one of ${MIC_JACKS.length} jacks: the toy's clock pin, so
+  your pitch sets its tempo; its address or data bus, so a yell scrambles the
+  song; Spool's capstan motor; Glint's registers. The body contact pad uses the
+  same idea with your finger as the resistor.
 - **Whole boards.** ${PRESETS.length} presets, and a roll button on every heading as
   well as on the whole board; **morph** moves between two boards over up to
   thirty seconds; **hunt** plays six candidates and keeps the one that spends

@@ -2,19 +2,11 @@ import { engine } from '../engine/engine.ts'
 import { sliderFor } from './controls/index.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import styles from './MicPatch.module.css'
+import { MIC_JACKS } from './micWiring.ts'
+import { toggleMic } from './plugMic.ts'
 import { Tip } from './Tip.tsx'
 
 const DEST = sliderFor('micPatch').choices!
-
-const SAYS = [
-  'the mix bus',
-  'the toy supply rail — yell to brown it out',
-  'oscillator A’s FM input',
-  'the delay feedback path',
-  'the ring mod carrier',
-  'the drum machine’s trigger line — clap and the kit fires',
-  'the glitch buffer’s trigger line — clap and it fires',
-]
 
 const DEST_W = 84
 const LEFT_X = 4
@@ -38,8 +30,8 @@ const rowY = (i: number) =>
   onLeft(i) ? TOP + i * STEP : TOP + STEP / 2 + (i - LEFT_N) * STEP
 const cy = (y: number, h: number) => y + h / 2
 
-// One wire, seven jacks either side of the mic to solder it to. Pressing a
-// jack moves the wire there, and the wire lights once the mic is turned up.
+// The mic between two columns of jacks. Pressing a jack moves the wire there,
+// and the wire lights once the mic is turned up.
 export function MicPatch() {
   const patch = Math.round(useControlValue('micPatch'))
   const soldered =
@@ -90,7 +82,7 @@ export function MicPatch() {
               }
             }}
           >
-            <title>{`${d} — ${SAYS[i]}${on ? ' (soldered here now)' : ''}`}</title>
+            <title>{`${d} — ${MIC_JACKS[i]!.says}${on ? ' (soldered here now)' : ''}`}</title>
             {on && (
               <line
                 x1={onLeft(i) ? MIC_X : MIC_X + MIC_W}
@@ -142,7 +134,7 @@ export function MicSwitch() {
         <button
           className={on ? styles.switchOn : styles.switch}
           aria-pressed={on}
-          onClick={() => engine.toggleMic()}
+          onClick={toggleMic}
         >
           open mic
         </button>

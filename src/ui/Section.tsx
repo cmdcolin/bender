@@ -33,6 +33,7 @@ import { FourTrack } from './FourTrack.tsx'
 import { listView } from './listView.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
+import { MicCap } from './MicJacks.tsx'
 import { MicPatch, MicSwitch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
 import { MonoPathDiagram } from './MonoPathDiagram.tsx'
@@ -844,6 +845,7 @@ export function OpenGroup({
         </span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}
         {group.editor?.kind === 'mic' && <MicSwitch />}
+        <MicCap stage={group.name} />
         {(group.editor?.kind === 'roll' || group.memory) && !rollBoxed && (
           <EditorToggle which="roll" />
         )}

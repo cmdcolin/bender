@@ -15,6 +15,7 @@ import {
   sliderFor,
   touchedCount,
 } from './controls/index.ts'
+import { MIC_JACKS } from './micWiring.ts'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg.ts'
 
 // The signal path, laid out and drawn: live bend order, the feedback wire, and
@@ -187,18 +188,7 @@ const SRC_GROUP: Record<number, string> = {
   10: 'Plinky',
 }
 
-// Where the mic wire is soldered, in micPatch order. Only the first of the
-// seven reaches the mix; the rest land in the middle of something.
-const MIC_TARGET = [
-  'mix',
-  // The rail is the keyboard's to own — it holds the starve knob that moves it.
-  'Plinky',
-  'Chaos osc',
-  'Wraith',
-  'Ring mod',
-  'Clatter',
-  'Glitch buffer',
-] as const
+const MIC_TARGET = MIC_JACKS.map(j => j.stage)
 
 // What each source is turned up to, which is also whether it is in the mix at
 // all: the loudest of its levels, as a share of the top of its normal stretch.
@@ -1706,10 +1696,10 @@ function collectTaps(
       : n
 
   // The mic, which is a patch point rather than a channel — so it draws as the
-  // wire it is, onto whichever of the seven places it is soldered to. Turned
+  // wire it is, onto whichever jack it is soldered to. Turned
   // right down it is still soldered there, so it stays on the map greyed, the
   // way the feedback bus does at no amount.
-  // Six of the seven solder points are a stage, and a stage can be in none of
+  // Every solder point but the mix is a stage, and a stage can be in none of
   // the slots — in which case the wire runs in through the rack's edge and
   // lands on the chip riding in it, greyed: it is soldered exactly where you
   // put it, and there is nothing running through what you put it on.
