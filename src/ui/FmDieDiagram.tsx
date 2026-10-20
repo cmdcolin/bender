@@ -144,6 +144,19 @@ export function FmDieDiagram() {
                   >
                     adder
                   </text>
+                  {Array.from({ length: VOICES }, (_, i) => (
+                    <Chip
+                      key={i}
+                      box={{
+                        name: `voice ${i + 1}`,
+                        x: voiceX,
+                        y: voiceTop(i),
+                        w: voiceW,
+                        h: VOICE_H,
+                      }}
+                      className={chip.inner}
+                    />
+                  ))}
                 </g>,
               )}
               <Wire
@@ -183,19 +196,6 @@ export function FmDieDiagram() {
               <Label x={WIDTH - 2} y={MID + 12} anchor="end">
                 out
               </Label>
-              {Array.from({ length: VOICES }, (_, i) => (
-                <Chip
-                  key={i}
-                  box={{
-                    name: `voice ${i + 1}`,
-                    x: voiceX,
-                    y: voiceTop(i),
-                    w: voiceW,
-                    h: VOICE_H,
-                  }}
-                  className={chip.inner}
-                />
-              ))}
               {node(
                 'allocator',
                 <Chip

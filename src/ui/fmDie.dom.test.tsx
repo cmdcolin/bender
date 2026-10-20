@@ -121,3 +121,11 @@ test('each part opens its own knobs, and only those', () => {
   expect(screen.queryByText('Allocator')).toBeNull()
   expect(screen.getByText('DAC slot')).not.toBeNull()
 })
+
+test('pressing a voice row opens the voices box', () => {
+  open()
+  fireEvent.click(
+    [...die().querySelectorAll('text')].find(t => t.textContent === 'voice 2')!,
+  )
+  expect(screen.getByText('Log adder')).not.toBeNull()
+})
