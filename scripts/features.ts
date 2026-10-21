@@ -132,6 +132,7 @@ const SCRIPTS: Record<string, string> = {
   reel: "renders the showcase demos to mp3 for the landing page's Demos section",
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
+  og: "renders the landing page's pile of instruments to public/og.jpg, the image a shared link unfurls with",
   jam: 'trims, encodes and uploads jams of the day, then records their waveform peaks in src/jam/jams.json',
   'guide-shots': 're-shoots the six pictures in docs/USER-GUIDE.md',
   'diagram-shots':
