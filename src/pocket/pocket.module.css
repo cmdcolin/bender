@@ -3,11 +3,29 @@
    are the only colours on screen. */
 
 .page {
+  --pocket-ground: #000;
+  --pocket-glass: #0a0a0c;
+  --pocket-sheet: #111;
+  --pocket-sheet-shadow: #000c;
+  --pocket-ink: #fff;
+  --pocket-ink-dim: #ffffffb0;
+  --pocket-lit: #fff;
+  --pocket-lit-ink: #000;
+  --pocket-edge: #ffffff50;
+  --pocket-edge-quiet: #ffffff38;
+  --pocket-edge-faint: #ffffff30;
+  --pocket-wash-faint: #ffffff0c;
+  --pocket-wash-quiet: #ffffff14;
+  --pocket-wash: #ffffff1c;
+  --pocket-wash-loud: #ffffff24;
+  --pocket-scrim: #000000b0;
+  --pocket-scrim-deep: #000000f2;
+
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: #000;
+  background: var(--pocket-ground);
   color: var(--fg);
   font-family: var(--font);
   padding: env(safe-area-inset-top) env(safe-area-inset-right)
@@ -31,7 +49,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-md);
-  color: #fff;
+  color: var(--pocket-ink);
   font-size: var(--fs-md);
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -52,24 +70,24 @@
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 1px solid #ffffff50;
+  border: 1px solid var(--pocket-edge);
   border-radius: 50%;
   background: transparent;
-  color: #fff;
+  color: var(--pocket-ink);
   font: inherit;
   font-size: var(--fs-md);
   font-weight: 700;
   cursor: pointer;
 }
 .round[aria-pressed='true'] {
-  background: #fff;
-  color: #000;
+  background: var(--pocket-lit);
+  color: var(--pocket-lit-ink);
 }
 .full {
   padding: var(--space-xs) var(--space-lg);
-  border: 1px solid #ffffff50;
+  border: 1px solid var(--pocket-edge);
   border-radius: var(--pill-radius);
-  color: #fff;
+  color: var(--pocket-ink);
   font-size: var(--fs-sm);
   font-weight: 700;
   text-decoration: none;
@@ -89,7 +107,7 @@
   min-width: 0;
   border-radius: 14px;
   overflow: hidden;
-  background: #0a0a0c;
+  background: var(--pocket-glass);
   touch-action: none;
   cursor: crosshair;
 }
@@ -133,7 +151,7 @@
   bottom: 14px;
   max-width: calc(100% - 24px);
   overflow: hidden;
-  color: #ffffffb0;
+  color: var(--pocket-ink-dim);
   font-size: var(--fs-sm);
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -150,12 +168,12 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #fff;
+  color: var(--pocket-ink);
   font: inherit;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  text-shadow: 0 1px 3px #000;
+  text-shadow: 0 1px 3px var(--pocket-ground);
   cursor: pointer;
 }
 .switchIcon {
@@ -164,13 +182,13 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #ffffff1c;
+  background: var(--pocket-wash);
   font-size: 18px;
   text-shadow: none;
 }
 .switchOn .switchIcon {
-  background: #fff;
-  color: #000;
+  background: var(--pocket-lit);
+  color: var(--pocket-lit-ink);
 }
 
 .flash,
@@ -181,8 +199,8 @@
   transform: translate(-50%, -50%);
   padding: var(--space-md) var(--space-xl);
   border-radius: 10px;
-  background: #000000b0;
-  color: #fff;
+  background: var(--pocket-scrim);
+  color: var(--pocket-ink);
   pointer-events: none;
 }
 .flash {
@@ -224,7 +242,7 @@
   overflow-y: auto;
   padding: var(--space-xl);
   border-radius: 14px;
-  background: #000000f2;
+  background: var(--pocket-scrim-deep);
 }
 .help ul {
   margin: 0;
@@ -238,7 +256,7 @@
   margin-top: var(--space-sm);
 }
 .help b {
-  color: #fff;
+  color: var(--pocket-ink);
 }
 
 .controls {
@@ -283,7 +301,7 @@
 }
 .tabOn {
   border-bottom-color: var(--accent);
-  color: #fff;
+  color: var(--pocket-ink);
 }
 
 /* The presets sit in one row that scrolls sideways, under random pinned at
@@ -308,7 +326,7 @@
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-md) var(--space-lg);
-  border: 1px solid #ffffff38;
+  border: 1px solid var(--pocket-edge-quiet);
   border-radius: var(--pill-radius);
   background: transparent;
   color: var(--fg2);
@@ -323,9 +341,9 @@
   cursor: default;
 }
 .chipOn {
-  border-color: #fff;
-  background: #fff;
-  color: #000;
+  border-color: var(--pocket-lit);
+  background: var(--pocket-lit);
+  color: var(--pocket-lit-ink);
 }
 .chipStrength {
   font-variant-numeric: tabular-nums;
@@ -339,7 +357,7 @@
   flex: none;
   display: flex;
   padding-left: var(--space-xl);
-  background: #000;
+  background: var(--pocket-ground);
 }
 .roll::after {
   content: '';
@@ -348,7 +366,7 @@
   bottom: 0;
   left: 100%;
   width: 14px;
-  background: linear-gradient(to right, #000, transparent);
+  background: linear-gradient(to right, var(--pocket-ground), transparent);
   pointer-events: none;
 }
 
@@ -374,9 +392,9 @@
   height: 50px;
   padding: var(--space-xs);
   overflow: hidden;
-  border: 1px solid #ffffff30;
+  border: 1px solid var(--pocket-edge-faint);
   border-radius: 8px;
-  background: #ffffff0c;
+  background: var(--pocket-wash-faint);
   color: var(--fg2);
   font: inherit;
   font-size: 11px;
@@ -403,7 +421,7 @@
 .throwOn {
   height: 36px;
   padding: 0;
-  border: 1px solid #ffffff30;
+  border: 1px solid var(--pocket-edge-faint);
   border-radius: var(--pill-radius);
   background: transparent;
   color: var(--fg2);
@@ -415,7 +433,7 @@
 .throwOn {
   border-color: var(--accent2);
   background: var(--accent2);
-  color: #000;
+  color: var(--pocket-lit-ink);
 }
 .dealRow {
   display: flex;
@@ -464,10 +482,10 @@
   align-items: center;
   height: 40px;
   padding: 0 var(--space-md);
-  border: 1px solid #ffffff50;
+  border: 1px solid var(--pocket-edge);
   border-radius: 10px;
-  background: #ffffff14;
-  color: #fff;
+  background: var(--pocket-wash-quiet);
+  color: var(--pocket-ink);
   font: inherit;
   font-variant-numeric: tabular-nums;
   font-size: 10px;
@@ -485,10 +503,10 @@
   gap: var(--space-sm);
   height: 40px;
   padding: 0 var(--space-lg);
-  border: 1px solid #ffffff38;
+  border: 1px solid var(--pocket-edge-quiet);
   border-radius: var(--pill-radius);
   background: transparent;
-  color: #fff;
+  color: var(--pocket-ink);
   font: inherit;
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-sm);
@@ -518,10 +536,10 @@
   width: 76px;
   height: 76px;
   padding: 0;
-  border: 4px solid #fff;
+  border: 4px solid var(--pocket-ink);
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: inset 0 0 0 4px #000;
+  box-shadow: inset 0 0 0 4px var(--pocket-ground);
   color: var(--accent-ink);
   font-size: 28px;
   cursor: pointer;
@@ -532,8 +550,8 @@
   transform: scale(0.94);
 }
 .playOn {
-  background: #fff;
-  color: #000;
+  background: var(--pocket-lit);
+  color: var(--pocket-lit-ink);
 }
 .side {
   justify-self: end;
@@ -544,8 +562,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #ffffff24;
-  color: #fff;
+  background: var(--pocket-wash-loud);
+  color: var(--pocket-ink);
   font-size: 22px;
   cursor: pointer;
 }
@@ -567,8 +585,8 @@
   overflow-y: auto;
   padding: 0 var(--space-xl) calc(var(--space-xl) + env(safe-area-inset-bottom));
   border-radius: 18px 18px 0 0;
-  background: #111;
-  box-shadow: 0 -8px 30px #000c;
+  background: var(--pocket-sheet);
+  box-shadow: 0 -8px 30px var(--pocket-sheet-shadow);
 }
 .sheetHead {
   position: sticky;
@@ -577,11 +595,11 @@
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-lg) 0 var(--space-xs);
-  background: #111;
+  background: var(--pocket-sheet);
 }
 .sheetTitle {
   flex: 1;
-  color: #fff;
+  color: var(--pocket-ink);
   font-size: var(--fs-lg);
   font-weight: 700;
 }
@@ -591,8 +609,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #ffffff1c;
-  color: #fff;
+  background: var(--pocket-wash);
+  color: var(--pocket-ink);
   font-size: var(--fs-md);
   cursor: pointer;
 }
@@ -628,9 +646,9 @@
 }
 .pool {
   padding: var(--space-md);
-  border: 1px solid #ffffff38;
+  border: 1px solid var(--pocket-edge-quiet);
   border-radius: var(--pill-radius);
-  background: #000;
+  background: var(--pocket-ground);
   color: var(--fg2);
   font: inherit;
   font-size: var(--fs-md);
