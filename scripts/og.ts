@@ -8,21 +8,53 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // `pnpm og` draws the landing page's pile, from the seed the server renders,
-// into the picture a shared link unfurls with. Wants a Chrome and ImageMagick's
-// `magick`.
+// under a name plate into the picture a shared link unfurls with. Wants a
+// Chrome and ImageMagick's `magick`.
 
 const OUT = `public/${SHARE_SHOT.file}`
 const { width, height } = SHARE_SHOT
 const DPR = 2
 
-const tokens = readFileSync('src/tokens.css', 'utf8')
+const TAGLINE = 'circuit bending in the browser'
+
+const sheet = (file: string) =>
+  readFileSync(file, 'utf8').replace(/^@import .*$/m, '')
 const html = `<!doctype html>
 <style>
-${tokens}
-html, body { margin: 0; background: var(--surface); }
+${sheet('src/tokens.css')}
+${sheet('src/theme.css')}
+html, body { margin: 0; background: var(--surface); font-family: var(--font); }
 svg { display: block; width: ${width}px; height: ${height}px; }
+.plate {
+  position: absolute;
+  left: 44px;
+  bottom: 44px;
+  padding: 18px 30px 22px;
+  border: 1px solid var(--border-faint);
+  border-left: 8px solid var(--accent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  box-shadow: 0 12px 40px #000c;
+}
+.name {
+  margin: 0;
+  color: var(--fg);
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.tag {
+  margin: 10px 0 0;
+  color: var(--fg2);
+  font-size: 32px;
+}
 </style>
-${pile()}`
+${pile()}
+<div class="plate">
+  <p class="name">bender</p>
+  <p class="tag">${TAGLINE}</p>
+</div>`
 
 const dir = mkdtempSync(join(tmpdir(), 'bender-og-'))
 try {
