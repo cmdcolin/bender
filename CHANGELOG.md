@@ -2,6 +2,17 @@
 
 All notable changes to bender are documented here.
 
+## [1.15.1](https://github.com/cmdcolin/bender/compare/v1.15.0...v1.15.1) - 2026-10-21
+
+### Features
+- *(home)* [`a61272a`](https://github.com/cmdcolin/bender/commit/a61272aab2a4c34d66cd8a25fcfb9d6bdd39c2ba) Jam of the day header link and pnpm jam page builder
+- *(home)* [`6c69195`](https://github.com/cmdcolin/bender/commit/6c691955fc3deca0742e5b4678ce6096594dae91) /jam/ page built into the site, fed by jams.json
+
+### Fixes
+- [`0c5b0bb`](https://github.com/cmdcolin/bender/commit/0c5b0bb9db37ee69f80b6876534a155b4f8a6dee) drop stray dependency bumps from jam commit
+- *(home)* [`e3042d2`](https://github.com/cmdcolin/bender/commit/e3042d205f77c0fe7934d30b204b3cc08c3f59ce) toSorted on the jam list
+- *(docs)* [`3276244`](https://github.com/cmdcolin/bender/commit/32762449158c538eeeabd2d264db2ea602bf955e) describe the jam script in features.md
+
 ## [1.15.0](https://github.com/cmdcolin/bender/compare/v1.14.1...v1.15.0) - 2026-10-20
 
 ### Features
