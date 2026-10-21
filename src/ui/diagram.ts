@@ -53,6 +53,8 @@ export function useSelectedBox(initial: string | null = null) {
   }
 }
 
+export type BoxPick = ReturnType<typeof useSelectedBox>
+
 export const CHAR_W = 5.8
 
 export const boxWidth = (name: string) =>
@@ -66,8 +68,6 @@ export const boxHeight = (name: string) =>
 
 /** The height of a box with a one-line name. */
 export const ONE_LINE_H = boxHeight('')
-
-export type BoxPick = ReturnType<typeof useSelectedBox>
 
 export function useOpensOnAim(
   pick: BoxPick,
