@@ -119,6 +119,9 @@ main and audio threads.
   `BENDER_CHROME`) and ImageMagick's `magick`. Regenerate it on Linux, because
   the shot shows live text in `system-ui` and the font the stack resolves to
   sets the box widths.
+- `pnpm og` regenerates the share image (`public/og.jpg`) from the landing
+  page's pile, using the same Chrome and `magick`; run it after changing
+  `src/site/pile.ts`.
 
 - `demos.json` lists the demos. `pnpm demos` writes them into the README, and
   the build fails if that block is stale. `pnpm reel` renders the ones marked

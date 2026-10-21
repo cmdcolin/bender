@@ -19,6 +19,7 @@
     "controls": "node scripts/controls.ts",
     "cpu": "node scripts/cpu.ts",
     "dash": "node scripts/dash.ts",
+    "og": "node scripts/og.ts",
     "jam": "node scripts/jam.mjs",
     "demos": "node scripts/demogen.mjs",
     "reel": "node scripts/demoreel.ts",

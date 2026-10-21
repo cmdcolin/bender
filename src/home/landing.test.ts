@@ -6,7 +6,7 @@ import About from '../pages/about.astro'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
 import { aboutUrl, blogUrl, privacyUrl } from '../site/paths.ts'
-import { PANEL_SHOT } from '../site/site.ts'
+import { SHARE_SHOT } from '../site/shareShot.ts'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn.ts'
 import { showcase, slug } from './demos.ts'
 
@@ -106,7 +106,7 @@ test('the pages it can render name themselves canonically, once each', () => {
 // file. Read out of the JPEG rather than compared against the constant that
 // wrote them, which would only have agreed with itself.
 test('the share image declares the shape the file actually is', () => {
-  const jpeg = readFileSync(`public/${PANEL_SHOT.file}`)
+  const jpeg = readFileSync(`public/${SHARE_SHOT.file}`)
   let at = 2
   let shape: { width: number; height: number } | undefined
   while (at < jpeg.length && shape === undefined) {
@@ -128,9 +128,9 @@ test('the share image declares the shape the file actually is', () => {
     else at += 2 + jpeg.readUInt16BE(at + 2)
   }
 
-  expect(shape).toEqual({ width: PANEL_SHOT.width, height: PANEL_SHOT.height })
-  expect(landing).toContain(`content="${PANEL_SHOT.width}"`)
-  expect(landing).toContain(`content="${PANEL_SHOT.height}"`)
+  expect(shape).toEqual({ width: SHARE_SHOT.width, height: SHARE_SHOT.height })
+  expect(landing).toContain(`content="${SHARE_SHOT.width}"`)
+  expect(landing).toContain(`content="${SHARE_SHOT.height}"`)
 })
 
 test('the bar links the about page and the blog, and the about page links privacy', async () => {

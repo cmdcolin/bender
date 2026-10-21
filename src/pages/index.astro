@@ -7,13 +7,14 @@ import SignedInHint from '../components/SignedInHint.astro'
 import SocialMeta from '../components/SocialMeta.astro'
 import WhySignInCard from '../components/WhySignInCard.astro'
 import Page from '../layouts/Page.astro'
-import { ORIGIN, PANEL_SHOT } from '../site/site.ts'
+import { SHARE_SHOT } from '../site/shareShot.ts'
+import { ORIGIN } from '../site/site.ts'
 
 const TITLE = 'bender — a circuit bender in the browser'
 const DESCRIPTION =
   'A toy keyboard, a drum machine and an FM chip, bent in the browser. Every board is a link.'
 
-const SHARE_IMAGE = `${ORIGIN}${PANEL_SHOT.file}`
+const SHARE_IMAGE = `${ORIGIN}${SHARE_SHOT.file}`
 ---
 
 <Page title={TITLE} description={DESCRIPTION} canonical={ORIGIN}>
@@ -24,8 +25,8 @@ const SHARE_IMAGE = `${ORIGIN}${PANEL_SHOT.file}`
       title={TITLE}
       description={DESCRIPTION}
       image={SHARE_IMAGE}
-      imageWidth={PANEL_SHOT.width}
-      imageHeight={PANEL_SHOT.height}
+      imageWidth={SHARE_SHOT.width}
+      imageHeight={SHARE_SHOT.height}
     />
   </Fragment>
 
