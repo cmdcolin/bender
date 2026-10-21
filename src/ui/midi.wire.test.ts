@@ -17,7 +17,8 @@ import { padGain } from './pads.ts'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
 
-const input = { onmidimessage: null as Handler }
+const input = { id: 'one', onmidimessage: null as Handler }
+const other = { id: 'two', onmidimessage: null as Handler }
 const sent: number[][] = []
 const output = { send: (bytes: number[]) => sent.push(bytes) }
 // The state-change listener is kept so a test can unplug the device: that is
@@ -25,15 +26,18 @@ const output = { send: (bytes: number[]) => sent.push(bytes) }
 // its way out sends nothing.
 let onStateChange: ((e: Event) => void) | null = null
 const access = {
-  inputs: new Map([['one', input]]),
+  inputs: new Map([
+    ['one', input],
+    ['two', other],
+  ]),
   outputs: new Map([['one', output]]),
   addEventListener(_kind: string, fn: (e: Event) => void) {
     onStateChange = fn
   },
   removeEventListener: () => {},
 }
-const unplug = () =>
-  onStateChange?.({ port: { state: 'disconnected' } } as unknown as Event)
+const unplug = (id = 'one') =>
+  onStateChange?.({ port: { id, state: 'disconnected' } } as unknown as Event)
 
 vi.stubGlobal('navigator', {
   requestMIDIAccess: () => Promise.resolve(access),
@@ -48,6 +52,9 @@ vi.stubGlobal('cancelAnimationFrame', () => {})
 
 const send = (...bytes: number[]) => {
   input.onmidimessage?.({ data: new Uint8Array(bytes) } as MIDIMessageEvent)
+}
+const sendOther = (...bytes: number[]) => {
+  other.onmidimessage?.({ data: new Uint8Array(bytes) } as MIDIMessageEvent)
 }
 
 const cc = (controller: number, value: number, channel = 0) =>
@@ -233,6 +240,41 @@ test('a device leaving the desk mid-note lets go of it', () => {
   expect(engine.keysDown.get().has(3)).toBe(true)
   unplug()
   expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
+test('a note two keyboards hold sounds until both let go', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  sendOther(0x90, 60, 100)
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(true)
+  sendOther(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
+test("one keyboard's pedal does not hold another's notes", () => {
+  midi.setNotes(true)
+  send(0xb0, 64, 127)
+  sendOther(0x90, 60, 100)
+  sendOther(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+  send(0xb0, 64, 0)
+})
+
+test('all notes off from one keyboard spares the other', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  sendOther(0x90, 64, 100)
+  send(0xb0, 123, 0)
+  expect([...engine.keysDown.get()]).toEqual([7])
+})
+
+test('unplugging one keyboard spares the other', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  sendOther(0x90, 64, 100)
+  unplug('two')
+  expect([...engine.keysDown.get()]).toEqual([3])
 })
 
 test('turning notes off at the panel does not strand what is playing', () => {

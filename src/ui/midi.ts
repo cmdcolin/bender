@@ -356,6 +356,16 @@ const OUT_VELOCITY = 100
 // this long without a message and the next one arms a fresh step.
 const GESTURE_GAP_MS = 400
 
+// One input's keys and pedal. `down` maps each note to the beds it went to: the
+// route can move while a note is down, and the key-up has to reach the bed that
+// is holding it rather than the bed the switch is on now. `sustained` holds
+// notes let go of under the pedal, which are still sounding until it lifts.
+interface Hand {
+  down: Map<number, NoteDest[]>
+  sustained: Map<number, NoteDest[]>
+  pedal: boolean
+}
+
 class Midi {
   // The kit's side of the wire, which is a different instrument: pads bind by
   // being hit rather than by arming a control, and nothing over there has a
@@ -423,17 +433,11 @@ class Midi {
   // re-read per byte.
   private spelling = new Map<string, boolean>()
 
-  // What the wire is holding down, so it can be let go of by something other
-  // than the note-off that may never come: a pedal lifting, an all-notes-off, a
-  // device leaving the desk mid-note.
-  // Which beds each one went to, not only which notes: the route can move while
-  // a note is down, and the key-up has to reach the bed that is holding it
-  // rather than the bed the switch is on now.
-  private notesOn = new Map<number, NoteDest[]>()
-  // Notes let go of while the sustain pedal was down. They are still sounding,
-  // and the pedal lifting is what ends them.
-  private sustained = new Map<number, NoteDest[]>()
-  private pedal = false
+  // What each input is holding down, by port id, so it can be let go of by
+  // something other than the note-off that may never come: a pedal lifting, an
+  // all-notes-off, a device leaving the desk mid-note. Per input, so two
+  // keyboards on one desk neither end each other's notes nor share a pedal.
+  private hands = new Map<string, Hand>()
 
   private seen = 0
   // A turning knob sends far faster than anyone can read, so the readout lands
@@ -488,8 +492,8 @@ class Midi {
         // is let go of here or it is held for ever.
         this.onStateChange = (e: Event) => {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- statechange on MIDIAccess only ever carries a MIDIConnectionEvent
-          if ((e as MIDIConnectionEvent).port?.state === 'disconnected')
-            this.allNotesOff()
+          const port = (e as MIDIConnectionEvent).port
+          if (port?.state === 'disconnected') this.dropHand(port.id)
           this.listen(access)
           this.lit.clear()
           this.lightAll()
@@ -735,7 +739,7 @@ class Midi {
 
   private listen(access: MIDIAccess) {
     for (const input of access.inputs.values())
-      input.onmidimessage = e => this.onMessage(e, input.name ?? '')
+      input.onmidimessage = e => this.onMessage(e, input)
   }
 
   // Clock ticks arrive 24 times a beat and active sensing every 300 ms, and both
@@ -1061,51 +1065,87 @@ class Midi {
     if (this.bpm.get() !== null) this.bpm.set(null)
   }
 
-  private strike(semitone: number, gain: number, dests: NoteDest[]) {
-    this.notesOn.set(semitone, dests)
-    this.sustained.delete(semitone)
+  private hand(port: string): Hand {
+    let hand = this.hands.get(port)
+    if (hand === undefined) {
+      hand = { down: new Map(), sustained: new Map(), pedal: false }
+      this.hands.set(port, hand)
+    }
+    return hand
+  }
+
+  private strike(
+    port: string,
+    semitone: number,
+    gain: number,
+    dests: NoteDest[],
+  ) {
+    const hand = this.hand(port)
+    hand.down.set(semitone, dests)
+    hand.sustained.delete(semitone)
     for (const dest of dests) engine.noteOn(semitone, gain, dest)
   }
 
   // A key let go of under a held pedal keeps sounding, and the pedal is what
   // ends it. The chip's voices latch, so a note nobody ends never stops.
-  private letGo(semitone: number) {
+  private letGo(port: string, semitone: number) {
     // A key-up for a note the wire never struck is the standard cure for one
     // that has stuck — a controller that lost its place, or a note left over
-    // from before the route moved — so it goes to both beds rather than
+    // from before the route moved — so it goes to every bed rather than
     // nowhere. The chips ignore a note they are not holding.
-    const dests = this.notesOn.get(semitone) ?? ALL_BEDS
-    if (this.pedal) {
-      this.sustained.set(semitone, dests)
+    const hand = this.hand(port)
+    const dests = hand.down.get(semitone) ?? ALL_BEDS
+    if (hand.pedal) {
+      hand.sustained.set(semitone, dests)
       return
     }
-    this.notesOn.delete(semitone)
-    this.sustained.delete(semitone)
-    for (const dest of dests) engine.noteOff(semitone, dest)
+    hand.down.delete(semitone)
+    hand.sustained.delete(semitone)
+    this.end(semitone, dests)
   }
 
-  private setPedal(down: boolean) {
-    if (down === this.pedal) return
-    this.pedal = down
+  // A bed another input is still holding the note on keeps sounding it.
+  private end(semitone: number, dests: NoteDest[]) {
+    for (const dest of dests)
+      if (!this.holding(semitone, dest)) engine.noteOff(semitone, dest)
+  }
+
+  private holding(semitone: number, dest: NoteDest) {
+    for (const { down } of this.hands.values())
+      if (down.get(semitone)?.includes(dest)) return true
+    return false
+  }
+
+  private setPedal(port: string, down: boolean) {
+    const hand = this.hand(port)
+    if (down === hand.pedal) return
+    hand.pedal = down
     if (down) return
-    for (const [semitone, dests] of this.sustained) {
-      this.notesOn.delete(semitone)
-      for (const dest of dests) engine.noteOff(semitone, dest)
+    for (const [semitone, dests] of hand.sustained) {
+      hand.down.delete(semitone)
+      this.end(semitone, dests)
     }
-    this.sustained.clear()
+    hand.sustained.clear()
+  }
+
+  // The throw pads aren't kept per input, so any input letting go of everything
+  // lets go of all of them.
+  private dropHand(port: string) {
+    const hand = this.hands.get(port)
+    this.hands.delete(port)
+    if (hand !== undefined)
+      for (const [semitone, dests] of hand.down) this.end(semitone, dests)
+    this.throwPads.releaseAll()
   }
 
   /** Let go of every note the wire is holding, pedal and all. */
   allNotesOff() {
-    this.pedal = false
-    this.sustained.clear()
-    for (const [semitone, dests] of this.notesOn)
-      for (const dest of dests) engine.noteOff(semitone, dest)
-    this.notesOn.clear()
+    for (const port of this.hands.keys()) this.dropHand(port)
     this.throwPads.releaseAll()
   }
 
-  private onMessage(e: MIDIMessageEvent, port = '') {
+  private onMessage(e: MIDIMessageEvent, input: MIDIInput) {
+    const port = input.id
     const data = e.data
     const head = data?.[0]
     if (data === null || head === undefined) return
@@ -1121,7 +1161,7 @@ class Midi {
         : null
     this.record(
       [...data],
-      port,
+      input.name ?? '',
       struck === null ? undefined : VOICE_LABELS[struck],
     )
     // System real-time is a single status byte: 0xF8 is a clock tick, 0xFC stop.
@@ -1154,11 +1194,12 @@ class Midi {
       const semitone = toSemitone(first)
       if (on)
         this.strike(
+          port,
           semitone,
           velocity(second),
           routeDests(this.keyRoute.get(), this.split.get(), first),
         )
-      else this.letGo(semitone)
+      else this.letGo(port, semitone)
       return
     }
     // Control Change is 0xB0..0xBF: status, controller, value.
@@ -1201,8 +1242,8 @@ class Midi {
     // 64 is the sustain pedal, and 120 and 123 are the two spellings of "let go
     // of everything" — which is what a controller sends when it loses its own
     // place, and the standard cure for a note left ringing.
-    if (first === 64) this.setPedal(second >= 64)
-    else if (first === 120 || first === 123) this.allNotesOff()
+    if (first === 64) this.setPedal(port, second >= 64)
+    else if (first === 120 || first === 123) this.dropHand(port)
   }
 }
 
