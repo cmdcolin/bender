@@ -83,7 +83,8 @@ interface Props {
   /** Switches that belong to this machine, ahead of the ones every bed has. */
   extras?: ReactNode
   /** A row of buttons between the deck and the keys. */
-  pads?: ReactNode
+  /** The effect buttons, told whether the hold switch is on. */
+  pads?: (hold: boolean) => ReactNode
   tail?: ReactNode
   /** The stage whose mute, level, roll and close caps end the deck. */
   stage?: string
@@ -412,7 +413,7 @@ export function Keybed({
               </span>
             </Tip>
           )}
-          <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">
+          <Tip text="Latch keys and effect buttons on — press a held one again to let it go. Alt-click a single key to pin just that one down.">
             <button
               className={hold ? styles.holdOn : styles.hold}
               aria-pressed={hold}
@@ -443,7 +444,7 @@ export function Keybed({
           )}
         </div>
       </div>
-      {pads}
+      {pads?.(hold)}
       <div className={styles.keys} ref={setBed}>
         {below && <span className={styles.offLow}>◂</span>}
         {above && <span className={styles.offHigh}>▸</span>}

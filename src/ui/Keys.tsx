@@ -91,14 +91,15 @@ export function Keys({
       onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}
-      pads={
+      pads={hold => (
         <EffectPads
           dest="toy"
           names={SFX_NAMES}
           tips={SFX_TIPS}
+          hold={hold}
           className={styles.pads}
         />
-      }
+      )}
       tail={<span className={styles.grille} aria-hidden="true" />}
     />
   )

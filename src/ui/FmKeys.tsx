@@ -60,14 +60,15 @@ export function FmKeys({
           <SeqRec dest="fm" name="Glint" />
         </>
       }
-      pads={
+      pads={hold => (
         <EffectPads
           dest="fm"
           names={EFFECT_NAMES}
           tips={EFFECT_TIPS}
+          hold={hold}
           className={styles.pads}
         />
-      }
+      )}
       stage="Glint"
       onOpen={onOpen}
       seconds={seconds}
