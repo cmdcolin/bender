@@ -35,7 +35,7 @@ import {
   type Verbs,
 } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
-import { listView } from './listView.ts'
+import { listView, VIEWS } from './listView.ts'
 import { MicCap } from './MicJacks.tsx'
 import { MicPatch, MicSwitch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
@@ -63,6 +63,7 @@ import { SupplyReading } from './SupplyReading.tsx'
 import { TapeLoopDiagram } from './TapeLoopDiagram.tsx'
 import { TapePathDiagram } from './TapePathDiagram.tsx'
 import { Tip } from './Tip.tsx'
+import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 import { TriggerPatch } from './TriggerPatch.tsx'
 import { TuneRoll } from './TuneRoll.tsx'
 
@@ -333,8 +334,9 @@ export function OpenGroup({
 }) {
   const shownEditors = useStoreValue(bench)
   const listedEverywhere = useStoreValue(listView)
-  const [listedHere, setListedHere] = useState(false)
-  const listed = listedEverywhere || listedHere
+  const [here, setHere] = useState<{ everywhere: boolean; listed: boolean }>()
+  const listed =
+    here?.everywhere === listedEverywhere ? here.listed : listedEverywhere
   const kind = group.editor?.kind
   const drawable = useMemo(
     () =>
@@ -394,13 +396,20 @@ export function OpenGroup({
         )}
         {kind === 'drums' && <EditorToggle which="grid" />}
         <StageVerbs group={group} seconds={seconds} />
-        <MoreMenu
-          group={group}
-          seconds={seconds}
-          onClose={onClose}
-          listed={drawable && !listedEverywhere ? listedHere : undefined}
-          onList={setListedHere}
-        />
+        {drawable && (
+          <ToggleButtonGroup
+            label={`${group.name} view`}
+            options={VIEWS}
+            value={listed ? 'settings' : 'diagram'}
+            onChange={view =>
+              setHere({
+                everywhere: listedEverywhere,
+                listed: view === 'settings',
+              })
+            }
+          />
+        )}
+        <MoreMenu group={group} seconds={seconds} onClose={onClose} />
         {!stacked && (
           <Tip text={`Close ${group.name} — the path stays.`}>
             <button

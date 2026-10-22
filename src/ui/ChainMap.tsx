@@ -16,7 +16,7 @@ import styles from './ChainMap.module.css'
 import { CHANNELS, GROUPS, STAGE_ORDER, type Group } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { added, removable, shownOn, takeOff } from './fitted.ts'
-import { listView, setListView } from './listView.ts'
+import { listView, setListView, VIEWS } from './listView.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
@@ -25,6 +25,7 @@ import { aimAt } from './reveal.ts'
 import { SettingFind } from './SettingFind.tsx'
 import { Shelf } from './Shelf.tsx'
 import { formerName } from './stageNames.ts'
+import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 import { watchTriggers } from './triggerWatch.ts'
 
 import type { Controls } from '../controls.ts'
@@ -207,13 +208,12 @@ export function StageBar({
   return (
     <>
       <div className={styles.addRow}>
-        <button
-          className={styles.add}
-          aria-pressed={listed}
-          onClick={() => setListView(!listed)}
-        >
-          {listed ? '◧ show the diagram' : '☰ show as a list'}
-        </button>
+        <ToggleButtonGroup
+          label="stage view"
+          options={VIEWS}
+          value={listed ? 'settings' : 'diagram'}
+          onChange={view => setListView(view === 'settings')}
+        />
         {children}
         <StageMenu
           groups={off}

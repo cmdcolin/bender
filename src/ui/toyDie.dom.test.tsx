@@ -277,21 +277,15 @@ test('an open box resets its own rows from inside its card', () => {
     expect(engine.controls.get()[key]).toBe(DEFAULT_CONTROLS[key])
 })
 
-test('all settings lists the stage’s rows in place of the die', () => {
+test('the settings view lists the stage’s rows in place of the die', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   open()
   expect(screen.queryByRole('group', { name: 'toy chip die' })).not.toBeNull()
   const rowsBefore = screen.queryAllByRole('slider').length
-  const listAll = () => {
-    fireEvent.click(screen.getByRole('button', { name: 'more for Plinky' }))
-    fireEvent.click(
-      screen.getByRole('menuitemcheckbox', { name: 'all settings' }),
-    )
-  }
-  listAll()
+  fireEvent.click(screen.getByRole('button', { name: 'settings' }))
   expect(screen.queryByRole('group', { name: 'toy chip die' })).toBeNull()
   expect(screen.queryAllByRole('slider').length).toBeGreaterThan(rowsBefore)
-  listAll()
+  fireEvent.click(screen.getByRole('button', { name: 'diagram' }))
   expect(screen.queryByRole('group', { name: 'toy chip die' })).not.toBeNull()
 })
 

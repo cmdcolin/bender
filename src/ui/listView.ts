@@ -1,6 +1,8 @@
 import { createStore } from '../listeners.ts'
 import { read, write } from './persist.ts'
 
+export const VIEWS = ['diagram', 'settings'] as const
+
 const KEY = 'bender.listView'
 
 /** Whether the panel lists every stage's sliders in place of the signal path

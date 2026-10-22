@@ -130,19 +130,15 @@ export function MoreMenu({
   group,
   seconds,
   onClose,
-  listed,
-  onList,
 }: {
   group: Group
   seconds: number
   onClose: () => void
-  listed?: boolean
-  onList: (listed: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const canTakeOff = removable(group.name)
-  if (!canTakeOff && listed === undefined) return null
+  if (!canTakeOff) return null
   return (
     <>
       <button
@@ -161,27 +157,6 @@ export function MoreMenu({
           role="menu"
           onClose={() => setOpen(false)}
         >
-          {listed !== undefined && (
-            <Tip
-              text={
-                listed
-                  ? `Back to ${group.name}’s drawing, with its settings behind the boxes.`
-                  : `List every setting of ${group.name} in one column, with no drawing to press through.`
-              }
-            >
-              <button
-                role="menuitemcheckbox"
-                aria-checked={listed}
-                className={menuItem(listed)}
-                onClick={() => {
-                  setOpen(false)
-                  onList(!listed)
-                }}
-              >
-                all settings
-              </button>
-            </Tip>
-          )}
           {canTakeOff && (
             <Tip
               text={`Take ${group.name} off the board and the map. A stage with a level or mix gets it turned off and keeps its other knobs; any other goes back to where it booted. Rolls leave it alone until you add it again.`}

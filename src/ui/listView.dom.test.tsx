@@ -22,8 +22,9 @@ test('the list view stacks every stage on the board in place of the map', () => 
 
 test('the toggle goes back to the diagram', () => {
   render(<App />)
-  act(() => screen.getByText('☰ show as a list').click())
-  act(() => screen.getByText('◧ show the diagram').click())
+  const view = () => within(screen.getByRole('group', { name: 'stage view' }))
+  act(() => view().getByRole('button', { name: 'settings' }).click())
+  act(() => view().getByRole('button', { name: 'diagram' }).click())
   expect(screen.queryByRole('group', { name: 'signal path' })).not.toBeNull()
 })
 
