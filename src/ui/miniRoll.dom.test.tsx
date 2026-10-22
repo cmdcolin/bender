@@ -12,7 +12,7 @@ import './testDom.ts'
 
 const strip = () =>
   screen.queryByRole('button', { name: 'open the piano roll' })
-const bars = () => strip()?.querySelectorAll('line').length ?? 0
+const bars = () => strip()?.querySelectorAll('line[class*="note"]').length ?? 0
 
 test('the toy shows its memory only while it plays your tune', () => {
   act(() => engine.patch({ chipTune: 0 }))

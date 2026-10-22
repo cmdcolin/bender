@@ -19,6 +19,8 @@ import type { NoteDest, SeqDest } from '../engine/messages.ts'
 // An octave, so one note reads as a dash rather than as a bar the full height.
 const MIN_ROWS = 13
 
+const BEATS = Array.from({ length: TUNE_STEPS / 4 - 1 }, (_, i) => (i + 1) * 4)
+
 interface Span {
   note: number
   from: number
@@ -135,6 +137,9 @@ function Strip({
       preserveAspectRatio="none"
       aria-hidden="true"
     >
+      {BEATS.map(x => (
+        <line key={x} className={styles.beat} x1={x} x2={x} y1={0} y2={rows} />
+      ))}
       {len < TUNE_STEPS && (
         <rect
           className={styles.past}

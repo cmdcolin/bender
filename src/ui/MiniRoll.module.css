@@ -38,6 +38,13 @@
   height: 100%;
 }
 
+.beat {
+  stroke: var(--fg2);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.12;
+}
+
 .past {
   fill: rgba(0, 0, 0, 0.55);
 }
