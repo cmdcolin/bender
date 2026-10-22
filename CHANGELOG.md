@@ -2,6 +2,26 @@
 
 All notable changes to bender are documented here.
 
+## [1.15.2](https://github.com/cmdcolin/bender/compare/v1.15.1...v1.15.2) - 2026-10-22
+
+### Features
+- *(home)* [`1ef15f7`](https://github.com/cmdcolin/bender/commit/1ef15f7342a3a817127c6b505e90be13dd49b394) unfurl shared links with the pile of instruments
+- *(home)* [`3950db3`](https://github.com/cmdcolin/bender/commit/3950db321c9477c59ec2aeeed22e718e38024320) name bender on the share image
+- *(ui)* [`1318c7e`](https://github.com/cmdcolin/bender/commit/1318c7e29071b97e20f8fdef9e5bd1f5b49a7072) switch a panel between diagram and settings with a button group
+- *(ui)* [`96133c1`](https://github.com/cmdcolin/bender/commit/96133c1de9ae08d97c578d6ec3972ee19c9ef6f6) show the melody memory in miniature on the keybed deck
+- *(ui)* [`0c13491`](https://github.com/cmdcolin/bender/commit/0c1349102ea56ec0a649fb6473a267c7a9cb73c0) label the settings view "all settings"
+- *(ui)* [`274f22d`](https://github.com/cmdcolin/bender/commit/274f22d20203dcf68b576d5d325adb1666030bc7) flash the step a recorded note lands on
+- *(ui)* [`745e50a`](https://github.com/cmdcolin/bender/commit/745e50ab945dd373ea6f665e5e6b84418fadcfad) latch the effect buttons with the keybed hold switch
+- *(ui)* [`f757773`](https://github.com/cmdcolin/bender/commit/f757773ece3aae7def02acf980e08bfd0e60f0b3) draw beat lines on the keybed's mini roll
+
+### Fixes
+- *(midi)* [`7b71793`](https://github.com/cmdcolin/bender/commit/7b717934fdaeb45577d26d43377aa16e0ed34da4) keep held notes and the sustain pedal per input port
+- *(docs)* [`cc34730`](https://github.com/cmdcolin/bender/commit/cc34730193e1d93f5aa62934351b02926caa4ff7) describe the og script in features.md
+
+### Refactor
+- *(ui)* [`dd141b4`](https://github.com/cmdcolin/bender/commit/dd141b41ca7fe64843402879d306396f0643ab7f) name the phone page's colours as tokens
+- *(ui)* [`c42cff9`](https://github.com/cmdcolin/bender/commit/c42cff9eede68ccbce1ff6ea5e2ce16d76bb6c82) build Bend on PickPart and share BoxPick with videoskillet
+
 ## [1.15.1](https://github.com/cmdcolin/bender/compare/v1.15.0...v1.15.1) - 2026-10-21
 
 ### Features
