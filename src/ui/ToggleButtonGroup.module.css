@@ -3,6 +3,10 @@
   align-self: flex-start;
 }
 
+.group > button {
+  white-space: nowrap;
+}
+
 .full {
   display: flex;
   flex: 1 1 0;

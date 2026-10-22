@@ -1,7 +1,7 @@
 import { createStore } from '../listeners.ts'
 import { read, write } from './persist.ts'
 
-export const VIEWS = ['diagram', 'settings'] as const
+export const VIEWS = ['diagram', 'all settings'] as const
 
 const KEY = 'bender.listView'
 

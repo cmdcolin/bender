@@ -211,8 +211,8 @@ export function StageBar({
         <ToggleButtonGroup
           label="stage view"
           options={VIEWS}
-          value={listed ? 'settings' : 'diagram'}
-          onChange={view => setListView(view === 'settings')}
+          value={listed ? 'all settings' : 'diagram'}
+          onChange={view => setListView(view === 'all settings')}
         />
         {children}
         <StageMenu

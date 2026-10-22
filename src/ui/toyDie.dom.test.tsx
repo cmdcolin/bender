@@ -282,7 +282,7 @@ test('the settings view lists the stage’s rows in place of the die', () => {
   open()
   expect(screen.queryByRole('group', { name: 'toy chip die' })).not.toBeNull()
   const rowsBefore = screen.queryAllByRole('slider').length
-  fireEvent.click(screen.getByRole('button', { name: 'settings' }))
+  fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
   expect(screen.queryByRole('group', { name: 'toy chip die' })).toBeNull()
   expect(screen.queryAllByRole('slider').length).toBeGreaterThan(rowsBefore)
   fireEvent.click(screen.getByRole('button', { name: 'diagram' }))

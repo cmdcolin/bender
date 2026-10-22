@@ -400,11 +400,11 @@ export function OpenGroup({
           <ToggleButtonGroup
             label={`${group.name} view`}
             options={VIEWS}
-            value={listed ? 'settings' : 'diagram'}
+            value={listed ? 'all settings' : 'diagram'}
             onChange={view =>
               setHere({
                 everywhere: listedEverywhere,
-                listed: view === 'settings',
+                listed: view === 'all settings',
               })
             }
           />
