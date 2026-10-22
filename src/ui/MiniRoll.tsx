@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
 import { SEQ_DESTS } from '../engine/messages.ts'
@@ -63,6 +65,7 @@ function TuneMini({ onOpen }: Omit<Props, 'dest'>) {
       len={len}
       pos={pos}
       armed={armed}
+      memory="tune"
       stage="Plinky"
       onOpen={onOpen}
     />
@@ -86,6 +89,7 @@ function SeqMini({ dest, onOpen }: Props & { dest: SeqDest }) {
       len={len}
       pos={pos}
       armed={armed}
+      memory="seq"
       stage="Growler"
       onOpen={onOpen}
     />
@@ -97,6 +101,7 @@ function Strip({
   len,
   pos,
   armed,
+  memory,
   stage,
   onOpen,
 }: {
@@ -104,11 +109,16 @@ function Strip({
   len: number
   pos: number
   armed: boolean
+  memory: 'tune' | 'seq'
   stage: string
   onOpen?: (stage: string) => void
 }) {
   const playing = useStoreValue(engine.songPlaying)
   const recording = armed && playing
+  const taken = useStoreValue(engine.noteTaken)
+  // A note taken before the strip mounted is old news, not one to flash.
+  const [old] = useState(taken)
+  const fresh = taken !== old && taken?.memory === memory ? taken : null
   const under = playing ? pos % len : -1
   const bars = lanes.flatMap(spans)
   const notes = bars.map(b => b.note)
@@ -137,6 +147,15 @@ function Strip({
         <rect
           className={recording ? styles.headRec : styles.head}
           x={under}
+          width={1}
+          height={rows}
+        />
+      )}
+      {fresh && (
+        <rect
+          key={fresh.at}
+          className={styles.taken}
+          x={fresh.step}
           width={1}
           height={rows}
         />

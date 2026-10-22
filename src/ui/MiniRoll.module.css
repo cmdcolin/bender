@@ -54,6 +54,18 @@
 
 /* A semitone is a pixel and a half of strip, so a bar's thickness is set in
    pixels rather than in rows. */
+.taken {
+  fill: var(--accent2);
+  opacity: 0;
+  animation: taken 500ms ease-out;
+}
+
+@keyframes taken {
+  from {
+    opacity: 0.8;
+  }
+}
+
 .note,
 .noteOn {
   stroke: var(--accent2);

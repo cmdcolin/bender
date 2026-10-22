@@ -362,6 +362,13 @@ export class Engine {
       on the step the chip is standing on. Off by default, for the same reason. */
   readonly tuneRecord = createStore(false)
   readonly seqRecord = createStore(false)
+  /** The last note recording took: which memory, the step it went to, and
+      when. */
+  readonly noteTaken = createStore<{
+    memory: 'tune' | 'seq'
+    step: number
+    at: number
+  } | null>(null)
   readonly running = createStore(false)
   /** Why the audio engine cannot play: the worklet would not load, or its
       processor threw. '' while it is fine. */
@@ -1603,6 +1610,7 @@ export class Engine {
     const note = foldNote(semitone)
     const key = MONO_SEQ_STEP_KEYS[step]!
     this.seqStruckAt.set(semitone, step)
+    this.noteTaken.set({ memory: 'seq', step, at: performance.now() })
     if (this.controls.get()[key] !== note) {
       this.armStep()
       this.set(key, note)
@@ -1646,6 +1654,7 @@ export class Engine {
     // the step — which is what the toy did.
     const lane = laneForNote(c, step, note, Math.round(c.tunePoly) === 1)
     this.struckAt.set(semitone, { step, lane })
+    this.noteTaken.set({ memory: 'tune', step, at: performance.now() })
     const key = this.stepKey(step, lane)
     if (c[key] !== note) {
       this.armStep()

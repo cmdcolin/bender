@@ -48,3 +48,23 @@ test('pressing the strip opens the roll in the drawing', () => {
   expect(onOpen).toHaveBeenCalledWith('Plinky')
   expect(bench.get().roll).toBe(true)
 })
+
+const flash = () => strip()?.querySelector('rect[class*="taken"]')
+
+test('a note recording takes flashes on the strip', () => {
+  act(() => engine.patch({ chipTune: YOURS }))
+  render(<Keys onOpen={() => {}} />)
+  expect(flash()).toBeFalsy()
+  act(() => engine.armTuneRecord(true))
+  act(() => engine.noteOn(3))
+  act(() => engine.noteOff(3))
+  expect(flash()).toBeTruthy()
+  act(() => engine.armTuneRecord(false))
+})
+
+test('the second melody’s notes do not flash the toy', () => {
+  act(() => engine.patch({ chipTune: YOURS }))
+  render(<Keys onOpen={() => {}} />)
+  act(() => engine.noteTaken.set({ memory: 'seq', step: 2, at: 1 }))
+  expect(flash()).toBeFalsy()
+})
