@@ -1,5 +1,36 @@
-import { isNote, NOTE_HI, NOTE_LO } from '../tune.ts'
+import {
+  isNote,
+  MONO_SEQ_STEP_KEYS,
+  NOTE_HI,
+  NOTE_LO,
+  TUNE_ALL_STEP_KEYS,
+  TUNE_LANE_KEYS,
+  TUNE_STEPS,
+} from '../tune.ts'
+import { useBoardValue, useMeterValue } from './ControlsContext.ts'
 import styles from './TuneRoll.module.css'
+
+// Where each memory's counter is standing. It only moves when a step does, so a
+// roll redraws at the tune's rate rather than at the meter's.
+export const useTunePos = () => useMeterValue(m => m.tunePos)
+export const useSeqPos = () => useMeterValue(m => m.monoSeqPos)
+
+// Ninety-six numbers read through one subscription rather than ninety-six. What
+// the board hands back has to be comparable with Object.is or every write to any
+// control redraws the roll, so the steps travel as a string and come back as
+// numbers.
+export function useLanes(): number[][] {
+  const packed = useBoardValue(c => TUNE_ALL_STEP_KEYS.map(k => c[k]).join(','))
+  const flat = packed.split(',').map(Number)
+  return TUNE_LANE_KEYS.map((_, lane) =>
+    flat.slice(lane * TUNE_STEPS, (lane + 1) * TUNE_STEPS),
+  )
+}
+
+export function useSteps(): number[] {
+  const packed = useBoardValue(c => MONO_SEQ_STEP_KEYS.map(k => c[k]).join(','))
+  return packed.split(',').map(Number)
+}
 
 // How much of the keyboard the roll shows at once. Two octaves is what a toy
 // melody stays inside of and what fits the panel without the grid becoming the

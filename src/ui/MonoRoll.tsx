@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { isSharp, semitoneName } from '../notes.ts'
@@ -11,28 +11,20 @@ import {
   TUNE_STEPS,
   voicing,
 } from '../tune.ts'
-import {
-  useBoardValue,
-  useControlValue,
-  useStoreValue,
-} from './ControlsContext.ts'
+import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { Tip } from './Tip.tsx'
 import styles from './TuneRoll.module.css'
-import { baseFor, cellClass, clampBase, isC, ROWS } from './tuneRoll.ts'
+import {
+  baseFor,
+  cellClass,
+  clampBase,
+  isC,
+  ROWS,
+  useSeqPos,
+  useSteps,
+} from './tuneRoll.ts'
 
 import type { RefObject } from 'react'
-
-function useSeqPos(): number {
-  return useSyncExternalStore(
-    engine.meter.subscribe,
-    () => engine.meter.get().monoSeqPos,
-  )
-}
-
-function useSteps(): number[] {
-  const packed = useBoardValue(c => MONO_SEQ_STEP_KEYS.map(k => c[k]).join(','))
-  return packed.split(',').map(Number)
-}
 
 const wipe = () => {
   engine.armStep()

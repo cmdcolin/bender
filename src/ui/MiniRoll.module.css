@@ -1,0 +1,66 @@
+/* The melody memory in miniature on a keybed's deck: amber bars for the notes,
+   the chip's own colour on the keys, and the playhead across them. Recording
+   rings the strip in the rec cap's colour, dashed while the song is stopped. */
+.roll,
+.rec,
+.recIdle {
+  flex: 1 1 72px;
+  min-width: 56px;
+  max-width: 200px;
+  height: var(--ctl-h);
+  padding: 2px;
+  background: var(--bed);
+  border: 1px solid var(--case-edge);
+  border-radius: 3px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rec {
+  border-color: var(--accent2);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--accent2) 55%, transparent);
+}
+
+.recIdle {
+  border: 1px dashed var(--accent2);
+}
+
+.roll:focus-visible,
+.rec:focus-visible,
+.recIdle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.past {
+  fill: rgba(0, 0, 0, 0.55);
+}
+
+.head {
+  fill: var(--fg2);
+  opacity: 0.25;
+}
+
+.headRec {
+  fill: var(--alarm);
+  opacity: 0.7;
+}
+
+/* A semitone is a pixel and a half of strip, so a bar's thickness is set in
+   pixels rather than in rows. */
+.note,
+.noteOn {
+  stroke: var(--accent2);
+  stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
+}
+
+.note {
+  opacity: 0.6;
+}

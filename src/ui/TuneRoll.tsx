@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
@@ -22,32 +22,17 @@ import {
 } from './ControlsContext.ts'
 import { Tip } from './Tip.tsx'
 import styles from './TuneRoll.module.css'
-import { baseFor, cellClass, clampBase, isC, ROWS } from './tuneRoll.ts'
+import {
+  baseFor,
+  cellClass,
+  clampBase,
+  isC,
+  ROWS,
+  useLanes,
+  useTunePos,
+} from './tuneRoll.ts'
 
 import type { RefObject } from 'react'
-
-// Where the tune's counter is standing. The same story as the kit's playhead:
-// it only moves when a step does, so the roll redraws at the tune's rate rather
-// than at the meter's.
-function useTunePos(): number {
-  return useSyncExternalStore(
-    engine.meter.subscribe,
-    () => engine.meter.get().tunePos,
-  )
-}
-
-// Ninety-six numbers read through one subscription rather than ninety-six. What
-// the board hands back has to be comparable with Object.is or every write to any
-// control redraws the roll, so the steps travel as a string and come back as
-// numbers — which is one small parse per write against the seven hundred and
-// sixty-eight cells a morph would otherwise rebuild every frame.
-function useLanes(): number[][] {
-  const packed = useBoardValue(c => TUNE_ALL_STEP_KEYS.map(k => c[k]).join(','))
-  const flat = packed.split(',').map(Number)
-  return TUNE_LANE_KEYS.map((_, lane) =>
-    flat.slice(lane * TUNE_STEPS, (lane + 1) * TUNE_STEPS),
-  )
-}
 
 // What a drag across the roll is drawing. Held in a ref rather than in state
 // because the roll draws none of it, the same as the kit's grid holds its own.

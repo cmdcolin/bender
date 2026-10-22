@@ -29,6 +29,7 @@ import { claimPress, claimRelease } from './keyPress.ts'
 import { letterKeys } from './letters.ts'
 import { useCoarse, useWidth } from './measure.ts'
 import { menuCheck, menuItem } from './menuItems.ts'
+import { MiniRoll } from './MiniRoll.tsx'
 import { levelOf } from './stageLevels.ts'
 import { Tip } from './Tip.tsx'
 
@@ -400,6 +401,7 @@ export function Keybed({
         <FaceBadge className={styles.badge} stage={stage} onOpen={onOpen}>
           {badge}
         </FaceBadge>
+        <MiniRoll dest={dest} onOpen={onOpen} />
         <div className={styles.switches}>
           {extras}
           {keyScale > 0 && (
