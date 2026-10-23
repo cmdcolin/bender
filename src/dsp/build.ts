@@ -24,6 +24,7 @@ import { Tape } from './stages/tape.ts'
 import { TapeDelay } from './stages/tapeDelay.ts'
 import { ToyChip } from './stages/toyChip.ts'
 import { ToyDrum } from './stages/toyDrum.ts'
+import { Supplies } from './supplies.ts'
 import { ToyRail } from './toyRail.ts'
 import { Transport } from './transport.ts'
 import { mulberry32 } from './util/rng.ts'
@@ -43,6 +44,8 @@ export interface BuiltChain {
       from outside the audio thread: the panel draws it, and a test asks it
       whether the watchdog tripped. */
   rail: ToyRail
+  /** The shared cells, the second cells and the bench supply. */
+  supplies: Supplies
   /** A key let go of, which reaches all four chips. The strike travels the gate line
       on its own, so nobody has to hand it anywhere; a finger coming up is the
       half of a note no wire between them carries, and both ends need it — the
@@ -65,21 +68,22 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   const next = () => (draw() * 0x1_0000_0000) >>> 0
   const chain = new Chain(sr, next())
   const rail = new ToyRail(sr, next())
+  // Seeded off the build's seed rather than drawn, so every stream after it
+  // stays the one it was.
+  const supplies = new Supplies(sr, rail, seed)
+  chain.supplies = supplies
   const transport = new Transport()
-  const toyChip = new ToyChip(sr, rail, transport, next())
-  const toyDrum = new ToyDrum(sr, rail, transport, next())
+  const toyChip = new ToyChip(sr, supplies, transport, next())
+  const toyDrum = new ToyDrum(sr, supplies, transport, next())
   const sampler = new Sampler(sr)
-  // After the kit, because the kit assigns the rail's reported load and the FM
-  // chip adds its own to it: one supply, two chips drawing on it.
-  const fmChip = new FmChip(sr, rail)
-  // And the third die on the same rail, which needs the sampler as well as the
-  // supply: its last voice is not a ROM at all, it is whatever is threaded next
-  // door.
-  const pcmKeys = new PcmKeys(sr, rail, sampler)
+  const fmChip = new FmChip(sr, supplies)
+  // The third die, which needs the sampler as well as the supply: its last
+  // voice is not a ROM at all, it is whatever is threaded next door.
+  const pcmKeys = new PcmKeys(sr, supplies, sampler)
   // The fourth, a monosynth voice card. It draws no seed, so every stream
   // after it stays the one it was.
-  const monoSynth = new MonoSynth(sr, rail)
-  const melody = new MelodyMemory(sr, rail, transport)
+  const monoSynth = new MonoSynth(sr, supplies)
+  const melody = new MelodyMemory(sr, supplies, transport)
   chain.melody = melody
   // In SOURCE_TAPS order, which is the order their meter taps come home in — a
   // test holds the two lists together, because the panel reads a channel off
@@ -133,6 +137,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     fourTrack,
     transport,
     rail,
+    supplies,
     noteOff(semitone: number) {
       toyChip.noteOff(semitone)
       fmChip.gateOff(semitone)

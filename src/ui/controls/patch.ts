@@ -202,6 +202,7 @@ export const PATCH_GROUPS: Group[] = [
             'crush cut depth',
             'crush ladder',
             'crush DAC ref',
+            'second cells starve',
           ],
           groups: [
             {
@@ -209,6 +210,7 @@ export const PATCH_GROUPS: Group[] = [
               choices: [
                 'chip clock',
                 'starve',
+                'second cells starve',
                 'toy level',
                 'toy data line',
                 'toy data fault',

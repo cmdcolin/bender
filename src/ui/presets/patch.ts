@@ -1,4 +1,5 @@
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
+import { SUPPLY, SUPPLY_KEYS } from '../../dsp/supplies.ts'
 import {
   BEND_SLOT_KEYS,
   bendAt,
@@ -179,6 +180,10 @@ const LANDINGS: Landing[] = [
   }),
   at('crush ladder', ['crushMix'], { bend: 'crush' }),
   at('crush DAC ref', ['crushMix', 'crushRef'], { bend: 'crush' }),
+  at('second cells starve', [], {
+    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'pcmLevel', 'monoLevel'],
+    needs: c => SUPPLY_KEYS.some(k => Math.round(c[k]) === SUPPLY.second),
+  }),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

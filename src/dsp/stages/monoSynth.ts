@@ -3,11 +3,11 @@ import { IDX } from '../../engine/params.ts'
 import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
+import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, SEQ_TO_MONO, voiceMask } from '../trigbus.ts'
 import { MonoVoice } from './monoVoice.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
-import type { ToyRail } from '../toyRail.ts'
 
 // The board counts semitones up from A3, the voice counts MIDI notes.
 const A3_MIDI = 57
@@ -30,7 +30,6 @@ export class MonoSynth implements Stage {
   private readonly cutoffLane = new Float32Array(BLOCK)
   private readonly queued: { note: number; on: boolean; gain: number }[] = []
   private readonly gateHeld: number[] = []
-  private lastReboot = 0
   private lastNote = A3_MIDI
   private gateNote = -1
   private gateLeft = 0
@@ -44,11 +43,11 @@ export class MonoSynth implements Stage {
   private ext: Float32Array | null = null
 
   private readonly sr: number
-  private readonly rail: ToyRail
+  private readonly power: SupplyTap
 
-  constructor(sr: number, rail: ToyRail) {
+  constructor(sr: number, supplies: Supplies) {
     this.sr = sr
-    this.rail = rail
+    this.power = new SupplyTap(supplies)
     this.voice = new MonoVoice(sr)
     this.stepSamples = FALLBACK_STEP_S * sr
   }
@@ -188,10 +187,9 @@ export class MonoSynth implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    const rail = this.rail
+    const rail = this.power.pick(p[IDX.monoSupply]!)
     const voice = this.voice
-    if (rail.rebootCount !== this.lastReboot) {
-      this.lastReboot = rail.rebootCount
+    if (this.power.rebooted()) {
       voice.allOff()
       this.gateNote = -1
       this.queued.length = 0
@@ -266,7 +264,7 @@ export class MonoSynth implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
-    rail.reported += load / io.n
+    rail.drawing += load / io.n
   }
 
   panic() {

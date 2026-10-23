@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-513 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+524 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 133 presets, 23 stage settings and 50 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 130 destinations, among
+- **A patch bay that modulates itself.** Four wires, 131 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 49 controls are shy, mostly the ones that act on the
+names it still sets it. 52 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -116,12 +116,13 @@ puts the knife on, and the rows under it show the controls it set:
   itself
 
 <details>
-<summary>49 controls</summary>
+<summary>50 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Level               | 0 to 4, normal 0 to 1                                                                                                          | How loud Plinky is in the source mix                                                                                                                                                          |
 | Mute                | live or muted                                                                                                                  | Silences Plinky on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness                                                                             |
+| Supply              | shared cells, second cells, bench supply                                                                                       | Which supply Plinky runs off                                                                                                                                                                  |
 | Tune                | 19 of them, lullaby through yours                                                                                              | Which song the chip plays                                                                                                                                                                     |
 | Memory rate         | 0.2 to 24 Hz                                                                                                                   | How fast the memory plays its steps back; each ROM song has its own rate                                                                                                                      |
 | Memory notes        | mono or poly                                                                                                                   | Whether the chip reads the two memory chips stacked on the first one                                                                                                                          |
@@ -227,12 +228,13 @@ puts the knife on, and the rows under it show the controls it set:
   sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>57 controls</summary>
+<summary>58 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Level           | 0 to 4, normal 0 to 1                                                                                              | How loud the toy drum machine is in the source mix                                                                                                      |
 | Mute            | live or muted                                                                                                      | Silences Clatter on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness                                      |
+| Supply          | shared cells, second cells, bench supply                                                                           | Which supply Clatter runs off                                                                                                                           |
 | Tempo           | 10 to 3000 bpm                                                                                                     | Sequencer clock                                                                                                                                         |
 | Swing           | 0 to 0.9                                                                                                           | Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving                                   |
 | Chance          | off to full                                                                                                        | How often a maybe step closes                                                                                                                           |
@@ -385,12 +387,13 @@ puts the knife on, and the rows under it show the controls it set:
   digital buzz at the pitch it always had
 
 <details>
-<summary>41 controls</summary>
+<summary>42 controls</summary>
 
 | control                        | range                                                                                    | what it does                                                                                                         |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Level                          | 0 to 4, normal 0 to 1                                                                    | How loud Glint is in the source mix                                                                                  |
 | Mute                           | live or muted                                                                            | Silences Glint on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness     |
+| Supply                         | shared cells, second cells, bench supply                                                 | Which supply Glint runs off                                                                                          |
 | Voice                          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                            | Which of the eight patches under the voice buttons the processor sends the chip                                      |
 | Brightness                     | 0 to 4, normal 0 to 1                                                                    | How loud the modulator is into the carrier, which sets the whole tone of a two-operator chip                         |
 | Feedback                       | 0 to 11, normal 0 to 7                                                                   | How much of the modulator goes back into itself, three bits of it as the part had                                    |
@@ -474,12 +477,13 @@ puts the knife on, and the rows under it show the controls it set:
   still
 
 <details>
-<summary>20 controls</summary>
+<summary>21 controls</summary>
 
 | control                            | range                                                                                                     | what it does                                                                                                                                                                |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Level                              | 0 to 4, normal 0 to 1                                                                                     | How loud Parlor is in the source mix                                                                                                                                        |
 | Mute                               | live or muted                                                                                             | Silences Parlor on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness                                                           |
+| Supply                             | shared cells, second cells, bench supply                                                                  | Which supply Parlor runs off                                                                                                                                                |
 | Voice                              | strings, choir, pipe organ, e.piano, flute, brass, vibes, chime, music box, glass pad, synth pad, sampled | Which recording in the ROM the address counter walks                                                                                                                        |
 | Envelope                           | piano, organ, pad, chime                                                                                  | The four buttons down the side of the case                                                                                                                                  |
 | Release                            | 0.02 to 8 s                                                                                               | The one capacitor the envelope generator has that the buttons do not pick: how long a note takes to die once the key comes up                                               |
@@ -516,12 +520,13 @@ oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck
 bit on the key DAC and a weak regulator.
 
 <details>
-<summary>50 controls</summary>
+<summary>51 controls</summary>
 
 | control                         | range                                                             | what it does                                                                                                               |
 | ------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | Level                           | 0 to 4, normal 0 to 1                                             | How loud Growler is in the source mix                                                                                      |
 | Mute                            | live or muted                                                     | Silences Growler on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness         |
+| Supply                          | shared cells, second cells, bench supply                          | Which supply Growler runs off                                                                                              |
 | Cutoff                          | 20 Hz to 12 kHz                                                   | Where the four-pole ladder filter starts cutting, 24 dB an octave                                                          |
 | Emphasis                        | 0 to 1.1, normal 0 to 0.95                                        | Resonance at the cutoff                                                                                                    |
 | Contour amount                  | 0 to 5 octaves                                                    | How many octaves the filter contour opens the cutoff at its peak                                                           |
@@ -738,23 +743,29 @@ touches, how hard it bites, how long it stays, and the charge and release rates.
 A release faster than the charge makes the touch a dive.
 
 <details>
-<summary>13 controls</summary>
+<summary>19 controls</summary>
 
-| control         | range                | what it does                                                                                                           |
-| --------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Starve †        | off to full          | Sags the shared toy supply rail                                                                                        |
-| Batteries †     | off to full          | How flat the cells are                                                                                                 |
-| Lead resistance | off to full          | A resistor in series with the cells                                                                                    |
-| Reservoir       | off to full          | How much of the board’s capacitance sits behind whatever the starve is pulling on                                      |
-| Watchdog        | 0.2 to 0.6 V         | The voltage at which the reset chip treats the supply as failed                                                        |
-| Latch-up †      | off to full          | How often a brownout jams the chip instead of rebooting it                                                             |
-| Latch hold      | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                      |
-| Clip chatter    | 0 to 40 Hz           | Bare metal dragged across the pads, and how often it finds one                                                         |
-| Clip on clock   | off to full          | Whether the clip lands on the timing pin, which gives a dive, or on the supply, which gives a sag                      |
-| Clip bite †     | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                    |
-| Clip dwell      | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                              |
-| Clip charge     | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down     |
-| Clip release    | 2 to 2000 per second | How fast the clock comes back when the metal lifts, which disconnects the pin and stock runs ten times the charge rate |
+| control            | range                | what it does                                                                                                                      |
+| ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Starve †           | off to full          | Sags the shared cells                                                                                                             |
+| Batteries †        | off to full          | How flat the cells are                                                                                                            |
+| Lead resistance    | off to full          | A resistor in series with the cells                                                                                               |
+| Reservoir          | off to full          | How much of the board’s capacitance sits behind whatever the starve is pulling on                                                 |
+| Watchdog           | 0.2 to 0.6 V         | The voltage at which the reset chip treats the supply as failed                                                                   |
+| Latch-up †         | off to full          | How often a brownout jams the chip instead of rebooting it                                                                        |
+| Latch hold         | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                                 |
+| Clip chatter       | 0 to 40 Hz           | Bare metal dragged across the pads, and how often it finds one                                                                    |
+| Clip on clock      | off to full          | Whether the clip lands on the timing pin, which gives a dive, or on the supply, which gives a sag                                 |
+| Clip bite †        | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
+| Clip dwell         | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                                         |
+| Clip charge        | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down                |
+| Clip release       | 2 to 2000 per second | How fast the clock comes back when the metal lifts, which disconnects the pin and stock runs ten times the charge rate            |
+| Second starve †    | off to full          | Sags the second cells, and only the machines whose Supply is set to them                                                          |
+| Second batteries † | off to full          | How flat the second cells are                                                                                                     |
+| Second lead        | off to full          | A resistor in series with the second cells                                                                                        |
+| Second reservoir   | off to full          | The capacitance behind the second cells                                                                                           |
+| Second clip        | 0 to 40 Hz           | A paperclip on the second cells’ pads, and how often it finds one                                                                 |
+| Second latch-up †  | off to full          | How often a brownout on the second cells jams their machines instead of rebooting them: one note screams until the rail gives out |
 
 </details>
 
@@ -1165,7 +1176,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s oscillator, free-running                                             |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 130 of them, filt cut through crush DAC ref                                                | Where the other end is soldered                                                |
+| Wire 1–4 to    | 131 of them, filt cut through second cells starve                                          | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

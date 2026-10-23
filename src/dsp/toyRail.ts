@@ -165,11 +165,14 @@ export class ToyRail {
   v = 1
   bootRemaining = 0
   rebootCount = 0
-  // block-average load reported by circuits that don't own the tick (toyDrum)
+  // Block-average load the machines that don't tick the rail drew last block,
+  // which this block's tick reads. They add into `drawing` as they run.
   reported = 0
+  drawing = 0
   // The kit's one-shots' charge, per sample over its last block: a spike at
   // the front of each hit rather than the sound that follows.
   spike = 0
+  spiking = 0
   // Open-circuit voltage: what the rail comes back to between notes.
   private open = 1
   private battery = 0
@@ -202,7 +205,7 @@ export class ToyRail {
     this.decouple = 1 - Math.exp(-1 / (PARTS.decouple * sr))
   }
 
-  // The parts, from whoever owns the tick, once a block alongside setBoard. The
+  // The parts, from the supplies, once a block alongside setBoard. The
   // one-pole coefficient off the timing node's cap is worked out here rather
   // than per sample for the same reason the reservoir factor is: it is an
   // exp() on a path that runs forty-eight thousand times a second.
@@ -218,7 +221,7 @@ export class ToyRail {
   // collapse; this is the floor it collapses from. Heat takes the same floor
   // down again, and the chip's own clock tracks it, so a hot board runs flat as
   // well as low. The reservoir doesn't change any of those resting places —
-  // only how long the rail takes to reach them. Whoever owns the tick sets all
+  // only how long the rail takes to reach them. The supplies set all
   // of it once a block.
   setBoard(battery: number, heat = 0, latch = 0, cluster = 0, cap = 0) {
     this.battery = battery
@@ -375,6 +378,13 @@ export class ToyRail {
     if (settle > this.v) this.v += (1 - this.cap) * (settle - this.v)
   }
 
+  nextBlock() {
+    this.reported = this.drawing
+    this.spike = this.spiking
+    this.drawing = 0
+    this.spiking = 0
+  }
+
   get booting() {
     return this.bootRemaining > 0
   }
@@ -439,7 +449,9 @@ export class ToyRail {
     this.drag = 0
     this.clockV = 1
     this.reported = 0
+    this.drawing = 0
     this.spike = 0
+    this.spiking = 0
     this.stress = 0
     this.thresholdWalk.reset()
     this.clipFault.reset()

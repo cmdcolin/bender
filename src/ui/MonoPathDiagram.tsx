@@ -75,7 +75,7 @@ const LOOSE: Partial<Record<BoxId, ControlKey[]>> = {
   filter: ['monoCutoff', 'monoEmph', 'monoContour', 'monoDrive'],
 }
 
-const OUT_KEYS: ControlKey[] = ['monoLevel', 'monoMute']
+const OUT_KEYS: ControlKey[] = ['monoLevel', 'monoMute', 'monoSupply']
 
 const boxKeys = (id: BoxId) => [...keysOf(BOXES[id].part), ...(LOOSE[id] ?? [])]
 

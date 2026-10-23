@@ -12,7 +12,7 @@ export interface StereoBlock {
 // fb is last block's feedback-bus output; fbDest decides where it lands.
 //
 // The supply buses model one wall-wart feeding the whole board: railV and sag
-// are written this block by whoever owns them (ToyChip, Brownout), and droop
+// are written this block by whoever owns them (the shared cells, Brownout), and droop
 // is the worse of the two from last block — what everything else reads to know
 // the power is dying. env is last block's output envelope.
 export interface Ctx {

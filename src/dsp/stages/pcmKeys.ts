@@ -2,6 +2,7 @@ import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { DEST, hop } from '../modbus.ts'
+import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, SEQ_TO_PCM, voiceMask } from '../trigbus.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { mulberry32 } from '../util/rng.ts'
@@ -20,7 +21,6 @@ import {
 } from './pcmRom.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
-import type { ToyRail } from '../toyRail.ts'
 import type { Sampler } from './sampler.ts'
 
 const N_VOICES = 4
@@ -125,7 +125,6 @@ export class PcmKeys implements Stage {
   private voices: Voice[] = Array.from({ length: N_VOICES }, newVoice)
   private clock = 0
   private lastNote = 0
-  private lastReboot = 0
   private queued: { note: number; gain: number; held: boolean }[] = []
 
   private flat: Int8Array
@@ -168,12 +167,12 @@ export class PcmKeys implements Stage {
   private decayTo = ENV_FLOOR
 
   private readonly sr: number
-  private readonly rail: ToyRail
+  private readonly power: SupplyTap
   private readonly sampler: Sampler
 
-  constructor(sr: number, rail: ToyRail, sampler: Sampler) {
+  constructor(sr: number, supplies: Supplies, sampler: Sampler) {
     this.sr = sr
-    this.rail = rail
+    this.power = new SupplyTap(supplies)
     this.sampler = sampler
     this.decim = sr / ROM_HZ
     const { flat, base } = flatten(this.rom)
@@ -373,9 +372,8 @@ export class PcmKeys implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.pcmLevel]!
-    const rail = this.rail
-    if (rail.rebootCount !== this.lastReboot) {
-      this.lastReboot = rail.rebootCount
+    const rail = this.power.pick(p[IDX.pcmSupply]!)
+    if (this.power.rebooted()) {
       for (const v of this.voices) {
         v.stage = IDLE
         v.env = 0
@@ -524,7 +522,7 @@ export class PcmKeys implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
-    rail.reported += load / io.n
+    rail.drawing += load / io.n
   }
 
   panic() {

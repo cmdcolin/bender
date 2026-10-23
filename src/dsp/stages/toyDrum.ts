@@ -15,6 +15,7 @@ import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { DEST, hop, ModBus } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
+import { Supplies, SupplyTap } from '../supplies.ts'
 import { ToyRail } from '../toyRail.ts'
 import { Transport } from '../transport.ts'
 import {
@@ -662,7 +663,6 @@ export class ToyDrum implements Stage {
   private clapsLeft = 0
   private clapTimer = 0
   private clapCount = 3
-  private lastReboot = 0
   private rng: Rng
   private slipRng: Rng
   private micTrig: Transient
@@ -750,12 +750,17 @@ export class ToyDrum implements Stage {
   private scanSamples = 0
 
   private readonly sr: number
-  private readonly rail: ToyRail
+  private readonly power: SupplyTap
   private readonly transport: Transport
 
-  constructor(sr: number, rail: ToyRail, transport: Transport, seed = 202) {
+  constructor(
+    sr: number,
+    supplies: Supplies,
+    transport: Transport,
+    seed = 202,
+  ) {
     this.sr = sr
-    this.rail = rail
+    this.power = new SupplyTap(supplies)
     this.transport = transport
     // Before anything else draws on the board: the scratch kit inside cutRom
     // runs this same constructor, and it has to find the flag rather than a
@@ -829,12 +834,7 @@ export class ToyDrum implements Stage {
   }
 
   when(p: Float32Array) {
-    const on = p[IDX.drumLevel]! > 0
-    if (!on) {
-      this.rail.reported = 0
-      this.rail.spike = 0
-    }
-    return on
+    return p[IDX.drumLevel]! > 0
   }
 
   /** Strike voices by hand. `bits` is the bit order of a step, so one message
@@ -1098,7 +1098,7 @@ export class ToyDrum implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.drumLevel]!
-    const rail = this.rail
+    const rail = this.power.pick(p[IDX.drumSupply]!)
     // Same divider, same cells as the keyboard: flat batteries drag the tempo,
     // and everything else this chip counts — see perSample below.
     const clock = rail.clockFactor
@@ -1246,8 +1246,7 @@ export class ToyDrum implements Stage {
       (Math.max(p[IDX.drumScan]!, 0) / 1000 / clock) * this.sr,
     )
 
-    if (rail.rebootCount !== this.lastReboot) {
-      this.lastReboot = rail.rebootCount
+    if (this.power.rebooted()) {
       this.tick = 0
       this.stepClock = 0
       this.rolledAt = -1
@@ -1802,8 +1801,8 @@ export class ToyDrum implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
-    rail.reported = loadSum / io.n
-    rail.spike = (trigLoad * spikeSum) / io.n
+    rail.drawing += loadSum / io.n
+    rail.spiking += (trigLoad * spikeSum) / io.n
   }
 
   // Crossing between the two kits, and whatever the other one was holding stops
@@ -1997,7 +1996,12 @@ function cutRom(): DrumSlabs {
   cutting = true
   let drum
   try {
-    drum = new ToyDrum(sr, new ToyRail(sr, ROM_SEED), new Transport(), ROM_SEED)
+    drum = new ToyDrum(
+      sr,
+      new Supplies(sr, new ToyRail(sr, ROM_SEED), ROM_SEED),
+      new Transport(),
+      ROM_SEED,
+    )
   } finally {
     cutting = false
   }

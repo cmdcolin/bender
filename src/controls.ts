@@ -71,6 +71,19 @@ export const DEFAULT_CONTROLS = {
   chipSpread: 1,
   chipMixDrive: 0.35,
 
+  // Which supply each machine runs off, and the second set of cells.
+  chipSupply: 0,
+  drumSupply: 0,
+  fmSupply: 0,
+  pcmSupply: 0,
+  monoSupply: 0,
+  cell2Starve: 0,
+  cell2Battery: 0,
+  cell2Lead: 0,
+  cell2Cap: 0,
+  cell2Clip: 0,
+  cell2Latch: 0,
+
   // The melody memory: thirty-two steps of what you played, filed the way the
   // demo songs are so the chip plays yours off the same counter. -128 is a step
   // with nothing on it, -127 one that holds whatever the step before struck;

@@ -71,6 +71,7 @@ import type { Controls } from '../../controls.ts'
 const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS
 import { MIC_JACKS } from '../micWiring.ts'
 import { FOUR_TRACK_GROUP } from './fourTrack.ts'
+import { supplyRow } from './supply.ts'
 
 import type { Group, SliderDef } from './types.ts'
 
@@ -204,6 +205,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: ['live', 'muted'],
         help: 'Silences Plinky on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
+      supplyRow('chipSupply'),
       {
         key: 'chipTune',
         label: 'Tune',
@@ -805,6 +807,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: ['live', 'muted'],
         help: 'Silences Clatter on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
+      supplyRow('drumSupply'),
       {
         key: 'drumBpm',
         lane: 'kit tempo',
@@ -1516,6 +1519,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: ['live', 'muted'],
         help: 'Silences Glint on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
+      supplyRow('fmSupply'),
       {
         key: 'fmVoice',
         label: 'Voice',
@@ -2063,6 +2067,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: ['live', 'muted'],
         help: 'Silences Parlor on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
+      supplyRow('pcmSupply'),
       {
         key: 'pcmVoice',
         label: 'Voice',
@@ -2337,6 +2342,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: ['live', 'muted'],
         help: 'Silences Growler on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
+      supplyRow('monoSupply'),
       {
         key: 'monoCutoff',
         lane: 'mono cutoff',

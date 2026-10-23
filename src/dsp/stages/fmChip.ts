@@ -4,6 +4,7 @@ import { snap } from '../../scale.ts'
 import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
+import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, N_DRUM_VOICES, SEQ_TO_FM, voiceMask } from '../trigbus.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
 import { mulberry32 } from '../util/rng.ts'
@@ -46,7 +47,6 @@ import {
 import { WIRE_REBOOT, WIRE_STUCK, WIRE_TOY } from './toySfx.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
-import type { ToyRail } from '../toyRail.ts'
 
 // The other chip on the board: two operators a voice, four voices, and a
 // register file the CPU writes over a bus.
@@ -486,7 +486,6 @@ export class FmChip implements Stage {
   /** the channel a stuck allocator hands every note, or -1 */
   private stuckCh = -1
   private cold = false
-  private lastReboot = 0
   /** the attenuation adder's mask, or 0 for the linear path */
   private adderMask = 0
   private bootRng = mulberry32(BOOT_SEED)
@@ -542,11 +541,11 @@ export class FmChip implements Stage {
   private micHeld = 0
 
   private readonly sr: number
-  private readonly rail: ToyRail
+  private readonly power: SupplyTap
 
-  constructor(sr: number, rail: ToyRail) {
+  constructor(sr: number, supplies: Supplies) {
     this.sr = sr
-    this.rail = rail
+    this.power = new SupplyTap(supplies)
   }
 
   when(p: Float32Array) {
@@ -1352,7 +1351,7 @@ export class FmChip implements Stage {
     const micOnBus = Math.round(p[IDX.micPatch]!) === MIC.glintBus
     const modSlip = bay.read(DEST.fmDacSlip)
     this.blob = baseBlob
-    const rail = this.rail
+    const rail = this.power.pick(p[IDX.fmSupply]!)
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 
     const drumMask = voiceMask(Math.round(p[IDX.fmStruck]!))
@@ -1374,9 +1373,8 @@ export class FmChip implements Stage {
       this.powerUp()
     }
     this.cold = cold
-    const rebooted = this.rail.rebootCount !== this.lastReboot
+    const rebooted = this.power.rebooted()
     if (rebooted) {
-      this.lastReboot = this.rail.rebootCount
       this.queued.length = 0
       this.powerUp()
     }
@@ -1661,7 +1659,7 @@ export class FmChip implements Stage {
     }
     // The kit owns the reported load and writes it first, so this adds to it:
     // two chips on one supply are two chips' worth of current.
-    rail.reported += load / io.n
+    rail.drawing += load / io.n
   }
 
   // The four slots through the one converter. A stuck counter sends one

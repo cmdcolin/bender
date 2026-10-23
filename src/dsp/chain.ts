@@ -31,6 +31,7 @@ import { mulberry32, type Rng } from './util/rng.ts'
 import { flushDenormal, softclip } from './util/softclip.ts'
 
 import type { MelodyMemory } from './melodyMemory.ts'
+import type { Supplies } from './supplies.ts'
 
 const LIMIT_CEIL = 0.891 // −1 dBFS
 
@@ -231,6 +232,7 @@ class DeskLoop {
 export class Chain {
   /** The second melody, ticked once a block right after the trigger bus clears. */
   melody: MelodyMemory | null = null
+  supplies: Supplies | null = null
   private readonly ctx: Ctx
   private readonly fbRetL = new Float32Array(BLOCK)
   private readonly fbRetR = new Float32Array(BLOCK)
@@ -397,6 +399,7 @@ export class Chain {
 
   panic() {
     for (const s of this.allStages()) s.panic()
+    this.supplies?.reset()
     this.fbRetL.fill(0)
     this.fbRetR.fill(0)
     this.dcL.reset()
@@ -545,6 +548,7 @@ export class Chain {
       stems.fill(0)
       for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
     }
+    this.supplies?.begin(n, p, ctx)
     for (let k = 0; k < this.sources.length; k++) {
       const s = this.sources[k]!
       if (!s.when || s.when(p, ctx)) {

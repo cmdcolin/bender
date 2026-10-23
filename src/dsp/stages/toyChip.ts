@@ -14,6 +14,7 @@ import {
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
+import { SupplyTap, poweredUp, type Supplies } from '../supplies.ts'
 import { voiceMask } from '../trigbus.ts'
 import { Burst } from '../util/burst.ts'
 import { CrossingRate } from '../util/crossings.ts'
@@ -44,7 +45,6 @@ import {
 } from './toySfx.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
-import type { ToyRail } from '../toyRail.ts'
 import type { Transport } from '../transport.ts'
 
 // One index table per lane: the melody the oscillator plays, then the two
@@ -381,7 +381,6 @@ export class ToyChip implements Stage {
   private gateState = 1
   private gateClock = 0
   private clockWalk = 0
-  private lastReboot = 0
   private wasPlaying = false
   // The gate, waiting to go out on the bus. A flag rather than a sentinel note:
   // the keys reach under the toy's bottom key, so there is no note number left
@@ -503,12 +502,19 @@ export class ToyChip implements Stage {
   private sfxNext = -1
 
   private readonly sr: number
-  private readonly rail: ToyRail
+  private readonly supplies: Supplies
+  private readonly power: SupplyTap
   private readonly transport: Transport
 
-  constructor(sr: number, rail: ToyRail, transport: Transport, seed = 101) {
+  constructor(
+    sr: number,
+    supplies: Supplies,
+    transport: Transport,
+    seed = 101,
+  ) {
     this.sr = sr
-    this.rail = rail
+    this.supplies = supplies
+    this.power = new SupplyTap(supplies)
     this.transport = transport
     this.rng = mulberry32(seed)
     this.counterFault = new Burst(sr, 1.1)
@@ -687,7 +693,8 @@ export class ToyChip implements Stage {
   // whatever its envelopes say.
   soundingNotes(out: Int16Array): number {
     let n = 0
-    if (this.rail.booting || this.rail.dead) return n
+    const rail = this.power.rail
+    if (rail.booting || rail.dead) return n
     if (this.transport.tune && isNote(this.note) && this.env > ENV_FLOOR)
       out[n++] = this.note
     if (this.accompLevel > 0) {
@@ -732,17 +739,11 @@ export class ToyChip implements Stage {
     return steal
   }
 
-  // Also true when only the drums or the FM chip play: this stage owns the
-  // shared rail tick, and it owns the key line the FM chip is soldered onto, so
-  // the demo song has to keep clocking even with the toy itself turned down.
+  // Also true when only another machine plays: this stage owns the key line
+  // the FM chip is soldered onto, so the demo song has to keep clocking even
+  // with the toy itself turned down.
   when(p: Float32Array) {
-    return (
-      p[IDX.chipLevel]! > 0 ||
-      p[IDX.drumLevel]! > 0 ||
-      p[IDX.fmLevel]! > 0 ||
-      p[IDX.pcmLevel]! > 0 ||
-      p[IDX.monoLevel]! > 0
-    )
+    return poweredUp(p)
   }
 
   // The only way anything here reads the ROM. The counter puts an address on
@@ -963,8 +964,6 @@ export class ToyChip implements Stage {
       this.len = rom.steps.length
     }
     const clockX = p[IDX.chipClockX]!
-    const baseStarve = p[IDX.chipStarve]!
-    const battery = p[IDX.chipBattery]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
     // Choice 0 on either selector is a bus nobody has been at, so the lines
@@ -1074,17 +1073,10 @@ export class ToyChip implements Stage {
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
     const micJack = Math.round(p[IDX.micPatch]!)
-    const micToRail = micJack === MIC.toyRail
     const micClock = micJack === MIC.toyClock
     if (micJack !== MIC.toyAddr) this.micAddr = 0
     if (micJack !== MIC.toyData) this.micData = 0
-    const fbToRail = ctx.fbDest === 2
     const modClock = ctx.mod.read(DEST.chipClock)
-    // A wire onto the supply itself. Everything else on this board is powered
-    // from the rail, so this is the one destination that reaches all of them at
-    // once: a kick on it browns the toy out on every hit, the LFO on it is a
-    // rail that dies in time.
-    const modStarve = ctx.mod.read(DEST.starve)
     const accomp = p[IDX.chipAccomp]!
     this.accompLevel = accomp
     // Whichever of the kit's voices is bridged onto the gate, and what it plays.
@@ -1109,25 +1101,12 @@ export class ToyChip implements Stage {
       else for (const note of this.heldKeys) this.noteOn(note)
     }
     const cluster = p[IDX.faultCluster]!
-    const couple = p[IDX.couple]!
-    const rail = this.rail
+    const supplies = this.supplies
+    const rail = this.power.pick(p[IDX.chipSupply]!)
     const maxHz = this.sr * 0.49
-    const clipHz = p[IDX.chipClipHz]!
-    const clipClock = p[IDX.chipClipClock]!
-    // What the board is doing, then what the board is made of. Both once a
-    // block: the parts are knobs like any other, and a hand on one of them is a
-    // part being swapped between blocks rather than mid-sample.
-    rail.setBoard(battery, ctx.heat, p[IDX.chipLatch], cluster, p[IDX.chipCap])
-    rail.setParts({
-      lead: p[IDX.chipLeadR]!,
-      latchHold: p[IDX.chipLatchHold]!,
-      watchdog: p[IDX.chipWatchdog]!,
-      clipStarve: p[IDX.chipClipBite]!,
-      clipHold: p[IDX.chipClipHold]! / 1000,
-      dragPull: p[IDX.chipClipCharge]!,
-      dragDrop: p[IDX.chipClipRelease]!,
-      decouple: p[IDX.chipDecouple]! / 1000,
-    })
+    // The clip on the timing pin is the shared cells' clip, so only a toy on
+    // those cells feels it.
+    const clipClock = rail === supplies.shared ? p[IDX.chipClipClock]! : 0
     const dragMax = dragDivisor(p[IDX.chipDragOct]!)
     const spread = p[IDX.chipSpread]!
     const mixDrive = p[IDX.chipMixDrive]!
@@ -1170,8 +1149,7 @@ export class ToyChip implements Stage {
     }
     const sfxMask = voiceMask(sfxWire < WIRE_TOY ? sfxWire : 0)
 
-    if (rail.rebootCount !== this.lastReboot) {
-      this.lastReboot = rail.rebootCount
+    if (this.power.rebooted()) {
       this.restart(tune, true)
       if (sfxWire === WIRE_REBOOT) this.wirePress()
     }
@@ -1566,17 +1544,7 @@ export class ToyChip implements Stage {
       if (this.outAddr >= 0 || this.outData >= 0)
         this.driveBus(tune, out > 0 ? 1 : 0)
       out *= level * 0.4
-      // A loop screaming in the top end draws on the same cells the toy runs
-      // off, so a squeal that got away browns out the chip that started it.
-      const extra =
-        (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) +
-        (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0) +
-        couple * Math.max(ctx.bright[i]!, 0) * 0.5
-      const starve = modStarve
-        ? Math.min(Math.max(baseStarve + modStarve[i]!, 0), 1)
-        : baseStarve
-      rail.tick(Math.abs(out), starve, extra, clipHz, clipClock)
-      ctx.railV[i] = rail.v
+      supplies.tick(rail, i, Math.abs(out))
       ctx.step[i] = this.stepClock
       // The chip's gate, brought out to the bus whether anything is soldered to
       // it or not: a note struck is a note struck, whether the ROM struck it,
@@ -1783,6 +1751,5 @@ export class ToyChip implements Stage {
     this.arpUp.length = 0
     this.arpStep = 0
     this.arpClock = 0
-    this.rail.reset()
   }
 }

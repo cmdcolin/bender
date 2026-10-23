@@ -1,8 +1,8 @@
 import { IDX } from '../engine/params.ts'
 import { asTuneLen, HOLD, isNote } from '../tune.ts'
+import { SupplyTap, type Supplies } from './supplies.ts'
 
 import type { Ctx } from './stage.ts'
-import type { ToyRail } from './toyRail.ts'
 import type { Transport } from './transport.ts'
 
 const NO_STEP = -1000
@@ -16,7 +16,6 @@ export class MelodyMemory {
   private clock = 1
   private fresh = true
   private stepSamples = 0
-  private lastReboot = 0
 
   /** Where the counter is standing, for the roll's playhead and the quantizer. */
   at = 0
@@ -27,12 +26,12 @@ export class MelodyMemory {
   stepMs = 0
 
   private readonly sr: number
-  private readonly rail: ToyRail
+  private readonly power: SupplyTap
   private readonly transport: Transport
 
-  constructor(sr: number, rail: ToyRail, transport: Transport) {
+  constructor(sr: number, supplies: Supplies, transport: Transport) {
     this.sr = sr
-    this.rail = rail
+    this.power = new SupplyTap(supplies)
     this.transport = transport
   }
 
@@ -59,9 +58,8 @@ export class MelodyMemory {
   }
 
   process(n: number, p: Float32Array, ctx: Ctx) {
-    const rail = this.rail
-    if (rail.rebootCount !== this.lastReboot) {
-      this.lastReboot = rail.rebootCount
+    const rail = this.power.pick(p[IDX.monoSupply]!)
+    if (this.power.rebooted()) {
       this.fresh = true
     }
     const running =

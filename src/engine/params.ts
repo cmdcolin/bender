@@ -78,6 +78,18 @@ export const PARAM_DEFS = [
   ['chipSpread', 'slew'],
   ['chipMixDrive', 'slew'],
 
+  ['chipSupply', 'step'],
+  ['drumSupply', 'step'],
+  ['fmSupply', 'step'],
+  ['pcmSupply', 'step'],
+  ['monoSupply', 'step'],
+  ['cell2Starve', 'slew'],
+  ['cell2Battery', 'slew'],
+  ['cell2Lead', 'slew'],
+  ['cell2Cap', 'slew'],
+  ['cell2Clip', 'slew'],
+  ['cell2Latch', 'slew'],
+
   // The memory's steps are notes rather than amounts: there is nothing between
   // two of them, exactly as there is nothing between two step masks.
   ['tuneStep0', 'step'],

@@ -63,6 +63,7 @@ const KEYS = [
   'fmDrive',
   'fmLevel',
   'fmMute',
+  'fmSupply',
   'fmVoice',
   ...KNIFE,
   ...DIE,
@@ -126,8 +127,8 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     ],
     [
       'output',
-      ['fmLevel', 'fmMute', 'fmDrive'],
-      'The one output stage the four voices share, and Glint’s fader into the source mix.',
+      ['fmLevel', 'fmMute', 'fmSupply', 'fmDrive'],
+      'The one output stage the four voices share, Glint’s fader into the source mix, and the supply it runs off.',
     ],
   ]
   const box = boxMaker(r.touched)

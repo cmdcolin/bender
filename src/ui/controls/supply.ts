@@ -1,8 +1,38 @@
-import type { Group } from './types.ts'
+import { SUPPLY, SUPPLY_KEYS, SUPPLY_NAMES } from '../../dsp/supplies.ts'
+
+import type { Controls } from '../../controls.ts'
+import type { Group, SliderDef } from './types.ts'
+
+export type SupplyKey = (typeof SUPPLY_KEYS)[number]
+
+/** Each machine's Supply selector, and the machine it belongs to. */
+export const SUPPLY_OF: Record<SupplyKey, string> = {
+  chipSupply: 'Plinky',
+  drumSupply: 'Clatter',
+  fmSupply: 'Glint',
+  pcmSupply: 'Parlor',
+  monoSupply: 'Growler',
+}
+
+/** The machines a supply feeds, in panel order. */
+export const machinesOn = (c: Controls, supply: number) =>
+  SUPPLY_KEYS.filter(k => Math.round(c[k]) === supply).map(k => SUPPLY_OF[k])
+
+const onSecond = (c: Controls) => machinesOn(c, SUPPLY.second).length > 0
+
+export const supplyRow = (key: SupplyKey): SliderDef => ({
+  key,
+  label: 'Supply',
+  min: 0,
+  max: SUPPLY_NAMES.length - 1,
+  step: 1,
+  unit: '',
+  choices: SUPPLY_NAMES,
+  help: `Which supply ${SUPPLY_OF[key]} runs off. The shared cells feed every machine left on them, so a starve, a clip or a reboot there bends them all together. Second cells are a set of their own, with their own knobs in Power supply, and a reboot there restarts only what runs off them. The bench supply never sags, never reboots and ignores load.`,
+})
 
 // The battery rail the toy keyboard, drums, FM chip, home keyboard and mono
-// synth share. Its knobs lived on the toy keyboard's panel, which made the rail
-// read as the keyboard's own.
+// synth boot on, and the second set of cells any of them can move to.
 export const SUPPLY_GROUPS: Group[] = [
   {
     name: 'Power supply',
@@ -20,7 +50,7 @@ export const SUPPLY_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         shy: true,
-        help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip. One oscillator clocks the whole chip, so a sag that lasts slurs and slows the tune together, the way a tape does.',
+        help: 'Sags the shared cells. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip. One oscillator clocks the whole chip, so a sag that lasts slurs and slows the tune together, the way a tape does.',
       },
       {
         key: 'chipBattery',
@@ -148,6 +178,76 @@ export const SUPPLY_GROUPS: Group[] = [
         unit: '/s',
         curve: 'log',
         help: 'How fast the clock comes back when the metal lifts, which disconnects the pin and stock runs ten times the charge rate. That asymmetry makes the bend a dive; even it up and dives turn into a warble.',
+      },
+      {
+        key: 'cell2Starve',
+        lane: 'second cells starve',
+        part: 'second cells',
+        needs: onSecond,
+        label: 'Second starve',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'Sags the second cells, and only the machines whose Supply is set to them. Past the brownout threshold their own watchdog reboots them and leaves everything on the shared cells playing.',
+      },
+      {
+        key: 'cell2Battery',
+        part: 'second cells',
+        needs: onSecond,
+        label: 'Second batteries',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'How flat the second cells are. The machines on them run low and slow, and sag further on every note.',
+      },
+      {
+        key: 'cell2Lead',
+        part: 'second cells',
+        needs: onSecond,
+        label: 'Second lead',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'A resistor in series with the second cells. Their machines whoop on every note and climb back between hits.',
+      },
+      {
+        key: 'cell2Cap',
+        part: 'second cells',
+        needs: onSecond,
+        label: 'Second reservoir',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The capacitance behind the second cells. It sets how long their rail takes to fall and recover, not where it lands.',
+      },
+      {
+        key: 'cell2Clip',
+        part: 'second cells',
+        needs: onSecond,
+        label: 'Second clip',
+        min: 0,
+        max: 40,
+        step: 0.1,
+        unit: 'Hz',
+        help: 'A paperclip on the second cells’ pads, and how often it finds one. Each touch chokes their rail for a few tens of milliseconds, so the machines on them dive while the shared cells play clean.',
+      },
+      {
+        key: 'cell2Latch',
+        part: 'second cells',
+        needs: onSecond,
+        label: 'Second latch-up',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'How often a brownout on the second cells jams their machines instead of rebooting them: one note screams until the rail gives out.',
       },
     ],
   },

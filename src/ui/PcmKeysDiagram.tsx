@@ -32,6 +32,7 @@ const KEYS = [
   'pcmTone',
   'pcmLevel',
   'pcmMute',
+  'pcmSupply',
   'pcmRunOn',
   'pcmWrite',
   'pcmSignDir',
@@ -106,8 +107,8 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     xs.at(-1)!,
     TOP + ROW,
     widths.at(-1)!,
-    ['pcmLevel', 'pcmMute'],
-    'The keyboard’s fader and mute, where it joins the source mix.',
+    ['pcmLevel', 'pcmMute', 'pcmSupply'],
+    'The keyboard’s fader and mute, where it joins the source mix, and the supply it runs off.',
   )
   const at = (id: string) => row.find(b => b.id === id)!
   const counter = at('counter')
