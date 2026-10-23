@@ -24,7 +24,7 @@ jobs:
           version: 11.20.0
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -43,7 +43,7 @@ jobs:
           version: 11.20.0
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # scripts/demoreel.ts encodes the landing page's demo clips with ffmpeg.
