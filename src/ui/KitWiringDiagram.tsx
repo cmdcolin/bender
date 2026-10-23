@@ -24,8 +24,8 @@ import type { ControlKey } from '../controls.ts'
 // What each box and each patch of the drawing opens.
 const OPENS: Record<string, { keys: readonly ControlKey[]; help: string }> = {
   'trigger lines': {
-    keys: ['drumRetrigHz', 'drumTrigFloor', 'drumScan'],
-    help: 'One trigger line a voice off the pattern memory. The rows set how fast a step retriggers, how far a voice must drain before it answers again and how slowly the chip scans its lines.',
+    keys: ['drumRetrigHz', 'drumRatchetRamp', 'drumTrigFloor', 'drumScan'],
+    help: 'One trigger line a voice off the pattern memory. The rows set how fast a step retriggers, how a ratcheted step’s repeats swell or fade, how far a voice must drain before it answers again and how slowly the chip scans its lines.',
   },
   amps: {
     keys: ['drumAccentAmt', 'drumAccentSag'],
