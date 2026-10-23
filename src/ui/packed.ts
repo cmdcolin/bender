@@ -904,6 +904,23 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'modEnvSustain',
   'modEnvRelease',
   'modEnvHold',
+  'drumStepCond0',
+  'drumStepCond1',
+  'drumStepCond2',
+  'drumStepCond3',
+  'drumStepCond4',
+  'drumStepCond5',
+  'drumStepCond6',
+  'drumStepCond7',
+  'drumStepCond8',
+  'drumStepCond9',
+  'drumStepCond10',
+  'drumStepCond11',
+  'drumStepCond12',
+  'drumStepCond13',
+  'drumStepCond14',
+  'drumStepCond15',
+  'drumFill',
 ]
 
 // Retired controls that old links still carry, each read into the control that

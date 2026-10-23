@@ -30,6 +30,8 @@ import {
   STEPS,
   romMatching,
   stepBit,
+  STEP_COND_KEYS,
+  STEP_CONDS,
   stepState,
   THROW_ROW,
   voiceBit,
@@ -299,6 +301,15 @@ export function DrumGrid() {
           tail={<EventEvery />}
           tip="A fault on the whole board for the length of its step: c a knife through the output lead, d the cells losing contact so the shared rail sags, b a tape brake on the mix, f the step's first half repeated, r the power pulled and put back. A run of one letter plays as one fault, so four b in a row brake over the whole beat and four f roll faster and faster. A reboot on the shared cells restarts the kit’s bar too, unless the kit runs off another supply. Click to go round, shift-click to go back."
         />
+        <CycleRow
+          live={live}
+          name="cond"
+          keys={STEP_COND_KEYS}
+          values={STEP_CONDS.map((_, i) => i)}
+          says={v => (v ? COND_CELL[v]! : '')}
+          tail={<FillButton />}
+          tip="Which bars each column plays, whatever voices are on it: 3:4 the third bar of every four, !4:4 all but the fourth. p plays only when the last column with a bar condition played, !p only when it rested, so two columns can trade places. F plays only while the F at the end of the row is held, !F only while it is not. Click to go round, shift-click to go back."
+        />
       </div>
 
       {level === 0 && (
@@ -338,6 +349,17 @@ function MuteSwitch({ voice, muted }: { voice: number; muted: boolean }) {
     </Tip>
   )
 }
+
+// A cell is one finger wide, so the column conditions print short: !4:4 as !4.
+const SHORT_COND: Record<string, string> = {
+  pre: 'p',
+  '!pre': '!p',
+  fill: 'F',
+  '!fill': '!F',
+}
+const COND_CELL = STEP_CONDS.map(
+  c => SHORT_COND[c] ?? (c.startsWith('!') ? c.split(':')[0]! : c),
+)
 
 // The last column holds each row's length, the bars it plays or its hits, one
 // at a time, so the cells keep their width. Not a control: which one is
@@ -797,6 +819,38 @@ function CycleRow(props: {
     </Tip>
   )
 }
+
+// Held, not toggled: the fill lasts as long as the press, like a throw.
+function FillButton() {
+  const on = useStoreValue(engine.held).has(FILL)
+  const up = () => engine.letGoThrow(FILL)
+  return (
+    <Tip text="Hold for the fill: the cond row's F columns play and its !F columns rest until you let go.">
+      <button
+        className={on ? styles.tailOn : styles.shuffleRow}
+        aria-pressed={on}
+        onPointerDown={e => {
+          e.currentTarget.setPointerCapture(e.pointerId)
+          engine.holdThrow(FILL, { drumFill: 1 })
+        }}
+        onPointerUp={up}
+        onPointerCancel={up}
+        onLostPointerCapture={up}
+        onKeyDown={e => {
+          if (e.key === ' ' || e.key === 'Enter')
+            engine.holdThrow(FILL, { drumFill: 1 })
+        }}
+        onKeyUp={up}
+        onContextMenu={e => e.preventDefault()}
+        aria-label="hold fill"
+      >
+        F
+      </button>
+    </Tip>
+  )
+}
+
+const FILL = 'fill'
 
 function EventEvery() {
   const at = asEventEvery(useBoardValue(c => c.drumEventEvery))

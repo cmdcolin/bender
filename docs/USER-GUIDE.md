@@ -38,7 +38,7 @@ The button over the last column steps through three views of each row:
 - **hits:** a count the row spreads as evenly as it goes over its length,
   starting from its first hit. 3 over 8 is the tresillo
 
-Two rows under the grid work like a tracker's effect columns:
+The rows under the grid work like a tracker's effect columns:
 
 - **ratchet** fires a step ×2 to ×8 inside itself. **Ratchet ramp** fades the
   repeats out or swells them in
@@ -51,6 +51,10 @@ Two rows under the grid work like a tracker's effect columns:
   plays as one fault: four **b** in a row brake over the whole beat, and four
   **f** roll faster and faster. The button at the end of the row sets how often
   the row fires: **4:4** fires on the fourth bar of every four
+- **cond:** each column plays only on the bars its condition names, whatever
+  voices sit on it. **p** plays only when the last column with a bar condition
+  played, **!p** only when it rested, and **F** plays only while you hold the
+  **F** at the end of the row
 
 The event row's five faults also play live from the keyboard while the kit runs.
 Hold a key and the fault starts on the kit's next step and lasts until you let

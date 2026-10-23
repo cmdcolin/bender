@@ -15,7 +15,11 @@ import {
   DATA_LINES,
   DRUM_VOICES,
   GRID_ROWS,
+  STEP_COND_KEYS,
+  STEP_CONDS,
   STEPS,
+  asStepCond,
+  stepCondPlays,
   VOICE_LABELS,
 } from '../../drums.ts'
 import { IDX, packParams } from '../../engine/params.ts'
@@ -538,6 +542,8 @@ let cutting = false
 const RATCHET_IDX = RATCHET_KEYS.map(k => IDX[k])
 const COND_IDX = COND_KEYS.map(k => IDX[k])
 const NUDGE_IDX = NUDGE_KEYS.map(k => IDX[k])
+const STEP_COND_IDX = STEP_COND_KEYS.map(k => IDX[k])
+const STEP_PRE = STEP_CONDS.indexOf('pre')
 // The quietest a repeat gets at either end of a full ramp.
 const RAMP_FLOOR = 0.15
 
@@ -561,6 +567,10 @@ export class ToyDrum implements Stage {
   /** How long an unswung step lasts at the rate the counter is clocking now. */
   stepMs = 125
   private repeats = 0
+  // Whether the column the counter stands on passed its condition, and how the
+  // last column with an A:B went, for a pre after it.
+  private colPlays = true
+  private lastCond = true
   private repeat = 0
   private due = 0
   private gap = 0
@@ -1097,6 +1107,7 @@ export class ToyDrum implements Stage {
       VOICE_BITS &
       ~Math.round(p[IDX.drumRowMute]!) &
       this.condBits(p, Math.floor(this.tick / STEPS))
+    if (!fallback && !this.colPlays) named = 0
     if (!fallback && this.tick === this.skipTick) {
       named &= ~this.skipBits
       this.skipTick = -1
@@ -1424,6 +1435,14 @@ export class ToyDrum implements Stage {
             (modTempo ? stepHz * octaves(modTempo[i]!) : stepHz)
           if (!missed) ctx.trig.stepClocked(i, this.tick, stepS)
           this.repeats = RATCHETS[asRatchet(p[RATCHET_IDX[col]!]!)]!
+          const cond = asStepCond(p[STEP_COND_IDX[col]!]!)
+          this.colPlays = stepCondPlays(
+            cond,
+            Math.floor(this.tick / STEPS),
+            this.lastCond,
+            p[IDX.drumFill]! > 0.5,
+          )
+          if (cond > 0 && cond < STEP_PRE) this.lastCond = this.colPlays
           this.repeat = 0
           this.due = stepS * late
           this.gap = (stepS * (1 - late)) / this.repeats

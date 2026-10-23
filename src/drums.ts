@@ -242,10 +242,51 @@ export function condPlays(cond: number, bar: number): boolean {
   return (bar % b === a - 1) !== not
 }
 
+/** Each column's condition, as an index into STEP_CONDS. */
+export const STEP_COND_KEYS = [
+  'drumStepCond0',
+  'drumStepCond1',
+  'drumStepCond2',
+  'drumStepCond3',
+  'drumStepCond4',
+  'drumStepCond5',
+  'drumStepCond6',
+  'drumStepCond7',
+  'drumStepCond8',
+  'drumStepCond9',
+  'drumStepCond10',
+  'drumStepCond11',
+  'drumStepCond12',
+  'drumStepCond13',
+  'drumStepCond14',
+  'drumStepCond15',
+] as const satisfies readonly ControlKey[]
+/** A column plays on the bars its A:B says, as a row does. pre plays only when
+    the last column with an A:B before it played, !pre only when it did not;
+    fill plays only while the fill key is down, !fill only while it is up. */
+export const STEP_CONDS = [...CONDS, 'pre', '!pre', 'fill', '!fill'] as const
+export const asStepCond = (v: number) =>
+  Math.min(Math.max(Math.round(v), 0), STEP_CONDS.length - 1)
+const PRE = CONDS.length
+
+/** Whether a column under `cond` plays on bar `bar`, given how the last
+    column with an A:B went and whether the fill key is down. */
+export function stepCondPlays(
+  cond: number,
+  bar: number,
+  pre: boolean,
+  fill: boolean,
+): boolean {
+  const c = asStepCond(cond)
+  if (c < PRE) return condPlays(c, bar)
+  return [pre, !pre, fill, !fill][c - PRE]!
+}
+
 export const RATCHET_SET = new Set<ControlKey>(RATCHET_KEYS)
 export const NUDGE_SET = new Set<ControlKey>(NUDGE_KEYS)
 export const EVENT_SET = new Set<ControlKey>(EVENT_KEYS)
 export const COND_SET = new Set<ControlKey>(COND_KEYS)
+export const STEP_COND_SET = new Set<ControlKey>(STEP_COND_KEYS)
 
 /** A setting of the kit's tracker rows clamped to what it can hold, or
     undefined for a key that is none of them. */
@@ -255,6 +296,8 @@ export function asKitSetting(key: ControlKey, v: number): number | undefined {
   if (EVENT_SET.has(key) || key === 'drumEventLive') return asEvent(v)
   if (key === 'drumEventEvery') return asEventEvery(v)
   if (COND_SET.has(key)) return asCond(v)
+  if (STEP_COND_SET.has(key)) return asStepCond(v)
+  if (key === 'drumFill') return v > 0.5 ? 1 : 0
   return undefined
 }
 

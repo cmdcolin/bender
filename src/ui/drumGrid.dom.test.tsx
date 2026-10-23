@@ -105,6 +105,20 @@ test('the last column trades row lengths for the bars each row plays', () => {
   ).toBeTruthy()
 })
 
+test('a cond cell clicks round the conditions, and fill holds while pressed', () => {
+  render(<DrumGrid />)
+  const cell = () => screen.getByRole('button', { name: 'cond step 3' })
+  fireEvent.click(cell())
+  fireEvent.click(cell())
+  expect(engine.controls.get().drumStepCond2).toBe(2)
+  expect(cell().textContent).toBe('2:2')
+  const fill = screen.getByRole('button', { name: 'hold fill' })
+  fireEvent.pointerDown(fill, { pointerId: 1 })
+  expect(engine.held.get().get('fill')).toEqual({ drumFill: 1 })
+  fireEvent.pointerUp(fill, { pointerId: 1 })
+  expect(engine.held.get().has('fill')).toBe(false)
+})
+
 test('the hits column spreads a row’s count evenly from its first hit', () => {
   act(() => {
     engine.set('drumKickLen', 8)
