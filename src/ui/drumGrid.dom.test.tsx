@@ -2,7 +2,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { GRID_ROWS } from '../drums.ts'
+import { GRID_ROWS, rowText, stepBit } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import styles from './DrumGrid.module.css'
 import { DrumGrid } from './DrumGrid.tsx'
@@ -94,11 +94,33 @@ test('the last column trades row lengths for the bars each row plays', () => {
   fireEvent.change(bars, { target: { value: '9' } })
   expect(engine.controls.get().drumSnareCond).toBe(9)
   expect((bars as HTMLSelectElement).selectedOptions[0]!.text).toBe('!4:4')
-  fireEvent.click(screen.getByRole('button', { name: 'bars' }))
+  fireEvent.click(screen.getByRole('button', { name: 'bars' }), {
+    shiftKey: true,
+  })
   expect(screen.getByRole('button', { name: 'len' }).className).toMatch(
     /tailOn/,
   )
   expect(
     screen.getByRole('combobox', { name: 'snare row length' }),
   ).toBeTruthy()
+})
+
+test('the hits column spreads a row’s count evenly from its first hit', () => {
+  act(() => {
+    engine.set('drumKickLen', 8)
+    engine.set('drumKick', 0)
+    engine.set('drumKickMaybe', stepBit(5))
+  })
+  render(<DrumGrid />)
+  fireEvent.click(screen.getByRole('button', { name: 'len' }), {
+    shiftKey: true,
+  })
+  const hits = screen.getByRole('combobox', { name: 'kick row hits' })
+  expect((hits as HTMLSelectElement).value).toBe('1')
+  fireEvent.change(hits, { target: { value: '3' } })
+  const c = engine.controls.get()
+  expect(rowText(c.drumKick, c.drumKickMaybe, 8)).toBe('x..x.x..')
+  expect(c.drumKickMaybe).toBe(0)
+  fireEvent.click(screen.getByRole('button', { name: 'hits' }))
+  expect(screen.getByRole('button', { name: 'len' })).toBeTruthy()
 })

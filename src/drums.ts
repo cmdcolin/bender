@@ -509,6 +509,29 @@ export function euclid(hits: number, steps: number, rotate = 0): string {
   return flat.slice(r) + flat.slice(0, r)
 }
 
+/** How many of a row's first `len` steps fire. */
+export const hitsIn = (mask: number, len: number) => {
+  let n = 0
+  for (let s = 0; s < asLen(len); s++) if (hasStep(mask, s)) n++
+  return n
+}
+
+/** A row's hits spread evenly over its length, starting from the step its
+    first hit stood on. Steps past the length keep what they had. */
+export function euclidMask(hits: number, len: number, mask: number): number {
+  const n = asLen(len)
+  let first = 0
+  while (first < n && !hasStep(mask, first)) first++
+  if (first === n) first = 0
+  const text = euclid(hits, n)
+  let out = mask
+  for (let s = 0; s < n; s++) {
+    const at = (s + first) % n
+    out = text[s] === 'x' ? out | stepBit(at) : out & ~stepBit(at)
+  }
+  return out
+}
+
 const EUCLID = /([x?.])\((\d+),(\d+)(?:,(-?\d+))?\)/g
 
 /** Parses the format rowText writes, ignoring spaces and `|`. The text length

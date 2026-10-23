@@ -8,8 +8,10 @@ import {
   DRUM_ROMS,
   DRUM_VOICES,
   euclid,
+  euclidMask,
   GRID_ROWS,
   heardStep,
+  hitsIn,
   PATTERN_KEYS,
   STEPS,
   hasStep,
@@ -134,6 +136,16 @@ test('a row reads Euclid groups and bracketed ratchets', () => {
   expect(row.len).toBe(5)
   expect(row.ratchets).toEqual({ 2: 3, 4: 2 })
   expect(rowText(row.mask, row.maybe, row.len)).toBe('x.x.?')
+})
+
+test('a Euclid fill spreads a row’s hits from its first one', () => {
+  const row = (text: string) => parseRow(text).mask
+  expect(rowText(euclidMask(3, 8, row('..x.....')), 0, 8)).toBe('x.x..x..')
+  expect(rowText(euclidMask(5, 16, 0), 0, 16)).toBe('x..x..x..x..x...')
+  expect(hitsIn(euclidMask(7, 12, row('x')), 12)).toBe(7)
+  const long = row('x...............') | stepBit(14)
+  expect(hasStep(euclidMask(2, 8, long), 14)).toBe(true)
+  expect(euclidMask(0, 8, row('xxxxxxxx'))).toBe(0)
 })
 
 test('the tracker rows read one character a column', () => {

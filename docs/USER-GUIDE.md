@@ -29,9 +29,14 @@ bird) play one pass per press and repeat while held.
 A toy drum box. A step counter reads a pattern memory and fires analog voices.
 Tap pads, tap the tempo, or draw steps in the strip.
 
-The button over the last column swaps each row's length for the bars it plays,
-after a groovebox's trig conditions: **3:4** plays the third bar of every four,
-**!4:4** every bar but the fourth. The button lights while any row has one.
+The button over the last column steps through three views of each row:
+
+- **len:** how many steps the row plays before it comes round
+- **bars:** which bars it plays, after a groovebox's trig conditions. **3:4**
+  plays the third bar of every four, **!4:4** every bar but the fourth. The
+  button lights while any row has one
+- **hits:** a count the row spreads as evenly as it goes over its length,
+  starting from its first hit. 3 over 8 is the tresillo
 
 Two rows under the grid work like a tracker's effect columns:
 

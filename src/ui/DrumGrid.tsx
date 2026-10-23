@@ -20,7 +20,9 @@ import {
   EVENT_KEYS,
   EVENT_LETTERS,
   EVENTS,
+  euclidMask,
   GRID_ROWS,
+  hitsIn,
   NUDGE_KEYS,
   NUDGES,
   RATCHET_KEYS,
@@ -337,13 +339,21 @@ function MuteSwitch({ voice, muted }: { voice: number; muted: boolean }) {
   )
 }
 
-// The last column holds each row's length or the bars it plays, one at a time,
-// so the cells keep their width. Not a control: which one is showing is how
-// this session is looking at the grid, not part of the pattern.
-const showBars = createStore(false)
+// The last column holds each row's length, the bars it plays or its hits, one
+// at a time, so the cells keep their width. Not a control: which one is
+// showing is how this session is looking at the grid, not part of the pattern.
+const TAILS = ['len', 'bars', 'hits'] as const
+type Tail = (typeof TAILS)[number]
+const tailShows = createStore<Tail>('len')
+
+const TAIL_TIP: Record<Tail, string> = {
+  len: 'Next, which bars each row plays, so a row can keep to every fourth bar or sit one out.',
+  bars: 'Next, how many hits each row has: pick a count and the row spreads that many as evenly as they go, from its first hit.',
+  hits: 'Back to how many steps each row plays.',
+}
 
 function Ruler() {
-  const bars = useStoreValue(showBars)
+  const tail = useStoreValue(tailShows)
   const conditioned = useBoardValue(c => COND_KEYS.some(k => c[k] !== 0))
   return (
     <div className={styles.row}>
@@ -357,18 +367,18 @@ function Ruler() {
         ))}
       </div>
       <Tip
-        text={
-          bars
-            ? 'Back to how many steps each row plays.'
-            : `Show which bars each row plays, so a row can keep to every fourth bar or sit one out.${conditioned ? ' Some rows already do.' : ''}`
-        }
+        text={`${TAIL_TIP[tail]}${conditioned && tail === 'len' ? ' Some rows keep to their bars already.' : ''} Shift-click goes back.`}
       >
         <button
-          className={conditioned && !bars ? styles.tailOn : styles.tail}
-          aria-pressed={bars}
-          onClick={() => showBars.set(!bars)}
+          className={
+            conditioned && tail === 'len' ? styles.tailOn : styles.tail
+          }
+          onClick={e => {
+            const by = e.shiftKey ? TAILS.length - 1 : 1
+            tailShows.set(TAILS[(TAILS.indexOf(tail) + by) % TAILS.length]!)
+          }}
         >
-          {bars ? 'bars' : 'len'}
+          {tail}
         </button>
       </Tip>
     </div>
@@ -403,7 +413,7 @@ const Row = memo(function Row({
   // round again while the long ones are still in the bar.
   const under = useUnder(live, len)
 
-  const bars = useStoreValue(showBars)
+  const tail = useStoreValue(tailShows)
   const voice = DRUM_VOICES.findIndex(v => v.key === row.key)
   const muted =
     useControlValue('drumRowMute') & (voice < 0 ? 0 : voiceBit(voice))
@@ -463,7 +473,9 @@ const Row = memo(function Row({
         {/* A select rather than a nudge or a shift-click alone: it says what the
             numbers are, it is one tap on a phone, and it is the only way to
             give a row its sixteen steps back once you have shortened it. */}
-        {bars ? (
+        {tail === 'hits' ? (
+          <HitsSelect row={row} hits={hitsIn(mask | maybe, len)} len={len} />
+        ) : tail === 'bars' ? (
           voice >= 0 ? (
             <CondSelect voice={voice} label={row.label} />
           ) : (
@@ -526,6 +538,56 @@ function CondSelect({ voice, label }: { voice: number; label: string }) {
           {CONDS.map((c, i) => (
             <option key={c} value={i}>
               {c}
+            </option>
+          ))}
+        </select>
+        <span className={styles.chevron} aria-hidden="true">
+          ▾
+        </span>
+      </span>
+    </Tip>
+  )
+}
+
+// A Euclidean fill: the count spreads over the row's length from its first hit,
+// and the dice come off the steps it rewrites.
+function HitsSelect({
+  row,
+  hits,
+  len,
+}: {
+  row: PanelRow
+  hits: number
+  len: number
+}) {
+  const fill = (k: number) => {
+    const board = engine.controls.get()
+    const was = board[row.key] | (row.maybe ? board[row.maybe] : 0)
+    const next: Controls = {
+      ...board,
+      [row.key]: euclidMask(k, len, was),
+    }
+    if (row.maybe) {
+      const inRow = ((1 << len) - 1) << (STEPS - len)
+      next[row.maybe] = board[row.maybe] & ~inRow
+    }
+    engine.armStep()
+    engine.writeBoard(next)
+  }
+  return (
+    <Tip
+      text={`spread ${hits === 1 ? 'one hit' : `${hits} hits`} as evenly as they go over the ${row.label} row’s ${len} steps, from its first hit — 3 over 8 is the tresillo, 5 over 16 a bossa clave`}
+    >
+      <span className={styles.field}>
+        <select
+          className={styles.len}
+          value={hits}
+          onChange={e => fill(Number(e.currentTarget.value))}
+          aria-label={`${row.label} row hits`}
+        >
+          {Array.from({ length: len + 1 }, (_, k) => (
+            <option key={k} value={k}>
+              {k}
             </option>
           ))}
         </select>
