@@ -203,9 +203,60 @@ export const EVENT_EVERY = [1, 2, 4, 8]
 export const asEventEvery = (v: number) =>
   Math.min(Math.max(Math.round(v), 0), EVENT_EVERY.length - 1)
 
+/** Which bars each voice row plays, as an index into CONDS, in voice order. */
+export const COND_KEYS = [
+  'drumKickCond',
+  'drumSnareCond',
+  'drumHatCond',
+  'drumClapCond',
+  'drumTomCond',
+  'drumBellCond',
+  'drumOpenCond',
+  'drumCymCond',
+] as const satisfies readonly ControlKey[]
+/** A:B plays on the Ath bar of every B, and !A:B on every other bar. */
+export const CONDS = [
+  '1:1',
+  '1:2',
+  '2:2',
+  '1:4',
+  '2:4',
+  '3:4',
+  '4:4',
+  '1:8',
+  '8:8',
+  '!4:4',
+  '!8:8',
+] as const
+export const asCond = (v: number) =>
+  Math.min(Math.max(Math.round(v), 0), CONDS.length - 1)
+
+const CONDS_PARSED = CONDS.map(c => {
+  const [a, b] = c.replace('!', '').split(':').map(Number)
+  return { a: a!, b: b!, not: c.startsWith('!') }
+})
+
+/** Whether a row under condition `cond` plays on bar `bar` of the kit. */
+export function condPlays(cond: number, bar: number): boolean {
+  const { a, b, not } = CONDS_PARSED[asCond(cond)]!
+  return (bar % b === a - 1) !== not
+}
+
 export const RATCHET_SET = new Set<ControlKey>(RATCHET_KEYS)
 export const NUDGE_SET = new Set<ControlKey>(NUDGE_KEYS)
 export const EVENT_SET = new Set<ControlKey>(EVENT_KEYS)
+export const COND_SET = new Set<ControlKey>(COND_KEYS)
+
+/** A setting of the kit's tracker rows clamped to what it can hold, or
+    undefined for a key that is none of them. */
+export function asKitSetting(key: ControlKey, v: number): number | undefined {
+  if (RATCHET_SET.has(key)) return asRatchet(v)
+  if (NUDGE_SET.has(key)) return asNudge(v)
+  if (EVENT_SET.has(key) || key === 'drumEventLive') return asEvent(v)
+  if (key === 'drumEventEvery') return asEventEvery(v)
+  if (COND_SET.has(key)) return asCond(v)
+  return undefined
+}
 
 // The wires carrying a word back out of the pattern memory: one a row, so the
 // accent has a wire of its own beside the eight voices. It is the trigger line

@@ -11,7 +11,10 @@ import { DRUM_MOVES, masksOf, throwLast, type DrumMove } from '../drum-moves.ts'
 import {
   asLen,
   DRUM_ROMS,
+  asCond,
   asEventEvery,
+  COND_KEYS,
+  CONDS,
   DRUM_VOICES,
   EVENT_EVERY,
   EVENT_KEYS,
@@ -32,6 +35,7 @@ import {
   type StepState,
 } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
+import { createStore } from '../listeners.ts'
 import {
   bendDeal,
   bendRow,
@@ -332,19 +336,40 @@ function MuteSwitch({ voice, muted }: { voice: number; muted: boolean }) {
   )
 }
 
+// The last column holds each row's length or the bars it plays, one at a time,
+// so the cells keep their width. Not a control: which one is showing is how
+// this session is looking at the grid, not part of the pattern.
+const showBars = createStore(false)
+
 function Ruler() {
+  const bars = useStoreValue(showBars)
+  const conditioned = useBoardValue(c => COND_KEYS.some(k => c[k] !== 0))
   return (
-    <div className={styles.row} aria-hidden="true">
+    <div className={styles.row}>
       <span />
       <span />
-      <div className={styles.cells}>
+      <div className={styles.cells} aria-hidden="true">
         {Array.from({ length: STEPS }, (_, s) => (
           <span key={s} className={styles.tick}>
             {s % 4 === 0 ? s / 4 + 1 : ''}
           </span>
         ))}
       </div>
-      <span />
+      <Tip
+        text={
+          bars
+            ? 'Back to how many steps each row plays.'
+            : `Show which bars each row plays, so a row can keep to every fourth bar or sit one out.${conditioned ? ' Some rows already do.' : ''}`
+        }
+      >
+        <button
+          className={conditioned && !bars ? styles.tailOn : styles.tail}
+          aria-pressed={bars}
+          onClick={() => showBars.set(!bars)}
+        >
+          {bars ? 'bars' : 'len'}
+        </button>
+      </Tip>
     </div>
   )
 }
@@ -377,6 +402,7 @@ const Row = memo(function Row({
   // round again while the long ones are still in the bar.
   const under = useUnder(live, len)
 
+  const bars = useStoreValue(showBars)
   const voice = DRUM_VOICES.findIndex(v => v.key === row.key)
   const muted =
     useControlValue('drumRowMute') & (voice < 0 ? 0 : voiceBit(voice))
@@ -436,35 +462,79 @@ const Row = memo(function Row({
         {/* A select rather than a nudge or a shift-click alone: it says what the
             numbers are, it is one tap on a phone, and it is the only way to
             give a row its sixteen steps back once you have shortened it. */}
-        <Tip
-          text={
-            len === STEPS
-              ? `how many steps the ${row.label} row plays before it comes round. All sixteen is the machine as it left the factory; anything else runs against the rows that kept theirs`
-              : `the ${row.label} row comes round every ${len} steps, so it lands somewhere different against the others each bar`
-          }
-        >
-          <span className={styles.field}>
-            <select
-              className={len === STEPS ? styles.len : styles.lenShort}
-              value={len}
-              onChange={e => engine.set(row.len, Number(e.currentTarget.value))}
-              aria-label={`${row.label} row length`}
-            >
-              {Array.from({ length: STEPS }, (_, i) => (
-                <option key={i} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span className={styles.chevron} aria-hidden="true">
-              ▾
+        {bars ? (
+          voice >= 0 ? (
+            <CondSelect voice={voice} label={row.label} />
+          ) : (
+            <span />
+          )
+        ) : (
+          <Tip
+            text={
+              len === STEPS
+                ? `how many steps the ${row.label} row plays before it comes round. All sixteen is the machine as it left the factory; anything else runs against the rows that kept theirs`
+                : `the ${row.label} row comes round every ${len} steps, so it lands somewhere different against the others each bar`
+            }
+          >
+            <span className={styles.field}>
+              <select
+                className={len === STEPS ? styles.len : styles.lenShort}
+                value={len}
+                onChange={e =>
+                  engine.set(row.len, Number(e.currentTarget.value))
+                }
+                aria-label={`${row.label} row length`}
+              >
+                {Array.from({ length: STEPS }, (_, i) => (
+                  <option key={i} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </select>
+              <span className={styles.chevron} aria-hidden="true">
+                ▾
+              </span>
             </span>
-          </span>
-        </Tip>
+          </Tip>
+        )}
       </div>
     </Tip>
   )
 })
+
+// Which bars of the kit a row plays, after the trig conditions on a groovebox:
+// 3:4 plays the third bar of every four, !4:4 every bar but the fourth.
+function CondSelect({ voice, label }: { voice: number; label: string }) {
+  const key = COND_KEYS[voice]!
+  const cond = asCond(useControlValue(key))
+  return (
+    <Tip
+      text={
+        cond === 0
+          ? `which bars the ${label} row plays: 3:4 the third of every four, !4:4 all but the fourth`
+          : `the ${label} row plays ${CONDS[cond]!.startsWith('!') ? 'every bar but' : 'only'} bar ${CONDS[cond]!.replace('!', '').replace(':', ' of every ')}`
+      }
+    >
+      <span className={styles.field}>
+        <select
+          className={cond === 0 ? styles.len : styles.lenShort}
+          value={cond}
+          onChange={e => engine.set(key, Number(e.currentTarget.value))}
+          aria-label={`${label} row bars`}
+        >
+          {CONDS.map((c, i) => (
+            <option key={c} value={i}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <span className={styles.chevron} aria-hidden="true">
+          ▾
+        </span>
+      </span>
+    </Tip>
+  )
+}
 
 // Memoised because the playhead moves: a tick re-renders the row, and without
 // this every one of its sixteen cells would rebuild the tip hanging off it to

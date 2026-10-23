@@ -6,6 +6,8 @@ import {
 import { randomPattern } from '../../drum-moves.ts'
 import {
   type DrumLenKey,
+  COND_KEYS,
+  CONDS,
   EVENT_KEYS,
   EVENTS,
   GRID_ROWS,
@@ -330,8 +332,16 @@ function rollStepFx(rand: () => number): Partial<Controls> {
   if (rand() < 0.3)
     out[pick(EVENT_KEYS.slice(12))] =
       1 + Math.floor(rand() * (EVENTS.length - 1))
+  // Now and then a row sits out a bar or keeps to one, so a rolled pattern
+  // has a phrase to it and not only a bar.
+  for (const k of COND_KEYS) out[k] = 0
+  if (rand() < 0.3) out[pick(COND_KEYS)] = pick(PHRASE_CONDS)
   return out
 }
+
+const PHRASE_CONDS = (['2:2', '4:4', '!4:4', '!8:8'] as const).map(c =>
+  CONDS.indexOf(c),
+)
 
 function rollLengths(rand: () => number): Record<DrumLenKey, number> {
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!

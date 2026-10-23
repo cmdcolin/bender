@@ -1,5 +1,6 @@
 import {
   ADDR_LINES,
+  COND_KEYS,
   DATA_LINES,
   EVENT_KEYS,
   GRID_ROWS,
@@ -796,6 +797,7 @@ export const SOURCE_GROUPS: Group[] = [
         ...EVENT_KEYS,
         'drumEventEvery',
         'drumEventLive',
+        ...COND_KEYS,
       ],
     },
     sliders: [

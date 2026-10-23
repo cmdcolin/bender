@@ -5,6 +5,8 @@ import {
   asLen,
   asNudge,
   asRatchet,
+  COND_KEYS,
+  condPlays,
   CYCLE,
   NUDGE_KEYS,
   NUDGE_PARTS,
@@ -534,6 +536,7 @@ let ROM: DrumSlabs | null = null
 let cutting = false
 
 const RATCHET_IDX = RATCHET_KEYS.map(k => IDX[k])
+const COND_IDX = COND_KEYS.map(k => IDX[k])
 const NUDGE_IDX = NUDGE_KEYS.map(k => IDX[k])
 // The quietest a repeat gets at either end of a full ramp.
 const RAMP_FLOOR = 0.15
@@ -1077,11 +1080,23 @@ export class ToyDrum implements Stage {
   // than one striking a single drum, and a second accent arriving before the
   // cap has caught up lands softer than the first. Left stiff, none of that
   // happens and the accent is the flag it always was.
+  // The rows whose condition lets them play this bar of the kit.
+  private condBits(p: Float32Array, bar: number): number {
+    let bits = 0
+    for (let v = 0; v < N_VOICES; v++)
+      if (condPlays(p[COND_IDX[v]!]!, bar)) bits |= 1 << v
+    return bits
+  }
+
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
     const word = this.wordAt(p, this.tick)
     const at = STEPS - 1 - (this.tick % this.throwLen)
     this.throwing = ((Math.round(p[IDX.drumThrow]!) >> at) & 1) === 1
-    let named = word & VOICE_BITS & ~Math.round(p[IDX.drumRowMute]!)
+    let named =
+      word &
+      VOICE_BITS &
+      ~Math.round(p[IDX.drumRowMute]!) &
+      this.condBits(p, Math.floor(this.tick / STEPS))
     if (!fallback && this.tick === this.skipTick) {
       named &= ~this.skipBits
       this.skipTick = -1

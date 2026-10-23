@@ -81,3 +81,24 @@ test('an event cell clicks round the faults', () => {
   expect(every.textContent).toBe('4:4')
   expect(engine.controls.get().drumEventEvery).toBe(2)
 })
+
+test('the last column trades row lengths for the bars each row plays', () => {
+  render(<DrumGrid />)
+  const toggle = screen.getByRole('button', { name: 'len' })
+  expect(screen.queryByRole('combobox', { name: 'snare row bars' })).toBeNull()
+  fireEvent.click(toggle)
+  const bars = screen.getByRole('combobox', { name: 'snare row bars' })
+  expect(
+    screen.queryByRole('combobox', { name: 'snare row length' }),
+  ).toBeNull()
+  fireEvent.change(bars, { target: { value: '9' } })
+  expect(engine.controls.get().drumSnareCond).toBe(9)
+  expect((bars as HTMLSelectElement).selectedOptions[0]!.text).toBe('!4:4')
+  fireEvent.click(screen.getByRole('button', { name: 'bars' }))
+  expect(screen.getByRole('button', { name: 'len' }).className).toMatch(
+    /tailOn/,
+  )
+  expect(
+    screen.getByRole('combobox', { name: 'snare row length' }),
+  ).toBeTruthy()
+})

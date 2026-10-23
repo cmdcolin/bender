@@ -2,7 +2,11 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from './controls.ts'
 import {
+  COND_KEYS,
+  CONDS,
+  condPlays,
   DRUM_ROMS,
+  DRUM_VOICES,
   GRID_ROWS,
   heardStep,
   PATTERN_KEYS,
@@ -99,4 +103,18 @@ test('a stale report is read as it stood', () => {
     tick: 8,
     phase: 0.2,
   })
+})
+
+test('a row condition plays the bars its name says', () => {
+  const bars = (name: (typeof CONDS)[number]) =>
+    [0, 1, 2, 3, 4, 5, 6, 7].filter(b => condPlays(CONDS.indexOf(name), b))
+  expect(bars('1:1')).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
+  expect(bars('2:2')).toEqual([1, 3, 5, 7])
+  expect(bars('3:4')).toEqual([2, 6])
+  expect(bars('!4:4')).toEqual([0, 1, 2, 4, 5, 6])
+  expect(bars('8:8')).toEqual([7])
+})
+
+test('the condition keys follow the voices', () => {
+  expect(COND_KEYS).toEqual(DRUM_VOICES.map(v => `${v.key}Cond`))
 })

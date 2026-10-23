@@ -305,6 +305,34 @@
   color: var(--fg2);
 }
 
+.tail,
+.tailOn {
+  padding: 0 var(--space-xs);
+  font-size: var(--fs-xs);
+  line-height: 1;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--ctl-radius);
+  color: var(--fg4);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tail:hover,
+.tailOn:hover {
+  color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+.tail[aria-pressed='true'] {
+  color: var(--fg2);
+}
+
+.tailOn {
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
 .accentOn {
   background: var(--accent2);
   border-color: var(--accent2);
@@ -412,6 +440,10 @@
     padding: var(--space-2xs) 0;
     text-align: center;
   }
+  .tail,
+  .tailOn {
+    padding: 0;
+  }
   .chevron {
     display: none;
   }
@@ -425,7 +457,14 @@
     height: 26px;
   }
   .accent,
-  .accentOn {
+  .accentOn,
+  .echo,
+  .echoOn,
+  .bend,
+  .bendOn,
+  .shuffleRow,
+  .tail,
+  .tailOn {
     height: 20px;
   }
 }

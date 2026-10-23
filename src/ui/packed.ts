@@ -3,18 +3,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
-import {
-  asLen,
-  asMask,
-  asEvent,
-  asEventEvery,
-  asNudge,
-  asRatchet,
-  EVENT_SET,
-  NUDGE_SET,
-  RATCHET_SET,
-  LEN_KEYS,
-} from '../drums.ts'
+import { asKitSetting, asLen, asMask, LEN_KEYS } from '../drums.ts'
 import {
   asLaneLen,
   asLaneValue,
@@ -898,6 +887,14 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumEvent15',
   'drumEventEvery',
   'drumEventLive',
+  'drumKickCond',
+  'drumSnareCond',
+  'drumHatCond',
+  'drumClapCond',
+  'drumTomCond',
+  'drumBellCond',
+  'drumOpenCond',
+  'drumCymCond',
 ]
 
 // Retired controls that old links still carry, each read into the control that
@@ -949,10 +946,8 @@ function fromInt(key: ControlKey, n: number): number {
   if (LEN_KEYS.has(key)) return asLen(n)
   if (key === 'tuneLen' || key === 'monoSeqLen') return asTuneLen(n)
   if (LANE_VALUE_KEYS.has(key)) return asLaneValue(n)
-  if (RATCHET_SET.has(key)) return asRatchet(n)
-  if (NUDGE_SET.has(key)) return asNudge(n)
-  if (EVENT_SET.has(key) || key === 'drumEventLive') return asEvent(n)
-  if (key === 'drumEventEvery') return asEventEvery(n)
+  const kit = asKitSetting(key, n)
+  if (kit !== undefined) return kit
   if (LANE_LEN_SET.has(key)) return asLaneLen(n)
   return asMask(n)
 }

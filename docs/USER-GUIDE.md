@@ -29,6 +29,10 @@ bird) play one pass per press and repeat while held.
 A toy drum box. A step counter reads a pattern memory and fires analog voices.
 Tap pads, tap the tempo, or draw steps in the strip.
 
+The button over the last column swaps each row's length for the bars it plays,
+after a groovebox's trig conditions: **3:4** plays the third bar of every four,
+**!4:4** every bar but the fourth. The button lights while any row has one.
+
 Two rows under the grid work like a tracker's effect columns:
 
 - **ratchet** fires a step ×2 to ×8 inside itself. **Ratchet ramp** fades the
