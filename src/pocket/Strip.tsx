@@ -1,3 +1,4 @@
+import { SHUFFLE } from '../ui/DeviceVerbs.tsx'
 import styles from './pocket.module.css'
 
 import type { Shelf } from './shelves.ts'
@@ -57,7 +58,7 @@ export function Strip(props: {
           title="a random board"
           onClick={props.onRoll}
         >
-          ⚄ random
+          {SHUFFLE} random
         </button>
       </span>
       <button

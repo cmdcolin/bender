@@ -15,6 +15,7 @@ import {
   setBendShape,
 } from '../ui/bendKeys.ts'
 import { useStoreValue } from '../ui/ControlsContext.ts'
+import { SHUFFLE } from '../ui/DeviceVerbs.tsx'
 import { THROWS } from '../ui/throws.ts'
 import { buzz } from './haptics.ts'
 import styles from './pocket.module.css'
@@ -77,7 +78,7 @@ export function BendPads() {
       </div>
       <div className={styles.dealRow}>
         <button className={styles.chip} onClick={redealAll}>
-          ⚄ redeal
+          {SHUFFLE} redeal
         </button>
         <button
           className={styles.chip}

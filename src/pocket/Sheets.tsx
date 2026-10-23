@@ -4,6 +4,7 @@ import { POOLS } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
 import { CHANNELS, sliderFor, snapToStep } from '../ui/controls/index.ts'
 import { useControlValue, useStoreValue } from '../ui/ControlsContext.ts'
+import { SHUFFLE } from '../ui/DeviceVerbs.tsx'
 import { mutate } from '../ui/presets/index.ts'
 import rangeStyles from '../ui/range.module.css'
 import { fromPos, toPos } from '../ui/slider-scale.ts'
@@ -208,7 +209,7 @@ export function MixSheet(props: { onClose: () => void }) {
           {micOn ? '● mic live' : 'mic'}
         </button>
         <button className={styles.chip} onClick={roll}>
-          {step ? '✕ cancel' : '⚄ load a tape'}
+          {step ? '✕ cancel' : <>{SHUFFLE} load a tape</>}
         </button>
         <select
           className={styles.pool}
