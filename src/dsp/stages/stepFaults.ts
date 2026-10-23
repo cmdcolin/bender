@@ -14,14 +14,13 @@ const EVENT_IDX = EVENT_KEYS.map(k => IDX[k])
 const BUFFER_S = 4
 const SEAM_S = 0.0015
 const BRAKE_STOP = 0.9
-const FREEZE_SLICES = 4
 const WINDOW = 32
 
 interface Voice {
   event: number
   t: number
   len: number
-  slice: number
+  step: number
   start: number
   lag: number
 }
@@ -46,7 +45,7 @@ const idle = (): Voice => ({
   event: 0,
   t: 0,
   len: 0,
-  slice: 0,
+  step: 0,
   start: 0,
   lag: 0,
 })
@@ -129,7 +128,7 @@ export class StepFaults implements Stage {
     was.event = event
     was.t = 0
     was.len = Math.min(len * run, this.size - 1)
-    was.slice = Math.max(Math.round(len / FREEZE_SLICES), WINDOW * 2)
+    was.step = len
     was.start = this.w
     was.lag = 0
     this.cur = was
@@ -146,11 +145,14 @@ export class StepFaults implements Stage {
       at = this.w - v.lag
       gain = Math.sqrt(speed)
     } else if (v.event === EVENT.freeze) {
-      const slice = v.slice
+      // Each step of a run loops half as much of the run's first step as the
+      // step before, so a run rolls faster and faster into a buzz.
+      const k = Math.floor(v.t / v.step)
+      const slice = Math.max(Math.round(v.step / 2 ** (k + 1)), WINDOW * 2)
       if (v.t >= slice) {
-        const k = v.t % slice
-        at = v.start + k
-        gain = Math.min(1, k / WINDOW, (slice - k) / WINDOW)
+        const phase = (v.t - k * v.step) % slice
+        at = v.start + phase
+        gain = Math.min(1, phase / WINDOW, (slice - phase) / WINDOW)
       }
     }
     v.t++

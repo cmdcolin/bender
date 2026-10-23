@@ -21,7 +21,7 @@ questions, made without asking.
 
 - Nobody has listened to the ratchets, nudges, lanes or the event row. Tests
   measure the faults (a brake drops the pitch an octave by mid-step, a freeze
-  repeats the step's first quarter), but nobody has judged how they sound.
+  repeats the step's first half), but nobody has judged how they sound.
 - The event row's cells show one letter each (c, d, b, f, r). A headless Chrome
   screenshot at 1400 px wide shows them fitting; nobody has checked phone width.
 

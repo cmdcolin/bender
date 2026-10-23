@@ -97,13 +97,24 @@ test('a run of brakes stops the mix once, over the whole run', () => {
   expect(at(3.7)).toBeLessThan(0.01)
 })
 
-test('a freeze loops the first quarter of its step', () => {
+test('a freeze repeats the first half of its step', () => {
   const { input, out } = run({ drumEvent0: EVENT.freeze }, BAR)
-  const slice = STEP / 4
-  for (const k of [100, 700, 1200]) {
-    expect(out[1000 + slice + k]).toBeCloseTo(input[1000 + k]!, 5)
-    expect(out[1000 + 2 * slice + k]).toBeCloseTo(input[1000 + k]!, 5)
+  for (const k of [100, 700, 2400])
+    expect(out[1000 + STEP / 2 + k]).toBeCloseTo(input[1000 + k]!, 5)
+})
+
+test('a run of freezes rolls faster each step', () => {
+  const strobes = [0, 1, 2].map(k => ({ at: 1000 + k * STEP, tick: k }))
+  const frozen = { drumEvent0: 4, drumEvent1: 4, drumEvent2: 4 }
+  const { input, out } = run(frozen, strobes, BLOCK * 220)
+  for (const k of [100, 1200]) {
+    expect(out[1000 + STEP + k]).toBeCloseTo(input[1000 + k]!, 5)
+    expect(out[1000 + STEP + STEP / 4 + k]).toBeCloseTo(input[1000 + k]!, 5)
   }
+  expect(out[1000 + 2 * STEP + STEP / 8 + 300]).toBeCloseTo(
+    input[1000 + 300]!,
+    5,
+  )
 })
 
 // The kick on every step at 120 bpm, so the kit is clocking.
