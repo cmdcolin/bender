@@ -2,6 +2,24 @@
 
 All notable changes to bender are documented here.
 
+## [1.16.0](https://github.com/cmdcolin/bender/compare/v1.15.2...v1.16.0) - 2026-10-23
+
+### Features
+- *(dsp)* [`11a41a9`](https://github.com/cmdcolin/bender/commit/11a41a9faed5e0fdd5251c514a4690d7c4bde2d7) rebuild the crusher as an ADC, a bus and an R-2R DAC
+- *(ui)* [`a5ad90e`](https://github.com/cmdcolin/bender/commit/a5ad90e68c77bbde6706f6e63d79cceaf5c62dd6) named cuts and boards for the crusher circuit
+- *(dsp)* [`070b86e`](https://github.com/cmdcolin/bender/commit/070b86e171583910c58fb8c938ebac16692179a2) put each machine on shared cells, second cells or a bench supply
+- *(ui)* [`a39739f`](https://github.com/cmdcolin/bender/commit/a39739f0a15529a8577c05328669f972803f60ae) show each machine's supply on its deck, the map and Power supply
+
+### Fixes
+- *(dsp)* [`2b8db75`](https://github.com/cmdcolin/bender/commit/2b8db752f4e621640b0ad7f2dabd4a7772f4ea8d) put the delta converter's stock step in slope overload
+
+### Documentation
+- [`a96ae47`](https://github.com/cmdcolin/bender/commit/a96ae47429b29bb7259b8f8cc6f858fe6e6aac76) the crusher's converter in BENDS.md and the bus drawing
+- [`d044bed`](https://github.com/cmdcolin/bender/commit/d044bedaa871f17a98e9c4712369ac40fcf73ee9) rank deep bends, with the crusher circuit built
+
+### Chores
+- *(ui)* [`15e00e6`](https://github.com/cmdcolin/bender/commit/15e00e684bee79785c5508799d66092e273fc884) measure the bend ends for the crusher's ladder
+
 ## [1.15.2](https://github.com/cmdcolin/bender/compare/v1.15.1...v1.15.2) - 2026-10-22
 
 ### Features
