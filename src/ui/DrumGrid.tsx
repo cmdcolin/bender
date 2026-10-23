@@ -12,6 +12,10 @@ import {
   DRUM_ROMS,
   DRUM_VOICES,
   GRID_ROWS,
+  NUDGE_KEYS,
+  NUDGES,
+  RATCHET_KEYS,
+  RATCHETS,
   STEPS,
   romMatching,
   stepBit,
@@ -40,7 +44,7 @@ import { padKeyFor, toggleRowMute } from './drumKeys.ts'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
 
-import type { Controls } from '../controls.ts'
+import type { ControlKey, Controls } from '../controls.ts'
 
 // Where a row's playhead stands, -1 while the kit is not running. Each row
 // reads its own, so a step redraws only the rows whose playhead moved.
@@ -258,6 +262,22 @@ export function DrumGrid() {
           />
         ))}
         <BendRow live={live} />
+        <CycleRow
+          live={live}
+          name="ratchet"
+          keys={RATCHET_KEYS}
+          values={RATCHETS.map((_, i) => i)}
+          says={v => (v ? `×${RATCHETS[v]}` : '')}
+          tip="How many times each step fires inside itself: ×2 to ×8, every voice on the step, each repeat rolling the dice again. Click to go up, shift-click to go down. Ratchet ramp fades or swells the repeats."
+        />
+        <CycleRow
+          live={live}
+          name="nudge"
+          keys={NUDGE_KEYS}
+          values={NUDGES}
+          says={v => (v ? `${v}` : '')}
+          tip="How late each step lands, in twelfths of the step: 6 is half a step, 4 and 8 sit on the triplet. A ratcheted step squeezes its repeats into what is left. Click to go later, shift-click to go back."
+        />
       </div>
 
       {level === 0 && (
@@ -574,6 +594,57 @@ function BendRow({ live }: { live: boolean }) {
             {SHUFFLE}
           </button>
         </Tip>
+      </div>
+    </Tip>
+  )
+}
+
+// A per-step value that clicks round a short list, on the bend row's cells.
+function CycleRow(props: {
+  live: boolean
+  name: string
+  keys: readonly ControlKey[]
+  values: readonly number[]
+  says: (v: number) => string
+  tip: string
+}) {
+  const { keys, values } = props
+  const now = useBoardValue(c => keys.map(k => c[k]).join(','))
+    .split(',')
+    .map(Number)
+  const under = useUnder(props.live, STEPS)
+  const step = (s: number, by: number) => {
+    const at = Math.max(values.indexOf(now[s]!), 0)
+    engine.armStep()
+    engine.set(keys[s]!, values[(at + by + values.length) % values.length]!)
+  }
+  return (
+    <Tip text={props.tip}>
+      <div className={styles.extraRow}>
+        <span className={now.some(Boolean) ? styles.nameOn : styles.name}>
+          {props.name}
+        </span>
+        <span />
+        <div className={styles.cells}>
+          {now.map((v, s) => (
+            <button
+              key={s}
+              className={cellClass({
+                kind: 'bend',
+                state: v ? 'on' : 'off',
+                beat: s % 4 === 0,
+                under: s === under,
+                past: false,
+              })}
+              aria-label={`${props.name} step ${s + 1}`}
+              aria-pressed={v !== 0}
+              onClick={e => step(s, e.shiftKey ? -1 : 1)}
+            >
+              <span className={styles.bendLetter}>{props.says(v)}</span>
+            </button>
+          ))}
+        </div>
+        <span />
       </div>
     </Tip>
   )

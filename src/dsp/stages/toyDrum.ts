@@ -3,7 +3,13 @@ import {
   ACCENT_GAIN,
   ADDR_LINES,
   asLen,
+  asNudge,
+  asRatchet,
   CYCLE,
+  NUDGE_KEYS,
+  NUDGE_PARTS,
+  RATCHET_KEYS,
+  RATCHETS,
   DATA_LINES,
   DRUM_VOICES,
   GRID_ROWS,
@@ -527,6 +533,17 @@ let ROM: DrumSlabs | null = null
 // cutting a ROM would never finish.
 let cutting = false
 
+const RATCHET_IDX = RATCHET_KEYS.map(k => IDX[k])
+const NUDGE_IDX = NUDGE_KEYS.map(k => IDX[k])
+// The quietest a repeat gets at either end of a full ramp.
+const RAMP_FLOOR = 0.15
+
+const rampGain = (ramp: number, k: number, n: number) => {
+  if (n < 2 || ramp === 0) return 1
+  const t = ramp < 0 ? k / (n - 1) : 1 - k / (n - 1)
+  return 1 - Math.abs(ramp) * (1 - RAMP_FLOOR) * t
+}
+
 export class ToyDrum implements Stage {
   label = 'toyDrum'
   /**
@@ -540,6 +557,11 @@ export class ToyDrum implements Stage {
   stepClock = 0
   /** How long an unswung step lasts at the rate the counter is clocking now. */
   stepMs = 125
+  private repeats = 0
+  private repeat = 0
+  private due = 0
+  private gap = 0
+  private ratchetGain = 1
   private skipBits = 0
   private skipTick = -1
   /** Each row's length this block, clamped to something a modulo can use. */
@@ -1064,7 +1086,8 @@ export class ToyDrum implements Stage {
     }
     let bits = fallback ? named || 1 : named
     const accent = (word & ACCENT_BIT) !== 0
-    const gain = accent ? 1 + (this.accentAmt - 1) * this.accentV : 1
+    const gain =
+      (accent ? 1 + (this.accentAmt - 1) * this.accentV : 1) * this.ratchetGain
     if (this.scanSamples > 0 && bits & (bits - 1)) bits = this.scan(bits, gain)
     const struck = this.hit(bits, gain, ctx, i)
     this.throwing = false
@@ -1130,6 +1153,7 @@ export class ToyDrum implements Stage {
     )
     const cymTone = Math.min(Math.max(p[IDX.drumCymTone]!, 0), 1)
     const baseRetrig = p[IDX.drumRetrigHz]!
+    const ramp = Math.min(Math.max(p[IDX.drumRatchetRamp]!, -1), 1)
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = Math.round(p[IDX.micPatch]!) === MIC.drumTrig
     const keyTrig = Math.round(p[IDX.trigToDrum]!)
@@ -1231,6 +1255,7 @@ export class ToyDrum implements Stage {
     if (this.power.rebooted()) {
       this.tick = 0
       this.stepClock = 0
+      this.repeats = 0
       this.rolledAt = -1
       this.clearing = false
       this.loop = 0
@@ -1371,8 +1396,28 @@ export class ToyDrum implements Stage {
             }
             ctx.trig.stepClocked(i, this.tick)
           }
-          this.fire(p, ctx, i)
+          // A column's ratchet and nudge share what is left of its step, so
+          // every repeat lands before the next strobe.
+          const col = this.tick % STEPS
+          const late = asNudge(p[NUDGE_IDX[col]!]!) / NUDGE_PARTS
+          const next = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
+          const stepS =
+            (next * this.sr) /
+            (modTempo ? stepHz * octaves(modTempo[i]!) : stepHz)
+          this.repeats = RATCHETS[asRatchet(p[RATCHET_IDX[col]!]!)]!
+          this.repeat = 0
+          this.due = stepS * late
+          this.gap = (stepS * (1 - late)) / this.repeats
         }
+        if (this.repeat < this.repeats && --this.due <= 0) {
+          this.ratchetGain = rampGain(ramp, this.repeat, this.repeats)
+          this.fire(p, ctx, i)
+          this.ratchetGain = 1
+          this.repeat++
+          this.due += this.gap
+        }
+      } else {
+        this.repeats = 0
       }
       // the bend: hammer the current step's trigger line at audio rate
       const retrigHz = mod

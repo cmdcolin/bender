@@ -48,3 +48,17 @@ test('the m switch and shift with a pad number mute a row', () => {
   fireEvent.click(mute)
   expect(engine.controls.get().drumRowMute).toBe(2)
 })
+
+test('a ratchet cell clicks up through the counts and shift-click goes back', () => {
+  act(() => engine.patch({ drumRatchet2: 0, drumNudge5: 0 }))
+  render(<DrumGrid />)
+  const cell = (name: string) => screen.getByRole('button', { name })
+  fireEvent.click(cell('ratchet step 3'))
+  expect(engine.controls.get().drumRatchet2).toBe(1)
+  expect(cell('ratchet step 3').textContent).toBe('×2')
+  fireEvent.click(cell('ratchet step 3'), { shiftKey: true })
+  fireEvent.click(cell('ratchet step 3'), { shiftKey: true })
+  expect(engine.controls.get().drumRatchet2).toBe(5)
+  fireEvent.click(cell('nudge step 6'))
+  expect(engine.controls.get().drumNudge5).toBe(2)
+})

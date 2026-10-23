@@ -113,6 +113,57 @@ export const THROW_ROW = {
 
 export type PanelRow = (typeof GRID_ROWS)[number] | typeof THROW_ROW
 
+/** How many times each column fires inside its step, as an index into RATCHETS. */
+export const RATCHET_KEYS = [
+  'drumRatchet0',
+  'drumRatchet1',
+  'drumRatchet2',
+  'drumRatchet3',
+  'drumRatchet4',
+  'drumRatchet5',
+  'drumRatchet6',
+  'drumRatchet7',
+  'drumRatchet8',
+  'drumRatchet9',
+  'drumRatchet10',
+  'drumRatchet11',
+  'drumRatchet12',
+  'drumRatchet13',
+  'drumRatchet14',
+  'drumRatchet15',
+] as const satisfies readonly ControlKey[]
+export const RATCHETS = [1, 2, 3, 4, 6, 8]
+
+/** How late each column fires, in twelfths of its step. */
+export const NUDGE_KEYS = [
+  'drumNudge0',
+  'drumNudge1',
+  'drumNudge2',
+  'drumNudge3',
+  'drumNudge4',
+  'drumNudge5',
+  'drumNudge6',
+  'drumNudge7',
+  'drumNudge8',
+  'drumNudge9',
+  'drumNudge10',
+  'drumNudge11',
+  'drumNudge12',
+  'drumNudge13',
+  'drumNudge14',
+  'drumNudge15',
+] as const satisfies readonly ControlKey[]
+export const NUDGE_PARTS = 12
+export const NUDGES = [0, 2, 3, 4, 6, 8, 9]
+
+export const asRatchet = (v: number) =>
+  Math.min(Math.max(Math.round(v), 0), RATCHETS.length - 1)
+export const asNudge = (v: number) =>
+  Math.min(Math.max(Math.round(v), 0), NUDGE_PARTS - 1)
+
+export const RATCHET_SET = new Set<ControlKey>(RATCHET_KEYS)
+export const NUDGE_SET = new Set<ControlKey>(NUDGE_KEYS)
+
 // The wires carrying a word back out of the pattern memory: one a row, so the
 // accent has a wire of its own beside the eight voices. It is the trigger line
 // rather than an amplifier — a bit forced high strikes for real, and the accent

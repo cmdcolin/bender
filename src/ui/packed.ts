@@ -3,7 +3,15 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
-import { asLen, asMask, LEN_KEYS } from '../drums.ts'
+import {
+  asLen,
+  asMask,
+  asNudge,
+  asRatchet,
+  NUDGE_SET,
+  RATCHET_SET,
+  LEN_KEYS,
+} from '../drums.ts'
 import {
   asLaneLen,
   asLaneValue,
@@ -823,6 +831,39 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'modLaneB15',
   'modLaneALen',
   'modLaneBLen',
+  'drumRatchet0',
+  'drumRatchet1',
+  'drumRatchet2',
+  'drumRatchet3',
+  'drumRatchet4',
+  'drumRatchet5',
+  'drumRatchet6',
+  'drumRatchet7',
+  'drumRatchet8',
+  'drumRatchet9',
+  'drumRatchet10',
+  'drumRatchet11',
+  'drumRatchet12',
+  'drumRatchet13',
+  'drumRatchet14',
+  'drumRatchet15',
+  'drumNudge0',
+  'drumNudge1',
+  'drumNudge2',
+  'drumNudge3',
+  'drumNudge4',
+  'drumNudge5',
+  'drumNudge6',
+  'drumNudge7',
+  'drumNudge8',
+  'drumNudge9',
+  'drumNudge10',
+  'drumNudge11',
+  'drumNudge12',
+  'drumNudge13',
+  'drumNudge14',
+  'drumNudge15',
+  'drumRatchetRamp',
 ]
 
 // Retired controls that old links still carry, each read into the control that
@@ -874,6 +915,8 @@ function fromInt(key: ControlKey, n: number): number {
   if (LEN_KEYS.has(key)) return asLen(n)
   if (key === 'tuneLen' || key === 'monoSeqLen') return asTuneLen(n)
   if (LANE_VALUE_KEYS.has(key)) return asLaneValue(n)
+  if (RATCHET_SET.has(key)) return asRatchet(n)
+  if (NUDGE_SET.has(key)) return asNudge(n)
   if (LANE_LEN_SET.has(key)) return asLaneLen(n)
   return asMask(n)
 }

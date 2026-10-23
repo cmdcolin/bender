@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-534 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+535 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 140 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -186,7 +186,7 @@ plays a pattern nobody wrote.
 The pattern grid is a widget, so the table below leaves it out. It has ten rows
 (the eight voices, an accent and an echo row), each with 16 steps and a length,
 and a second 16-step mask on every voice for the steps that sometimes fire. That
-is 29 more controls, and a link stores them like the rest.
+is 61 more controls, and a link stores them like the rest.
 
 Named cuts, one press each under _knife on the bus_, as in the panel. A press
 puts the knife on, and the rows under it show the controls it set:
@@ -228,7 +228,7 @@ puts the knife on, and the rows under it show the controls it set:
   sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>58 controls</summary>
+<summary>59 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -274,6 +274,7 @@ puts the knife on, and the rows under it show the controls it set:
 | ROM data †      | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the knife is on                                                                      |
 | Data fault †    | cut, to ground, to +V, bridged                                                                                     | What the knife did to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                |
 | Retrigger       | 0 Hz to 4 kHz                                                                                                      | Retriggers the current step at this rate                                                                                                                |
+| Ratchet ramp    | −1 to +1                                                                                                           | How the repeats of a ratcheted step land                                                                                                                |
 | Trigger floor   | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                                                    |
 | Scan            | 0 to 40 ms                                                                                                         | The chip strikes one voice per scan                                                                                                                     |
 | Accent          | 1× to 4×                                                                                                           | How far the accent bus swings when it is rested                                                                                                         |

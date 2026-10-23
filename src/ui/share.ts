@@ -5,7 +5,16 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
-import { asLen, asMask, LEN_KEYS, ROCK } from '../drums.ts'
+import {
+  asLen,
+  asMask,
+  asNudge,
+  asRatchet,
+  NUDGE_SET,
+  RATCHET_SET,
+  LEN_KEYS,
+  ROCK,
+} from '../drums.ts'
 import {
   asLaneLen,
   asLaneValue,
@@ -118,11 +127,15 @@ export function coerceControl(key: ControlKey, v: number): number {
         ? asTuneLen(v)
         : LANE_VALUE_KEYS.has(key)
           ? asLaneValue(v)
-          : LANE_LEN_SET.has(key)
-            ? asLaneLen(v)
-            : EDITOR_KEYS.has(key)
-              ? asMask(v)
-              : snapToStep(sliderFor(key), v)
+          : RATCHET_SET.has(key)
+            ? asRatchet(v)
+            : NUDGE_SET.has(key)
+              ? asNudge(v)
+              : LANE_LEN_SET.has(key)
+                ? asLaneLen(v)
+                : EDITOR_KEYS.has(key)
+                  ? asMask(v)
+                  : snapToStep(sliderFor(key), v)
 }
 
 // Which form the bar is already in, and so which one the next write uses. A

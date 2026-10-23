@@ -29,6 +29,13 @@ bird) play one pass per press and repeat while held.
 A toy drum box. A step counter reads a pattern memory and fires analog voices.
 Tap pads, tap the tempo, or draw steps in the strip.
 
+Two rows under the grid work like a tracker's effect columns:
+
+- **ratchet** fires a step ×2 to ×8 inside itself. **Ratchet ramp** fades the
+  repeats out or swells them in
+- **nudge** lands a step late, in twelfths of the step. A nudged ratchet fits
+  its repeats into what is left
+
 ![The drum box's blocks: triggers into one-shots, tanks, a metal bank and noise, then amps and a DAC fed by a sample ROM.](../public/guide/guide-drum-voices.jpg)
 
 ## More machines

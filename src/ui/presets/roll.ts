@@ -4,7 +4,15 @@ import {
   type Controls,
 } from '../../controls.ts'
 import { randomPattern } from '../../drum-moves.ts'
-import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums.ts'
+import {
+  type DrumLenKey,
+  GRID_ROWS,
+  NUDGE_KEYS,
+  NUDGES,
+  RATCHET_KEYS,
+  RATCHETS,
+  STEPS,
+} from '../../drums.ts'
 import {
   ALL_SLIDERS,
   BENDS,
@@ -297,7 +305,26 @@ export const rollPattern = (
   ...current,
   ...randomPattern(rand),
   ...rollLengths(rand),
+  ...rollStepFx(rand),
 })
+
+// Most rolled bars get a roll or two and some get a step dragged late, so the
+// dice reach the tracker side of the kit without burying the pattern in it.
+function rollStepFx(rand: () => number): Partial<Controls> {
+  const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
+  const out: Partial<Controls> = {}
+  for (const k of [...RATCHET_KEYS, ...NUDGE_KEYS]) out[k] = 0
+  if (rand() < 0.6) {
+    const n = 1 + Math.floor(rand() * 3)
+    for (let i = 0; i < n; i++)
+      out[pick(RATCHET_KEYS)] = 1 + Math.floor(rand() * (RATCHETS.length - 1))
+  }
+  if (rand() < 0.35) {
+    const n = 1 + Math.floor(rand() * 2)
+    for (let i = 0; i < n; i++) out[pick(NUDGE_KEYS)] = pick(NUDGES.slice(1))
+  }
+  return out
+}
 
 function rollLengths(rand: () => number): Record<DrumLenKey, number> {
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!

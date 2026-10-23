@@ -3,6 +3,8 @@ import {
   DATA_LINES,
   GRID_ROWS,
   N_DRUM_VOICES,
+  NUDGE_KEYS,
+  RATCHET_KEYS,
   THROW_ROW,
   VOICE_LABELS,
 } from '../../drums.ts'
@@ -788,6 +790,8 @@ export const SOURCE_GROUPS: Group[] = [
         THROW_ROW.key,
         THROW_ROW.len,
         'drumRowMute',
+        ...RATCHET_KEYS,
+        ...NUDGE_KEYS,
       ],
     },
     sliders: [
@@ -1263,6 +1267,16 @@ export const SOURCE_GROUPS: Group[] = [
         unit: 'Hz',
         curve: 'log',
         help: 'Retriggers the current step at this rate. Slow is a machine-gun roll; past ~40 Hz the retrigger period becomes the pitch and the drum screams.',
+      },
+      {
+        key: 'drumRatchetRamp',
+        part: 'triggers and cross-patch',
+        label: 'Ratchet ramp',
+        min: -1,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How the repeats of a ratcheted step land: below zero each one softer than the last, above zero each one harder, so a roll fades out or swells into the next step.',
       },
       {
         key: 'drumTrigFloor',
