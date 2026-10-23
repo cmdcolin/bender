@@ -1,7 +1,7 @@
 import { useState } from 'react'
+import { sinceWords } from 'skillet-shared/relative-time'
 
 import { Menu } from './Menu.tsx'
-import { sinceWords } from './relativeTime.ts'
 import styles from './SavedVoices.module.css'
 import { Tip } from './Tip.tsx'
 import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel.ts'

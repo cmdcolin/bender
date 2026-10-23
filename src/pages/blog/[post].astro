@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content'
 
 import Page from '../../layouts/Page.astro'
 import { appUrl, blogUrl, siteRoot } from '../../site/paths.ts'
-import { isoDay, longDate, published } from '../../site/posts.ts'
+import { isoDay, longDate, published } from 'skillet-shared/posts'
 import { ORIGIN } from '../../site/site.ts'
 
 export async function getStaticPaths() {

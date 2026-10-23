@@ -21,7 +21,7 @@ const sheet = (file: string) =>
   readFileSync(file, 'utf8').replace(/^@import .*$/m, '')
 const html = `<!doctype html>
 <style>
-${sheet('src/tokens.css')}
+${sheet('node_modules/skillet-shared/src/tokens.css')}
 ${sheet('src/theme.css')}
 html, body { margin: 0; background: var(--surface); font-family: var(--font); }
 svg { display: block; width: ${width}px; height: ${height}px; }

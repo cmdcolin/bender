@@ -1,8 +1,9 @@
 // The sections down the signed-in home, in the order they are stacked: the
 // board you had open last, the ones before it, and everything you have saved.
 
+import { sinceWords } from 'skillet-shared/relative-time'
+
 import { appUrl, boardUrl } from '../site/paths.ts'
-import { sinceWords } from '../ui/relativeTime.ts'
 import { handOffSession } from '../ui/resumeHandoff.ts'
 import { card, cardActions, type CardEdits } from './cards.ts'
 import { el } from './dom.ts'

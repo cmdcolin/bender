@@ -1,4 +1,12 @@
 import {
+  EMPTY_HISTORY,
+  record,
+  stepBack,
+  stepForward,
+  type History,
+} from 'skillet-shared/history'
+
+import {
   DEFAULT_CONTROLS,
   sameControls,
   type ControlKey,
@@ -22,13 +30,6 @@ import { YOURS } from '../dsp/stages/roms.ts'
 import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler.ts'
 import workletUrl from '../dsp/worklet.ts?worker&url'
 import { errorText } from '../errorText.ts'
-import {
-  EMPTY_HISTORY,
-  record,
-  stepBack,
-  stepForward,
-  type History,
-} from '../history.ts'
 import { createStore, type Store } from '../listeners.ts'
 import { snap } from '../scale.ts'
 import {

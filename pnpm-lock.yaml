@@ -29,6 +29,9 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      skillet-shared:
+        specifier: ^0.1.0
+        version: 0.1.0(astro@7.4.2(@types/node@26.6.5)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
     devDependencies:
       '@testing-library/dom':
         specifier: ^10.4.2
@@ -2471,6 +2474,11 @@ packages:
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
+
+  skillet-shared@0.1.0:
+    resolution: {integrity: sha512-ZvNippHne1XctS2TLgz56qii9LaEd+mGfZPuhyOl7KDXDX7GKG/ZwwnApoPihuQ/JcJZcRcOk9jqp0ZJJMVt/w==}
+    peerDependencies:
+      astro: ^7.4.2
 
   smol-toml@1.9.1:
     resolution: {integrity: sha512-j7WyPdf0CJoutMzMoPLF/bVXHtKZIT9Rb4eGeEbWw8X2t5oirjPgpL+OpaENZrILYaXqYwnVH+qgUwVbl+pUJQ==}
@@ -5090,6 +5098,10 @@ snapshots:
   signal-exit@4.1.0: {}
 
   sisteransi@1.0.5: {}
+
+  skillet-shared@0.1.0(astro@7.4.2(@types/node@26.6.5)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)):
+    dependencies:
+      astro: 7.4.2(@types/node@26.6.5)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
 
   smol-toml@1.9.1: {}
 

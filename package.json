@@ -59,7 +59,8 @@
     "firebase": "13.1.0",
     "prettier": "^3.9.10",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "skillet-shared": "^0.1.0"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.2",

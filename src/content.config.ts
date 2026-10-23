@@ -1,7 +1,6 @@
 import { glob } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
-
-import { postSchema } from './site/posts.ts'
+import { postSchema } from 'skillet-shared/posts'
 
 import { readFileSync } from 'node:fs'
 

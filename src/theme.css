@@ -2,7 +2,7 @@
    travel that runs backwards, and the loud red of the panic and record buttons.
    The neutrals, borders, type, spacing and corners come from tokens.css, which
    videoskillet shares. */
-@import './tokens.css';
+@import 'skillet-shared/tokens.css';
 
 :root {
   --accent: #ff5d3b;
