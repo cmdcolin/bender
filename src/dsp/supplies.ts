@@ -1,7 +1,8 @@
-import { asEvent, EVENT, EVENT_KEYS, STEPS } from '../drums.ts'
+import { EVENT } from '../drums.ts'
 import { IDX } from '../engine/params.ts'
 import { MIC } from './micJacks.ts'
 import { DEST } from './modbus.ts'
+import { eventOn } from './stages/stepFaults.ts'
 import { PARTS, ToyRail, type Parts } from './toyRail.ts'
 
 import type { Ctx } from './stage.ts'
@@ -34,8 +35,6 @@ const onSecond = (p: Float32Array) => {
 }
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
-
-const EVENT_IDX = EVENT_KEYS.map(k => IDX[k])
 
 // The board's supplies: the shared cells every machine boots on, a second set
 // of cells, and a bench supply that never moves. The bench is a rail nobody
@@ -141,7 +140,7 @@ export class Supplies {
     for (let i = 0; i < n; i++) {
       const tick = steps[i]!
       if (tick === 0) continue
-      const event = asEvent(p[EVENT_IDX[(tick - 1) % STEPS]!]!)
+      const event = eventOn(p, tick)
       this.dropLeft = event === EVENT.drop ? ctx.trig.drumStepLen : 0
       if (event === EVENT.reboot) this.shared.trip()
     }

@@ -1,4 +1,11 @@
-import { asEvent, EVENT, EVENT_KEYS, STEPS } from '../../drums.ts'
+import {
+  asEvent,
+  asEventEvery,
+  EVENT,
+  EVENT_EVERY,
+  EVENT_KEYS,
+  STEPS,
+} from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
@@ -16,6 +23,15 @@ interface Voice {
   len: number
   start: number
   lag: number
+}
+
+/** The fault on the kit's step `tick`, as the trigger bus carries it: one past
+    the counter. A row set to fire every few bars fires on the last of them. */
+export function eventOn(p: Float32Array, tick: number): number {
+  const every = EVENT_EVERY[asEventEvery(p[IDX.drumEventEvery]!)]!
+  const bar = Math.floor((tick - 1) / STEPS)
+  if ((bar + 1) % every !== 0) return 0
+  return asEvent(p[EVENT_IDX[(tick - 1) % STEPS]!]!)
 }
 
 const idle = (): Voice => ({ event: 0, t: 0, len: 0, start: 0, lag: 0 })
@@ -60,7 +76,7 @@ export class StepFaults implements Stage {
     for (let i = 0; i < io.n; i++) {
       const tick = steps[i]!
       if (tick > 0) {
-        const event = asEvent(p[EVENT_IDX[(tick - 1) % STEPS]!]!)
+        const event = eventOn(p, tick)
         if (event !== 0 || this.cur.event !== 0) this.begin(event, len)
       } else if (this.cur.event !== 0 && this.cur.t >= this.cur.len) {
         this.begin(0, 0)

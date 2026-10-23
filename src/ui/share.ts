@@ -9,6 +9,7 @@ import {
   asLen,
   asMask,
   asEvent,
+  asEventEvery,
   asNudge,
   asRatchet,
   EVENT_SET,
@@ -135,11 +136,13 @@ export function coerceControl(key: ControlKey, v: number): number {
               ? asNudge(v)
               : EVENT_SET.has(key)
                 ? asEvent(v)
-                : LANE_LEN_SET.has(key)
-                  ? asLaneLen(v)
-                  : EDITOR_KEYS.has(key)
-                    ? asMask(v)
-                    : snapToStep(sliderFor(key), v)
+                : key === 'drumEventEvery'
+                  ? asEventEvery(v)
+                  : LANE_LEN_SET.has(key)
+                    ? asLaneLen(v)
+                    : EDITOR_KEYS.has(key)
+                      ? asMask(v)
+                      : snapToStep(sliderFor(key), v)
 }
 
 // Which form the bar is already in, and so which one the next write uses. A

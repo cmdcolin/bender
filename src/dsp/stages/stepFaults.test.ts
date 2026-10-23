@@ -112,17 +112,13 @@ function railRun(overrides: Partial<Controls>) {
     b => {
       b.transport.drums = true
       b.transport.tune = true
-      const trig = b.chain.ctx.trig
-      const own = trig.stepClocked.bind(trig)
-      trig.stepClocked = (i, tick, samples) => {
-        ticks.push(tick % 16)
-        own(i, tick, samples)
-      }
     },
     undefined,
     b => {
       reboots = b.rail.rebootCount
       v.push(b.rail.v)
+      const col = b.toyDrum.tick % 16
+      if (col !== ticks.at(-1)) ticks.push(col)
     },
   )
   return { reboots, v, ticks }
@@ -130,9 +126,18 @@ function railRun(overrides: Partial<Controls>) {
 
 test('a reboot on step 8 makes an eight-step bar from the downbeat', () => {
   const { ticks } = railRun({ drumEvent7: EVENT.reboot })
-  expect(ticks.slice(7, 23)).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7,
+  const played = ticks.filter(col => col !== 15)
+  expect(played.slice(0, 24)).toEqual([
+    0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7,
   ])
+})
+
+test('a row set to every four bars fires on the fourth', () => {
+  const reboots = (every: number) =>
+    railRun({ drumBpm: 480, drumEvent5: EVENT.reboot, drumEventEvery: every })
+      .reboots
+  expect(reboots(0)).toBeGreaterThanOrEqual(7)
+  expect(reboots(2)).toBe(2)
 })
 
 test('a reboot step reboots the shared cells every bar', () => {

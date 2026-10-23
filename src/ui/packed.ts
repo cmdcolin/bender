@@ -7,6 +7,7 @@ import {
   asLen,
   asMask,
   asEvent,
+  asEventEvery,
   asNudge,
   asRatchet,
   EVENT_SET,
@@ -895,6 +896,7 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumEvent13',
   'drumEvent14',
   'drumEvent15',
+  'drumEventEvery',
 ]
 
 // Retired controls that old links still carry, each read into the control that
@@ -949,6 +951,7 @@ function fromInt(key: ControlKey, n: number): number {
   if (RATCHET_SET.has(key)) return asRatchet(n)
   if (NUDGE_SET.has(key)) return asNudge(n)
   if (EVENT_SET.has(key)) return asEvent(n)
+  if (key === 'drumEventEvery') return asEventEvery(n)
   if (LANE_LEN_SET.has(key)) return asLaneLen(n)
   return asMask(n)
 }

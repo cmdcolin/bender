@@ -794,6 +794,7 @@ export const SOURCE_GROUPS: Group[] = [
         ...RATCHET_KEYS,
         ...NUDGE_KEYS,
         ...EVENT_KEYS,
+        'drumEventEvery',
       ],
     },
     sliders: [

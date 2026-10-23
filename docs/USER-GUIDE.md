@@ -38,7 +38,9 @@ Two rows under the grid work like a tracker's effect columns:
 - **event** puts a fault on the whole board for one step: **c** cuts the output,
   **d** drops the cells' contact so the shared rail sags, **b** brakes the mix
   to a stop, **f** loops the step's first quarter and **r** pulls the power. A
-  reboot on the shared cells restarts the kit's bar too
+  reboot on the shared cells restarts the kit's bar too. The button at the end
+  of the row sets how often the row fires: **4:4** fires on the fourth bar of
+  every four
 
 ![The drum box's blocks: triggers into one-shots, tanks, a metal bank and noise, then amps and a DAC fed by a sample ROM.](../public/guide/guide-drum-voices.jpg)
 

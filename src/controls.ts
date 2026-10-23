@@ -386,6 +386,7 @@ export const DEFAULT_CONTROLS = {
   drumEvent13: 0,
   drumEvent14: 0,
   drumEvent15: 0,
+  drumEventEvery: 0,
 
   fmLevel: 0,
   fmMute: 0,

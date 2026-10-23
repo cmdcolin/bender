@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useSyncExternalStore,
+  type ReactNode,
   type RefObject,
 } from 'react'
 
@@ -10,7 +11,9 @@ import { DRUM_MOVES, masksOf, throwLast, type DrumMove } from '../drum-moves.ts'
 import {
   asLen,
   DRUM_ROMS,
+  asEventEvery,
   DRUM_VOICES,
+  EVENT_EVERY,
   EVENT_KEYS,
   EVENTS,
   GRID_ROWS,
@@ -286,6 +289,7 @@ export function DrumGrid() {
           keys={EVENT_KEYS}
           values={EVENTS.map((_, i) => i)}
           says={v => EVENT_GLYPHS[v]!}
+          tail={<EventEvery />}
           tip="A fault on the whole board for the length of its step: c a knife through the output lead, d the cells losing contact so the shared rail sags, b a tape brake on the mix, f the step's first quarter looped, r the power pulled and put back. A reboot on the shared cells restarts the kit's bar too, unless the kit runs off another supply. Click to go round, shift-click to go back."
         />
       </div>
@@ -619,6 +623,7 @@ function CycleRow(props: {
   values: readonly number[]
   says: (v: number) => string
   tip: string
+  tail?: ReactNode
 }) {
   const { keys, values } = props
   const now = useBoardValue(c => keys.map(k => c[k]).join(','))
@@ -656,8 +661,30 @@ function CycleRow(props: {
             </button>
           ))}
         </div>
-        <span />
+        {props.tail ?? <span />}
       </div>
+    </Tip>
+  )
+}
+
+function EventEvery() {
+  const at = asEventEvery(useBoardValue(c => c.drumEventEvery))
+  const bars = EVENT_EVERY[at]!
+  return (
+    <Tip
+      text={`The row fires on bar ${bars} of every ${bars}. Click for a longer run, shift-click for a shorter one.`}
+    >
+      <button
+        className={styles.shuffleRow}
+        aria-label="bars between faults"
+        onClick={e => {
+          const by = e.shiftKey ? -1 : 1
+          const n = EVENT_EVERY.length
+          engine.set('drumEventEvery', (at + by + n) % n)
+        }}
+      >
+        {bars}:{bars}
+      </button>
     </Tip>
   )
 }

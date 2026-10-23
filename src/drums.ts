@@ -198,6 +198,10 @@ export const asNudge = (v: number) =>
   Math.min(Math.max(Math.round(v), 0), NUDGE_PARTS - 1)
 export const asEvent = (v: number) =>
   Math.min(Math.max(Math.round(v), 0), EVENTS.length - 1)
+/** Bars between the event row's faults: it fires on the last bar of each run. */
+export const EVENT_EVERY = [1, 2, 4, 8]
+export const asEventEvery = (v: number) =>
+  Math.min(Math.max(Math.round(v), 0), EVENT_EVERY.length - 1)
 
 export const RATCHET_SET = new Set<ControlKey>(RATCHET_KEYS)
 export const NUDGE_SET = new Set<ControlKey>(NUDGE_KEYS)
@@ -400,6 +404,20 @@ export const DRUM_ROMS: DrumRom[] = [
     drumTom: 0b0000_0000_0000_0111,
     drumBell: 0b1000_0000_1000_0000,
     drumCym: 0b1000_0000_0000_0000,
+    drumAccent: 0b1000_0000_1000_0000,
+  }),
+  rom('techno', 'Four on the floor, clap on two and four, open hat between', {
+    drumKick: 0b1000_1000_1000_1000,
+    drumClap: 0b0000_1000_0000_1000,
+    drumHat: 0b1101_1101_1101_1101,
+    drumOpen: 0b0010_0010_0010_0010,
+    drumAccent: 0b0010_0010_0010_0010,
+  }),
+  rom('rumble', 'Kick on the beat, a low tom rolling after it, no backbeat', {
+    drumKick: 0b1000_1000_1000_1000,
+    drumTom: 0b0011_0011_0011_0011,
+    drumHat: 0b0010_0010_0010_0010,
+    drumCym: 0b0000_0000_0000_0010,
     drumAccent: 0b1000_0000_1000_0000,
   }),
   rom('clear', 'Wipe every voice and write your own', {}),

@@ -186,7 +186,7 @@ plays a pattern nobody wrote.
 The pattern grid is a widget, so the table below leaves it out. It has ten rows
 (the eight voices, an accent and an echo row), each with 16 steps and a length,
 and a second 16-step mask on every voice for the steps that sometimes fire. That
-is 77 more controls, and a link stores them like the rest.
+is 78 more controls, and a link stores them like the rest.
 
 Named cuts, one press each under _knife on the bus_, as in the panel. A press
 puts the knife on, and the rows under it show the controls it set:
