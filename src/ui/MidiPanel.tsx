@@ -73,8 +73,8 @@ export function MidiPanel(props: {
   )
 }
 
-// The way in from the menu on a touch screen, which leaves the button out
-// while the wire is off. A browser with no Web MIDI gets neither.
+// The way in while the wire is off and the button is hidden. A browser with no
+// Web MIDI gets neither.
 export function MidiMenuItem(props: {
   className: string | undefined
   onPick: () => void
@@ -82,11 +82,7 @@ export function MidiMenuItem(props: {
   const status = useStoreValue(midi.status)
   if (status !== 'idle') return null
   return (
-    <button
-      role="menuitem"
-      className={`${props.className ?? ''} ${styles.menuTouch}`}
-      onClick={props.onPick}
-    >
+    <button role="menuitem" className={props.className} onClick={props.onPick}>
       midi
     </button>
   )

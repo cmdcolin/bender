@@ -16,7 +16,7 @@ import styles from './ChainMap.module.css'
 import { CHANNELS, GROUPS, STAGE_ORDER, type Group } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { added, removable, shownOn, takeOff } from './fitted.ts'
-import { listView, setListView, VIEWS } from './listView.ts'
+import { listView, PANEL_VIEWS, setListView } from './listView.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
@@ -219,9 +219,9 @@ export function StageBar({
     <div className={styles.addRow}>
       <ToggleButtonGroup
         label="stage view"
-        options={VIEWS}
-        value={listed ? 'all settings' : 'diagram'}
-        onChange={view => setListView(view === 'all settings')}
+        options={PANEL_VIEWS}
+        value={listed ? 'every stage' : 'map'}
+        onChange={view => setListView(view === 'every stage')}
       />
       {children}
       <StageMenu

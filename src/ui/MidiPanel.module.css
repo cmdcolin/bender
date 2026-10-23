@@ -32,21 +32,12 @@
   composes: actionWaiting from './button.module.css';
 }
 
-/* Few phones and tablets can reach a MIDI controller, and iOS has no Web MIDI
-   at all, so a touch screen moves the button into the menu until the wire is
-   on. */
+/* Until the wire is on, the way in is the ☰ menu. */
 .tabIdle {
   composes: tab;
 }
-@media (pointer: coarse) {
-  button.tabIdle {
-    display: none;
-  }
-}
-@media not (pointer: coarse) {
-  button.menuTouch {
-    display: none;
-  }
+button.tabIdle {
+  display: none;
 }
 
 .tabNote {

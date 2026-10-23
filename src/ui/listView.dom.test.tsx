@@ -20,11 +20,11 @@ test('the list view stacks every stage on the board in place of the map', () => 
   expect(within(list).queryAllByRole('slider').length).toBeGreaterThan(10)
 })
 
-test('the toggle goes back to the diagram', () => {
+test('the toggle goes back to the map', () => {
   render(<App />)
   const view = () => within(screen.getByRole('group', { name: 'stage view' }))
-  act(() => view().getByRole('button', { name: 'all settings' }).click())
-  act(() => view().getByRole('button', { name: 'diagram' }).click())
+  act(() => view().getByRole('button', { name: 'every stage' }).click())
+  act(() => view().getByRole('button', { name: 'map' }).click())
   expect(screen.queryByRole('group', { name: 'signal path' })).not.toBeNull()
 })
 

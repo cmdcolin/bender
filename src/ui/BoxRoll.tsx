@@ -29,7 +29,7 @@ export function BoxRoll({
   const moved = useMovedCount(keys)
   if (keys.length === 0) return null
   return (
-    <div className={styles.verbs}>
+    <div className={styles.verbs} data-box-verbs>
       <Tip
         text={`Randomize the ${keys.length} controls under ${title} and leave the rest of the stage where it stands.`}
       >

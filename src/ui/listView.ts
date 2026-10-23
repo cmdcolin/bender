@@ -3,6 +3,8 @@ import { read, write } from './persist.ts'
 
 export const VIEWS = ['diagram', 'all settings'] as const
 
+export const PANEL_VIEWS = ['map', 'every stage'] as const
+
 const KEY = 'bender.listView'
 
 /** Whether the panel lists every stage's sliders in place of the signal path
