@@ -214,6 +214,15 @@ tempo and restarts each cycle on the beat it belongs to.
 step the kit stands on, so one step can starve the rail, the next can open the
 crusher, and the one after can leave both alone.
 
+**Phrase** is a source that moves over 1 to 32 bars of the kit:
+
+- **Rise** climbs and drops back on the downbeat; **build** saves its climb for
+  the last bars
+- **Fall**, **swell**, **stairs** (a notch a bar) and a slow **wave** cover the
+  other moves
+- Wire the phrase onto another wire's depth, and a fast LFO on that wire grows
+  over the phrase
+
 ## Pedals and tape
 
 - **Gnash:** six dirt-box circuits: screamer, rat, muff, germanium, octave, gate

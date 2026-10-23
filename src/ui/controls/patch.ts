@@ -1,5 +1,10 @@
 import { VOICE_LABELS } from '../../drums.ts'
-import { LFO_SYNC_MODES, N_DEST } from '../../dsp/modbus.ts'
+import {
+  LFO_SYNC_MODES,
+  N_DEST,
+  PHRASE_BARS,
+  PHRASE_SHAPES,
+} from '../../dsp/modbus.ts'
 import { LANE_KEYS, LANE_LEN_KEYS } from '../../lanes.ts'
 
 import type { Group } from './types.ts'
@@ -12,11 +17,15 @@ export const PATCH_GROUPS: Group[] = [
     // wire, so the four rows of source/destination pairs read as a bay
     // rather than as forty-nine choices to cross-reference by hand.
     editor: { kind: 'patch', keys: [...LANE_KEYS.flat(), ...LANE_LEN_KEYS] },
-    handled: ([0, 1, 2, 3] as const).flatMap(i => [
-      `mod${i}Src` as const,
-      `mod${i}Dest` as const,
-      `mod${i}Depth` as const,
-    ]),
+    handled: [
+      ...([0, 1, 2, 3] as const).flatMap(i => [
+        `mod${i}Src` as const,
+        `mod${i}Dest` as const,
+        `mod${i}Depth` as const,
+      ]),
+      'modPhraseBars',
+      'modPhraseShape',
+    ],
     sliders: [
       {
         key: 'modLfoHz',
@@ -50,13 +59,33 @@ export const PATCH_GROUPS: Group[] = [
         choices: LFO_SYNC_MODES,
         help: 'Runs one LFO cycle per division of the kit’s tempo instead of LFO rate. Each kit step that lands on a cycle boundary restarts the cycle, so a bars sweep starts on the one and S&H on sixteenths picks a fresh value every step.',
       },
+      {
+        key: 'modPhraseBars',
+        label: 'Phrase',
+        min: 0,
+        max: PHRASE_BARS.length - 1,
+        step: 1,
+        unit: '',
+        choices: PHRASE_BARS.map(b => (b === 1 ? '1 bar' : `${b} bars`)),
+        help: 'How many bars of the kit the phrase source takes to come round. It starts again on the downbeat that ends the run, so a build lands on the one.',
+      },
+      {
+        key: 'modPhraseShape',
+        label: 'Phrase shape',
+        min: 0,
+        max: PHRASE_SHAPES.length - 1,
+        step: 1,
+        unit: '',
+        choices: PHRASE_SHAPES,
+        help: 'Rise climbs the whole phrase and drops back on the one; build saves most of its climb for the last bars; fall runs the other way; swell rises and falls; stairs climbs a notch a bar; wave is a slow sine either side of the knob. Wire it onto another wire’s depth to grow a fast LFO over the phrase.',
+      },
       ...([0, 1, 2, 3] as const).flatMap(i => [
         {
           key: `mod${i}Src` as const,
           label: `Wire ${i + 1} from`,
           ...(i > 0 ? { part: `wire ${i + 1}` } : {}),
           min: 0,
-          max: 13,
+          max: 14,
           step: 1,
           unit: '',
           choices: [
@@ -74,8 +103,9 @@ export const PATCH_GROUPS: Group[] = [
             'heat',
             'lane A',
             'lane B',
+            'phrase',
           ],
-          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, how hot the board has got, or a step lane, which holds one value per kit step.',
+          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, how hot the board has got, a step lane, which holds one value per kit step, or the phrase, a slow shape over several bars of the kit.',
         },
         {
           key: `mod${i}Dest` as const,

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-549 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+551 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 144 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -1230,14 +1230,16 @@ wire can connect to the toy’s supply rail, the tape loop’s capstan and loop
 markers, or another wire’s depth, so the bay can modulate itself.
 
 <details>
-<summary>15 controls</summary>
+<summary>17 controls</summary>
 
 | control        | range                                                                                                                  | what it does                                                                   |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | LFO rate       | 0.02 to 400 Hz                                                                                                         | The bay’s oscillator, free-running                                             |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                  | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | LFO sync       | off, four bars, two bars, bars, halves, quarters, dotted eighths, eighths, eighth triplets, sixteenths, thirty-seconds | Runs one LFO cycle per division of the kit’s tempo instead of LFO rate         |
-| Wire 1–4 from  | 14 of them, off through lane B                                                                                         | What the wire picks up                                                         |
+| Phrase         | 1 bar, 2 bars, 4 bars, 8 bars, 16 bars, 32 bars                                                                        | How many bars of the kit the phrase source takes to come round                 |
+| Phrase shape   | rise, build, fall, swell, stairs, wave                                                                                 | Rise climbs the whole phrase and drops back on the one                         |
+| Wire 1–4 from  | 15 of them, off through phrase                                                                                         | What the wire picks up                                                         |
 | Wire 1–4 to    | 135 of them, filt cut through oct chaos                                                                                | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                       |
 

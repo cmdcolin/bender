@@ -786,6 +786,8 @@ export const PARAM_DEFS = [
   ['modLaneB15', 'step'],
   ['modLaneALen', 'step'],
   ['modLaneBLen', 'step'],
+  ['modPhraseBars', 'step'],
+  ['modPhraseShape', 'step'],
   ['mod0Src', 'step'],
   ['mod0Dest', 'step'],
   ['mod0Depth', 'slew'],

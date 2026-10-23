@@ -247,6 +247,7 @@ const SRC = {
   heat: 11,
   laneA: 12,
   laneB: 13,
+  phrase: 14,
 }
 
 // Long enough to take the click off a lane on a level, short enough that a
@@ -271,6 +272,7 @@ const OWN_LANE = new Set<number>([
   SRC.bodyY,
   SRC.laneA,
   SRC.laneB,
+  SRC.phrase,
 ])
 
 const WIRES = [
@@ -295,6 +297,39 @@ export const LFO_SYNC_MODES = [
 ]
 // One cycle in sixths of a kit step, so every division is a whole number.
 const LFO_SYNC_SIXTHS = [0, 384, 192, 96, 48, 24, 18, 12, 8, 6, 3]
+
+export const PHRASE_BARS = [1, 2, 4, 8, 16, 32]
+export const PHRASE_SHAPES = [
+  'rise',
+  'build',
+  'fall',
+  'swell',
+  'stairs',
+  'wave',
+]
+const BAR_STEPS = 16
+
+/** Where a phrase stands at `t` of the way through it. Every shape but wave
+    runs 0 to 1, so a wire pushes one way from where its knob sits; stairs
+    climbs a notch a bar, or a beat in a phrase under four bars. */
+export function phraseShape(t: number, shape: number, bars: number): number {
+  switch (shape) {
+    case 1:
+      return t * t * t
+    case 2:
+      return 1 - t
+    case 3:
+      return 1 - Math.abs(2 * t - 1)
+    case 4: {
+      const n = Math.max(bars, 4)
+      return Math.min(Math.floor(t * n), n - 1) / (n - 1)
+    }
+    case 5:
+      return Math.sin(t * 2 * Math.PI)
+    default:
+      return t
+  }
+}
 
 function lfoShape(phase: number, shape: number, sh: number): number {
   switch (shape) {
@@ -345,6 +380,10 @@ export class ModBus {
   private readonly laneFrom = LANE_IDX.map(() => 0)
   private readonly laneOut = LANE_IDX.map(() => 0)
   private readonly laneRamp = LANE_IDX.map(() => 0)
+  private readonly phrase = new Float32Array(BLOCK)
+  // Steps into the phrase: set from the kit's counter on each strobe, and run
+  // on at the kit's tempo in between, or with the kit stopped.
+  private phrasePos = 0
   private lfoPhase = 0
   private shValue = 0
   private mic = new Follower()
@@ -384,10 +423,15 @@ export class ModBus {
     // advance every sample. The other shapes are functions of the phase, so
     // their lane is only written when a wire reads it.
     let wired = false
+    let phrased = false
     for (let w = 0; w < WIRES.length; w++) {
       const from = Math.round(p[WIRES[w]![0]]!)
       if (from !== SRC.off && !OWN_LANE.has(from)) wired = true
+      if (from === SRC.phrase) phrased = true
     }
+    const bars = PHRASE_BARS[Math.round(p[IDX.modPhraseBars]!)] ?? 8
+    const phraseSteps = bars * BAR_STEPS
+    const phraseShapeAt = Math.round(p[IDX.modPhraseShape]!)
     for (let i = 0; i < n; i++) {
       const prev = this.lfoPhase
       this.lfoPhase = wrap1(this.lfoPhase + hz / this.sr)
@@ -411,6 +455,15 @@ export class ModBus {
       )
       this.keyEnv[i] = this.keyHit.process(src.trig.key[i]! > 0 ? 1 : 0, fall)
       const at = strobe[i]!
+      this.phrasePos = at
+        ? (at - 1) % phraseSteps
+        : (this.phrasePos + kitHz / this.sr) % phraseSteps
+      if (phrased)
+        this.phrase[i] = phraseShape(
+          this.phrasePos / phraseSteps,
+          phraseShapeAt,
+          bars,
+        )
       for (let l = 0; l < LANE_IDX.length; l++) {
         if (at) {
           const len = asLaneLen(p[LANE_LEN_IDX[l]!]!)
@@ -509,6 +562,8 @@ export class ModBus {
         return this.stepLanes[0]!
       case SRC.laneB:
         return this.stepLanes[1]!
+      case SRC.phrase:
+        return this.phrase
       case SRC.heat:
       case SRC.bodyX:
       case SRC.bodyY: {
@@ -531,6 +586,7 @@ export class ModBus {
     this.live.fill(0)
     this.lfoPhase = 0
     this.shValue = 0
+    this.phrasePos = 0
     this.laneAt.fill(0)
     this.laneOut.fill(0)
     this.laneFrom.fill(0)

@@ -812,6 +812,8 @@ export const DEFAULT_CONTROLS = {
   modLaneB15: 0,
   modLaneALen: 16,
   modLaneBLen: 16,
+  modPhraseBars: 3,
+  modPhraseShape: 0,
   mod0Src: 0,
   mod0Dest: 0,
   mod0Depth: 0.5,

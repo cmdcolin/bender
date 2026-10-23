@@ -1,3 +1,7 @@
+import { useSyncExternalStore } from 'react'
+
+import { STEPS } from '../drums.ts'
+import { PHRASE_BARS, PHRASE_SHAPES, phraseShape } from '../dsp/modbus.ts'
 import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
 import { sliderFor } from './controls/index.ts'
@@ -31,6 +35,8 @@ const WAITS_ON_KIT = new Set([
   SRC.indexOf('lane B'),
 ])
 const WAITS_ON_SONG = SRC.indexOf('ROM step')
+const PHRASE = SRC.indexOf('phrase')
+const WAVE = PHRASE_SHAPES.indexOf('wave')
 
 const NUM_X = 2
 const SRC_X = 14
@@ -51,14 +57,10 @@ const cy = (y: number) => y + ROW_H / 2
 // dashed when nothing is patched, and a destination box. A destination that is
 // another wire's depth gets a curved lead out to that wire's row. Pressing a
 // wire opens its from, to and depth rows underneath.
-const HOLDS = MOD_KEYS.map((k, i) => ({
-  id: String(i),
-  keys: [k.src, k.dest, k.depth],
-}))
+const PHRASE_KEYS = ['modPhraseBars', 'modPhraseShape'] as const
 
 export function PatchBay() {
   const pick = useSelectedBox()
-  useOpensOnAim(pick, HOLDS)
   const raw = useBoardValue(c =>
     MOD_KEYS.flatMap(k => [c[k.src], c[k.dest], c[k.depth]]).join(','),
   )
@@ -76,6 +78,16 @@ export function PatchBay() {
     dest: Math.round(nums[i * 3 + 1]!),
     depth: nums[i * 3 + 2]!,
   }))
+  const holds = MOD_KEYS.map((k, i) => ({
+    id: String(i),
+    keys: [
+      k.src,
+      k.dest,
+      k.depth,
+      ...(wires[i]!.src === PHRASE ? PHRASE_KEYS : []),
+    ],
+  }))
+  useOpensOnAim(pick, holds)
 
   // The bay's other door, counted: every control one of these wires can land on
   // carries a `+ mod` of its own, and somebody who found the bay first has no
@@ -87,8 +99,7 @@ export function PatchBay() {
       ? 'All four wires are soldered. Each says so on the row it is on.'
       : `${free === 4 ? 'All four' : `${free} of the four`} wires ${free === 1 ? 'is' : 'are'} free — press + mod on any control row the bay can reach to solder one there.`
 
-  const open =
-    pick.selected === null ? undefined : MOD_KEYS[Number(pick.selected)]
+  const open = pick.selected === null ? undefined : holds[Number(pick.selected)]
   const bare = free === 4
   const height = (bare ? TOP : rowY(3)) + ROW_H + 8
 
@@ -182,6 +193,9 @@ export function PatchBay() {
                   >
                     {patched ? SRC[w.src] : 'unwired'}
                   </text>
+                  {w.src === PHRASE && drums && (
+                    <PhraseMeter y={y + ROW_H - 3} />
+                  )}
                   {patched && (
                     <>
                       <line
@@ -249,7 +263,7 @@ export function PatchBay() {
           })}
         </svg>
       </div>
-      <BoxRows inOrder keys={open && [open.src, open.dest, open.depth]} />
+      <BoxRows inOrder keys={open?.keys} />
       <StepLanes />
       {!open && (
         <span className={styles.spare}>
@@ -283,5 +297,27 @@ export function PatchBay() {
         </Tip>
       )}
     </>
+  )
+}
+
+// How far the phrase has climbed, as a bar along the foot of its source box.
+function PhraseMeter({ y }: { y: number }) {
+  const bars = PHRASE_BARS[useBoardValue(c => c.modPhraseBars)] ?? 8
+  const shape = useBoardValue(c => c.modPhraseShape)
+  const steps = bars * STEPS
+  const t = useSyncExternalStore(
+    engine.meter.subscribe,
+    () => (engine.meter.get().tick % steps) / steps,
+  )
+  const v = phraseShape(t, shape, bars)
+  const fill = shape === WAVE ? (v + 1) / 2 : v
+  return (
+    <rect
+      x={SRC_X + 2}
+      y={y}
+      width={Math.max(fill * (SRC_W - 4), 0.5)}
+      height={1.5}
+      fill="var(--accent)"
+    />
   )
 }

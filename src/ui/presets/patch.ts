@@ -254,6 +254,7 @@ const TAPS: Tap[] = [
   from('key hit', [], { hands: true }),
   from('lane A', ['drumLevel'], { lane: LANE_KEYS[0] }),
   from('lane B', ['drumLevel'], { lane: LANE_KEYS[1] }),
+  from('phrase', []),
 ]
 
 const blank = (c: Controls, lane: readonly ControlKey[]) =>
