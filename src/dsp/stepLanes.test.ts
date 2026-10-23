@@ -33,12 +33,13 @@ function bay(overrides: Partial<Controls>) {
     ...overrides,
   })
   // One block with the kit's counter landing on `tick`, or no strobe at all.
-  return (tick?: number) => {
+  const run = (tick?: number) => {
     if (tick !== undefined) trig.stepClocked(0, tick)
     trig.swap(BLOCK)
     bus.build(BLOCK, p, src)
-    return bus.read(0)![BLOCK - 1]!
+    return bus.read(0)!
   }
+  return Object.assign((tick?: number) => run(tick)[BLOCK - 1]!, { run })
 }
 
 test('a lane sends the value written on the step the kit stands on', () => {
@@ -46,6 +47,17 @@ test('a lane sends the value written on the step the kit stands on', () => {
   expect(block(0)).toBeCloseTo(6 / LANE_MAX)
   expect(block(1)).toBeCloseTo(-1)
   expect(block(2)).toBe(0)
+})
+
+test('a lane ramps onto its step instead of jumping', () => {
+  const block = bay({ modLaneA1: 12 })
+  block(0)
+  const lane = block.run(1)
+  let widest = 0
+  for (let i = 1; i < BLOCK; i++)
+    widest = Math.max(widest, Math.abs(lane[i]! - lane[i - 1]!))
+  expect(widest).toBeLessThan(0.05)
+  expect(lane[BLOCK - 1]).toBe(1)
 })
 
 test('a lane holds its step between strobes and while the kit is stopped', () => {

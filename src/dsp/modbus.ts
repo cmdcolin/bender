@@ -249,6 +249,10 @@ const SRC = {
   laneB: 13,
 }
 
+// Long enough to take the click off a lane on a level, short enough that a
+// lane has landed well inside the block it steps in.
+const LANE_RAMP_S = 0.0007
+
 const LANE_IDX = LANE_KEYS.map(keys => keys.map(k => IDX[k]))
 const LANE_LEN_IDX = LANE_LEN_KEYS.map(k => IDX[k])
 
@@ -338,6 +342,9 @@ export class ModBus {
   private readonly keyEnv = new Float32Array(BLOCK)
   private readonly stepLanes = LANE_IDX.map(() => new Float32Array(BLOCK))
   private readonly laneAt = LANE_IDX.map(() => 0)
+  private readonly laneFrom = LANE_IDX.map(() => 0)
+  private readonly laneOut = LANE_IDX.map(() => 0)
+  private readonly laneRamp = LANE_IDX.map(() => 0)
   private lfoPhase = 0
   private shValue = 0
   private mic = new Follower()
@@ -372,6 +379,7 @@ export class ModBus {
     const attack = coef(0.005, this.sr)
     const release = coef(0.12, this.sr)
     const fall = Math.exp(-1 / (0.12 * this.sr))
+    const rampLen = Math.max(1, Math.round(LANE_RAMP_S * this.sr))
     // The phase, the held value and the chaos and drunk walks carry state and
     // advance every sample. The other shapes are functions of the phase, so
     // their lane is only written when a wire reads it.
@@ -408,8 +416,20 @@ export class ModBus {
           const len = asLaneLen(p[LANE_LEN_IDX[l]!]!)
           this.laneAt[l] =
             asLaneValue(p[LANE_IDX[l]![(at - 1) % len]!]!) / LANE_MAX
+          this.laneFrom[l] = this.laneOut[l]!
+          this.laneRamp[l] = rampLen
         }
-        this.stepLanes[l]![i] = this.laneAt[l]!
+        const to = this.laneAt[l]!
+        const left = this.laneRamp[l]!
+        if (left > 1) {
+          this.laneRamp[l] = left - 1
+          this.laneOut[l] =
+            to + ((this.laneFrom[l]! - to) * (left - 1)) / rampLen
+        } else {
+          this.laneRamp[l] = 0
+          this.laneOut[l] = to
+        }
+        this.stepLanes[l]![i] = this.laneOut[l]!
       }
     }
 
@@ -512,6 +532,9 @@ export class ModBus {
     this.lfoPhase = 0
     this.shValue = 0
     this.laneAt.fill(0)
+    this.laneOut.fill(0)
+    this.laneFrom.fill(0)
+    this.laneRamp.fill(0)
     this.mic.reset()
     this.drumHit.reset()
     this.keyHit.reset()
