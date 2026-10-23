@@ -1,0 +1,19 @@
+bank  tune          app rate  nearest tempo tap (master 3.6 MHz)
+ 0  lullaby        3.2 Hz  /2^20 = 3.4 Hz  DIP 1-5: off off off off off
+ 1  march          3.2 Hz  /2^20 = 3.4 Hz  DIP 1-5: on off off off off
+ 2  arp            3.2 Hz  /2^20 = 3.4 Hz  DIP 1-5: off on off off off
+ 3  scale          3.2 Hz  /2^20 = 3.4 Hz  DIP 1-5: on on off off off
+ 4  für elise        8 Hz  /2^19 = 6.9 Hz  DIP 1-5: off off on off off
+ 5  ode to joy       6 Hz  /2^19 = 6.9 Hz  DIP 1-5: on off on off off
+ 6  rondo turca      9 Hz  /2^19 = 6.9 Hz  DIP 1-5: off on on off off
+ 7  yankee           6 Hz  /2^19 = 6.9 Hz  DIP 1-5: on on on off off
+ 8  camptown         6 Hz  /2^19 = 6.9 Hz  DIP 1-5: off off off on off
+ 9  wm tell          9 Hz  /2^19 = 6.9 Hz  DIP 1-5: on off off on off
+10  ragtime          8 Hz  /2^19 = 6.9 Hz  DIP 1-5: off on off on off
+11  danube           5 Hz  /2^19 = 6.9 Hz  DIP 1-5: on on off on off
+12  gymnopédie     2.2 Hz  /2^21 = 1.7 Hz  DIP 1-5: off off on on off
+13  gnossienne       4 Hz  /2^20 = 3.4 Hz  DIP 1-5: on off on on off
+14  sakura           3 Hz  /2^20 = 3.4 Hz  DIP 1-5: off on on on off
+15  dies irae        3 Hz  /2^20 = 3.4 Hz  DIP 1-5: on on on on off
+16  funeral        2.6 Hz  /2^20 = 3.4 Hz  DIP 1-5: off off off off on
+17  greensleeves   4.5 Hz  /2^20 = 3.4 Hz  DIP 1-5: on off off off on
