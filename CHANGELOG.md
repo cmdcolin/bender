@@ -2,6 +2,51 @@
 
 All notable changes to bender are documented here.
 
+## [1.17.0](https://github.com/cmdcolin/bender/compare/v1.16.1...v1.17.0) - 2026-10-23
+
+### Features
+- *(dsp)* [`7609cdf`](https://github.com/cmdcolin/bender/commit/7609cdf48a7e1345198802176485a82f6d27c5db) lock Growler's memory, the LFO and the delay to the kit's clock
+- *(dsp)* [`24b2241`](https://github.com/cmdcolin/bender/commit/24b22417dd9e82a2b950fe5c3bfc62d7e0b48935) add a bell carrier and let tracked ring mod follow the pitch it hears
+- *(dsp)* [`5238fe2`](https://github.com/cmdcolin/bender/commit/5238fe2553aacefaf359a3a1b109c17a86a317c7) accent and slide on Growler's melody memory
+- *(dsp)* [`d472cd4`](https://github.com/cmdcolin/bender/commit/d472cd4c88d85df8f0a46aa76f00b3545cc1c893) step lanes, per-step values the patch bay reads as sources
+- *(dsp)* [`34563c3`](https://github.com/cmdcolin/bender/commit/34563c3746f78070d3c76bd466193d6d3d3b946b) voice the drum kit against a real TR-808
+- [`2f7d489`](https://github.com/cmdcolin/bender/commit/2f7d489c9934e6799c78541f3051d6bcd3ba7743) placement and routing scripts for the toy board PCB
+- *(dsp)* [`21dc091`](https://github.com/cmdcolin/bender/commit/21dc091535f3dcc5be1cc35c15ea586cf7b0356a) per-step ratchets and nudges on Clatter
+- *(dsp)* [`96fef29`](https://github.com/cmdcolin/bender/commit/96fef29eefab761d22807702f2accc82ee9ebb0d) octave bend after MicroSputter V2
+- *(dsp)* [`6cf850c`](https://github.com/cmdcolin/bender/commit/6cf850ccb5fa86a718bc4884f1e05cecbb8e53b9) event row, a fault per step on the whole board
+- [`317bd80`](https://github.com/cmdcolin/bender/commit/317bd8069234377158ec65bec8482a708b79e418) techno and rumble beats, and an event row that fires every few bars
+- *(dsp)* [`d6dda5d`](https://github.com/cmdcolin/bender/commit/d6dda5df1dd5b8eda397368a130691f9f3ee2a06) a run of one fault on the event row plays as one
+- *(dsp)* [`c938ed7`](https://github.com/cmdcolin/bender/commit/c938ed75bd3239a447b0f78ea3987c0ae591a168) a run of freezes rolls faster each step
+- *(home)* [`a1d7640`](https://github.com/cmdcolin/bender/commit/a1d764094a634e979cd4a34fef4ec5b28a7c5484) demo an acid line, a pulled plug and a knife through the strings
+- *(ui)* [`6676777`](https://github.com/cmdcolin/bender/commit/6676777411cea938acb2cc49d7758b567e8a8fbe) play the board's faults live from the keyboard
+- [`2d3fb59`](https://github.com/cmdcolin/bender/commit/2d3fb5972fe690dcb73ae13e70ed0fc05106c2d9) trig conditions on the kit's voice rows
+- *(dsp)* [`f4dd65f`](https://github.com/cmdcolin/bender/commit/f4dd65f530ca4355f4ef890c17bfe38d02e18768) a kick pump on the master supply
+- *(ui)* [`7e80dc7`](https://github.com/cmdcolin/bender/commit/7e80dc74a8da4b69a8d113f9b27464febb3a4ecb) write Euclid rows, ratchets, faults and bar conditions from bender.drums
+
+### Fixes
+- *(ui)* [`2f90828`](https://github.com/cmdcolin/bender/commit/2f90828c12af5976b4a568f01c03c6205900a929) open Ratchet ramp from the kit's trigger lines box
+- *(dsp)* [`9f91ed9`](https://github.com/cmdcolin/bender/commit/9f91ed9c20afd91104677453deb98d3cc3f10493) clamp step lanes and FM clock lanes so the effect ROM can't spin
+- *(ui)* [`aa4224a`](https://github.com/cmdcolin/bender/commit/aa4224a1183c1efe1b13ffb942df7f76d7e1e6b8) slot the octave bend in when testing its patch wires
+- *(dsp)* [`e829b25`](https://github.com/cmdcolin/bender/commit/e829b25631b0db9f8d0fe6ff1689f90279fcff8c) bring the kit's counter out of reset on the downbeat
+- *(dsp)* [`ac62d81`](https://github.com/cmdcolin/bender/commit/ac62d8154399405704a08586c4d7cce5117da87a) ramp step lanes onto each step instead of jumping
+- *(home)* [`9984143`](https://github.com/cmdcolin/bender/commit/99841436b5793becac1a734c2d3a1fd3c69ccb12) render missing demo clips before the dev server starts
+- *(dsp)* [`91b1237`](https://github.com/cmdcolin/bender/commit/91b123796f31a9be494d4d7e4ffc11680a668038) keep the kit's clock running with its fader down
+- *(ui)* [`56e54e4`](https://github.com/cmdcolin/bender/commit/56e54e4af508aecc8c3e09ddd7c7e10c2822f5f4) put Time sync on Wraith's face and hide Time while it is on
+- *(ui)* [`064da73`](https://github.com/cmdcolin/bender/commit/064da735c077646d4b25327c2dad1ce05d872b96) give a fault throw a free letter when a saved layout took its own
+
+### Performance
+- *(dsp)* [`c16254c`](https://github.com/cmdcolin/bender/commit/c16254c9f96e00badc94e372d7ffc30d26cb8fe5) run the kit's noise and voice filters only while a voice is open
+
+### Documentation
+- [`13c71da`](https://github.com/cmdcolin/bender/commit/13c71dafe6fb389cd684bc505aee9bb02124ee72) move the hardware note out of the synced commit region
+- [`e89775d`](https://github.com/cmdcolin/bender/commit/e89775d28fba78f793ff4041f7144da2bd2e57ad) hand off the techno machine work
+- [`39a1c48`](https://github.com/cmdcolin/bender/commit/39a1c489922fc9026e2de379acf3999129b6b69b) hand off the techno machine work after the event row
+- [`8f10f04`](https://github.com/cmdcolin/bender/commit/8f10f0433ab58518d9a678ba26b53a039280aa2e) hand off the techno machine work after the demos
+- [`28981d5`](https://github.com/cmdcolin/bender/commit/28981d5b4981ce6734751106de91737dd4618a1c) hand off the techno machine work after live faults and conditions
+
+### Tests
+- [`9b659c0`](https://github.com/cmdcolin/bender/commit/9b659c07017b5ecfc5e5904f157db7c441515eb5) fail when the toy board falls behind the app
+
 ## [1.16.1](https://github.com/cmdcolin/bender/compare/v1.16.0...v1.16.1) - 2026-10-23
 
 ### Features
