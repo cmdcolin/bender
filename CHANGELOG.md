@@ -2,6 +2,29 @@
 
 All notable changes to bender are documented here.
 
+## [1.16.1](https://github.com/cmdcolin/bender/compare/v1.16.0...v1.16.1) - 2026-10-23
+
+### Features
+- *(ui)* [`59c4d1e`](https://github.com/cmdcolin/bender/commit/59c4d1e383bd95038cf70ef2c6a7ddfba35d82ea) the speaker cap opens a Level slider and a mute box
+- [`bab9757`](https://github.com/cmdcolin/bender/commit/bab9757cda5c0ec0a0437df19e992e5ab706a01c) hardwired toy board as a netlist, drawings and gate-level sim
+- *(dsp)* [`a2972ad`](https://github.com/cmdcolin/bender/commit/a2972ad90d375d4c1f721005115c612521112904) rebuild the clipper as the toy's LM386 into a speaker on a supply
+- *(ui)* [`02806cd`](https://github.com/cmdcolin/bender/commit/02806cd27464d1ddc12cec322ed90ddf2c53a02a) named cuts and boards for the toy's amp
+- *(ui)* [`e1d4f98`](https://github.com/cmdcolin/bender/commit/e1d4f9816bdd1ebf5fa2758cb3b7180996ef7236) draw the Clipper's amp, its supply and its speaker
+- *(home)* [`3c7153d`](https://github.com/cmdcolin/bender/commit/3c7153d3af264580f69c3a7fc21a5da70885daf1) demo the motorboating amp, the second cells and ADPCM drift
+
+### Fixes
+- *(docs)* [`ea67d62`](https://github.com/cmdcolin/bender/commit/ea67d62c44fbd955cb7171634ea4be045f4d08b1) describe the toy board script in the features list
+
+### Refactor
+- *(ui)* [`016dd23`](https://github.com/cmdcolin/bender/commit/016dd236d750a7268164b299540bae4d8017aaab) drop the inline Level slider where the speaker cap carries it
+- *(dsp)* [`cd83bb2`](https://github.com/cmdcolin/bender/commit/cd83bb2350b53262a3536f792177d0c4931e2fdd) say at the clipper's current boost why it is there
+
+### Documentation
+- [`4ce25c1`](https://github.com/cmdcolin/bender/commit/4ce25c1a871b11785a3b4b524596202f92b2a659) the clipper's amp in BENDS.md, and deep bends item 2 built
+
+### Chores
+- *(ui)* [`92a8f97`](https://github.com/cmdcolin/bender/commit/92a8f975842bbf21f25fa3410d5dce593b05b783) measure the bend ends for the clipper's amp
+
 ## [1.16.0](https://github.com/cmdcolin/bender/compare/v1.15.2...v1.16.0) - 2026-10-23
 
 ### Features
