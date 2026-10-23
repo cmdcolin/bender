@@ -130,7 +130,6 @@ export const BEND_ENDS: Partial<
   bits: [-3.5, null],
   srHz: [-2.5, 0],
   srJitter: [0, 0],
-  crushMix: [null, 0],
   driveDb: [-6, 4],
   distBias: [-3, -3],
   distToneHz: [-3.5, 0],
@@ -279,6 +278,8 @@ export const BEND_ENDS: Partial<
   four4Mid: [null, 5],
   four4High: [null, 3],
   four4Pan: [2.5, null],
+  crushMix: [null, 0],
+  crushLadder: [-0.5, -2.5],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */
