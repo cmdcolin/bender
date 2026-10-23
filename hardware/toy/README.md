@@ -62,6 +62,17 @@ amp. 131 parts, 26 ICs, all through-hole.
 
 A swapped wire in the mux fails 17 of these.
 
+## Keeping it in step with the app
+
+- **Tunes, tempos:** edit `src/dsp/stages/roms.ts` as usual, then run `pnpm toy`
+  to rebuild the ROM images.
+- **Circuit changes:** the board does not read `toyChip.ts`. Edit `board.ts`,
+  run `pnpm toy`, and add a test beside the matching one in `toy.test.ts`.
+- **Check:** `pnpm test hardware/toy` fails when
+  - a generated file is older than `board.ts` or `roms.ts`
+  - the app's address, data or bank line counts differ from the board's
+  - a tune no longer fits the banks, steps or four octaves
+
 ## Not done
 
 - **Gerbers:** none. Layout needs KiCad, which this machine lacks, and a board

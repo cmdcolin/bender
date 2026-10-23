@@ -71,7 +71,7 @@ const named = (def: PartDef, names: string[]): PartDef => ({
 })
 
 const rnet = (n: number) =>
-  named(passive('10k', `Resistor_THT:R_Array_SIP${n}`, n), ['COM'])
+  named(passive('10k', `Resistor_THT:R_Array_SIP${Math.max(n, 4)}`, n), ['COM'])
 
 const letters = (n: number, prefix: string) =>
   Array.from({ length: n }, (_, i) => `${prefix}${i}`)
@@ -162,14 +162,22 @@ export const PARTS = {
     ),
     ['CCW', 'WIPER', 'CW'],
   ),
-  D: named(passive('1N5819', 'Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal'), [
-    'A',
+  D: named(passive('1N5819', 'Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal'), [
     'K',
+    'A',
   ]),
   KEY: passive('key', 'Button_Switch_THT:SW_PUSH_6mm'),
-  SLIDE: passive('slide', 'Button_Switch_THT:SW_Slide_1P2T_CK_OS102011MS2Q', 2),
+  SLIDE: passive(
+    'slide',
+    'Button_Switch_THT:SW_Slide_SPDT_Straight_CK_OS102011MS2Q',
+    2,
+  ),
   SPDT: named(
-    passive('SPDT', 'Button_Switch_THT:SW_Slide_1P2T_CK_OS102011MS2Q', 3),
+    passive(
+      'SPDT',
+      'Button_Switch_THT:SW_Slide_SPDT_Straight_CK_OS102011MS2Q',
+      3,
+    ),
     ['A', 'COM', 'B'],
   ),
   DIP5: passive(
@@ -179,7 +187,7 @@ export const PARTS = {
   ),
   DIP2: passive(
     'DIP-2',
-    'Button_Switch_THT:SW_DIP_SPSTx02_Slide_9.78x7.21mm_W7.62mm_P2.54mm',
+    'Button_Switch_THT:SW_DIP_SPSTx02_Slide_9.78x7.26mm_W7.62mm_P2.54mm',
     4,
   ),
   SP4T: named(

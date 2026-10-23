@@ -19,6 +19,7 @@ export interface Placed {
   conn: Map<string, string>
   closed: [string, string][]
   note?: string
+  decouples?: string
 }
 
 export type Closed = [string, string][]
@@ -64,8 +65,11 @@ export class Board {
       closed: opts.closed ?? (type === 'SJ' ? [['1', '2']] : []),
       note: opts.note,
     })
-    if (!def.passive && def.pins.some(p => p.dir === 'v'))
-      this.part(`C${this.decouple++}`, 'C', { 1: 'VCC', 2: 'GND' }, '100n')
+    if (!def.passive && def.pins.some(p => p.dir === 'v')) {
+      const cap = `C${this.decouple++}`
+      this.part(cap, 'C', { 1: 'VCC', 2: 'GND' }, '100n')
+      this.parts.get(cap)!.decouples = ref
+    }
   }
 
   part(
