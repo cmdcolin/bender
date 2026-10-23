@@ -1,3 +1,5 @@
+import { arrowhead, route, type Point } from 'skillet-shared/wire-route'
+
 import { type ControlKey, type Controls } from '../controls.ts'
 import { DEST } from '../dsp/modbus.ts'
 import {
@@ -18,7 +20,7 @@ import {
 } from './controls/index.ts'
 import { SUPPLY_OF } from './controls/supply.ts'
 import { MIC_JACKS } from './micWiring.ts'
-import { arrowhead, el, route, textWidth, type El, type Point } from './svg.ts'
+import { el, textWidth, type El } from './svg.ts'
 
 // The signal path, laid out and drawn: live bend order, the feedback wire, and
 // where it lands. The panel mounts the drawing as React elements and

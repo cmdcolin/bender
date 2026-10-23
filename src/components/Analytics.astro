@@ -1,11 +1,8 @@
 ---
-// The hit counter on every page. src/analytics.ts loads it.
 ---
 
 <script>
-  import { startAnalytics } from '../analytics.ts'
+  import { startAnalytics } from 'skillet-shared/analytics'
 
-  // CROSS_REPO_SYNC(analytics-snippet)
   startAnalytics()
-  // CROSS_REPO_SYNC_END(analytics-snippet)
 </script>
