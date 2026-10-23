@@ -14,9 +14,18 @@ import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 // little further out than it was and the contact is a little more oxidised for
 // having arced — so both faults run off self-exciting timing rather than a flat
 // rate the ear can average away.
+// How deep a full pump ducks the board, how fast the supply gives way, and how
+// much of a beat it takes to climb back (the time constant, so it is most of
+// the way home by the next kick).
+const PUMP_DEPTH = 0.8
+const PUMP_ATTACK_S = 0.004
+const PUMP_RECOVER = 0.3
+
 export class Brownout implements Stage {
   label = 'brownout'
   private sag = new Follower()
+  private pump = 0
+  private pumpTarget = 0
   private dropRemaining = 0
   private hum = new SineOsc()
   private rng: Rng
@@ -42,6 +51,7 @@ export class Brownout implements Stage {
   when(p: Float32Array) {
     return (
       p[IDX.brownAmt]! > 0 ||
+      p[IDX.brownKick]! > 0 ||
       p[IDX.brownCrackle]! > 0 ||
       p[IDX.humLevel]! > 0 ||
       p[IDX.couple]! > 0
@@ -59,6 +69,10 @@ export class Brownout implements Stage {
     )
     const cluster = p[IDX.faultCluster]!
     const couple = p[IDX.couple]!
+    const kickPump = p[IDX.brownKick]!
+    const beatS = ctx.trig.kitStepHz > 0 ? 4 / ctx.trig.kitStepHz : 0.5
+    const pumpFall = Math.exp(-1 / (PUMP_RECOVER * beatS * this.sr))
+    const pumpRise = coef(PUMP_ATTACK_S, this.sr)
 
     for (let i = 0; i < io.n; i++) {
       this.dropFault.step()
@@ -72,9 +86,22 @@ export class Brownout implements Stage {
         Math.max(Math.abs(io.l[i]!), Math.abs(io.r[i]!)) *
         (1 + couple * Math.max(ctx.bright[i]!, 0) * 1.6)
       const sag = this.sag.process(x, this.attack, this.release)
-      ctx.sag[i] = sag
 
-      let g = 1 / (1 + amt * 4 * sag)
+      // The kit's kick on the bus, a block late, which is what lets its own
+      // attack through before the supply gives way under it.
+      if (kickPump > 0) {
+        if ((ctx.trig.drumBits[i]! & 1) !== 0)
+          this.pumpTarget = Math.max(
+            this.pumpTarget,
+            Math.min(ctx.trig.drumGain[i]!, 1.5),
+          )
+        this.pumpTarget *= pumpFall
+        this.pump += (this.pumpTarget - this.pump) * pumpRise
+      }
+      const pumped = Math.min(kickPump * this.pump, 1)
+      ctx.sag[i] = Math.max(sag, pumped)
+
+      let g = (1 / (1 + amt * 4 * sag)) * (1 - PUMP_DEPTH * pumped)
       if (
         amt > 0 &&
         this.dropRemaining <= 0 &&
@@ -110,6 +137,8 @@ export class Brownout implements Stage {
   }
 
   panic() {
+    this.pump = 0
+    this.pumpTarget = 0
     this.sag.reset()
     this.dropRemaining = 0
     this.hum.reset()

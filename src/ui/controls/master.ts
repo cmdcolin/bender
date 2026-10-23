@@ -16,6 +16,15 @@ export const MASTER_GROUPS: Group[] = [
         help: 'The master supply sags under load: loud passages collapse and pump like a dying battery.',
       },
       {
+        key: 'brownKick',
+        label: 'Kick pump',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Every kick draws the master supply down and it climbs back over a third of a beat, so the whole board ducks around the kick: a sidechain made of a weak wall-wart. The kick’s own attack gets through before the sag arrives, and the sag drags Wraith’s motor with it.',
+      },
+      {
         key: 'brownRate',
         label: 'Dropouts',
         min: 0,

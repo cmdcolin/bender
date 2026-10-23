@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-548 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+549 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 144 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -1373,15 +1373,16 @@ machine they all depend on tape speed.
 The mains supply failing: sag, dropouts, crackle and hum.
 
 <details>
-<summary>5 controls</summary>
+<summary>6 controls</summary>
 
-| control    | range          | what it does                                                                                                          |
-| ---------- | -------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Sag †      | off to full    | The master supply sags under load: loud passages collapse and pump like a dying battery                               |
-| Dropouts † | 0 to 50 Hz     | Random full dropouts — a loose power jack                                                                             |
-| Crackle †  | off to full    | Crackle injected in proportion to how hard the supply is working                                                      |
-| Ground hum | off to full    | A ground loop: mains fundamental plus rectifier buzz, louder as the supply strains, with the ripple wobbling the rail |
-| Mains      | 50 Hz or 60 Hz | Which grid you’re plugged into                                                                                        |
+| control    | range          | what it does                                                                                                                                                      |
+| ---------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sag †      | off to full    | The master supply sags under load: loud passages collapse and pump like a dying battery                                                                           |
+| Kick pump  | off to full    | Every kick draws the master supply down and it climbs back over a third of a beat, so the whole board ducks around the kick: a sidechain made of a weak wall-wart |
+| Dropouts † | 0 to 50 Hz     | Random full dropouts — a loose power jack                                                                                                                         |
+| Crackle †  | off to full    | Crackle injected in proportion to how hard the supply is working                                                                                                  |
+| Ground hum | off to full    | A ground loop: mains fundamental plus rectifier buzz, louder as the supply strains, with the ripple wobbling the rail                                             |
+| Mains      | 50 Hz or 60 Hz | Which grid you’re plugged into                                                                                                                                    |
 
 </details>
 

@@ -822,6 +822,7 @@ export const PARAM_DEFS = [
   ['fbBlock', 'slew'],
   ['fbSag', 'slew'],
 
+  ['brownKick', 'slew'],
   ['brownAmt', 'slew'],
   ['brownRate', 'slew'],
   ['brownCrackle', 'slew'],

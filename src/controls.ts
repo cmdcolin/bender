@@ -848,6 +848,7 @@ export const DEFAULT_CONTROLS = {
   fbBlock: 0,
   fbSag: 0,
 
+  brownKick: 0,
   brownAmt: 0,
   brownRate: 6,
   brownCrackle: 0,
