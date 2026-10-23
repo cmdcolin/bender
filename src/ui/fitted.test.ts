@@ -8,6 +8,7 @@ import {
   added,
   clearAdded,
   confine,
+  confineToOne,
   parseAdded,
   shownOn,
   takeOff,
@@ -97,6 +98,21 @@ test('a nudge reaches a stage you added', () => {
     confine(mutate(current, 0.3, rand), current, rand),
   ).some(b => b.ringHz !== current.ringHz)
   expect(moved).toBe(true)
+})
+
+test('a drift leg moves one stage and leaves the rest where they were', () => {
+  added.set(new Set(['Ring mod']))
+  const current = { ...stock(), ringMix: 0.6 }
+  for (let seed = 1; seed < 20; seed++) {
+    const rand = seeded(seed)
+    const next = confineToOne(mutate(current, 0.3, rand), current, rand)
+    const moved = new Set(
+      [...OWNER_BY_KEY]
+        .filter(([k]) => next[k] !== current[k])
+        .map(([, o]) => o),
+    )
+    expect(moved.size).toBeLessThanOrEqual(1)
+  }
 })
 
 test('a stage a roll took back to stock stays on the map', () => {

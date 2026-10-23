@@ -97,3 +97,26 @@ export function confine(
   add([...shown].filter(name => !after.has(name)))
   return out
 }
+
+/** A roll held to one stage on the map, picked at random from the stages it
+    moved, so a drift changes one heading at a time. */
+export function confineToOne(
+  next: Controls,
+  current: Controls,
+  rand: () => number,
+): Controls {
+  const out = confine(next, current, rand)
+  const moved = [
+    ...new Set(
+      [...OWNER_BY_KEY]
+        .filter(([k]) => out[k] !== current[k])
+        .map(([, o]) => o),
+    ),
+  ]
+  if (moved.length === 0) return out
+  const pick = moved[Math.floor(rand() * moved.length)]
+  const one = { ...current }
+  for (const [key, owner] of OWNER_BY_KEY)
+    if (owner === pick) one[key] = out[key]
+  return one
+}

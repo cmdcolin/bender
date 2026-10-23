@@ -204,7 +204,7 @@ function land(
     k => patch[k] !== undefined && patch[k] !== board[k],
   )
   if (!changes) return
-  engine.morphTo(
+  engine.morphNow(
     { ...board, ...patch },
     Number.isFinite(seconds) ? Math.max(seconds, 0) : 0,
     force,

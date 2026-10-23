@@ -1,3 +1,5 @@
+import { engine } from '../engine/engine.ts'
+import { PHRASE_LOCKS, type PhraseLock } from '../engine/phraseClock.ts'
 import { createStore } from '../listeners.ts'
 import { read, write } from './persist.ts'
 
@@ -36,4 +38,26 @@ export const morphSetting = createStore<MorphSeconds>(parseMorph(read(KEY)))
 export function setMorph(seconds: MorphSeconds) {
   morphSetting.set(seconds)
   write(KEY, String(seconds))
+}
+
+const LOCK_KEY = 'bender.phraseLock'
+
+export const PHRASE_LOCK_LABELS: Record<PhraseLock, string> = {
+  0: 'now',
+  1: 'next bar',
+  4: '4 bars',
+  8: '8 bars',
+  16: '16 bars',
+}
+
+export const parsePhraseLock = (raw: string | null): PhraseLock =>
+  PHRASE_LOCKS.find(b => String(b) === raw) ?? 0
+
+/** Puts back the lock the desk had last time; only the desk shows it. */
+export const loadPhraseLock = () =>
+  engine.phraseLock.set(parsePhraseLock(read(LOCK_KEY)))
+
+export function setPhraseLock(bars: PhraseLock) {
+  engine.phraseLock.set(bars)
+  write(LOCK_KEY, String(bars))
 }

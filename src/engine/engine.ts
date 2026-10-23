@@ -13,6 +13,7 @@ import {
   heardStep,
   quantizeStep,
   stepBit,
+  STEPS,
   type DrumMaybeKey,
   type DrumStepKey,
 } from '../drums.ts'
@@ -57,6 +58,12 @@ import {
   STEM_FILES,
   packParams,
 } from './params.ts'
+import {
+  landingTick,
+  msUntilTick,
+  type CounterReport,
+  type PhraseLock,
+} from './phraseClock.ts'
 import { openTake, sweepTakes } from './takeSink.ts'
 import { encodeWav, pcmMono, pcmStereo } from './wav.ts'
 
@@ -73,6 +80,20 @@ import type { Take, WavSink } from './takeSink.ts'
 export const RETRO_S = 30
 const noop = () => {}
 const DRIFT_TAP_S = 2.5
+// How far ahead of its downbeat a waiting change is written, to cover the hop
+// to the worklet, and how near the downbeat the meter has to come before the
+// timer is set rather than waiting on the next report.
+const QUEUE_LEAD_MS = 6
+const QUEUE_WAKE_MS = 40
+
+interface Queued {
+  target: () => Controls
+  seconds: number
+  forceKeys?: ReadonlySet<ControlKey>
+  bank: boolean
+  tick: number
+  after?: () => void
+}
 const DRIFT_TRAIL = 12
 // Below this a stem is silence, and silence gets no file: a fader left down is
 // six seconds of nothing to drag into a session and wonder about. Not exactly
@@ -440,6 +461,11 @@ export class Engine {
   readonly hunted = createStore<Controls[]>([])
   /** True while the board is nudging itself along on a timer. */
   readonly drifting = createStore(false)
+  /** Bars a whole-board change waits for while the kit runs, so it lands on
+      the downbeat of the next run; 0 lands it at once. */
+  readonly phraseLock = createStore<PhraseLock>(0)
+  /** The counter tick a change waiting on the phrase lock lands on. */
+  readonly waiting = createStore<{ tick: number } | null>(null)
   /** Controls pushed while a throw is held. They reach the audio thread over
       the board and never touch the board, the link or the walk. */
   readonly held = createStore<ReadonlyMap<string, Partial<Controls>>>(new Map())
@@ -496,7 +522,9 @@ export class Engine {
   // pattern reads as sounding between its own hits rather than flickering.
   private readonly soundHold = new Float32Array(MAX_SOURCES)
 
-  private driftTimer: ReturnType<typeof setInterval> | undefined
+  private driftTimer: ReturnType<typeof setTimeout> | undefined
+  private queued: Queued | null = null
+  private queueTimer: ReturnType<typeof setTimeout> | undefined
   private driftTap: ReturnType<typeof setInterval> | undefined
   // Where a drift has been, a snapshot every DRIFT_TAP_S, newest last.
   private driftTrail: Controls[] = []
@@ -504,6 +532,7 @@ export class Engine {
   constructor() {
     this.meter.subscribe(() => {
       this.meterAt = performance.now()
+      this.checkQueue()
     })
   }
 
@@ -735,6 +764,7 @@ export class Engine {
     seconds: number,
   ) {
     if (step === null) return
+    this.cancelQueue()
     this.armed = null
     this.history.set(step.history)
     this.travel(step.value, seconds)
@@ -743,16 +773,102 @@ export class Engine {
   // Stop where it has got to and keep the half-way board, which is a board like
   // any other. Grabbing a slider does the same thing, through set().
   stopMorph() {
+    this.cancelQueue()
     this.cancelMorph()
   }
 
   // Every whole-board verb — a preset, random, mutate, reset — comes through
   // here, so the walk covers all of them without each caller having to remember
-  // to bank one.
+  // to bank one. With the phrase lock on and the kit running, the change waits
+  // to land on the next downbeat of the run, and banks when it sets off.
   morphTo(target: Controls, seconds = 1, forceKeys?: ReadonlySet<ControlKey>) {
     this.stopHunt()
+    if (this.queue({ target: () => target, seconds, forceKeys, bank: true }))
+      return
+    this.morphNow(target, seconds, forceKeys)
+  }
+
+  /** A whole-board change that sets off at once, phrase lock or not. */
+  morphNow(target: Controls, seconds = 1, forceKeys?: ReadonlySet<ControlKey>) {
+    this.stopHunt()
+    this.cancelQueue()
     this.bank()
     this.travel(target, seconds, forceKeys)
+  }
+
+  private counterReport(): CounterReport {
+    const m = this.meter.get()
+    return {
+      tick: m.tick,
+      clock: m.drumClock,
+      stepMs: m.drumStepMs,
+      ageMs: performance.now() - this.meterAt,
+    }
+  }
+
+  /** How long a run of the phrase lock lasts at the kit's tempo, in seconds. */
+  phraseSeconds(): number {
+    return (this.phraseLock.get() * STEPS * this.meter.get().drumStepMs) / 1000
+  }
+
+  // A change replacing one still waiting keeps the drift chained to it, so a
+  // preset pressed mid-drift lands and the drift carries on from there.
+  private queue(q: Omit<Queued, 'tick'>): boolean {
+    if (!this.drumsPlaying.get()) return false
+    const tick = landingTick(
+      this.counterReport(),
+      this.phraseLock.get(),
+      q.seconds,
+    )
+    if (tick === null) return false
+    const after = q.after ?? this.queued?.after
+    this.cancelQueue()
+    this.queued = { ...q, after, tick }
+    this.waiting.set({ tick })
+    this.checkQueue()
+    return true
+  }
+
+  private checkQueue() {
+    const q = this.queued
+    if (!q || this.queueTimer !== undefined) return
+    if (!this.drumsPlaying.get()) {
+      this.fireQueue()
+      return
+    }
+    const r = this.counterReport()
+    const run = this.phraseLock.get() * STEPS
+    const lead = msUntilTick(q.tick, r) - q.seconds * 1000 - QUEUE_LEAD_MS
+    // A reboot or a restart put the counter back on zero, and the downbeat it
+    // was waiting for is a lap away.
+    if (run > 0 && lead > run * r.stepMs + 50) {
+      const tick = landingTick(r, this.phraseLock.get(), q.seconds)
+      if (tick !== null && tick !== q.tick) {
+        q.tick = tick
+        this.waiting.set({ tick })
+      }
+      return
+    }
+    if (lead < QUEUE_WAKE_MS)
+      this.queueTimer = setTimeout(() => this.fireQueue(), Math.max(lead, 0))
+  }
+
+  private fireQueue() {
+    const q = this.queued
+    this.cancelQueue()
+    if (!q) return
+    this.armed = null
+    if (q.bank) this.bank()
+    this.travel(q.target(), q.seconds, q.forceKeys)
+    if (q.seconds <= 0) this.flush()
+    q.after?.()
+  }
+
+  private cancelQueue() {
+    if (this.queueTimer !== undefined) clearTimeout(this.queueTimer)
+    this.queueTimer = undefined
+    this.queued = null
+    if (this.waiting.get() !== null) this.waiting.set(null)
   }
 
   // Audition a row of boards and keep the one nearest the edge of running away.
@@ -821,16 +937,29 @@ export class Engine {
         -DRIFT_TRAIL,
       )
     }, DRIFT_TAP_S * 1000)
+    // Each leg chains the next. Under the phrase lock a leg sets off so as to
+    // arrive on a downbeat, and the next leaves for the downbeat after it.
     const leg = () => {
+      this.driftTimer = undefined
       this.armed = null
+      if (
+        this.queue({
+          target: next,
+          seconds: this.phraseSeconds() * 0.85,
+          bank: false,
+          after: leg,
+        })
+      )
+        return
       this.travel(next(), everyS * 0.85)
+      this.driftTimer = setTimeout(leg, everyS * 1000)
     }
     leg()
-    this.driftTimer = setInterval(leg, everyS * 1000)
   }
 
   stopDrift() {
-    if (this.driftTimer !== undefined) clearInterval(this.driftTimer)
+    if (this.driftTimer !== undefined) clearTimeout(this.driftTimer)
+    if (this.queued?.after) this.cancelQueue()
     if (this.driftTap !== undefined) clearInterval(this.driftTap)
     this.driftTimer = undefined
     this.driftTap = undefined
@@ -849,7 +978,7 @@ export class Engine {
     const trail = this.driftTrail
     const then = trail[Math.max(trail.length - back, 0)]
     this.stopDrift()
-    if (then) this.morphTo(then, travel)
+    if (then) this.morphNow(then, travel)
   }
 
   /** Cancel a hunt in flight and leave whatever board is playing on the board. */

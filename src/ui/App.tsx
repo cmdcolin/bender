@@ -8,7 +8,9 @@ import {
 } from 'react'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
+import { STEPS } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
+import { PHRASE_LOCKS } from '../engine/phraseClock.ts'
 import { pocketUrl } from '../site/paths.ts'
 import { versionLabel } from '../version.ts'
 import { AboutDialog } from './AboutDialog.tsx'
@@ -20,7 +22,7 @@ import { GROUPS } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
-import { add, clearAdded, confine } from './fitted.ts'
+import { add, clearAdded, confine, confineToOne } from './fitted.ts'
 import { HuntDialog } from './HuntDialog.tsx'
 import { Instruments } from './Instruments.tsx'
 import { isTyping } from './isTyping.ts'
@@ -34,8 +36,11 @@ import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
 import {
   MORPH_LABELS,
   MORPH_SECONDS,
+  loadPhraseLock,
   morphSetting,
+  PHRASE_LOCK_LABELS,
   setMorph,
+  setPhraseLock,
   type MorphSeconds,
 } from './morph.ts'
 import { PinnedStrip } from './PinnedStrip.tsx'
@@ -63,7 +68,7 @@ const MUTATE_HELP =
   'Keeps this board and nudges the controls of the stages on it a little way off where they sit. The tempo stays put and the timed things land back on the grid — shift for a wild nudge, alt for a gentle one.'
 
 const DRIFT_HELP =
-  'Lets the stages on the board nudge themselves somewhere near where they stand, every fifteen seconds, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
+  'Lets the stages on the board nudge themselves somewhere near where they stand, one stage at a time, every fifteen seconds or every run of the land lock, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
 
 const nudged = (amount: number) => {
   const current = engine.controls.get()
@@ -85,6 +90,9 @@ function MorphControl(props: {
     engine.morphProgress.subscribe,
     engine.morphProgress.get,
   )
+  const waiting = useStoreValue(engine.waiting)
+  if (waiting !== null && !props.drifting)
+    return <Waiting tick={waiting.tick} />
   if (progress !== null && !props.drifting) {
     return (
       <Tip
@@ -118,6 +126,48 @@ function MorphControl(props: {
       >
         {MORPH_SECONDS.map(s => (
           <option key={s} value={s}>{`morph: ${MORPH_LABELS[s]}`}</option>
+        ))}
+      </select>
+    </Tip>
+  )
+}
+
+// A change held for the downbeat, counting down the bars to it.
+function Waiting({ tick }: { tick: number }) {
+  const bars = useSyncExternalStore(engine.meter.subscribe, () =>
+    Math.max(Math.ceil((tick - engine.meter.get().tick) / STEPS), 1),
+  )
+  return (
+    <Tip text="The change lands on the downbeat the lock is waiting for. Press to call it off and keep the board as it stands.">
+      <button className={styles.flight} onClick={() => engine.stopMorph()}>
+        <span className={styles.flightLabel}>
+          {bars === 1 ? 'on the one' : `in ${bars} bars`}
+        </span>
+      </button>
+    </Tip>
+  )
+}
+
+function PhraseLockControl() {
+  const bars = useStoreValue(engine.phraseLock)
+  return (
+    <Tip
+      text={
+        bars === 0
+          ? 'Presets, random, mutate, reset, cuts and drift set off at once. Pick a run of bars and, while the kit runs, they wait to land on its next downbeat.'
+          : `While the kit runs, presets, random, mutate, reset, cuts and drift wait to land on the next downbeat of ${bars === 1 ? 'a bar' : `${bars} bars`}; a morph sets off early so it arrives there.`
+      }
+    >
+      <select
+        className={styles.morph}
+        value={bars}
+        onChange={e => {
+          const picked = PHRASE_LOCKS.find(b => String(b) === e.target.value)
+          if (picked !== undefined) setPhraseLock(picked)
+        }}
+      >
+        {PHRASE_LOCKS.map(b => (
+          <option key={b} value={b}>{`land: ${PHRASE_LOCK_LABELS[b]}`}</option>
         ))}
       </select>
     </Tip>
@@ -258,7 +308,14 @@ function BoardVerbs({
           onClick={() =>
             drifting
               ? engine.stopDrift()
-              : engine.startDrift(() => nudged(0.05))
+              : engine.startDrift(() => {
+                  const current = engine.controls.get()
+                  return confineToOne(
+                    mutate(current, 0.1, Math.random),
+                    current,
+                    Math.random,
+                  )
+                })
           }
         >
           <SteadyLabel widest="drifting…">
@@ -353,6 +410,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const toggle = (name: string) => show(open === name ? null : name)
   const listed = useStoreValue(listView)
   const morphSeconds = useStoreValue(morphSetting)
+  useEffect(loadPhraseLock, [])
   const drifting = useStoreValue(engine.drifting)
   const [landed, setLanded] = useState(false)
   const dismissLanded = useCallback(() => setLanded(false), [])
@@ -503,6 +561,7 @@ export function App(props: { openedFromLink?: boolean }) {
               drifting={drifting}
               onSet={setMorph}
             />
+            <PhraseLockControl />
             <MidiPanel
               open={showMidi}
               onToggle={() => setShowMidi(o => !o)}

@@ -64,6 +64,14 @@ go:
 | `i` | stutter | the whole mix rolled faster and faster      |
 | `r` | reboot  | the power pulled on every step              |
 
+**land** beside the morph picker holds whole-board changes for the kit's
+downbeat. Set it to **4 bars**, for example, and while the kit runs:
+
+- Presets, random, mutate, reset and the named cuts land on the downbeat that
+  starts the next four bars. A morph sets off early so it arrives there
+- Drift moves one stage a leg and lands each leg on a downbeat
+- The button counts down the bars; press it to call the change off
+
 ![The drum box's blocks: triggers into one-shots, tanks, a metal bank and noise, then amps and a DAC fed by a sample ROM.](../public/guide/guide-drum-voices.jpg)
 
 ## More machines
