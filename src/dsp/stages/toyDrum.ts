@@ -1105,6 +1105,7 @@ export class ToyDrum implements Stage {
     const stepHz = (p[IDX.drumBpm]! / 60) * 4 * clock
     const modTempo = ctx.mod.read(DEST.drumBpm)
     this.stepMs = 1000 / (modTempo ? stepHz * octaves(modTempo[0]!) : stepHz)
+    if (this.transport.drums) ctx.trig.kitClocking(1000 / this.stepMs)
     const baseSwing = p[IDX.drumSwing]!
     const modSwing = ctx.mod.read(DEST.drumSwing)
     const slip = Math.min(Math.max(p[IDX.drumSlip]!, 0), 1)
@@ -1385,6 +1386,7 @@ export class ToyDrum implements Stage {
               this.clearing = false
               this.rolledAt = -1
             }
+            ctx.trig.stepClocked(i, this.tick)
           }
           this.fire(p, ctx, i)
         }

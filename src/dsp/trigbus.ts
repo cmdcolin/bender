@@ -44,6 +44,10 @@ export class TriggerBus {
   drumBits = new Float32Array(BLOCK)
   /** How hard, so an accented step strikes a harder note. */
   drumGain = new Float32Array(BLOCK)
+  /** The kit's counter plus one where it stepped, else 0. */
+  drumStep = new Float32Array(BLOCK)
+  /** The kit's unswung step rate last block, or 0 while its clock is stopped. */
+  kitStepHz = 0
   /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
   readonly key = new Float32Array(BLOCK)
   /** Whether a hand is still on that key. A gate line carries a level and not
@@ -61,10 +65,20 @@ export class TriggerBus {
 
   private pendBits = new Float32Array(BLOCK)
   private pendGain = new Float32Array(BLOCK)
+  private pendStep = new Float32Array(BLOCK)
+  private pendStepHz = 0
 
   drumFired(i: number, bits: number, gain: number) {
     this.pendBits[i] = bits
     this.pendGain[i] = gain
+  }
+
+  stepClocked(i: number, tick: number) {
+    this.pendStep[i] = tick + 1
+  }
+
+  kitClocking(stepHz: number) {
+    this.pendStepHz = stepHz
   }
 
   keyStruck(i: number, semitone: number, held = false) {
@@ -82,12 +96,18 @@ export class TriggerBus {
   swap(n: number) {
     const bits = this.drumBits
     const gain = this.drumGain
+    const step = this.drumStep
     this.drumBits = this.pendBits
     this.drumGain = this.pendGain
+    this.drumStep = this.pendStep
     this.pendBits = bits
     this.pendGain = gain
+    this.pendStep = step
     this.pendBits.fill(0, 0, n)
     this.pendGain.fill(0, 0, n)
+    this.pendStep.fill(0, 0, n)
+    this.kitStepHz = this.pendStepHz
+    this.pendStepHz = 0
     this.key.fill(0, 0, n)
     this.keyHeld.fill(0, 0, n)
     this.seqKey.fill(0, 0, n)
@@ -99,6 +119,10 @@ export class TriggerBus {
     this.drumGain.fill(0)
     this.pendBits.fill(0)
     this.pendGain.fill(0)
+    this.drumStep.fill(0)
+    this.pendStep.fill(0)
+    this.kitStepHz = 0
+    this.pendStepHz = 0
     this.key.fill(0)
     this.keyHeld.fill(0)
     this.seqKey.fill(0)

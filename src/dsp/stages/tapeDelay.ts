@@ -23,6 +23,20 @@ const THUMP = 0.5
 export const HEAD_CHOICES = ['1', '1+2', '1+3', '2+3', '1+2+3'] as const
 const HEAD_MASKS = [1, 3, 5, 6, 7]
 
+export const DELAY_SYNC_MODES = [
+  'off',
+  'sixteenths',
+  'eighth triplets',
+  'eighths',
+  'dotted eighths',
+  'quarters',
+  'dotted quarters',
+  'halves',
+  'bars',
+]
+const DELAY_SYNC_BEATS = [0, 0.25, 1 / 3, 0.5, 0.75, 1, 1.5, 2, 4]
+const DELAY_MS = [20, 4000] as const
+
 // A sine carrier at full depth costs the tail 3 dB a lap, so the repeats die
 // faster for no reason anyone asked for. √2 is exactly what the modulation took
 // out, handed back to the ring path alone.
@@ -90,7 +104,14 @@ export class TapeDelay implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    const baseDelay = (p[IDX.delayMs]! / 1000) * this.sr
+    const beats = DELAY_SYNC_BEATS[Math.round(p[IDX.dlySync]!)] ?? 0
+    const ms = beats
+      ? Math.min(
+          Math.max((beats * 60000) / Math.max(p[IDX.drumBpm]!, 1), DELAY_MS[0]),
+          DELAY_MS[1],
+        )
+      : p[IDX.delayMs]!
+    const baseDelay = (ms / 1000) * this.sr
     const fb = p[IDX.dlyFb]!
     const busSend = p[IDX.dlySend]!
     const wowDepth = (p[IDX.wowDepthMs]! / 1000) * this.sr

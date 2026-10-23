@@ -62,6 +62,9 @@ and a counter walks it at the rate each note asks for.
 A Model D-style monosynth card. Three oscillators with hard sync feed a
 four-pole transistor ladder filter that self-oscillates.
 
+**Kit sync** on its melody memory steps the bass line on Clatter's counter, so
+swing, a slipping clock or a cleared counter moves the bass with the drums.
+
 ![The monosynth's blocks: three oscillators, mixer, ladder filter, loudness stage, modulation and voice card.](../public/guide/guide-growler-card.jpg)
 
 ### Four-track
@@ -168,13 +171,14 @@ voltage you set, or jams one.
 ![The patch bay: three of four wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](../public/guide/guide-patchbay.jpg)
 
 **+ mod** wires an LFO to any control. The patch bay holds four wires from a
-source to a knob.
+source to a knob. **LFO sync** runs the LFO in bars or note values of the kit's
+tempo and restarts each cycle on the beat it belongs to.
 
 ## Pedals and tape
 
 - **Gnash:** six dirt-box circuits: screamer, rat, muff, germanium, octave, gate
 - **Wraith:** a tape echo. A motor-driven capstan pulls a five-second loop past
-  three play heads
+  three play heads. **Time sync** sets the echo from the kit's tempo
 - **Ricochet:** a delay pedal with a clean mode, a bucket-brigade mode, reverse
   and hold
 - **Boing:** a spring reverb tank that crashes when you kick it

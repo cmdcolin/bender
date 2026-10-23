@@ -1,7 +1,7 @@
 import { AMP_CAB_NAMES, AMP_VOICE_NAMES } from '../../dsp/stages/amp.ts'
 import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo.ts'
 import { ENS_MODE, ENS_MODE_NAMES } from '../../dsp/stages/ensemble.ts'
-import { HEAD_CHOICES } from '../../dsp/stages/tapeDelay.ts'
+import { DELAY_SYNC_MODES, HEAD_CHOICES } from '../../dsp/stages/tapeDelay.ts'
 
 import type { Group } from './types.ts'
 
@@ -94,7 +94,7 @@ export const PEDAL_GROUPS: Group[] = [
     name: 'Wraith',
     place: 'Pedals',
     editor: { kind: 'tapeLoop' },
-    lead: ['delayMs', 'dlyFb', 'dlyMix'],
+    lead: ['delayMs', 'dlySync', 'dlyFb', 'dlyMix'],
     handled: [
       'dlyHeads',
       'dlyToneHz',
@@ -125,7 +125,18 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: 'ms',
         curve: 'log',
+        needs: c => c.dlySync === 0,
         help: 'Delay time. Grabbing it drags the tape — pitch smears while it settles.',
+      },
+      {
+        key: 'dlySync',
+        label: 'Time sync',
+        min: 0,
+        max: DELAY_SYNC_MODES.length - 1,
+        step: 1,
+        unit: '',
+        choices: DELAY_SYNC_MODES,
+        help: 'Sets the time from the kit’s tempo instead of the Time knob. A tempo change drags the head to the new spacing, so a tempo sweep smears the repeats.',
       },
       {
         key: 'dlyHeads',

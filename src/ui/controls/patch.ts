@@ -1,5 +1,5 @@
 import { VOICE_LABELS } from '../../drums.ts'
-import { N_DEST } from '../../dsp/modbus.ts'
+import { LFO_SYNC_MODES, N_DEST } from '../../dsp/modbus.ts'
 
 import type { Group } from './types.ts'
 
@@ -26,6 +26,7 @@ export const PATCH_GROUPS: Group[] = [
         step: 0.01,
         unit: 'Hz',
         curve: 'log',
+        needs: c => c.modLfoSync === 0,
         help: 'The bay’s oscillator, free-running. Slow is a sweep; fast, wired onto a pitch, is modulation rather than vibrato. Chaos is the exception — it runs out of speed around 160 Hz.',
       },
       {
@@ -37,6 +38,16 @@ export const PATCH_GROUPS: Group[] = [
         unit: '',
         choices: ['sine', 'ramp', 'square', 'S&H', 'chaos', 'drunk'],
         help: 'Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle. Chaos and drunk never repeat; rate sets roughly how fast.',
+      },
+      {
+        key: 'modLfoSync',
+        label: 'LFO sync',
+        min: 0,
+        max: LFO_SYNC_MODES.length - 1,
+        step: 1,
+        unit: '',
+        choices: LFO_SYNC_MODES,
+        help: 'Runs one LFO cycle per division of the kit’s tempo instead of LFO rate. Each kit step that lands on a cycle boundary restarts the cycle, so a bars sweep starts on the one and S&H on sixteenths picks a fresh value every step.',
       },
       ...([0, 1, 2, 3] as const).flatMap(i => [
         {

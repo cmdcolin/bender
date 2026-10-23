@@ -260,6 +260,22 @@ const WIRES = [
   [IDX.mod3Src, IDX.mod3Dest, IDX.mod3Depth],
 ] as const
 
+export const LFO_SYNC_MODES = [
+  'off',
+  'four bars',
+  'two bars',
+  'bars',
+  'halves',
+  'quarters',
+  'dotted eighths',
+  'eighths',
+  'eighth triplets',
+  'sixteenths',
+  'thirty-seconds',
+]
+// One cycle in sixths of a kit step, so every division is a whole number.
+const LFO_SYNC_SIXTHS = [0, 384, 192, 96, 48, 24, 18, 12, 8, 6, 3]
+
 function lfoShape(phase: number, shape: number, sh: number): number {
   switch (shape) {
     case 1:
@@ -330,7 +346,10 @@ export class ModBus {
   // are current. A block is 2.7 ms — under the resolution of every wire here.
   build(n: number, p: Float32Array, src: ModSources) {
     this.live.fill(0)
-    const hz = p[IDX.modLfoHz]!
+    const cycle = LFO_SYNC_SIXTHS[Math.round(p[IDX.modLfoSync]!)] ?? 0
+    const kitHz = src.trig.kitStepHz || p[IDX.drumBpm]! / 15
+    const hz = cycle ? (6 * kitHz) / cycle : p[IDX.modLfoHz]!
+    const strobe = src.trig.drumStep
     const shape = Math.round(p[IDX.modLfoShape]!)
     const attack = coef(0.005, this.sr)
     const release = coef(0.12, this.sr)
@@ -346,7 +365,13 @@ export class ModBus {
     for (let i = 0; i < n; i++) {
       const prev = this.lfoPhase
       this.lfoPhase = wrap1(this.lfoPhase + hz / this.sr)
-      if (this.lfoPhase < prev) this.shValue = this.rng() * 2 - 1
+      let wrapped = this.lfoPhase < prev
+      // A strobe on a cycle boundary puts the phase back on the bar.
+      if (cycle && strobe[i] && ((strobe[i]! - 1) * 6) % cycle === 0) {
+        wrapped ||= this.lfoPhase > 0.5
+        this.lfoPhase = 0
+      }
+      if (wrapped) this.shValue = this.rng() * 2 - 1
       if (shape === 4) this.lfo[i] = this.chaos.step(hz, this.sr)
       else if (shape === 5) this.lfo[i] = this.drunk.step(hz, this.sr, this.rng)
       else if (wired) this.lfo[i] = lfoShape(this.lfoPhase, shape, this.shValue)

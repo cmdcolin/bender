@@ -7,6 +7,7 @@ import {
   VOICE_LABELS,
 } from '../../drums.ts'
 import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
+import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
 import { FM_EFFECT_NAMES, FM_SFX_PICKS } from '../../dsp/stages/fmEffects.ts'
 import {
   fallSecs,
@@ -2424,8 +2425,20 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.1,
         unit: 'Hz',
         curve: 'log',
-        needs: c => c.monoSeqOn > 0,
+        needs: c => c.monoSeqOn > 0 && c.monoSeqSync === 0,
         help: 'Steps a second. The counter runs off the toy’s supply, so a sagging rail slows it and a reboot sends it back to the first step.',
+      },
+      {
+        key: 'monoSeqSync',
+        part: 'melody',
+        label: 'Kit sync',
+        min: 0,
+        max: MEMORY_SYNC_MODES.length - 1,
+        step: 1,
+        unit: '',
+        choices: MEMORY_SYNC_MODES,
+        needs: c => c.monoSeqOn > 0,
+        help: 'A wire from the drum machine’s step clock to the memory’s counter, which steps on every kit step, every second, every third or every fourth. It steps when the kit’s counter steps, so swing, a slipping clock and a cleared counter all reach the melody. The kit has to be running.',
       },
       {
         key: 'monoWave1',

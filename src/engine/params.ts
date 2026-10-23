@@ -193,6 +193,7 @@ export const PARAM_DEFS = [
   ['tunePoly', 'step'],
   ['monoSeqOn', 'step'],
   ['monoSeqRate', 'slew'],
+  ['monoSeqSync', 'step'],
   ['monoSeqLen', 'step'],
   ['monoSeqTo', 'step'],
   ['monoSeqStep0', 'step'],
@@ -603,6 +604,7 @@ export const PARAM_DEFS = [
   ['stompMix', 'slew'],
 
   ['delayMs', 'slew'],
+  ['dlySync', 'step'],
   ['dlyFb', 'ramp'],
   ['wowDepthMs', 'slew'],
   ['wowHz', 'slew'],
@@ -671,6 +673,7 @@ export const PARAM_DEFS = [
 
   ['modLfoHz', 'slew'],
   ['modLfoShape', 'step'],
+  ['modLfoSync', 'step'],
   ['mod0Src', 'step'],
   ['mod0Dest', 'step'],
   ['mod0Depth', 'slew'],

@@ -197,6 +197,7 @@ export const DEFAULT_CONTROLS = {
   tunePoly: 1,
   monoSeqOn: 0,
   monoSeqRate: 4,
+  monoSeqSync: 0,
   monoSeqLen: 16,
   monoSeqTo: 0,
   monoSeqStep0: -128,
@@ -628,6 +629,7 @@ export const DEFAULT_CONTROLS = {
   stompMix: 0,
 
   delayMs: 350,
+  dlySync: 0,
   dlyFb: 0.35,
   wowDepthMs: 0,
   wowHz: 0.8,
@@ -696,6 +698,7 @@ export const DEFAULT_CONTROLS = {
 
   modLfoHz: 1,
   modLfoShape: 0,
+  modLfoSync: 0,
   mod0Src: 0,
   mod0Dest: 0,
   mod0Depth: 0.5,
