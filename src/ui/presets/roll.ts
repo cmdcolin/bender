@@ -6,6 +6,8 @@ import {
 import { randomPattern } from '../../drum-moves.ts'
 import {
   type DrumLenKey,
+  EVENT_KEYS,
+  EVENTS,
   GRID_ROWS,
   NUDGE_KEYS,
   NUDGES,
@@ -308,8 +310,9 @@ export const rollPattern = (
   ...rollStepFx(rand),
 })
 
-// Most rolled bars get a roll or two and some get a step dragged late, so the
-// dice reach the tracker side of the kit without burying the pattern in it.
+// Most rolled bars get a roll or two, some get a step dragged late and some a
+// fault in the last beat, so the dice reach the tracker side of the kit without
+// burying the pattern in it.
 function rollStepFx(rand: () => number): Partial<Controls> {
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
   const out: Partial<Controls> = {}
@@ -323,6 +326,10 @@ function rollStepFx(rand: () => number): Partial<Controls> {
     const n = 1 + Math.floor(rand() * 2)
     for (let i = 0; i < n; i++) out[pick(NUDGE_KEYS)] = pick(NUDGES.slice(1))
   }
+  for (const k of EVENT_KEYS) out[k] = 0
+  if (rand() < 0.3)
+    out[pick(EVENT_KEYS.slice(12))] =
+      1 + Math.floor(rand() * (EVENTS.length - 1))
   return out
 }
 

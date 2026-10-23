@@ -1,6 +1,7 @@
 import {
   ADDR_LINES,
   DATA_LINES,
+  EVENT_KEYS,
   GRID_ROWS,
   N_DRUM_VOICES,
   NUDGE_KEYS,
@@ -792,6 +793,7 @@ export const SOURCE_GROUPS: Group[] = [
         'drumRowMute',
         ...RATCHET_KEYS,
         ...NUDGE_KEYS,
+        ...EVENT_KEYS,
       ],
     },
     sliders: [

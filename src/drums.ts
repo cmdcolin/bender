@@ -156,13 +156,52 @@ export const NUDGE_KEYS = [
 export const NUDGE_PARTS = 12
 export const NUDGES = [0, 2, 3, 4, 6, 8, 9]
 
+/** The fault the kit puts on the whole board for each column's step, as an index
+    into EVENTS. */
+export const EVENT_KEYS = [
+  'drumEvent0',
+  'drumEvent1',
+  'drumEvent2',
+  'drumEvent3',
+  'drumEvent4',
+  'drumEvent5',
+  'drumEvent6',
+  'drumEvent7',
+  'drumEvent8',
+  'drumEvent9',
+  'drumEvent10',
+  'drumEvent11',
+  'drumEvent12',
+  'drumEvent13',
+  'drumEvent14',
+  'drumEvent15',
+] as const satisfies readonly ControlKey[]
+export const EVENTS = [
+  'none',
+  'cut',
+  'drop',
+  'brake',
+  'freeze',
+  'reboot',
+] as const
+export const EVENT = {
+  cut: 1,
+  drop: 2,
+  brake: 3,
+  freeze: 4,
+  reboot: 5,
+} as const satisfies Record<Exclude<(typeof EVENTS)[number], 'none'>, number>
+
 export const asRatchet = (v: number) =>
   Math.min(Math.max(Math.round(v), 0), RATCHETS.length - 1)
 export const asNudge = (v: number) =>
   Math.min(Math.max(Math.round(v), 0), NUDGE_PARTS - 1)
+export const asEvent = (v: number) =>
+  Math.min(Math.max(Math.round(v), 0), EVENTS.length - 1)
 
 export const RATCHET_SET = new Set<ControlKey>(RATCHET_KEYS)
 export const NUDGE_SET = new Set<ControlKey>(NUDGE_KEYS)
+export const EVENT_SET = new Set<ControlKey>(EVENT_KEYS)
 
 // The wires carrying a word back out of the pattern memory: one a row, so the
 // accent has a wire of its own beside the eight voices. It is the trigger line

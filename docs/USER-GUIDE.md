@@ -35,6 +35,10 @@ Two rows under the grid work like a tracker's effect columns:
   repeats out or swells them in
 - **nudge** lands a step late, in twelfths of the step. A nudged ratchet fits
   its repeats into what is left
+- **event** puts a fault on the whole board for one step: **c** cuts the output,
+  **d** drops the cells' contact so the shared rail sags, **b** brakes the mix
+  to a stop, **f** loops the step's first quarter and **r** pulls the power. A
+  reboot on the shared cells restarts the kit's bar too
 
 ![The drum box's blocks: triggers into one-shots, tanks, a metal bank and noise, then amps and a DAC fed by a sample ROM.](../public/guide/guide-drum-voices.jpg)
 

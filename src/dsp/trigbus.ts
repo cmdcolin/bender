@@ -46,6 +46,8 @@ export class TriggerBus {
   drumGain = new Float32Array(BLOCK)
   /** The kit's counter plus one where it stepped, else 0. */
   drumStep = new Float32Array(BLOCK)
+  /** How many samples the last step the kit clocked lasts, swing included. */
+  drumStepLen = 0
   /** The kit's unswung step rate last block, or 0 while its clock is stopped. */
   kitStepHz = 0
   /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
@@ -71,14 +73,26 @@ export class TriggerBus {
   private pendGain = new Float32Array(BLOCK)
   private pendStep = new Float32Array(BLOCK)
   private pendStepHz = 0
+  private pendStepLen = 0
 
   drumFired(i: number, bits: number, gain: number) {
     this.pendBits[i] = bits
     this.pendGain[i] = gain
   }
 
-  stepClocked(i: number, tick: number) {
+  stepClocked(i: number, tick: number, samples = 0) {
     this.pendStep[i] = tick + 1
+    if (samples > 0) this.pendStepLen = samples
+  }
+
+  /** This block's strobes, so a stage that runs after the kit hears a step on
+      the sample it lands. */
+  get stepNow(): Float32Array {
+    return this.pendStep
+  }
+
+  get stepLenNow() {
+    return this.pendStepLen
   }
 
   kitClocking(stepHz: number) {
@@ -120,6 +134,7 @@ export class TriggerBus {
     this.pendStep.fill(0, 0, n)
     this.kitStepHz = this.pendStepHz
     this.pendStepHz = 0
+    this.drumStepLen = this.pendStepLen
     this.key.fill(0, 0, n)
     this.keyHeld.fill(0, 0, n)
     this.seqKey.fill(0, 0, n)
@@ -137,6 +152,8 @@ export class TriggerBus {
     this.pendStep.fill(0)
     this.kitStepHz = 0
     this.pendStepHz = 0
+    this.drumStepLen = 0
+    this.pendStepLen = 0
     this.key.fill(0)
     this.keyHeld.fill(0)
     this.seqKey.fill(0)

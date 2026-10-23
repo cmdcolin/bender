@@ -30,6 +30,12 @@ export const DEAD_V = 0.2
 // has stopped, rather than being paid back by its silence.
 const STARVE_SHUNT = 12
 
+// With the cells' contact open the board runs off its reservoir: the circuit's
+// own quiescent draw leaks it away, and whatever the machines draw takes more.
+// A bare board falls from full to the watchdog in about a fifth of a second.
+const OPEN_LEAK = 2.5
+const OPEN_DRAIN = 6
+
 // How much of the board's own capacitance the contact found, as a slowing
 // factor on everything the supply does.
 //
@@ -165,6 +171,8 @@ export class ToyRail {
   v = 1
   bootRemaining = 0
   rebootCount = 0
+  /** Whether the cells touch the board. A dropout opens it. */
+  contact = true
   // Block-average load the machines that don't tick the rail drew last block,
   // which this block's tick reads. They add into `drawing` as they run.
   reported = 0
@@ -279,7 +287,7 @@ export class ToyRail {
       this.drag + pull * ((touching ? 1 : 0) - this.drag),
     )
 
-    this.stress = choked + this.battery
+    this.stress = choked + this.battery + (this.contact ? 0 : 1)
     // Everything the supply does, slowed by whatever capacitance is behind the
     // point in question. One factor for all of it, so the cap buys time without
     // moving any resting place: a rail that used to settle in 17 ms settles in a
@@ -328,10 +336,10 @@ export class ToyRail {
     // off and on at one voltage — and the watchdog never tripped at all, so the
     // reboot the whole bend is named after was unreachable from this knob.
     const shunt = (choked * STARVE_SHUNT) / this.sr / slow
-    this.v +=
-      charge * (this.open - this.v) -
-      drain * (load + this.reported + extra) -
-      shunt
+    const draw = load + this.reported + extra
+    this.v += this.contact
+      ? charge * (this.open - this.v) - drain * draw - shunt
+      : -((OPEN_LEAK + OPEN_DRAIN * draw) / this.sr / slow) - shunt
     if (this.spike > 0) this.v -= (TRIG_DRAIN * this.spike) / slow
     this.v = flushDenormal(Math.min(Math.max(this.v, 0), 1))
 
@@ -356,6 +364,15 @@ export class ToyRail {
         this.reboot()
       }
     }
+  }
+
+  /** Power pulled and put back: the rail drops to nothing and the reset line
+      brings the board up from wherever its reservoir lets it. */
+  trip() {
+    if (this.bootRemaining > 0) return
+    this.v *= this.cap
+    this.latchRemaining = 0
+    this.reboot()
   }
 
   private reboot() {
@@ -443,6 +460,7 @@ export class ToyRail {
 
   reset() {
     this.v = 1
+    this.contact = true
     this.bootRemaining = 0
     this.latchRemaining = 0
     this.clipRemaining = 0

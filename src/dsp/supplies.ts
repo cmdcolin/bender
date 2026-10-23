@@ -1,3 +1,4 @@
+import { asEvent, EVENT, EVENT_KEYS, STEPS } from '../drums.ts'
 import { IDX } from '../engine/params.ts'
 import { MIC } from './micJacks.ts'
 import { DEST } from './modbus.ts'
@@ -34,6 +35,8 @@ const onSecond = (p: Float32Array) => {
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
+const EVENT_IDX = EVENT_KEYS.map(k => IDX[k])
+
 // The board's supplies: the shared cells every machine boots on, a second set
 // of cells, and a bench supply that never moves. The bench is a rail nobody
 // ticks, so it sits at full forever and every machine reads it through the same
@@ -59,6 +62,7 @@ export class Supplies {
   private starve2 = 0
   private starve2Lane: Float32Array | null = null
   private clip2Hz = 0
+  private dropLeft = 0
 
   constructor(sr: number, shared: ToyRail, seed: number) {
     this.shared = shared
@@ -81,6 +85,7 @@ export class Supplies {
     this.bench.nextBlock()
     if (!poweredUp(p)) return
     this.ctx = ctx
+    this.stepEvents(n, p, ctx)
     const cluster = p[IDX.faultCluster]!
 
     this.shared.setBoard(
@@ -129,6 +134,21 @@ export class Supplies {
       for (let i = 0; i < n; i++) this.tick(this.second, i, 0)
   }
 
+  // The kit's drop and reboot steps, a block behind the strobe: the supplies run
+  // ahead of the kit, so last block's steps are the newest they can read.
+  private stepEvents(n: number, p: Float32Array, ctx: Ctx) {
+    const steps = ctx.trig.drumStep
+    for (let i = 0; i < n; i++) {
+      const tick = steps[i]!
+      if (tick === 0) continue
+      const event = asEvent(p[EVENT_IDX[(tick - 1) % STEPS]!]!)
+      this.dropLeft = event === EVENT.drop ? ctx.trig.drumStepLen : 0
+      if (event === EVENT.reboot) this.shared.trip()
+    }
+    this.shared.contact = this.dropLeft <= 0
+    this.dropLeft -= n
+  }
+
   /** One sample of whichever rail `rail` is, drawing `load` on top of what
       the machines on it drew last block. The bench takes nothing. */
   tick(rail: ToyRail, i: number, load: number) {
@@ -150,6 +170,7 @@ export class Supplies {
   }
 
   reset() {
+    this.dropLeft = 0
     this.shared.reset()
     this.second.reset()
     this.bench.reset()

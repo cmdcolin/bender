@@ -1394,7 +1394,6 @@ export class ToyDrum implements Stage {
               this.clearing = false
               this.rolledAt = -1
             }
-            ctx.trig.stepClocked(i, this.tick)
           }
           // A column's ratchet and nudge share what is left of its step, so
           // every repeat lands before the next strobe.
@@ -1404,6 +1403,7 @@ export class ToyDrum implements Stage {
           const stepS =
             (next * this.sr) /
             (modTempo ? stepHz * octaves(modTempo[i]!) : stepHz)
+          if (!missed) ctx.trig.stepClocked(i, this.tick, stepS)
           this.repeats = RATCHETS[asRatchet(p[RATCHET_IDX[col]!]!)]!
           this.repeat = 0
           this.due = stepS * late

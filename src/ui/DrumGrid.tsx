@@ -11,6 +11,8 @@ import {
   asLen,
   DRUM_ROMS,
   DRUM_VOICES,
+  EVENT_KEYS,
+  EVENTS,
   GRID_ROWS,
   NUDGE_KEYS,
   NUDGES,
@@ -277,6 +279,14 @@ export function DrumGrid() {
           values={NUDGES}
           says={v => (v ? `${v}` : '')}
           tip="How late each step lands, in twelfths of the step: 6 is half a step, 4 and 8 sit on the triplet. A ratcheted step squeezes its repeats into what is left. Click to go later, shift-click to go back."
+        />
+        <CycleRow
+          live={live}
+          name="event"
+          keys={EVENT_KEYS}
+          values={EVENTS.map((_, i) => i)}
+          says={v => EVENT_GLYPHS[v]!}
+          tip="A fault on the whole board for the length of its step: c a knife through the output lead, d the cells losing contact so the shared rail sags, b a tape brake on the mix, f the step's first quarter looped, r the power pulled and put back. A reboot on the shared cells restarts the kit's bar too, unless the kit runs off another supply. Click to go round, shift-click to go back."
         />
       </div>
 
@@ -598,6 +608,8 @@ function BendRow({ live }: { live: boolean }) {
     </Tip>
   )
 }
+
+const EVENT_GLYPHS = ['', 'c', 'd', 'b', 'f', 'r']
 
 // A per-step value that clicks round a short list, on the bend row's cells.
 function CycleRow(props: {

@@ -20,6 +20,7 @@ import { Sampler } from './stages/sampler.ts'
 import { Screech } from './stages/screech.ts'
 import { Shifter } from './stages/shifter.ts'
 import { SpringVerb } from './stages/springVerb.ts'
+import { StepFaults } from './stages/stepFaults.ts'
 import { Stompbox } from './stages/stompbox.ts'
 import { Tape } from './stages/tape.ts'
 import { TapeDelay } from './stages/tapeDelay.ts'
@@ -121,7 +122,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Amp(sr),
   ]
   const tape = new Tape(sr, next())
-  chain.post = [new Brownout(sr, next()), tape]
+  chain.post = [new Brownout(sr, next()), tape, new StepFaults(sr)]
   chain.tape = tape
   // Last of the sources and last to draw a seed, so every stream before it is
   // the one it was before the four-track was on the board.
