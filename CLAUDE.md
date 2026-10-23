@@ -22,17 +22,6 @@ markers and the workflow.
 
 <!-- CROSS_REPO_SYNC(commit-conventions) -->
 
-## Hardware
-
-`hardware/toy/` is a hardwired board modelled on the toy chip
-([`README`](hardware/toy/README.md)). It reads the ROM tunes from `src/`, but
-`board.ts` is hand-written.
-
-- After changing the toy chip's ROM, tunes, address, data or bank lines, run
-  `pnpm toy` and `pnpm test hardware/toy`.
-- After changing the toy chip's circuit behaviour, edit `hardware/toy/board.ts`
-  to match, or note in the commit that the board now differs.
-
 ## Commits
 
 Use Conventional Commits (`type(scope): description`). `cliff.toml` groups the
@@ -43,6 +32,17 @@ from `scripts/push.mjs` and stay out of the changelog.
 
 Scope is optional; when used, pick from `dsp`, `engine`, `ui`, `home`, `midi` or
 `docs`.
+
+## Hardware
+
+`hardware/toy/` is a hardwired board modelled on the toy chip
+([`README`](hardware/toy/README.md)). It reads the ROM tunes from `src/`, but
+`board.ts` is hand-written.
+
+- After changing the toy chip's ROM, tunes, address, data or bank lines, run
+  `pnpm toy` and `pnpm test hardware/toy`.
+- After changing the toy chip's circuit behaviour, edit `hardware/toy/board.ts`
+  to match, or note in the commit that the board now differs.
 
 ## Tests and typecheck
 
