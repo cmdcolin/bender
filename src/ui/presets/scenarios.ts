@@ -171,8 +171,18 @@ export const drivable = (c: Controls) =>
       (!d.needs || d.needs(c)),
   )
 
+// Controls that do nothing until something the roll cannot see is true: a
+// second voice sounding, a file dropped on the tape loop, offbeat hits on the kit.
+const NEEDS_UNSEEN = new Set<ControlKey>([
+  'chipScan',
+  'chipShort',
+  'sampleSpeed',
+  'drumSwing',
+])
+
 // The drivable controls on a stage you can hear.
-const slammable = (c: Controls) => drivable(c).filter(d => heard(c, d.key))
+const slammable = (c: Controls) =>
+  drivable(c).filter(d => heard(c, d.key) && !NEEDS_UNSEEN.has(d.key))
 
 // One, two or three controls all the way to an end, and nothing else touched.
 // It is how a hand actually finds a sound — all the way up, listen, all the way
