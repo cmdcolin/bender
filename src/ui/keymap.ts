@@ -28,11 +28,14 @@ export const isKeymap = (value: unknown): value is string[] =>
   new Set(value).size === value.length
 
 // A layout saved before newer throws existed is the same layout with those
-// throws on their own letters, unless the layout already gave a letter away.
+// throws on their own letters, or on a free one where the layout took theirs.
 function grown(parsed: unknown): unknown {
   if (!Array.isArray(parsed) || parsed.length >= DEFAULT_KEYMAP.length)
     return parsed
-  return [...parsed, ...DEFAULT_KEYMAP.slice(parsed.length)]
+  const out: unknown[] = [...parsed]
+  for (const k of DEFAULT_KEYMAP.slice(parsed.length))
+    out.push(out.includes(k) ? CAPS.split('').find(c => !out.includes(c)) : k)
+  return out
 }
 
 function storedKeymap(): readonly string[] | null {
