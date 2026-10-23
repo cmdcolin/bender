@@ -30,9 +30,9 @@ questions, made without asking.
 - Nobody has listened to any of it. Offline renders and tests measure the
   faults, the conditions, the pump and the phrase, but nobody has judged how
   they sound.
-- The owner asked for bends that climb and move over seconds while the beat
-  runs faster, and suggested ADSR. The phrase source and the bend envelopes are
-  the answer so far, and the owner has not tried them yet.
+- The owner asked for bends that climb and move over seconds while the beat runs
+  faster, and suggested ADSR. The phrase source and the bend envelopes are the
+  answer so far, and the owner has not tried them yet.
 
 ## Next, in order
 
@@ -59,5 +59,5 @@ questions, made without asking.
   holds the bar's level.
 - The phrase runs on at the kit's tempo while the kit is stopped, and restarts
   on the downbeat when it starts.
-- The bend envelopes run on animation frames, so they stall in a hidden tab.
-  The grid's bend row ignores them and holds each key for its step.
+- The bend envelopes run on animation frames, so they stall in a hidden tab. The
+  grid's bend row ignores them and holds each key for its step.

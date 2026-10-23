@@ -203,10 +203,9 @@ voltage you set, or jams one.
 
 - **Starve** drags the shared battery rail down
 - **Clip chatter** drags a paperclip across the pads
-- **Letter keys** switch on sixteen dealt bends. The envelope picker beside
-  them sets how a held key moves: **snap**, **swell**, **riser** (climbs over
-  four bars, drops when you let go), **pluck** or **wobble** (pulses on the
-  eighths)
+- **Letter keys** switch on sixteen dealt bends. The envelope picker beside them
+  sets how a held key moves: **snap**, **swell**, **riser** (climbs over four
+  bars, drops when you let go), **pluck** or **wobble** (pulses on the eighths)
 - **Knife on the bus** cuts, grounds or bridges a wire inside a chip
 - **Pedals:** add tape echo, spring reverb, chorus, a tube amp or dirt boxes
   from the **Add pedal** menu
