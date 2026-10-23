@@ -73,6 +73,29 @@ A swapped wire in the mux fails 17 of these.
   - the app's address, data or bank line counts differ from the board's
   - a tune no longer fits the banks, steps or four octaves
 
+## PCB (in progress)
+
+- **Plan:** 4 layers, 270 x 208 mm. In1 is a GND plane and In2 is a VCC plane,
+  so only signals get routed.
+- **Run:** `FREEROUTING_JAR=<jar> pnpm toy:pcb`. It places with `pcb/place.py`,
+  exports a DSN, routes with Freerouting, imports the routes with
+  `pcb/finish.py`, pours the planes, then exports gerbers and a DRC report.
+- **Router:** Freerouting 2.1.0 runs on Java 21. The 2.5.0 jar needs Java 25 and
+  the 2.5.0 native CLI crashes. The router ignores `-mp`, passes past 90 happen,
+  and the session file appears only when it exits.
+- **State:** placement works. The router has not finished a clean route, so the
+  repo has no `toy.kicad_pcb`, gerbers or DRC report.
+  - 4 layers: 20 to 26 unrouted after 8 passes, still falling when stopped
+  - 2 layers, GND poured: 2 to 3 unrouted after 43 passes, with 30 open items in
+    the DRC
+- **Untested:** the `pour` step of `finish.py` on the 4-layer board, and the
+  gerber and drill export.
+- **Next:**
+  - place chips that share a bus next to each other, instead of by size
+  - let one 4-layer run finish, then run the DRC
+  - fix what the DRC flags: courtyard overlaps, dangling stubs, silkscreen
+  - read the gerbers in a viewer before sending them to a fab
+
 ## Not done
 
 - **Gerbers:** none. Layout needs KiCad, which this machine lacks, and a board

@@ -32,6 +32,7 @@
     "panel": "node scripts/panel.ts",
     "soak": "node scripts/soak.ts",
     "toy": "node hardware/toy/build.ts",
+    "toy:pcb": "node hardware/toy/pcb.ts",
     "spectrum": "node scripts/spectrum.ts",
     "preview": "astro preview",
     "test": "scripts/heavy-run-slot.sh vitest run",

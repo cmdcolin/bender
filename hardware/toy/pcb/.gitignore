@@ -1,0 +1,5 @@
+.build/
+toy.kicad_pcb
+toy.kicad_pro
+toy.kicad_prl
+drc.txt
