@@ -8,7 +8,7 @@ import {
   bendName,
   bendRow,
   bendStepName,
-  bendSwell,
+  bendShape,
   redealEvery,
   toggleBendStep,
 } from './bendKeys.ts'
@@ -230,7 +230,7 @@ test('a swelling key walks in over the morph time and falls back', () => {
   vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'performance'] })
   act(() => {
     letterKeys.set('bends')
-    bendSwell.set(true)
+    bendShape.set('swell')
   })
   render(<BendKeys morphSeconds={1} />)
   const k = bendDeal.get()[0]!
@@ -248,6 +248,30 @@ test('a swelling key walks in over the morph time and falls back', () => {
   act(() => {
     vi.advanceTimersByTime(1100)
   })
+  expect(engine.held.get().has(bendName('a'))).toBe(false)
+})
+
+test('a riser key climbs over four bars and drops the moment it lets go', () => {
+  vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'performance'] })
+  act(() => {
+    letterKeys.set('bends')
+    bendShape.set('riser')
+    engine.set('drumBpm', 120)
+  })
+  render(<BendKeys morphSeconds={0} />)
+  const k = bendDeal.get()[0]!
+  const target = k.push(engine.controls.get())
+  const key = k.keys[0]!
+  stroke('keydown', 'a')
+  act(() => {
+    vi.advanceTimersByTime(4000)
+  })
+  expect(engine.held.get().get(bendName('a'))![key]).not.toBe(target[key])
+  act(() => {
+    vi.advanceTimersByTime(4100)
+  })
+  expect(engine.held.get().get(bendName('a'))![key]).toBe(target[key])
+  stroke('keyup', 'a')
   expect(engine.held.get().has(bendName('a'))).toBe(false)
 })
 

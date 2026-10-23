@@ -3,6 +3,16 @@ import { STEPS, stepBit } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
 import { dealBendKeys, isHeat, type BendKey, type Heat } from './bendDeal.ts'
+import {
+  attackFrom,
+  bendEnvelope,
+  heldLevel,
+  isBendEnvelope,
+  releasedLevel,
+  settles,
+  type BendEnvelopeName,
+  type Envelope,
+} from './bendEnvelope.ts'
 import { sliderFor, snapToStep } from './controls/index.ts'
 import { LETTERS } from './keyboard.ts'
 import { read, write } from './persist.ts'
@@ -17,6 +27,7 @@ export const bendStepName = (letter: string) => `bend:${letter}:step`
 
 const HEAT_KEY = 'bender.bend.heat'
 const SWELL_KEY = 'bender.bend.swell'
+const ENVELOPE_KEY = 'bender.bend.envelope'
 const EVERY_KEY = 'bender.bend.every'
 const LETTERS_KEY = 'bender.bend.letters'
 
@@ -29,13 +40,27 @@ export function setBendHeat(heat: Heat) {
   write(HEAT_KEY, heat)
 }
 
-/** Keys ramp in over the morph time and fall back the same way, instead of
-    snapping. */
-export const bendSwell = createStore(read(SWELL_KEY) === '1')
-export function setBendSwell(on: boolean) {
-  bendSwell.set(on)
-  write(SWELL_KEY, on ? '1' : '0')
+const storedEnvelope = read(ENVELOPE_KEY)
+/** How a key moves into its push and back out. */
+export const bendShape = createStore<BendEnvelopeName>(
+  isBendEnvelope(storedEnvelope)
+    ? storedEnvelope
+    : read(SWELL_KEY) === '1'
+      ? 'swell'
+      : 'snap',
+)
+export function setBendShape(name: BendEnvelopeName) {
+  bendShape.set(name)
+  write(ENVELOPE_KEY, name)
 }
+
+/** The envelope a key moves by now, at the kit's tempo. */
+export const bendEnvelopeNow = (morphSeconds: number) =>
+  bendEnvelope(
+    bendShape.get(),
+    60 / engine.controls.get().drumBpm,
+    morphSeconds,
+  )
 
 /** Bars of the kit between deals, or 0 for a hand that keeps its deal. */
 export const REDEAL_BARS = [0, 1, 4, 8] as const
@@ -95,88 +120,88 @@ export function shuffleBendRow(rand: () => number = Math.random) {
   bendRow.set(lit.reduce((mask, s) => mask | stepBit(s), 0))
 }
 
-// A push eased over `seconds` rather than dropped on the board: every control
-// in it walks its own travel from where the board stands to where the key
-// wants it, a frame at a time, and a choice control jumps at the start on the
-// way in and at the end on the way out. One ramp per throw name; a new one
-// takes over from wherever the old one had got to.
-const ramps = new Map<string, number>()
+// One loop a held name, a frame at a time: every control in the push walks its
+// own travel from where the board stands to where the key wants it, as far as
+// the envelope says, and a choice control flips while the envelope is above
+// zero. A new loop takes over from the level the old one had reached.
+interface Hold {
+  frame: number
+  level: number
+  to: Partial<Controls>
+}
+const holds = new Map<string, Hold>()
 
 const patchKeys = (patch: Partial<Controls>) =>
   CONTROL_KEYS.filter(key => key in patch)
 
-function eased(
-  key: ControlKey,
-  from: number,
-  to: number,
-  t: number,
-  arriving: boolean,
-): number {
+function eased(key: ControlKey, from: number, to: number, v: number): number {
   const def = sliderFor(key)
-  if (def.choices) return (arriving ? t > 0 : t >= 1) ? to : from
-  const pos = toPos(def, from) + (toPos(def, to) - toPos(def, from)) * t
+  if (def.choices) return v > 0 ? to : from
+  const pos = toPos(def, from) + (toPos(def, to) - toPos(def, from)) * v
   return snapToStep(def, fromPos(def, pos))
 }
 
-function ramp(
+function run(
   name: string,
-  from: Partial<Controls>,
   to: Partial<Controls>,
-  seconds: number,
-  arriving: boolean,
+  level: (t: number) => number | null,
+  settle: number,
   done?: () => void,
 ) {
+  cancelRamp(name)
   const start = performance.now()
   const keys = patchKeys(to)
+  const hold: Hold = { frame: -1, level: 0, to }
+  holds.set(name, hold)
   const step = (now: number) => {
-    const t = Math.min(1, (now - start) / (seconds * 1000))
-    const patch: Partial<Controls> = {}
-    for (const key of keys)
-      patch[key] = eased(key, from[key] ?? to[key]!, to[key]!, t, arriving)
-    engine.holdThrow(name, patch)
-    if (t < 1) ramps.set(name, requestAnimationFrame(step))
-    else {
-      ramps.delete(name)
+    const t = (now - start) / 1000
+    const v = level(t)
+    if (v === null) {
+      holds.delete(name)
       done?.()
+      return
     }
+    const live = engine.controls.get()
+    const patch: Partial<Controls> = {}
+    for (const key of keys) patch[key] = eased(key, live[key], to[key]!, v)
+    engine.holdThrow(name, patch)
+    hold.level = v
+    hold.frame = t < settle ? requestAnimationFrame(step) : -1
   }
-  cancelRamp(name)
   step(start)
 }
 
 function cancelRamp(name: string) {
-  const id = ramps.get(name)
-  if (id !== undefined) cancelAnimationFrame(id)
-  ramps.delete(name)
+  const hold = holds.get(name)
+  if (hold && hold.frame >= 0) cancelAnimationFrame(hold.frame)
+  holds.delete(name)
 }
 
-/** Hold a key's push under `name`: at once, or swelling in over `seconds`. */
-export function holdBend(name: string, k: BendKey, seconds: number) {
-  const live = engine.controls.get()
-  const to = k.push(live)
-  if (seconds <= 0) {
-    cancelRamp(name)
-    engine.holdThrow(name, to)
-    return
-  }
-  const from = { ...engine.held.get().get(name) }
-  for (const key of patchKeys(to)) from[key] ??= live[key]
-  ramp(name, from, to, seconds, true)
+/** Hold a key's push under `name`, moving in as the envelope says. */
+export function holdBend(name: string, k: BendKey, env: Envelope) {
+  const to = k.push(engine.controls.get())
+  const from = attackFrom(env, holds.get(name)?.level ?? 0)
+  run(name, to, t => heldLevel(env, from + t), settles(env) - from)
 }
 
-/** Let go of a hold: at once, or falling back to the board over `seconds`. */
-export function letGoBend(name: string, seconds: number) {
+/** Let go of a hold, falling back to the board over the release. */
+export function letGoBend(name: string, env: Envelope) {
   const held = engine.held.get().get(name)
   if (held === undefined) return
-  if (seconds <= 0) {
+  const hold = holds.get(name)
+  const level = hold?.level ?? 1
+  if (env.release <= 0 || level <= 0) {
     cancelRamp(name)
     engine.letGoThrow(name)
     return
   }
-  const live = engine.controls.get()
-  const to: Partial<Controls> = {}
-  for (const key of patchKeys(held)) to[key] = live[key]
-  ramp(name, held, to, seconds, false, () => engine.letGoThrow(name))
+  run(
+    name,
+    hold?.to ?? held,
+    t => releasedLevel(env, level, t),
+    Infinity,
+    () => engine.letGoThrow(name),
+  )
 }
 
 /** The kit's bar clock running the bend row and the redeal counter. Returns

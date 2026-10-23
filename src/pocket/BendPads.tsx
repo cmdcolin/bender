@@ -1,16 +1,18 @@
 import { engine } from '../engine/engine.ts'
 import { HEATS } from '../ui/bendDeal.ts'
+import { BEND_ENVELOPES, ENVELOPE_TIP } from '../ui/bendEnvelope.ts'
 import {
   bendDeal,
   bendHeat,
   bendName,
-  bendSwell,
+  bendEnvelopeNow,
+  bendShape,
   holdBend,
   letGoAllBends,
   letGoBend,
   redealAll,
   setBendHeat,
-  setBendSwell,
+  setBendShape,
 } from '../ui/bendKeys.ts'
 import { useStoreValue } from '../ui/ControlsContext.ts'
 import { THROWS } from '../ui/throws.ts'
@@ -23,8 +25,7 @@ export function BendPads() {
   const deal = useStoreValue(bendDeal)
   const held = useStoreValue(engine.held)
   const heat = useStoreValue(bendHeat)
-  const swell = useStoreValue(bendSwell)
-  const seconds = swell ? 1 : 0
+  const shape = useStoreValue(bendShape)
   const anyOn = deal.some(k => held.has(bendName(k.letter)))
 
   return (
@@ -42,8 +43,8 @@ export function BendPads() {
               aria-label={`${k.letter}: ${k.stages.join(', ')}`}
               onClick={() => {
                 buzz()
-                if (on) letGoBend(name, seconds)
-                else holdBend(name, k, seconds)
+                if (on) letGoBend(name, bendEnvelopeNow(1))
+                else holdBend(name, k, bendEnvelopeNow(1))
               }}
             >
               {k.stages.slice(0, 3).map(line => (
@@ -98,12 +99,17 @@ export function BendPads() {
           </button>
         ))}
         <button
-          className={swell ? styles.chipOn : styles.chip}
-          aria-pressed={swell}
-          title="bends swell in and fall back over a second"
-          onClick={() => setBendSwell(!swell)}
+          className={shape === 'snap' ? styles.chip : styles.chipOn}
+          title={`${ENVELOPE_TIP[shape]}. Tap for the next`}
+          onClick={() =>
+            setBendShape(
+              BEND_ENVELOPES[
+                (BEND_ENVELOPES.indexOf(shape) + 1) % BEND_ENVELOPES.length
+              ]!,
+            )
+          }
         >
-          swell
+          {shape}
         </button>
       </div>
     </div>

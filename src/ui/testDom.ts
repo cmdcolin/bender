@@ -4,7 +4,7 @@ import { afterEach, beforeAll } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { EMPTY_HISTORY } from '../history.ts'
-import { bendRow, bendSwell, redealEvery } from './bendKeys.ts'
+import { bendRow, bendShape, redealEvery } from './bendKeys.ts'
 import { clearAdded } from './fitted.ts'
 import { letterKeys } from './letters.ts'
 
@@ -202,7 +202,7 @@ function resetBoard() {
   engine.held.set(new Map())
   bendRow.set(0)
   redealEvery.set(0)
-  bendSwell.set(false)
+  bendShape.set('snap')
   clearAdded()
   onGlass = false
 }

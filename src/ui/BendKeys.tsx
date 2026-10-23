@@ -2,13 +2,15 @@ import { useEffect, useState, type CSSProperties } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { HEATS, type BendKey } from './bendDeal.ts'
+import { BEND_ENVELOPES, ENVELOPE_TIP, isBendEnvelope } from './bendEnvelope.ts'
 import styles from './BendKeys.module.css'
 import {
   bendDeal,
   bendHeat,
   bendName,
   bendStepName,
-  bendSwell,
+  bendEnvelopeNow,
+  bendShape,
   holdBend,
   letGoAllBends,
   letGoBend,
@@ -20,7 +22,7 @@ import {
   rememberLetters,
   runBendClock,
   setBendHeat,
-  setBendSwell,
+  setBendShape,
   setRedealEvery,
 } from './bendKeys.ts'
 import { useStoreValue } from './ControlsContext.ts'
@@ -80,14 +82,13 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   const held = useStoreValue(engine.held)
   const on = useStoreValue(letterKeys) === 'bends'
   const heat = useStoreValue(bendHeat)
-  const swell = useStoreValue(bendSwell)
+  const shape = useStoreValue(bendShape)
   const every = useStoreValue(redealEvery)
   const map = useStoreValue(keymap)
   const noteLetters = noteKeys(map)
   const octaveLetters = octaveKeys(map)
   const [latched, setLatched] = useState<Set<string>>(new Set())
-  // A swell with the morph set to instant still swells: the switch is the ask.
-  const seconds = swell ? Math.max(morphSeconds, 1) : 0
+  const env = () => bendEnvelopeNow(morphSeconds)
 
   useEffect(() => {
     if (bendDeal.get().length === 0) redealBendKeys(engine.controls.get())
@@ -97,7 +98,7 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   useThrowKeys()
 
   const letGo = (k: BendKey) => {
-    letGoBend(bendName(k.letter), seconds)
+    letGoBend(bendName(k.letter), env())
     if (latched.has(k.letter)) setLatched(l => omitFrom(l, k.letter))
   }
 
@@ -108,12 +109,12 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
       letGo(k)
       return
     }
-    holdBend(bendName(k.letter), k, seconds)
+    holdBend(bendName(k.letter), k, env())
     if (latch) setLatched(l => new Set(l).add(k.letter))
   }
 
   const release = (k: BendKey) => {
-    if (!latched.has(k.letter)) letGoBend(bendName(k.letter), seconds)
+    if (!latched.has(k.letter)) letGoBend(bendName(k.letter), env())
   }
 
   const letGoAll = () => {
@@ -265,15 +266,23 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
             </Tip>
           ))}
           <Tip
-            text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
+            text={`${ENVELOPE_TIP[shape]}${shape === 'swell' ? ` — ${Math.max(morphSeconds, 1)}s as the picker stands` : ''}`}
           >
-            <button
-              className={swell ? styles.chipOn : styles.chip}
-              aria-pressed={swell}
-              onClick={() => setBendSwell(!swell)}
+            <select
+              className={shape === 'snap' ? styles.every : styles.everyOn}
+              value={shape}
+              aria-label="how a key moves"
+              onChange={e => {
+                const v = e.currentTarget.value
+                if (isBendEnvelope(v)) setBendShape(v)
+              }}
             >
-              swell
-            </button>
+              {BEND_ENVELOPES.map(n => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
           </Tip>
           <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
             <select
