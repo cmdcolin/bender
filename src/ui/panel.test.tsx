@@ -424,7 +424,7 @@ test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
   const was = { ...engine.controls.get() }
 
   act(() => {
-    fireEvent.click(inFold(line(), /^roll$/))
+    fireEvent.click(inFold(line(), /^randomize$/))
   })
   const now = engine.controls.get()
   expect(rows.some(k => now[k] !== was[k])).toBe(true)
@@ -449,25 +449,28 @@ test('undo on a fold takes back its roll and keeps a knob turned since', () => {
   fireEvent.click(line())
   const was = { ...engine.controls.get() }
   act(() => {
-    fireEvent.click(inFold(line(), /^roll$/))
+    fireEvent.click(inFold(line(), /^randomize$/))
   })
   act(() => engine.set('ensMix', 0.9))
   act(() => {
-    fireEvent.click(inFold(line(), /^undo roll$/))
+    fireEvent.click(inFold(line(), /^undo randomize$/))
   })
   expect({ ...engine.controls.get(), ensMix: was.ensMix }).toEqual(was)
   expect(engine.controls.get().ensMix).toBe(0.9)
-  expect(notInFold(line(), /^undo roll$/)).toBeNull()
+  expect(notInFold(line(), /^undo randomize$/)).toBeNull()
 })
 
 test('undo on a stage walks back its rolls one at a time', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   openFmChip()
-  const undo = () => screen.getAllByRole('button', { name: /^undo roll$/ })[0]!
+  const undo = () =>
+    screen.getAllByRole('button', { name: /^undo randomize$/ })[0]!
   const noUndo = () =>
-    expect(screen.queryByRole('button', { name: /^undo roll$/ })).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: /^undo randomize$/ }),
+    ).toBeNull()
   noUndo()
-  const roll = () => screen.getAllByRole('button', { name: /^roll$/ })[0]!
+  const roll = () => screen.getAllByRole('button', { name: /^randomize$/ })[0]!
   const boot = { ...engine.controls.get() }
   act(() => {
     fireEvent.click(roll())

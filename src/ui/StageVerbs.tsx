@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { useBoardValue } from './ControlsContext.ts'
+import { SHUFFLE } from './DeviceVerbs.tsx'
 import { removable, takeOff } from './fitted.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
@@ -51,8 +52,8 @@ export function StageVerbs({
       moved={touched}
       rollTip={
         group.editor?.kind === 'drums'
-          ? 'roll this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
-          : `roll every control in ${group.name} somewhere new and leave the rest of the board alone`
+          ? 'randomize this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
+          : `randomize every control in ${group.name} and leave the rest of the board alone`
       }
       resetTip={putBackTitle(group, touched)}
       onRoll={() =>
@@ -68,7 +69,7 @@ export function StageVerbs({
 }
 
 const rollTipFor = (count: number, what: string, stage: string) =>
-  `Roll the ${count} controls under ${what} somewhere new and leave the rest of ${stage} where it stands.`
+  `Randomize the ${count} controls under ${what} and leave the rest of ${stage} where it stands.`
 
 const resetTipFor = (what: string, moved: number) =>
   `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
@@ -99,16 +100,20 @@ export function ScopeVerbs({
   return (
     <>
       <Tip text={rollTip}>
-        <button className={verb} onClick={onRoll}>
-          roll
+        <button className={verb} aria-label="randomize" onClick={onRoll}>
+          {SHUFFLE}
         </button>
       </Tip>
       {canUndo && (
         <Tip
-          text={`put ${what} back where it stood before its last roll, and leave every other control where it is now`}
+          text={`put ${what} back where it stood before its last randomize, and leave every other control where it is now`}
         >
-          <button className={verb} onClick={() => undoRoll(scope, seconds)}>
-            undo roll
+          <button
+            className={verb}
+            aria-label="undo randomize"
+            onClick={() => undoRoll(scope, seconds)}
+          >
+            undo
           </button>
         </Tip>
       )}

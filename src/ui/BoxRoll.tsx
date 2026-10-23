@@ -2,6 +2,7 @@ import { engine } from '../engine/engine.ts'
 import styles from './BoxRoll.module.css'
 import { groupFor } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
+import { SHUFFLE } from './DeviceVerbs.tsx'
 import { morphSetting } from './morph.ts'
 import { rollKeys } from './presets/index.ts'
 import {
@@ -30,11 +31,11 @@ export function BoxRoll({
   return (
     <div className={styles.verbs}>
       <Tip
-        text={`Roll the ${keys.length} controls under ${title} somewhere new and leave the rest of the stage where it stands.`}
+        text={`Randomize the ${keys.length} controls under ${title} and leave the rest of the stage where it stands.`}
       >
         <button
           className={styles.roll}
-          aria-label={`roll ${title}`}
+          aria-label={`randomize ${title}`}
           onClick={() =>
             rollIn(
               scope,
@@ -43,17 +44,19 @@ export function BoxRoll({
             )
           }
         >
-          roll
+          {SHUFFLE}
         </button>
       </Tip>
       {canUndo && (
-        <Tip text={`put ${title} back where it stood before its last roll`}>
+        <Tip
+          text={`put ${title} back where it stood before its last randomize`}
+        >
           <button
             className={styles.roll}
-            aria-label={`undo roll of ${title}`}
+            aria-label={`undo randomize of ${title}`}
             onClick={() => undoRoll(scope, seconds)}
           >
-            undo roll
+            undo
           </button>
         </Tip>
       )}

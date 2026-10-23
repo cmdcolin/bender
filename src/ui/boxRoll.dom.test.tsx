@@ -16,14 +16,16 @@ test('undo survives a roll that shows more of the box’s rows', () => {
   const { rerender } = render(
     <BoxRoll title="envelope" keys={['chipEnvCap', 'chipPwm']} />,
   )
-  fireEvent.click(screen.getByRole('button', { name: 'roll envelope' }))
+  fireEvent.click(screen.getByRole('button', { name: 'randomize envelope' }))
   rerender(
     <BoxRoll
       title="envelope"
       keys={['chipEnvCap', 'chipPwm', 'chipBendSpot', 'chipBendPot']}
     />,
   )
-  const undo = screen.getByRole('button', { name: 'undo roll of envelope' })
+  const undo = screen.getByRole('button', {
+    name: 'undo randomize of envelope',
+  })
   expect(undo.hasAttribute('disabled')).toBe(false)
   fireEvent.click(undo)
   expect(engine.controls.get().chipEnvCap).toBe(DEFAULT_CONTROLS.chipEnvCap)

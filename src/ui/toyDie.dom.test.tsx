@@ -228,7 +228,7 @@ test('the header verbs act on the whole stage with a box open', () => {
     screen.queryByRole('group', { name: 'what roll, undo and reset act on' }),
   ).toBeNull()
   const before = engine.controls.get()
-  fireEvent.click(screen.getByRole('button', { name: 'roll' }))
+  fireEvent.click(screen.getByRole('button', { name: 'randomize' }))
   const after = engine.controls.get()
   const outside = (Object.keys(after) as (keyof Controls)[]).filter(
     k => after[k] !== before[k] && !NODE_KEYS.envelope?.includes(k),
@@ -246,7 +246,9 @@ test('an open box rolls its own rows from inside its card', () => {
   fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
   const card = screen.getByRole('region', { name: 'envelope' })
   const before = engine.controls.get()
-  fireEvent.click(within(card).getByRole('button', { name: 'roll envelope' }))
+  fireEvent.click(
+    within(card).getByRole('button', { name: 'randomize envelope' }),
+  )
   const after = engine.controls.get()
   const changed = (Object.keys(after) as (keyof Controls)[]).filter(
     k => after[k] !== before[k],
@@ -254,7 +256,7 @@ test('an open box rolls its own rows from inside its card', () => {
   expect(changed.length).toBeGreaterThan(0)
   for (const key of changed) expect(NODE_KEYS.envelope).toContain(key)
   fireEvent.click(
-    within(card).getByRole('button', { name: 'undo roll of envelope' }),
+    within(card).getByRole('button', { name: 'undo randomize of envelope' }),
   )
   expect(engine.controls.get()).toEqual(before)
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
@@ -271,7 +273,9 @@ test('an open box resets its own rows from inside its card', () => {
   const reset = () =>
     within(card).queryByRole('button', { name: 'reset envelope' })
   expect(reset()).toBeNull()
-  fireEvent.click(within(card).getByRole('button', { name: 'roll envelope' }))
+  fireEvent.click(
+    within(card).getByRole('button', { name: 'randomize envelope' }),
+  )
   fireEvent.click(reset()!)
   for (const key of NODE_KEYS.envelope!)
     expect(engine.controls.get()[key]).toBe(DEFAULT_CONTROLS[key])

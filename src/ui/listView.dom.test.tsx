@@ -32,11 +32,13 @@ test('the list rolls, undoes and resets every stage in it at once', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   render(<StageList seconds={0} />)
   const before = engine.controls.get()
-  act(() => screen.getAllByRole('button', { name: 'roll' })[0]!.click())
+  act(() => screen.getAllByRole('button', { name: 'randomize' })[0]!.click())
   expect(engine.controls.get()).not.toEqual(before)
-  act(() => screen.getAllByRole('button', { name: 'undo roll' })[0]!.click())
+  act(() =>
+    screen.getAllByRole('button', { name: 'undo randomize' })[0]!.click(),
+  )
   expect(engine.controls.get()).toEqual(before)
-  act(() => screen.getAllByRole('button', { name: 'roll' })[0]!.click())
+  act(() => screen.getAllByRole('button', { name: 'randomize' })[0]!.click())
   act(() => screen.getAllByRole('button', { name: /^reset \d+$/ })[0]!.click())
   expect(engine.controls.get()).toEqual(before)
 })
