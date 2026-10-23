@@ -194,7 +194,7 @@ export function PatchBay() {
                     {patched ? SRC[w.src] : 'unwired'}
                   </text>
                   {w.src === PHRASE && drums && (
-                    <PhraseMeter y={y + ROW_H - 3} />
+                    <PhraseMeter y={y + ROW_H - 4.5} />
                   )}
                   {patched && (
                     <>
@@ -316,7 +316,7 @@ function PhraseMeter({ y }: { y: number }) {
       x={SRC_X + 2}
       y={y}
       width={Math.max(fill * (SRC_W - 4), 0.5)}
-      height={1.5}
+      height={2.5}
       fill="var(--accent)"
     />
   )

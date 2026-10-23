@@ -61,12 +61,12 @@ export const PATCH_GROUPS: Group[] = [
       },
       {
         key: 'modPhraseBars',
-        label: 'Phrase',
+        label: 'Phrase bars',
         min: 0,
         max: PHRASE_BARS.length - 1,
         step: 1,
         unit: '',
-        choices: PHRASE_BARS.map(b => (b === 1 ? '1 bar' : `${b} bars`)),
+        choices: PHRASE_BARS.map(String),
         help: 'How many bars of the kit the phrase source takes to come round. It starts again on the downbeat that ends the run, so a build lands on the one.',
       },
       {
