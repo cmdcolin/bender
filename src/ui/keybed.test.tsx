@@ -258,32 +258,23 @@ test('a finger is given fewer keys than a pointer in the same case', () => {
   expect(toy().queryByRole('button', { name: 'key C5' })).not.toBeNull()
 })
 
-// On a narrow case the Level slider moves into the ⋯ menu.
-test('a narrow case keeps its Level in the ⋯ menu', () => {
+test('a deck keeps its Level in the speaker cap at any width', () => {
   render(<Keys />)
   const toy = () => bed('plinky')
   const level = () => toy().queryByRole('slider', { name: 'Level' })
-  expect(level()).not.toBeNull()
+  expect(level()).toBeNull()
 
   act(() => measure(300))
   expect(level()).toBeNull()
-  press(more('plinky'))
+  fireEvent.click(toy().getByRole('button', { name: 'volume Plinky' }))
   expect(level()).not.toBeNull()
-  press(more('plinky'))
-
-  act(() => touch(true))
-  press(more('plinky'))
-  expect(level()).not.toBeNull()
-  expect(toy().queryByRole('checkbox')).toBeNull()
 })
 
-test('a touch screen with room on the deck keeps no keyboard settings', () => {
+test('a touch screen keeps no keyboard settings', () => {
   render(<Keys />)
-  act(() => measure(600))
   act(() => touch(true))
   press(more('plinky'))
   expect(bed('plinky').queryByRole('checkbox')).toBeNull()
-  expect(bed('plinky').queryByRole('slider', { name: 'Level' })).not.toBeNull()
 })
 
 test('a soldered jumper draws a cable from Plinky to the keyboard, and pulling the plug removes it', () => {

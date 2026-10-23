@@ -196,17 +196,13 @@ test('the popover slider moves the Level, and zero lights the speaker and the mu
   expect(mute).toHaveProperty('checked', false)
 })
 
-test('each machine has a Level slider that moves its own level', () => {
+test('only the machines with no speaker cap keep a Level slider on the face', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
-  const levels = screen.getAllByRole('slider', { name: 'Level' })
-  expect(levels).toHaveLength(7)
-  fireEvent.change(
-    within(machine('clatter')).getByRole('slider', { name: 'Level' }),
-    { target: { value: '0' } },
-  )
-  expect(engine.controls.get().drumLevel).toBe(0)
-  expect(engine.controls.get().chipLevel).toBe(DEFAULT_CONTROLS.chipLevel)
+  expect(screen.getAllByRole('slider', { name: 'Level' })).toHaveLength(2)
+  expect(
+    within(machine('clatter')).queryByRole('slider', { name: 'Level' }),
+  ).toBeNull()
 })
 
 test('every machine on the shared rail shows the rail lamp', () => {

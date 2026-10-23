@@ -284,15 +284,14 @@ export function DrawerSlider({ control }: { control: ControlKey }) {
   )
 }
 
-// The caps on every instrument and pedal on the bench: mute or bypass, an
-// instrument's level, the mic jacks on it, roll the stage somewhere new, and a
-// close cap where the machine can be put away.
+// The caps on every instrument and pedal on the bench: mute or bypass, the
+// mic jacks on it, roll the stage somewhere new, and a close cap where the
+// machine can be put away. An instrument's Level sits in its speaker cap.
 export function DeviceVerbs({
   stage,
   seconds = 0,
   onClose,
   noMute,
-  noLevel,
   noMic,
   more,
 }: {
@@ -301,8 +300,6 @@ export function DeviceVerbs({
   onClose?: () => void
   /** For a face that draws its own switch for it. */
   noMute?: boolean
-  /** For a face that keeps its Level in a drawer. */
-  noLevel?: boolean
   /** For a face too narrow for the mic cap; Mic into still lists its jacks. */
   noMic?: boolean
   /** The face's own settings, drawn in the ⋯ menu. */
@@ -315,7 +312,7 @@ export function DeviceVerbs({
   return (
     <>
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
-      {level && !noLevel && <FaceLevel control={level} />}
+      {level && !mute && <FaceLevel control={level} />}
       {!noMic && <MicCap stage={stage} />}
       <Rolls group={group} seconds={seconds} more={more} />
       {onClose && (

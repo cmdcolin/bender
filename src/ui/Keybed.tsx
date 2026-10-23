@@ -10,7 +10,7 @@ import { engine } from '../engine/engine.ts'
 import { NOTE_NAMES, semitoneName } from '../notes.ts'
 import { SCALE_NAMES, snap } from '../scale.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
-import { DeviceVerbs, DrawerSlider } from './DeviceVerbs.tsx'
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { FaceBadge } from './FaceBadge.tsx'
 import { isTyping } from './isTyping.ts'
 import styles from './Keybed.module.css'
@@ -30,7 +30,6 @@ import { letterKeys } from './letters.ts'
 import { useCoarse, useWidth } from './measure.ts'
 import { menuCheck, menuItem } from './menuItems.ts'
 import { MiniRoll } from './MiniRoll.tsx'
-import { levelOf } from './stageLevels.ts'
 import { Tip } from './Tip.tsx'
 
 import type { NoteDest } from '../engine/messages.ts'
@@ -55,10 +54,6 @@ const NEXT_BED: Record<NoteDest, NoteDest> = {
   pcm: 'toy',
   mono: 'toy',
 }
-
-// Below this many pixels of bed, the Level slider moves into the ⋯ menu and the
-// deck keeps two rows.
-const ROOMY_DECK = 560
 
 // Who is holding a key down, and so what colour it is.
 type Lit = 'hand' | 'chip' | 'dark'
@@ -138,9 +133,6 @@ export function Keybed({
       ? OCTAVES_DRAWN
       : octavesFor(width, coarse ? MIN_KEY.coarse : MIN_KEY.fine)
   const short = drawn < OCTAVES_DRAWN
-  const level = stage === undefined ? undefined : levelOf(stage)
-  const levelInDrawer =
-    level !== undefined && width !== undefined && width < ROOMY_DECK
   const top = topKey(drawn)
   const shift = octave * 12
   const at = (key: number) => pitch(key, shift)
@@ -328,40 +320,31 @@ export function Keybed({
     </Tip>
   )
 
-  const settings =
-    coarse && !levelInDrawer ? undefined : (
-      <>
-        {!coarse && (
-          <>
-            <Tip
-              text={
-                owns
-                  ? `the computer keyboard is wired to this bed — ${noteLetters.slice(0, 4).join(' ')} play it, ${octaveLetters.down} and ${octaveLetters.up} move the octave. Turning it off hands the letters back to the toy, because there is one keyboard and it has to play one of them`
-                  : `wire the computer keyboard to this bed: ${noteLetters.slice(0, 4).join(' ')} play it, ${octaveLetters.down} and ${octaveLetters.up} move the octave. There is one keyboard in front of the panel and several beds on it, so it plays whichever is switched on`
-              }
-            >
-              <label className={menuCheck}>
-                <input
-                  type="checkbox"
-                  checked={owns}
-                  onChange={() => letterKeys.set(owns ? other : dest)}
-                />
-                computer keyboard plays this bed
-              </label>
-            </Tip>
-            <Tip text="Choose which computer key plays each note, moves the octave or throws a bend.">
-              <button
-                className={menuItem(false)}
-                onClick={() => remapOpen.set(true)}
-              >
-                remap keys…
-              </button>
-            </Tip>
-          </>
-        )}
-        {levelInDrawer && <DrawerSlider control={level} />}
-      </>
-    )
+  const settings = coarse ? undefined : (
+    <>
+      <Tip
+        text={
+          owns
+            ? `the computer keyboard is wired to this bed — ${noteLetters.slice(0, 4).join(' ')} play it, ${octaveLetters.down} and ${octaveLetters.up} move the octave. Turning it off hands the letters back to the toy, because there is one keyboard and it has to play one of them`
+            : `wire the computer keyboard to this bed: ${noteLetters.slice(0, 4).join(' ')} play it, ${octaveLetters.down} and ${octaveLetters.up} move the octave. There is one keyboard in front of the panel and several beds on it, so it plays whichever is switched on`
+        }
+      >
+        <label className={menuCheck}>
+          <input
+            type="checkbox"
+            checked={owns}
+            onChange={() => letterKeys.set(owns ? other : dest)}
+          />
+          computer keyboard plays this bed
+        </label>
+      </Tip>
+      <Tip text="Choose which computer key plays each note, moves the octave or throws a bend.">
+        <button className={menuItem(false)} onClick={() => remapOpen.set(true)}>
+          remap keys…
+        </button>
+      </Tip>
+    </>
+  )
 
   const key = (note: number, black: boolean) => {
     const lit = litBy(note)
@@ -438,7 +421,6 @@ export function Keybed({
               stage={stage}
               seconds={seconds}
               onClose={onClose}
-              noLevel={levelInDrawer}
               more={settings}
             />
           )}

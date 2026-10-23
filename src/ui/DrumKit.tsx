@@ -15,7 +15,7 @@ import {
   useMeterValue,
   useStoreValue,
 } from './ControlsContext.ts'
-import { DeviceVerbs, DrawerSlider } from './DeviceVerbs.tsx'
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
 import { FaceBadge } from './FaceBadge.tsx'
@@ -54,7 +54,6 @@ export function DrumKit({
   const armed = useStoreValue(engine.drumRecord)
   const [kit, setKit] = useState<HTMLDivElement | null>(null)
   const width = useWidth(kit)
-  const levelInMenu = width !== undefined && width < ROOMY_KIT
   const micCramped =
     width !== undefined && width >= ROOMY_KIT && width < ROOMY_FOR_MIC
 
@@ -106,11 +105,7 @@ export function DrumKit({
             stage="Clatter"
             seconds={seconds}
             onClose={onClose}
-            noLevel={levelInMenu}
             noMic={micCramped}
-            more={
-              levelInMenu ? <DrawerSlider control="drumLevel" /> : undefined
-            }
           />
         </div>
       </div>
