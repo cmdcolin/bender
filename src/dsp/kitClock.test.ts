@@ -54,6 +54,19 @@ test('synced, the memory stands still while the kit is stopped', () => {
   ).toBeLessThan(0.5)
 })
 
+test('synced, the memory keeps stepping with the kit’s fader down', () => {
+  const sync = { monoSeqSync: memorySync('sixteenths'), drumLevel: 0 }
+  expect(memorySteps(sync)).toBeCloseTo(8, 0)
+  const out = renderBender(
+    { chipLevel: 0, drumLevel: 0, drumKick: 0xffff },
+    1,
+    built => {
+      built.transport.drums = true
+    },
+  )
+  expect(Math.max(...out.map(Math.abs))).toBeLessThan(1e-4)
+})
+
 test('synced, a slipping kit clock stalls the memory with it', () => {
   const locked = { monoSeqSync: memorySync('eighths') }
   expect(memorySteps({ ...locked, drumSlip: 0.5 })).toBeLessThan(

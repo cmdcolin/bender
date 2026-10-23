@@ -836,8 +836,10 @@ export class ToyDrum implements Stage {
     return err * amt * (tol / LADDER_TOL)
   }
 
+  // A running kit keeps running with its fader down, since its counter is
+  // the clock everything synced to it steps on.
   when(p: Float32Array) {
-    return p[IDX.drumLevel]! > 0
+    return p[IDX.drumLevel]! > 0 || this.transport.drums
   }
 
   /** Strike voices by hand. `bits` is the bit order of a step, so one message
