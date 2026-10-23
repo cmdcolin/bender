@@ -80,3 +80,15 @@
 .wire:focus-visible .hitOn {
   stroke: var(--fg3);
 }
+
+.envShape {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+}
+
+.envLetter {
+  font-size: 7px;
+  fill: var(--fg3);
+}

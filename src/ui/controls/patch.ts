@@ -154,6 +154,7 @@ export const PATCH_GROUPS: Group[] = [
         max: 16,
         step: 1,
         unit: 'steps',
+        reads: v => (v === 1 ? '1 step' : `${v} steps`),
         needs: c => c.modEnvGate !== 0,
         help: 'How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release.',
       },

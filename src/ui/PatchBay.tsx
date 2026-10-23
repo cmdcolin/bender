@@ -283,6 +283,7 @@ export function PatchBay() {
           })}
         </svg>
       </div>
+      {open && wires[Number(pick.selected)]!.src === ADSR && <EnvShape />}
       <BoxRows inOrder keys={open?.keys} />
       <StepLanes />
       {!open && (
@@ -339,5 +340,78 @@ function PhraseMeter({ y }: { y: number }) {
       height={2.5}
       fill="var(--accent)"
     />
+  )
+}
+
+const ENV_W = 160
+const ENV_H = 40
+const ENV_LINE = 30
+const ENV_HOLD = 1.2
+const envSpan = (ms: number) => Math.log10(Math.max(ms, 1)) + 0.4
+const envY = (v: number) => 2 + (1 - v) * (ENV_LINE - 4)
+
+// The ADSR's four stages as a line, each as wide as the log of its time, so a
+// thirty-second attack reads as long beside a 5 ms one without the 5 ms one
+// vanishing.
+function EnvShape() {
+  const [a, d, s, r] = useBoardValue(c =>
+    [c.modEnvAttack, c.modEnvDecay, c.modEnvSustain, c.modEnvRelease].join(','),
+  )
+    .split(',')
+    .map(Number)
+
+  const total = envSpan(a!) + envSpan(d!) + ENV_HOLD + envSpan(r!)
+  const x = (t: number) => (t / total) * ENV_W
+  const xa = x(envSpan(a!))
+  const xd = xa + x(envSpan(d!))
+  const xs = xd + x(ENV_HOLD)
+  const points = [
+    [0, envY(0)],
+    [xa, envY(1)],
+    [xd, envY(s!)],
+    [xs, envY(s!)],
+    [ENV_W, envY(0)],
+  ]
+  return (
+    <svg
+      className={styles.envShape}
+      viewBox={`0 0 ${ENV_W} ${ENV_H}`}
+      role="img"
+      aria-label="the ADSR's shape: attack, decay, sustain, release"
+    >
+      <polyline
+        points={points.map(([px, py]) => `${px},${py}`).join(' ')}
+        fill="none"
+        stroke="var(--accent)"
+        strokeWidth={1.5}
+      />
+      {[xa, xd, xs].map((px, i) => (
+        <line
+          key={i}
+          x1={px}
+          x2={px}
+          y1={0}
+          y2={ENV_LINE}
+          stroke="var(--fg4)"
+          strokeDasharray="2 2"
+        />
+      ))}
+      {[
+        ['A', 0, xa],
+        ['D', xa, xd],
+        ['S', xd, xs],
+        ['R', xs, ENV_W],
+      ].map(([letter, from, to]) => (
+        <text
+          key={letter}
+          x={(Number(from) + Number(to)) / 2}
+          y={ENV_H - 1}
+          textAnchor="middle"
+          className={styles.envLetter}
+        >
+          {letter}
+        </text>
+      ))}
+    </svg>
   )
 }
