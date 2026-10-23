@@ -92,10 +92,15 @@ for (const check of [
   'pnpm typecheck',
   'pnpm sync:check --strict',
   'node scripts/demogen.mjs --check',
-  'pnpm test',
+  'pnpm test:full',
 ]) {
   run(check)
 }
 
+// The local run cannot see the runner's environment, so release only what CI
+// has passed.
+run('node scripts/wait-for-ci.mjs --job check')
+
 run(`pnpm version ${bump} -m "Release v%s"`)
 run('git push --follow-tags')
+run('node scripts/wait-for-ci.mjs')
