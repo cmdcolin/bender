@@ -7,11 +7,13 @@ import {
   condPlays,
   DRUM_ROMS,
   DRUM_VOICES,
+  euclid,
   GRID_ROWS,
   heardStep,
   PATTERN_KEYS,
   STEPS,
   hasStep,
+  parseCells,
   parseRow,
   romMatching,
   rowText,
@@ -26,9 +28,10 @@ test('parseRow reads hits, dice hits and rests, and rowText writes them back', (
     mask: stepBit(0) | stepBit(6),
     maybe: stepBit(4),
     len: 8,
+    ratchets: {},
   })
   expect(rowText(row.mask, row.maybe, row.len)).toBe('x...?.x.')
-  expect(parseRow('')).toEqual({ mask: 0, maybe: 0, len: STEPS })
+  expect(parseRow('')).toEqual({ mask: 0, maybe: 0, len: STEPS, ratchets: {} })
   expect(() => parseRow('x-x')).toThrow("'-' is not a step")
   expect(() => parseRow('.'.repeat(STEPS + 1))).toThrow(`${STEPS + 1} steps`)
 })
@@ -113,6 +116,31 @@ test('a row condition plays the bars its name says', () => {
   expect(bars('3:4')).toEqual([2, 6])
   expect(bars('!4:4')).toEqual([0, 1, 2, 4, 5, 6])
   expect(bars('8:8')).toEqual([7])
+})
+
+test('euclid spreads its hits as Tidal does, and turns', () => {
+  expect(euclid(3, 8)).toBe('x..x..x.')
+  expect(euclid(5, 8)).toBe('x.xx.xx.')
+  expect(euclid(4, 16)).toBe('x...x...x...x...')
+  expect(euclid(7, 16)).toBe('x..x.x.x..x.x.x.')
+  expect(euclid(3, 8, 1)).toBe('..x..x.x')
+  expect(euclid(0, 4)).toBe('....')
+  expect(euclid(9, 4)).toBe('xxxx')
+})
+
+test('a row reads Euclid groups and bracketed ratchets', () => {
+  expect(rowText(parseRow('?(3,8)').maybe, 0, 8)).toBe('x..x..x.')
+  const row = parseRow('x . [xxx] . [??]')
+  expect(row.len).toBe(5)
+  expect(row.ratchets).toEqual({ 2: 3, 4: 2 })
+  expect(rowText(row.mask, row.maybe, row.len)).toBe('x.x.?')
+})
+
+test('the tracker rows read one character a column', () => {
+  expect(parseCells('ratchet', '.2.8').slice(0, 4)).toEqual([0, 1, 0, 5])
+  expect(parseCells('nudge', '..b').slice(0, 3)).toEqual([0, 0, 11])
+  expect(parseCells('event', 'cdbfr')).toHaveLength(STEPS)
+  expect(() => parseCells('ratchet', '5')).toThrow("'5' is not a ratchet step")
 })
 
 test('the condition keys follow the voices', () => {

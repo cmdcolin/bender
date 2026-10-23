@@ -490,10 +490,57 @@ export const rowText = (mask: number, maybe: number, len: number) =>
     (_, s) => STEP_CHARS[stepState(mask, maybe, s)],
   ).join('')
 
+/** A Euclidean rhythm: `hits` spread as evenly as they go over `steps` by
+    Bjorklund's algorithm, turned left by `rotate`. The strings match Tidal's:
+    euclid(3, 8) is `x..x..x.`. */
+export function euclid(hits: number, steps: number, rotate = 0): string {
+  if (steps < 1) return ''
+  const k = Math.min(Math.max(Math.round(hits), 0), steps)
+  let a = Array.from({ length: k }, () => 'x')
+  let b = Array.from({ length: steps - k }, () => '.')
+  while (b.length > 1 && a.length > 0) {
+    const m = Math.min(a.length, b.length)
+    const joined = a.slice(0, m).map((s, i) => s + b[i]!)
+    b = a.length > m ? a.slice(m) : b.slice(m)
+    a = joined
+  }
+  const flat = a.join('') + b.join('')
+  const r = ((Math.round(rotate) % steps) + steps) % steps
+  return flat.slice(r) + flat.slice(0, r)
+}
+
+const EUCLID = /([x?.])\((\d+),(\d+)(?:,(-?\d+))?\)/g
+
 /** Parses the format rowText writes, ignoring spaces and `|`. The text length
-    sets the row length, and an empty string gives sixteen rests. */
+    sets the row length, and an empty string gives sixteen rests. Two short
+    forms expand first: `x(3,8)` is a Euclidean row (a third number rotates
+    it), and `[xxx]` is one step struck three times, which the kit plays as a
+    ratchet on that column. */
 export function parseRow(text: string) {
-  const steps = text.toLowerCase().replace(/[\s|]/g, '').split('')
+  const flat = text
+    .toLowerCase()
+    .replace(/[\s|]/g, '')
+    .replace(EUCLID, (_, ch: string, k: string, n: string, r?: string) =>
+      euclid(Number(k), Number(n), Number(r ?? 0)).replaceAll('x', ch),
+    )
+  const steps: string[] = []
+  const ratchets: Record<number, number> = {}
+  for (let i = 0; i < flat.length; i++) {
+    if (flat[i] !== '[') {
+      steps.push(flat[i]!)
+      continue
+    }
+    const end = flat.indexOf(']', i)
+    const inner = end < 0 ? '' : flat.slice(i + 1, end)
+    const count = inner.length
+    if (!/^(x+|\?+)$/.test(inner) || !RATCHETS.includes(count))
+      throw new Error(
+        `'[${inner}]' is not a step; a bracket holds ${RATCHETS.slice(1).join(', ')} of x or of ?`,
+      )
+    ratchets[steps.length] = count
+    steps.push(inner[0]!)
+    i = end
+  }
   if (steps.length > STEPS)
     throw new Error(`${steps.length} steps; the maximum is ${STEPS}`)
   let mask = 0
@@ -503,5 +550,51 @@ export function parseRow(text: string) {
     else if (ch === '?') maybe |= stepBit(s)
     else if (ch !== '.') throw new Error(`'${ch}' is not a step; use x, ? or .`)
   }
-  return { mask, maybe, len: steps.length || STEPS }
+  return { mask, maybe, len: steps.length || STEPS, ratchets }
+}
+
+/** The event row's letters, by EVENT value: c cut, d drop, b brake, f freeze,
+    r reboot. */
+export const EVENT_LETTERS = ['.', 'c', 'd', 'b', 'f', 'r'] as const
+
+/** One character a column for the ratchet, nudge and event rows, read back the
+    way `parseCells` takes them. */
+export const CELL_ROWS = {
+  ratchet: {
+    keys: RATCHET_KEYS,
+    write: (v: number) => (v ? String(RATCHETS[asRatchet(v)]) : '.'),
+    read: (ch: string) =>
+      ch === '.' || ch === '1' ? 0 : RATCHETS.indexOf(Number(ch)),
+    says: `a count of ${RATCHETS.slice(1).join(', ')}, or . for one`,
+  },
+  nudge: {
+    keys: NUDGE_KEYS,
+    write: (v: number) => (v ? asNudge(v).toString(NUDGE_PARTS) : '.'),
+    read: (ch: string) => (ch === '.' ? 0 : Number.parseInt(ch, NUDGE_PARTS)),
+    says: 'twelfths late as 1 to 9, a or b, or . for on time',
+  },
+  event: {
+    keys: EVENT_KEYS,
+    write: (v: number) => EVENT_LETTERS[asEvent(v)]!,
+    read: (ch: string) => (EVENT_LETTERS as readonly string[]).indexOf(ch),
+    says: 'c cut, d drop, b brake, f freeze, r reboot, or . for none',
+  },
+} as const
+
+export type CellRow = keyof typeof CELL_ROWS
+
+/** A ratchet, nudge or event row: one character a column, up to sixteen, the
+    columns past the text left at none. */
+export function parseCells(row: CellRow, text: string): number[] {
+  const { read, says } = CELL_ROWS[row]
+  const chars = text.toLowerCase().replace(/[\s|]/g, '').split('')
+  if (chars.length > STEPS)
+    throw new Error(`${chars.length} steps; the maximum is ${STEPS}`)
+  return Array.from({ length: STEPS }, (_, s) => {
+    const ch = chars[s] ?? '.'
+    const v = read(ch)
+    if (!Number.isInteger(v) || v < 0)
+      throw new Error(`'${ch}' is not a ${row} step; use ${says}`)
+    return v
+  })
 }

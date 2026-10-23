@@ -5,7 +5,22 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
-import { DRUM_VOICES, GRID_ROWS, parseRow, rowText } from '../drums.ts'
+import {
+  asCond,
+  asEventEvery,
+  CELL_ROWS,
+  COND_KEYS,
+  CONDS,
+  DRUM_VOICES,
+  EVENT_EVERY,
+  GRID_ROWS,
+  parseCells,
+  parseRow,
+  RATCHET_KEYS,
+  RATCHETS,
+  rowText,
+  type CellRow,
+} from '../drums.ts'
 import { BLOCK, METER_EVERY } from '../dsp/stage.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
@@ -39,12 +54,13 @@ import { formatValue } from './slider-scale.ts'
 // GUIDE_MAX_CHARS.
 export const GUIDE_MAX_CHARS = 900
 
-const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. The browser tool cuts any single returned string at 1000 characters, so return arrays and objects as they are, since JSON.stringify turns a long list into one string. Start with bender.summary(). The rest of the contract is in four short topics: bender.guide('read') covers board, find and describe; bender.guide('change') covers set, presets, load, reset and undo; bender.guide('music') covers tune and drums; bender.guide('sound') covers start, play, stop, listen and link.`
+const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. The browser tool cuts any single returned string at 1000 characters, so return arrays and objects as they are, since JSON.stringify turns a long list into one string. Start with bender.summary(). The rest of the contract is in five short topics: bender.guide('read') covers board, find and describe; bender.guide('change') covers set, presets, load, reset and undo; bender.guide('music') covers tune and drums, and bender.guide('drums') the rest of the kit; bender.guide('sound') covers start, play, stop, listen and link.`
 
 const GUIDE = {
   read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. bender has about 250 controls, so search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help.`,
   change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }) accepts numbers, choice names and unique prefixes of choice names, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists keys that match no control with the closest real keys, and failed lists values set could not read; set leaves those controls unchanged. A number of seconds as the second argument glides the controls there on animation frames, which the browser pauses in a hidden tab. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds.`,
-  music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory with one token per step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold the previous note. tune also switches the chip to play the memory at tuneRate steps per second. An array of up to three strings writes chords, one string per lane. bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. An x is a hit, a question mark is a hit with probability drumChance, and a dot is a rest. Each character is a sixteenth note, so a beat is four characters. The string length sets the row's loop length, an empty string clears the row, and rows missing from the call keep their pattern. drumBpm sets the tempo.`,
+  music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory with one token per step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold the previous note. tune also switches the chip to play the memory at tuneRate steps per second. An array of up to three strings writes chords, one string per lane. bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. An x is a hit, a question mark is a hit with probability drumChance, and a dot is a rest. Each character is a sixteenth note, so a beat is four characters. The string length sets the row's loop length, an empty string clears the row, and rows missing from the call keep their pattern. drumBpm sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
+  drums: `More drums. In a row, x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}. bender.board().drums reads all of these back in the same form.`,
   sound: `Sound. The browser keeps audio suspended until the page receives a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the melody and the drums, bender.play('song') or bender.play('drums') starts one, and bender.stop() stops both. A screenshot shows the panel and contains no measurement of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due, where short means the audio thread missed blocks, plus the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), the watchdog reboots, the sources with signal, the notes each chip played and the drum voices hit. bender.link() returns a URL that loads the current board in any tab.`,
 }
 
@@ -210,6 +226,8 @@ function tuneLines(c: Controls) {
     .map(laneText)
 }
 
+const barsText = (bars: number) => `${bars}:${bars}`
+
 function drumLines(c: Controls) {
   const rows: Record<string, string> = {}
   for (const row of GRID_ROWS) {
@@ -217,8 +235,20 @@ function drumLines(c: Controls) {
     if (c[row.key] === 0 && maybe === 0) continue
     rows[row.label] = rowText(c[row.key], maybe, c[row.len])
   }
+  for (const [v, key] of COND_KEYS.entries())
+    if (c[key] !== 0)
+      rows[`${DRUM_VOICES[v]!.label} bars`] = CONDS[asCond(c[key])]!
+  for (const [name, row] of Object.entries(CELL_ROWS))
+    if (row.keys.some(k => c[k] !== 0))
+      rows[name] = row.keys.map(k => row.write(c[k])).join('')
+  if (c.drumEventEvery !== 0)
+    rows['event every'] = barsText(EVENT_EVERY[asEventEvery(c.drumEventEvery)]!)
   return rows
 }
+
+const squash = (name: string) => name.toLowerCase().replace(/\s/g, '')
+const isCellRow = (name: string): name is CellRow =>
+  Object.hasOwn(CELL_ROWS, name)
 
 const audioState = () =>
   engine.running.get()
@@ -484,19 +514,52 @@ export function createBenderApi() {
 
     drums(rows: Record<string, string>) {
       const patch: Partial<Controls> = {}
+      const cells: [CellRow, string][] = []
       for (const [name, text] of Object.entries(rows)) {
-        const wanted = name.toLowerCase().replace(/\s/g, '')
-        const row = GRID_ROWS.find(r => r.label.replace(/\s/g, '') === wanted)
+        const wanted = squash(name)
+        if (isCellRow(wanted)) {
+          cells.push([wanted, text])
+          continue
+        }
+        if (wanted === 'eventevery') {
+          const at = EVENT_EVERY.findIndex(b => barsText(b) === text.trim())
+          if (at < 0)
+            throw new Error(
+              `event every takes ${EVENT_EVERY.map(barsText).join(', ')}`,
+            )
+          patch.drumEventEvery = at
+          continue
+        }
+        if (wanted.endsWith('bars')) {
+          const v = DRUM_VOICES.findIndex(
+            d => squash(d.label) === wanted.slice(0, -4),
+          )
+          const at = (CONDS as readonly string[]).indexOf(text.trim())
+          if (v < 0 || at < 0)
+            throw new Error(
+              `'${name}' takes a voice and one of ${CONDS.join(', ')}, as { 'snare bars': '!4:4' }`,
+            )
+          patch[COND_KEYS[v]!] = at
+          continue
+        }
+        const row = GRID_ROWS.find(r => squash(r.label) === wanted)
         if (!row)
           throw new Error(
-            `no drum row named '${name}'; rows: ${GRID_ROWS.map(r => r.label).join(', ')}`,
+            `no drum row named '${name}'; rows: ${GRID_ROWS.map(r => r.label).join(', ')}, ${Object.keys(CELL_ROWS).join(', ')}, event every, and a voice's bars`,
           )
-        const { mask, maybe, len } = parseRow(text)
+        const { mask, maybe, len, ratchets } = parseRow(text)
         if (maybe !== 0 && !row.maybe)
           throw new Error(`the ${row.label} row accepts only 'x' and '.'`)
         patch[row.key] = mask
         if (row.maybe) patch[row.maybe] = maybe
         patch[row.len] = len
+        for (const [s, count] of Object.entries(ratchets))
+          patch[RATCHET_KEYS[Number(s)]!] = RATCHETS.indexOf(count)
+      }
+      for (const [row, text] of cells) {
+        const values = parseCells(row, text)
+        for (const [s, key] of CELL_ROWS[row].keys.entries())
+          patch[key] = values[s]!
       }
       land(patch, 0)
       return { drums: drumLines(engine.controls.get()) }

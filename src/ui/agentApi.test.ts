@@ -106,10 +106,10 @@ test('describe names find for a group name', () => {
 
 test('help and every guide topic fit in one browser tool result', () => {
   expect(bender.help.length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
-  for (const topic of ['read', 'change', 'music', 'sound'])
+  for (const topic of ['read', 'change', 'music', 'drums', 'sound'])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, sound",
   )
 })
 
@@ -160,6 +160,35 @@ test('drums writes the named rows and leaves the others unchanged', () => {
     "the accent row accepts only 'x' and '.'",
   )
   expect(() => bender.drums({ cowbell: 'x' })).toThrow(/rows: kick, snare/)
+})
+
+test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
+  const out = bender.drums({
+    kick: 'x(3,8)x(5,8)',
+    hat: 'x.x.[xxx].x.',
+    nudge: '....6',
+    event: '............bbbb',
+    'event every': '4:4',
+    'snare bars': '!4:4',
+  })
+  const c = engine.controls.get()
+  expect(out.drums.kick).toBe('x..x..x.x.xx.xx.')
+  expect(c.drumRatchet4).toBe(2)
+  expect(c.drumNudge4).toBe(6)
+  expect(c.drumEvent12).toBe(3)
+  expect(c.drumEvent11).toBe(0)
+  expect(c.drumEventEvery).toBe(2)
+  expect(c.drumSnareCond).toBe(9)
+  expect(out.drums).toMatchObject({
+    ratchet: '....3...........',
+    nudge: '....6...........',
+    event: '............bbbb',
+    'event every': '4:4',
+    'snare bars': '!4:4',
+  })
+  expect(() => bender.drums({ event: 'z' })).toThrow(/'z' is not a event/)
+  expect(() => bender.drums({ 'kick bars': '5:4' })).toThrow(/one of 1:1/)
+  expect(() => bender.drums({ hat: '[xxxxx]' })).toThrow(/a bracket holds/)
 })
 
 test('load finds a preset by name prefix and throws on an unknown name', () => {

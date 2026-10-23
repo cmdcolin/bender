@@ -60,24 +60,24 @@ Then ask Claude Code to open the public URL, or
 
 ## The API
 
-| Call                                   | Effect                                                                                 |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| `bender.guide(topic)`                  | the calls for `read`, `change`, `music` or `sound`                                     |
-| `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                            |
-| `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text             |
-| `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                          |
-| `bender.describe(key)`                 | one control's range, unit, choices and help                                            |
-| `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                     |
-| `bender.presets(search?)`              | lists presets                                                                          |
-| `bender.load(name, seconds?)`          | loads a preset                                                                         |
-| `bender.reset(seconds?)`               | restores the defaults                                                                  |
-| `bender.undo()`, `bender.redo()`       | steps through the history, which gains one step per call that changes the board        |
-| `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`                  |
-| `bender.drums(rows)`                   | writes drum rows from step text, such as `{ kick: 'x...x...' }`                        |
-| `bender.start()`                       | starts audio, or reports that the page needs a click first                             |
-| `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                        |
-| `bender.listen(ms)`                    | peak level, limiter gain reduction, supply rail, reboots, sources, notes and drum hits |
-| `bender.link()`                        | a `#set=` URL for the current board                                                    |
+| Call                                   | Effect                                                                                                                               |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `bender.guide(topic)`                  | the calls for `read`, `change`, `music` or `sound`                                                                                   |
+| `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                                                                          |
+| `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text                                                           |
+| `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                        |
+| `bender.describe(key)`                 | one control's range, unit, choices and help                                                                                          |
+| `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                                                                   |
+| `bender.presets(search?)`              | lists presets                                                                                                                        |
+| `bender.load(name, seconds?)`          | loads a preset                                                                                                                       |
+| `bender.reset(seconds?)`               | restores the defaults                                                                                                                |
+| `bender.undo()`, `bender.redo()`       | steps through the history, which gains one step per call that changes the board                                                      |
+| `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`                                                                |
+| `bender.drums(rows)`                   | writes drum rows from step text, such as `{ kick: 'x(3,8)', hat: 'x.[xxx].' }`, and the ratchet, nudge, event and bar condition rows |
+| `bender.start()`                       | starts audio, or reports that the page needs a click first                                                                           |
+| `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                      |
+| `bender.listen(ms)`                    | peak level, limiter gain reduction, supply rail, reboots, sources, notes and drum hits                                               |
+| `bender.link()`                        | a `#set=` URL for the current board                                                                                                  |
 
 ## Limitations
 
