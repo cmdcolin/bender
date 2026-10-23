@@ -22,7 +22,8 @@
 // Widths track constants: ROM_DATA_LINES / ROM_ADDR_LINES in
 // src/dsp/stages/roms.ts, DATA_LINES and ADDR_LINES in src/drums.ts,
 // KIT_ROM_ADDR_LINES / KIT_ROM_DATA_LINES in src/dsp/stages/toyDrum.ts,
-// PCM_ADDR_LINES / PCM_DATA_LINES in src/dsp/stages/pcmKeys' own ROM. Palette
+// PCM_ADDR_LINES / PCM_DATA_LINES in src/dsp/stages/pcmKeys' own ROM,
+// CRUSH_LINES in src/dsp/stages/crusher.ts. Palette
 // follows docs/img/dataflow.dot so the family reads alike: blue chooses, orange
 // carries, green is the bus the processor never touches.
 digraph buses {
@@ -129,5 +130,25 @@ digraph buses {
 
     toy_ctr -> toy_rom [label="A0–A4" color="#0969da" fontcolor="#0969da"]
     toy_rom -> toy_div [label="D0–D5" color="#bc4c00" fontcolor="#bc4c00"]
+  }
+
+  subgraph cluster_crush {
+    label="crusher"
+    labelloc="t"
+    labeljust="l"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=14
+
+    // One converter takes both channels in turn, so a floating pin carries
+    // from one channel's word into the other's.
+    crush_adc [label=<converter<br/><font color="#57606a" point-size="8">left, right, left…</font>> style="filled,rounded"]
+    crush_dac [label="R-2R DAC" style="filled,rounded"]
+
+    crush_adc -> crush_dac [label=<<font color="#bc4c00">D0–D15</font><br/><font color="#57606a" point-size="8">words at the top: μ-law D8 up, ADPCM D12 up, delta D15</font>>
+                            color="#bc4c00"]
   }
 }

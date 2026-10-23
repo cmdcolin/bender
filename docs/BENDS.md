@@ -673,6 +673,35 @@ The patch bay is four free wires.
 - **Body pad:** two bare contacts; touching both makes your body resistance the
   control. It does nothing until a bay wire is soldered to it.
 
+## The crusher's converter
+
+The crusher's **the converter**, **the DAC** and **knife on the bus** folds
+rebuild it as one converter taking both channels in turn onto a 16-wire bus into
+an R-2R ladder.
+
+- **Converter:**
+  - **SAR:** resolves one bit per comparator decision, and the comparator slows
+    as the board's supply sags. Bits it has no time for keep the last word, so a
+    starved toy turns the crusher coarse while it browns out.
+  - **μ-law:** the telephone curve. A knife on a top wire jumps the level by
+    octaves.
+  - **ADPCM:** four-bit steps to a decoder that tracks the signal. A bad word
+    drifts it until the next block header, 505 words later.
+  - **delta:** one bit up or down. **Bits** sets the step; at 12 bits the
+    converter cannot follow the board and loses its top end.
+- **Sample clock:** **toy RC** runs off the toy's rail, so the crush rate dives
+  with a starve and stops while the toy reboots. The **crush clock** mic jack
+  takes one sample per cycle of your voice.
+- **Ladder mismatch:** the top rung comes out short, so every zero crossing
+  steps backwards, and the board's heat widens every rung's error.
+- **DAC reference:** multiplies every code by the rail, the toy, the mic or the
+  crusher's own input.
+- **Logic gate:** combines each word with another machine's word by XOR, AND or
+  OR.
+- **Knife on the bus:** both channels share the wires. A cut pin drags after its
+  neighbour's edges, the loudest fault on audio words: D15 cut moves the take
+  3.6×, D15 to a rail 2.3×.
+
 ## Effects and pedals
 
 - **Brake + supply drag:** the tape delay's capstan as a weighted motor. Echoes
