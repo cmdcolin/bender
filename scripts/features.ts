@@ -101,6 +101,7 @@ const SCRIPTS: Record<string, string> = {
   check: 'lint, typecheck and the changed tests, for the edit loop',
   'blog:draft': 'drafts a blog post from the feat commits since the last one',
   'sync:check': 'compare the regions shared with videoskillet',
+  toy: 'writes the hardwired toy board: schematic sheets, KiCad netlist, BOM and ROM images',
   lint: 'oxlint, type-aware',
   'lint:fix': 'oxlint, fixing what it can',
   format: 'oxfmt, and prettier for .astro',

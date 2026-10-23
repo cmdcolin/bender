@@ -1916,7 +1916,7 @@ back.
 ## Scripts
 
 <details>
-<summary>45 commands</summary>
+<summary>46 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1947,6 +1947,7 @@ back.
 | `pnpm knife`         | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                |
 | `pnpm panel`         | what the panel costs the browser per frame, in a real Chrome                                                                                                                           |
 | `pnpm soak`          | whether any stage gets slower the longer it runs                                                                                                                                       |
+| `pnpm toy`           | writes the hardwired toy board: schematic sheets, KiCad netlist, BOM and ROM images                                                                                                    |
 | `pnpm spectrum`      | sweeps every wire and fault on every bus and reports what each sounds like, by frequency                                                                                               |
 | `pnpm preview`       | serves the built bundle                                                                                                                                                                |
 | `pnpm test`          | the suite without the sixteen slowest files, with a two-second torture test that pins every feedback past unity at once, and the panel in jsdom                                        |
