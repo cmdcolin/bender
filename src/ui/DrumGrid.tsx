@@ -89,26 +89,21 @@ const NEXT: Record<StepState, StepState> = {
 // whatever you had drawn, and an afternoon of writing a pattern is not a thing
 // a mis-aimed click gets to take. Written straight rather than travelled to —
 // a pattern is sixteen bits, and there is nothing between two of them.
-const load = (r: DrumRom) => {
-  engine.armStep()
-  engine.writeBoard({ ...engine.controls.get(), ...r.masks })
-}
+const load = (r: DrumRom) => engine.writePattern(r.masks)
 
 // The moves land the same way a ROM does, and for the same reason: one entry
 // in the walk, so a fill you don't like is one ctrl+z away from the bar you
 // spent the afternoon on.
 const play = (move: DrumMove, back: boolean) => {
   const board = engine.controls.get()
-  engine.armStep()
-  engine.writeBoard({
-    ...board,
-    ...move.play({
+  engine.writePattern(
+    move.play({
       masks: masksOf(board),
       lens: board,
       rand: Math.random,
       back,
     }),
-  })
+  )
 }
 
 const throwIt = (clear: boolean) => {

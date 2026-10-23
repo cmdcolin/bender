@@ -71,8 +71,9 @@ go:
 **land** beside the morph picker holds whole-board changes for the kit's
 downbeat. Set it to **4 bars**, for example, and while the kit runs:
 
-- Presets, random, mutate, reset and the named cuts land on the downbeat that
-  starts the next four bars. A morph sets off early so it arrives there
+- Presets, random, mutate, reset, the named cuts, the beats buttons, the moves
+  and the memory slots land on the downbeat that starts the next four bars. A
+  morph sets off early so it arrives there
 - Drift moves one stage a leg and lands each leg on a downbeat
 - The button counts down the bars; press it to call the change off
 

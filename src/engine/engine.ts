@@ -86,11 +86,12 @@ const DRIFT_TAP_S = 2.5
 const QUEUE_LEAD_MS = 6
 const QUEUE_WAKE_MS = 40
 
+const QUEUE_SLOTS = ['board', 'pattern'] as const
+type QueueSlot = (typeof QUEUE_SLOTS)[number]
+
 interface Queued {
-  target: () => Controls
+  land: () => void
   seconds: number
-  forceKeys?: ReadonlySet<ControlKey>
-  bank: boolean
   tick: number
   after?: () => void
 }
@@ -523,8 +524,11 @@ export class Engine {
   private readonly soundHold = new Float32Array(MAX_SOURCES)
 
   private driftTimer: ReturnType<typeof setTimeout> | undefined
-  private queued: Queued | null = null
-  private queueTimer: ReturnType<typeof setTimeout> | undefined
+  private readonly queued = new Map<QueueSlot, Queued>()
+  private readonly queueTimers = new Map<
+    QueueSlot,
+    ReturnType<typeof setTimeout>
+  >()
   private driftTap: ReturnType<typeof setInterval> | undefined
   // Where a drift has been, a snapshot every DRIFT_TAP_S, newest last.
   private driftTrail: Controls[] = []
@@ -783,15 +787,18 @@ export class Engine {
   // to land on the next downbeat of the run, and banks when it sets off.
   morphTo(target: Controls, seconds = 1, forceKeys?: ReadonlySet<ControlKey>) {
     this.stopHunt()
-    if (this.queue({ target: () => target, seconds, forceKeys, bank: true }))
-      return
+    const land = () => {
+      this.bank()
+      this.travel(target, seconds, forceKeys)
+    }
+    if (this.queue('board', { land, seconds })) return
     this.morphNow(target, seconds, forceKeys)
   }
 
   /** A whole-board change that sets off at once, phrase lock or not. */
   morphNow(target: Controls, seconds = 1, forceKeys?: ReadonlySet<ControlKey>) {
     this.stopHunt()
-    this.cancelQueue()
+    this.cancelQueue('board')
     this.bank()
     this.travel(target, seconds, forceKeys)
   }
@@ -811,9 +818,11 @@ export class Engine {
     return (this.phraseLock.get() * STEPS * this.meter.get().drumStepMs) / 1000
   }
 
-  // A change replacing one still waiting keeps the drift chained to it, so a
-  // preset pressed mid-drift lands and the drift carries on from there.
-  private queue(q: Omit<Queued, 'tick'>): boolean {
+  // One change waits in each slot: a board in one, a pattern in the other, so a
+  // preset and a pattern pressed in the same bar land on the same downbeat. A
+  // board replacing one still waiting keeps the drift chained to it, so a preset
+  // pressed mid-drift lands and the drift carries on from there.
+  private queue(slot: QueueSlot, q: Omit<Queued, 'tick'>): boolean {
     if (!this.drumsPlaying.get()) return false
     const tick = landingTick(
       this.counterReport(),
@@ -821,54 +830,67 @@ export class Engine {
       q.seconds,
     )
     if (tick === null) return false
-    const after = q.after ?? this.queued?.after
-    this.cancelQueue()
-    this.queued = { ...q, after, tick }
-    this.waiting.set({ tick })
+    const after = q.after ?? this.queued.get(slot)?.after
+    this.cancelQueue(slot)
+    this.queued.set(slot, { ...q, after, tick })
+    this.showWaiting()
     this.checkQueue()
     return true
   }
 
-  private checkQueue() {
-    const q = this.queued
-    if (!q || this.queueTimer !== undefined) return
-    if (!this.drumsPlaying.get()) {
-      this.fireQueue()
-      return
-    }
-    const r = this.counterReport()
-    const run = this.phraseLock.get() * STEPS
-    const lead = msUntilTick(q.tick, r) - q.seconds * 1000 - QUEUE_LEAD_MS
-    // A reboot or a restart put the counter back on zero, and the downbeat it
-    // was waiting for is a lap away.
-    if (run > 0 && lead > run * r.stepMs + 50) {
-      const tick = landingTick(r, this.phraseLock.get(), q.seconds)
-      if (tick !== null && tick !== q.tick) {
-        q.tick = tick
-        this.waiting.set({ tick })
-      }
-      return
-    }
-    if (lead < QUEUE_WAKE_MS)
-      this.queueTimer = setTimeout(() => this.fireQueue(), Math.max(lead, 0))
+  private showWaiting() {
+    const ticks = [...this.queued.values()].map(q => q.tick)
+    const next = ticks.length ? { tick: Math.min(...ticks) } : null
+    if (next?.tick !== this.waiting.get()?.tick) this.waiting.set(next)
   }
 
-  private fireQueue() {
-    const q = this.queued
-    this.cancelQueue()
+  private checkQueue() {
+    for (const slot of QUEUE_SLOTS) {
+      const q = this.queued.get(slot)
+      if (!q || this.queueTimers.has(slot)) continue
+      if (!this.drumsPlaying.get()) {
+        this.fireQueue(slot)
+        continue
+      }
+      const r = this.counterReport()
+      const run = this.phraseLock.get() * STEPS
+      const lead = msUntilTick(q.tick, r) - q.seconds * 1000 - QUEUE_LEAD_MS
+      // A reboot or a restart put the counter back on zero, and the downbeat it
+      // was waiting for is a lap away.
+      if (run > 0 && lead > run * r.stepMs + 50) {
+        const tick = landingTick(r, this.phraseLock.get(), q.seconds)
+        if (tick !== null && tick !== q.tick) {
+          q.tick = tick
+          this.showWaiting()
+        }
+        continue
+      }
+      if (lead < QUEUE_WAKE_MS)
+        this.queueTimers.set(
+          slot,
+          setTimeout(() => this.fireQueue(slot), Math.max(lead, 0)),
+        )
+    }
+  }
+
+  private fireQueue(slot: QueueSlot) {
+    const q = this.queued.get(slot)
+    this.cancelQueue(slot)
     if (!q) return
     this.armed = null
-    if (q.bank) this.bank()
-    this.travel(q.target(), q.seconds, q.forceKeys)
-    if (q.seconds <= 0) this.flush()
+    q.land()
+    this.flush()
     q.after?.()
   }
 
-  private cancelQueue() {
-    if (this.queueTimer !== undefined) clearTimeout(this.queueTimer)
-    this.queueTimer = undefined
-    this.queued = null
-    if (this.waiting.get() !== null) this.waiting.set(null)
+  private cancelQueue(slot?: QueueSlot) {
+    for (const s of slot ? [slot] : QUEUE_SLOTS) {
+      const timer = this.queueTimers.get(s)
+      if (timer !== undefined) clearTimeout(timer)
+      this.queueTimers.delete(s)
+      this.queued.delete(s)
+    }
+    this.showWaiting()
   }
 
   // Audition a row of boards and keep the one nearest the edge of running away.
@@ -942,11 +964,11 @@ export class Engine {
     const leg = () => {
       this.driftTimer = undefined
       this.armed = null
+      const seconds = this.phraseSeconds() * 0.85
       if (
-        this.queue({
-          target: next,
-          seconds: this.phraseSeconds() * 0.85,
-          bank: false,
+        this.queue('board', {
+          land: () => this.travel(next(), seconds),
+          seconds,
           after: leg,
         })
       )
@@ -959,7 +981,7 @@ export class Engine {
 
   stopDrift() {
     if (this.driftTimer !== undefined) clearTimeout(this.driftTimer)
-    if (this.queued?.after) this.cancelQueue()
+    if (this.queued.get('board')?.after) this.cancelQueue('board')
     if (this.driftTap !== undefined) clearInterval(this.driftTap)
     this.driftTimer = undefined
     this.driftTap = undefined
@@ -1061,9 +1083,17 @@ export class Engine {
   // mean to load is one ctrl+z away from the pattern it replaced.
   loadDrumSlot(i: number) {
     const patch = this.drumSlots.get()[i]
-    if (!patch) return
-    this.armStep()
-    this.writeBoard({ ...this.controls.get(), ...patch })
+    if (patch) this.writePattern(patch)
+  }
+
+  /** A new pattern over the board as it stands, on the next downbeat of the
+      phrase lock while the kit runs, else at once. One entry in the walk. */
+  writePattern(patch: Partial<Controls>) {
+    const land = () => {
+      this.armStep()
+      this.writeBoard({ ...this.controls.get(), ...patch })
+    }
+    if (!this.queue('pattern', { land, seconds: 0 })) land()
   }
 
   // Travel to a new board over `seconds`, or land in one frame at zero. It sets

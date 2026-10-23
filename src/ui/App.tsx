@@ -154,8 +154,8 @@ function PhraseLockControl() {
     <Tip
       text={
         bars === 0
-          ? 'Presets, random, mutate, reset, cuts and drift set off at once. Pick a run of bars and, while the kit runs, they wait to land on its next downbeat.'
-          : `While the kit runs, presets, random, mutate, reset, cuts and drift wait to land on the next downbeat of ${bars === 1 ? 'a bar' : `${bars} bars`}; a morph sets off early so it arrives there.`
+          ? 'Presets, random, mutate, reset, cuts, drift and the kit’s patterns set off at once. Pick a run of bars and, while the kit runs, they wait to land on its next downbeat.'
+          : `While the kit runs, presets, random, mutate, reset, cuts, drift and the kit’s patterns wait to land on the next downbeat of ${bars === 1 ? 'a bar' : `${bars} bars`}; a morph sets off early so it arrives there.`
       }
     >
       <select
