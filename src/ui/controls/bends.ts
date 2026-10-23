@@ -367,7 +367,7 @@ export const BEND_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Lifts the decoupling cap off pin 7. Supply ripple and the amp’s own current feed back into its input, and past halfway it squeals: high on a full rail, lower as the rail sags, and a low motorboat once Draw loads it.',
+        help: 'Lifts the decoupling cap off pin 7. Supply ripple and the amp’s own current feed back into its input, and from about 0.6 it squeals: high on a full rail, lower as the rail sags, and a low motorboat once Draw loads it.',
       },
       {
         key: 'distBlock',

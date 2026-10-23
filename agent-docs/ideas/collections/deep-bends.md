@@ -2,8 +2,8 @@
 name: deep-bends
 description:
   Ranked rebuilds of the bend slots as circuits on the board's supply, heat and
-  buses — crusher as ADC into R-2R (built), clipper as the toy's LM386, comb as
-  a BBD, glitch as a Discman, shifter as a Bode.
+  buses — crusher as ADC into R-2R (built), clipper as the toy's LM386 (built),
+  comb as a BBD, glitch as a Discman, shifter as a Bode.
 ---
 
 # Deep bends
@@ -14,7 +14,7 @@ crusher, the bend slots read only `ctx.mod`. Each candidate below rebuilds one
 slot as the circuit it imitates, so the board's modelling reaches it. Stock
 stays bit-identical: every new control rests off.
 
-**Built:** item 1; items 2–6 are candidates.
+**Built:** items 1 and 2; items 3–6 are candidates.
 
 ## 1. Crusher → ADC, bus, R-2R DAC (built)
 
@@ -66,14 +66,36 @@ board down into its bass.
 - A separate knife on ADPCM's step table stays unbuilt, because the bus on the
   nibble already gives the accumulating fault.
 
-## 2. Clipper → the toy's LM386 into a speaker on the shared rail
+## 2. Clipper → the toy's LM386 into a speaker (built)
 
-- Headroom follows `railV`. The amp's current loads the rail through
-  `ToyRail.spike` / `reported`, so loud clipping sags the toy's pitch, the level
-  drops, the rail recovers: motorboating.
-- Pin 1–8 gain bend, a bypass pin that oscillates, blocking distortion, the cone
-  bottoming out.
-- The Gnash pedal runs on its own 9 V, so this amp would be a separate stage.
+An LM386 on a Supply selector, into a cone (`src/dsp/stages/clipper.ts`). The
+amp's supply pin charges from its rail and empties into the speaker; Draw pulls
+the rail through `spiking` and `drawing`, a block late. Toy tune, default drive,
+fully wet:
+
+| control              | setting     | measured                          |
+| -------------------- | ----------- | --------------------------------- |
+| Draw, shared cells   | 0.5         | toy −3.2 st, 9 dropouts/s, 96 ms  |
+| Draw, shared cells   | 1           | toy −4.7 st, 12 dropouts/s, 75 ms |
+| (same, drive 30 dB)  |             | toy −7.7 st, 14 dropouts/s, 64 ms |
+| Draw, bench          | 1           | toy 0 st, amp sputters 12/s       |
+| Pins 1–8 gain        | 300× / 600× | sings at 2.7 / 1.3 kHz            |
+| Bypass pin           | 0.7 / 1     | squeals at 8.5 / 3 kHz            |
+| (shared, starve 0.3) | 1           | 1.25 kHz                          |
+| (shared, Draw 0.6)   | 0.8         | 64 Hz motorboat growl             |
+| Blocking             | 1, 200×     | 28% of the take near silent       |
+| Speaker              | 0.5 / 1     | flatness 0.25 / 0.82              |
+
+- Calls made toward the wilder sound: the amp mutes below a quarter of its rail
+  and pops back after pin 7 recharges, rather than browning out smoothly; a
+  saturated output stage draws more as the rail falls, so the loop runs away
+  into a motorboat instead of settling into compression; the amp's bandwidth
+  follows its supply, so every squeal dives with the load; a pinned cone
+  radiates nothing.
+- With current proportional to output alone, the loop found a stable sag at
+  every Draw and never motorboated.
+- Unbuilt: a trigger-bus tie for blocking, since loud transients already charge
+  the cap; the clipper on the map's supply loop.
 
 ## 3. Comb → bucket brigade on an RC clock
 

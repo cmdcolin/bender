@@ -714,6 +714,41 @@ an R-2R ladder.
   neighbour's edges, the loudest fault on audio words: D15 cut moves the take
   3.6×, D15 to a rail 2.3×.
 
+## The clipper's amp
+
+The Clipper's **the amp** fold rebuilds it as the toy's own LM386 on one of the
+board's supplies, into a small speaker. Every control rests off, and the amp
+rests on the bench supply.
+
+- **Supply:** shared cells, second cells or bench. The amp's headroom is its
+  supply pin's voltage, so a starve on its cells makes it clip earlier and
+  quieter, with a crossover gap. Below a quarter of the rail it mutes until pin
+  7 recharges, then pops back in.
+- **Draw:** the current the amp pulls, more when it clips. On the shared cells
+  it sags the toy's rail a block later, the amp mutes, the rail recovers, and
+  the board motorboats with nobody touching it:
+
+  | Draw | toy dives | amp drops out | period    |
+  | ---- | --------- | ------------- | --------- |
+  | 0.25 | 1.8 semis | 2.7 a second  | irregular |
+  | 0.5  | 3.2 semis | 9 a second    | 96 ms     |
+  | 1    | 4.7 semis | 12 a second   | 75 ms     |
+
+  Drive at 30 dB takes the dive to 7.7 semitones. On the bench the amp still
+  sputters on its own and the toy holds pitch.
+
+- **Pins 1–8 gain:** 20× to 600×. Bandwidth falls as the gain rises, and from
+  about 270× the amp oscillates: 2.7 kHz at 300×, 1.3 kHz at 600×.
+- **Bypass pin:** pin 7's cap lifted. The amp squeals at 8.5 kHz at 0.7 and 3
+  kHz at 1 on a full supply, lower as its supply sags (1.25 kHz on a starved
+  rail), and with Draw up it motorboats at 40–90 Hz instead. The **clip bypass**
+  mic jack feeds your voice in through the supply.
+- **Blocking:** hard clipping charges the output coupling cap, which biases the
+  amp shut, so it chokes after each loud hit and sputters back.
+- **Speaker:** a cone whose resonance climbs from 120 Hz to 960 Hz as it
+  shrinks. Its output follows the cone's acceleration, so a cone pinned at its
+  stop goes silent, and each slam clicks and rattles.
+
 ## Effects and pedals
 
 - **Brake + supply drag:** the tape delay's capstan as a weighted motor. Echoes
