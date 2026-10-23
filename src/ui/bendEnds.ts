@@ -280,6 +280,11 @@ export const BEND_ENDS: Partial<
   four4Pan: [2.5, null],
   crushMix: [null, 0],
   crushLadder: [-0.5, -2.5],
+  distDraw: [null, -11],
+  distPinGain: [null, 2.5],
+  distBypass: [-0.5, 2],
+  distBlock: [null, -7],
+  distSpeaker: [0.5, -7],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */
