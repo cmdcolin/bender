@@ -956,7 +956,7 @@ test('a pedal with its face on the bench says so on its box and the others do no
 })
 
 test('the panel palette matches the tokens it copies', () => {
-  const css = ['node_modules/skillet-shared/src/tokens.css', 'src/theme.css']
+  const css = ['node_modules/skillet-shared/dist/tokens.css', 'src/theme.css']
     .map(f => readFileSync(f, 'utf8'))
     .join('\n')
   const token = (name: string) =>
