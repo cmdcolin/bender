@@ -243,9 +243,9 @@ crusher, and the one after can leave both alone.
 - Wire the phrase onto another wire's depth, and a fast LFO on that wire grows
   over the phrase
 
-**ADSR** is an envelope a held key or a kit hit opens. **Attack** is how long
-it takes to climb, **decay** how long it takes to fall to the **sustain**
-level, and **release** how long it takes to die once the gate shuts:
+**ADSR** is an envelope a held key or a kit hit opens. **Attack** is how long it
+takes to climb, **decay** how long it takes to fall to the **sustain** level,
+and **release** how long it takes to die once the gate shuts:
 
 - Off the kick with sustain at zero and a short decay, it pumps whatever the
   wire lands on

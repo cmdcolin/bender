@@ -24,28 +24,31 @@ questions, made without asking.
 - `src/ui/bendEnvelope.ts`: the bend keys' envelopes (snap, swell, riser, pluck,
   wobble), which `holdBend` and `letGoBend` in `src/ui/bendKeys.ts` run
 - `euclidMask` in `src/drums.ts`: the grid's hits column
+- `src/engine/phraseClock.ts` and `queue` in `src/engine/engine.ts`: the land
+  lock, which holds board and pattern changes for the kit's downbeat
+- `runEnv` in `src/dsp/modbus.ts` and `src/dsp/util/adsr.ts`: the bay's ADSR;
+  the worklet writes the held keys into `TriggerBus.keysDown`
+- `STEP_CONDS` and `stepCondPlays` in `src/drums.ts`: the cond row, which
+  `drumFill` (the F button) gates
 
 ## Unverified
 
 - Nobody has listened to any of it. Offline renders and tests measure the
-  faults, the conditions, the pump and the phrase, but nobody has judged how
-  they sound.
+  faults, the conditions, the pump, the phrase and the ADSR, but nobody has
+  judged how they sound.
 - The owner asked for bends that climb and move over seconds while the beat runs
-  faster, and suggested ADSR. The phrase source and the bend envelopes are the
-  answer so far, and the owner has not tried them yet.
+  faster, and suggested ADSR. The phrase source, the bend envelopes and the
+  bay's ADSR are the answer so far, and the owner has not tried them yet.
 
 ## Next, in order
 
-1. **Phrase-locked changes.** Quantize drift, morph and named cuts to 8- or
-   16-bar boundaries, and let drift touch one heading at a time. The phrase
-   source already counts the bars (`modPhraseBars`).
-   `agent-docs/ideas/waiting-on-a-call/knob-automation.md` covers recorded
-   sweeps.
-2. **An ADSR on the bay.** A source gated by a kit voice or a held key, with
-   times in beats. The trigger bus marks a key only on the sample it strikes
-   (`TriggerBus.keyHeld` too), so a key gate needs a held level first.
-3. **Per-step conditions.** The voice rows have one condition a row; a groovebox
-   has one a step, and "only after the previous step fired".
+1. **Pattern chains.** The memory slots switch on the land lock's downbeat; a
+   chain would play slot 1 for so many bars, then slot 2, as a groovebox song
+   mode does.
+2. **A key for the fill.** All thirty letters have a job, so F is a button only.
+   A MIDI note or a modifier on a throw key would free the hands.
+3. **Recorded sweeps.** `agent-docs/ideas/waiting-on-a-call/knob-automation.md`
+   covers knob motion recorded onto the bar.
 
 ## Loose ends
 
@@ -61,3 +64,7 @@ questions, made without asking.
   on the downbeat when it starts.
 - The bend envelopes run on animation frames, so they stall in a hidden tab. The
   grid's bend row ignores them and holds each key for its step.
+- `bender.drums()` reads and writes no text form for the cond row; agents set
+  `drumStepCond0` to `drumStepCond15` by name.
+- A morph that arrives on the downbeat sets every pattern mask the preset names
+  as it lands, so a pattern queued for the same downbeat can lose to it.
