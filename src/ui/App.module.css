@@ -1,6 +1,25 @@
 .app {
   display: flex;
+  flex-direction: column;
   height: 100%;
+}
+
+.bar {
+  --verb-w: 56px;
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-ctl);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
 }
 
 .left {
@@ -57,35 +76,16 @@
   flex: none;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: 0 var(--space-lg) var(--space-md);
+  padding: var(--space-xs) var(--space-lg) var(--space-md);
   border-left: 1px solid var(--border);
   background: var(--surface);
-}
-
-.chrome {
-  --verb-w: 56px;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  margin: 0 -12px;
-  padding: var(--space-md) var(--space-lg) 0;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border-quiet);
-}
-
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--gap-ctl);
-  padding-bottom: var(--space-sm);
 }
 
 .nameplate {
   display: flex;
   align-items: baseline;
   gap: var(--space-sm);
-  margin-right: auto;
+  margin-right: var(--space-sm);
   padding: 0;
   background: none;
   border: none;
@@ -115,12 +115,16 @@
   composes: actionQuiet from './button.module.css';
 }
 
-.actions {
+.actions,
+.settings {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gap-ctl);
-  padding-bottom: var(--space-sm);
+}
+
+.settings {
+  margin-left: auto;
 }
 
 .btn {
@@ -262,8 +266,13 @@
 
 @media (max-width: 760px) {
   .app {
-    flex-direction: column;
     height: auto;
+  }
+  .bar {
+    --verb-w: 0;
+  }
+  .body {
+    flex-direction: column;
   }
   .left {
     overflow: visible;

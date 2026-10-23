@@ -43,6 +43,7 @@ import {
   setPhraseLock,
   type MorphSeconds,
 } from './morph.ts'
+import { read, write } from './persist.ts'
 import { PinnedStrip } from './PinnedStrip.tsx'
 import { Presets } from './PresetRow.tsx'
 import { mutate, presetNameFor } from './presets/index.ts'
@@ -63,6 +64,8 @@ import { useSavedVoices, type VoiceFlash } from './useSavedVoices.ts'
 import { useSyncedPrefs } from './useSyncedPrefs.ts'
 import { suggestVoiceName, type SavedVoice } from './voiceModel.ts'
 import { WhySignInDialog } from './WhySignInDialog.tsx'
+
+const PRESETS_KEY = 'bender.presetsShown'
 
 const MUTATE_HELP =
   'Keeps this board and nudges the controls of the stages on it a little way off where they sit. The tempo stays put and the timed things land back on the grid — shift for a wild nudge, alt for a gentle one.'
@@ -418,6 +421,13 @@ export function App(props: { openedFromLink?: boolean }) {
   const [showAbout, setShowAbout] = useState(false)
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
   const [showMidi, setShowMidi] = useState(false)
+  const [presetsShown, setPresetsShown] = useState(
+    () => read(PRESETS_KEY) === '1',
+  )
+  const showPresets = (shown: boolean) => {
+    setPresetsShown(shown)
+    write(PRESETS_KEY, shown ? '1' : '0')
+  }
 
   const lib = useSavedVoices()
   const libUid = lib.user?.uid ?? null
@@ -516,140 +526,155 @@ export function App(props: { openedFromLink?: boolean }) {
       }}
       onDrop={onDrop}
     >
-      <main className={styles.left}>
-        <div className={styles.top}>
-          <div className={styles.scope}>
-            <Scope />
-            {fault !== '' ? (
-              <p className={styles.hint} role="alert">
-                <b className={styles.warn}>{fault}</b>
-              </p>
-            ) : !running ? (
-              <p className={styles.hint}>
-                <b className={styles.warn}>
-                  click anywhere to power on — loud, harsh noise ahead, start
-                  with your volume low.
-                </b>
-              </p>
-            ) : sampleError !== '' ? (
-              <p className={styles.hint} role="alert">
-                <b className={styles.warn}>{sampleError}</b>
-              </p>
-            ) : null}
-          </div>
-          <Recorder />
-        </div>
-        <PinnedStrip />
-        <Instruments seconds={morphSeconds} onOpen={show} />
-        <BodyPad onOpen={show} />
-      </main>
-
-      <aside className={styles.panel} aria-label="the board">
-        <div className={styles.chrome}>
-          <div className={styles.head}>
-            <Tip text="What this is, where the docs and the source are, and which build you are on.">
-              <button
-                className={styles.nameplate}
-                onClick={() => setShowAbout(true)}
-              >
-                <span className={styles.brand}>bender</span>
-                <span className={styles.version}>{versionLabel}</span>
-              </button>
-            </Tip>
-            <MorphControl
-              seconds={morphSeconds}
-              drifting={drifting}
-              onSet={setMorph}
-            />
-            <PhraseLockControl />
-            <MidiPanel
-              open={showMidi}
-              onToggle={() => setShowMidi(o => !o)}
-              onClose={() => setShowMidi(false)}
-            />
-            <ShareButton onCopy={() => copyLink(boardQuery())} />
-            <SavedVoices
-              voices={lib.voices}
-              recent={lib.recent}
-              onRecallSession={s => morphToQuery(s.query)}
-              onOpenSession={s => {
-                window.location.hash = s.query
-              }}
-              suggestName={suggestName}
-              onSave={name => lib.saveVoice(name, boardQuery())}
-              onRecall={recall}
-              onOpen={openVoice}
-              onDelete={lib.deleteVoice}
-              onCopyLink={voice => copyLink(voice.query)}
-              flash={lib.flash}
-              status={lib.status}
-              error={lib.error}
-            />
-            <Account
-              user={lib.user}
-              status={lib.status}
-              onSignIn={lib.signIn}
-              onSignOut={lib.signOut}
-            />
-            <AppMenu
-              signedIn={signedIn}
-              coarse={coarse}
-              onWhy={() => setWhy({ pending: null })}
-              onMidi={() => setShowMidi(true)}
-            />
-          </div>
-
-          <BoardVerbs
+      <header className={styles.bar}>
+        <Tip text="What this is, where the docs and the source are, and which build you are on.">
+          <button
+            className={styles.nameplate}
+            onClick={() => setShowAbout(true)}
+          >
+            <span className={styles.brand}>bender</span>
+            <span className={styles.version}>{versionLabel}</span>
+          </button>
+        </Tip>
+        <BoardVerbs
+          seconds={morphSeconds}
+          drifting={drifting}
+          saveFlash={lib.flash?.kind}
+          signedIn={signedIn}
+          onLanded={setLanded}
+          onSave={askSave}
+        />
+        <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
+          <button
+            className={presetsShown ? styles.btnOn : styles.btnQuiet}
+            aria-pressed={presetsShown}
+            onClick={() => showPresets(!presetsShown)}
+          >
+            presets
+          </button>
+        </Tip>
+        <div className={styles.settings}>
+          <MorphControl
             seconds={morphSeconds}
             drifting={drifting}
-            saveFlash={lib.flash?.kind}
+            onSet={setMorph}
+          />
+          <PhraseLockControl />
+          <MidiPanel
+            open={showMidi}
+            onToggle={() => setShowMidi(o => !o)}
+            onClose={() => setShowMidi(false)}
+          />
+          <ShareButton onCopy={() => copyLink(boardQuery())} />
+          <SavedVoices
+            voices={lib.voices}
+            recent={lib.recent}
+            onRecallSession={s => morphToQuery(s.query)}
+            onOpenSession={s => {
+              window.location.hash = s.query
+            }}
+            suggestName={suggestName}
+            onSave={name => lib.saveVoice(name, boardQuery())}
+            onRecall={recall}
+            onOpen={openVoice}
+            onDelete={lib.deleteVoice}
+            onCopyLink={voice => copyLink(voice.query)}
+            flash={lib.flash}
+            status={lib.status}
+            error={lib.error}
+          />
+          <Account
+            user={lib.user}
+            status={lib.status}
+            onSignIn={lib.signIn}
+            onSignOut={lib.signOut}
+          />
+          <AppMenu
             signedIn={signedIn}
-            onLanded={setLanded}
-            onSave={askSave}
+            coarse={coarse}
+            onWhy={() => setWhy({ pending: null })}
+            onMidi={() => setShowMidi(true)}
           />
         </div>
+      </header>
 
-        <HuntDialog landed={landed} onDismiss={dismissLanded} />
+      <div className={styles.body}>
+        <main className={styles.left}>
+          {presetsShown && (
+            <Presets
+              morphSeconds={morphSeconds}
+              onClose={() => showPresets(false)}
+            />
+          )}
+          <div className={styles.top}>
+            <div className={styles.scope}>
+              <Scope />
+              {fault !== '' ? (
+                <p className={styles.hint} role="alert">
+                  <b className={styles.warn}>{fault}</b>
+                </p>
+              ) : !running ? (
+                <p className={styles.hint}>
+                  <b className={styles.warn}>
+                    click anywhere to power on — loud, harsh noise ahead, start
+                    with your volume low.
+                  </b>
+                </p>
+              ) : sampleError !== '' ? (
+                <p className={styles.hint} role="alert">
+                  <b className={styles.warn}>{sampleError}</b>
+                </p>
+              ) : null}
+            </div>
+            <Recorder />
+          </div>
+          <PinnedStrip />
+          <Instruments seconds={morphSeconds} onOpen={show} />
+          <BodyPad onOpen={show} />
+        </main>
 
-        {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
+        <aside className={styles.panel} aria-label="the board">
+          <HuntDialog landed={landed} onDismiss={dismissLanded} />
 
-        {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
+          {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
 
-        {remapping && <KeysDialog onClose={() => remapOpen.set(false)} />}
+          {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
 
-        {why && (
-          <WhySignInDialog
-            pendingName={why.pending}
-            onClose={() => {
-              setWhy(null)
-              lib.dropPending()
-            }}
-            onSignIn={() => {
-              setWhy(null)
-              lib.signIn()
-            }}
-            onCopyLink={() => copyLink(boardQuery())}
-          />
-        )}
+          {remapping && <KeysDialog onClose={() => remapOpen.set(false)} />}
 
-        <Presets morphSeconds={morphSeconds} folded />
-        {listed ? (
-          <StageList seconds={morphSeconds} />
-        ) : (
-          <>
-            <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
-            {openGroup ? (
-              <OpenGroup
-                group={openGroup}
-                onClose={() => setOpen(null)}
-                seconds={morphSeconds}
-              />
-            ) : (
-              <PathHint />
-            )}
-          </>
-        )}
-      </aside>
+          {why && (
+            <WhySignInDialog
+              pendingName={why.pending}
+              onClose={() => {
+                setWhy(null)
+                lib.dropPending()
+              }}
+              onSignIn={() => {
+                setWhy(null)
+                lib.signIn()
+              }}
+              onCopyLink={() => copyLink(boardQuery())}
+            />
+          )}
+
+          {listed ? (
+            <StageList seconds={morphSeconds} />
+          ) : (
+            <>
+              <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
+              {openGroup ? (
+                <OpenGroup
+                  group={openGroup}
+                  onClose={() => setOpen(null)}
+                  seconds={morphSeconds}
+                />
+              ) : (
+                <PathHint />
+              )}
+            </>
+          )}
+        </aside>
+      </div>
     </div>
   )
 }

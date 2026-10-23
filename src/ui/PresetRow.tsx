@@ -165,10 +165,9 @@ function PresetChip(props: {
 // arrive at the same row.
 export function Presets(props: {
   morphSeconds: MorphSeconds
-  folded?: boolean
+  onClose?: () => void
 }) {
   const [scrub, setScrub] = useState<Scrub | null>(null)
-  const [shelf, setShelf] = useState(!props.folded)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const collapsed = useCoarse() ? COLLAPSED_COARSE : COLLAPSED
@@ -191,40 +190,28 @@ export function Presets(props: {
       : undefined
   const rest = PRESETS.length - shown.length - (stray ? 1 : 0)
 
-  if (!shelf && held === null)
-    return (
-      <section className={styles.shelfShut} aria-label="presets">
-        <span className={styles.rowLabel}>presets</span>
-        <button className={styles.more} onClick={() => setShelf(true)}>
-          show
-        </button>
-      </section>
-    )
-
   return (
     <section
-      className={props.folded ? styles.shelf : styles.section}
+      className={props.onClose ? styles.strip : styles.section}
       aria-label="presets"
     >
-      {/* A heading, because the row had none and needed one more than anything
-          else on the panel did. Fifty-one named boards is one of the two ways
-          the board arrives, and unlabelled — in the same chip the MIDI switches
-          and the stage verbs wear, directly under two rows of randomisers — it
-          read as more randomisers.
-
-          The drag is on the heading rather than on the chips: it is the best
-          thing the row does and it lived in a tooltip, so nobody found it, and
-          fifty-one chips is the wrong place to say a thing once. */}
       <div className={styles.head}>
-        <span className={props.folded ? styles.rowLabel : styles.title}>
+        <span className={props.onClose ? styles.rowLabel : styles.title}>
           presets
         </span>
+        <input
+          className={styles.filter}
+          type="search"
+          aria-label="find a preset"
+          placeholder="find: a name, a word, or a stage like wraith"
+          value={query}
+          onChange={e => setQuery(e.currentTarget.value)}
+          onKeyDown={e => {
+            if (e.key === 'Escape') setQuery('')
+            e.stopPropagation()
+          }}
+        />
         <span className={styles.hint}>drag one sideways to stop part way</span>
-        {props.folded && (
-          <button className={styles.more} onClick={() => setShelf(false)}>
-            ✕
-          </button>
-        )}
         {!query.trim() && (
           <button
             className={styles.more}
@@ -234,19 +221,16 @@ export function Presets(props: {
             {open ? 'hide' : `show ${rest} more`}
           </button>
         )}
+        {props.onClose && (
+          <button
+            className={styles.more}
+            aria-label="close presets"
+            onClick={props.onClose}
+          >
+            ✕
+          </button>
+        )}
       </div>
-      <input
-        className={styles.filter}
-        type="search"
-        aria-label="find a preset"
-        placeholder="find: a name, a word, or a stage like wraith"
-        value={query}
-        onChange={e => setQuery(e.currentTarget.value)}
-        onKeyDown={e => {
-          if (e.key === 'Escape') setQuery('')
-          e.stopPropagation()
-        }}
-      />
       <div className={styles.presets}>
         {[...shown, ...(stray ? [stray] : [])].map(p => (
           <PresetChip

@@ -185,7 +185,7 @@ test('the take-off menu lists the stages on the board and takes one off', async 
   })
   await act(() => new Promise(r => setTimeout(r, 150)))
   expect(doorsOnMap().has('Ring mod')).toBe(true)
-  fireEvent.click(screen.getByRole('button', { name: '− take off a stage' }))
+  fireEvent.click(screen.getByRole('button', { name: '− take off' }))
   expect(screen.queryByRole('menuitem', { name: 'Mix bus' })).toBeNull()
   expect(screen.queryByRole('menuitem', { name: 'Output' })).toBeNull()
   fireEvent.click(screen.getByRole('menuitem', { name: 'Ring mod' }))

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { beforeAll, expect, test } from 'vitest'
+import { beforeAll, expect, test, vi } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
 import { Presets } from './PresetRow.tsx'
@@ -238,11 +238,11 @@ test('the chip you are standing on survives the fold', () => {
   )
 })
 
-test('a folded shelf shows one chip until opened', () => {
-  render(<Presets morphSeconds={0} folded />)
-  expect(screen.getAllByRole('button')).toHaveLength(1)
-  fireEvent.click(screen.getByRole('button', { name: 'show' }))
-  expect(screen.getAllByRole('button').length).toBeGreaterThan(12)
+test('the strip closes on its ✕', () => {
+  const onClose = vi.fn()
+  render(<Presets morphSeconds={0} onClose={onClose} />)
+  fireEvent.click(screen.getByRole('button', { name: 'close presets' }))
+  expect(onClose).toHaveBeenCalledOnce()
 })
 
 test('the find field narrows the row to matching presets', () => {

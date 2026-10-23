@@ -25,6 +25,7 @@ import { aimAt } from './reveal.ts'
 import { SettingFind } from './SettingFind.tsx'
 import { Shelf } from './Shelf.tsx'
 import { formerName } from './stageNames.ts'
+import { Tip } from './Tip.tsx'
 import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 import { watchTriggers } from './triggerWatch.ts'
 
@@ -176,13 +177,22 @@ export function ChainMap({
         seconds={seconds}
       >
         {open !== null && !coarse && (
-          <button
-            className={styles.add}
-            aria-pressed={folded}
-            onClick={() => foldMap(!folded)}
+          <Tip
+            text={
+              folded
+                ? 'Show the map again.'
+                : 'Fold the map to a row of stages.'
+            }
           >
-            {folded ? '▾ show the map' : '▴ fold the map'}
-          </button>
+            <button
+              className={styles.add}
+              aria-label={folded ? 'show the map' : 'fold the map'}
+              aria-pressed={folded}
+              onClick={() => foldMap(!folded)}
+            >
+              {folded ? '▾' : '▴'}
+            </button>
+          </Tip>
         )}
       </StageBar>
     </div>
@@ -206,35 +216,33 @@ export function StageBar({
 }) {
   const listed = useStoreValue(listView)
   return (
-    <>
-      <div className={styles.addRow}>
-        <ToggleButtonGroup
-          label="stage view"
-          options={VIEWS}
-          value={listed ? 'all settings' : 'diagram'}
-          onChange={view => setListView(view === 'all settings')}
-        />
-        {children}
-        <StageMenu
-          groups={off}
-          button="+ add a stage"
-          label="add a stage"
-          former
-          onPick={onOpen}
-        />
-        <StageMenu
-          groups={on.filter(g => removable(g.name))}
-          button="− take off a stage"
-          label="take off a stage"
-          onPick={name => {
-            const group = GROUP_BY_NAME.get(name)!
-            engine.morphTo(takeOff(group, engine.controls.get()), seconds)
-            if (open === name) onOpen(name)
-          }}
-        />
-      </div>
+    <div className={styles.addRow}>
+      <ToggleButtonGroup
+        label="stage view"
+        options={VIEWS}
+        value={listed ? 'all settings' : 'diagram'}
+        onChange={view => setListView(view === 'all settings')}
+      />
+      {children}
+      <StageMenu
+        groups={off}
+        button="+ add a stage"
+        label="add a stage"
+        former
+        onPick={onOpen}
+      />
+      <StageMenu
+        groups={on.filter(g => removable(g.name))}
+        button="− take off"
+        label="take off a stage"
+        onPick={name => {
+          const group = GROUP_BY_NAME.get(name)!
+          engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+          if (open === name) onOpen(name)
+        }}
+      />
       <SettingFind groups={on} open={open} onOpen={onOpen} />
-    </>
+    </div>
   )
 }
 

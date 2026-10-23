@@ -632,7 +632,7 @@ test('the map folds to a row of stages while one is open', () => {
   const map = () =>
     document.querySelector<HTMLElement>('[aria-label="signal path"]')!
   fireEvent.click(screen.getByRole('button', { name: 'Clatter settings' }))
-  fireEvent.click(screen.getByRole('button', { name: '▴ fold the map' }))
+  fireEvent.click(screen.getByRole('button', { name: 'fold the map' }))
   expect(map().hidden).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: /^Plinky$/ }))
   expect(screen.getByRole('button', { name: 'close Plinky' })).toBeTruthy()
@@ -640,6 +640,6 @@ test('the map folds to a row of stages while one is open', () => {
   expect(map().hidden).toBe(false)
   fireEvent.click(screen.getByRole('button', { name: 'Clatter settings' }))
   expect(map().hidden).toBe(true)
-  fireEvent.click(screen.getByRole('button', { name: '▾ show the map' }))
+  fireEvent.click(screen.getByRole('button', { name: 'show the map' }))
   expect(map().hidden).toBe(false)
 })

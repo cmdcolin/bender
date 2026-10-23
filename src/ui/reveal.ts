@@ -15,10 +15,8 @@ function scrollParent(el: HTMLElement): HTMLElement | undefined {
   return undefined
 }
 
-// How much of the top of the view a pinned sibling is standing in. The panel's
-// nameplate and verbs stick to the top of its scroll, so the top edge of the
-// view is not where a section becomes visible: aligned to the edge itself, its
-// heading would come to rest underneath them.
+// How much of the top of the view sticky siblings cover, so a section's heading
+// does not come to rest underneath them.
 function pinnedAbove(el: HTMLElement): number {
   const siblings = el.parentElement ? [...el.parentElement.children] : []
   return siblings

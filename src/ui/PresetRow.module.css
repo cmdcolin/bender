@@ -5,17 +5,12 @@
   padding-top: var(--space-xs);
 }
 
-.shelf {
-  padding: 0 var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.shelfShut {
-  padding: 0 var(--space-md);
-  flex-direction: row;
-  align-items: center;
+.strip {
+  flex: none;
+  padding: 0 var(--space-sm);
+  background: var(--surface);
+  border: 1px solid var(--border-quiet);
+  border-radius: var(--ctl-radius);
 }
 
 /* Engraved like the rows of the studio plate it sits on. */
@@ -28,7 +23,8 @@
 
 .head {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-sm);
   padding: var(--space-xs) var(--space-2xs);
   color: var(--fg);
@@ -44,13 +40,14 @@
    down only in a tooltip, on a chip you have to already be pointing at. */
 .hint {
   flex: 1;
+  white-space: nowrap;
   font-size: var(--fs-xs);
   color: var(--fg3);
 }
 
 .filter {
-  width: 100%;
-  margin-bottom: var(--space-xs);
+  flex: 0 1 20rem;
+  min-width: 10rem;
   padding: var(--space-2xs) var(--space-sm);
   font: inherit;
   font-size: var(--fs-xs);

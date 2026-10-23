@@ -1,5 +1,6 @@
 .find {
-  padding-bottom: var(--space-sm);
+  position: relative;
+  flex: 1 1 9rem;
 }
 
 .field {
@@ -19,10 +20,19 @@
 }
 
 .hits {
+  position: absolute;
+  top: calc(100% + var(--space-2xs));
+  right: 0;
+  z-index: 3;
+  width: max(100%, 20rem);
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap-ctl-sm);
-  padding-top: var(--space-xs);
+  padding: var(--space-xs);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+  box-shadow: 0 6px 18px #0008;
 }
 
 .hit {
