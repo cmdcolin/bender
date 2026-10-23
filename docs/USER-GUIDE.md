@@ -47,8 +47,9 @@ Two rows under the grid work like a tracker's effect columns:
   **f** roll faster and faster. The button at the end of the row sets how often
   the row fires: **4:4** fires on the fourth bar of every four
 
-The same five faults play live while the kit runs. Hold a key and the fault
-starts on the kit's next step and lasts until you let go:
+The event row's five faults also play live from the keyboard while the kit runs.
+Hold a key and the fault starts on the kit's next step and lasts until you let
+go:
 
 | key | throw   | fault                                       |
 | --- | ------- | ------------------------------------------- |
