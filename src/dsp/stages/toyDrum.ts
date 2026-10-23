@@ -1582,88 +1582,100 @@ export class ToyDrum implements Stage {
           // the same hiss, so they sum coherently into one crack instead of
           // standing beside each other as two.
           //
-          // Every filter below runs whether or not a voice is open. A cap left
-          // holding the charge of the last hit meets the bank wherever it has
-          // turned to since, and the jump came out as a needle at the front of
-          // every hat and cymbal — crest 12 on a closed hat the 808 plays at 8.
-          const noise = this.noiseLid.process(
-            (this.rng() * 2 - 1) * this.noiseGate,
-            noiseLidCoef,
-          )
-          this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
-          const snareBand = this.snareLid.process(
-            this.snareBand.process(noise, snareHpCoef),
-            snareLpCoef,
-          )
-          if (amp[SNARE]! > AUDIBLE) {
-            const y =
-              snareBand * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
-            out += y
-            if (th & (1 << SNARE)) send += y
+          // A filter runs only while a voice it feeds is open, except the
+          // bank's two bands. Woken with the last hit's charge on them, they
+          // met a sum that had moved since and rang a needle at the front of
+          // the hat, 5 dB over the rest of it.
+          const snareOn = amp[SNARE]! > AUDIBLE
+          const clapOn = amp[CLAP]! > AUDIBLE
+          const hats = amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE
+          const cymOn = amp[CYM]! > AUDIBLE
+          let hatHiss = 0
+          if (snareOn || clapOn || hats) {
+            const noise = this.noiseLid.process(
+              (this.rng() * 2 - 1) * this.noiseGate,
+              noiseLidCoef,
+            )
+            this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
+            hatHiss = noise - this.noiseLp
+            if (snareOn) {
+              const band = this.snareLid.process(
+                this.snareBand.process(noise, snareHpCoef),
+                snareLpCoef,
+              )
+              const y = band * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
+              out += y
+              if (th & (1 << SNARE)) send += y
+            }
+            if (clapOn) {
+              this.clapFast += clapLpCoef * (noise - this.clapFast)
+              this.clapSlow += clapHpCoef * (noise - this.clapSlow)
+              const y =
+                (this.clapFast - this.clapSlow) *
+                amp[CLAP]! *
+                weight[CLAP]! *
+                CLAP_GAIN
+              out += y
+              if (th & (1 << CLAP)) send += y
+            }
           }
-          // One amplifier and one filter for both hats, with the pot between
-          // the bank and the transistor ahead of them: what separates the two
-          // hats is the cap under the amplifier, not what is fed into it.
-          const lo = this.metalLo.process(this.metal.clash, this.metalLoBand)
-          const hi = this.metalHi.process(this.metal.clash, this.metalHiBand)
-          const hat = this.hatLp.process(
-            this.hatHp.process(
-              hi * HAT_METAL * bank +
-                (noise - this.noiseLp) * HAT_NOISE * trans,
-              hatHpCoef,
-            ),
-            hatLpCoef,
-          )
-          if (amp[HAT]! > AUDIBLE) {
-            const y = hat * amp[HAT]! * weight[HAT]!
-            out += y
-            if (th & (1 << HAT)) send += y
-          }
-          if (amp[OHAT]! > AUDIBLE) {
-            const e = Math.max(amp[OHAT]! - OHAT_FLOOR, 0) / (1 - OHAT_FLOOR)
-            const y = hat * e * weight[OHAT]!
-            out += y
-            if (th & (1 << OHAT)) send += y
-          }
-          this.clapFast += clapLpCoef * (noise - this.clapFast)
-          this.clapSlow += clapHpCoef * (noise - this.clapSlow)
-          if (amp[CLAP]! > AUDIBLE) {
-            const y =
-              (this.clapFast - this.clapSlow) *
-              amp[CLAP]! *
-              weight[CLAP]! *
-              CLAP_GAIN
-            out += y
-            if (th & (1 << CLAP)) send += y
-          }
-          // The cowbell taps the top pair ahead of the summing stage, through a
-          // band around the pair, which is what leaves a pitch in it. The hats
-          // take what comes off that stage through a corner high enough that
-          // only the clatter survives; the cymbal takes the same through a
-          // lower band with a lid on it, which is the body a hat throws away.
+          // The hats take the bank's upper band through a corner high enough
+          // that only the clatter survives, with the pot between the bank and
+          // the transistor ahead of them: one amplifier and one filter for
+          // both, so what separates the two hats is the cap under the
+          // amplifier. The cymbal takes both bands through a lower corner with
+          // a lid on it, which is the body a hat throws away.
           //
-          // The cowbell and the cymbal each ring twice: a strike that is gone in
-          // a few tens of milliseconds over a tail that hangs on. One envelope raised to a
-          // power is the strike, and the envelope itself is the tail.
-          const bell = this.bellLp.process(
-            this.bellHp.process(this.metal.bell, bellHpCoef),
-            bellLpCoef,
-          )
+          // The cowbell and the cymbal each ring twice: a strike that is gone
+          // in a few tens of milliseconds over a tail that hangs on. One
+          // envelope raised to a power is the strike, and the envelope itself
+          // is the tail.
+          const hi = this.metalHi.process(this.metal.clash, this.metalHiBand)
+          const lo = this.metalLo.process(this.metal.clash, this.metalLoBand)
+          if (hats || cymOn) {
+            if (hats) {
+              const hat = this.hatLp.process(
+                this.hatHp.process(
+                  hi * HAT_METAL * bank + hatHiss * HAT_NOISE * trans,
+                  hatHpCoef,
+                ),
+                hatLpCoef,
+              )
+              if (amp[HAT]! > AUDIBLE) {
+                const y = hat * amp[HAT]! * weight[HAT]!
+                out += y
+                if (th & (1 << HAT)) send += y
+              }
+              if (amp[OHAT]! > AUDIBLE) {
+                const e =
+                  Math.max(amp[OHAT]! - OHAT_FLOOR, 0) / (1 - OHAT_FLOOR)
+                const y = hat * e * weight[OHAT]!
+                out += y
+                if (th & (1 << OHAT)) send += y
+              }
+            }
+            if (cymOn) {
+              const cym = this.cymLp.process(
+                this.cymCrash.process(lo + hi, cymCrashCoef) * crashMix +
+                  this.cymSplash.process(hi, cymSplashCoef) * splashMix,
+                cymLpCoef,
+              )
+              const y = cym * strike(amp[CYM]!, CYM_TAIL) * weight[CYM]!
+              out += y
+              if (th & (1 << CYM)) send += y
+            }
+          }
+          // The cowbell taps the top pair ahead of the summing stage, through
+          // a band around the pair, which is what leaves a pitch in it.
           if (amp[BELL]! > AUDIBLE) {
-            const e = amp[BELL]!
-            const y = bell * strike(e, BELL_TAIL) * weight[BELL]! * BELL_GAIN
+            const bell = this.bellLp.process(
+              this.bellHp.process(this.metal.bell, bellHpCoef),
+              bellLpCoef,
+            )
+            const y =
+              bell * strike(amp[BELL]!, BELL_TAIL) * weight[BELL]! * BELL_GAIN
             out += y
             if (th & (1 << BELL)) send += y
-          }
-          const cym = this.cymLp.process(
-            this.cymCrash.process(lo + hi, cymCrashCoef) * crashMix +
-              this.cymSplash.process(hi, cymSplashCoef) * splashMix,
-            cymLpCoef,
-          )
-          if (amp[CYM]! > AUDIBLE) {
-            const y = cym * strike(amp[CYM]!, CYM_TAIL) * weight[CYM]!
-            out += y
-            if (th & (1 << CYM)) send += y
           }
         }
         // Every voice's envelope falls on its own, whatever its amplifier is
