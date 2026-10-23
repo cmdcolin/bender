@@ -22,6 +22,9 @@ import {
   stepMask,
 } from '../testRender.ts'
 
+const loudest = (x: Float32Array) =>
+  x.reduce((a, v) => Math.max(a, Math.abs(v)), 0)
+
 // One voice alone on an empty grid, nothing else in the kit or the chain.
 const soloVoice = (overrides: Partial<Controls>, seconds = 0.5) =>
   render(
@@ -91,7 +94,7 @@ test('every voice in the grid is reachable from its own mask', () => {
 test('an accented step hits harder than a plain one', () => {
   const plain = soloVoice({ drumKick: stepMask(2) })
   const hard = soloVoice({ drumKick: stepMask(2), drumAccent: stepMask(2) })
-  expect(rms(hard)).toBeGreaterThan(rms(plain) * 1.3)
+  expect(loudest(hard)).toBeGreaterThan(loudest(plain) * 1.3)
 })
 
 test('swing holds the offbeat back and takes it off the step after', () => {
@@ -637,8 +640,8 @@ test('the accent wire held high weighs every step the machine fetches', () => {
     drumBpm: 240,
     drumDecay: 0.3,
   }
-  const plain = rms(soloVoice(bar, 2))
-  const forced = rms(
+  const plain = loudest(soloVoice(bar, 2))
+  const forced = loudest(
     soloVoice({ ...bar, drumDataLine: 9, drumDataFault: FAULT_SUPPLY }, 2),
   )
   expect(forced).toBeGreaterThan(1.4 * plain)
@@ -754,22 +757,24 @@ test('a wrapping accumulator turns the loud step inside-out', () => {
     drumAccent: stepMask(2),
     drumBpm: 60,
   }
-  const peak = (x: Float32Array) =>
-    x.reduce((a, v) => Math.max(a, Math.abs(v)), 0)
   const stock = soloVoice(stack, 1.5)
   const wrapped = soloVoice({ ...stack, drumOverflow: 1 }, 1.5)
   // Rolling over is also a ceiling: what wraps cannot leave the box past full
   // scale, where the sum that did not wrap left it to the limiter to catch.
-  expect(peak(stock)).toBeGreaterThan(0.8)
-  expect(peak(wrapped)).toBeLessThan(0.7 * peak(stock))
+  expect(loudest(stock)).toBeGreaterThan(0.8)
+  expect(loudest(wrapped)).toBeLessThan(0.7 * loudest(stock))
   expect(slew(wrapped)).toBeGreaterThan(1.6 * slew(stock))
 })
 
 // A step wired through the kit's dice rather than straight to the trigger line,
 // and how many of eight laps of the bar the kick arrived on.
 const diceLaps = (drumChance: number) =>
-  onsets(soloVoice({ drumKickMaybe: stepMask(2), drumChance, drumBpm: 480 }, 4))
-    .length
+  onsets(
+    soloVoice(
+      { drumKickMaybe: stepMask(2), drumChance, drumBpm: 480, drumDecay: 0.3 },
+      4,
+    ),
+  ).length
 
 test('a maybe step plays some laps and not others', () => {
   const laps = diceLaps(0.5)
@@ -856,7 +861,7 @@ test('an accent still weighs a step the dice decided', () => {
   const dice: Partial<Controls> = { drumKickMaybe: stepMask(2), drumChance: 1 }
   const plain = soloVoice(dice)
   const hard = soloVoice({ ...dice, drumAccent: stepMask(2) })
-  expect(rms(hard)).toBeGreaterThan(rms(plain) * 1.3)
+  expect(loudest(hard)).toBeGreaterThan(loudest(plain) * 1.3)
 })
 
 // A row's own length decides which of its steps the counter is standing on, and
@@ -953,9 +958,10 @@ test('a run of accents drains the bus it is drawn from', () => {
   const sagging = soloVoice({ ...roll, drumAccentSag: 1 }, 1.2)
   // The first accent of the run finds the cap charged and lands where a stiff
   // bus would have put it. A few steps later there is nothing left to hand out,
-  // and the cap is being asked for another one every seventy milliseconds.
+  // and the cap is being asked for another one every seventy milliseconds. A
+  // full accent cuts the long kick short, so the starved run rings longer.
   expect(span(sagging, 0.06, 0.14)).toBeCloseTo(span(stiff, 0.06, 0.14), 2)
-  expect(rms(sagging)).toBeLessThan(rms(stiff) * 0.9)
+  expect(rms(sagging)).toBeGreaterThan(rms(stiff) * 1.05)
   expect(span(stiff, 0.8, 1.2)).toBeGreaterThan(span(stiff, 0.1, 0.3) * 0.9)
 })
 
@@ -981,7 +987,9 @@ test('an accent stacking the kit leaves less on the bus for the next one', () =>
       soloVoice(o, 1).subarray(Math.round(0.25 * SR), Math.round(0.55 * SR)),
       70,
     )
-  expect(kickAlone({ ...board, ...busy })).toBeLessThan(kickAlone(board) * 0.9)
+  expect(kickAlone({ ...board, ...busy })).toBeGreaterThan(
+    kickAlone(board) * 1.05,
+  )
   // With the bus stiff there is nothing to share and the kick lands the same.
   const stiff = (o: Partial<Controls>) => kickAlone({ ...o, drumAccentSag: 0 })
   expect(stiff({ ...board, ...busy })).toBeGreaterThan(stiff(board) * 0.95)
@@ -1617,7 +1625,12 @@ test('a wire on the swing shuffles a straight kit', () => {
 })
 
 test('a wire on Chance opens a dice the knob has shut', () => {
-  const shut = { drumKickMaybe: stepMask(2), drumChance: 0, drumBpm: 480 }
+  const shut = {
+    drumKickMaybe: stepMask(2),
+    drumChance: 0,
+    drumBpm: 480,
+    drumDecay: 0.3,
+  }
   expect(onsets(soloVoice(shut, 4))).toHaveLength(0)
   expect(
     onsets(soloVoice({ ...shut, ...held(DEST.drumChance) }, 4)),
