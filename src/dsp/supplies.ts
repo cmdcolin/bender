@@ -29,7 +29,7 @@ export const poweredUp = (p: Float32Array) =>
 const onSecond = (p: Float32Array) => {
   for (const k of SUPPLY_KEYS)
     if (Math.round(p[IDX[k]]!) === SUPPLY.second) return true
-  return false
+  return p[IDX.distMix]! > 0 && Math.round(p[IDX.distSupply]!) === SUPPLY.second
 }
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)

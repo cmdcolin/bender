@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-524 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+530 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 135 presets, 23 stage settings and 50 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 131 destinations, among
+- **A patch bay that modulates itself.** Four wires, 133 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -64,7 +64,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   noise goes down under the last. _Hold_ raises the write level by what a lap
   lost, so a loop stays at its level.
 - **A microphone into the middle of the board.** _Mic into_ on the bench bar
-  solders the mic to one of 15 jacks: the toy's clock pin, so your pitch sets
+  solders the mic to one of 16 jacks: the toy's clock pin, so your pitch sets
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
@@ -727,7 +727,7 @@ list the jacks with what a voice does at each.
 | control   | range                               | what it does                         |
 | --------- | ----------------------------------- | ------------------------------------ |
 | Mic       | 0 to 4, normal 0 to 1               | Microphone gain into the patch point |
-| Mic patch | 15 of them, mix through crush clock | Where the mic wire is soldered       |
+| Mic patch | 16 of them, mix through clip bypass | Where the mic wire is soldered       |
 
 </details>
 
@@ -863,16 +863,22 @@ puts the knife on, and the rows under it show the controls it set:
 A rack of clipping circuits, with bias, a tone control and a sub octave.
 
 <details>
-<summary>6 controls</summary>
+<summary>12 controls</summary>
 
-| control    | range                        | what it does                                                                                                                    |
-| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Drive      | 0 to 60 dB                   | Gain into the shaping stage                                                                                                     |
-| Circuit    | soft, hard, fuzz, fold, rect | Soft saturation, hard clip, asymmetric fuzz, wavefolder, or full rectifier                                                      |
-| Bias       | −1 to +1                     | DC offset into the clipper                                                                                                      |
-| Tone       | 200 Hz to 20 kHz             | Low-pass after the shaping — the tone knob on the pedal                                                                         |
-| Sub octave | off to full                  | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
-| Mix        | off to full                  | Dry/wet                                                                                                                         |
+| control       | range                                    | what it does                                                                                                                    |
+| ------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Drive         | 0 to 60 dB                               | Gain into the shaping stage                                                                                                     |
+| Circuit       | soft, hard, fuzz, fold, rect             | Soft saturation, hard clip, asymmetric fuzz, wavefolder, or full rectifier                                                      |
+| Bias          | −1 to +1                                 | DC offset into the clipper                                                                                                      |
+| Tone          | 200 Hz to 20 kHz                         | Low-pass after the shaping — the tone knob on the pedal                                                                         |
+| Sub octave    | off to full                              | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
+| Mix           | off to full                              | Dry/wet                                                                                                                         |
+| Supply        | shared cells, second cells, bench supply | Which supply the toy’s LM386 runs off                                                                                           |
+| Draw          | off to full                              | How much current the amp pulls into its speaker, more when it clips                                                             |
+| Pins 1–8 gain | 20× to 600×                              | A cap across pins 1 and 8 takes the gain from 20 to 200 and past it                                                             |
+| Bypass pin    | off to full                              | Lifts the decoupling cap off pin 7                                                                                              |
+| Blocking      | off to full                              | How much the output coupling cap charges on hard clipping                                                                       |
+| Speaker       | off to full                              | Plays the amp through a cone instead of a line out, smaller as it goes up                                                       |
 
 </details>
 
@@ -1176,7 +1182,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s oscillator, free-running                                             |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 131 of them, filt cut through second cells starve                                          | Where the other end is soldered                                                |
+| Wire 1–4 to    | 133 of them, filt cut through dist pin gain                                                | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

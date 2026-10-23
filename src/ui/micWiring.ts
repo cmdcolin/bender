@@ -96,6 +96,12 @@ const JACKS: Record<(typeof MIC)[keyof typeof MIC], MicJack> = {
     part: 'data bus',
     says: 'your voice overwrites its settings, and they stay overwritten',
   },
+  [MIC.clipBypass]: {
+    name: 'clip bypass',
+    stage: 'Clipper',
+    part: 'bypass pin',
+    says: 'your voice rides the amp’s supply straight into its input, and with the gain cap in it comes out two hundred times louder',
+  },
   [MIC.crushClock]: {
     name: 'crush clock',
     stage: 'Crusher',
@@ -134,6 +140,7 @@ export const JACKS_BY_STAGE: readonly {
   { stage: 'Wraith', kind: 'tape delay', jacks: [MIC.delayFb] },
   { stage: 'Ring mod', jacks: [MIC.ringCarrier] },
   { stage: 'Crusher', jacks: [MIC.crushClock] },
+  { stage: 'Clipper', jacks: [MIC.clipBypass] },
   { stage: 'Glitch buffer', jacks: [MIC.glitchTrig] },
   { stage: 'mix', jacks: [MIC.mix] },
 ]

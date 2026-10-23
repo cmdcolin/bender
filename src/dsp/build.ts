@@ -104,7 +104,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     undefined,
     new RingMod(sr),
     new Crusher(sr, next()),
-    new Clipper(sr),
+    new Clipper(sr, supplies),
     new Comb(sr),
     new GlitchBuf(sr, next()),
     new Screech(sr),

@@ -1,4 +1,5 @@
 import { FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
+import { PIN_GAIN_MAX, STOCK_GAIN } from '../../dsp/stages/clipper.ts'
 import {
   CRUSH_ADC,
   CRUSH_CLOCK,
@@ -8,6 +9,7 @@ import {
   CRUSH_WITH,
 } from '../../dsp/stages/crusher.ts'
 import { RING_FROM, RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod.ts'
+import { SUPPLY_NAMES } from '../../dsp/supplies.ts'
 
 import type { ControlKey } from '../../controls.ts'
 import type { Group } from './types.ts'
@@ -322,6 +324,70 @@ export const BEND_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'Dry/wet.',
+      },
+      {
+        key: 'distSupply',
+        part: 'the amp',
+        label: 'Supply',
+        min: 0,
+        max: SUPPLY_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: SUPPLY_NAMES,
+        help: 'Which supply the toy’s LM386 runs off. Its headroom is that supply’s voltage, so on the shared cells a starve makes it clip earlier, quieter and with a crossover gap, and below a quarter of the rail it mutes and sputters back. The bench supply never moves.',
+      },
+      {
+        key: 'distDraw',
+        lane: 'dist draw',
+        part: 'the amp',
+        label: 'Draw',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much current the amp pulls into its speaker, more when it clips. On the shared cells that current sags the toy’s pitch and level, the amp mutes, the rail recovers and it comes back loud: the board motorboats on its own. Up full the toy dives about five semitones twelve times a second.',
+      },
+      {
+        key: 'distPinGain',
+        lane: 'dist pin gain',
+        part: 'the amp',
+        label: 'Pins 1–8 gain',
+        min: STOCK_GAIN,
+        max: PIN_GAIN_MAX,
+        step: 1,
+        unit: '×',
+        curve: 'log',
+        help: 'A cap across pins 1 and 8 takes the gain from 20 to 200 and past it. The bandwidth closes in as the gain rises, and from about 270 the amp sings on its own, lower the higher you go.',
+      },
+      {
+        key: 'distBypass',
+        part: 'the amp',
+        label: 'Bypass pin',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Lifts the decoupling cap off pin 7. Supply ripple and the amp’s own current feed back into its input, and past halfway it squeals: high on a full rail, lower as the rail sags, and a low motorboat once Draw loads it.',
+      },
+      {
+        key: 'distBlock',
+        part: 'the amp',
+        label: 'Blocking',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much the output coupling cap charges on hard clipping. After a loud hit the charge biases the amp shut, so it chokes and sputters back as the cap drains. Up full it takes longer to drain.',
+      },
+      {
+        key: 'distSpeaker',
+        part: 'the speaker',
+        label: 'Speaker',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Plays the amp through a cone instead of a line out, smaller as it goes up. A small cone loses the bass, rings at its resonance and slams into its stops at full travel, rattling on each hit.',
       },
     ],
   },

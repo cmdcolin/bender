@@ -182,8 +182,12 @@ const LANDINGS: Landing[] = [
   at('crush DAC ref', ['crushMix', 'crushRef'], { bend: 'crush' }),
   at('second cells starve', [], {
     oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'pcmLevel', 'monoLevel'],
-    needs: c => SUPPLY_KEYS.some(k => Math.round(c[k]) === SUPPLY.second),
+    needs: c =>
+      SUPPLY_KEYS.some(k => Math.round(c[k]) === SUPPLY.second) ||
+      (c.distMix > 0 && Math.round(c.distSupply) === SUPPLY.second),
   }),
+  at('dist draw', ['distMix'], { bend: 'dist' }),
+  at('dist pin gain', ['distMix'], { bend: 'dist' }),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

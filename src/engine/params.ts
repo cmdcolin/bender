@@ -559,6 +559,12 @@ export const PARAM_DEFS = [
   ['distToneHz', 'slew'],
   ['subLevel', 'slew'],
   ['distMix', 'slew'],
+  ['distSupply', 'step'],
+  ['distDraw', 'slew'],
+  ['distPinGain', 'ramp'],
+  ['distBypass', 'slew'],
+  ['distBlock', 'slew'],
+  ['distSpeaker', 'slew'],
 
   ['filtHz', 'slew'],
   ['filtRes', 'ramp'],

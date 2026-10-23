@@ -203,6 +203,8 @@ export const PATCH_GROUPS: Group[] = [
             'crush ladder',
             'crush DAC ref',
             'second cells starve',
+            'dist draw',
+            'dist pin gain',
           ],
           groups: [
             {
@@ -351,6 +353,8 @@ export const PATCH_GROUPS: Group[] = [
                 'crush cut depth',
                 'crush ladder',
                 'crush DAC ref',
+                'dist draw',
+                'dist pin gain',
                 'glitch',
                 'shift Hz',
               ],

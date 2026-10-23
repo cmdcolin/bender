@@ -160,6 +160,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   crushLadder: 'Crusher',
   crushRefDepth: 'Crusher',
   starve2: 'Plinky',
+  distDraw: 'Clipper',
+  distPinGain: 'Clipper',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

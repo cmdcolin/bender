@@ -16,4 +16,5 @@ export const MIC = {
   growlerIn: 12,
   glintBus: 13,
   crushClock: 14,
+  clipBypass: 15,
 } as const

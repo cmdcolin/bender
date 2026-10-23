@@ -18,7 +18,9 @@ export const SUPPLY_OF: Record<SupplyKey, string> = {
 export const machinesOn = (c: Controls, supply: number) =>
   SUPPLY_KEYS.filter(k => Math.round(c[k]) === supply).map(k => SUPPLY_OF[k])
 
-const onSecond = (c: Controls) => machinesOn(c, SUPPLY.second).length > 0
+const onSecond = (c: Controls) =>
+  machinesOn(c, SUPPLY.second).length > 0 ||
+  (c.distMix > 0 && Math.round(c.distSupply) === SUPPLY.second)
 
 export const supplyRow = (key: SupplyKey): SliderDef => ({
   key,

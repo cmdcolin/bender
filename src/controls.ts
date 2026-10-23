@@ -584,6 +584,12 @@ export const DEFAULT_CONTROLS = {
   distToneHz: 8000,
   subLevel: 0,
   distMix: 0,
+  distSupply: 2,
+  distDraw: 0,
+  distPinGain: 20,
+  distBypass: 0,
+  distBlock: 0,
+  distSpeaker: 0,
 
   filtHz: 800,
   filtRes: 0.7,

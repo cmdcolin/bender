@@ -177,8 +177,10 @@ export const DEST = {
   crushLadder: 128,
   crushRefDepth: 129,
   starve2: 130,
+  distDraw: 131,
+  distPinGain: 132,
 } as const
-export const N_DEST = 131
+export const N_DEST = 133
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
