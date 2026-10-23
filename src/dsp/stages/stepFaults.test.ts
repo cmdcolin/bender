@@ -85,6 +85,18 @@ test('a brake slows the mix to a stop inside its step', () => {
   expect(crossings).toBeLessThan(8)
 })
 
+test('a run of brakes stops the mix once, over the whole run', () => {
+  const strobes = [0, 1, 2, 3].map(k => ({ at: 1000 + k * STEP, tick: k }))
+  const brakes = { drumEvent0: 3, drumEvent1: 3, drumEvent2: 3, drumEvent3: 3 }
+  const { out } = run(brakes, strobes, BLOCK * 220)
+  const at = (s: number) =>
+    rms(out.subarray(1000 + s * STEP, 1000 + s * STEP + 600))
+  expect(at(0.5)).toBeGreaterThan(at(2))
+  expect(at(2)).toBeGreaterThan(at(3.5))
+  expect(at(2)).toBeGreaterThan(0.1)
+  expect(at(3.7)).toBeLessThan(0.01)
+})
+
 test('a freeze loops the first quarter of its step', () => {
   const { input, out } = run({ drumEvent0: EVENT.freeze }, BAR)
   const slice = STEP / 4

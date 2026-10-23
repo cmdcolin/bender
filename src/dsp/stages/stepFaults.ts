@@ -21,6 +21,7 @@ interface Voice {
   event: number
   t: number
   len: number
+  slice: number
   start: number
   lag: number
 }
@@ -34,11 +35,26 @@ export function eventOn(p: Float32Array, tick: number): number {
   return asEvent(p[EVENT_IDX[(tick - 1) % STEPS]!]!)
 }
 
-const idle = (): Voice => ({ event: 0, t: 0, len: 0, start: 0, lag: 0 })
+/** How many steps from `tick` on carry the same fault, so a run plays as one. */
+function runOf(p: Float32Array, tick: number, event: number): number {
+  let n = 1
+  while (n < STEPS && eventOn(p, tick + n) === event) n++
+  return n
+}
+
+const idle = (): Voice => ({
+  event: 0,
+  t: 0,
+  len: 0,
+  slice: 0,
+  start: 0,
+  lag: 0,
+})
 
 // The kit's event row on the whole mix, past the tape: a knife through the
-// output lead, a tape brake, a glitch freeze. Each fault lasts its step and
-// lands on the strobe; the drop and reboot steps act on the rail, in Supplies.
+// output lead, a tape brake, a glitch freeze. Each fault lands on the strobe
+// and lasts its step, or the whole run when the steps after it carry the same
+// fault. The drop and reboot steps act on the rail, in Supplies.
 export class StepFaults implements Stage {
   label = 'stepFaults'
   private readonly bufL: Float32Array
@@ -77,9 +93,12 @@ export class StepFaults implements Stage {
       const tick = steps[i]!
       if (tick > 0) {
         const event = eventOn(p, tick)
-        if (event !== 0 || this.cur.event !== 0) this.begin(event, len)
+        const joins =
+          event !== 0 && event === this.cur.event && this.cur.t < this.cur.len
+        if (!joins && (event !== 0 || this.cur.event !== 0))
+          this.begin(event, len, runOf(p, tick, event))
       } else if (this.cur.event !== 0 && this.cur.t >= this.cur.len) {
-        this.begin(0, 0)
+        this.begin(0, 0, 1)
       }
 
       const l = io.l[i]!
@@ -104,12 +123,13 @@ export class StepFaults implements Stage {
     }
   }
 
-  private begin(event: number, len: number) {
+  private begin(event: number, len: number, run: number) {
     const was = this.old
     this.old = this.cur
     was.event = event
     was.t = 0
-    was.len = len
+    was.len = Math.min(len * run, this.size - 1)
+    was.slice = Math.max(Math.round(len / FREEZE_SLICES), WINDOW * 2)
     was.start = this.w
     was.lag = 0
     this.cur = was
@@ -126,7 +146,7 @@ export class StepFaults implements Stage {
       at = this.w - v.lag
       gain = Math.sqrt(speed)
     } else if (v.event === EVENT.freeze) {
-      const slice = Math.max(Math.round(v.len / FREEZE_SLICES), WINDOW * 2)
+      const slice = v.slice
       if (v.t >= slice) {
         const k = v.t % slice
         at = v.start + k
