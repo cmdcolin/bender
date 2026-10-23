@@ -105,12 +105,19 @@ const KIT: Partial<Controls> = {
 function railRun(overrides: Partial<Controls>) {
   let reboots = 0
   const v: number[] = []
+  const ticks: number[] = []
   renderBender(
     { ...KIT, ...overrides },
     4.5,
     b => {
       b.transport.drums = true
       b.transport.tune = true
+      const trig = b.chain.ctx.trig
+      const own = trig.stepClocked.bind(trig)
+      trig.stepClocked = (i, tick, samples) => {
+        ticks.push(tick % 16)
+        own(i, tick, samples)
+      }
     },
     undefined,
     b => {
@@ -118,8 +125,15 @@ function railRun(overrides: Partial<Controls>) {
       v.push(b.rail.v)
     },
   )
-  return { reboots, v }
+  return { reboots, v, ticks }
 }
+
+test('a reboot on step 8 makes an eight-step bar from the downbeat', () => {
+  const { ticks } = railRun({ drumEvent7: EVENT.reboot })
+  expect(ticks.slice(7, 23)).toEqual([
+    0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7,
+  ])
+})
 
 test('a reboot step reboots the shared cells every bar', () => {
   expect(railRun({}).reboots).toBe(0)

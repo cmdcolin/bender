@@ -1253,7 +1253,9 @@ export class ToyDrum implements Stage {
     )
 
     if (this.power.rebooted()) {
-      this.tick = 0
+      // The counter comes out of reset one strobe short of step 1, so the
+      // first step it plays is the downbeat.
+      this.tick = CYCLE - 1
       this.stepClock = 0
       this.repeats = 0
       this.rolledAt = -1
