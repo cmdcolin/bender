@@ -1,5 +1,6 @@
 import { BusDiagram } from './BusDiagram.tsx'
 import { BUS_SPECS } from './busSpecs.ts'
+import { ClipperAmpDiagram } from './ClipperAmpDiagram.tsx'
 import { FmDieDiagram } from './FmDieDiagram.tsx'
 import { DRAWN_ROWS, type Verbs, type Zoom } from './foldHosting.ts'
 import { KitWiringDiagram } from './KitWiringDiagram.tsx'
@@ -24,6 +25,7 @@ const DRAWINGS: Record<string, ComponentType<DrawingProps>> = {
   'Glint|die and driver': FmDieDiagram,
   'Growler|voice card faults': MonoCardDiagram,
   'Power supply|the cells': SupplyDiagram,
+  'Clipper|the amp': ClipperAmpDiagram,
 }
 
 /** The drawing for one fold of a group, or null when it has none. */
