@@ -3,6 +3,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../../controls.ts'
+import { SUPPLY } from '../../dsp/supplies.ts'
 import { choiceValue, GROUPS, sliderFor } from '../controls/index.ts'
 import { formatValue } from '../slider-scale.ts'
 
@@ -23,6 +24,8 @@ export interface CutDef {
 const KNIFE = 'knife on the bus'
 const DIE = 'die and driver'
 const SAMPLE_ROM = 'Sample ROM'
+const AMP = 'the amp'
+const SPEAKER = 'the speaker'
 
 const pick = choiceValue
 
@@ -548,6 +551,62 @@ export const CUTS: CutDef[] = [
       crushDataFault: pick('crushDataFault', 'cut'),
       crushBusCut: 0.7,
     },
+  },
+  {
+    group: 'Clipper',
+    part: AMP,
+    name: 'motorboat',
+    blurb:
+      'The amp on the toy’s own cells, pulling hard: each loud stretch sags the rail, the toy dives about five semitones, the amp mutes, the rail recovers and it pops back in, twelve times a second',
+    patch: { distSupply: SUPPLY.shared, distDraw: 1 },
+  },
+  {
+    group: 'Clipper',
+    part: AMP,
+    name: 'growl on the rail',
+    blurb:
+      'Pin 7 open and the amp loading the toy’s cells, so its own supply ripple comes back in as a 60 Hz motorboat growl under the tune',
+    patch: { distSupply: SUPPLY.shared, distDraw: 0.6, distBypass: 0.8 },
+  },
+  {
+    group: 'Clipper',
+    part: AMP,
+    name: 'the amp sings',
+    blurb:
+      'A big cap across pins 1 and 8 for 600 times the gain: the amp runs out of phase margin and holds a 1.1 kHz note over everything',
+    patch: { distPinGain: 600 },
+  },
+  {
+    group: 'Clipper',
+    part: AMP,
+    name: 'pin 7 screams',
+    blurb:
+      'The bypass cap off pin 7: the amp oscillates at 3 kHz on a full supply and swallows the tune',
+    patch: { distBypass: 1 },
+  },
+  {
+    group: 'Clipper',
+    part: AMP,
+    name: 'chokes on every hit',
+    blurb:
+      'Two hundred times the gain into a coupling cap that charges on each clipped peak, so the amp shuts after every loud note and sputters back',
+    patch: { distPinGain: 200, distBlock: 1 },
+  },
+  {
+    group: 'Clipper',
+    part: SPEAKER,
+    name: 'phone speaker',
+    blurb:
+      'A cone the size of a coin: no bass, a honk near 340 Hz and a buzz on every bass note',
+    patch: { distSpeaker: 0.5 },
+  },
+  {
+    group: 'Clipper',
+    part: SPEAKER,
+    name: 'blown cone',
+    blurb:
+      'The smallest cone, slamming into its stops on every note, so the tune comes out as clicks and rattle',
+    patch: { distSpeaker: 1 },
   },
 ]
 

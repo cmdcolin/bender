@@ -2341,4 +2341,65 @@ export const PRESETS: PresetDef[] = [
       crushMix: 1,
     },
   },
+  {
+    name: 'motorboat lullaby',
+    blurb:
+      'The toy’s amp pulling on the toy’s own cells through a small cone: the tune putt-putts twelve times a second, diving five semitones on each stroke',
+    patch: {
+      chipLevel: 0.8,
+      distSupply: SUPPLY.shared,
+      distDraw: 1,
+      distSpeaker: 0.4,
+      distMix: 0.85,
+    },
+  },
+  {
+    name: 'the amp sings along',
+    blurb:
+      'Six hundred times the gain into a phone speaker: the amp holds its own 1.1 kHz note and the tune pushes it around',
+    patch: {
+      chipLevel: 0.8,
+      distPinGain: 600,
+      distSpeaker: 0.5,
+      distMix: 1,
+    },
+  },
+  {
+    name: 'squeal on a whooping rail',
+    blurb:
+      'Pin 7 open on an amp sharing the toy’s cells behind a lead resistor, so the squeal’s pitch dips with every note the toy plays',
+    patch: {
+      chipLevel: 0.8,
+      chipLeadR: 0.7,
+      distSupply: SUPPLY.shared,
+      distBypass: 1,
+      distMix: 0.8,
+    },
+  },
+  {
+    name: 'sputtering on dying cells',
+    blurb:
+      'A starved toy and an amp on the same cells: it clips at a third of its headroom, chokes after each peak and drops out whenever the toy pulls',
+    patch: {
+      chipLevel: 0.8,
+      chipStarve: 0.35,
+      distSupply: SUPPLY.shared,
+      distDraw: 0.4,
+      distBlock: 0.6,
+      distMix: 0.8,
+    },
+  },
+  {
+    name: 'blown speaker on its own cells',
+    blurb:
+      'The amp on half-flat second cells, motorboating on its own while the toy plays steady, through a cone that slams its stops',
+    patch: {
+      chipLevel: 0.8,
+      distSupply: SUPPLY.second,
+      distDraw: 1,
+      cell2Battery: 0.5,
+      distSpeaker: 0.7,
+      distMix: 0.9,
+    },
+  },
 ]

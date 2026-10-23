@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
 530 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
-135 presets, 23 stage settings and 50 named cuts. The generator reads everything
+140 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 135 presets, and a roll button on every heading as well as
+- **Whole boards.** 140 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -862,6 +862,26 @@ puts the knife on, and the rows under it show the controls it set:
 
 A rack of clipping circuits, with bias, a tone control and a sub octave.
 
+Named cuts, one press each under _the amp_, as in the panel. A press puts the
+knife on, and the rows under it show the controls it set:
+
+- **motorboat**: The amp on the toy’s own cells, pulling hard: each loud stretch
+  sags the rail, the toy dives about five semitones, the amp mutes, the rail
+  recovers and it pops back in, twelve times a second
+- **growl on the rail**: Pin 7 open and the amp loading the toy’s cells, so its
+  own supply ripple comes back in as a 60 Hz motorboat growl under the tune
+- **the amp sings**: A big cap across pins 1 and 8 for 600 times the gain: the
+  amp runs out of phase margin and holds a 1.1 kHz note over everything
+- **pin 7 screams**: The bypass cap off pin 7: the amp oscillates at 3 kHz on a
+  full supply and swallows the tune
+- **chokes on every hit**: Two hundred times the gain into a coupling cap that
+  charges on each clipped peak, so the amp shuts after every loud note and
+  sputters back
+- **phone speaker**: A cone the size of a coin: no bass, a honk near 340 Hz and
+  a buzz on every bass note
+- **blown cone**: The smallest cone, slamming into its stops on every note, so
+  the tune comes out as clicks and rattle
+
 <details>
 <summary>12 controls</summary>
 
@@ -1487,7 +1507,7 @@ result:
 
 ### Presets
 
-135 presets. Each name is a link that opens the app with that board loaded, and
+140 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1855,6 +1875,21 @@ the board waits until you press play.
 - [**XOR with the kit**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.8,crushMix:1,crushLogic:1,crushWith:1)
   — Every code word XORed with the kit’s, bit by bit, before it reaches the DAC:
   the tune comes out scrambled into noise that pulses with the drums
+- [**motorboat lullaby**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,distMix:0.85,distSupply:0,distDraw:1,distSpeaker:0.4)
+  — The toy’s amp pulling on the toy’s own cells through a small cone: the tune
+  putt-putts twelve times a second, diving five semitones on each stroke
+- [**the amp sings along**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,distMix:1,distPinGain:600,distSpeaker:0.5)
+  — Six hundred times the gain into a phone speaker: the amp holds its own 1.1
+  kHz note and the tune pushes it around
+- [**squeal on a whooping rail**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipLeadR:0.7,distMix:0.8,distSupply:0,distBypass:1)
+  — Pin 7 open on an amp sharing the toy’s cells behind a lead resistor, so the
+  squeal’s pitch dips with every note the toy plays
+- [**sputtering on dying cells**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipStarve:0.35,distMix:0.8,distSupply:0,distDraw:0.4,distBlock:0.6)
+  — A starved toy and an amp on the same cells: it clips at a third of its
+  headroom, chokes after each peak and drops out whenever the toy pulls
+- [**blown speaker on its own cells**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,cell2Battery:0.5,distMix:0.9,distSupply:1,distDraw:1,distSpeaker:0.7)
+  — The amp on half-flat second cells, motorboating on its own while the toy
+  plays steady, through a cone that slams its stops
 
 ### Kit voices
 
