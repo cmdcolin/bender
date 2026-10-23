@@ -71,6 +71,10 @@
   user-select: none;
 }
 
+.flags {
+  margin-top: var(--space-xs);
+}
+
 .row {
   display: grid;
   grid-template-columns: 2.2rem 1fr;

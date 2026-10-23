@@ -232,6 +232,10 @@ export const DEFAULT_CONTROLS = {
   monoSeqStep29: -128,
   monoSeqStep30: -128,
   monoSeqStep31: -128,
+  monoSeqAccentLo: 0,
+  monoSeqAccentHi: 0,
+  monoSeqSlideLo: 0,
+  monoSeqSlideHi: 0,
 
   drumLevel: 0.7,
   drumMute: 0,
@@ -407,6 +411,7 @@ export const DEFAULT_CONTROLS = {
   monoMute: 0,
   monoKeyGate: 0,
   monoGate: 0.6,
+  monoAccent: 0.6,
   monoStruck: 0,
   monoGlide: 0,
   monoWave1: 1,

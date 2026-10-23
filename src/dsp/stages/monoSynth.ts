@@ -15,6 +15,9 @@ const OUT_TRIM = 0.6
 const FALLBACK_STEP_S = 0.125
 const CUTOFF_LANE_OCTAVES = 4
 const QUEUE_MAX = 32
+// The gate of a sliding step stays down past the step's own length, so the
+// next step lands while it is still open, swing and all.
+const SLIDE_HOLD = 1.5
 // The mic on the mixer's external input, level with a full oscillator.
 const MIC_IN_GAIN = 1.5
 
@@ -37,6 +40,7 @@ export class MonoSynth implements Stage {
   private sinceWrap = 0
   private stepSamples: number
   private gateLength = 0
+  private slideNext = false
   private from = 0
   private pitchLane: Float32Array | null = null
   private cutLane: Float32Array | null = null
@@ -148,6 +152,7 @@ export class MonoSynth implements Stage {
     v.droop = p[IDX.monoDroop]!
     v.dacBit = Math.round(p[IDX.monoDacBit]!) - 1
     v.sag = p[IDX.monoSag]!
+    v.accent = p[IDX.monoAccent]!
     const micIn = Math.round(p[IDX.micPatch]!) === MIC.growlerIn
     v.ext = micIn ? MIC_IN_GAIN : 0
     this.ext = micIn ? ctx.mic : null
@@ -158,10 +163,12 @@ export class MonoSynth implements Stage {
     held: boolean,
     gain = 1,
     length = this.gateLength,
+    accent = false,
   ) {
     const voice = this.voice
     this.lastNote = note
-    voice.noteOn(note, gain)
+    this.slideNext = false
+    voice.noteOn(note, gain, accent)
     if (held) {
       if (!this.gateHeld.includes(note)) this.gateHeld.push(note)
       return
@@ -171,6 +178,29 @@ export class MonoSynth implements Stage {
     }
     this.gateNote = note
     this.gateLeft = length
+  }
+
+  private sing(note: number, i: number, p: Float32Array, ctx: Ctx) {
+    const span = ctx.trig.seqSpan[i]!
+    const accent = ctx.trig.seqAccent[i]! > 0
+    const slides = ctx.trig.seqSlide[i]! > 0
+    const length = Math.max(
+      slides ? span * SLIDE_HOLD : span * p[IDX.monoGate]!,
+      1,
+    )
+    const from = this.gateNote
+    if (this.slideNext && from >= 0) {
+      if (note !== from) {
+        this.voice.noteOn(note, 1, accent, true)
+        this.voice.noteOff(from)
+        this.gateNote = note
+        this.lastNote = note
+      }
+      this.gateLeft = length
+    } else {
+      this.strike(note, false, 1, length, accent)
+    }
+    this.slideNext = slides
   }
 
   private run(to: number) {
@@ -244,8 +274,7 @@ export class MonoSynth implements Stage {
       if (key !== 0) {
         this.strike(key - KEY_BIAS + A3_MIDI, ctx.trig.keyHeld[i]! > 0)
       } else if (seq !== 0) {
-        const span = ctx.trig.seqSpan[i]! * p[IDX.monoGate]!
-        this.strike(seq - KEY_BIAS + A3_MIDI, false, 1, Math.max(span, 1))
+        this.sing(seq - KEY_BIAS + A3_MIDI, i, p, ctx)
       } else if (bits !== 0) {
         const gain = Math.min(ctx.trig.drumGain[i]! / ACCENT_GAIN, 1)
         this.strike(this.lastNote, false, gain)
@@ -273,5 +302,6 @@ export class MonoSynth implements Stage {
     this.gateHeld.length = 0
     this.gateNote = -1
     this.gateLeft = 0
+    this.slideNext = false
   }
 }

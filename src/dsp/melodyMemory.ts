@@ -1,5 +1,5 @@
 import { IDX } from '../engine/params.ts'
-import { asTuneLen, HOLD, isNote } from '../tune.ts'
+import { asTuneLen, hasSeqFlag, HOLD, isNote } from '../tune.ts'
 import { SupplyTap, type Supplies } from './supplies.ts'
 
 import type { Ctx } from './stage.ts'
@@ -107,12 +107,23 @@ export class MelodyMemory {
     const rate = every
       ? Math.max(kitHz / every, 0.01)
       : Math.max(p[IDX.monoSeqRate]!, 0.01) * rail.clockFactor
+    const accentLo = p[IDX.monoSeqAccentLo]!
+    const accentHi = p[IDX.monoSeqAccentHi]!
+    const slideLo = p[IDX.monoSeqSlideLo]!
+    const slideHi = p[IDX.monoSeqSlideHi]!
     for (let i = 0; i < n; i++) {
       const step = every
         ? this.clocked(ctx.trig.drumStep[i]!, every, rate, len, p)
         : this.tick(rate, len, p)
       if (step === NO_STEP || !isNote(step)) continue
-      ctx.trig.seqStruck(i, step, this.stepSamples * this.run(len, p))
+      const run = this.run(len, p)
+      ctx.trig.seqStruck(
+        i,
+        step,
+        this.stepSamples * run,
+        hasSeqFlag(accentLo, accentHi, this.pos),
+        hasSeqFlag(slideLo, slideHi, this.pos + run - 1),
+      )
     }
   }
 

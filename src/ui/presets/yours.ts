@@ -1,5 +1,10 @@
 import { GRID_ROWS, THROW_ROW } from '../../drums.ts'
-import { MONO_SEQ_STEP_KEYS, TUNE_ALL_STEP_KEYS } from '../../tune.ts'
+import {
+  MONO_SEQ_ACCENT_KEYS,
+  MONO_SEQ_SLIDE_KEYS,
+  MONO_SEQ_STEP_KEYS,
+  TUNE_ALL_STEP_KEYS,
+} from '../../tune.ts'
 import { HOLD_KEYS } from '../controls/index.ts'
 
 import type { ControlKey, Controls } from '../../controls.ts'
@@ -67,6 +72,8 @@ export const YOURS = new Set<ControlKey>([
   'monoSeqLen',
   'monoSeqTo',
   ...MONO_SEQ_STEP_KEYS,
+  ...MONO_SEQ_ACCENT_KEYS,
+  ...MONO_SEQ_SLIDE_KEYS,
 ])
 
 export const keepYours = (

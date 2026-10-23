@@ -65,6 +65,11 @@ four-pole transistor ladder filter that self-oscillates.
 **Kit sync** on its melody memory steps the bass line on Clatter's counter, so
 swing, a slipping clock or a cleared counter moves the bass with the drums.
 
+The **acc** and **slide** rows under its piano roll make it an acid line. An
+accented step hits louder and kicks the cutoff, and accents close together
+climb, higher with more **Emphasis**. A slide holds the gate into the next note
+and glides there with no new attack.
+
 ![The monosynth's blocks: three oscillators, mixer, ladder filter, loudness stage, modulation and voice card.](../public/guide/guide-growler-card.jpg)
 
 ### Four-track

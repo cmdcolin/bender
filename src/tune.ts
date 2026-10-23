@@ -243,6 +243,20 @@ export const MONO_SEQ_STEP_KEYS = [
   'monoSeqStep31',
 ] as const satisfies readonly ControlKey[]
 
+/** Sixteen steps a word, the first step in the top bit, as on the kit's rows. */
+export const MONO_SEQ_ACCENT_KEYS = [
+  'monoSeqAccentLo',
+  'monoSeqAccentHi',
+] as const satisfies readonly ControlKey[]
+export const MONO_SEQ_SLIDE_KEYS = [
+  'monoSeqSlideLo',
+  'monoSeqSlideHi',
+] as const satisfies readonly ControlKey[]
+
+export const seqFlagBit = (step: number) => 1 << (15 - (step & 15))
+export const hasSeqFlag = (lo: number, hi: number, step: number) =>
+  ((step < 16 ? lo : hi) & seqFlagBit(step)) !== 0
+
 /** How many steps the memory plays before it comes round: a whole number of the
     steps it has. */
 export const asTuneLen = (v: number) =>

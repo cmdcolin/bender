@@ -86,6 +86,8 @@ export interface MonoPatch {
   dacBit: number
   /** How far a loud note pulls the supply, and the pitch with it. */
   sag: number
+  /** How hard an accented note hits the VCA and the cutoff. */
+  accent: number
 }
 
 export const MONO_DEFAULT: MonoPatch = {
@@ -129,6 +131,7 @@ export const MONO_DEFAULT: MonoPatch = {
   droop: 0,
   dacBit: -1,
   sag: 0,
+  accent: 0,
 }
 
 const OS = 2
@@ -138,6 +141,14 @@ const SOFT_WINDOW = 0.25
 const LO_HZ = 0.25
 const DRIFT_HZ = 0.15
 const CONTROL = 16
+const ACCENT_OCTAVES = 3
+const ACCENT_VCA = 0.8
+const ACCENT_DECAY_S = 0.2
+// The 303 gangs its resonance pot with the accent cap's resistor, so emphasis
+// slows the cap and back-to-back accents stack higher.
+const ACCENT_CAP_S = 0.02
+const ACCENT_CAP_EMPH_S = 0.3
+const SLIDE_S = 0.06
 // Hiss at the ladder input, enough to start it oscillating from silence.
 const FLOOR = 1e-4
 // The nonlinear gains in the ladder detune its resonance flat by about this much.
@@ -360,6 +371,11 @@ export class MonoVoice {
   private readonly noise: Rng
   private readonly held: number[] = []
   private velocity = 1
+  private accentEnv = 0
+  private accentCap = 0
+  private boost = 1
+  private boostTarget = 1
+  private sliding = false
   /** semitones on every oscillator keyed off the keyboard, a block at a time */
   bend = 0
   /** octaves on the cutoff, a block at a time */
@@ -385,8 +401,11 @@ export class MonoVoice {
     ]
   }
 
-  noteOn(note: number, velocity = 1) {
+  noteOn(note: number, velocity = 1, accent = false, slide = false) {
     this.velocity = velocity
+    this.sliding = slide
+    this.boostTarget = accent ? 1 + ACCENT_VCA * this.patch.accent : 1
+    if (accent) this.accentEnv = 1
     const i = this.held.indexOf(note)
     if (i >= 0) this.held.splice(i, 1)
     const legato = this.held.length > 0
@@ -477,7 +496,13 @@ export class MonoVoice {
     const osr = this.osr
     const sr = osr / OS
     const { osc0, osc1, osc2, ratio, fEnv, aEnv, ladder } = this
-    const glideK = p.glide > 0 ? 1 - Math.exp(-1 / (p.glide * sr)) : 1
+    const glideS = this.sliding ? SLIDE_S : p.glide
+    const glideK = glideS > 0 ? 1 - Math.exp(-1 / (glideS * sr)) : 1
+    const accentFall = Math.exp(-1 / (ACCENT_DECAY_S * p.envCap * sr))
+    const accentCapK =
+      1 - Math.exp(-1 / ((ACCENT_CAP_S + ACCENT_CAP_EMPH_S * p.emphasis) * sr))
+    const accentOct = ACCENT_OCTAVES * p.accent
+    const boostK = 1 - Math.exp(-1 / (0.002 * sr))
     const droopK = p.droop > 0 ? 1 - Math.exp(-p.droop / sr) : 0
     const r = 4.2 * p.emphasis
     const comp = 1 + p.bassComp * r * 0.75
@@ -525,7 +550,12 @@ export class MonoVoice {
       }
       const fe = fEnv.step()
       const ae = aEnv.step()
-      const amp = leak + (1 - leak) * ae
+      this.accentEnv = flushDenormal(this.accentEnv * accentFall)
+      this.accentCap = flushDenormal(
+        this.accentCap + (this.accentEnv - this.accentCap) * accentCapK,
+      )
+      this.boost += (this.boostTarget - this.boost) * boostK
+      const amp = (leak + (1 - leak) * ae) * this.boost
       const mod =
         modMix > 0
           ? modAmt *
@@ -551,6 +581,7 @@ export class MonoVoice {
         p.cutoff *
           octaves(
             contour * fe +
+              accentOct * this.accentCap +
               track * (this.cv - 48) +
               modFilter * mod +
               this.open +
@@ -598,6 +629,11 @@ export class MonoVoice {
     this.allOff()
     this.fEnv.level = 0
     this.aEnv.level = 0
+    this.accentEnv = 0
+    this.accentCap = 0
+    this.boost = 1
+    this.boostTarget = 1
+    this.sliding = false
     this.ladder.reset()
     this.down.reset()
     this.dc.reset()

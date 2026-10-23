@@ -228,6 +228,10 @@ export const PARAM_DEFS = [
   ['monoSeqStep29', 'step'],
   ['monoSeqStep30', 'step'],
   ['monoSeqStep31', 'step'],
+  ['monoSeqAccentLo', 'step'],
+  ['monoSeqAccentHi', 'step'],
+  ['monoSeqSlideLo', 'step'],
+  ['monoSeqSlideHi', 'step'],
 
   ['drumLevel', 'slew'],
   ['drumMute', 'ramp'],
@@ -386,6 +390,7 @@ export const PARAM_DEFS = [
   ['monoMute', 'ramp'],
   ['monoKeyGate', 'step'],
   ['monoGate', 'slew'],
+  ['monoAccent', 'slew'],
   ['monoStruck', 'step'],
   ['monoGlide', 'slew'],
   ['monoWave1', 'step'],

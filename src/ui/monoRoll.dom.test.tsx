@@ -94,3 +94,23 @@ test('record on the roll arms the memory, turns it on and runs the song', () => 
   fireEvent.click(screen.getByRole('button', { name: 'record' }))
   expect(engine.seqRecord.get()).toBe(false)
 })
+
+test('the accent and slide rows flip one step’s bit each', () => {
+  act(() =>
+    engine.patch({
+      monoSeqAccentLo: 0,
+      monoSeqAccentHi: 0,
+      monoSeqSlideLo: 0,
+      monoSeqSlideHi: 0,
+    }),
+  )
+  openMono()
+  fireEvent.click(cell('acc step 1'))
+  fireEvent.click(cell('slide step 18'))
+  const c = engine.controls.get()
+  expect(c.monoSeqAccentLo).toBe(0x8000)
+  expect(c.monoSeqSlideHi).toBe(0x4000)
+  expect(lit('acc step 1')).toBe(true)
+  fireEvent.click(cell('acc step 1'))
+  expect(engine.controls.get().monoSeqAccentLo).toBe(0)
+})

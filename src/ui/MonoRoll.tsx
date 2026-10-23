@@ -4,10 +4,14 @@ import { engine } from '../engine/engine.ts'
 import { isSharp, semitoneName } from '../notes.ts'
 import {
   asTuneLen,
+  hasSeqFlag,
   HOLD,
   isNote,
+  MONO_SEQ_ACCENT_KEYS,
+  MONO_SEQ_SLIDE_KEYS,
   MONO_SEQ_STEP_KEYS,
   REST,
+  seqFlagBit,
   TUNE_STEPS,
   voicing,
 } from '../tune.ts'
@@ -24,6 +28,7 @@ import {
   useSteps,
 } from './tuneRoll.ts'
 
+import type { ControlKey } from '../controls.ts'
 import type { RefObject } from 'react'
 
 const wipe = () => {
@@ -31,6 +36,9 @@ const wipe = () => {
   engine.writeBoard({
     ...engine.controls.get(),
     ...Object.fromEntries(MONO_SEQ_STEP_KEYS.map(k => [k, REST])),
+    ...Object.fromEntries(
+      [...MONO_SEQ_ACCENT_KEYS, ...MONO_SEQ_SLIDE_KEYS].map(k => [k, 0]),
+    ),
   })
 }
 
@@ -218,7 +226,72 @@ export function MonoRoll() {
           ))}
         </div>
       </Tip>
+      <div className={`${styles.grid} ${styles.flags}`}>
+        <FlagRow
+          name="acc"
+          keys={MONO_SEQ_ACCENT_KEYS}
+          tip="Accent a step: louder, and a kick to the cutoff. Accents close together climb. Accent on the panel sets how hard."
+          under={under}
+          len={len}
+        />
+        <FlagRow
+          name="slide"
+          keys={MONO_SEQ_SLIDE_KEYS}
+          tip="Slide a step into the next note: the gate stays down and the pitch glides, with no new attack. Into the same note it ties."
+          under={under}
+          len={len}
+        />
+      </div>
     </div>
+  )
+}
+
+function FlagRow(props: {
+  name: string
+  keys: readonly [ControlKey, ControlKey]
+  tip: string
+  under: number
+  len: number
+}) {
+  const { keys, under, len } = props
+  const lo = useControlValue(keys[0])
+  const hi = useControlValue(keys[1])
+  const toggle = (step: number) => {
+    const key = keys[step < 16 ? 0 : 1]
+    const mask = step < 16 ? lo : hi
+    engine.armStep()
+    if (engine.controls.get().monoSeqOn < 1) engine.set('monoSeqOn', 1)
+    engine.set(key, mask ^ seqFlagBit(step))
+  }
+  return (
+    <Tip text={props.tip}>
+      <div className={styles.row}>
+        <span className={styles.name}>{props.name}</span>
+        <div className={styles.cells}>
+          {Array.from({ length: TUNE_STEPS }, (_, s) => {
+            const on = hasSeqFlag(lo, hi, s)
+            return (
+              <button
+                key={s}
+                className={cellClass({
+                  on,
+                  head: on,
+                  ghost: false,
+                  sharp: false,
+                  beat: s % 4 === 0,
+                  under: s === under,
+                  past: s >= len,
+                  wrap: s === len,
+                })}
+                aria-label={`${props.name} step ${s + 1}`}
+                aria-pressed={on}
+                onClick={() => toggle(s)}
+              />
+            )
+          })}
+        </div>
+      </div>
+    </Tip>
   )
 }
 

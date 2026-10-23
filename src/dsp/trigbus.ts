@@ -62,6 +62,10 @@ export class TriggerBus {
   readonly seqKey = new Float32Array(BLOCK)
   /** How many samples that step lasts, plus the holds that follow it. */
   readonly seqSpan = new Float32Array(BLOCK)
+  /** 1 where that step is accented. */
+  readonly seqAccent = new Float32Array(BLOCK)
+  /** 1 where that step slides into the next note. */
+  readonly seqSlide = new Float32Array(BLOCK)
 
   private pendBits = new Float32Array(BLOCK)
   private pendGain = new Float32Array(BLOCK)
@@ -86,9 +90,17 @@ export class TriggerBus {
     this.keyHeld[i] = held ? 1 : 0
   }
 
-  seqStruck(i: number, semitone: number, span: number) {
+  seqStruck(
+    i: number,
+    semitone: number,
+    span: number,
+    accent = false,
+    slide = false,
+  ) {
     this.seqKey[i] = semitone + KEY_BIAS
     this.seqSpan[i] = span
+    this.seqAccent[i] = accent ? 1 : 0
+    this.seqSlide[i] = slide ? 1 : 0
   }
 
   // Once a block, from the chain: last block's kit hits become the readable
@@ -112,6 +124,8 @@ export class TriggerBus {
     this.keyHeld.fill(0, 0, n)
     this.seqKey.fill(0, 0, n)
     this.seqSpan.fill(0, 0, n)
+    this.seqAccent.fill(0, 0, n)
+    this.seqSlide.fill(0, 0, n)
   }
 
   panic() {
@@ -127,5 +141,7 @@ export class TriggerBus {
     this.keyHeld.fill(0)
     this.seqKey.fill(0)
     this.seqSpan.fill(0)
+    this.seqAccent.fill(0)
+    this.seqSlide.fill(0)
   }
 }

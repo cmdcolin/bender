@@ -64,7 +64,12 @@ import {
 import { SFX_PICKS, SFX_WIRES } from '../../dsp/stages/toySfx.ts'
 import { NOTE_NAMES } from '../../notes.ts'
 import { SCALE_NAMES } from '../../scale.ts'
-import { MONO_SEQ_STEP_KEYS, TUNE_ALL_STEP_KEYS } from '../../tune.ts'
+import {
+  MONO_SEQ_ACCENT_KEYS,
+  MONO_SEQ_SLIDE_KEYS,
+  MONO_SEQ_STEP_KEYS,
+  TUNE_ALL_STEP_KEYS,
+} from '../../tune.ts'
 
 import type { Controls } from '../../controls.ts'
 
@@ -2277,7 +2282,14 @@ export const SOURCE_GROUPS: Group[] = [
     name: 'Growler',
     place: 'Sources',
     editor: { kind: 'monoPath' },
-    memory: { keys: [...MONO_SEQ_STEP_KEYS, 'monoSeqLen'] },
+    memory: {
+      keys: [
+        ...MONO_SEQ_STEP_KEYS,
+        ...MONO_SEQ_ACCENT_KEYS,
+        ...MONO_SEQ_SLIDE_KEYS,
+        'monoSeqLen',
+      ],
+    },
     handled: [
       'monoWave1',
       'monoRange1',
@@ -2763,6 +2775,16 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'How long a note struck off the toy’s gate or the kit’s trigger lines stays down, as a fraction of the toy’s sequencer step. At 1 each note is still down when the next arrives, so the tune plays legato and slides with glide.',
+      },
+      {
+        key: 'monoAccent',
+        part: 'melody',
+        label: 'Accent',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How hard an accented step of the melody memory hits: louder, and a kick to the cutoff through the accent cap. Accents close together charge the cap before it drains, so a run of them climbs, and Emphasis slows the cap so the climb goes higher.',
       },
       {
         key: 'monoStruck',

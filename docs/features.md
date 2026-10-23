@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-533 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+534 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 140 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -520,7 +520,7 @@ oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck
 bit on the key DAC and a weak regulator.
 
 <details>
-<summary>52 controls</summary>
+<summary>53 controls</summary>
 
 | control                         | range                                                             | what it does                                                                                                                                |
 | ------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -567,6 +567,7 @@ bit on the key DAC and a weak regulator.
 | To pitch                        | 0 to 12 st                                                        | How far the modulation moves oscillators 1 and 2, in semitones                                                                              |
 | To filter                       | 0 to 4 octaves                                                    | How far the modulation moves the cutoff, in octaves                                                                                         |
 | Gate                            | 0.05 to 1                                                         | How long a note struck off the toy’s gate or the kit’s trigger lines stays down, as a fraction of the toy’s sequencer step                  |
+| Accent                          | off to full                                                       | How hard an accented step of the melody memory hits: louder, and a kick to the cutoff through the accent cap                                |
 | Kit voice that plays this synth | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit | The kit’s trigger lines, clipped onto the synth’s gate                                                                                      |
 | Plays Plinky’s notes            | yes, soldered or no, cut                                          | The jumper from the toy’s gate line to the synth’s key input                                                                                |
 | Hot converter                   | off to full                                                       | The exponential converter’s transistor pair with its heater gone                                                                            |
