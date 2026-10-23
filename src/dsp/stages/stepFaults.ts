@@ -15,6 +15,9 @@ const BUFFER_S = 4
 const SEAM_S = 0.0015
 const BRAKE_STOP = 0.9
 const WINDOW = 32
+// A held throw has no end the stage can see, so it shapes itself to a beat:
+// the brake stops in one and stays stopped while the key is down.
+const LIVE_RUN = 4
 
 interface Voice {
   event: number
@@ -26,8 +29,11 @@ interface Voice {
 }
 
 /** The fault on the kit's step `tick`, as the trigger bus carries it: one past
-    the counter. A row set to fire every few bars fires on the last of them. */
+    the counter. A held fault throw wins over the row; a row set to fire every
+    few bars fires on the last of them. */
 export function eventOn(p: Float32Array, tick: number): number {
+  const live = asEvent(p[IDX.drumEventLive]!)
+  if (live !== 0) return live
   const every = EVENT_EVERY[asEventEvery(p[IDX.drumEventEvery]!)]!
   const bar = Math.floor((tick - 1) / STEPS)
   if ((bar + 1) % every !== 0) return 0
@@ -36,6 +42,7 @@ export function eventOn(p: Float32Array, tick: number): number {
 
 /** How many steps from `tick` on carry the same fault, so a run plays as one. */
 function runOf(p: Float32Array, tick: number, event: number): number {
+  if (asEvent(p[IDX.drumEventLive]!) !== 0) return LIVE_RUN
   let n = 1
   while (n < STEPS && eventOn(p, tick + n) === event) n++
   return n
@@ -78,6 +85,7 @@ export class StepFaults implements Stage {
 
   when(p: Float32Array) {
     if (this.cur.event !== 0 || this.seam > 0) return true
+    if (p[IDX.drumEventLive]! !== 0) return true
     for (const idx of EVENT_IDX) if (p[idx]! !== 0) return true
     return false
   }

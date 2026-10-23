@@ -43,6 +43,17 @@ Two rows under the grid work like a tracker's effect columns:
   **f** roll faster and faster. The button at the end of the row sets how often
   the row fires: **4:4** fires on the fourth bar of every four
 
+The same five faults play live while the kit runs. Hold a key and the fault
+starts on the kit's next step and lasts until you let go:
+
+| key | throw   | fault                                       |
+| --- | ------- | ------------------------------------------- |
+| `.` | knife   | the whole board cut                         |
+| `;` | unplug  | the cells off the board; held long, reboots |
+| `/` | stop    | the whole mix braked to a stop over a beat  |
+| `i` | stutter | the whole mix rolled faster and faster      |
+| `r` | reboot  | the power pulled on every step              |
+
 ![The drum box's blocks: triggers into one-shots, tanks, a metal bank and noise, then amps and a DAC fed by a sample ROM.](../public/guide/guide-drum-voices.jpg)
 
 ## More machines

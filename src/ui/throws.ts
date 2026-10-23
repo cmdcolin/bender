@@ -1,3 +1,5 @@
+import { EVENT } from '../drums.ts'
+
 import type { Controls } from '../controls.ts'
 
 export interface ThrowDef {
@@ -54,5 +56,37 @@ export const THROWS: ThrowDef[] = [
     key: ',',
     blurb: 'Crusher down to three bits',
     push: () => ({ bits: 3, crushMix: 1 }),
+  },
+  // The event row's faults, from the kit's next step for as long as the key is
+  // down. The kit has to be running.
+  {
+    name: 'knife',
+    key: '.',
+    blurb: 'Whole board cut from the kit’s next step',
+    push: () => ({ drumEventLive: EVENT.cut }),
+  },
+  {
+    name: 'unplug',
+    key: ';',
+    blurb: 'Cells off the board from the kit’s next step',
+    push: () => ({ drumEventLive: EVENT.drop }),
+  },
+  {
+    name: 'stop',
+    key: '/',
+    blurb: 'Whole mix braked to a stop over a beat',
+    push: () => ({ drumEventLive: EVENT.brake }),
+  },
+  {
+    name: 'stutter',
+    key: 'i',
+    blurb: 'Whole mix rolled faster and faster from the next step',
+    push: () => ({ drumEventLive: EVENT.freeze }),
+  },
+  {
+    name: 'reboot',
+    key: 'r',
+    blurb: 'Power pulled on every step',
+    push: () => ({ drumEventLive: EVENT.reboot }),
   },
 ]

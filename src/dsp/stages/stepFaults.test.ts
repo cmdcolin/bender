@@ -69,6 +69,13 @@ test('a fault ends with its step even if the kit stops', () => {
   )
 })
 
+test('a held fault throw lands on the next step, whatever the row says', () => {
+  const held = { drumEventLive: EVENT.cut, drumEventEvery: 3 }
+  const { input, out } = run(held, BAR)
+  expect(out.subarray(0, 1000)).toEqual(input.subarray(0, 1000))
+  expect(rms(out.subarray(1200, 1000 + 2 * STEP))).toBe(0)
+})
+
 test('a brake slows the mix to a stop inside its step', () => {
   const { out } = run({ drumEvent0: EVENT.brake }, BAR)
   const early = rms(out.subarray(1100, 1600))

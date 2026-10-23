@@ -61,6 +61,15 @@ test('the throws follow their letters', () => {
   expect(throwForKey('c')).toBeUndefined()
 })
 
+test('a layout saved before the fault throws gets them on their letters', async () => {
+  const old = DEFAULT_KEYMAP.slice(0, -5).map(k => (k === 'a' ? 'q' : k))
+  localStorage.setItem('bender.keymap', JSON.stringify(old))
+  vi.resetModules()
+  const reloaded = await import('./keymap.ts')
+  expect(reloaded.keymap.get()[0]).toBe('q')
+  expect(reloaded.throwForKey('r')?.name).toBe('reboot')
+})
+
 test('a layout survives a reload and a damaged one is dropped', async () => {
   moveKey('a', 'q')
   vi.resetModules()

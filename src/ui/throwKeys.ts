@@ -14,7 +14,7 @@ const releaseAll = () => {
   for (const t of THROWS) releaseThrow(t)
 }
 
-/** The bottom row of letters holds the six throws, whatever the rest of the
+/** The throws' letters hold their throws, whatever the rest of the
     letters are doing. */
 export function useThrowKeys() {
   useEffect(() => {

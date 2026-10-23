@@ -372,6 +372,7 @@ export const PARAM_DEFS = [
   ['drumEvent14', 'step'],
   ['drumEvent15', 'step'],
   ['drumEventEvery', 'step'],
+  ['drumEventLive', 'step'],
 
   ['fmLevel', 'slew'],
   ['fmMute', 'ramp'],

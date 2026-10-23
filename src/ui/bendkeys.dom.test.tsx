@@ -162,8 +162,17 @@ test('the redeal and let-go keys take a click', () => {
 
 test('the letters with nothing on them hold their place on the keyboard', () => {
   open()
-  for (const letter of ['q', 'r', 'i'])
-    expect(screen.getByText(letter).closest('button')).toBeNull()
+  expect(screen.getByText('q').closest('button')).toBeNull()
+})
+
+test('a fault throw key holds its fault on the board', () => {
+  open()
+  const reboot = screen.getByText('r').closest('button')!
+  expect(reboot.textContent).toContain('reboot')
+  fireEvent.pointerDown(reboot, { pointerId: 1 })
+  expect(engine.held.get().get('reboot')).toEqual({ drumEventLive: 5 })
+  fireEvent.pointerUp(reboot, { pointerId: 1 })
+  expect(engine.held.get().has('reboot')).toBe(false)
 })
 
 test('a lit step of the bend row holds that step’s key for the step', () => {

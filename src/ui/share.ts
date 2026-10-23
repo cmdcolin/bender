@@ -134,7 +134,7 @@ export function coerceControl(key: ControlKey, v: number): number {
             ? asRatchet(v)
             : NUDGE_SET.has(key)
               ? asNudge(v)
-              : EVENT_SET.has(key)
+              : EVENT_SET.has(key) || key === 'drumEventLive'
                 ? asEvent(v)
                 : key === 'drumEventEvery'
                   ? asEventEvery(v)

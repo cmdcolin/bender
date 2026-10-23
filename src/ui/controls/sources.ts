@@ -795,6 +795,7 @@ export const SOURCE_GROUPS: Group[] = [
         ...NUDGE_KEYS,
         ...EVENT_KEYS,
         'drumEventEvery',
+        'drumEventLive',
       ],
     },
     sliders: [

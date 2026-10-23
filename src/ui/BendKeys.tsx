@@ -70,10 +70,11 @@ function place(row: number, indent: number, i: number): CSSProperties {
   return vars
 }
 
-// Sixteen throws the dice dealt on the top two rows of letters, the six chosen
-// throws on the bottom row, and z and x to let go and redeal, laid out where
-// the fingers find them. Letters reach the bends only once the toggle in the
-// bar sends them here instead of to a keybed; the bottom row always throws.
+// Sixteen throws the dice dealt on the top two rows of letters, the chosen
+// throws on the bottom row and the letters left over, and z and x to let go
+// and redeal, laid out where the fingers find them. Letters reach the bends
+// only once the toggle in the bar sends them here instead of to a keybed; a
+// throw's letter always throws.
 export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   const deal = useStoreValue(bendDeal)
   const held = useStoreValue(engine.held)

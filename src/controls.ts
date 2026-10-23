@@ -387,6 +387,8 @@ export const DEFAULT_CONTROLS = {
   drumEvent14: 0,
   drumEvent15: 0,
   drumEventEvery: 0,
+  // Held by a fault throw, never set: a key down puts its fault on every step.
+  drumEventLive: 0,
 
   fmLevel: 0,
   fmMute: 0,

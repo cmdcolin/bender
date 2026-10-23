@@ -27,11 +27,19 @@ export const isKeymap = (value: unknown): value is string[] =>
   ) &&
   new Set(value).size === value.length
 
+// A layout saved before newer throws existed is the same layout with those
+// throws on their own letters, unless the layout already gave a letter away.
+function grown(parsed: unknown): unknown {
+  if (!Array.isArray(parsed) || parsed.length >= DEFAULT_KEYMAP.length)
+    return parsed
+  return [...parsed, ...DEFAULT_KEYMAP.slice(parsed.length)]
+}
+
 function storedKeymap(): readonly string[] | null {
   const raw = read(KEYMAP_KEY)
   if (raw === null) return null
   try {
-    const parsed: unknown = JSON.parse(raw)
+    const parsed = grown(JSON.parse(raw))
     return isKeymap(parsed) ? parsed : null
   } catch {
     return null
