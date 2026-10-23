@@ -167,6 +167,16 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
+  'Crusher|knife on the bus': {
+    label: 'crusher bus wiring',
+    cut: 'crushBusCut',
+    rows: [
+      {
+        chips: ['converter', 'DAC'],
+        links: [[ribbon('crushDataLine', 'crushDataFault')]],
+      },
+    ],
+  },
   'Glint|knife on the bus': {
     label: 'glint bus wiring',
     cut: 'fmBusCut',

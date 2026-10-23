@@ -96,6 +96,12 @@ const JACKS: Record<(typeof MIC)[keyof typeof MIC], MicJack> = {
     part: 'data bus',
     says: 'your voice overwrites its settings, and they stay overwritten',
   },
+  [MIC.crushClock]: {
+    name: 'crush clock',
+    stage: 'Crusher',
+    part: 'clock pin',
+    says: 'each cycle of your voice takes one sample, so you sing the sample rate and silence freezes it',
+  },
 }
 
 export const MIC_JACKS: readonly MicJack[] = Object.values(MIC)
@@ -127,6 +133,7 @@ export const JACKS_BY_STAGE: readonly {
   { stage: 'Chaos osc', kind: 'oscillator', jacks: [MIC.oscSync, MIC.oscFm] },
   { stage: 'Wraith', kind: 'tape delay', jacks: [MIC.delayFb] },
   { stage: 'Ring mod', jacks: [MIC.ringCarrier] },
+  { stage: 'Crusher', jacks: [MIC.crushClock] },
   { stage: 'Glitch buffer', jacks: [MIC.glitchTrig] },
   { stage: 'mix', jacks: [MIC.mix] },
 ]

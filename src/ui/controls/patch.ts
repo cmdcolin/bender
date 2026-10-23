@@ -197,6 +197,11 @@ export const PATCH_GROUPS: Group[] = [
             'keys write strobe',
             'keys sign on up/down',
             'keys shared latch',
+            'crush data line',
+            'crush data fault',
+            'crush cut depth',
+            'crush ladder',
+            'crush DAC ref',
           ],
           groups: [
             {
@@ -339,6 +344,11 @@ export const PATCH_GROUPS: Group[] = [
                 'comb pitch',
                 'crush rate',
                 'bit depth',
+                'crush data line',
+                'crush data fault',
+                'crush cut depth',
+                'crush ladder',
+                'crush DAC ref',
                 'glitch',
                 'shift Hz',
               ],

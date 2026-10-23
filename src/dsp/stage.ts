@@ -44,6 +44,12 @@ export interface Ctx {
    * toy's timing pin asks for it.
    */
   fm: Float32Array
+  /**
+   * The second word for the crusher's logic gate: one source on its own, taken
+   * the same way as the carrier, for whichever `crushWith` names. Zeros unless
+   * the gate is on.
+   */
+  logic: Float32Array
   /** Kit hits thrown to the tape delay this block, mono and dry. */
   send: Float32Array
   /**

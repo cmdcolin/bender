@@ -30,6 +30,7 @@ import {
 } from '../src/controls.ts'
 import { FAULT } from '../src/dsp/bus.ts'
 import { BANDS, spectrum } from '../src/dsp/spectrum.ts'
+import { CRUSH_ADC } from '../src/dsp/stages/crusher.ts'
 import { FM_EFFECT_NAMES } from '../src/dsp/stages/fmEffects.ts'
 import { PCM_VOICE_NAMES } from '../src/dsp/stages/pcmRom.ts'
 import { romIndex } from '../src/dsp/stages/roms.ts'
@@ -62,7 +63,8 @@ interface BusDef {
   fault: ControlKey
   depth: ControlKey
   solo: Partial<Controls>
-  tap: SourceTap
+  /** the source's own stem, or the master for a bend */
+  tap?: SourceTap
   /** the other machines this chip can be, if it can be more than one */
   modes?: [name: string, board: Partial<Controls>][]
 }
@@ -77,6 +79,12 @@ const FM = { drumLevel: 0.4, chipLevel: 0.2, fmLevel: 0.9 }
 // its own, so the toy stays in underneath it striking the notes, and the
 // measurement comes off this chip's own stem.
 const KEYS = { drumLevel: 0.4, chipLevel: 0.2, pcmLevel: 0.9 }
+// The crusher is a bend: the whole board goes through it, and each converter
+// puts a different word on the same wires.
+const CRUSH = { crushMix: 1 }
+const CRUSH_MODES: [string, Partial<Controls>][] = CRUSH_ADC.slice(1).map(
+  (name, i) => [name, { crushAdc: i + 1 }],
+)
 
 // The keyboard is two machines as well, and the second one is not a mode the
 // panel switches — it is whether there is a file on the sampler. A ROM voice is
@@ -225,6 +233,15 @@ const BUSES: BusDef[] = [
     tap: 'pcmKeys',
     modes: KEYS_MODES,
   },
+  {
+    chip: 'crush',
+    bus: 'data',
+    line: 'crushDataLine',
+    fault: 'crushDataFault',
+    depth: 'crushBusCut',
+    solo: CRUSH,
+    modes: CRUSH_MODES,
+  },
 ]
 
 const FAULTS: [name: string, fault: number, depth: number][] = [
@@ -240,8 +257,10 @@ const pad = (s: string, n: number) => s.padEnd(n)
 const LABEL = 30
 
 /** One source's own stem, so a neighbour in the mix is not in the answer. */
-const stemOf = (c: Partial<Controls>, tap: SourceTap) =>
-  renderStems({ ...BOARD, ...c }, SECONDS).stems[SOURCE_TAPS.indexOf(tap)]!
+const stemOf = (c: Partial<Controls>, tap?: SourceTap) =>
+  tap
+    ? renderStems({ ...BOARD, ...c }, SECONDS).stems[SOURCE_TAPS.indexOf(tap)]!
+    : render({ ...BOARD, ...c }, SECONDS)
 
 interface Row {
   label: string

@@ -62,6 +62,8 @@ const FM = { drumLevel: 0, chipLevel: 0.2, fmLevel: 0.9 }
 // Same arrangement for the home keyboard, and for the same reason: it has no
 // sequencer either, so the toy stays in underneath it striking the notes.
 const KEYS = { drumLevel: 0, fmLevel: 0, chipLevel: 0.2, pcmLevel: 0.9 }
+// The crusher is a bend, so the whole board goes through it, fully wet.
+const CRUSH = { crushMix: 1 }
 
 const BUSES: BusDef[] = [
   {
@@ -159,6 +161,14 @@ const BUSES: BusDef[] = [
     fault: 'pcmDataFault',
     depth: 'pcmBusCut',
     solo: KEYS,
+  },
+  {
+    chip: 'crush',
+    bus: 'data',
+    line: 'crushDataLine',
+    fault: 'crushDataFault',
+    depth: 'crushBusCut',
+    solo: CRUSH,
   },
 ]
 

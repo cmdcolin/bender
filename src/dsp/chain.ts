@@ -10,6 +10,7 @@ import { pedalOrderAt } from '../pedals.ts'
 import { MIC } from './micJacks.ts'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage.ts'
+import { CRUSH_REF_TOY, CRUSH_WITH_TAP } from './stages/crusher.ts'
 import { RING_FROM_TAP } from './stages/ringmod.ts'
 import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
 import { DAC_REF_TOY } from './stages/toyDrum.ts'
@@ -356,6 +357,7 @@ export class Chain {
       out: new Float32Array(BLOCK),
       step: new Float32Array(BLOCK),
       carrier: new Float32Array(BLOCK),
+      logic: new Float32Array(BLOCK),
       toy: new Float32Array(BLOCK),
       fm: new Float32Array(BLOCK),
       send: new Float32Array(BLOCK),
@@ -413,6 +415,7 @@ export class Chain {
     this.ctx.out.fill(0)
     this.ctx.step.fill(0)
     this.ctx.carrier.fill(0)
+    this.ctx.logic.fill(0)
     this.ctx.toy.fill(0)
     this.ctx.fm.fill(0)
     this.ctx.send.fill(0)
@@ -517,8 +520,16 @@ export class Chain {
     // is a thing only this loop has.
     const carFrom = RING_FROM_TAP[Math.round(p[IDX.ringFrom]!)] ?? -1
     let carRan = false
+    const crushing = p[IDX.crushMix]! > 0
+    const logicFrom =
+      crushing && p[IDX.crushLogic]! >= 0.5
+        ? (CRUSH_WITH_TAP[Math.round(p[IDX.crushWith]!)] ?? -1)
+        : -1
+    let logicRan = false
     const toyRef =
-      Math.round(p[IDX.drumRef]!) === DAC_REF_TOY || p[IDX.fmToyBus]! > 0
+      Math.round(p[IDX.drumRef]!) === DAC_REF_TOY ||
+      p[IDX.fmToyBus]! > 0 ||
+      (crushing && Math.round(p[IDX.crushRef]!) === CRUSH_REF_TOY)
     if (toyRef) ctx.toy.fill(0, 0, n)
     const fmTap = p[IDX.chipFmClock]! > 0
     let fmRan = false
@@ -548,8 +559,11 @@ export class Chain {
         // than a branch inside the loop that reads it.
         const carrying = k === carFrom
         if (carrying) for (let i = 0; i < n; i++) ctx.carrier[i] = prev[i]!
+        const gating = k === logicFrom
+        if (gating) for (let i = 0; i < n; i++) ctx.logic[i] = prev[i]!
         s.process(io, p, ctx)
         if (carrying) carRan = true
+        if (gating) logicRan = true
         if (vca) {
           for (let i = 0; i < n; i++) {
             const g = Math.min(Math.max(1 + vca[i]!, 0), 2)
@@ -598,6 +612,9 @@ export class Chain {
           for (let i = 0; i < n; i++)
             ctx.carrier[i] = prev[i]! - ctx.carrier[i]!
         }
+        if (gating) {
+          for (let i = 0; i < n; i++) ctx.logic[i] = prev[i]! - ctx.logic[i]!
+        }
         // A source past `MAX_SOURCES` would still sound, but its meter would
         // land on the mic's; a test holds the two numbers together.
         if (k < MAX_SOURCES && peak > this.taps[k]!) this.taps[k] = peak
@@ -606,6 +623,7 @@ export class Chain {
     // A machine whose own `when` said no put nothing on the bus, so the carrier
     // is silence rather than last block's copy of it.
     if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
+    if (logicFrom >= 0 && !logicRan) ctx.logic.fill(0, 0, n)
     if (fmTap && !fmRan) ctx.fm.fill(0, 0, n)
 
     // The summing amp the sources meet in. Every desk has one and it is

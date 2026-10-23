@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-503 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+513 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 125 presets, 23 stage settings and 46 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 125 destinations, among
+- **A patch bay that modulates itself.** Four wires, 130 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -64,7 +64,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   noise goes down under the last. _Hold_ raises the write level by what a lap
   lost, so a loop stays at its level.
 - **A microphone into the middle of the board.** _Mic into_ on the bench bar
-  solders the mic to one of 14 jacks: the toy's clock pin, so your pitch sets
+  solders the mic to one of 15 jacks: the toy's clock pin, so your pitch sets
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 48 controls are shy, mostly the ones that act on the
+names it still sets it. 49 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -719,10 +719,10 @@ list the jacks with what a voice does at each.
 <details>
 <summary>2 controls</summary>
 
-| control   | range                             | what it does                         |
-| --------- | --------------------------------- | ------------------------------------ |
-| Mic       | 0 to 4, normal 0 to 1             | Microphone gain into the patch point |
-| Mic patch | 14 of them, mix through Glint bus | Where the mic wire is soldered       |
+| control   | range                               | what it does                         |
+| --------- | ----------------------------------- | ------------------------------------ |
+| Mic       | 0 to 4, normal 0 to 1               | Microphone gain into the patch point |
+| Mic patch | 15 of them, mix through crush clock | Where the mic wire is soldered       |
 
 </details>
 
@@ -810,14 +810,24 @@ Bit depth and sample rate, both reducible until the signal breaks up, with
 jitter on the rate.
 
 <details>
-<summary>4 controls</summary>
+<summary>14 controls</summary>
 
-| control | range            | what it does                   |
-| ------- | ---------------- | ------------------------------ |
-| Bits    | 1 to 16 bits     | Word length of the virtual DAC |
-| Rate    | 100 Hz to 48 kHz | Sample-and-hold rate           |
-| Jitter  | off to full      | Re-rolls each hold length      |
-| Mix     | off to full      | Dry/wet                        |
+| control         | range                                                                        | what it does                                                                                                       |
+| --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Bits            | 1 to 16 bits                                                                 | Word length of the virtual DAC                                                                                     |
+| Rate            | 100 Hz to 48 kHz                                                             | Sample-and-hold rate                                                                                               |
+| Jitter          | off to full                                                                  | Re-rolls each hold length                                                                                          |
+| Mix             | off to full                                                                  | Dry/wet                                                                                                            |
+| Converter       | stock, SAR, μ-law, ADPCM, delta                                              | What turns the input into a code word                                                                              |
+| Sample clock    | crystal or toy RC                                                            | Its own crystal, or the toy’s RC oscillator, which runs off the toy’s rail                                         |
+| Logic gate      | off, XOR, AND, OR                                                            | A gate chip between the converter and the bus that combines each code word with another machine’s word, bit by bit |
+| Gate with       | the toy, the kit, glint, chaos osc, noise, sampler, keys, growler, layercake | The machine whose words go into the gate’s other input                                                             |
+| Ladder mismatch | off to full                                                                  | How far out the R-2R ladder’s resistors are                                                                        |
+| DAC reference   | fixed, the rail, the toy chip, the mic, the bus                              | What the DAC’s reference pin is wired to                                                                           |
+| Reference depth | off to full                                                                  | How much of the reference pin is that signal and how much the fixed voltage                                        |
+| Data line †     | 17 of them, off through D15                                                  | Which of the sixteen wires from the converter to the DAC the knife is on, D15 the top                              |
+| Data fault      | cut, to ground, to +V, bridged                                               | What the knife did to the wire                                                                                     |
+| Cut depth       | off to full                                                                  | How far through the trace the knife went                                                                           |
 
 </details>
 
@@ -1139,7 +1149,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s oscillator, free-running                                             |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 125 of them, filt cut through keys shared latch                                            | Where the other end is soldered                                                |
+| Wire 1–4 to    | 130 of them, filt cut through crush DAC ref                                                | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

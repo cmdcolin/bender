@@ -152,6 +152,11 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   pcmWrite: 'Parlor',
   pcmSignDir: 'Parlor',
   pcmLatch: 'Parlor',
+  crushDataLine: 'Crusher',
+  crushDataFault: 'Crusher',
+  crushBusCut: 'Crusher',
+  crushLadder: 'Crusher',
+  crushRefDepth: 'Crusher',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

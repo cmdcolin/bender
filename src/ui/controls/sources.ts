@@ -3171,7 +3171,7 @@ export const SOURCE_GROUPS: Group[] = [
         key: 'micPatch',
         label: 'Mic patch',
         min: 0,
-        max: 13,
+        max: MIC_JACKS.length - 1,
         step: 1,
         unit: '',
         choices: MIC_JACKS.map(j => j.name),

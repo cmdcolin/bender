@@ -171,6 +171,14 @@ const LANDINGS: Landing[] = [
   at('keys write strobe', ['pcmLevel']),
   at('keys sign on up/down', ['pcmLevel']),
   at('keys shared latch', ['pcmLevel']),
+  at('crush data line', ['crushMix'], { bend: 'crush' }),
+  at('crush data fault', ['crushMix', 'crushDataLine'], { bend: 'crush' }),
+  at('crush cut depth', ['crushMix', 'crushDataLine'], {
+    bend: 'crush',
+    needs: c => c.crushDataFault === 0,
+  }),
+  at('crush ladder', ['crushMix'], { bend: 'crush' }),
+  at('crush DAC ref', ['crushMix', 'crushRef'], { bend: 'crush' }),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))
