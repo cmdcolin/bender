@@ -5,6 +5,7 @@ import { packParams } from '../engine/params.ts'
 import { MEMORY_SYNC_MODES } from './melodyMemory.ts'
 import {
   LFO_SYNC_MODES,
+  ENV_GATES,
   ModBus,
   PHRASE_BARS,
   PHRASE_SHAPES,
@@ -101,14 +102,17 @@ function bay(overrides: Partial<Controls>) {
     mod0Depth: 1,
     ...overrides,
   })
-  // One block of the LFO, with a kit strobe at `tick` on the first sample.
-  return (tick?: number) => {
+  // One block of the bay, with a kit strobe at `tick` and the voices in `hit`
+  // fired on the first sample.
+  const block = (tick?: number, hit = 0) => {
     trig.kitClocking(8)
-    if (tick !== undefined) trig.stepClocked(0, tick)
+    if (tick !== undefined) trig.stepClocked(0, tick, SR / 8)
+    if (hit) trig.drumFired(0, hit, 1)
     trig.swap(BLOCK)
     bus.build(BLOCK, p, src)
     return bus.read(0)!
   }
+  return Object.assign(block, { trig })
 }
 
 const lfoSync = (name: string) => LFO_SYNC_MODES.indexOf(name)
@@ -195,4 +199,57 @@ test('the phrase grows a wire’s depth under a fast LFO', () => {
   }
   expect(swing(1)).toBeLessThan(0.2)
   expect(swing(14)).toBeGreaterThan(0.8)
+})
+
+const adsr = (patch: Partial<Controls>) =>
+  bay({
+    mod0Src: 15,
+    modEnvAttack: 1,
+    modEnvDecay: 100,
+    modEnvSustain: 0,
+    modEnvRelease: 100,
+    ...patch,
+  })
+
+const blocksOf = (seconds: number) => Math.round((seconds * SR) / BLOCK)
+
+test('a kick opens the ADSR, and the snare leaves it shut', () => {
+  const block = adsr({ modEnvGate: ENV_GATES.indexOf('kick') })
+  block(0, 1 << 1)
+  for (let b = 0; b < 4; b++) block()
+  expect(block()[0]).toBe(0)
+  block(0, 1)
+  expect(block()[0]).toBeGreaterThan(0.9)
+  for (let b = 0; b < blocksOf(0.2); b++) block()
+  expect(block()[0]).toBeLessThan(0.01)
+})
+
+test('a slow attack climbs across many steps of a fast beat', () => {
+  const block = adsr({
+    modEnvGate: ENV_GATES.indexOf('any hit'),
+    modEnvAttack: 4000,
+    modEnvSustain: 1,
+    modEnvHold: 16,
+  })
+  const perStep = blocksOf(1 / 8)
+  let level = 0
+  for (let step = 0; step < 16; step++) {
+    level = block(step, 1)[0]!
+    for (let b = 1; b < perStep; b++) block()
+  }
+  expect(level).toBeGreaterThan(0.4)
+  expect(level).toBeLessThan(0.6)
+})
+
+test('held keys keep the ADSR open, and the last one up lets it go', () => {
+  const block = adsr({
+    modEnvGate: ENV_GATES.indexOf('keys'),
+    modEnvSustain: 0.5,
+  })
+  block.trig.keysDown.add(0)
+  for (let b = 0; b < blocksOf(1); b++) block()
+  expect(block()[0]).toBeCloseTo(0.5, 2)
+  block.trig.keysDown.delete(0)
+  for (let b = 0; b < blocksOf(0.3); b++) block()
+  expect(block()[0]).toBeLessThan(0.01)
 })

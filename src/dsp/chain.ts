@@ -234,6 +234,12 @@ export class Chain {
   melody: MelodyMemory | null = null
   supplies: Supplies | null = null
   private readonly ctx: Ctx
+
+  /** A key going down or coming up on any keyboard, for the bay's ADSR gate. */
+  keyGate(semitone: number, down: boolean) {
+    if (down) this.ctx.trig.keysDown.add(semitone)
+    else this.ctx.trig.keysDown.delete(semitone)
+  }
   private readonly fbRetL = new Float32Array(BLOCK)
   private readonly fbRetR = new Float32Array(BLOCK)
   private readonly dcL = new DcBlocker()

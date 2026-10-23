@@ -5,11 +5,13 @@ import { PHRASE_BARS, PHRASE_SHAPES, phraseShape } from '../dsp/modbus.ts'
 import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
 import { sliderFor } from './controls/index.ts'
+import { ENV_KEYS } from './controls/patch.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { useSelectedBox, useOpensOnAim } from './diagram.ts'
 import { BoxRows } from './DiagramParts.tsx'
 import styles from './PatchBay.module.css'
 import { coherePatch, wireFault } from './presets/patch.ts'
+import { aimed } from './reveal.ts'
 import { StepLanes } from './StepLanes.tsx'
 import { Tip } from './Tip.tsx'
 
@@ -37,6 +39,7 @@ const WAITS_ON_KIT = new Set([
 const WAITS_ON_SONG = SRC.indexOf('ROM step')
 const PHRASE = SRC.indexOf('phrase')
 const WAVE = PHRASE_SHAPES.indexOf('wave')
+const ADSR = SRC.indexOf('ADSR')
 
 const NUM_X = 2
 const SRC_X = 14
@@ -59,6 +62,21 @@ const cy = (y: number) => y + ROW_H / 2
 // wire opens its from, to and depth rows underneath.
 const PHRASE_KEYS = ['modPhraseBars', 'modPhraseShape'] as const
 
+// A source's own rows open under each wire patched from it. While none is, a
+// search aimed at one of them opens it under the first wire.
+const ownsRows = (
+  wires: readonly { src: number }[],
+  i: number,
+  src: number,
+  keys: readonly string[],
+  aim: string | undefined,
+) =>
+  wires[i]!.src === src ||
+  (i === 0 &&
+    aim !== undefined &&
+    keys.includes(aim) &&
+    wires.every(w => w.src !== src))
+
 export function PatchBay() {
   const pick = useSelectedBox()
   const raw = useBoardValue(c =>
@@ -78,13 +96,15 @@ export function PatchBay() {
     dest: Math.round(nums[i * 3 + 1]!),
     depth: nums[i * 3 + 2]!,
   }))
+  const aim = useStoreValue(aimed)?.key
   const holds = MOD_KEYS.map((k, i) => ({
     id: String(i),
     keys: [
       k.src,
       k.dest,
       k.depth,
-      ...(wires[i]!.src === PHRASE ? PHRASE_KEYS : []),
+      ...(ownsRows(wires, i, PHRASE, PHRASE_KEYS, aim) ? PHRASE_KEYS : []),
+      ...(ownsRows(wires, i, ADSR, ENV_KEYS, aim) ? ENV_KEYS : []),
     ],
   }))
   useOpensOnAim(pick, holds)

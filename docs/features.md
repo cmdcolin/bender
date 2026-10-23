@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-551 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+557 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 144 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -1230,18 +1230,24 @@ wire can connect to the toy’s supply rail, the tape loop’s capstan and loop
 markers, or another wire’s depth, so the bay can modulate itself.
 
 <details>
-<summary>17 controls</summary>
+<summary>23 controls</summary>
 
-| control        | range                                                                                                                  | what it does                                                                   |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| LFO rate       | 0.02 to 400 Hz                                                                                                         | The bay’s oscillator, free-running                                             |
-| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                  | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
-| LFO sync       | off, four bars, two bars, bars, halves, quarters, dotted eighths, eighths, eighth triplets, sixteenths, thirty-seconds | Runs one LFO cycle per division of the kit’s tempo instead of LFO rate         |
-| Phrase bars    | 1, 2, 4, 8, 16, 32                                                                                                     | How many bars of the kit the phrase source takes to come round                 |
-| Phrase shape   | rise, build, fall, swell, stairs, wave                                                                                 | Rise climbs the whole phrase and drops back on the one                         |
-| Wire 1–4 from  | 15 of them, off through phrase                                                                                         | What the wire picks up                                                         |
-| Wire 1–4 to    | 135 of them, filt cut through oct chaos                                                                                | Where the other end is soldered                                                |
-| Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                       |
+| control        | range                                                                                                                  | what it does                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| LFO rate       | 0.02 to 400 Hz                                                                                                         | The bay’s oscillator, free-running                                                                  |
+| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                  | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle                      |
+| LFO sync       | off, four bars, two bars, bars, halves, quarters, dotted eighths, eighths, eighth triplets, sixteenths, thirty-seconds | Runs one LFO cycle per division of the kit’s tempo instead of LFO rate                              |
+| Phrase bars    | 1, 2, 4, 8, 16, 32                                                                                                     | How many bars of the kit the phrase source takes to come round                                      |
+| Phrase shape   | rise, build, fall, swell, stairs, wave                                                                                 | Rise climbs the whole phrase and drops back on the one                                              |
+| ADSR gate      | keys, any hit, kick, snare, hat, clap, tom, bell, open hat, cymbal                                                     | What opens the ADSR: a key held on any keyboard, or a hit from the kit — any voice, or one          |
+| Attack         | 1 ms to 30.0 s                                                                                                         | How long the ADSR takes to climb to the top once the gate opens                                     |
+| Decay          | 5 ms to 30.0 s                                                                                                         | How long it takes to fall from the top to the sustain level while the gate stays open               |
+| Sustain        | off to full                                                                                                            | Where it sits while the gate stays open                                                             |
+| Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
+| Hold           | 1 to 16 steps                                                                                                          | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
+| Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
+| Wire 1–4 to    | 135 of them, filt cut through oct chaos                                                                                | Where the other end is soldered                                                                     |
+| Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
 

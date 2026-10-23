@@ -58,6 +58,8 @@ export class TriggerBus {
       a key and a drum hit, and what tells the chip on the other end of the wire
       whether to decide the length of the note itself. */
   readonly keyHeld = new Float32Array(BLOCK)
+  /** The keys a hand is holding down on any of the keyboards, by semitone. */
+  readonly keysDown = new Set<number>()
   /** A note the melody memory struck this block, biased; 0 where it struck
       nothing. Its own line, so the memory plays one machine while the toy's
       tune plays the others. */
@@ -144,6 +146,7 @@ export class TriggerBus {
   }
 
   panic() {
+    this.keysDown.clear()
     this.drumBits.fill(0)
     this.drumGain.fill(0)
     this.pendBits.fill(0)

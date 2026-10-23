@@ -140,6 +140,7 @@ class BenderProcessor extends AudioWorkletProcessor {
           this.built.fourTrack.blank()
           break
         case 'noteOn':
+          this.built.chain.keyGate(msg.semitone, true)
           if (msg.dest === 'fm')
             this.built.fmChip.noteOn(msg.semitone, msg.gain)
           else if (msg.dest === 'pcm')
@@ -149,6 +150,7 @@ class BenderProcessor extends AudioWorkletProcessor {
           else this.built.toyChip.noteOn(msg.semitone, msg.gain)
           break
         case 'noteOff':
+          this.built.chain.keyGate(msg.semitone, false)
           if (msg.dest === 'fm') this.built.fmChip.noteOff(msg.semitone)
           else if (msg.dest === 'pcm') this.built.pcmKeys.noteOff(msg.semitone)
           else if (msg.dest === 'mono')

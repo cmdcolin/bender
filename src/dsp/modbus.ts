@@ -1,3 +1,4 @@
+import { VOICE_LABELS, voiceBit } from '../drums.ts'
 import { IDX, type SOURCE_TAPS } from '../engine/params.ts'
 import {
   asLaneLen,
@@ -7,6 +8,7 @@ import {
   LANE_MAX,
 } from '../lanes.ts'
 import { BLOCK } from './stage.ts'
+import { Adsr, adsrRates } from './util/adsr.ts'
 import { Chaos, Drunk } from './util/drift.ts'
 import { Decay, Follower, coef } from './util/follower.ts'
 import { wrap1 } from './util/pitch.ts'
@@ -248,6 +250,7 @@ const SRC = {
   laneA: 12,
   laneB: 13,
   phrase: 14,
+  adsr: 15,
 }
 
 // Long enough to take the click off a lane on a level, short enough that a
@@ -273,6 +276,7 @@ const OWN_LANE = new Set<number>([
   SRC.laneA,
   SRC.laneB,
   SRC.phrase,
+  SRC.adsr,
 ])
 
 const WIRES = [
@@ -297,6 +301,9 @@ export const LFO_SYNC_MODES = [
 ]
 // One cycle in sixths of a kit step, so every division is a whole number.
 const LFO_SYNC_SIXTHS = [0, 384, 192, 96, 48, 24, 18, 12, 8, 6, 3]
+
+/** What opens the bay's ADSR: a held key, any hit of the kit, or one voice. */
+export const ENV_GATES = ['keys', 'any hit', ...VOICE_LABELS]
 
 export const PHRASE_BARS = [1, 2, 4, 8, 16, 32]
 export const PHRASE_SHAPES = [
@@ -384,6 +391,10 @@ export class ModBus {
   // Steps into the phrase: set from the kit's counter on each strobe, and run
   // on at the kit's tempo in between, or with the kit stopped.
   private phrasePos = 0
+  private readonly env = new Adsr()
+  private readonly envLane = new Float32Array(BLOCK)
+  private keysWere = 0
+  private holdLeft = 0
   private lfoPhase = 0
   private shValue = 0
   private mic = new Follower()
@@ -424,14 +435,17 @@ export class ModBus {
     // their lane is only written when a wire reads it.
     let wired = false
     let phrased = false
+    let enveloped = false
     for (let w = 0; w < WIRES.length; w++) {
       const from = Math.round(p[WIRES[w]![0]]!)
       if (from !== SRC.off && !OWN_LANE.has(from)) wired = true
       if (from === SRC.phrase) phrased = true
+      if (from === SRC.adsr) enveloped = true
     }
     const bars = PHRASE_BARS[Math.round(p[IDX.modPhraseBars]!)] ?? 8
     const phraseSteps = bars * BAR_STEPS
     const phraseShapeAt = Math.round(p[IDX.modPhraseShape]!)
+    if (enveloped) this.runEnv(n, p, src.trig, kitHz)
     for (let i = 0; i < n; i++) {
       const prev = this.lfoPhase
       this.lfoPhase = wrap1(this.lfoPhase + hz / this.sr)
@@ -516,6 +530,39 @@ export class ModBus {
     }
   }
 
+  // A key going down retriggers the envelope, and the last one up lets it go.
+  // A hit holds the gate open for Hold steps of the kit, and a hit inside the
+  // hold starts the attack again.
+  private runEnv(n: number, p: Float32Array, trig: TriggerBus, kitHz: number) {
+    const rates = adsrRates(
+      this.sr,
+      p[IDX.modEnvAttack]! / 1000,
+      p[IDX.modEnvDecay]! / 1000,
+      p[IDX.modEnvSustain]!,
+      p[IDX.modEnvRelease]! / 1000,
+    )
+    const gate = Math.round(p[IDX.modEnvGate]!)
+    const down = trig.keysDown.size
+    const mask = gate === 1 ? -1 : voiceBit(gate - 2)
+    const stepLen = trig.drumStepLen || this.sr / Math.max(kitHz, 0.5)
+    const hold = Math.round(p[IDX.modEnvHold]!) * stepLen
+    if (gate === 0) {
+      if (down > this.keysWere) this.env.trigger()
+      else if (down === 0 && this.keysWere > 0) this.env.release()
+      this.holdLeft = 0
+    }
+    this.keysWere = down
+    for (let i = 0; i < n; i++) {
+      if (gate > 0) {
+        if ((trig.drumBits[i]! & mask) !== 0) {
+          this.env.trigger()
+          this.holdLeft = hold
+        } else if (this.holdLeft > 0 && --this.holdLeft <= 0) this.env.release()
+      }
+      this.envLane[i] = this.env.step(rates)
+    }
+  }
+
   private add(
     dest: number,
     n: number,
@@ -564,6 +611,8 @@ export class ModBus {
         return this.stepLanes[1]!
       case SRC.phrase:
         return this.phrase
+      case SRC.adsr:
+        return this.envLane
       case SRC.heat:
       case SRC.bodyX:
       case SRC.bodyY: {
@@ -587,6 +636,9 @@ export class ModBus {
     this.lfoPhase = 0
     this.shValue = 0
     this.phrasePos = 0
+    this.env.reset()
+    this.keysWere = 0
+    this.holdLeft = 0
     this.laneAt.fill(0)
     this.laneOut.fill(0)
     this.laneFrom.fill(0)

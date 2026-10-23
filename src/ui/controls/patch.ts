@@ -1,4 +1,5 @@
 import { VOICE_LABELS } from '../../drums.ts'
+import { ENV_GATES } from '../../dsp/modbus.ts'
 import {
   LFO_SYNC_MODES,
   N_DEST,
@@ -8,6 +9,20 @@ import {
 import { LANE_KEYS, LANE_LEN_KEYS } from '../../lanes.ts'
 
 import type { Group } from './types.ts'
+
+const msOrSeconds = (ms: number) =>
+  ms < 1000
+    ? `${Math.round(ms)} ms`
+    : `${(ms / 1000).toFixed(ms < 10000 ? 2 : 1)} s`
+
+export const ENV_KEYS = [
+  'modEnvGate',
+  'modEnvAttack',
+  'modEnvDecay',
+  'modEnvSustain',
+  'modEnvRelease',
+  'modEnvHold',
+] as const
 
 export const PATCH_GROUPS: Group[] = [
   {
@@ -25,6 +40,7 @@ export const PATCH_GROUPS: Group[] = [
       ]),
       'modPhraseBars',
       'modPhraseShape',
+      ...ENV_KEYS,
     ],
     sliders: [
       {
@@ -79,13 +95,75 @@ export const PATCH_GROUPS: Group[] = [
         choices: PHRASE_SHAPES,
         help: 'Rise climbs the whole phrase and drops back on the one; build saves most of its climb for the last bars; fall runs the other way; swell rises and falls; stairs climbs a notch a bar; wave is a slow sine either side of the knob. Wire it onto another wire’s depth to grow a fast LFO over the phrase.',
       },
+      {
+        key: 'modEnvGate',
+        label: 'ADSR gate',
+        min: 0,
+        max: ENV_GATES.length - 1,
+        step: 1,
+        unit: '',
+        choices: ENV_GATES,
+        help: 'What opens the ADSR: a key held on any keyboard, or a hit from the kit — any voice, or one. A hit holds the gate open for Hold steps.',
+      },
+      {
+        key: 'modEnvAttack',
+        label: 'Attack',
+        min: 1,
+        max: 30000,
+        step: 1,
+        unit: 'ms',
+        curve: 'log',
+        reads: msOrSeconds,
+        help: 'How long the ADSR takes to climb to the top once the gate opens. Seconds here and a hit a bar is a swell that never gets there.',
+      },
+      {
+        key: 'modEnvDecay',
+        label: 'Decay',
+        min: 5,
+        max: 30000,
+        step: 1,
+        unit: 'ms',
+        curve: 'log',
+        reads: msOrSeconds,
+        help: 'How long it takes to fall from the top to the sustain level while the gate stays open.',
+      },
+      {
+        key: 'modEnvSustain',
+        label: 'Sustain',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Where it sits while the gate stays open. At zero the ADSR is a hit that falls away, which off the kick is a pump on whatever the wire lands on.',
+      },
+      {
+        key: 'modEnvRelease',
+        label: 'Release',
+        min: 5,
+        max: 30000,
+        step: 1,
+        unit: 'ms',
+        curve: 'log',
+        reads: msOrSeconds,
+        help: 'How long it takes to fall back to nothing once the gate closes.',
+      },
+      {
+        key: 'modEnvHold',
+        label: 'Hold',
+        min: 1,
+        max: 16,
+        step: 1,
+        unit: 'steps',
+        needs: c => c.modEnvGate !== 0,
+        help: 'How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release.',
+      },
       ...([0, 1, 2, 3] as const).flatMap(i => [
         {
           key: `mod${i}Src` as const,
           label: `Wire ${i + 1} from`,
           ...(i > 0 ? { part: `wire ${i + 1}` } : {}),
           min: 0,
-          max: 14,
+          max: 15,
           step: 1,
           unit: '',
           choices: [
@@ -104,8 +182,9 @@ export const PATCH_GROUPS: Group[] = [
             'lane A',
             'lane B',
             'phrase',
+            'ADSR',
           ],
-          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, how hot the board has got, a step lane, which holds one value per kit step, or the phrase, a slow shape over several bars of the kit.',
+          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, how hot the board has got, a step lane, which holds one value per kit step, the phrase, a slow shape over several bars of the kit, or the ADSR, an envelope a key or a kit hit opens.',
         },
         {
           key: `mod${i}Dest` as const,
