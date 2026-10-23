@@ -123,7 +123,7 @@ test('a bad ADPCM word drifts the decoder until the next block header', () => {
 })
 
 test('delta modulation overloads on a steep slope and follows a gentle one', () => {
-  const board = { crushAdc: adc('delta'), bits: 12 }
+  const board = { crushAdc: adc('delta') }
   const steep = sineAt(2000, 0.5)
   const gentle = sineAt(100, 0.5)
   expect(rms(stage(board, steep))).toBeLessThan(0.5 * rms(stage({}, steep)))

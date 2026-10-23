@@ -687,8 +687,8 @@ an R-2R ladder.
     octaves.
   - **ADPCM:** four-bit steps to a decoder that tracks the signal. A bad word
     drifts it until the next block header, 505 words later.
-  - **delta:** one bit up or down. **Bits** sets the step; at 12 bits the
-    converter cannot follow the board and loses its top end.
+  - **delta:** one bit up or down. **Bits** sets the step: at 16 the converter
+    cannot follow the board and grinds below 500 Hz, and at 8 it hisses.
 - **Sample clock:** **toy RC** runs off the toy's rail, so the crush rate dives
   with a starve and stops while the toy reboots. The **crush clock** mic jack
   takes one sample per cycle of your voice.

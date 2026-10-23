@@ -434,7 +434,7 @@ export class Crusher implements Stage {
       }
       word = side.enc.encode(Math.round(q(x) * 32767)) << 12
     } else if (adc === ADC_DELTA) {
-      const delta = Math.sqrt(2 / steps)
+      const delta = 1 / Math.cbrt(2 * steps)
       const bit = x >= side.dmEnc ? 1 : 0
       side.dmEnc = Math.min(
         Math.max(side.dmEnc * DM_LEAK + (bit ? delta : -delta), -1),
@@ -471,7 +471,7 @@ export class Crusher implements Stage {
       side.dec.step((word >> 12) & 15)
       v = side.dec.pred / MSB
     } else if (adc === ADC_DELTA) {
-      const delta = Math.sqrt(2 / steps)
+      const delta = 1 / Math.cbrt(2 * steps)
       side.dmDec = Math.min(
         Math.max(side.dmDec * DM_LEAK + (word & MSB ? delta : -delta), -1),
         1,
