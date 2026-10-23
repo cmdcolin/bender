@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-535 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
-140 presets, 23 stage settings and 57 named cuts. The generator reads everything
+548 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+144 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -36,9 +36,9 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   _knife on the bus_ opens on a row of named cuts: press **machine-gun** or
   **the note never ends** and the rows under it show which controls it set.
   **Random knife** under random ▾ draws from the same table.
-- **Seven bends, six slots.** You pick which are on the board and in what order,
-  so one always sits out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 133 destinations, among
+- **Eight bends, six slots.** You pick which are on the board and in what order,
+  so two always sit out. A mix at zero takes the stage out of the path.
+- **A patch bay that modulates itself.** Four wires, 135 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 140 presets, and a roll button on every heading as well as
+- **Whole boards.** 144 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -798,7 +798,7 @@ one.
 
 ## Bends
 
-Seven bends compete for six ordered slots, so one always sits out. Each has a
+Eight bends compete for six ordered slots, so two always sit out. Each has a
 mix, and a mix at zero takes the stage out of the path.
 
 ### Ring mod
@@ -986,6 +986,36 @@ again and partials climb forever.
 | Direction | up or down            | Which sideband survives                                                                                        |
 | Feedback  | 0 to 2, normal 0 to 1 | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                   |
 | Mix       | off to full           | Dry/wet                                                                                                        |
+
+</details>
+
+### Octave
+
+An analog octave pedal after MicroSputter V2: a comparator with hysteresis
+clocks a divider for the sub, an XOR against its own delayed edge doubles it for
+the octave up, and a switch samples the input on every divider rise. With Track
+down, harmonics and the divider’s own output reach the comparator, and a slow
+recovery after each edge makes it fire on extra edges and drop others. Bounce
+swaps the octave and the sub on a clock, up to audio rate.
+
+<details>
+<summary>13 controls</summary>
+
+| control       | range             | what it does                                                                                                                                                                                           |
+| ------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Gain          | 1× to 10×         | Preamp into the detector                                                                                                                                                                               |
+| Detector tone | 20 Hz to 10 kHz   | Low-pass ahead of the comparator                                                                                                                                                                       |
+| Track         | off to full       | Toward zero, harmonic residue and the divider’s own output reach the comparator, and the comparator ignores new edges for a recovery time after each one, so it fires on extra edges and misses others |
+| Breakup       | 40 Hz to 4 kHz    | Where the retrigger recovery sits                                                                                                                                                                      |
+| Division      | ÷1, ÷2, ÷4, ÷8    | How many detector cycles make one cycle of the sub, from unison (÷1) to three octaves down (÷8)                                                                                                        |
+| Octave up     | off to full       | The detector XORed against itself 0.33 ms late                                                                                                                                                         |
+| Sub           | off to full       | Level of the sub voice                                                                                                                                                                                 |
+| Sub voice     | divider or hold   | Divider is the divided square, gated by how hard you play                                                                                                                                              |
+| Bounce        | off, hard, smooth | Off mixes the octave and the sub together                                                                                                                                                              |
+| Bounce clock  | free, note, step  | Free swaps at Rate, note on every new attack, and step on every sequencer step                                                                                                                         |
+| Rate          | 0.2 Hz to 1 kHz   | Changes per second on the free clock                                                                                                                                                                   |
+| Freeze        | off or on         | Stops the divider where it is, or on the hold voice, stops sampling and lets the cap leak                                                                                                              |
+| Mix           | off to full       | Dry/wet                                                                                                                                                                                                |
 
 </details>
 
@@ -1208,7 +1238,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                  | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | LFO sync       | off, four bars, two bars, bars, halves, quarters, dotted eighths, eighths, eighth triplets, sixteenths, thirty-seconds | Runs one LFO cycle per division of the kit’s tempo instead of LFO rate         |
 | Wire 1–4 from  | 14 of them, off through lane B                                                                                         | What the wire picks up                                                         |
-| Wire 1–4 to    | 133 of them, filt cut through dist pin gain                                                                            | Where the other end is soldered                                                |
+| Wire 1–4 to    | 135 of them, filt cut through oct chaos                                                                                | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                       |
 
 </details>
@@ -1426,9 +1456,9 @@ move it, or move it with the arrow keys. To bring in a bend that is off the
 board, drag it or press it in the first section. A crusher into a filter and a
 filter into a crusher use the same two stages and sound different, and fuzz into
 a reverb gives a wall with a room behind it where a reverb into fuzz gives the
-room itself distorting. Seven bends compete for six positions, so one always
-sits out. All six pedals stay on the board, and a pedal leaves the path when its
-mix is at zero.
+room itself distorting. Eight bends compete for six positions, so two always sit
+out. All six pedals stay on the board, and a pedal leaves the path when its mix
+is at zero.
 
 The panel draws two racks in place of a row of sliders: the six bend-slot
 controls under _onboard effects_, and the one order control under _pedals_. The
@@ -1470,7 +1500,7 @@ result:
 
 | control      | range                                                                                              | what it does                                  |
 | ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift                                                    | Which bend runs in this position              |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct                                               | Which bend runs in this position              |
 | Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals in |
 
 </details>
@@ -1513,7 +1543,7 @@ result:
 
 ### Presets
 
-140 presets. Each name is a link that opens the app with that board loaded, and
+144 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1662,6 +1692,14 @@ the board waits until you press play.
   — Every lap through the shifter climbs again, so no pitch settles
 - [**bell metal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:7,shiftHz:380,shiftMix:1,delayMs:180,dlyFb:0.45,dlyMix:0.3)
   — Shifted far enough that the harmonics stop being harmonics
+- [**sputter**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,bendSlot0:8,octTrack:0.35,octBreakHz:220,octBounce:1,octRate:6,octMix:0.9)
+  — An octave pedal on the edge of tracking, bouncing octave and sub
+- [**basement**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:8,octTone:400,octDiv:3,octUp:0,octMix:0.7)
+  — Divided three octaves down, gated by how hard the toy plays
+- [**swap tone**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,bendSlot0:8,octTrack:0.6,octBounce:1,octRate:660,octMix:1)
+  — Octave and sub swapped at audio rate, so the swap is a pitch too
+- [**stair hold**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:8,octTone:6000,octTrack:0.5,octUp:0.3,octSubSrc:1,octMix:0.8)
+  — The sampled voice: steps and aliasing on every divider rise
 - [**lean on it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
   — Skin on the pad rides the cutoff, and pressing harder opens the feedback
 - [**clock wobble**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)
@@ -1923,7 +1961,7 @@ back.
 ## Scripts
 
 <details>
-<summary>46 commands</summary>
+<summary>47 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1955,6 +1993,7 @@ back.
 | `pnpm panel`         | what the panel costs the browser per frame, in a real Chrome                                                                                                                           |
 | `pnpm soak`          | whether any stage gets slower the longer it runs                                                                                                                                       |
 | `pnpm toy`           | writes the hardwired toy board: schematic sheets, KiCad netlist, BOM and ROM images                                                                                                    |
+| `pnpm toy:pcb`       | places and routes the toy board PCB with Freerouting and writes its gerbers                                                                                                            |
 | `pnpm spectrum`      | sweeps every wire and fault on every bus and reports what each sounds like, by frequency                                                                                               |
 | `pnpm preview`       | serves the built bundle                                                                                                                                                                |
 | `pnpm test`          | the suite without the sixteen slowest files, with a two-second torture test that pins every feedback past unity at once, and the panel in jsdom                                        |

@@ -5,12 +5,12 @@ import type { Controls } from '../src/controls.ts'
 // Every pedal wet, tape on, the supply dying, four wires in the bay and the
 // faults rolling — and the bend slots named outright.
 //
-// Naming them matters: the rack has six slots for seven bends, so one always
-// sits out, and a mix turned up on the one that is out costs nothing at all.
+// Naming them matters: the rack has six slots for eight bends, so two always
+// sit out, and a mix turned up on one that is out costs nothing at all.
 // Left to the stock slots this board set shiftMix and shiftFb on a shifter that
 // was in no slot, which quietly kept the dearest bend on the board out of every
 // number this script has ever printed. Glitch buffer sits out instead, as the
-// cheapest of the seven — swap it in for whichever you want to read.
+// cheapest of the eight — swap it in for whichever you want to read.
 export const HEAVY: Partial<Controls> = {
   bendSlot0: 1,
   bendSlot1: 2,

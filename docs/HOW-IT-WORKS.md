@@ -33,10 +33,10 @@ every stage.
 - **random**, **hunt an edge**, **mutate** and **drift** change only the stages
   on the map.
 
-**Six slots, seven bends.** You choose which six are on the board, and in what
-order. The map draws the seventh bend loose in the rack at the head of the
-chain, dashed and soldered to nothing. Click the rack to reorder the slots, or
-click the loose bend to open its controls.
+**Six slots, eight bends.** You choose which six are on the board, and in what
+order. The map draws the other two loose in the rack at the head of the chain,
+dashed and soldered to nothing. Click the rack to reorder the slots, or click a
+loose bend to open its controls.
 
 The Plinky, the drum machine and Glint group their advanced controls under
 headings that expand on demand.

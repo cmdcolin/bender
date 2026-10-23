@@ -13,6 +13,7 @@ import { FourTrack } from './stages/fourTrack.ts'
 import { GlitchBuf } from './stages/glitchBuf.ts'
 import { MonoSynth } from './stages/monoSynth.ts'
 import { Noise } from './stages/noise.ts'
+import { Octave } from './stages/octave.ts'
 import { PcmKeys } from './stages/pcmKeys.ts'
 import { RingMod } from './stages/ringmod.ts'
 import { Sampler } from './stages/sampler.ts'
@@ -99,7 +100,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     sampler,
   ]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
-  // 6 filt, 7 shift — six slots for seven bends, so you pick
+  // 6 filt, 7 shift, 8 oct — six slots for eight bends, so you pick
   chain.bendById = [
     undefined,
     new RingMod(sr),
@@ -109,6 +110,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new GlitchBuf(sr, next()),
     new Screech(sr),
     new Shifter(sr),
+    new Octave(sr),
   ]
   chain.pedals = [
     new Stompbox(sr),

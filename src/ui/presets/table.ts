@@ -1002,6 +1002,56 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'sputter',
+    blurb: 'An octave pedal on the edge of tracking, bouncing octave and sub',
+    patch: {
+      chipLevel: 0.7,
+      bendSlot0: 8,
+      octMix: 0.9,
+      octTrack: 0.35,
+      octBreakHz: 220,
+      octBounce: 1,
+      octRate: 6,
+    },
+  },
+  {
+    name: 'basement',
+    blurb: 'Divided three octaves down, gated by how hard the toy plays',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 8,
+      octMix: 0.7,
+      octDiv: 3,
+      octUp: 0,
+      octTone: 400,
+    },
+  },
+  {
+    name: 'swap tone',
+    blurb: 'Octave and sub swapped at audio rate, so the swap is a pitch too',
+    patch: {
+      chipLevel: 0.7,
+      bendSlot0: 8,
+      octMix: 1,
+      octBounce: 1,
+      octRate: 660,
+      octTrack: 0.6,
+    },
+  },
+  {
+    name: 'stair hold',
+    blurb: 'The sampled voice: steps and aliasing on every divider rise',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 8,
+      octMix: 0.8,
+      octSubSrc: 1,
+      octUp: 0.3,
+      octTrack: 0.5,
+      octTone: 6000,
+    },
+  },
+  {
     name: 'lean on it',
     blurb:
       'Skin on the pad rides the cutoff, and pressing harder opens the feedback',

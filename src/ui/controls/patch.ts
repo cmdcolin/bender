@@ -219,6 +219,8 @@ export const PATCH_GROUPS: Group[] = [
             'second cells starve',
             'dist draw',
             'dist pin gain',
+            'oct rate',
+            'oct chaos',
           ],
           groups: [
             {
@@ -371,6 +373,8 @@ export const PATCH_GROUPS: Group[] = [
                 'dist pin gain',
                 'glitch',
                 'shift Hz',
+                'oct rate',
+                'oct chaos',
               ],
             },
             {

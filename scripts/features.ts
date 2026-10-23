@@ -60,8 +60,10 @@ const BLURBS: Record<string, string> = {
     'Catches slices and repeats them, sometimes reversed, sometimes transposed, sometimes held.',
   'Freq shifter':
     'Bode-style: every partial moves by the same number of Hz rather than the same ratio, so harmonic input comes out inharmonic. With feedback each lap shifts again and partials climb forever.',
+  Octave:
+    'An analog octave pedal after MicroSputter V2: a comparator with hysteresis clocks a divider for the sub, an XOR against its own delayed edge doubles it for the octave up, and a switch samples the input on every divider rise. With Track down, harmonics and the divider’s own output reach the comparator, and a slow recovery after each edge makes it fire on extra edges and drop others. Bounce swaps the octave and the sub on a clock, up to audio rate.',
   'Signal order':
-    'The Signal order panel orders both runs: the six positions the bends compete for, between the mix bus and the pedals, and the six pedals downstream of them. It draws two racks, *onboard effects* first and *pedals* second. Drag a box to move it, or move it with the arrow keys. To bring in a bend that is off the board, drag it or press it in the first section. A crusher into a filter and a filter into a crusher use the same two stages and sound different, and fuzz into a reverb gives a wall with a room behind it where a reverb into fuzz gives the room itself distorting. Seven bends compete for six positions, so one always sits out. All six pedals stay on the board, and a pedal leaves the path when its mix is at zero.',
+    'The Signal order panel orders both runs: the six positions the bends compete for, between the mix bus and the pedals, and the six pedals downstream of them. It draws two racks, *onboard effects* first and *pedals* second. Drag a box to move it, or move it with the arrow keys. To bring in a bend that is off the board, drag it or press it in the first section. A crusher into a filter and a filter into a crusher use the same two stages and sound different, and fuzz into a reverb gives a wall with a room behind it where a reverb into fuzz gives the room itself distorting. Eight bends compete for six positions, so two always sit out. All six pedals stay on the board, and a pedal leaves the path when its mix is at zero.',
   Gnash:
     'Gnash models each circuit separately: *Screamer* clips inside the feedback loop so the dry note passes under it; *rat* clips to ground behind a slew-limited op-amp; *muff* is two clipping stages and a scooped tone stack; *germanium* clips asymmetrically, with its bias moving down under the signal; *octave* rectifies into a ringing transformer; *gate* is misbiased to the edge of cutoff.',
   Wraith:
@@ -103,6 +105,8 @@ const SCRIPTS: Record<string, string> = {
   'blog:draft': 'drafts a blog post from the feat commits since the last one',
   'sync:check': 'compare the regions shared with videoskillet',
   toy: 'writes the hardwired toy board: schematic sheets, KiCad netlist, BOM and ROM images',
+  'toy:pcb':
+    'places and routes the toy board PCB with Freerouting and writes its gerbers',
   lint: 'oxlint, type-aware',
   'lint:fix': 'oxlint, fixing what it can',
   format: 'oxfmt, and prettier for .astro',
@@ -379,7 +383,7 @@ grey out. \`pnpm diagram\` renders it with the same layout the app uses.
   or **the note never ends** and the rows under it show which controls it set.
   **Random knife** under random ▾ draws from the same table.
 - **${cap(num(BENDS.length))} bends, ${num(slots)} slots.** You pick which are on the board and in what
-  order, so one always sits out. A mix at zero takes the stage out of the path.
+  order, so ${num(BENDS.length - slots)} always sit out. A mix at zero takes the stage out of the path.
 - **A patch bay that modulates itself.** ${cap(num(wires.sliders.filter(s => s.label.endsWith('depth')).length))} wires, ${dests} destinations, among them
   the supply rail, the tape loop's capstan, and the depths of the other wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -435,7 +439,7 @@ names it still sets it. ${
     out.push(`## ${place}\n`)
     if (place === 'Bends') {
       out.push(
-        `${cap(num(BENDS.length))} bends compete for ${num(slots)} ordered slots, so one always sits out. Each has a mix, and a mix at zero takes the stage out of the path.\n`,
+        `${cap(num(BENDS.length))} bends compete for ${num(slots)} ordered slots, so ${num(BENDS.length - slots)} always sit out. Each has a mix, and a mix at zero takes the stage out of the path.\n`,
       )
     }
     if (place === 'Pedals') {

@@ -864,6 +864,19 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumNudge14',
   'drumNudge15',
   'drumRatchetRamp',
+  'octGain',
+  'octTone',
+  'octTrack',
+  'octBreakHz',
+  'octDiv',
+  'octUp',
+  'octSub',
+  'octSubSrc',
+  'octBounce',
+  'octClock',
+  'octRate',
+  'octFreeze',
+  'octMix',
 ]
 
 // Retired controls that old links still carry, each read into the control that

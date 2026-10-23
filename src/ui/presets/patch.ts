@@ -189,6 +189,8 @@ const LANDINGS: Landing[] = [
   }),
   at('dist draw', ['distMix'], { bend: 'dist' }),
   at('dist pin gain', ['distMix'], { bend: 'dist' }),
+  at('oct rate', ['octMix'], { bend: 'oct' }),
+  at('oct chaos', ['octMix'], { bend: 'oct' }),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

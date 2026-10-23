@@ -162,6 +162,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   starve2: 'Plinky',
   distDraw: 'Clipper',
   distPinGain: 'Clipper',
+  octRate: 'Octave',
+  octChaos: 'Octave',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -784,7 +786,7 @@ function pickParts(c: Controls, o: Options) {
   }
 
   // The rack, at the head of the run: the signal walks into it before it walks
-  // the slots. Six slots and seven bends, so one is always in none of them —
+  // the slots. Six slots and eight bends, so two are always in none of them —
   // those ride at the head of the path as loose chips, each a door of its own.
   const slotted = bendOrder(c)
   const bends = slotted.filter(has)
