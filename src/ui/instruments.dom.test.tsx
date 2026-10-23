@@ -89,8 +89,8 @@ test('adding a machine with its level down brings the level up to sound', () => 
   expect(engine.controls.get().monoLevel).toBe(0.6)
   expect(
     screen
-      .getByRole('button', { name: 'mute Growler' })
-      .getAttribute('aria-pressed'),
+      .getByRole('button', { name: 'volume Growler' })
+      .getAttribute('aria-expanded'),
   ).toBe('false')
 })
 
@@ -156,15 +156,19 @@ test('undo in the roll menu puts the stage back', () => {
   expect(sameControls(engine.controls.get(), before)).toBe(true)
 })
 
-test('mute silences one machine and keeps its level, and a roll leaves it muted', () => {
+test('the speaker opens a volume popover whose mute keeps the level, and a roll leaves it muted', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
-  const mute = screen.getByRole('button', { name: 'mute Clatter' })
-  expect(mute.getAttribute('aria-pressed')).toBe('false')
+  const speaker = screen.getByRole('button', { name: 'volume Clatter' })
+  expect(speaker.getAttribute('aria-expanded')).toBe('false')
+  fireEvent.click(speaker)
+  expect(speaker.getAttribute('aria-expanded')).toBe('true')
+  const mute = screen.getByRole('checkbox', { name: 'mute' })
+  expect(mute).toHaveProperty('checked', false)
   fireEvent.click(mute)
   expect(engine.controls.get().drumMute).toBe(1)
   expect(engine.controls.get().drumLevel).toBe(DEFAULT_CONTROLS.drumLevel)
-  expect(mute.getAttribute('aria-pressed')).toBe('true')
+  expect(mute).toHaveProperty('checked', true)
   fireEvent.click(
     within(machine('clatter')).getByRole('button', { name: 'randomize' }),
   )
@@ -173,22 +177,23 @@ test('mute silences one machine and keeps its level, and a roll leaves it muted'
   expect(engine.controls.get().drumMute).toBe(0)
 })
 
-test('a Level at zero lights mute, and unmute brings the Level back', () => {
+test('the popover slider moves the Level, and zero lights the speaker and the mute box', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
-  const level = within(machine('clatter')).getByRole('slider', {
-    name: 'Level',
-  })
-  const mute = screen.getByRole('button', { name: 'mute Clatter' })
+  fireEvent.click(screen.getByRole('button', { name: 'volume Clatter' }))
+  const popover = screen.getByRole('group', { name: 'Clatter volume' })
+  const level = within(popover).getByRole('slider', { name: 'Level' })
   fireEvent.change(level, { target: { value: '400' } })
   const up = engine.controls.get().drumLevel
   expect(up).not.toBe(DEFAULT_CONTROLS.drumLevel)
   fireEvent.change(level, { target: { value: '0' } })
-  expect(mute.getAttribute('aria-pressed')).toBe('true')
+  expect(engine.controls.get().drumLevel).toBe(0)
   expect(engine.controls.get().drumMute).toBe(0)
+  const mute = within(popover).getByRole('checkbox', { name: 'mute' })
+  expect(mute).toHaveProperty('checked', true)
   fireEvent.click(mute)
   expect(engine.controls.get().drumLevel).toBe(up)
-  expect(mute.getAttribute('aria-pressed')).toBe('false')
+  expect(mute).toHaveProperty('checked', false)
 })
 
 test('each machine has a Level slider that moves its own level', () => {

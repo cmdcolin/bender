@@ -6,7 +6,7 @@ import { GROUPS, sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
 import { Menu } from './Menu.tsx'
-import { menuItem } from './menuItems.ts'
+import { menuCheck, menuItem } from './menuItems.ts'
 import { MicCap } from './MicJacks.tsx'
 import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
@@ -75,40 +75,68 @@ function Mute({
   const pedal = isPedal(stage)
   const where = useHeardThrough(stage)
   const heard = !pedal && where.length > 0
+  const popover = !pedal && level !== undefined
+  const [open, setOpen] = useState(false)
+  const [cap, setCap] = useState<HTMLButtonElement | null>(null)
+  const close = useCallback(() => setOpen(false), [])
+
+  const flip = () => {
+    engine.armStep()
+    if (!muted) engine.set(control, 1)
+    else {
+      if (switched) engine.set(control, 0)
+      if (atZero && level) engine.set(level, lastUp)
+    }
+  }
+
+  const tip = pedal
+    ? muted
+      ? `${stage} is bypassed. Switching it back on brings the sound you left.`
+      : `Takes ${stage} out of the path and leaves its knobs where they are.`
+    : popover
+      ? `Opens ${stage}’s volume. Drag it to 0 to silence it, or mute it and keep the Level where it is.`
+      : muted
+        ? `${stage} is muted. Unmute brings it back.`
+        : `Silences ${stage}.`
+
   return (
-    <Tip
-      text={[
-        pedal
-          ? muted
-            ? `${stage} is bypassed. Switching it back on brings the sound you left.`
-            : `Takes ${stage} out of the path and leaves its knobs where they are.`
-          : atZero
-            ? `${stage}’s Level is at 0. Unmute brings it back up.`
-            : muted
-              ? `${stage} is muted. Unmute brings it back at the Level you left.`
-              : `Silences ${stage} and leaves its Level where it is.`,
-        ...(heard ? [stillHeardText(stage, where, atZero)] : []),
-      ].join(' ')}
-    >
-      <button
-        className={muted ? styles.capOn : styles.cap}
-        aria-label={`${pedal ? 'bypass' : 'mute'} ${stage}`}
-        aria-pressed={muted}
-        onClick={() => {
-          engine.armStep()
-          if (!muted) engine.set(control, 1)
-          else {
-            if (switched) engine.set(control, 0)
-            if (atZero && level) engine.set(level, lastUp)
-          }
-        }}
+    <>
+      <Tip
+        text={[
+          tip,
+          ...(heard ? [stillHeardText(stage, where, atZero)] : []),
+        ].join(' ')}
       >
-        {pedal ? POWER : SPEAKER(muted)}
-        {heard && (
-          <span className={styles.leak} role="img" aria-label="still heard" />
-        )}
-      </button>
-    </Tip>
+        <button
+          ref={setCap}
+          className={muted ? styles.capOn : styles.cap}
+          aria-label={`${pedal ? 'bypass' : popover ? 'volume' : 'mute'} ${stage}`}
+          aria-pressed={popover ? undefined : muted}
+          aria-expanded={popover ? open : undefined}
+          onClick={popover ? () => setOpen(o => !o) : flip}
+        >
+          {pedal ? POWER : SPEAKER(muted)}
+          {heard && (
+            <span className={styles.leak} role="img" aria-label="still heard" />
+          )}
+        </button>
+      </Tip>
+      {popover && open && (
+        <Menu
+          anchor={cap}
+          toggle={cap}
+          role="group"
+          label={`${stage} volume`}
+          onClose={close}
+        >
+          <DrawerSlider control={level} />
+          <label className={menuCheck}>
+            <input type="checkbox" checked={muted} onChange={flip} />
+            mute
+          </label>
+        </Menu>
+      )}
+    </>
   )
 }
 
