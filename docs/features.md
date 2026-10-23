@@ -801,7 +801,8 @@ mix, and a mix at zero takes the stage out of the path.
 
 ### Ring mod
 
-Amplitude modulation by a carrier, sine or square.
+Amplitude modulation by a carrier: sine, square, diode bridge or inharmonic
+bell.
 
 <details>
 <summary>5 controls</summary>
@@ -809,7 +810,7 @@ Amplitude modulation by a carrier, sine or square.
 | control       | range                                                                                                    | what it does                                                                                                                           |
 | ------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Carrier       | 0.1 Hz to 8 kHz                                                                                          | Carrier frequency                                                                                                                      |
-| Carrier shape | sine, square, diode                                                                                      | A square carrier chops the signal, which adds harsh AM-radio ghosts                                                                    |
+| Carrier shape | sine, square, diode, bell                                                                                | A square carrier chops the signal, which adds harsh AM-radio ghosts                                                                    |
 | Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64            | Solders the carrier to the note the toy is sounding                                                                                    |
 | Carrier from  | knob, toy, kit, glint, chaos osc, noise, sampler, keys, growler, toy step late, toy beat late, layercake | Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect |
 | Mix           | off to full                                                                                              | Dry/wet, which on a ring modulator sets the depth of the modulation                                                                    |

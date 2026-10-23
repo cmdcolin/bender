@@ -5,10 +5,23 @@ import { KEY_BIAS } from '../trigbus.ts'
 import { DelayLine } from '../util/delayline.ts'
 import { QuadOsc, RATE_MASK } from '../util/lfo.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
+import { PitchFollow } from '../util/pitchfollow.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
-export const RING_SHAPES = ['sine', 'square', 'diode']
+export const RING_SHAPES = ['sine', 'square', 'diode', 'bell']
+const BELL = 3
+
+// A struck plate's partials above the fundamental, and the weight of each one
+// with the fundamental first. The trim brings the sum back to the rms of a
+// sine, so picking the bell changes the character and not the level.
+const BELL_RATIOS = [2.76, 5.4, 8.93]
+const BELL_WEIGHTS = [0.4, 0.3, 0.2, 0.1]
+const BELL_TRIM =
+  1 / Math.sqrt(2 * BELL_WEIGHTS.reduce((sum, w) => sum + w * w, 0))
+
+// How long a note on the key line keeps the carrier off the pitch follower.
+const KEY_HOLD_S = 10
 
 // How far behind itself a machine's carrier runs: not at all, one of the toy's
 // steps, or one of the kit's beats.
@@ -124,6 +137,11 @@ export class RingMod implements Stage {
       changes on a note, which is rare, so the two trig calls a rate costs are
       worth a compare to skip. */
   private loaded = -1
+  private readonly partials = BELL_RATIOS.map(() => new QuadOsc())
+  private readonly follow: PitchFollow
+  private shape = 0
+  private keyHold = 0
+  private followed = 0
   private readonly late: DelayLine
   private readonly maxLate: number
   private lastStep = 0
@@ -137,11 +155,20 @@ export class RingMod implements Stage {
     this.sr = sr
     this.maxLate = MAX_LATE_S * sr
     this.late = new DelayLine(this.maxLate + 4)
+    this.follow = new PitchFollow(sr)
+  }
+
+  private setRate(hz: number) {
+    this.carrier.setRate(hz, this.sr)
+    if (this.shape !== BELL) return
+    for (let k = 0; k < BELL_RATIOS.length; k++) {
+      this.partials[k]!.setRate(hz * BELL_RATIOS[k]!, this.sr)
+    }
   }
 
   private tune(hz: number) {
     if (hz === this.loaded) return
-    this.carrier.setRate(hz, this.sr)
+    this.setRate(hz)
     this.loaded = hz
   }
 
@@ -155,6 +182,10 @@ export class RingMod implements Stage {
     const base = p[IDX.ringHz]!
     const mod = ctx.mod.read(DEST.ringHz)
     const shape = Math.round(p[IDX.ringShape]!)
+    if (shape !== this.shape) {
+      this.shape = shape
+      this.loaded = -1
+    }
     const track = Math.round(p[IDX.ringTrack]!)
     const ratio = TRACK_RATIO[track] ?? 0
     const stepK = TRACK_STEP[track] ?? 0
@@ -169,9 +200,7 @@ export class RingMod implements Stage {
     const beatLen = (60 / Math.max(p[IDX.drumBpm]!, 1)) * this.sr
     const carrier = this.carrier
     // Untracked, the knob is the whole story. Tracked, it is where the carrier
-    // waits until the first note arrives — which is also where it stays on a
-    // board whose sound is coming from the FM chip or the sampler, since
-    // neither of those stamps the key line.
+    // waits until a note or a pitch the follower hears arrives.
     if (!ratio || this.hz === 0) this.hz = base
     // A wire on the carrier rewrites the rate every sample, so the rate the
     // oscillator is holding stops meaning anything while one is patched: the
@@ -227,13 +256,22 @@ export class RingMod implements Stage {
             const struck = ctx.trig.key[i]!
             if (struck > 0) {
               this.hz = A3_HZ * octaves((struck - KEY_BIAS) / 12) * ratio
+              this.keyHold = KEY_HOLD_S * this.sr
               if (!mod) this.tune(this.hz)
+            } else if (this.keyHold > 0) {
+              this.keyHold--
+            } else {
+              const heard = this.follow.process(0.5 * (io.l[i]! + io.r[i]!))
+              if (heard > 0 && heard !== this.followed) {
+                this.followed = heard
+                this.hz = heard * ratio
+                if (!mod) this.tune(this.hz)
+              }
             }
           }
           if (mod && (i & RATE_MASK) === 0) {
-            carrier.setRate(
+            this.setRate(
               Math.min(this.hz * octaves(mod[i]! * 4), this.sr * 0.45),
-              this.sr,
             )
           }
           carrier.step()
@@ -246,6 +284,18 @@ export class RingMod implements Stage {
           // nothing cancels.
           carL = carrier.im
           carR = carrier.re
+          if (shape === BELL) {
+            carL *= BELL_WEIGHTS[0]!
+            carR *= BELL_WEIGHTS[0]!
+            for (let k = 0; k < BELL_RATIOS.length; k++) {
+              const partial = this.partials[k]!
+              partial.step()
+              carL += BELL_WEIGHTS[k + 1]! * partial.im
+              carR += BELL_WEIGHTS[k + 1]! * partial.re
+            }
+            carL *= BELL_TRIM
+            carR *= BELL_TRIM
+          }
         }
         if (shape === 1) {
           carL = Math.sign(carL) || 1
@@ -266,6 +316,10 @@ export class RingMod implements Stage {
 
   panic() {
     this.carrier.reset()
+    for (const partial of this.partials) partial.reset()
+    this.follow.reset()
+    this.keyHold = 0
+    this.followed = 0
     this.hz = 0
     this.loaded = -1
     this.late.reset()

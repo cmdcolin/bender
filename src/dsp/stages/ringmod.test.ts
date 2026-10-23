@@ -20,6 +20,7 @@ import {
   RING_FROM,
   RING_FROM_LATE,
   RING_FROM_TAP,
+  RING_SHAPES,
   RING_TRACK,
 } from './ringmod.ts'
 import { YOURS } from './roms.ts'
@@ -450,4 +451,53 @@ test('a panic leaves nothing of the last note in the carrier', () => {
     built.toyChip.noteOn(A3)
   })
   expect(onGrid(wet.l.subarray(200 * BLOCK), F0)).toBeGreaterThan(0.9)
+})
+
+const bellShape = RING_SHAPES.indexOf('bell')
+
+// The bell's partials are not whole multiples of the carrier, so a held note
+// grows sidebands a sine carrier never puts there.
+test('the bell carrier adds sidebands a sine carrier does not', () => {
+  const sine = held(play({ ringHz: 300, ringShape: 0 }).l)
+  const bell = held(play({ ringHz: 300, ringShape: bellShape }).l)
+  const away = F0 + 300 * 2.76
+  expect(bin(bell, away)).toBeGreaterThan(5 * bin(sine, away))
+  expect(rms(bell)).toBeGreaterThan(0.5 * rms(sine))
+  expect(rms(bell)).toBeLessThan(2 * rms(sine))
+  expect(spectrum(bell, SR).flatness).toBeGreaterThan(
+    spectrum(sine, SR).flatness,
+  )
+})
+
+test('the bell carrier takes the track ratio like any other', () => {
+  const wet = play({ ringShape: bellShape, ringTrack: track('unison') })
+  const sine = play({ ringTrack: track('unison') })
+  expect(rms(wet.l)).toBeGreaterThan(0.01)
+  expect(wet.l).not.toEqual(sine.l)
+})
+
+// The chaos oscillator on a steady pitch never stamps the key line, so the
+// carrier has to come from listening: an octave over 400 Hz is 800, which puts
+// the upper sideband at 1200.
+test('a tracked carrier follows the pitch of a machine that stamps no key', () => {
+  const upper = (oscAHz: number, hz: number) =>
+    bin(
+      render(
+        {
+          ...RING,
+          chipLevel: 0,
+          oscLevel: 0.8,
+          oscAHz,
+          ringHz: 300,
+          ringTrack: track('octave'),
+        },
+        2,
+      ).subarray(SR),
+      hz,
+    )
+
+  expect(upper(400, 1200)).toBeGreaterThan(0.05)
+  expect(upper(400, 1800)).toBeLessThan(0.02)
+  expect(upper(600, 1800)).toBeGreaterThan(0.05)
+  expect(upper(600, 1200)).toBeLessThan(0.02)
 })

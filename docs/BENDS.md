@@ -788,10 +788,16 @@ rests on the bench supply.
     sequencer, one turn per ROM step or four, sixteen, sixty-four. ×64 is
     audio-rate and follows the toy's clock, so a starve, a drift or a clock
     multiplier bends the ring with the tune.
+  - **Track** on a board that never strikes the toy's key line (Glint, the
+    sampler, the chaos oscillator): a zero-crossing follower reads the pitch
+    off the signal. It holds the last pitch when the signal stops and gives way
+    to the key line for ten seconds after each toy note. Polyphony and rich
+    waves make it jump octaves, which the ring mod turns into more clang.
 
 - **Carrier shape:** the third position is a diode bridge and the only shape
   that responds to playing strength. Quiet passages come out gritty; loud ones
-  approach the clean multiply.
+  approach the clean multiply. The fourth, bell, adds partials at ×2.76, ×5.4
+  and ×8.93 to the carrier, so a held note grows sidebands on no harmonic grid.
 - **Carrier from:** takes the carrier from another machine, disabling the
   Carrier knob and Track. The machine must be up in the mix.
   - Kit: the hits gate the programme.

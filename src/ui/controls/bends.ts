@@ -64,7 +64,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_SHAPES,
-        help: 'A square carrier chops the signal, which adds harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only shape whose output depends on how hard you play: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply.',
+        help: 'A square carrier chops the signal, which adds harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only shape whose output depends on how hard you play: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply. Bell adds partials at ×2.76, ×5.4 and ×8.93 to the carrier, so a held note grows sidebands on no harmonic grid.',
       },
       {
         key: 'ringTrack',
@@ -74,7 +74,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_TRACK,
-        help: 'Solders the carrier to the note the toy is sounding — the ROM’s, your hand’s, or a drum hit that came back round and struck one — instead of leaving it on the Carrier knob. The ratio decides what survives: whole ones (unison, octave, oct+5th, two oct) put the sidebands back on the note’s own harmonics, so the note stays in tune and only its timbre moved; half ones (sub, fifth) land them an octave under it and write a new fundamental below what you played; tritone lands on nothing, so the clang is still a clang but it follows the melody. Glint and the sampler don’t stamp the key line, so a board playing those stays on the knob. The four step positions lock the carrier to the sequencer instead of the note — one turn per ROM step, or four, sixteen, sixty-four — so a tremolo lands on the same phase every step and an audio-rate carrier follows the toy’s clock, its starve and its drift. Stop the sequencer and they fall back on the knob too.',
+        help: 'Solders the carrier to the note the toy is sounding — the ROM’s, your hand’s, or a drum hit that came back round and struck one — instead of leaving it on the Carrier knob. The ratio decides what survives: whole ones (unison, octave, oct+5th, two oct) put the sidebands back on the note’s own harmonics, so the note stays in tune and only its timbre moved; half ones (sub, fifth) land them an octave under it and write a new fundamental below what you played; tritone lands on nothing, so the clang is still a clang but it follows the melody. Glint, the sampler and the chaos oscillator don’t stamp the key line, so on those the carrier follows the pitch it hears in the signal instead, holding the last one when the signal stops; the ratios still apply, and polyphony makes it jump. The four step positions lock the carrier to the sequencer instead of the note — one turn per ROM step, or four, sixteen, sixty-four — so a tremolo lands on the same phase every step and an audio-rate carrier follows the toy’s clock, its starve and its drift. Stop the sequencer and they fall back on the knob too.',
       },
       {
         key: 'ringFrom',

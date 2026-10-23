@@ -47,7 +47,8 @@ const BLURBS: Record<string, string> = {
   Mic: 'A live microphone, the one source that need not reach the mix. *Mic patch* picks the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus, the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s carrier, a trigger line, Spool’s capstan motor, Growler’s external input or Glint’s data bus. *Mic into* on the bench bar and the mic cap on each machine list the jacks with what a voice does at each.',
   'Mix bus':
     'The seven sources meet at this desk, and every fader appears here as well as on its machine’s panel, under the machine’s name, with a meter beside it that reads what that channel puts on the bus, and the bus’s own meter under the lot. A fader’s position does not show whether sound is coming out. Glint shows the difference: it boots at zero, and turned up with nothing striking it (no hand on its keys, no tune next door) it sits at three quarters and plays silence. *Bus drive* is the summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.',
-  'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
+  'Ring mod':
+    'Amplitude modulation by a carrier: sine, square, diode bridge or inharmonic bell.',
   Crusher:
     'Bit depth and sample rate, both reducible until the signal breaks up, with jitter on the rate.',
   Clipper:
