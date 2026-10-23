@@ -47,7 +47,9 @@ export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
 // widget names no keys of its own — the faders on it belong to the machines
 // they came from.
 const editorKeys = (g: Group): ControlKey[] => [
-  ...(g.editor?.kind === 'drums' || g.editor?.kind === 'roll'
+  ...(g.editor?.kind === 'drums' ||
+  g.editor?.kind === 'roll' ||
+  g.editor?.kind === 'patch'
     ? g.editor.keys
     : []),
   ...(g.memory?.keys ?? []),

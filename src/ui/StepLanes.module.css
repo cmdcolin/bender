@@ -1,0 +1,85 @@
+.lanes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-width: 320px;
+  margin: 0 0 var(--space-md);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2xs);
+}
+
+.name {
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}
+
+.len {
+  font-size: var(--fs-xs);
+  color: var(--fg2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.bars {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 1px;
+  height: 40px;
+  touch-action: none;
+  user-select: none;
+  cursor: ns-resize;
+}
+
+.step {
+  position: relative;
+  background: var(--surface);
+  border-radius: 1px;
+}
+
+.step::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--border);
+}
+
+.beat {
+  background: var(--surface-raised);
+}
+
+.under {
+  box-shadow: inset 0 0 0 1px var(--fg);
+}
+
+.past {
+  opacity: 0.35;
+}
+
+.step:focus-visible {
+  outline: 1px solid var(--accent);
+}
+
+.up,
+.down {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+}
+
+.up {
+  bottom: 50%;
+  background: var(--accent);
+}
+
+.down {
+  top: 50%;
+  background: var(--cool);
+}

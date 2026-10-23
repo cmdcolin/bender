@@ -5,6 +5,12 @@ import {
 } from '../controls.ts'
 import { asLen, asMask, LEN_KEYS } from '../drums.ts'
 import {
+  asLaneLen,
+  asLaneValue,
+  LANE_LEN_SET,
+  LANE_VALUE_KEYS,
+} from '../lanes.ts'
+import {
   asTuneLen,
   asTuneStep,
   MONO_SEQ_STEP_KEYS,
@@ -783,6 +789,40 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'monoSeqSlideLo',
   'monoSeqSlideHi',
   'monoAccent',
+  'modLaneA0',
+  'modLaneA1',
+  'modLaneA2',
+  'modLaneA3',
+  'modLaneA4',
+  'modLaneA5',
+  'modLaneA6',
+  'modLaneA7',
+  'modLaneA8',
+  'modLaneA9',
+  'modLaneA10',
+  'modLaneA11',
+  'modLaneA12',
+  'modLaneA13',
+  'modLaneA14',
+  'modLaneA15',
+  'modLaneB0',
+  'modLaneB1',
+  'modLaneB2',
+  'modLaneB3',
+  'modLaneB4',
+  'modLaneB5',
+  'modLaneB6',
+  'modLaneB7',
+  'modLaneB8',
+  'modLaneB9',
+  'modLaneB10',
+  'modLaneB11',
+  'modLaneB12',
+  'modLaneB13',
+  'modLaneB14',
+  'modLaneB15',
+  'modLaneALen',
+  'modLaneBLen',
 ]
 
 // Retired controls that old links still carry, each read into the control that
@@ -833,6 +873,8 @@ function fromInt(key: ControlKey, n: number): number {
   if (TUNE.has(key)) return asTuneStep(n)
   if (LEN_KEYS.has(key)) return asLen(n)
   if (key === 'tuneLen' || key === 'monoSeqLen') return asTuneLen(n)
+  if (LANE_VALUE_KEYS.has(key)) return asLaneValue(n)
+  if (LANE_LEN_SET.has(key)) return asLaneLen(n)
   return asMask(n)
 }
 

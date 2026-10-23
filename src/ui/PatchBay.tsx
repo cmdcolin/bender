@@ -6,6 +6,7 @@ import { useSelectedBox, useOpensOnAim } from './diagram.ts'
 import { BoxRows } from './DiagramParts.tsx'
 import styles from './PatchBay.module.css'
 import { coherePatch, wireFault } from './presets/patch.ts'
+import { StepLanes } from './StepLanes.tsx'
 import { Tip } from './Tip.tsx'
 
 const SRC = sliderFor('mod0Src').choices!
@@ -21,10 +22,14 @@ const MOD_KEYS = ([0, 1, 2, 3] as const).map(i => ({
   depth: `mod${i}Depth` as const,
 }))
 
-// The two sources that are a sequencer running rather than a control being up.
-// Nothing in the bay can tell you about those — a stopped kit is not a setting
-// — so the picture says it where the picture is, and the transport says it.
-const WAITS_ON_KIT = SRC.indexOf('drum hit')
+// Sources that are a sequencer running rather than a control being up. Nothing
+// in the bay can tell you about those — a stopped kit is not a setting — so the
+// picture says it where the picture is, and the transport says it.
+const WAITS_ON_KIT = new Set([
+  SRC.indexOf('drum hit'),
+  SRC.indexOf('lane A'),
+  SRC.indexOf('lane B'),
+])
 const WAITS_ON_SONG = SRC.indexOf('ROM step')
 
 const NUM_X = 2
@@ -112,7 +117,7 @@ export function PatchBay() {
             // patched and does nothing is the one thing four rows of choices can
             // never tell you, and this is where somebody is already looking.
             const waiting =
-              (w.src === WAITS_ON_KIT &&
+              (WAITS_ON_KIT.has(w.src) &&
                 !drums &&
                 ' The kit is stopped, so this carries only when something else hits it.') ||
               (w.src === WAITS_ON_SONG &&
@@ -245,6 +250,7 @@ export function PatchBay() {
         </svg>
       </div>
       <BoxRows inOrder keys={open && [open.src, open.dest, open.depth]} />
+      <StepLanes />
       {!open && (
         <span className={styles.spare}>
           Press a wire to open its from, to and depth.

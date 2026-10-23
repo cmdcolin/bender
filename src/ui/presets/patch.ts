@@ -1,5 +1,6 @@
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
 import { SUPPLY, SUPPLY_KEYS } from '../../dsp/supplies.ts'
+import { LANE_KEYS, LANE_MAX } from '../../lanes.ts'
 import {
   BEND_SLOT_KEYS,
   bendAt,
@@ -226,6 +227,7 @@ interface Tap {
   up: ControlKey[]
   hands?: true
   dull?: true
+  lane?: readonly ControlKey[]
 }
 
 const from = (
@@ -248,7 +250,23 @@ const TAPS: Tap[] = [
   from('body X', [], { hands: true }),
   from('body Y', [], { hands: true }),
   from('key hit', [], { hands: true }),
+  from('lane A', ['drumLevel'], { lane: LANE_KEYS[0] }),
+  from('lane B', ['drumLevel'], { lane: LANE_KEYS[1] }),
 ]
+
+const blank = (c: Controls, lane: readonly ControlKey[]) =>
+  lane.every(k => c[k] === 0)
+
+// A third of the steps left at zero, so the lane reads as locks on some steps
+// rather than a second LFO.
+function writeLane(
+  next: Controls,
+  lane: readonly ControlKey[],
+  rand: () => number,
+) {
+  for (const k of lane)
+    next[k] = rand() < 0.33 ? 0 : Math.round((rand() * 2 - 1) * LANE_MAX)
+}
 
 const TAP_AT = new Map(TAPS.map(t => [t.src, t]))
 
@@ -328,6 +346,7 @@ function pickTap(
       : live
   const tap = pool[Math.floor(rand() * pool.length)] ?? TAPS[0]!
   for (const key of tap.up) turnUp(next, key, rand, woke)
+  if (tap.lane && blank(next, tap.lane)) writeLane(next, tap.lane, rand)
   return tap.src
 }
 
@@ -390,6 +409,8 @@ export function wireFault(c: Controls, wire: number): string | null {
   const tap = TAP_AT.get(Math.round(c[w.src]))
   if (!tap) return 'picks up nothing'
   if (!tap.hands && !moving(c, tap)) return 'is off a source that isn’t running'
+  if (tap.lane && blank(c, tap.lane))
+    return 'is off a lane with nothing written'
   const to = depthTarget(c[w.dest])
   if (to === wire) return 'is soldered to its own depth'
   if (to >= 0) {
@@ -446,6 +467,7 @@ export function coherePatch(
   for (const w of WIRES) {
     if (next[w.src] === SRC_OFF) continue
     const tap = TAP_AT.get(Math.round(next[w.src]))
+    if (tap?.lane && blank(next, tap.lane)) writeLane(next, tap.lane, rand)
     if (!tap || tap.hands || moving(next, tap)) continue
     if (wake) for (const key of tap.up) turnUp(next, key, rand, woke)
     else next[w.src] = pickTap(next, rand, woke, bayTaps(next))

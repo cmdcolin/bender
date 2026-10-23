@@ -1206,7 +1206,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | LFO rate       | 0.02 to 400 Hz                                                                                                         | The bay’s oscillator, free-running                                             |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                  | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | LFO sync       | off, four bars, two bars, bars, halves, quarters, dotted eighths, eighths, eighth triplets, sixteenths, thirty-seconds | Runs one LFO cycle per division of the kit’s tempo instead of LFO rate         |
-| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                             | What the wire picks up                                                         |
+| Wire 1–4 from  | 14 of them, off through lane B                                                                                         | What the wire picks up                                                         |
 | Wire 1–4 to    | 133 of them, filt cut through dist pin gain                                                                            | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                       |
 

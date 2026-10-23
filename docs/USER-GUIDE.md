@@ -179,6 +179,11 @@ voltage you set, or jams one.
 source to a knob. **LFO sync** runs the LFO in bars or note values of the kit's
 tempo and restarts each cycle on the beat it belongs to.
 
+**Step lanes** under the bay are two rows of sixteen values, **lane A** and
+**lane B**, each with its own length. A wire off a lane sends the value on the
+step the kit stands on, so one step can starve the rail, the next can open the
+crusher, and the one after can leave both alone.
+
 ## Pedals and tape
 
 - **Gnash:** six dirt-box circuits: screamer, rat, muff, germanium, octave, gate

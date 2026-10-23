@@ -123,7 +123,7 @@ export interface Group {
     | { kind: 'mixer' }
     | { kind: 'order' }
     | { kind: 'feedback' }
-    | { kind: 'patch' }
+    | { kind: 'patch'; keys: readonly ControlKey[] }
     | { kind: 'trigger' }
     | { kind: 'supply' }
     | { kind: 'mic' }

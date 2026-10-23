@@ -1,4 +1,5 @@
 import { IDX, type SOURCE_TAPS } from '../engine/params.ts'
+import { asLaneLen, LANE_KEYS, LANE_LEN_KEYS, LANE_MAX } from '../lanes.ts'
 import { BLOCK } from './stage.ts'
 import { Chaos, Drunk } from './util/drift.ts'
 import { Decay, Follower, coef } from './util/follower.ts'
@@ -236,7 +237,12 @@ const SRC = {
   drum: 9,
   key: 10,
   heat: 11,
+  laneA: 12,
+  laneB: 13,
 }
+
+const LANE_IDX = LANE_KEYS.map(keys => keys.map(k => IDX[k]))
+const LANE_LEN_IDX = LANE_LEN_KEYS.map(k => IDX[k])
 
 // Sources pick() answers with a lane of their own. Every other source reads the
 // LFO.
@@ -251,6 +257,8 @@ const OWN_LANE = new Set<number>([
   SRC.heat,
   SRC.bodyX,
   SRC.bodyY,
+  SRC.laneA,
+  SRC.laneB,
 ])
 
 const WIRES = [
@@ -320,6 +328,8 @@ export class ModBus {
   // kit or off the keys pushes what it is soldered to on every hit.
   private readonly drumEnv = new Float32Array(BLOCK)
   private readonly keyEnv = new Float32Array(BLOCK)
+  private readonly stepLanes = LANE_IDX.map(() => new Float32Array(BLOCK))
+  private readonly laneAt = LANE_IDX.map(() => 0)
   private lfoPhase = 0
   private shValue = 0
   private mic = new Follower()
@@ -384,6 +394,14 @@ export class ModBus {
         fall,
       )
       this.keyEnv[i] = this.keyHit.process(src.trig.key[i]! > 0 ? 1 : 0, fall)
+      const at = strobe[i]!
+      for (let l = 0; l < LANE_IDX.length; l++) {
+        if (at) {
+          const len = asLaneLen(p[LANE_LEN_IDX[l]!]!)
+          this.laneAt[l] = p[LANE_IDX[l]![(at - 1) % len]!]! / LANE_MAX
+        }
+        this.stepLanes[l]![i] = this.laneAt[l]!
+      }
     }
 
     // What each wire picks up, before anything decides how hard it pushes. All
@@ -458,6 +476,10 @@ export class ModBus {
         return this.drumEnv
       case SRC.key:
         return this.keyEnv
+      case SRC.laneA:
+        return this.stepLanes[0]!
+      case SRC.laneB:
+        return this.stepLanes[1]!
       case SRC.heat:
       case SRC.bodyX:
       case SRC.bodyY: {
@@ -480,6 +502,7 @@ export class ModBus {
     this.live.fill(0)
     this.lfoPhase = 0
     this.shValue = 0
+    this.laneAt.fill(0)
     this.mic.reset()
     this.drumHit.reset()
     this.keyHit.reset()

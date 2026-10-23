@@ -1,5 +1,6 @@
 import { VOICE_LABELS } from '../../drums.ts'
 import { LFO_SYNC_MODES, N_DEST } from '../../dsp/modbus.ts'
+import { LANE_KEYS, LANE_LEN_KEYS } from '../../lanes.ts'
 
 import type { Group } from './types.ts'
 
@@ -10,7 +11,7 @@ export const PATCH_GROUPS: Group[] = [
     // The picture drawn above these rows, in PatchBay: a box-to-box lead per
     // wire, so the four rows of source/destination pairs read as a bay
     // rather than as forty-nine choices to cross-reference by hand.
-    editor: { kind: 'patch' },
+    editor: { kind: 'patch', keys: [...LANE_KEYS.flat(), ...LANE_LEN_KEYS] },
     handled: ([0, 1, 2, 3] as const).flatMap(i => [
       `mod${i}Src` as const,
       `mod${i}Dest` as const,
@@ -55,7 +56,7 @@ export const PATCH_GROUPS: Group[] = [
           label: `Wire ${i + 1} from`,
           ...(i > 0 ? { part: `wire ${i + 1}` } : {}),
           min: 0,
-          max: 11,
+          max: 13,
           step: 1,
           unit: '',
           choices: [
@@ -71,8 +72,10 @@ export const PATCH_GROUPS: Group[] = [
             'drum hit',
             'key hit',
             'heat',
+            'lane A',
+            'lane B',
           ],
-          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, or how hot the board has got.',
+          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, how hot the board has got, or a step lane, which holds one value per kit step.',
         },
         {
           key: `mod${i}Dest` as const,
