@@ -133,6 +133,8 @@ export interface Meter {
   duck: number
   rail: number
   reboots: number
+  rail2: number
+  reboots2: number
   /** What each source, the mic and the bus peaked at over the last meter — see
       the chain's taps. Read by the mixer's meters, which draw straight to the
       DOM off it rather than through a render. */
@@ -332,6 +334,8 @@ export class Engine {
       duck: 0,
       rail: 1,
       reboots: 0,
+      rail2: 1,
+      reboots2: 0,
       taps: new Float32Array(N_TAPS),
       walk: Uint8Array.from([0, 1, 2, 3, 4, 5]),
       dropped: 0,
@@ -591,6 +595,8 @@ export class Engine {
           duck: msg.duck,
           rail: msg.rail,
           reboots: msg.reboots,
+          rail2: msg.rail2,
+          reboots2: msg.reboots2,
           taps: msg.taps,
           walk: msg.walk,
           dropped: msg.dropped,

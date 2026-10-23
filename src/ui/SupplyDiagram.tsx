@@ -1,5 +1,8 @@
+import { SUPPLY } from '../dsp/supplies.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS } from './controls/index.ts'
+import { machinesOn } from './controls/supply.ts'
+import { useBoardValue } from './ControlsContext.ts'
 import diagram from './Diagram.module.css'
 import {
   boxWidth,
@@ -29,17 +32,21 @@ const keysOf = (part: string) =>
   slidersFirst(GROUP.sliders.filter(d => d.part === part)).map(d => d.key)
 
 const CELLS = 'cells'
+const SECOND = 'second cells'
 const BOX_KEYS = {
   [CELLS]: keysOf('the cells'),
   'reset chip': keysOf('the reset chip'),
   clip: keysOf('the clip'),
+  [SECOND]: keysOf('second cells'),
 }
 type BoxId = keyof typeof BOX_KEYS
 const KEYS = Object.values(BOX_KEYS).flat()
 
 const isBox = (id: string | null): id is BoxId => id !== null && id in BOX_KEYS
 
-const HELP: Record<Exclude<BoxId, typeof CELLS>, string> = {
+type Hung = Exclude<BoxId, typeof CELLS | typeof SECOND>
+
+const HELP: Record<Hung, string> = {
   'reset chip':
     'The chip that watches the rail and holds every machine in reset while it sits too low, and the latch-up that keeps them there.',
   clip: 'A paperclip dragged across the supply pads, biting the rail a few times a second.',
@@ -49,7 +56,8 @@ const TOP = 8
 const BOX_H = ONE_LINE_H
 const DROP = 24
 const LOW = TOP + BOX_H + DROP
-const HEIGHT = LOW + BOX_H + TOP
+const SECOND_Y = LOW + BOX_H + DROP
+const HEIGHT = SECOND_Y + BOX_H + TOP
 const GLYPH_W = 16
 const GLYPH_H = 9
 const RUN = 40
@@ -81,17 +89,24 @@ function batteryGlyph(x: number, mid: number) {
   )
 }
 
-// The rail every machine runs off. The cells feed it through their leads, the
-// reset chip watches it and the clip bites it.
+// The rail the machines boot on. The cells feed it through their leads, the
+// reset chip watches it and the clip bites it. The second cells sit under it
+// with a rail of their own, feeding whichever machines have moved to them.
 export function SupplyDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox(CELLS)
   useOpensOnAim(pick, BOX_KEYS)
   const flow = useFlow()
+  const shared = useBoardValue(c => machinesOn(c, SUPPLY.shared).length)
+  const second = useBoardValue(c =>
+    machinesOn(c, SUPPLY.second).join(', ').toLowerCase(),
+  )
 
   const cellsW = glyphBoxWidth(CELLS, GLYPH_W)
+  const secondW = glyphBoxWidth(SECOND, GLYPH_W)
   const mid = TOP + BOX_H / 2
-  const box = (id: Exclude<BoxId, typeof CELLS>, x: number): BoxSpec => ({
+  const mid2 = SECOND_Y + BOX_H / 2
+  const box = (id: Hung, x: number): BoxSpec => ({
     id,
     keys: BOX_KEYS[id],
     x,
@@ -122,10 +137,18 @@ export function SupplyDiagram() {
             <Wire
               arrow={arrow}
               d={`M${cellsW} ${mid} H${width - 2}`}
-              look={flow}
+              look={shared > 0 ? flow : 'plain'}
             />
             <Label x={width - 2} y={mid - 4} anchor="end">
-              machines
+              {shared > 0 ? 'machines' : 'nothing'}
+            </Label>
+            <Wire
+              arrow={arrow}
+              d={`M${secondW} ${mid2} H${width - 2}`}
+              look={second ? flow : 'plain'}
+            />
+            <Label x={width - 2} y={mid2 - 4} anchor="end">
+              {second || 'nothing'}
             </Label>
             {(
               [
@@ -157,6 +180,19 @@ export function SupplyDiagram() {
               glyphW={GLYPH_W}
               glyph={batteryGlyph}
             />
+            <GlyphBox
+              x={0}
+              y={SECOND_Y}
+              w={secondW}
+              h={BOX_H}
+              name={SECOND}
+              help="a second set of cells, with their own starve, leads, reservoir, clip and watchdog, for the machines whose Supply picks them"
+              lit={r.touched(...BOX_KEYS[SECOND])}
+              selected={pick.selected === SECOND}
+              onSelect={() => pick.toggle(SECOND)}
+              glyphW={GLYPH_W}
+              glyph={batteryGlyph}
+            />
             {[reset, clip].map(b => (
               <BoxView
                 key={b.id}
@@ -172,6 +208,11 @@ export function SupplyDiagram() {
         card={card(pick)}
         hint="Press a box for its settings."
         keys={isBox(pick.selected) ? BOX_KEYS[pick.selected] : undefined}
+        note={
+          pick.selected === SECOND && !second
+            ? 'Set a machine’s Supply to second cells to run it off these.'
+            : undefined
+        }
       />
     </>
   )

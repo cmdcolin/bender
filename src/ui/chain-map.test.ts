@@ -586,6 +586,16 @@ test('hops open Signal order, out-bars their source, rail drops the supply', () 
   expect(map.wires.find(w => w.id === 'collect-mix')?.door).toBe('Mix bus')
 })
 
+test('a machine off the shared cells drops no tap onto their rail', () => {
+  const map = buildMap({ ...DEFAULT_CONTROLS, chipSupply: 2, drumSupply: 1 })
+  const drops = map.wires.filter(w => w.id.startsWith('rail-')).map(w => w.id)
+  expect(drops).not.toContain('rail-Plinky')
+  expect(drops).not.toContain('rail-Clatter')
+  expect(buildMap(DEFAULT_CONTROLS).wires.map(w => w.id)).toContain(
+    'rail-Clatter',
+  )
+})
+
 const OPEN_HAT = VOICE_LABELS.indexOf('open hat') + 1
 
 const leftOf = (x: number, width: number, anchor?: string) =>

@@ -90,7 +90,12 @@ const SHOTS: Shot[] = [
       'growler voice card',
       { monoLevel: 0.6 },
     ],
-    ['guide-power.jpg', 'Power supply', 'power supply', {}],
+    [
+      'guide-power.jpg',
+      'Power supply',
+      'power supply',
+      { drumSupply: 1, fmSupply: 1 },
+    ],
   ].map(([file, door, drawing, board]): Shot => ({
     file: file as string,
     board: board as Partial<Controls>,
@@ -301,7 +306,10 @@ async function main() {
   const work = mkdtempSync(join(tmpdir(), 'bender-guide-out-'))
 
   try {
-    for (const shot of SHOTS) {
+    const only = process.argv.slice(2)
+    for (const shot of SHOTS.filter(
+      s => !only.length || only.includes(s.file),
+    )) {
       const board: Controls = { ...DEFAULT_CONTROLS, ...shot.board }
       const query = boardHash('', board)
       const full = query ? `${url}#${query}` : url

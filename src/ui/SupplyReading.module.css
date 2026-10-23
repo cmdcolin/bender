@@ -1,8 +1,14 @@
+.readings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-2xs) 0 var(--space-md);
+}
+
 .reading {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin: var(--space-2xs) 0 var(--space-md);
 }
 
 .feeds {

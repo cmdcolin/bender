@@ -29,7 +29,7 @@ const HOSTED: Record<string, readonly string[]> = {
     'knife on the bus',
   ],
   'Plinky|inside the die': ['arp and key lock', 'knife on the bus'],
-  'Power supply|the cells': ['the reset chip', 'the clip'],
+  'Power supply|the cells': ['the reset chip', 'the clip', 'second cells'],
 }
 
 export const hostedBy = (group: string, part: string) =>

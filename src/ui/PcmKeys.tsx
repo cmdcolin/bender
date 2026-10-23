@@ -42,7 +42,7 @@ export function PcmKeys({
       }
       extras={
         <>
-          <RailLamp onOpen={onOpen} />
+          <RailLamp onOpen={onOpen} supply="pcmSupply" />
           <SeqRec dest="pcm" name="Parlor" />
         </>
       }

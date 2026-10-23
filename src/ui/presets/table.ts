@@ -21,6 +21,7 @@ import {
   DAC_REF_NAMES,
   DICE_NAMES,
 } from '../../dsp/stages/toyDrum.ts'
+import { SUPPLY } from '../../dsp/supplies.ts'
 import { ANY_CHOICE } from '../../dsp/trigbus.ts'
 
 import type { Controls } from '../../controls.ts'
@@ -150,6 +151,38 @@ export const PRESETS: PresetDef[] = [
       drumBits: 5,
       tapeMix: 0.45,
       tapeHiss: 0.5,
+    },
+  },
+  {
+    name: 'paperclip on the kit',
+    blurb:
+      'Clatter alone on the second cells with a paperclip chattering across them, so the beat dives and reboots while Plinky plays its tune clean off the bench supply',
+    patch: {
+      ...romMasks('rock'),
+      chipLevel: 0.7,
+      chipAccomp: 0.5,
+      chipSupply: SUPPLY.bench,
+      drumLevel: 0.8,
+      drumSupply: SUPPLY.second,
+      cell2Clip: 6,
+      cell2Cap: 0.1,
+      faultCluster: 0.5,
+    },
+  },
+  {
+    name: 'two dying batteries',
+    blurb:
+      'Plinky on second cells starved into latch-ups and reboots, Clatter on flat shared cells behind a lead resistor, so each browns out on its own schedule',
+    patch: {
+      ...romMasks('rock'),
+      chipLevel: 0.85,
+      chipSupply: SUPPLY.second,
+      cell2Starve: 0.85,
+      cell2Battery: 0.3,
+      cell2Latch: 0.5,
+      drumLevel: 0.7,
+      chipBattery: 0.6,
+      chipLeadR: 0.5,
     },
   },
   {

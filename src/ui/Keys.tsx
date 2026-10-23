@@ -45,7 +45,7 @@ export function Keys({
       }
       extras={
         <>
-          <RailLamp onOpen={onOpen} />
+          <RailLamp onOpen={onOpen} supply="chipSupply" />
           <Tip
             text={
               yourTune

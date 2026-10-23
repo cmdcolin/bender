@@ -60,7 +60,8 @@ Plinky, the drum machine, Glint, Parlor and Growler are dies on one rail. The
 map draws them inside a dashed frame with the dotted supply rail running past
 every box. A battery box on the rail opens **Power supply**, and so does the
 voltage lamp on each machine's deck. The **Starve** knob in that panel drags the
-rail down, so the chips' pitch dives and the kit's tempo slows.
+rail down, so the chips' pitch dives and the kit's tempo slows. A machine whose
+**Supply** picks the second cells or the bench drops no tap onto the rail.
 
 - **The key line:** the toy's gate line runs along the top row from the toy
   keyboard to Glint and Parlor, then drops onto Growler. All three play whatever

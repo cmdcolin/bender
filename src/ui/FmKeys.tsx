@@ -56,7 +56,7 @@ export function FmKeys({
       }
       extras={
         <>
-          <RailLamp onOpen={onOpen} />
+          <RailLamp onOpen={onOpen} supply="fmSupply" />
           <SeqRec dest="fm" name="Glint" />
         </>
       }

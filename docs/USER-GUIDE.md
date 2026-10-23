@@ -146,11 +146,15 @@ keyboards:
 
 ## Power supply
 
-![The battery rail: cells, reset chip and clip, feeding the machines.](../public/guide/guide-power.jpg)
+![The battery rail: cells, reset chip and clip feeding the machines, and second cells feeding Clatter and Glint.](../public/guide/guide-power.jpg)
 
 One battery rail runs Plinky, Clatter, Glint, Parlor and Growler, so a sag drops
 the pitch of all five and slows the kit. A reset chip reboots the chips at a
 voltage you set, or jams one.
+
+- **Supply** on each machine's panel moves it off the shared cells
+- **Second cells:** a separate set with its own knobs and watchdog
+- **Bench supply:** a stiff rail that never sags or reboots
 
 ## Bend it
 

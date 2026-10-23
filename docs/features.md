@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
 524 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
-133 presets, 23 stage settings and 50 named cuts. The generator reads everything
+135 presets, 23 stage settings and 50 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 133 presets, and a roll button on every heading as well as
+- **Whole boards.** 135 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -1481,7 +1481,7 @@ result:
 
 ### Presets
 
-133 presets. Each name is a link that opens the app with that board loaded, and
+135 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1500,6 +1500,13 @@ the board waits until you press play.
   — Bare metal on the timing pin — every touch dives an octave and snaps back
 - [**flat batteries**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.6,chipBattery:0.75,drumLevel:0.55,drumBits:5,drumKick:32912,drumSnare:2056,drumHat:8738,tapeMix:0.45,tapeHiss:0.5)
   — Cells too far gone to hold the rail — the whole toy runs low and late
+- [**paperclip on the kit**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.5,chipSupply:2,drumSupply:1,cell2Cap:0.1,cell2Clip:6,drumLevel:0.8,drumKick:32912,drumSnare:2056,drumHat:8738,faultCluster:0.5)
+  — Clatter alone on the second cells with a paperclip chattering across them,
+  so the beat dives and reboots while Plinky plays its tune clean off the bench
+  supply
+- [**two dying batteries**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipBattery:0.6,chipLeadR:0.5,chipSupply:1,cell2Starve:0.85,cell2Battery:0.3,cell2Latch:0.5,drumKick:32912,drumSnare:2056,drumHat:8738)
+  — Plinky on second cells starved into latch-ups and reboots, Clatter on flat
+  shared cells behind a lead resistor, so each browns out on its own schedule
 - [**melody scrambler**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipClockX:2.5,chipBendSpot:2,chipBendPot:0.8,glitchProb:0.45,glitchSliceMs:90,glitchMix:0.5)
   — Pot soldered on the program counter
 - [**wrong song**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipAccomp:0.7,chipClockX:1.2,chipDataLine:3,chipDataFault:2)

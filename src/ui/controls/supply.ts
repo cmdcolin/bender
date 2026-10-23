@@ -28,7 +28,7 @@ export const supplyRow = (key: SupplyKey): SliderDef => ({
   step: 1,
   unit: '',
   choices: SUPPLY_NAMES,
-  help: `Which supply ${SUPPLY_OF[key]} runs off. The shared cells feed every machine left on them, so a starve, a clip or a reboot there bends them all together. Second cells are a set of their own, with their own knobs in Power supply, and a reboot there restarts only what runs off them. The bench supply never sags, never reboots and ignores load.`,
+  help: `Which supply ${SUPPLY_OF[key]} runs off. The shared cells bend every machine on them together. Second cells have their own knobs in Power supply and their own reboots. The bench supply never sags.`,
 })
 
 // The battery rail the toy keyboard, drums, FM chip, home keyboard and mono

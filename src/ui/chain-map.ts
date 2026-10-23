@@ -5,6 +5,7 @@ import {
   TAPE_AT_END,
   TAPE_AT_PEDALS,
 } from '../dsp/stages/tape.ts'
+import { SUPPLY as ON, SUPPLY_KEYS } from '../dsp/supplies.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import {
   bendAt,
@@ -15,6 +16,7 @@ import {
   sliderFor,
   touchedCount,
 } from './controls/index.ts'
+import { SUPPLY_OF } from './controls/supply.ts'
 import { MIC_JACKS } from './micWiring.ts'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg.ts'
 
@@ -1266,6 +1268,14 @@ function layAcross(d: LaidDown) {
   }
 }
 
+const SUPPLY_KEY = new Map(SUPPLY_KEYS.map(k => [SUPPLY_OF[k], k]))
+
+// A machine moved to the second cells or the bench drops no tap onto the rail.
+const onSharedCells = (c: Controls, label: string) => {
+  const key = SUPPLY_KEY.get(label)
+  return !key || Math.round(c[key]) === ON.shared
+}
+
 // The supply rail, the key line and the trigger bridges, all inside the toy
 // board's frame.
 function boardWires(m: Laid) {
@@ -1297,7 +1307,7 @@ function boardWires(m: Laid) {
         door: SUPPLY,
       },
     )
-  for (const toy of chips)
+  for (const toy of chips.filter(n => onSharedCells(m.c, n.label)))
     bar(
       `rail-${toy.id}`,
       board,

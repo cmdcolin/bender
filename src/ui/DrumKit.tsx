@@ -66,7 +66,7 @@ export function DrumKit({
           clatter
         </FaceBadge>
         <div className={styles.switches}>
-          <RailLamp onOpen={onOpen} />
+          <RailLamp onOpen={onOpen} supply="drumSupply" />
           <Tip
             text={
               playing

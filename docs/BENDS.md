@@ -81,6 +81,17 @@ box opens first, then the reset chip and clip boxes.
   this rail, so a starved chord collapses raggedly. See **Part spread** under
   [the parts rack](#the-parts-rack) below.
 
+Each machine's **Supply** picks the rail it runs off:
+
+- **Shared cells:** the rail above, stock for all five.
+- **Second cells:** a second rail with its own Starve, Batteries, Lead,
+  Reservoir, clip and Latch-up, and its own watchdog. A reboot there restarts
+  only the machines on it, so a paperclip can crash the kit while the toy plays.
+- **Bench supply:** stiff and clean. It never sags, never reboots and ignores
+  load.
+- The brownout, the pedals' and loop amps' sag, the bay's supply source, the
+  mic's supply jack and the chip-rail return all stay on the shared cells.
+
 ## The toy chip's pins
 
 The Plinky panel draws the parts these bends reach, and a bend turns its part or
@@ -652,7 +663,8 @@ The patch bay is four free wires.
   word-length controls, tape speed or delay time, glitch chance, stompbox drive,
   the kit's trimmer, the spring tank's decay, the drum cross-patch amount, the
   feedback amount, or another wire's depth.
-- **Starve:** the shared rail; one wire affects everything it powers.
+- **Starve** and **second cells starve:** one wire sags every machine on that
+  set of cells.
 
 - **Toy chip lanes (twelve):** **crosstalk**, **scan**, **PWM** and **short**
   move every sample. The envelope cap, ghost keys, loop wire and the song and

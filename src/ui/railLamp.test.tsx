@@ -1,11 +1,15 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
-import { expect, test, vi } from 'vitest'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, expect, test, vi } from 'vitest'
 
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
 import { RailLamp } from './RailLamp.tsx'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
+
+afterEach(() => act(() => engine.patch(DEFAULT_CONTROLS)))
 
 test('the voltage lamp on a deck opens the power supply panel', () => {
   const onOpen = vi.fn()
@@ -33,4 +37,26 @@ test('the supply panel opens on a reading of the rail', () => {
   render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
   expect(screen.getByText(/Feeds Plinky/)).toBeTruthy()
   expect(screen.getByText('Starve')).toBeTruthy()
+})
+
+test('a deck on the bench supply says so on its lamp', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS, drumSupply: 2 }))
+  render(<RailLamp supply="drumSupply" />)
+  expect(screen.getByText('bench')).toBeTruthy()
+})
+
+test('the supply panel names what each set of cells feeds', () => {
+  act(() =>
+    engine.patch({
+      ...DEFAULT_CONTROLS,
+      drumSupply: 1,
+      fmSupply: 1,
+      chipSupply: 2,
+    }),
+  )
+  const group = GROUPS.find(g => g.name === 'Power supply')!
+  render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
+  expect(screen.getByText('Feeds Parlor and Growler.')).toBeTruthy()
+  expect(screen.getByText('Second cells feed Clatter and Glint.')).toBeTruthy()
+  expect(screen.getByText('On the bench supply: Plinky.')).toBeTruthy()
 })

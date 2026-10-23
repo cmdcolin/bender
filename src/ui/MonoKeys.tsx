@@ -45,7 +45,7 @@ export function MonoKeys({
       }
       extras={
         <>
-          <RailLamp onOpen={onOpen} />
+          <RailLamp onOpen={onOpen} supply="monoSupply" />
           <SeqRec dest="mono" name="Growler" />
         </>
       }
