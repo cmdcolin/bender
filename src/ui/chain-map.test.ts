@@ -4,7 +4,7 @@ import { HEAVY } from '../../scripts/boards.ts'
 import { renderDiagrams } from '../../scripts/chain-svg.ts'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { VOICE_LABELS } from '../drums.ts'
-import { DEST, N_DEST } from '../dsp/modbus.ts'
+import { N_DEST } from '../dsp/modbus.ts'
 import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import {
@@ -923,15 +923,17 @@ test('a patch wire onto any destination draws onto that destination’s box', ()
     sampleLevel: 0.5,
     echoLevel: 0.5,
   }
-  // HEAVY slots six of the eight bends and leaves out the glitch buffer.
-  const glitchIn = { bendSlot4: 5 }
+  const slottedIn = (group: string) => {
+    const bend = BENDS.findIndex(b => b.group === group) + 1
+    return bend ? { bendSlot4: bend } : {}
+  }
   expect(WIRE_TARGET.length).toBe(N_DEST)
   const undrawn: string[] = []
   for (let dest = 0; dest < N_DEST; dest++) {
     if (!WIRE_TARGET[dest]) continue
     const map = buildMap({
       ...board,
-      ...(dest === DEST.glitch ? glitchIn : {}),
+      ...slottedIn(WIRE_TARGET[dest]!),
       mod0Src: 1,
       mod0Dest: dest,
       mod0Depth: 1,
