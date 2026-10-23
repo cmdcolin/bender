@@ -2,6 +2,13 @@ import { DATA_LINES, DRUM_ROMS } from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
 import { DEST } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
+import {
+  CRUSH_ADC,
+  CRUSH_CLOCK,
+  CRUSH_LOGIC,
+  CRUSH_REF,
+  CRUSH_WITH,
+} from '../../dsp/stages/crusher.ts'
 import { ECHO_MODE } from '../../dsp/stages/echo.ts'
 import { ENS_MODE } from '../../dsp/stages/ensemble.ts'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects.ts'
@@ -2213,6 +2220,92 @@ export const PRESETS: PresetDef[] = [
       monoFS: 0.3,
       monoGate: 0.8,
       monoGlide: 0.05,
+    },
+  },
+  {
+    name: 'bits lost to the brownout',
+    blurb:
+      'A SAR converter on a starved toy: the comparator slows with the rail, the low bits never finish and keep the last word, and the crush coarsens and clears as the toy dies and reboots',
+    patch: {
+      chipLevel: 0.8,
+      chipStarve: 0.35,
+      crushAdc: CRUSH_ADC.indexOf('SAR'),
+      crushMix: 1,
+    },
+  },
+  {
+    name: 'crusher on the toy’s clock',
+    blurb:
+      'The crusher clocked off the toy’s RC oscillator on a starved rail: the sample rate dives with the supply and stops dead while the toy reboots',
+    patch: {
+      chipLevel: 0.8,
+      chipStarve: 0.4,
+      srHz: 9000,
+      crushClock: CRUSH_CLOCK.indexOf('toy RC'),
+      crushMix: 1,
+    },
+  },
+  {
+    name: 'drift until the header',
+    blurb:
+      'ADPCM with its lowest code wire held high: every word tells the decoder a little too much, the error compounds, and each block header snaps it back, 32 times a second',
+    patch: {
+      srHz: 16000,
+      crushAdc: CRUSH_ADC.indexOf('ADPCM'),
+      crushDataLine: 13,
+      crushDataFault: FAULT.supply,
+      crushMix: 1,
+    },
+  },
+  {
+    name: 'delta with a floating bit',
+    blurb:
+      'A one-bit delta converter whose only wire is parted, so the decoder hears the bitstream a few words late through the neighbouring trace and the whole board slumps into its bass',
+    patch: {
+      bits: 12,
+      crushAdc: CRUSH_ADC.indexOf('delta'),
+      crushDataLine: 16,
+      crushDataFault: FAULT.cut,
+      crushMix: 1,
+    },
+  },
+  {
+    name: 'telephone with a cut wire',
+    blurb:
+      'A μ-law converter with its top magnitude wire grounded: loud words lose an octave of level, quiet ones fall into hiss',
+    patch: {
+      bits: 8,
+      crushAdc: CRUSH_ADC.indexOf('μ-law'),
+      crushDataLine: 15,
+      crushDataFault: FAULT.ground,
+      crushMix: 1,
+    },
+  },
+  {
+    name: 'bad top rung',
+    blurb:
+      'The crusher’s R-2R ladder with its top resistor far out: every zero crossing lurches backwards, and a square wave at the pitch of everything rides under the board',
+    patch: { bits: 8, srHz: 24000, crushLadder: 1, crushMix: 1 },
+  },
+  {
+    name: 'crushed times itself',
+    blurb:
+      'The DAC’s reference pin on its own input, so the board comes out multiplied by a 3 kHz crushed copy of itself: the bass gone, the aliases ringing',
+    patch: {
+      srHz: 3000,
+      crushRef: CRUSH_REF.indexOf('the bus'),
+      crushMix: 1,
+    },
+  },
+  {
+    name: 'XOR with the kit',
+    blurb:
+      'Every code word XORed with the kit’s, bit by bit, before it reaches the DAC: the tune comes out scrambled into noise that pulses with the drums',
+    patch: {
+      drumLevel: 0.8,
+      crushLogic: CRUSH_LOGIC.indexOf('XOR'),
+      crushWith: CRUSH_WITH.indexOf('the kit'),
+      crushMix: 1,
     },
   },
 ]

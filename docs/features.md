@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
 513 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
-125 presets, 23 stage settings and 46 named cuts. The generator reads everything
+133 presets, 23 stage settings and 50 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 125 presets, and a roll button on every heading as well as
+- **Whole boards.** 133 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -809,6 +809,22 @@ Amplitude modulation by a carrier, sine or square.
 Bit depth and sample rate, both reducible until the signal breaks up, with
 jitter on the rate.
 
+Named cuts, one press each under _knife on the bus_, as in the panel. A press
+puts the knife on, and the rows under it show the controls it set:
+
+- **the sign bit wanders**: The top wire into the DAC parted. Nothing drives the
+  pin, so it holds a word and then drags after D14, and each half of the wave
+  lands in the wrong half a few words at a time
+- **every wave folded up**: The top wire held at +V, so every word reads as the
+  top half: the bottom of each wave jumps up a whole half scale and lands on top
+  of the rest
+- **two bits that agree**: D14 soldered to D15. A word keeps both only where
+  both are set, so the four quarters of the wave collapse onto two and the pitch
+  climbs
+- **a bit that comes and goes**: D13 parted most of the way: the bit floats
+  after its neighbour, and every time the trace still conducts the real bit
+  slams back
+
 <details>
 <summary>14 controls</summary>
 
@@ -1454,7 +1470,7 @@ result:
 
 ### Presets
 
-125 presets. Each name is a link that opens the app with that board loaded, and
+133 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1787,6 +1803,34 @@ the board waits until you press play.
 - [**tearing sync**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:1,monoGate:0.8,monoGlide:0.05,monoRange1:-1,monoRange2:-1,monoTune2:0,monoSync:1,monoSweep:24,monoMix1:0,monoMix2:1,monoMix3:0.4,monoCutoff:700,monoContour:2,monoFD:0.4,monoFS:0.3)
   — Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so
   each note of the tune sweeps down through the harmonics
+- [**bits lost to the brownout**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipStarve:0.35,crushMix:1,crushAdc:1)
+  — A SAR converter on a starved toy: the comparator slows with the rail, the
+  low bits never finish and keep the last word, and the crush coarsens and
+  clears as the toy dies and reboots
+- [**crusher on the toy’s clock**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipStarve:0.4,srHz:9000,crushMix:1,crushClock:1)
+  — The crusher clocked off the toy’s RC oscillator on a starved rail: the
+  sample rate dives with the supply and stops dead while the toy reboots
+- [**drift until the header**](https://cmdcolin.github.io/bender/app/#set=srHz:16000,crushMix:1,crushAdc:3,crushDataLine:13,crushDataFault:2)
+  — ADPCM with its lowest code wire held high: every word tells the decoder a
+  little too much, the error compounds, and each block header snaps it back, 32
+  times a second
+- [**delta with a floating bit**](https://cmdcolin.github.io/bender/app/#set=bits:12,crushMix:1,crushAdc:4,crushDataLine:16)
+  — A one-bit delta converter whose only wire is parted, so the decoder hears
+  the bitstream a few words late through the neighbouring trace and the whole
+  board slumps into its bass
+- [**telephone with a cut wire**](https://cmdcolin.github.io/bender/app/#set=bits:8,crushMix:1,crushAdc:2,crushDataLine:15,crushDataFault:1)
+  — A μ-law converter with its top magnitude wire grounded: loud words lose an
+  octave of level, quiet ones fall into hiss
+- [**bad top rung**](https://cmdcolin.github.io/bender/app/#set=bits:8,srHz:24000,crushMix:1,crushLadder:1)
+  — The crusher’s R-2R ladder with its top resistor far out: every zero crossing
+  lurches backwards, and a square wave at the pitch of everything rides under
+  the board
+- [**crushed times itself**](https://cmdcolin.github.io/bender/app/#set=srHz:3000,crushMix:1,crushRef:4)
+  — The DAC’s reference pin on its own input, so the board comes out multiplied
+  by a 3 kHz crushed copy of itself: the bass gone, the aliases ringing
+- [**XOR with the kit**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.8,crushMix:1,crushLogic:1,crushWith:1)
+  — Every code word XORed with the kit’s, bit by bit, before it reaches the DAC:
+  the tune comes out scrambled into noise that pulses with the drums
 
 ### Kit voices
 

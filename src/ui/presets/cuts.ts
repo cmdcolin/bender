@@ -504,6 +504,51 @@ export const CUTS: CutDef[] = [
       'The log adder cut to 7 bits, so anything 3 dB down wraps back to the top — the quiet middle of every wave folds up into a harsh digital buzz at the pitch it always had',
     patch: { fmAdder: pick('fmAdder', '7 bits') },
   },
+  {
+    group: 'Crusher',
+    part: KNIFE,
+    name: 'the sign bit wanders',
+    blurb:
+      'The top wire into the DAC parted. Nothing drives the pin, so it holds a word and then drags after D14, and each half of the wave lands in the wrong half a few words at a time',
+    patch: {
+      crushDataLine: pick('crushDataLine', 'D15'),
+      crushDataFault: pick('crushDataFault', 'cut'),
+    },
+  },
+  {
+    group: 'Crusher',
+    part: KNIFE,
+    name: 'every wave folded up',
+    blurb:
+      'The top wire held at +V, so every word reads as the top half: the bottom of each wave jumps up a whole half scale and lands on top of the rest',
+    patch: {
+      crushDataLine: pick('crushDataLine', 'D15'),
+      crushDataFault: pick('crushDataFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Crusher',
+    part: KNIFE,
+    name: 'two bits that agree',
+    blurb:
+      'D14 soldered to D15. A word keeps both only where both are set, so the four quarters of the wave collapse onto two and the pitch climbs',
+    patch: {
+      crushDataLine: pick('crushDataLine', 'D14'),
+      crushDataFault: pick('crushDataFault', 'bridged'),
+    },
+  },
+  {
+    group: 'Crusher',
+    part: KNIFE,
+    name: 'a bit that comes and goes',
+    blurb:
+      'D13 parted most of the way: the bit floats after its neighbour, and every time the trace still conducts the real bit slams back',
+    patch: {
+      crushDataLine: pick('crushDataLine', 'D13'),
+      crushDataFault: pick('crushDataFault', 'cut'),
+      crushBusCut: 0.7,
+    },
+  },
 ]
 
 function groupOf(name: string) {
@@ -536,7 +581,8 @@ export const cutsFor = (group: string, part: string): CutDef[] =>
 
 // Loud enough to be the reason you pressed it. The FM chip boots at zero and a
 // cut you cannot hear teaches nothing, so a chip sitting silent comes up — the
-// same reason a stage's own roll does not get to land its mix at nothing.
+// same reason a stage's own roll does not get to land its mix at nothing. A
+// bend has no level, so its dry/wet comes up instead.
 const AUDIBLE = 0.8
 
 // One knife rather than two: the heading goes back where it booted and the cut
@@ -545,7 +591,9 @@ const AUDIBLE = 0.8
 // exactly where your hand put it.
 export function applyCut(cut: CutDef, current: Controls): Controls {
   const next = { ...cutOff(cut.group, cut.part, current), ...cut.patch }
-  const level = groupOf(cut.group).sliders.find(s => s.role === 'level')
+  const sliders = groupOf(cut.group).sliders
+  const level =
+    sliders.find(s => s.role === 'level') ?? sliders.find(s => s.role === 'mix')
   if (level && next[level.key] === level.min) next[level.key] = AUDIBLE
   return next
 }
