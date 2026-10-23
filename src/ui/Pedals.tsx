@@ -35,6 +35,7 @@ const FACE: Record<string, Face> = {
   },
   Wraith: {
     colour: '#75592c',
+    switch: 'dlySync',
     sliders: ['delayMs', 'dlyFb', 'dlyMix'],
     bypass: 'dlyMute',
   },
@@ -143,6 +144,7 @@ function Selector({ control }: { control: ControlKey }) {
   const value = useControlValue(control)
   const choices = def.choices!
   const at = Math.round(value) - def.min
+  const says = choices[at] === 'off' ? `${def.label} off` : choices[at]
   return (
     <Tip text={def.help}>
       <button
@@ -153,7 +155,7 @@ function Selector({ control }: { control: ControlKey }) {
           engine.set(control, def.min + ((at + 1) % choices.length))
         }}
       >
-        {choices[at]}
+        {says}
         <span aria-hidden="true"> ›</span>
       </button>
     </Tip>
@@ -208,6 +210,9 @@ function PedalFace({
   onClose: () => void
 }) {
   const face = FACE[stage]!
+  const live = useBoardValue(c =>
+    face.sliders.filter(key => sliderFor(key).needs?.(c) ?? true).join(','),
+  ).split(',')
   return (
     <div
       className={styles.pedal}
@@ -234,9 +239,11 @@ function PedalFace({
         </div>
         <div className={styles.sliders}>
           {face.switch && <Selector control={face.switch} />}
-          {face.sliders.map(key => (
-            <ControlSlider key={key} def={sliderFor(key)} />
-          ))}
+          {face.sliders
+            .filter(key => live.includes(key))
+            .map(key => (
+              <ControlSlider key={key} def={sliderFor(key)} />
+            ))}
         </div>
       </div>
     </div>

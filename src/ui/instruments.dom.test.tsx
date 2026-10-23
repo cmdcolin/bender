@@ -5,7 +5,7 @@ import { beforeEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { bench, parseBench } from './bench.ts'
-import { GROUPS } from './controls/index.ts'
+import { GROUPS, sliderFor } from './controls/index.ts'
 import { shownOn } from './fitted.ts'
 import { Instruments } from './Instruments.tsx'
 import { OpenGroup } from './Section.tsx'
@@ -303,6 +303,25 @@ test('a pedal selector switch goes to the next position on each press', () => {
   const before = engine.controls.get().stompCircuit
   fireEvent.click(screen.getByRole('button', { name: /^Circuit: / }))
   expect(engine.controls.get().stompCircuit).toBe(before + 1)
+})
+
+test('Wraith’s face trades its Time slider for the sync switch', () => {
+  bench.set({
+    instruments: [],
+    closed: [],
+    pedals: ['Wraith'],
+    roll: false,
+    grid: false,
+  })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  const time = sliderFor('delayMs').label
+  expect(screen.getByRole('slider', { name: time })).not.toBeNull()
+  const sync = screen.getByRole('button', { name: 'Time sync: off' })
+  expect(sync.textContent).toContain('Time sync off')
+  fireEvent.click(sync)
+  expect(engine.controls.get().dlySync).toBe(1)
+  expect(screen.queryByRole('slider', { name: time })).toBeNull()
+  act(() => engine.set('dlySync', 0))
 })
 
 test('the stage panel of a pedal puts it on the bench and takes it off', () => {
