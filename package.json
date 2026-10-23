@@ -4,7 +4,7 @@
   "version": "1.16.1",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "node scripts/demoreel.ts --missing && astro dev",
     "blog:draft": "node scripts/blogdraft.mjs",
     "build": "astro sync && tsc -b && node scripts/demogen.mjs --check && node scripts/demoreel.ts && astro build",
     "ab": "node scripts/ab.ts",

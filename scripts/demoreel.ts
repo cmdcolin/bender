@@ -1,8 +1,10 @@
 // Renders the showcase demos into `public/demos/*.mp3` through the same board
 // the worklet builds, so a clip is what the app plays today. `pnpm build` runs
-// it, and the clips stay out of git.
+// it, and the clips stay out of git. `pnpm dev` runs it with `--missing`, which
+// renders only the clips with no file or whose demo link changed since, so the
+// landing page's play buttons work on a dev server too.
 //
-// Run: pnpm reel. Needs ffmpeg on the path.
+// Run: pnpm reel [--missing]. Needs ffmpeg on the path.
 import { DEFAULT_CONTROLS } from '../src/controls.ts'
 import { buildBender } from '../src/dsp/build.ts'
 import { BLOCK } from '../src/dsp/stage.ts'
@@ -11,7 +13,7 @@ import { clipPath, showcase } from '../src/home/demos.ts'
 import { boardFromUrl } from '../src/ui/share.ts'
 
 import { execFileSync } from 'node:child_process'
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const SR = 48000
@@ -43,9 +45,23 @@ function take(query: string) {
   return pcm
 }
 
+const DIR = join('public', 'demos')
+const RENDERED = join(DIR, 'rendered.json')
+const missingOnly = process.argv.includes('--missing')
+
+function readRendered(): Record<string, string> {
+  try {
+    return JSON.parse(readFileSync(RENDERED, 'utf8'))
+  } catch {
+    return {}
+  }
+}
+
+const rendered = readRendered()
+mkdirSync(DIR, { recursive: true })
 for (const demo of showcase) {
   const out = join('public', clipPath(demo))
-  mkdirSync(join('public', 'demos'), { recursive: true })
+  if (missingOnly && existsSync(out) && rendered[out] === demo.query) continue
   execFileSync(
     'ffmpeg',
     [
@@ -59,5 +75,7 @@ for (const demo of showcase) {
     ].flat(),
     { input: Buffer.from(take(demo.query).buffer) },
   )
+  rendered[out] = demo.query
+  writeFileSync(RENDERED, `${JSON.stringify(rendered, null, 2)}\n`)
   console.log(out)
 }
