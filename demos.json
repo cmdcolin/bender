@@ -18,5 +18,20 @@
     "name": "Aimless stalling lullaby",
     "showcase": false,
     "query": "p=AKoBAnYAxAEBjAEACAAEAAYNLBisAQPiEAAKDsSJAQCAAwCABQB4CMgBAbgBFgEBJinyAQE8CEgAZAS6BQmqBwMGAwQByAEDZh8WAQIBVANiCQhYoAEQ6MABAJh_"
+  },
+  {
+    "name": "Motorboat lullaby",
+    "showcase": true,
+    "query": "set=chipLevel:0.8,distMix:0.85,distSupply:0,distDraw:1,distSpeaker:0.4"
+  },
+  {
+    "name": "Paperclip on the kit",
+    "showcase": true,
+    "query": "set=chipLevel:0.7,chipAccomp:0.5,chipSupply:2,drumSupply:1,cell2Cap:0.1,cell2Clip:6,drumLevel:0.8,drumKick:32912,drumSnare:2056,drumHat:8738,faultCluster:0.5"
+  },
+  {
+    "name": "Drift until the header",
+    "showcase": true,
+    "query": "set=srHz:16000,crushMix:1,crushAdc:3,crushDataLine:13,crushDataFault:2"
   }
 ]

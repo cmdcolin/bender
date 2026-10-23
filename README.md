@@ -106,4 +106,13 @@ footsteps of https://github.com/cmdcolin/ntsc.js
 - Aimless stalling lullaby
   https://cmdcolin.github.io/bender/app/#p=AKoBAnYAxAEBjAEACAAEAAYNLBisAQPiEAAKDsSJAQCAAwCABQB4CMgBAbgBFgEBJinyAQE8CEgAZAS6BQmqBwMGAwQByAEDZh8WAQIBVANiCQhYoAEQ6MABAJh_
 
+- Motorboat lullaby
+  https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,distMix:0.85,distSupply:0,distDraw:1,distSpeaker:0.4
+
+- Paperclip on the kit
+  https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.5,chipSupply:2,drumSupply:1,cell2Cap:0.1,cell2Clip:6,drumLevel:0.8,drumKick:32912,drumSnare:2056,drumHat:8738,faultCluster:0.5
+
+- Drift until the header
+  https://cmdcolin.github.io/bender/app/#set=srHz:16000,crushMix:1,crushAdc:3,crushDataLine:13,crushDataFault:2
+
 <!-- /generated:demos -->
