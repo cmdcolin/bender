@@ -246,6 +246,11 @@ const SLIP_MAX = 0.75
 
 /** Octaves a full push of a clock lane moves its crystal, as on the toy. */
 const CLOCK_LANE_OCTAVES = 3
+const CLOCK_LANE_MAX = 2
+const laneOctaves = (x: number) =>
+  octaves(
+    Math.min(Math.max(x, -CLOCK_LANE_MAX), CLOCK_LANE_MAX) * CLOCK_LANE_OCTAVES,
+  )
 
 /** Where a wire off the bay lands on a control that only has 0 to 1 to give. */
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
@@ -1463,9 +1468,7 @@ export class FmChip implements Stage {
     const cpuX = p[IDX.fmCpuClockX]!
     const modChipX = bay.read(DEST.fmClock)
     const modCpuX = bay.read(DEST.fmCpuClock)
-    this.crystal = modChipX
-      ? chipX * octaves(modChipX[0]! * CLOCK_LANE_OCTAVES)
-      : chipX
+    this.crystal = modChipX ? chipX * laneOctaves(modChipX[0]!) : chipX
     this.readPatch(rail.clockFactor)
     if (kit) this.readKit(rail.clockFactor)
     // The keys, before the block.
@@ -1476,12 +1479,8 @@ export class FmChip implements Stage {
     let load = 0
 
     for (let i = 0; i < io.n; i++) {
-      const xtal = modChipX
-        ? chipX * octaves(modChipX[i]! * CLOCK_LANE_OCTAVES)
-        : chipX
-      const cpu = modCpuX
-        ? cpuX * octaves(modCpuX[i]! * CLOCK_LANE_OCTAVES)
-        : cpuX
+      const xtal = modChipX ? chipX * laneOctaves(modChipX[i]!) : chipX
+      const cpu = modCpuX ? cpuX * laneOctaves(modCpuX[i]!) : cpuX
       this.stepLfo(rail.clockFactor * xtal)
       if (this.toyBits > 0) this.toyOnBus(toy[i]!)
       if (micOnBus) this.micOnBus(ctx.mic[i]!)

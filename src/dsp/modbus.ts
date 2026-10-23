@@ -1,5 +1,11 @@
 import { IDX, type SOURCE_TAPS } from '../engine/params.ts'
-import { asLaneLen, LANE_KEYS, LANE_LEN_KEYS, LANE_MAX } from '../lanes.ts'
+import {
+  asLaneLen,
+  asLaneValue,
+  LANE_KEYS,
+  LANE_LEN_KEYS,
+  LANE_MAX,
+} from '../lanes.ts'
 import { BLOCK } from './stage.ts'
 import { Chaos, Drunk } from './util/drift.ts'
 import { Decay, Follower, coef } from './util/follower.ts'
@@ -400,7 +406,8 @@ export class ModBus {
       for (let l = 0; l < LANE_IDX.length; l++) {
         if (at) {
           const len = asLaneLen(p[LANE_LEN_IDX[l]!]!)
-          this.laneAt[l] = p[LANE_IDX[l]![(at - 1) % len]!]! / LANE_MAX
+          this.laneAt[l] =
+            asLaneValue(p[LANE_IDX[l]![(at - 1) % len]!]!) / LANE_MAX
         }
         this.stepLanes[l]![i] = this.laneAt[l]!
       }
