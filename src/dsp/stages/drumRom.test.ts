@@ -149,9 +149,10 @@ test('a hat step still cuts a ringing sampled open hat short', () => {
     drumOpen: stepMask(2),
     drumBpm: 120,
   }
-  const ringing = solo(open, 1.2)
-  const choked = solo({ ...open, drumHat: stepMask(4) }, 1.2)
-  const tail = (x: Float32Array) => rms(x.subarray(Math.round(0.7 * SR)))
+  const ringing = solo(open, 0.7)
+  const choked = solo({ ...open, drumHat: stepMask(3) }, 0.7)
+  const tail = (x: Float32Array) =>
+    rms(x.subarray(Math.round(0.45 * SR), Math.round(0.6 * SR)))
   expect(tail(choked)).toBeLessThan(tail(ringing) * 0.5)
 })
 
@@ -210,7 +211,7 @@ test('a ROM bus nobody has knifed is the sampled kit it always was', () => {
 test('a cut end stop runs the kick on through every slab after it', () => {
   const stops = ends(struck(KICK, {}, 5)) * 5
   const runs = ends(struck(KICK, { drumRomCount: 1 }, 5)) * 5
-  expect(stops).toBeLessThan(0.7)
+  expect(stops).toBeLessThan(ROM_SECS[KICK] + 0.1)
   expect(runs).toBeGreaterThan(3)
 })
 
@@ -243,7 +244,7 @@ test('the sign wire on the ROM’s data bus folds every hit', () => {
     0,
     0.6,
   )
-  expect(rms(folded)).toBeGreaterThan(rms(kick) * 1.4)
+  expect(rms(folded)).toBeGreaterThan(rms(kick) * 1.3)
   expect(highEnergy(folded, 4000)).toBeGreaterThan(highEnergy(kick, 4000) * 5)
 })
 

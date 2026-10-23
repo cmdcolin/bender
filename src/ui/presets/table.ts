@@ -1124,14 +1124,14 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'struck metal',
+    name: 'needle metal',
     blurb:
-      'The squarer biased out of the way — the hats and the cymbal come back as the six tones they are made of',
+      'The squarer biased to its trip point — the hats and the cymbal turn to a comparator spitting needles',
     patch: {
       chipLevel: 0,
       drumLevel: 0.85,
       drumBpm: 92,
-      drumSquare: 0.06,
+      drumSquare: 1,
       drumMetal: 1,
       drumSpread: 0.4,
       drumCymTone: 0.2,

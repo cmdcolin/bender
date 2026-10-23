@@ -256,7 +256,7 @@ puts the knife on, and the rows under it show the controls it set:
 | Metal           | off to full                                                                                                        | What the hat and the open hat are fed from                                                                                                              |
 | Cymbal tone     | off to full                                                                                                        | Where the bottom of the cymbal’s band sits                                                                                                              |
 | Bank spread     | off to full                                                                                                        | Moves the ends of the one resistor chain that sets all six oscillators and leaves the middle, so the bank widens where Tune transposes it               |
-| Squarer bias    | off to full                                                                                                        | The one resistor that makes the bank a clatter                                                                                                          |
+| Squarer bias    | off to full                                                                                                        | A resistor across the gate that sums the bank                                                                                                           |
 | Bank starve     | off to full                                                                                                        | A resistor into the metal bank’s own supply                                                                                                             |
 | Bank gate       | off, on the kick, on the snare, on the hat, on the clap, on the tom, on the bell, on the open hat, on the cymbal   | Solders a trigger line onto the metal bank’s supply, so the six run only while that voice sounds and hold their phases between its hits                 |
 | Bit depth       | 2 to 16 bits                                                                                                       | Word length of the one cheap DAC the whole kit shares                                                                                                   |
@@ -1670,7 +1670,7 @@ the board waits until you press play.
   mic level up
 - [**backbeat**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
   — Claps on two and four, shuffled hard, through four bits of DAC
-- [**boom bap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:88,drumSwing:0.6,drumBits:12,drumRom:1,drumRomHz:22000,drumKick:33312,drumSnare:2056,drumHat:43690,drumAccent:2056,revMix:0.18,tapeMix:0.5,tapeHiss:0.55,tapeWow:0.3)
+- [**boom bap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:88,drumSwing:0.6,drumRom:1,drumRomHz:22000,drumKick:33312,drumSnare:2056,drumHat:43690,drumAccent:2056,revMix:0.18,tapeMix:0.5,tapeHiss:0.55,tapeWow:0.3)
   — The kit sampled by itself, twelve bits and shuffled
 - [**dusty kit**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:84,drumSwing:0.4,drumDecay:0.5,drumRom:1,drumRomHz:12000,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,bendSlot0:2,bits:6,srHz:12000,crushMix:0.3,revDecayS:1.2,revMix:0.25)
   — The ROM clock down at 12 k and every hit truncated — a sampler running out
@@ -1678,9 +1678,9 @@ the board waits until you press play.
 - [**pitched down**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:76,drumTune:0.5,drumRom:1,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:514,drumCym:32768,drumAccent:32896,revDecayS:3,revMix:0.3)
   — Every slab read at half speed — the long ones smear into each other and the
   kit sounds an octave under
-- [**struck metal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:92,drumDecay:2.4,drumMetal:1,drumCymTone:0.2,drumSpread:0.4,drumSquare:0.06,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumCym:32768,drumAccent:32896,revDecayS:2.4,revMix:0.32)
-  — The squarer biased out of the way — the hats and the cymbal come back as the
-  six tones they are made of
+- [**needle metal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:92,drumDecay:2.4,drumMetal:1,drumCymTone:0.2,drumSpread:0.4,drumSquare:1,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumCym:32768,drumAccent:32896,revDecayS:2.4,revMix:0.32)
+  — The squarer biased to its trip point — the hats and the cymbal turn to a
+  comparator spitting needles
 - [**popcorn**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumDecay:1.3,drumSnappy:0.9,drumNoiseBias:0.42,drumMetal:0.25,drumKick:33312,drumSnare:2312,drumHat:44718,drumClap:514,drumAccent:2056,revMix:0.24)
   — The noise transistor back at its knee: snare, hats and clap all missing the
   same gaps
@@ -1902,21 +1902,22 @@ Each of the eight kit voices is a circuit. On the sampled _Kit_ setting, the
 machine strikes all eight once through these circuits and plays the recordings
 back.
 
-- **kick** — A bridged-T network, shocked and left to ring. It pitches down as
-  it runs down, so how hard you hit it is how far it swoops.
+- **kick** — A bridged-T network, shocked and left to ring. The trigger pulse
+  snaps it at the front, and it pitches down as it runs down, so how hard you
+  hit it is how far it swoops.
 - **snare** — A noise transistor over two tuned networks at 185 and 330 Hz.
   Snappy is the pot between them.
-- **hat** — The metal bank through a steep high-pass, gated short. Metal is the
-  pot between the bank and the noise transistor.
+- **hat** — The metal bank’s upper band through a high-pass, gated short. Metal
+  is the pot between the bank and the noise transistor.
 - **clap** — Three noise bursts nine milliseconds apart, then the tail.
 - **tom** — The same network as the kick, tuned higher and rung shorter — the
   fill voice.
-- **bell** — Two of the metal bank’s six oscillators, filtered just under the
-  pair: the cowbell.
+- **bell** — Two of the metal bank’s six oscillators through a band around the
+  pair: the cowbell, a clank over a ring.
 - **open hat** — The same bank and the same filter as the hat, held open instead
   of gated. A hat step cuts it short — the two share one cap.
-- **cymbal** — All six oscillators through a wider band, and a tail nothing
-  chokes. Cymbal tone is where the band sits.
+- **cymbal** — All six oscillators through a wider band, a crash over a long
+  tail nothing chokes. Cymbal tone is where the band sits.
 
 ## Scripts
 

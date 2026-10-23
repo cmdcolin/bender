@@ -196,6 +196,7 @@ test('hold catches the window after a hit and goes round it', () => {
 // on the way: three clock rates, sample for sample, against the bytes the
 // committed stage rendered before the move. A tolerance would pass a refactor
 // that quietly retuned the filters, so this is the bits.
+// The kit is off, so retuning a drum voice does not move these bytes.
 const digest = (x: Float32Array) => {
   let h = 0x811c9dc5
   const view = new DataView(x.buffer, x.byteOffset, x.byteLength)
@@ -215,6 +216,7 @@ test('the analog mode renders what it rendered before the chip was shared', () =
       render(
         {
           chipLevel: 0.7,
+          drumLevel: 0,
           echoMode: ECHO_MODE.analog,
           echoLevel: 1,
           echoMs,
@@ -224,9 +226,9 @@ test('the analog mode renders what it rendered before the chip was shared', () =
       ),
     )
   expect([at(150), at(900), at(1500)]).toEqual([
-    '08aee11c',
-    'f1ff37ca',
-    '90d2987e',
+    'a7889a8e',
+    '9e2cfcee',
+    '4099b5ed',
   ])
 })
 

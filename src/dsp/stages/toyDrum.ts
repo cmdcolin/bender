@@ -24,6 +24,7 @@ import {
   TriggerBus,
   voiceMask,
 } from '../trigbus.ts'
+import { bandpass, BiquadState, type Biquad } from '../util/biquad.ts'
 import { BridgedT } from '../util/bridged.ts'
 import { coef, Transient } from '../util/follower.ts'
 import { MetalBank } from '../util/metal.ts'
@@ -255,13 +256,14 @@ export const BANK_GATE_NAMES = ['off', ...VOICE_LABELS.map(l => `on the ${l}`)]
 //
 // `count` is the ring time in the units the rest of the kit counts envelopes
 // in, so a tank runs down alongside the noise voices rather than to a clock of
-// its own; `sweep` is how far a full swing carries the tuning; `gain` is what
-// the voice is worth in the sum.
+// its own; `sweep` is how far a full swing carries the tuning; `push` is how far
+// the trigger pulse lifts it while the pulse is on the line; `gain` is what the
+// voice is worth in the sum.
 const TANKS = [
-  { voice: KICK, hz: 48, sweep: 0.9, count: 9, gain: 1.54 },
-  { voice: TOM, hz: 105, sweep: 0.7, count: 11, gain: 1.86 },
-  { voice: SNARE, hz: 185, sweep: 0.25, count: 22, gain: 1.53 },
-  { voice: SNARE, hz: 330, sweep: 0.25, count: 22, gain: 0.98 },
+  { voice: KICK, hz: 48, sweep: 0.9, push: 4, count: 5, gain: 1.8 },
+  { voice: TOM, hz: 105, sweep: 0.7, push: 1, count: 11, gain: 1.86 },
+  { voice: SNARE, hz: 185, sweep: 0.25, push: 0, count: 22, gain: 1.53 },
+  { voice: SNARE, hz: 330, sweep: 0.25, push: 0, count: 22, gain: 0.98 },
 ] as const
 const N_TANKS = TANKS.length
 
@@ -275,45 +277,24 @@ const VOICE_TANK = [0, -1, -1, -1, 1, -1, -1, -1]
 // It is what survives of a kick on a small speaker, and it is only there while
 // the pulse is narrow enough to be a spike: the charge is fixed, so a wide one
 // arrives as a shove too low and too slow for the cap to pass.
-const CLICK = [0.9, 0.45, 0, 0, 0.7, 0, 0, 0]
+const CLICK = [0.9, 0.2, 0, 0, 0.7, 0, 0, 0]
 
-// And what the path does to it on the way, which is the whole of why it is a
-// click and not a thud. The cap it comes through blocks the low end, so what
-// reaches the mix is the pulse's edges rather than its body; the one small
-// stage it lands in cannot swing arbitrarily fast, so those edges arrive with a
-// shape. Left as the raw pulse it was neither — a lump with a needle on it,
-// mostly energy under a hundred hertz, and a kick that came out of the kit's
-// seven-bit converter carrying more hash at 6 kHz than the hat did.
-//
-// The cap has to be a cap, though, and for a long time this was two low-passes
-// subtracted instead. That is a band rather than a cap: it peaks at four tenths
-// somewhere between the two corners and falls away either side of it, and a
-// one-shot's edge is nowhere near there — so what came through measured 60 dB
-// under the kick's body, and zeroing the whole table changed the take by five
-// thousandths of a decibel. A pulse whose height is the same whatever its width
-// is what the tanks want, so the click takes its own read of the line at the
-// height the one-shot actually reaches.
-const CLICK_HI = 1200
+// The cap the pulse comes through, and the stage behind it. On an 808 the
+// pulse reaches the output as a bump a millisecond wide that rises before the
+// network has swung at all, and that bump is the snap at the front of the kick.
+// A cap at 150 Hz passes the bump whole. For a long time this
+// was three poles at 1200 Hz, which passed only the pulse's edges, and the kick
+// faded in like a sine.
+const CLICK_HI = 150
 const CLICK_LO = 4200
-
-// How steep the cap is, and what the stage behind it is worth.
-//
-// One pole is a tilt, not a cap. At 6 dB an octave a corner at 1200 Hz still
-// hands on most of a one-shot's body, and the body is the half the tank is
-// already playing — so the click arrived a quarter-turn out of phase with the
-// voice it was meant to sharpen and took 22% off the kit's own level on a
-// hammered line. Three poles keep the path inside the band it is named for,
-// where the tanks have nothing, and then the stage has to make up the level
-// that steepness costs. Which is the right way round: a click is a small
-// signal through a lot of gain, not a large one leaking past a filter.
-const CLICK_POLES = 3
-const CLICK_GAIN = 3.1
+const CLICK_POLES = 1
+const CLICK_GAIN = 2.5
 
 // How much of a one-shot's width its own edge takes. A one-shot is a cap
 // charging through a resistor, so it has a rise as well as a fall, and the rise
 // is the fast part rather than no part: nothing on a board goes anywhere in
 // nought seconds. Modelled without one, a hit arrived as a step two samples
-// wide, and the kit's seven-bit converter turned that edge into broadband hash
+// wide, and the kit's converter turned that edge into broadband hash
 // — a kick that measured brighter at 6 kHz than the hat sitting on top of it.
 const PULSE_EDGE = 2.5
 
@@ -386,54 +367,37 @@ const BURST_LONG = 0.08
 // worst off a full-scale switch and high enough to leave the pop in it.
 const NOISE_EDGE = 2000
 
-// Where the hats' filter sits, and how much of it there is. What comes off the
-// bank's summing stage is broadband, but it is broadband with the bank's own
-// rate all through it, and a hat is only the part of that above where a pitch
-// can be heard. Forty-odd decibels down at the top of the bank is what it takes
-// to be sure of that; one pole at this corner hands back a cowbell.
+// The two resonant bands the bank's sum goes through before anything is hung
+// off it, where the 808 put them. A band that rings turns every edge the bank
+// makes into a few cycles of sizzle. Without them each edge reached the hats'
+// high-pass as one needle, and the hat was a spray of clicks with silence
+// between them.
+const METAL_LO = 3440
+const METAL_HI = 7100
+const METAL_Q = 2.5
+
+// The hats' high-pass and the lid over it. Below the corner the bank and the
+// transistor are still pitches and rumble, and an 808 hat has nothing under
+// 3 kHz.
 const HAT_HP = 5000
 const HAT_POLES = 3
-
-// And the lid over it. The cymbal has had one all along, and it is the same
-// stage at the far end of the same bank, so it is the same corner — see CYM_LP
-// below, which is where this number comes from. Left off, an eighth of a closed
-// hat's power sat above 16 kHz: past where anyone hears, and still taking up the
-// peak the mix bus has to find room for. HAT_METAL is what that steepness cost,
-// put back.
+const HAT_LP = 14000
 const HAT_LP_POLES = 2
 
-// The cymbal's two bands, and the pot between them. Cymbal tone is not a corner
-// being swept: it is a wiper between two taps on the same filter chain, which
-// is the only way a tone control on a board like this was ever built and the
-// reason it is a tone control rather than a second volume. The crash tap keeps
-// the body a hat throws away; the splash tap is most of the way to being a hat.
-//
-// Neither goes lower than this. Down where the fundamentals are, six
-// oscillators stop being a clatter and go back to being six notes.
+// The cymbal's two bands, and the pot between them. Cymbal tone is a wiper
+// between two taps on the same filter chain rather than a swept corner: the
+// crash tap keeps the body a hat throws away, and the splash tap is most of
+// the way to being a hat.
 const CYM_CRASH = 2200
 const CYM_SPLASH = 7000
 const CYM_POLES = 3
-
-// And the lid on both of them. A cymbal rolls off at the top; what is up there
-// on this board is the bank's harmonics folding back off the sample rate, which
-// is hash rather than air.
-const CYM_LP = 9000
+const CYM_LP = 12000
 const CYM_LP_POLES = 2
-const HAT_LP = CYM_LP
 
-// The cowbell's corner. A cowbell is the one metal voice with a pitch in it, so
-// the filter under it has to leave that pitch alone — and this one was soldered
-// up at 3.9 kHz, four octaves above the pair it taps. What came out was the
-// harmonics of the pair rather than the pair: it measured 6 kHz bright, and it
-// sat 11 dB under the kick in `bossa` and 20 under it in `electro`, which are
-// the patterns that put the cowbell out front. Under the lower of the two
-// instead, so both pass and only what the squares' own edges put above them
-// does not.
-//
-// Two poles rather than one because a cowbell has no bottom end. At 6 dB an
-// octave a corner here is still only 16 dB down where the kick lives, and the
-// low end that leaked through was enough to read on a meter as a drum.
-const BELL_HP = 500
+// The cowbell's band, around the 800 Hz square of the pair it taps, as on the
+// 808, where the 540 Hz one sits 15 dB under it.
+const BELL_HP = 700
+const BELL_LP = 1100
 const BELL_POLES = 2
 
 // The cap between the noise transistor and the voices hung off it, and the
@@ -442,26 +406,20 @@ const BELL_POLES = 2
 // here is whatever the browser opened the context at. Written the old way every
 // one of these sat an octave high on a 96 kHz device.
 const NOISE_LP = 2200
-const CLAP_LP = 4600
-const CLAP_HP = 390
+const CLAP_LP = 3200
+const CLAP_HP = 800
+const CLAP_GAIN = 3.2
 
-// The lid on the transistor itself, and the snare's own corner under it.
+// The lid on the transistor itself, and the snare's own band under it.
 //
-// There is one junction on this board and one cap off it, so there is one band,
-// and it belongs to the source rather than to each voice hung off it. A snare's
-// hiss lives between the drum and the air and not above both, and one pole
-// taken off the transistor is a 6 dB tilt rather than a band: it left the noise
-// flat to Nyquist, with the loudest octave of a snare sitting above 8 kHz, so
-// what arrived was air laid over the two networks instead of a crack between
-// them.
-//
-// Lidding the source rather than the voices is also what keeps them one source.
-// Two of them on a step sum coherently because they hear the same hiss, and a
-// band soldered under one voice and not the others is exactly how that stops
-// being true.
+// There is one junction on this board and one cap off it, so the lid belongs to
+// the source rather than to each voice hung off it, and two voices on a step sum
+// coherently because they hear the same hiss. The snare's band is the 808's
+// crack: 1 to 7 kHz, with nothing under it to muddy the two networks.
 const NOISE_LID = 9500
 const NOISE_POLES = 2
-const SNARE_HP = 400
+const SNARE_HP = 1000
+const SNARE_LP = 7000
 const SNARE_NOISE = 1.33
 
 // What each metal voice is worth in the sum. The hat's two are measured against
@@ -469,11 +427,26 @@ const SNARE_NOISE = 1.33
 // crossfades instead of stepping. The open hat has no numbers of its own: it is
 // the same filter and the same amplifier, and the only thing that separates it
 // from the closed hat is which resistor the cap drains through.
-const BELL_GAIN = 0.3
-const HAT_NOISE = 0.65
-const HAT_METAL = 7.8
-const CYM_CRASH_GAIN = 1.27
-const CYM_SPLASH_GAIN = 11.0
+const BELL_GAIN = 1.4
+const HAT_NOISE = 10.7
+const HAT_METAL = 47
+const CYM_CRASH_GAIN = 10
+const CYM_SPLASH_GAIN = 87
+
+// What share of a metal voice is left in the tail once the strike has gone.
+const BELL_TAIL = 0.25
+const CYM_TAIL = 0.3
+
+// Where the open hat's amplifier stops passing anything. An 808's open hat
+// holds most of its level and then shuts, rather than fading for half a second.
+const OHAT_FLOOR = 0.1
+
+/** A strike over a tail, off one envelope: the envelope's sixth power falls
+    six times as fast. */
+const strike = (e: number, tail: number) => {
+  const e2 = e * e
+  return e * (tail + (1 - tail) * e2 * e2 * e)
+}
 
 // The kit sampling itself, which is the only way a box with no samples in it
 // gets a sampled kit. On its way up it strikes each of its eight voices once,
@@ -490,7 +463,7 @@ export const ROM_BITS = 12
 // How long each voice is given, in the order of the rows. Long enough to hold
 // the tail at the stock decay and no longer: a slab is memory, and the cymbal
 // on its own is a third of the kit.
-export const ROM_SECS = [0.6, 0.35, 0.1, 0.3, 0.45, 0.35, 0.6, 1.4] as const
+export const ROM_SECS = [0.9, 0.35, 0.1, 0.3, 0.45, 0.35, 0.6, 1.4] as const
 
 // The filter in front of the converter and the one behind it. Both were real
 // parts and both are half of why these boxes sound the way they do: with
@@ -608,9 +581,11 @@ export class ToyDrum implements Stage {
   private accentSag = 0
   private accentPull = 0
   private bellHp = new Highpass(BELL_POLES)
+  private bellLp = new Lowpass(BELL_POLES)
   private noiseLp = 0
   private noiseLid = new Lowpass(NOISE_POLES)
   private snareBand = new Highpass(NOISE_POLES)
+  private snareLid = new OnePoleLP()
   // Whether the noise transistor's junction is avalanching this instant, how
   // long it has left before it changes its mind, and what the cap between it
   // and the four voices hung off it has made of that. It runs whether or not
@@ -623,6 +598,10 @@ export class ToyDrum implements Stage {
   // The metal section: one bank of six oscillators, and the filters that make
   // the four voices hung off it different from each other.
   private metal: MetalBank
+  private metalLo = new BiquadState()
+  private metalHi = new BiquadState()
+  private readonly metalLoBand: Biquad
+  private readonly metalHiBand: Biquad
   private hatHp = new Highpass(HAT_POLES)
   private hatLp = new Lowpass(HAT_LP_POLES)
   private cymCrash = new Highpass(CYM_POLES)
@@ -770,6 +749,8 @@ export class ToyDrum implements Stage {
     this.romDataBus = new Bus(KIT_ROM_DATA_LINES, seed ^ 0x50da)
     this.rng = mulberry32(seed)
     this.metal = new MetalBank(sr)
+    this.metalLoBand = bandpass(METAL_LO, METAL_Q, sr)
+    this.metalHiBand = bandpass(METAL_HI, METAL_Q, sr)
     this.micTrig = new Transient(sr)
     this.addrBus = new Bus(ADDR_LINES, seed ^ 0xadd4)
     this.dataBus = new Bus(DATA_LINES, seed ^ 0xda7a)
@@ -1268,27 +1249,29 @@ export class ToyDrum implements Stage {
     const clapGapMs = Math.max(p[IDX.drumClapGap]!, 0.1)
     const clapGap = clapGapMs / 1000 / clock
     const clapBurstFall = Math.exp(
-      70 * Math.max(CLAP_GAP_MS / clapGapMs, 1) * perSample,
+      300 * Math.max(CLAP_GAP_MS / clapGapMs, 1) * perSample,
     )
     this.clapCount = Math.max(Math.round(p[IDX.drumClapCount]!), 1)
     const falls = this.falls
     falls[KICK] = Math.exp(9 * perSample)
-    falls[SNARE] = Math.exp(22 * perSample)
+    falls[SNARE] = Math.exp(45 * perSample)
     falls[HAT] = Math.exp(CHOKE_COUNT * perSample)
-    falls[CLAP] = Math.exp(13 * perSample)
+    falls[CLAP] = Math.exp(30 * perSample)
     falls[TOM] = Math.exp(11 * perSample)
-    falls[BELL] = Math.exp(16 * perSample)
-    falls[OHAT] = Math.exp(8 * perSample)
-    falls[CYM] = Math.exp(4 * perSample)
+    falls[BELL] = Math.exp(9 * perSample)
+    falls[OHAT] = Math.exp(7 * perSample)
+    falls[CYM] = Math.exp(1.5 * perSample)
 
     const chokeFall = Math.exp(CHOKE_COUNT * perSample)
 
     const clickCapCoef = lpCoef(CLICK_HI, this.sr)
     const clickSlewCoef = lpCoef(CLICK_LO, this.sr)
     const bellHpCoef = lpCoef(BELL_HP, this.sr)
+    const bellLpCoef = lpCoef(BELL_LP, this.sr)
     const noiseLpCoef = lpCoef(NOISE_LP, this.sr)
     const noiseLidCoef = lpCoef(NOISE_LID, this.sr)
     const snareHpCoef = lpCoef(SNARE_HP, this.sr)
+    const snareLpCoef = lpCoef(SNARE_LP, this.sr)
     const clapLpCoef = lpCoef(CLAP_LP, this.sr)
     const clapHpCoef = lpCoef(CLAP_HP, this.sr)
     const hatHpCoef = lpCoef(HAT_HP, this.sr)
@@ -1513,6 +1496,7 @@ export class ToyDrum implements Stage {
               this.tankF[t]! * pf * bankFm,
               this.tankRate[t]!,
               TANKS[t]!.sweep * sweep,
+              TANKS[t]!.push * drive * clickHeight,
             )
             if (v === KICK) kickRing = ringing
             const y = ringing * this.tankGain[t]!
@@ -1596,95 +1580,88 @@ export class ToyDrum implements Stage {
           // There is one noise transistor on the board, and the snare, both hats
           // and the clap are all hung off it. Two of them on the same step hear
           // the same hiss, so they sum coherently into one crack instead of
-          // standing beside each other as two — and the hats are a high-pass
-          // rather than a second noise minus a first one, because what they
-          // subtract is the filtered version of the sample being held.
+          // standing beside each other as two.
           //
-          // The filter is a cap on the board and it keeps its charge between hits,
-          // so it runs when anything is drawing on the transistor and stops when
-          // nothing is: the kit's idle cost is one branch, not one draw.
-          if (
-            amp[SNARE]! > AUDIBLE ||
-            amp[HAT]! > AUDIBLE ||
-            amp[OHAT]! > AUDIBLE ||
-            amp[CLAP]! > AUDIBLE
-          ) {
-            // Drawn either way, and gated after: the transistor is making noise
-            // or it is not, and a knob that reseeded the whole kit on its way past
-            // the knee would be a knob nobody could get back off.
-            const noise = this.noiseLid.process(
-              (this.rng() * 2 - 1) * this.noiseGate,
-              noiseLidCoef,
-            )
-            this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
-            if (amp[SNARE]! > AUDIBLE) {
-              const band = this.snareBand.process(noise, snareHpCoef)
-              const y = band * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
-              out += y
-              if (th & (1 << SNARE)) send += y
-            }
-            // One tap for both hats, because there is one amplifier: what
-            // separates them is the cap under it, not what is fed into it.
-            const hatHiss = noise - this.noiseLp
-            if (amp[HAT]! > AUDIBLE) {
-              const y = hatHiss * amp[HAT]! * weight[HAT]! * HAT_NOISE * trans
-              out += y
-              if (th & (1 << HAT)) send += y
-            }
-            if (amp[OHAT]! > AUDIBLE) {
-              const y = hatHiss * amp[OHAT]! * weight[OHAT]! * HAT_NOISE * trans
-              out += y
-              if (th & (1 << OHAT)) send += y
-            }
-            if (amp[CLAP]! > AUDIBLE) {
-              this.clapFast += clapLpCoef * (noise - this.clapFast)
-              this.clapSlow += clapHpCoef * (noise - this.clapSlow)
-              const y =
-                (this.clapFast - this.clapSlow) *
-                amp[CLAP]! *
-                weight[CLAP]! *
-                1.6
-              out += y
-              if (th & (1 << CLAP)) send += y
-            }
+          // Every filter below runs whether or not a voice is open. A cap left
+          // holding the charge of the last hit meets the bank wherever it has
+          // turned to since, and the jump came out as a needle at the front of
+          // every hat and cymbal — crest 12 on a closed hat the 808 plays at 8.
+          const noise = this.noiseLid.process(
+            (this.rng() * 2 - 1) * this.noiseGate,
+            noiseLidCoef,
+          )
+          this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
+          const snareBand = this.snareLid.process(
+            this.snareBand.process(noise, snareHpCoef),
+            snareLpCoef,
+          )
+          if (amp[SNARE]! > AUDIBLE) {
+            const y =
+              snareBand * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
+            out += y
+            if (th & (1 << SNARE)) send += y
           }
-          // Four voices off the one bank, and what separates them is the filter
-          // each is soldered behind. The cowbell taps the top pair ahead of the
-          // summing stage and takes them through a corner just under the lower of
-          // the two, which is what leaves a pitch in it; the hats take what comes
-          // off that stage through a corner high enough that only the clatter
-          // survives; the cymbal takes the same through a lower band with a lid on
-          // it, which is the body a hat throws away.
+          // One amplifier and one filter for both hats, with the pot between
+          // the bank and the transistor ahead of them: what separates the two
+          // hats is the cap under the amplifier, not what is fed into it.
+          const lo = this.metalLo.process(this.metal.clash, this.metalLoBand)
+          const hi = this.metalHi.process(this.metal.clash, this.metalHiBand)
+          const hat = this.hatLp.process(
+            this.hatHp.process(
+              hi * HAT_METAL * bank +
+                (noise - this.noiseLp) * HAT_NOISE * trans,
+              hatHpCoef,
+            ),
+            hatLpCoef,
+          )
+          if (amp[HAT]! > AUDIBLE) {
+            const y = hat * amp[HAT]! * weight[HAT]!
+            out += y
+            if (th & (1 << HAT)) send += y
+          }
+          if (amp[OHAT]! > AUDIBLE) {
+            const e = Math.max(amp[OHAT]! - OHAT_FLOOR, 0) / (1 - OHAT_FLOOR)
+            const y = hat * e * weight[OHAT]!
+            out += y
+            if (th & (1 << OHAT)) send += y
+          }
+          this.clapFast += clapLpCoef * (noise - this.clapFast)
+          this.clapSlow += clapHpCoef * (noise - this.clapSlow)
+          if (amp[CLAP]! > AUDIBLE) {
+            const y =
+              (this.clapFast - this.clapSlow) *
+              amp[CLAP]! *
+              weight[CLAP]! *
+              CLAP_GAIN
+            out += y
+            if (th & (1 << CLAP)) send += y
+          }
+          // The cowbell taps the top pair ahead of the summing stage, through a
+          // band around the pair, which is what leaves a pitch in it. The hats
+          // take what comes off that stage through a corner high enough that
+          // only the clatter survives; the cymbal takes the same through a
+          // lower band with a lid on it, which is the body a hat throws away.
+          //
+          // The cowbell and the cymbal each ring twice: a strike that is gone in
+          // a few tens of milliseconds over a tail that hangs on. One envelope raised to a
+          // power is the strike, and the envelope itself is the tail.
+          const bell = this.bellLp.process(
+            this.bellHp.process(this.metal.bell, bellHpCoef),
+            bellLpCoef,
+          )
           if (amp[BELL]! > AUDIBLE) {
-            const hp = this.bellHp.process(this.metal.bell, bellHpCoef)
-            const y = hp * amp[BELL]! * weight[BELL]! * BELL_GAIN
+            const e = amp[BELL]!
+            const y = bell * strike(e, BELL_TAIL) * weight[BELL]! * BELL_GAIN
             out += y
             if (th & (1 << BELL)) send += y
           }
-          if (amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE) {
-            const hp = this.hatLp.process(
-              this.hatHp.process(this.metal.clash, hatHpCoef),
-              hatLpCoef,
-            )
-            if (amp[HAT]! > AUDIBLE) {
-              const y = hp * amp[HAT]! * weight[HAT]! * HAT_METAL * bank
-              out += y
-              if (th & (1 << HAT)) send += y
-            }
-            if (amp[OHAT]! > AUDIBLE) {
-              const y = hp * amp[OHAT]! * weight[OHAT]! * HAT_METAL * bank
-              out += y
-              if (th & (1 << OHAT)) send += y
-            }
-          }
+          const cym = this.cymLp.process(
+            this.cymCrash.process(lo + hi, cymCrashCoef) * crashMix +
+              this.cymSplash.process(hi, cymSplashCoef) * splashMix,
+            cymLpCoef,
+          )
           if (amp[CYM]! > AUDIBLE) {
-            const sq = this.metal.clash
-            const band = this.cymLp.process(
-              this.cymCrash.process(sq, cymCrashCoef) * crashMix +
-                this.cymSplash.process(sq, cymSplashCoef) * splashMix,
-              cymLpCoef,
-            )
-            const y = band * amp[CYM]! * weight[CYM]!
+            const y = cym * strike(amp[CYM]!, CYM_TAIL) * weight[CYM]!
             out += y
             if (th & (1 << CYM)) send += y
           }
@@ -1908,13 +1885,17 @@ export class ToyDrum implements Stage {
     this.pulseW.fill(1)
     this.accentV = 1
     this.bellHp.reset()
+    this.bellLp.reset()
     this.noiseLp = 0
     this.noiseLid.reset()
     this.snareBand.reset()
+    this.snareLid.reset()
     this.avalanche = 1
     this.burstLeft = 0
     this.noiseGate = 1
     this.metal.reset()
+    this.metalLo.reset()
+    this.metalHi.reset()
     this.hatHp.reset()
     this.hatLp.reset()
     this.cymCrash.reset()
@@ -1956,7 +1937,7 @@ export class ToyDrum implements Stage {
 // has nothing to do with.
 //
 // The converter itself is left wide open and dead straight, because the kit's
-// own seven-bit ladder is downstream of both kits: a slab that had already been
+// own ladder is downstream of both kits: a slab that had already been
 // through it would go through it twice.
 function cutRom(): DrumSlabs {
   const sr = ROM_RATE

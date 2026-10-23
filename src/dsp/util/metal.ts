@@ -4,10 +4,10 @@ import { wrap1 } from './pitch.ts'
 // is made out of, and the reason its cowbell and its cymbal are relatives.
 //
 // There is no noise source in the metal section. There are six cheap squares at
-// frequencies chosen not to share harmonics, a stage that squares their sum off
-// again, and a filter on each voice steep enough that what comes out the far
-// end is a clatter rather than six tones. The cowbell taps two of the six ahead
-// of that stage, which is why it is the one metal voice you can hear a pitch in.
+// frequencies chosen not to share harmonics, a summing stage, and a filter on
+// each voice steep enough that what comes out the far end is a clatter rather
+// than six tones. The cowbell taps two of the six ahead of that stage, which is
+// why it is the one metal voice you can hear a pitch in.
 //
 // They free-run. Nothing on the board resets them — a trigger opens an
 // amplifier and that is all it does — so every hit catches the bank wherever it
@@ -55,9 +55,8 @@ export class MetalBank {
   private phase = Float64Array.from(START)
   private inc = new Float64Array(N_METAL)
   private gain = SQUARE_MAX / N_METAL
-  /** What comes off the summing stage: which way the six are leaning, this
-      sample. Six squares that share no harmonics lean back and forth at times
-      that never come round, which is the clatter. */
+  /** What comes off the summing stage this sample: the six summed, or with
+      the squarer biased up, which way they are leaning. */
   clash = 0
   /** The pair the cowbell is soldered to, summed. */
   bell = 0
@@ -71,9 +70,9 @@ export class MetalBank {
 
   /** The bank's two trimmers, read once a block. `spread` is the resistor chain
       the six rates come off, at 0 the frequencies the machine shipped with;
-      `square` is the bias on the stage that squares their sum, at 1 the
-      comparator the board left the factory with and at 0 an amplifier. */
-  tune(spread: number, square = 1) {
+      `square` is the bias on the summing stage, at 0 the plain sum the 808
+      took and at 1 a comparator. */
+  tune(spread: number, square = 0) {
     this.gain = (SQUARE_MIN + (SQUARE_MAX - SQUARE_MIN) * square) / N_METAL
     for (let k = 0; k < N_METAL; k++) {
       // −1 at the bottom of the chain, +1 at the top, so the middle of the bank
@@ -88,24 +87,16 @@ export class MetalBank {
   /** One sample on, at `pf` times where the trimmer left them — the kit's own
       pitch factor, so the bank sags with the batteries like everything else.
 
-      The summing stage as the board wires it has nothing like the headroom for
-      six of them, so what leaves it is which way they are leaning and not by
-      how much — and that is the difference between a clatter and six tones.
-      Summed and left alone, the loudest harmonics in the pile all belong to the
-      fastest oscillator and a hat comes out ringing on one note; squared off,
-      the edges of all six land in it at times that never come round. Taken
-      through the hat's own high-pass, which is what "across the top of the
-      band" means here, the squared one measures six and a half times as flat as
-      the sum it was made from.
+      Biased up, the summing stage has nothing like the headroom for six of
+      them, so what leaves it is which way they are leaning and not by how much.
+      Through the 808's resonant bands a comparator sounds sparser than the
+      sum, because the bands ring on each edge and a comparator makes fewer
+      edges than six squares do.
+      The cowbell taps out ahead of the stage, so the bias never reaches it.
 
-      The bias trimmer is that sentence as a knob. The cowbell taps out ahead of
-      the stage, so it is the one metal voice the trimmer never reaches.
-
-      The squares themselves are the naive kind, so above a couple of kilohertz
-      they are also a pile of harmonics folding back down the spectrum. On a
-      board whose converter is seven bits wide that is the smaller of the two
-      crimes, and what folds is inharmonic hash landing under filters that pass
-      nothing else. */
+      The squares are the naive kind, so above a couple of kilohertz they are
+      also harmonics folding back down the spectrum, as inharmonic hash under
+      filters that pass nothing else. */
   step(pf: number) {
     let sum = 0
     let bell = 0

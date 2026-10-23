@@ -1060,7 +1060,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The one resistor that makes the bank a clatter. It wraps a gate from output back to input and parks it at its trip point, where the gain is in the thousands, so the six arrive at the far side as a rail and what comes out is which way they are leaning rather than how far. Back the bias off and the gate stops deciding and starts amplifying: the sum comes through as a sum, and the hat, the open hat and the cymbal turn from a clatter into the six tones they were made of — a metal chord that beats against itself. The cowbell is soldered in ahead of the stage, so it is the one metal voice this never reaches.',
+        help: 'A resistor across the gate that sums the bank. Stock, the six come through as a sum, the way the 808 mixed them, and the hats sizzle. Wind it up and the gate parks at its trip point, where the gain is in the thousands, so what comes out is which way the six are leaning rather than how far: the hats, the open hat and the cymbal turn to a spray of needles, louder and grittier. The cowbell is soldered in ahead of the stage, so it is the one metal voice this never reaches.',
       },
       {
         key: 'drumBankStarve',
@@ -1096,7 +1096,7 @@ export const SOURCE_GROUPS: Group[] = [
         // one is a part the kit was built with.
         step: 1,
         unit: 'bit',
-        help: 'Word length of the one cheap DAC the whole kit shares. Stock is 7 — wind it down and the tails turn to gravel before the hits do.',
+        help: 'Word length of the one cheap DAC the whole kit shares. Stock is 12 — wind it down and the tails turn to gravel before the hits do.',
       },
       {
         key: 'drumSlot',

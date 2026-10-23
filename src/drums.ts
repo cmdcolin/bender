@@ -28,7 +28,7 @@ export const DRUM_VOICES = [
     maybe: 'drumKickMaybe',
     len: 'drumKickLen',
     label: 'kick',
-    help: 'A bridged-T network, shocked and left to ring. It pitches down as it runs down, so how hard you hit it is how far it swoops.',
+    help: 'A bridged-T network, shocked and left to ring. The trigger pulse snaps it at the front, and it pitches down as it runs down, so how hard you hit it is how far it swoops.',
   },
   {
     key: 'drumSnare',
@@ -42,7 +42,7 @@ export const DRUM_VOICES = [
     maybe: 'drumHatMaybe',
     len: 'drumHatLen',
     label: 'hat',
-    help: 'The metal bank through a steep high-pass, gated short. Metal is the pot between the bank and the noise transistor.',
+    help: 'The metal bank’s upper band through a high-pass, gated short. Metal is the pot between the bank and the noise transistor.',
   },
   {
     key: 'drumClap',
@@ -63,7 +63,7 @@ export const DRUM_VOICES = [
     maybe: 'drumBellMaybe',
     len: 'drumBellLen',
     label: 'bell',
-    help: 'Two of the metal bank’s six oscillators, filtered just under the pair: the cowbell.',
+    help: 'Two of the metal bank’s six oscillators through a band around the pair: the cowbell, a clank over a ring.',
   },
   {
     key: 'drumOpen',
@@ -77,7 +77,7 @@ export const DRUM_VOICES = [
     maybe: 'drumCymMaybe',
     len: 'drumCymLen',
     label: 'cymbal',
-    help: 'All six oscillators through a wider band, and a tail nothing chokes. Cymbal tone is where the band sits.',
+    help: 'All six oscillators through a wider band, a crash over a long tail nothing chokes. Cymbal tone is where the band sits.',
   },
 ] as const satisfies readonly {
   key: ControlKey

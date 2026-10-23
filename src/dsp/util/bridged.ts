@@ -73,10 +73,21 @@ export class BridgedT {
    * trimmer does to a real network — and it would quietly make the kit's pitch
    * knob a second decay knob, so the pitch is divided back out here and Decay
    * goes on meaning the time it has always meant.
+   *
+   * `push` is how far the trigger pulse itself lifts the tuning while it is on
+   * the line. The pulse drives the transistor far harder than any swing does,
+   * so the first half-cycle of an 808 kick runs at three times the pitch of the
+   * rest — the snap at the front of the drum, a millisecond long.
    */
-  process(drive: number, f: number, rate: number, sweep: number): number {
+  process(
+    drive: number,
+    f: number,
+    rate: number,
+    sweep: number,
+    push = 0,
+  ): number {
     const w = Math.min(
-      Math.max(f * Math.max(1 + sweep * this.env, SWEEP_FLOOR), -1),
+      Math.max(f * Math.max(1 + sweep * this.env + push, SWEEP_FLOOR), -1),
       1,
     )
     this.lp = flushDenormal(this.lp + w * this.bp)

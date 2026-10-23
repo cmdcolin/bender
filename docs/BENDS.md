@@ -440,9 +440,9 @@ tempo, swing, chance, tune, decay and mute.
 The cowbell, two hats and cymbal share six free-running square oscillators,
 tuned so that no two share a harmonic.
 
-- **Squarer bias:** backing off the comparator resistor makes the stage amplify,
-  and the hats and cymbal become a metal chord. The bottom of the travel
-  measures three times as tonal as the top. The cowbell is unaffected.
+- **Squarer bias:** stock, the six sum like the 808's. Winding it up parks the
+  summing gate at its trip point, and the hats and cymbal turn to a spray of
+  needles. The cowbell is unaffected.
 - **Metal:** blends the metal bank with the noise transistor on the hats'
   amplifier. Down is a noise hat with every hit the same, and up no two hits
   match.
