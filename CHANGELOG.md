@@ -2,6 +2,35 @@
 
 All notable changes to bender are documented here.
 
+## [1.18.0](https://github.com/cmdcolin/bender/compare/v1.17.0...v1.18.0) - 2026-10-23
+
+### Features
+- *(dsp)* [`3f1b12a`](https://github.com/cmdcolin/bender/commit/3f1b12ae56c9caedfe57bd06ce4d021843939196) a phrase source on the patch bay that moves over bars
+- *(ui)* [`994ce50`](https://github.com/cmdcolin/bender/commit/994ce50d73a9cb043f89ab75d8e57d745b4dfe75) envelopes on the bend keys — snap, swell, riser, pluck, wobble
+- *(ui)* [`5655338`](https://github.com/cmdcolin/bender/commit/565533854c2e124cd82cf9dc70687b7dec1d7f2a) Euclid fills on the grid from a hits column
+- *(engine)* [`765b88b`](https://github.com/cmdcolin/bender/commit/765b88b31d3ffaba2531e6408477c8dbee7900c5) land whole-board changes on the kit's downbeat
+- *(dsp)* [`08d27b5`](https://github.com/cmdcolin/bender/commit/08d27b5067bf003165a0df41d01bde6fcc39674f) an ADSR source on the patch bay, gated by keys or the kit
+- *(ui)* [`0372865`](https://github.com/cmdcolin/bender/commit/03728656d9d521795a6583992f9d938e020cc43a) draw the ADSR's shape over its rows, and read Hold as steps
+- [`1e19266`](https://github.com/cmdcolin/bender/commit/1e192663052c08c042c5b12b4435c7aa65ed8e88) a condition on each column of the kit, with pre and a held fill
+- *(engine)* [`3afd8ce`](https://github.com/cmdcolin/bender/commit/3afd8cef24d791b47bc7645933cbe07e0a45b431) switch the kit's patterns on the land lock's downbeat
+
+### Fixes
+- *(ui)* [`aa3edf2`](https://github.com/cmdcolin/bender/commit/aa3edf292b82cf3cf544ededaa5b0df8fc20947d) fit the phrase bars on one line and thicken its meter
+
+### Documentation
+- [`814d79a`](https://github.com/cmdcolin/bender/commit/814d79af7c590cfaa3a7ff11b666ef1e6b919522) hand off the techno machine work after the phrase, envelopes and Euclid fills
+- [`ec21e16`](https://github.com/cmdcolin/bender/commit/ec21e1650f91c1c4ebc4386263108cd3323ef6b8) hand off the techno machine work after the land lock, ADSR and cond row
+
+### Style
+- [`d3333cd`](https://github.com/cmdcolin/bender/commit/d3333cd047d0b61374d68b1c26885d3b33ea5463) format the techno machine handoff and user guide
+
+### Tests
+- *(dsp)* [`b65c325`](https://github.com/cmdcolin/bender/commit/b65c3258924e50f958bf513971b59fe4851e4be2) measure accents by peak now the kick rings longer
+- *(dsp)* [`8d36da5`](https://github.com/cmdcolin/bender/commit/8d36da5561cd0d70ce53464fa860de2c10f11fa1) rebaseline the drum kit tests to the 808 voicing
+
+### Chores
+- [`07fb307`](https://github.com/cmdcolin/bender/commit/07fb3072261454b2ae666f3be8eafed2783b07ae) use Node 24 so Astro's engine check passes
+
 ## [1.17.0](https://github.com/cmdcolin/bender/compare/v1.16.1...v1.17.0) - 2026-10-23
 
 ### Features
