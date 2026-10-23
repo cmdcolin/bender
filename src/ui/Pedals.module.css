@@ -78,6 +78,7 @@
   border: 1px solid var(--ink);
   border-radius: var(--ctl-radius);
   cursor: pointer;
+  max-width: 100%;
 }
 
 .selector:hover {

@@ -301,11 +301,13 @@ test('a pedal selector switch goes to the next position on each press', () => {
   })
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const before = engine.controls.get().stompCircuit
-  fireEvent.click(screen.getByRole('button', { name: /^Circuit: / }))
+  fireEvent.change(screen.getByRole('combobox', { name: /^Circuit/ }), {
+    target: { value: String(before + 1) },
+  })
   expect(engine.controls.get().stompCircuit).toBe(before + 1)
 })
 
-test('Wraith’s face trades its Time slider for the sync switch', () => {
+test('Wraith’s face trades its Time slider for the sync dropdown', () => {
   bench.set({
     instruments: [],
     closed: [],
@@ -316,9 +318,9 @@ test('Wraith’s face trades its Time slider for the sync switch', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const time = sliderFor('delayMs').label
   expect(screen.getByRole('slider', { name: time })).not.toBeNull()
-  const sync = screen.getByRole('button', { name: 'Time sync: off' })
-  expect(sync.textContent).toContain('Time sync off')
-  fireEvent.click(sync)
+  const sync = screen.getByRole('combobox', { name: 'Time sync' })
+  expect((sync as HTMLSelectElement).value).toBe('0')
+  fireEvent.change(sync, { target: { value: '1' } })
   expect(engine.controls.get().dlySync).toBe(1)
   expect(screen.queryByRole('slider', { name: time })).toBeNull()
   act(() => engine.set('dlySync', 0))

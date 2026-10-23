@@ -137,27 +137,26 @@ export function AddPedal() {
   )
 }
 
-// A selector switch: one press goes to the next position, as a pedal's mode
-// switch does.
 function Selector({ control }: { control: ControlKey }) {
   const def = sliderFor(control)
   const value = useControlValue(control)
-  const choices = def.choices!
-  const at = Math.round(value) - def.min
-  const says = choices[at] === 'off' ? `${def.label} off` : choices[at]
   return (
     <Tip text={def.help}>
-      <button
+      <select
         className={styles.selector}
-        aria-label={`${def.label}: ${choices[at]}`}
-        onClick={() => {
+        aria-label={def.label}
+        value={Math.round(value) - def.min}
+        onChange={e => {
           engine.armStep()
-          engine.set(control, def.min + ((at + 1) % choices.length))
+          engine.set(control, def.min + Number(e.currentTarget.value))
         }}
       >
-        {says}
-        <span aria-hidden="true"> ›</span>
-      </button>
+        {def.choices!.map((c, i) => (
+          <option key={c} value={i}>
+            {c}
+          </option>
+        ))}
+      </select>
     </Tip>
   )
 }
