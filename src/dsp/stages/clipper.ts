@@ -38,13 +38,16 @@ export const PIN_GAIN_MAX = 600
 const AMP_FILL_S = 0.12
 const AMP_SELF = 0.000005
 const AMP_DRAW = 0.0015
+// A saturated output stage draws more as the rail falls. With the current
+// following the output alone, the loop settled into a sag at every Draw and
+// never motorboated.
 const CLIP_BOOST = 0.5
 const OVER_MAX = 2
 const HEAD_DROP = 0.12
 const HEAD_MIN = 0.03
 // An LM386 mutes below its minimum supply and won't come back until the
 // bypass cap on pin 7 has recharged.
-export const AMP_OFF_V = 0.25
+const AMP_OFF_V = 0.25
 const AMP_HYST = 0.06
 const MUTE_S = 0.06
 const POP = 0.6
