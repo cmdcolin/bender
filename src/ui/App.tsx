@@ -282,7 +282,6 @@ function BoardVerbs({
   onLanded: (landed: boolean) => void
   onSave: () => void
 }) {
-  const walk = useStoreValue(engine.history)
   return (
     <div className={styles.actions}>
       <Dice seconds={seconds} onLanded={onLanded} />
@@ -361,6 +360,16 @@ function BoardVerbs({
           </SteadyLabel>
         </button>
       </Tip>
+    </div>
+  )
+}
+
+// Pinned to the top right with both buttons always drawn, so nothing to its
+// left can push undo out from under the pointer.
+function History({ seconds }: { seconds: MorphSeconds }) {
+  const walk = useStoreValue(engine.history)
+  return (
+    <>
       <Tip text="Steps back through the boards you have been through (ctrl+z).">
         <button
           className={walk.past.length ? styles.btn : styles.btnOff}
@@ -370,14 +379,16 @@ function BoardVerbs({
           undo
         </button>
       </Tip>
-      {walk.future.length > 0 && (
-        <Tip text="Steps forward again (ctrl+shift+z).">
-          <button className={styles.btn} onClick={() => engine.redo(seconds)}>
-            redo
-          </button>
-        </Tip>
-      )}
-    </div>
+      <Tip text="Steps forward again (ctrl+shift+z).">
+        <button
+          className={walk.future.length ? styles.btn : styles.btnOff}
+          onClick={() => engine.redo(seconds)}
+          disabled={!walk.future.length}
+        >
+          redo
+        </button>
+      </Tip>
+    </>
   )
 }
 
@@ -527,68 +538,73 @@ export function App(props: { openedFromLink?: boolean }) {
       onDrop={onDrop}
     >
       <header className={styles.bar}>
-        <Tip text="What this is, where the docs and the source are, and which build you are on.">
-          <button
-            className={styles.nameplate}
-            onClick={() => setShowAbout(true)}
-          >
-            <span className={styles.brand}>bender</span>
-            <span className={styles.version}>{versionLabel}</span>
-          </button>
-        </Tip>
-        <BoardVerbs
-          seconds={morphSeconds}
-          drifting={drifting}
-          saveFlash={lib.flash?.kind}
-          signedIn={signedIn}
-          onLanded={setLanded}
-          onSave={askSave}
-        />
-        <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
-          <button
-            className={presetsShown ? styles.btnOn : styles.btnQuiet}
-            aria-pressed={presetsShown}
-            onClick={() => showPresets(!presetsShown)}
-          >
-            presets
-          </button>
-        </Tip>
-        <div className={styles.settings}>
-          <MorphControl
+        <div className={styles.barMain}>
+          <Tip text="What this is, where the docs and the source are, and which build you are on.">
+            <button
+              className={styles.nameplate}
+              onClick={() => setShowAbout(true)}
+            >
+              <span className={styles.brand}>bender</span>
+              <span className={styles.version}>{versionLabel}</span>
+            </button>
+          </Tip>
+          <BoardVerbs
             seconds={morphSeconds}
             drifting={drifting}
-            onSet={setMorph}
+            saveFlash={lib.flash?.kind}
+            signedIn={signedIn}
+            onLanded={setLanded}
+            onSave={askSave}
           />
-          <PhraseLockControl />
-          <MidiPanel
-            open={showMidi}
-            onToggle={() => setShowMidi(o => !o)}
-            onClose={() => setShowMidi(false)}
-          />
-          <ShareButton onCopy={() => copyLink(boardQuery())} />
-          <SavedVoices
-            voices={lib.voices}
-            recent={lib.recent}
-            onRecallSession={s => morphToQuery(s.query)}
-            onOpenSession={s => {
-              window.location.hash = s.query
-            }}
-            suggestName={suggestName}
-            onSave={name => lib.saveVoice(name, boardQuery())}
-            onRecall={recall}
-            onOpen={openVoice}
-            onDelete={lib.deleteVoice}
-            onCopyLink={voice => copyLink(voice.query)}
-            flash={lib.flash}
-            status={lib.status}
-            error={lib.error}
-          />
-          <Account
-            user={lib.user}
-            status={lib.status}
-            onSignIn={lib.signIn}
-            onSignOut={lib.signOut}
-          />
+          <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
+            <button
+              className={presetsShown ? styles.btnOn : styles.btnQuiet}
+              aria-pressed={presetsShown}
+              onClick={() => showPresets(!presetsShown)}
+            >
+              presets
+            </button>
+          </Tip>
+          <div className={styles.settings}>
+            <MorphControl
+              seconds={morphSeconds}
+              drifting={drifting}
+              onSet={setMorph}
+            />
+            <PhraseLockControl />
+            <MidiPanel
+              open={showMidi}
+              onToggle={() => setShowMidi(o => !o)}
+              onClose={() => setShowMidi(false)}
+            />
+            <ShareButton onCopy={() => copyLink(boardQuery())} />
+            <SavedVoices
+              voices={lib.voices}
+              recent={lib.recent}
+              onRecallSession={s => morphToQuery(s.query)}
+              onOpenSession={s => {
+                window.location.hash = s.query
+              }}
+              suggestName={suggestName}
+              onSave={name => lib.saveVoice(name, boardQuery())}
+              onRecall={recall}
+              onOpen={openVoice}
+              onDelete={lib.deleteVoice}
+              onCopyLink={voice => copyLink(voice.query)}
+              flash={lib.flash}
+              status={lib.status}
+              error={lib.error}
+            />
+            <Account
+              user={lib.user}
+              status={lib.status}
+              onSignIn={lib.signIn}
+              onSignOut={lib.signOut}
+            />
+          </div>
+        </div>
+        <div className={styles.pinned}>
+          <History seconds={morphSeconds} />
           <AppMenu
             signedIn={signedIn}
             coarse={coarse}
