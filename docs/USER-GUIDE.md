@@ -228,8 +228,8 @@ voltage you set, or jams one.
   bend on the bench as a pedal face, slotting it into the first empty chain
   position if it has none
   - The badge shows the chain position, or **off** when no position holds it
-  - The badge reads **2→5** while **Re-solder** has moved the bend, and **drop**
-    while one of the **Dry joints** has taken it out of the path
+  - The badge reads **now 5** while **Re-solder** has moved the bend, and
+    **drop** while one of the **Dry joints** has taken it out of the path
   - The footswitch sets the mix to 0 and back to where you left it, and slots
     the bend in again if it has no position
 

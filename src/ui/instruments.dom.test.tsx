@@ -365,7 +365,7 @@ test('a bend face badge follows the relay and an open joint', () => {
   walkOf([1, 0, 2, 3, 4, 5])
   expect(
     screen.getByRole('img', { name: 'position 2, running at 1' }).textContent,
-  ).toBe('2→1')
+  ).toBe('now 1')
   walkOf([1, 0, 2, 3, 4, 5], 0b1)
   expect(screen.getByRole('img', { name: 'position 2, dropped' })).toBeTruthy()
   walkOf([0, 1, 2, 3, 4, 5])

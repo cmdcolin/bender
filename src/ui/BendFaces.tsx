@@ -63,7 +63,7 @@ function reading(stage: string, at: number, step: number, open: boolean) {
     }
   if (step !== at)
     return {
-      text: `${at}→${step}`,
+      text: `now ${step}`,
       label: `position ${at}, running at ${step}`,
       tip: `${stage} is set to position ${at}, and Re-solder has moved it to ${step}.`,
     }
