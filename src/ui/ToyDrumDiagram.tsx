@@ -1,9 +1,5 @@
-import { useState } from 'react'
-
-import { bench, setBench } from './bench.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS } from './controls/index.ts'
-import { useStoreValue } from './ControlsContext.ts'
 import diagram from './Diagram.module.css'
 import {
   boxWidth,
@@ -13,7 +9,6 @@ import {
   useFlow,
   useReadings,
   useSelectedBox,
-  type BoxPick,
   type BoxSpec,
   lefts,
   useOpensOnAim,
@@ -28,7 +23,6 @@ import {
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
-import { DrumGrid } from './DrumGrid.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
 
@@ -130,33 +124,11 @@ function padsGlyph(x: number, mid: number) {
   )
 }
 
-// usePatternBox keeps the header's pattern switch and the pattern box in step:
-// the switch opens the box, and opening or leaving the box flips the switch.
-function usePatternBox(): BoxPick {
-  const shown = useStoreValue(bench).grid
-  const pick = useSelectedBox(shown ? 'pattern' : PADS)
-  const [was, setWas] = useState(shown)
-  if (shown !== was) {
-    setWas(shown)
-    if (shown !== (pick.selected === 'pattern')) pick.toggle('pattern')
-  }
-  return {
-    selected: pick.selected,
-    toggle: id => {
-      const next = id === 'pattern' && pick.selected !== id
-      pick.toggle(id)
-      if (next === shown) return
-      setWas(next)
-      setBench({ ...bench.get(), grid: next })
-    },
-  }
-}
-
 // Pads and the pattern fire the triggers. One-shots and amps each span the three
 // voices, so every voice gets its own wire in and out; the sum happens in the DAC.
 export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
-  const pick = usePatternBox()
+  const pick = useSelectedBox(PADS)
   const flow = useFlow('Clatter')
 
   const srcW = Math.max(...FIRST.map(boxWidth))
@@ -345,7 +317,6 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
           name={open?.name ?? pick.selected}
           onHide={() => pick.toggle(pick.selected!)}
         >
-          {pick.selected === 'pattern' && <DrumGrid />}
           {close}
           {pick.selected === PADS ? (
             <BoxRows title={open?.name ?? pick.selected} keys={PAD_KEYS} />

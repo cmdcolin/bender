@@ -22,6 +22,11 @@
   gap: 26px;
 }
 
+.stage {
+  composes: shelf;
+}
+
+.stage:has([data-trig-plate]),
 .rack:has([data-trig-plate]) {
   padding-top: 40px;
 }

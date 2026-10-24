@@ -125,7 +125,9 @@ const throwIt = (clear: boolean) => {
 // A contact has three positions rather than two: out, closed, and wired through
 // the kit's dice, where Chance decides it afresh every lap. Which is the only
 // thing on the panel that stops sixteen steps from being sixteen steps.
-export function DrumGrid() {
+//
+// Staged on the kit's face, the grid leaves run and record to the kit's deck.
+export function DrumGrid({ staged = false }: { staged?: boolean }) {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
   const slots = useStoreValue(engine.drumSlots)
@@ -155,17 +157,19 @@ export function DrumGrid() {
   }, [])
 
   return (
-    <div className={styles.wrap}>
+    <div className={staged ? styles.staged : styles.wrap}>
       <div className={styles.roms}>
-        <Tip text={playing ? 'Stop the kit.' : 'Run the kit.'}>
-          <button
-            className={playing ? styles.playOn : styles.play}
-            aria-pressed={playing}
-            onClick={() => engine.setDrumsPlaying(!playing)}
-          >
-            {playing ? '❚❚' : '▶'}
-          </button>
-        </Tip>
+        {staged || (
+          <Tip text={playing ? 'Stop the kit.' : 'Run the kit.'}>
+            <button
+              className={playing ? styles.playOn : styles.play}
+              aria-pressed={playing}
+              onClick={() => engine.setDrumsPlaying(!playing)}
+            >
+              {playing ? '❚❚' : '▶'}
+            </button>
+          </Tip>
+        )}
         <span className={styles.label}>beats</span>
         {DRUM_ROMS.map(r => (
           <Tip key={r.name} text={r.blurb}>
@@ -186,25 +190,27 @@ export function DrumGrid() {
             hits still sound, so nothing about playing says the pattern isn't
             being kept. It gets its own look rather than a word, because the
             fix is to press play and the button next to it already says so. */}
-        <Tip
-          text={
-            !armed
-              ? 'play the pattern in: arm this and every hit — the number keys, a row’s name, a pad on a controller — writes the step it lands on, rounded to the nearest. Arming runs the kit'
-              : playing
-                ? 'every hit writes the step it lands on, rounded to the nearest. Press to stop'
-                : 'armed, but the kit is stopped — hits sound and nothing is written. Run the kit and they land on the step they arrive in'
-          }
-        >
-          <button
-            className={
-              !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
+        {staged || (
+          <Tip
+            text={
+              !armed
+                ? 'play the pattern in: arm this and every hit — the number keys, a row’s name, a pad on a controller — writes the step it lands on, rounded to the nearest. Arming runs the kit'
+                : playing
+                  ? 'every hit writes the step it lands on, rounded to the nearest. Press to stop'
+                  : 'armed, but the kit is stopped — hits sound and nothing is written. Run the kit and they land on the step they arrive in'
             }
-            aria-pressed={armed}
-            onClick={() => engine.armDrumRecord(!armed)}
           >
-            record
-          </button>
-        </Tip>
+            <button
+              className={
+                !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
+              }
+              aria-pressed={armed}
+              onClick={() => engine.armDrumRecord(!armed)}
+            >
+              record
+            </button>
+          </Tip>
+        )}
       </div>
 
       {/* Spare patterns, next to the grid rather than a preset: empty until you

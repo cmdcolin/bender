@@ -49,13 +49,11 @@ test('the DAC opens the converter rows and the sample ROM opens the kit rows', (
   expect(screen.queryByText('Bit depth')).toBeNull()
 })
 
-test('pressing pattern shows the grid and the bus rows, and pressing triggers shows only its verbs', () => {
+test('pressing pattern shows the bus rows, and pressing triggers shows only its verbs', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<ToyDrumDiagram verbs={part => <p>{`verbs for ${part}`}</p>} />)
   fireEvent.click(box('pattern'))
   expect(screen.getByText('Data line')).not.toBeNull()
-  expect(screen.getByRole('button', { name: 'kick step 1' })).not.toBeNull()
-  expect(bench.get().grid).toBe(true)
   fireEvent.click(box('triggers'))
   expect(screen.getByText('verbs for triggers and cross-patch')).not.toBeNull()
   expect(screen.queryByText('Retrigger')).toBeNull()
@@ -125,17 +123,13 @@ test('the pads box starts open on the kit rows, and the stage draws no folds', (
   ).toHaveLength(1)
 })
 
-test('showing the drum pattern opens the pattern box, and leaving the box hides it', () => {
+test('picking a box leaves the staged kit staged', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
-  openKit()
-  const toggle = () => screen.getByRole('button', { name: 'show drum pattern' })
-  fireEvent.click(box('noise'))
-  fireEvent.click(toggle())
-  expect(screen.getByText('Data line')).not.toBeNull()
-  expect(screen.getByRole('button', { name: 'kick step 1' })).not.toBeNull()
+  bench.set({ ...bench.get(), grid: true })
+  render(<ToyDrumDiagram />)
+  fireEvent.click(box('pattern'))
   fireEvent.click(box('tanks'))
-  expect(screen.queryByRole('button', { name: 'kick step 1' })).toBeNull()
-  expect(toggle().getAttribute('aria-pressed')).toBe('false')
+  expect(bench.get().grid).toBe(true)
 })
 
 test('the pads box lights when a kit knob moves', () => {

@@ -9,13 +9,14 @@ import {
   type DrumVoice,
 } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
-import { bench, setBench } from './bench.ts'
+import { bench, stageKit } from './bench.ts'
 import {
   useControlValue,
   useMeterValue,
   useStoreValue,
 } from './ControlsContext.ts'
 import { DeviceVerbs } from './DeviceVerbs.tsx'
+import { DrumGrid } from './DrumGrid.tsx'
 import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
 import { FaceBadge } from './FaceBadge.tsx'
@@ -30,7 +31,8 @@ const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 // DrumKit draws the toy drum machine as a moulded case with switches that run
 // the pattern and arm recording, the pattern in miniature, and eight rubber
 // pads. A pad lights on every hit the kit reports, from the pads, the number
-// keys, the pattern or a trigger patch.
+// keys, the pattern or a trigger patch. Staged, the case spans the main area
+// and the miniature becomes the whole grid.
 //
 // The pattern and the pads render as separate components, so a step redraws
 // only the pattern and a hit redraws only the pads that changed.
@@ -52,13 +54,19 @@ export function DrumKit({
 }) {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
+  const staged = useStoreValue(bench).grid
   const [kit, setKit] = useState<HTMLDivElement | null>(null)
   const width = useWidth(kit)
   const micCramped =
     width !== undefined && width >= ROOMY_KIT && width < ROOMY_FOR_MIC
 
   return (
-    <div ref={setKit} className={styles.kit} role="group" aria-label="clatter">
+    <div
+      ref={setKit}
+      className={staged ? styles.kitStaged : styles.kit}
+      role="group"
+      aria-label="clatter"
+    >
       <TrigPlate />
       <div className={styles.deck}>
         <FaceBadge className={styles.brand} stage="Clatter" onOpen={onOpen}>
@@ -101,6 +109,21 @@ export function DrumKit({
               rec
             </button>
           </Tip>
+          <Tip
+            text={
+              staged
+                ? 'Folds the drum machine back into its small face.'
+                : 'Spreads the drum machine across the bench, the whole grid at full size.'
+            }
+          >
+            <button
+              className={staged ? styles.gridOn : styles.grid}
+              aria-pressed={staged}
+              onClick={() => stageKit(!staged)}
+            >
+              grid
+            </button>
+          </Tip>
           <DeviceVerbs
             stage="Clatter"
             seconds={seconds}
@@ -109,31 +132,25 @@ export function DrumKit({
           />
         </div>
       </div>
-      <Pattern
-        playing={playing}
-        onOpen={
-          onOpen &&
-          (() => {
-            setBench({ ...bench.get(), grid: true })
-            onOpen('Clatter')
-          })
-        }
-      />
+      {staged ? (
+        <div className={styles.screen} ref={showStage}>
+          <DrumGrid staged />
+        </div>
+      ) : (
+        <Pattern playing={playing} />
+      )}
       <Pads />
     </div>
   )
 }
 
+const showStage = (el: HTMLDivElement | null) =>
+  el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+
 // The pattern in miniature, a row of lights per voice, so the kit shows what it
-// plays without the panel open, and a recorded hit flashes on the step it went
-// to. Pressing it opens the grid.
-function Pattern({
-  playing,
-  onOpen,
-}: {
-  playing: boolean
-  onOpen?: () => void
-}) {
+// plays when folded, and a recorded hit flashes on the step it went to.
+// Pressing it stages the kit.
+function Pattern({ playing }: { playing: boolean }) {
   const level = useControlValue('drumLevel')
   const tick = useMeterValue(m => m.tick)
   const taken = useStoreValue(engine.drumTaken)
@@ -151,18 +168,12 @@ function Pattern({
       taken={fresh && fresh.bits & voiceBit(v) ? fresh : null}
     />
   ))
-  if (!onOpen)
-    return (
-      <div className={styles.pattern} aria-hidden="true">
-        {rows}
-      </div>
-    )
   return (
-    <Tip text="The pattern, a row of lights per voice. Opens the grid to edit it.">
+    <Tip text="The pattern, a row of lights per voice. Spreads the drum machine across the bench to edit it.">
       <button
         className={styles.patternButton}
         aria-label="edit the drum pattern"
-        onClick={onOpen}
+        onClick={() => stageKit(true)}
       >
         {rows}
       </button>

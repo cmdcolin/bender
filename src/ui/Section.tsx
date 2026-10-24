@@ -11,7 +11,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
-import { bench, setBench } from './bench.ts'
+import { bench, setBench, stageKit } from './bench.ts'
 import { isBend } from './bendChain.ts'
 import { groupAnchor } from './chain-map.ts'
 import {
@@ -22,7 +22,6 @@ import {
 } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { foldDrawing, zoomFor } from './drawingFor.tsx'
-import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { firstLook, markLooked } from './firstLook.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
@@ -295,26 +294,29 @@ function Rows({
 }
 
 const EDITORS = {
-  roll: { label: 'piano roll', what: 'the piano roll' },
-  grid: { label: 'drum pattern', what: 'the drum pattern grid' },
+  roll: {
+    label: 'piano roll',
+    hide: 'Hide the piano roll. The notes in it keep playing.',
+    show: "Show the piano roll under the stage's knobs.",
+    set: (on: boolean) => setBench({ ...bench.get(), roll: on }),
+  },
+  grid: {
+    label: 'drum pattern',
+    hide: 'Fold the drum machine back into its small face. The pattern keeps playing.',
+    show: 'Spread the drum machine across the bench, the whole grid at full size.',
+    set: stageKit,
+  },
 } as const
 
 function EditorToggle({ which }: { which: keyof typeof EDITORS }) {
-  const b = useStoreValue(bench)
-  const on = b[which]
-  const { label, what } = EDITORS[which]
+  const on = useStoreValue(bench)[which]
+  const { label, hide, show, set } = EDITORS[which]
   return (
-    <Tip
-      text={
-        on
-          ? `Hide ${what}. The notes in it keep playing.`
-          : `Show ${what} under the stage's knobs.`
-      }
-    >
+    <Tip text={on ? hide : show}>
       <button
         className={on ? styles.editorOn : styles.editor}
         aria-pressed={on}
-        onClick={() => setBench({ ...b, [which]: !on })}
+        onClick={() => set(!on)}
       >
         {`show ${label}`}
       </button>
@@ -372,11 +374,7 @@ export function OpenGroup({
     !listed && isPathKind(kind) ? PATH_DRAWINGS[kind] : undefined
   const rollBoxed = drawn || Boolean(group.memory && PathDrawing)
   const widget =
-    kind === 'roll' && shownEditors.roll && !drawn ? (
-      <TuneRoll />
-    ) : kind === 'drums' && shownEditors.grid ? (
-      <DrumGrid />
-    ) : null
+    kind === 'roll' && shownEditors.roll && !drawn ? <TuneRoll /> : null
   const rigs = <Rigs group={group} seconds={seconds} />
   return (
     <div

@@ -4,6 +4,52 @@
   margin-bottom: var(--space-xs);
 }
 
+/* On the kit's face the grid spans the main area, so the rows get room for
+   their names and the steps grow to a finger's size. */
+.staged {
+  padding: var(--space-2xs) 0;
+}
+
+@media (min-width: 761px) {
+  .staged .row,
+  .staged .extraRow {
+    grid-template-columns: 6.5rem 1.4rem 1fr 3.2rem;
+    gap: var(--space-md);
+  }
+  .staged .cells,
+  .staged .cellsMuted {
+    gap: 5px;
+  }
+  .staged .name,
+  .staged .nameOn,
+  .staged .nameHit {
+    font-size: var(--fs-sm);
+  }
+  .staged .cell,
+  .staged .cellOn,
+  .staged .cellMaybe,
+  .staged .mute,
+  .staged .muteOn {
+    height: 30px;
+    border-radius: 3px;
+  }
+  .staged .accent,
+  .staged .accentOn,
+  .staged .echo,
+  .staged .echoOn,
+  .staged .bend,
+  .staged .bendOn {
+    height: 18px;
+  }
+  .staged .cellMaybe::after {
+    width: 6px;
+    height: 6px;
+  }
+  .staged .bendLetter {
+    font-size: var(--fs-xs);
+  }
+}
+
 .roms {
   display: flex;
   flex-wrap: wrap;

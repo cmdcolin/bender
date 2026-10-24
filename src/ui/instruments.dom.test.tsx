@@ -564,14 +564,15 @@ test('the piano roll stays out of the listed toy keyboard panel until it is show
   expect(document.body.innerHTML).toBe(before)
 })
 
-test('the drum grid stays out of the toy drums panel until it is shown', () => {
+test('show drum pattern stages a closed kit and leaves the panel without a grid', () => {
+  bench.set({ ...bench.get(), grid: false, closed: ['Clatter'] })
   const kit = GROUPS.find(g => g.name === 'Clatter')!
   render(<OpenGroup group={kit} onClose={() => {}} seconds={0} />)
-  const before = document.body.innerHTML
   fireEvent.click(screen.getByRole('button', { name: 'show drum pattern' }))
   expect(bench.get().grid).toBe(true)
   expect(bench.get().roll).toBe(false)
-  expect(document.body.innerHTML).not.toBe(before)
+  expect(bench.get().closed).toEqual([])
+  expect(screen.queryByRole('button', { name: 'kick step 1' })).toBeNull()
 })
 
 test('the kit’s miniature pattern shows the grid it opens', () => {

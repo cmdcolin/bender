@@ -10,6 +10,7 @@ import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
 import { bench } from './bench.ts'
 import { GROUPS } from './controls/index.ts'
+import { DrumKit } from './DrumKit.tsx'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
@@ -206,7 +207,7 @@ test('arrow keys walk a slider along its travel, and page keys take bigger strid
 // The kit's ROM buttons write over whatever you had drawn, so they land in the
 // walk like every other verb on the panel.
 test('a drum ROM lands in the walk, and ctrl+z takes it back', () => {
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   act(() => {
     engine.armStep()
     engine.set('drumKick', 0b1010101010101010)
@@ -224,7 +225,7 @@ test('a drum ROM lands in the walk, and ctrl+z takes it back', () => {
 // of steps by dragging across them, and the whole drag is one thing that
 // happened: one entry in the walk, however many steps it wrote.
 test('a drag across the grid draws a run of steps, and one undo takes it back', () => {
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   const cell = (step: number) =>
     screen.getByRole('button', { name: `tom step ${step + 1}` })
 
@@ -245,7 +246,7 @@ test('a drag across the grid draws a run of steps, and one undo takes it back', 
 // it crosses through the dice and one off a maybe wipes it.
 test('a drag writes whatever the step it started on became', () => {
   engine.patch({ ...engine.controls.get(), ...ROCK })
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   const cell = (step: number) =>
     screen.getByRole('button', { name: `hat step ${step + 1}` })
   const run = [2, 3, 4, 5, 6]
@@ -274,7 +275,7 @@ test('a drag writes whatever the step it started on became', () => {
 // Three states on one contact, and one click each way round them. The two masks
 // never hold the same step, because what the grid draws is what the kit reads.
 test('a step cycles off, on, wired through the dice, off', () => {
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   const cell = screen.getByRole('button', { name: 'tom step 5' })
   const at = () => {
     const c = engine.controls.get()
@@ -305,7 +306,7 @@ test('a step cycles off, on, wired through the dice, off', () => {
 // The accent row has no maybe mask — it is a weight rather than a hit — so its
 // contact is the two-state contact it always was.
 test('the accent row has no dice on it', () => {
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   const cell = screen.getByRole('button', { name: 'accent step 5' })
   fireEvent.pointerDown(cell)
   expect(hasStep(engine.controls.get().drumAccent, 4)).toBe(true)
@@ -315,7 +316,7 @@ test('the accent row has no dice on it', () => {
 
 // A pointer crossing the grid on its way somewhere else is not a hand drawing.
 test('a pointer with nothing held down writes nothing', () => {
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   const before = engine.controls.get().drumTom
   fireEvent.pointerOver(screen.getByRole('button', { name: 'tom step 5' }), {
     buttons: 0,
@@ -327,7 +328,7 @@ test('a pointer with nothing held down writes nothing', () => {
 // outliving the gesture meant the next press anywhere on the page — a ROM
 // button a centimetre above the grid — carried on drawing the run before it.
 test('a drag that began off the grid draws nothing on it', () => {
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   const cell = (step: number) =>
     screen.getByRole('button', { name: `tom step ${step + 1}` })
 
@@ -346,7 +347,7 @@ test('a drag that began off the grid draws nothing on it', () => {
 // the walk the way the ROM buttons do.
 test('a turnaround writes the end of the bar, keeps the tempo, and takes back', () => {
   engine.patch({ ...engine.controls.get(), ...ROCK })
-  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
+  render(<DrumKit />)
   act(() => engine.set('drumBpm', 96))
   const before = engine.controls.get()
 

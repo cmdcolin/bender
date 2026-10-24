@@ -70,9 +70,26 @@ test('the kit records a hit and flashes the step it went to', () => {
   engine.setDrumsPlaying(false)
 })
 
-test('the pattern opens the drum grid', () => {
-  const open = vi.fn()
-  render(<DrumKit onOpen={open} />)
+test('the pattern stages the kit with the whole grid, and grid folds it', () => {
+  setBench({ ...bench.get(), grid: false })
+  render(<DrumKit />)
+  expect(screen.queryByRole('button', { name: 'kick step 1' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'edit the drum pattern' }))
-  expect(open).toHaveBeenCalledWith('Clatter')
+  expect(bench.get().grid).toBe(true)
+  expect(screen.getByRole('button', { name: 'kick step 1' })).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'grid' }))
+  expect(bench.get().grid).toBe(false)
+  expect(screen.queryByRole('button', { name: 'kick step 1' })).toBeNull()
+})
+
+test('the staged kit takes a shelf of its own above the keyboards', () => {
+  setBench({ ...bench.get(), grid: true })
+  render(<App />)
+  const keyboard = screen.getByRole('group', { name: 'plinky' })
+  const kit = screen.getByRole('group', { name: 'clatter' })
+  expect(kit.parentElement?.contains(keyboard)).toBe(false)
+  expect(
+    kit.compareDocumentPosition(keyboard) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy()
+  setBench({ ...bench.get(), grid: false })
 })

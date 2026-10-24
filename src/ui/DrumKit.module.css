@@ -23,6 +23,31 @@
   border-radius: 10px 10px 5px 5px;
 }
 
+/* A staged case takes the main area's width, and the grid sits on an inset
+   screen in the theme's colours, since the case stays dark in either theme. */
+.kitStaged {
+  composes: kit;
+  flex: 1 1 100%;
+  max-width: 1200px;
+  gap: 10px;
+  padding: 10px 14px 14px;
+}
+
+.screen {
+  padding: var(--space-sm) var(--space-md) var(--space-xs);
+  background: var(--bg);
+  border: 1px solid var(--rubber-edge);
+  border-radius: 6px;
+  color: var(--fg);
+}
+
+@media (min-width: 761px) {
+  .kitStaged .pads {
+    grid-template-columns: repeat(8, 1fr);
+    height: 64px;
+  }
+}
+
 .kit::before,
 .kit::after {
   content: '';
@@ -64,7 +89,6 @@
    fours. A step that plays is pale, a step on the dice dimmer, and a step past
    the row's length barely there. Each row's playhead is red, and a recorded hit
    flashes in the record colour. */
-.pattern,
 .patternButton {
   display: grid;
   gap: 2px;
@@ -72,9 +96,6 @@
   background: var(--rubber);
   border: 1px solid var(--rubber-edge);
   border-radius: 4px;
-}
-
-.patternButton {
   width: 100%;
   font: inherit;
   cursor: pointer;
@@ -163,6 +184,14 @@
 
 .rec {
   composes: cap from './button.module.css';
+}
+
+.grid {
+  composes: cap from './button.module.css';
+}
+
+.gridOn {
+  composes: capOn from './button.module.css';
 }
 
 .recOn {

@@ -4,7 +4,7 @@ import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
 import { AddBend } from './AddBend.tsx'
 import { AddMenu } from './AddMenu.tsx'
-import { INSTRUMENTS } from './bench.ts'
+import { bench, INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendShelf } from './BendFaces.tsx'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
@@ -87,7 +87,7 @@ const KIND: Record<string, string> = {
 // come up or Add instrument brings them in. The tape loop also shows while the
 // open mic goes to the mix or its motor, since its face holds the mic key, and
 // while a file is over the app, to take the drop. Every face wears a close cap, and Add instrument
-// brings a closed one back.
+// brings a closed one back. The bench gives a staged kit a shelf above the rest.
 //
 // A machine that has come up goes on the map for good (`add`): the Level slider
 // on its face runs down to zero, and a face that left under the pointer would
@@ -127,7 +127,9 @@ export function Instruments({
       ))
 
   const keyboards = faces(KEYBOARDS)
-  const kit = faces(KIT)
+  const staged = useStoreValue(bench).grid
+  const kit = staged ? [] : faces(KIT)
+  const stagedKit = staged ? faces(KIT) : []
   const tapes = faces(TAPES)
   const pedals = usePedalStages()
   const bends = useBendStages()
@@ -162,6 +164,9 @@ export function Instruments({
       </div>
       <BendKeys morphSeconds={seconds} />
       <GateBench>
+        {stagedKit.length > 0 && (
+          <div className={styles.stage}>{stagedKit}</div>
+        )}
         {(keyboards.length > 0 ||
           kit.length > 0 ||
           pedals.length > 0 ||

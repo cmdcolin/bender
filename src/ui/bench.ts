@@ -6,8 +6,9 @@ const KEY = 'bender.bench'
 
 // What the main area shows. `instruments`, `pedals` and `bends` are the faces
 // the player has brought up, none until asked for; an instrument whose fader is up shows
-// without being asked, unless it is in `closed`, the ones put away. `roll` and `grid` are the piano roll and the drum
-// pattern in the stage panels, which stay out of the panel until asked for.
+// without being asked, unless it is in `closed`, the ones put away. `roll` is
+// the piano roll in the stage panels, and `grid` spreads the kit across the
+// main area as a drum machine with the whole grid; both wait to be asked for.
 export interface Bench {
   instruments: readonly string[]
   closed: readonly string[]
@@ -73,4 +74,16 @@ export const bench = createStore<Bench>(parseBench(read(KEY)))
 export function setBench(next: Bench) {
   bench.set(next)
   write(KEY, JSON.stringify(next))
+}
+
+export function stageKit(on: boolean) {
+  const b = bench.get()
+  setBench({
+    ...b,
+    grid: on,
+    ...(on && {
+      instruments: [...b.instruments.filter(s => s !== 'Clatter'), 'Clatter'],
+      closed: b.closed.filter(s => s !== 'Clatter'),
+    }),
+  })
 }
