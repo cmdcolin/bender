@@ -362,3 +362,13 @@ test('the slot rack rolls a chain you can pick apart', () => {
     expect(BENDS.filter(b => rolled[b.mix] > 0).length).toBeLessThanOrEqual(3)
   }
 })
+
+test('random rarely loads the shared supply with the kit’s trigger current', () => {
+  const before = mine()
+  let on = 0
+  for (let seed = 1; seed <= 300; seed++) {
+    const after = randomLook(before, mulberry32(seed))
+    if (after.drumTrigLoad > 0) on++
+  }
+  expect(on / 300).toBeLessThan(0.15)
+})

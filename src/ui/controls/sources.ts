@@ -966,6 +966,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumTrigLoad',
+        shy: true,
         part: 'inside the voices',
         label: 'Trigger load',
         min: 0,
