@@ -96,6 +96,12 @@
   background: var(--surface);
 }
 
+@media (min-width: 761px) and (max-width: 1099px) {
+  .panel {
+    width: clamp(360px, 42vw, 470px);
+  }
+}
+
 .nameplate {
   display: flex;
   align-items: baseline;
