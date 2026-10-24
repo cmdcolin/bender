@@ -225,7 +225,11 @@ voltage you set, or jams one.
 - **Pedals:** add tape echo, spring reverb, chorus, a tube amp or dirt boxes
   from the **Add pedal** menu
 - **Bends:** the **Add bend** menu puts a ring mod, crusher, octave or any other
-  bend in the first empty chain position and opens its panel
+  bend on the bench as a pedal face, slotting it into the first empty chain
+  position if it has none
+  - The badge shows the chain position, or **off** when no position holds it
+  - The footswitch sets the mix to 0 and back to where you left it, and slots
+    the bend in again if it has no position
 
 ![The patch bay: three of four wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](../public/guide/guide-patchbay.jpg)
 

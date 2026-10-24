@@ -174,3 +174,15 @@
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
+
+.badge {
+  min-width: 1.6rem;
+  padding: 0 var(--space-xs);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: var(--ctl-h);
+  text-align: center;
+  color: var(--ink);
+  background: var(--edge);
+  border-radius: var(--ctl-radius);
+}

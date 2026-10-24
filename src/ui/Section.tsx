@@ -12,6 +12,7 @@ import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
 import { bench, setBench } from './bench.ts'
+import { isBend } from './bendChain.ts'
 import { groupAnchor } from './chain-map.ts'
 import {
   groupKeys,
@@ -388,7 +389,9 @@ export function OpenGroup({
           {group.name}
           {former && <span className={styles.was}> ({former})</span>}
         </span>
-        {isPedal(group.name) && <BenchToggle stage={group.name} />}
+        {(isPedal(group.name) || isBend(group.name)) && (
+          <BenchToggle stage={group.name} />
+        )}
         {kind === 'mic' && <MicSwitch />}
         <MicCap stage={group.name} />
         {(kind === 'roll' || group.memory) && !rollBoxed && (

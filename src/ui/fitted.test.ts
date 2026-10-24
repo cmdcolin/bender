@@ -152,6 +152,7 @@ test('every instrument laid out on the bench has its box on the map', () => {
     instruments: ['Glint', 'Parlor'],
     closed: [],
     pedals: ['Gnash'],
+    bends: [],
     roll: false,
     grid: false,
   }
@@ -166,6 +167,7 @@ test('taking an instrument off puts its face away', () => {
     instruments: ['Glint'],
     closed: [],
     pedals: ['Gnash'],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -177,6 +179,7 @@ test('taking an instrument off puts its face away', () => {
     instruments: [],
     closed: [],
     pedals: [],
+    bends: [],
     roll: false,
     grid: false,
   })

@@ -20,6 +20,7 @@ beforeEach(() => {
     instruments: [],
     closed: [],
     pedals: [],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -52,6 +53,7 @@ test('a stored setup keeps the fields that are the right shape', () => {
       instruments: ['Glint'],
       closed: [],
       pedals: [],
+      bends: [],
       roll: false,
       grid: false,
     },
@@ -70,6 +72,7 @@ test('a stored setup naming the old stages keeps them under the new names', () =
     instruments: ['Glint'],
     closed: [],
     pedals: ['Boing'],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -81,6 +84,7 @@ test('applying a setup writes the stores and this machine keeps it', () => {
       instruments: ['Growler'],
       closed: [],
       pedals: [],
+      bends: [],
       roll: false,
       grid: false,
     },
@@ -90,6 +94,7 @@ test('applying a setup writes the stores and this machine keeps it', () => {
     instruments: ['Growler'],
     closed: [],
     pedals: [],
+    bends: [],
     roll: false,
     grid: false,
   })

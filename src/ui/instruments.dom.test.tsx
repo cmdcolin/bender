@@ -17,6 +17,7 @@ beforeEach(() => {
     instruments: [],
     closed: [],
     pedals: [],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -250,29 +251,115 @@ test('Add pedal names each pedal with what it is, benches the pick and brings it
   expect(screen.queryByRole('menuitem', { name: /^Ember/ })).toBeNull()
 })
 
-test('Add bend slots the pick into the first empty position, brings its mix up and opens its panel', () => {
-  const opened: string[] = []
-  engine.set('bendSlot0', 1)
-  for (const k of [1, 2, 3, 4, 5] as const) engine.set(`bendSlot${k}`, 0)
-  engine.set('octMix', 0)
-  render(<Instruments seconds={0} onOpen={s => opened.push(s)} />)
+const chainOf = (...ids: number[]) => {
+  for (const k of [0, 1, 2, 3, 4, 5] as const)
+    engine.set(`bendSlot${k}`, ids[k] ?? 0)
+}
+
+const addBend = (name: RegExp) => {
   fireEvent.click(screen.getByRole('button', { name: /^Add bend/ }))
-  fireEvent.click(screen.getByRole('menuitem', { name: /^Octave/ }))
+  fireEvent.click(screen.getByRole('menuitem', { name }))
+}
+
+test('Add bend slots the pick into the first empty position, brings its mix up and puts its face on the bench', () => {
+  chainOf(1)
+  engine.set('octMix', 0)
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  addBend(/^Octave/)
   const after = engine.controls.get()
   expect(after.bendSlot0).toBe(1)
   expect(after.bendSlot1).toBe(8)
   expect(after.octMix).toBe(0.5)
-  expect(opened).toEqual(['Octave'])
+  expect(bench.get().bends).toEqual(['Octave'])
   expect(shownOn(after).has('Octave')).toBe(true)
+  expect(group('octave')).not.toBeNull()
+  expect(screen.getByRole('img', { name: 'position 2' })).toBeTruthy()
   expect(screen.queryByRole('menuitem', { name: /^Octave/ })).toBeNull()
 })
 
 test('Add bend on a full chain trades out the last position', () => {
-  for (const k of [0, 1, 2, 3, 4, 5] as const) engine.set(`bendSlot${k}`, k + 1)
+  chainOf(1, 2, 3, 4, 5, 6)
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  addBend(/^Octave/)
+  expect(engine.controls.get().bendSlot5).toBe(8)
+})
+
+test('Add bend lists a bend in the chain at mix 0 and brings it up where it sits', () => {
+  chainOf(0, 8)
+  engine.set('octMix', 0)
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  addBend(/^Octave/)
+  const after = engine.controls.get()
+  expect(after.bendSlot0).toBe(0)
+  expect(after.bendSlot1).toBe(8)
+  expect(after.octMix).toBe(0.5)
+  expect(group('octave')).not.toBeNull()
+})
+
+test('every bend has a face', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(screen.getByRole('button', { name: /^Add bend/ }))
-  fireEvent.click(screen.getByRole('menuitem', { name: /^Octave/ }))
-  expect(engine.controls.get().bendSlot5).toBe(8)
+  for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
+    fireEvent.click(item)
+  expect(bench.get().bends).toHaveLength(8)
+  for (const name of [
+    'ring mod',
+    'crusher',
+    'clipper',
+    'comb',
+    'glitch buffer',
+    'screech filter',
+    'freq shifter',
+    'octave',
+  ])
+    expect(group(name)).not.toBeNull()
+})
+
+test('a bend face switches its bend out and back at the mix it left, opens its panel and puts itself away', () => {
+  const opened: string[] = []
+  chainOf(0, 0, 4)
+  engine.set('combMix', 0.7)
+  bench.set({ ...bench.get(), bends: ['Comb'] })
+  render(<Instruments seconds={0} onOpen={s => opened.push(s)} />)
+  const bypass = screen.getByRole('button', { name: 'bypass Comb' })
+  expect(bypass.getAttribute('aria-pressed')).toBe('false')
+  expect(screen.getByRole('img', { name: 'position 3' })).toBeTruthy()
+  fireEvent.click(bypass)
+  expect(engine.controls.get().combMix).toBe(0)
+  expect(engine.controls.get().bendSlot2).toBe(4)
+  expect(bypass.getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(bypass)
+  expect(engine.controls.get().combMix).toBe(0.7)
+  fireEvent.click(screen.getByRole('button', { name: 'all controls' }))
+  expect(opened).toEqual(['Comb'])
+  putAway('Comb')
+  expect(group('comb')).toBeNull()
+  expect(bench.get().bends).toEqual([])
+  expect(engine.controls.get().combMix).toBe(0.7)
+})
+
+test('a bend face in no position says so and its footswitch slots it in', () => {
+  chainOf(1)
+  engine.set('combMix', 0.7)
+  bench.set({ ...bench.get(), bends: ['Comb'] })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  expect(screen.getByRole('img', { name: 'in no position' })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'bypass Comb' }))
+  expect(engine.controls.get().bendSlot1).toBe(4)
+  expect(engine.controls.get().combMix).toBe(0.7)
+})
+
+test('bend faces sit in chain order', () => {
+  chainOf(8, 4)
+  engine.set('octMix', 0.5)
+  engine.set('combMix', 0.5)
+  bench.set({ ...bench.get(), bends: ['Comb', 'Octave'] })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  const names = screen
+    .getAllByRole('group')
+    .map(g => g.getAttribute('aria-label'))
+    .filter(n => n === 'comb' || n === 'octave')
+  expect(names).toEqual(['octave', 'comb'])
 })
 
 test('a pedal face bypasses its pedal, opens its panel and puts itself away', () => {
@@ -281,6 +368,7 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
     instruments: [],
     closed: [],
     pedals: ['Boing'],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -304,6 +392,7 @@ test('a pedal slider moves its own control and goes back to stock on a double pr
     instruments: [],
     closed: [],
     pedals: ['Boing'],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -321,6 +410,7 @@ test('a pedal selector switch goes to the next position on each press', () => {
     instruments: [],
     closed: [],
     pedals: ['Gnash'],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -337,6 +427,7 @@ test('Wraith’s face trades its Time slider for the sync dropdown', () => {
     instruments: [],
     closed: [],
     pedals: ['Wraith'],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -396,6 +487,7 @@ test('the instruments brought up are stored for the next load', () => {
     instruments: ['Glint'],
     closed: [],
     pedals: [],
+    bends: [],
     roll: false,
     grid: false,
   })
@@ -406,6 +498,7 @@ test('a stored bench that is not one reads as the default', () => {
     instruments: [],
     closed: [],
     pedals: [],
+    bends: [],
     roll: false,
     grid: false,
   }
@@ -417,6 +510,7 @@ test('a stored bench that is not one reads as the default', () => {
     instruments: ['Glint'],
     closed: [],
     pedals: ['Ember'],
+    bends: [],
     roll: false,
     grid: false,
   })

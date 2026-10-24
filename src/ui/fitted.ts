@@ -35,11 +35,12 @@ export const added = createStore<ReadonlySet<string>>(
 )
 added.subscribe(() => writeSession(KEY, JSON.stringify([...added.get()])))
 
-/** The faces the bench lays out whatever the board holds: the instruments and
-    pedals brought up. */
+/** The faces the bench lays out whatever the board holds: the instruments,
+    pedals and bends brought up. */
 export const benchStages = (b: Bench): string[] => [
   ...b.instruments,
   ...b.pedals,
+  ...b.bends,
 ]
 
 export const shownOn = (c: Controls, b: Bench = bench.get()): Set<string> =>
@@ -57,12 +58,14 @@ export const removable = (name: string) => !FIXED.has(name)
 function putAway(name: string) {
   const b = bench.get()
   const pedals = b.pedals.filter(p => p !== name)
+  const bends = b.bends.filter(p => p !== name)
   const instruments = b.instruments.filter(s => s !== name)
   if (
     pedals.length !== b.pedals.length ||
+    bends.length !== b.bends.length ||
     instruments.length !== b.instruments.length
   )
-    setBench({ ...b, pedals, instruments })
+    setBench({ ...b, pedals, bends, instruments })
 }
 
 /** The board with the stage closed off: a gated stage's level or mix down and

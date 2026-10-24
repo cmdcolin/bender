@@ -6,7 +6,9 @@ import { AddBend } from './AddBend.tsx'
 import { AddMenu } from './AddMenu.tsx'
 import { INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
+import { BendShelf } from './BendFaces.tsx'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
+import { useBendStages } from './bendStages.ts'
 import { onBoard } from './chain-map.ts'
 import {
   useBoardValue,
@@ -24,7 +26,8 @@ import { Keys } from './Keys.tsx'
 import { MicMenu } from './MicJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
-import { AddPedal, PedalShelf, usePedalStages } from './Pedals.tsx'
+import { AddPedal, PedalShelf } from './Pedals.tsx'
+import { usePedalStages } from './pedalStages.ts'
 import { levelOf } from './stageLevels.ts'
 import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
@@ -127,6 +130,7 @@ export function Instruments({
   const kit = faces(KIT)
   const tapes = faces(TAPES)
   const pedals = usePedalStages()
+  const bends = useBendStages()
 
   const bringUp = (stage: string) => {
     bring(stage)
@@ -152,21 +156,25 @@ export function Instruments({
           onPick={bringUp}
         />
         <AddPedal />
-        <AddBend onOpen={onOpen} />
+        <AddBend />
         <MicMenu className={styles.add} />
         <BendKeysSwitch />
       </div>
       <BendKeys morphSeconds={seconds} />
       <GateBench>
-        {(keyboards.length > 0 || kit.length > 0 || pedals.length > 0) && (
+        {(keyboards.length > 0 ||
+          kit.length > 0 ||
+          pedals.length > 0 ||
+          bends.length > 0) && (
           <div className={styles.shelf}>
             {keyboards.length > 0 && (
               <div className={styles.lane}>{keyboards}</div>
             )}
-            {(kit.length > 0 || pedals.length > 0) && (
+            {(kit.length > 0 || pedals.length > 0 || bends.length > 0) && (
               <div className={styles.rack}>
                 {kit}
                 <PedalShelf seconds={seconds} onOpen={onOpen} />
+                <BendShelf seconds={seconds} onOpen={onOpen} />
               </div>
             )}
           </div>

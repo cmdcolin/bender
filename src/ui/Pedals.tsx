@@ -1,32 +1,21 @@
 import { engine } from '../engine/engine.ts'
-import { PEDALS, pedalOrderAt } from '../pedals.ts'
+import { isPedal } from '../pedals.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, setBench } from './bench.ts'
-import { sliderFor } from './controls/index.ts'
-import {
-  useBoardValue,
-  useControlValue,
-  useStoreValue,
-} from './ControlsContext.ts'
-import { DeviceVerbs } from './DeviceVerbs.tsx'
+import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import styles from './Pedals.module.css'
-import { ControlSlider } from './Slider.tsx'
+import { useRunOrder, usePedalStages } from './pedalStages.ts'
+import { Footswitch, StompFace, type Face } from './StompFace.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
-import type { CSSProperties } from 'react'
 
-// What a pedal wears on the bench: its enclosure colour, an optional selector
-// switch, the sliders you reach for first with the mix last, and the control its
-// footswitch throws. The rest are one press away on the stage's own panel.
-interface Face {
-  colour: string
-  switch?: ControlKey
-  sliders: readonly ControlKey[]
+// A pedal's face, and the control its footswitch throws.
+interface PedalLook extends Face {
   bypass: ControlKey
 }
 
-const FACE: Record<string, Face> = {
+const FACE: Record<string, PedalLook> = {
   Gnash: {
     colour: '#2f7040',
     switch: 'stompCircuit',
@@ -62,8 +51,6 @@ const FACE: Record<string, Face> = {
   },
 }
 
-const cssVars = (vars: Record<`--${string}`, string>): CSSProperties => vars
-
 const ADDED_MIX = 0.5
 
 const show = (shown: readonly string[], pedal: string) =>
@@ -72,10 +59,16 @@ const show = (shown: readonly string[], pedal: string) =>
 const hide = (shown: readonly string[], pedal: string) =>
   setBench({ ...bench.get(), pedals: shown.filter(p => p !== pedal) })
 
-/** The button on a pedal's own panel that puts it on the bench, or takes it off. */
+const listOf = (stage: string) => (isPedal(stage) ? 'pedals' : 'bends')
+
+/** The button on a pedal's or bend's own panel that puts its face on the bench,
+    or takes it off. */
 export function BenchToggle({ stage }: { stage: string }) {
-  const { pedals: shown } = useStoreValue(bench)
+  const list = listOf(stage)
+  const shown = useStoreValue(bench)[list]
   const on = shown.includes(stage)
+  const put = (next: readonly string[]) =>
+    setBench({ ...bench.get(), [list]: next })
   return (
     <Tip
       text={
@@ -87,19 +80,14 @@ export function BenchToggle({ stage }: { stage: string }) {
       <button
         className={on ? styles.benchOn : styles.bench}
         aria-pressed={on}
-        onClick={() => (on ? hide(shown, stage) : show(shown, stage))}
+        onClick={() =>
+          put(on ? shown.filter(p => p !== stage) : [...shown, stage])
+        }
       >
         bench
       </button>
     </Tip>
   )
-}
-
-// The pedals in the order the signal meets them, which is the order both the
-// menu and the shelf list them in.
-function useRunOrder() {
-  const at = useBoardValue(c => Math.round(c.pedalOrder))
-  return pedalOrderAt(at).map(i => PEDALS[i]!.group)
 }
 
 const KIND: Record<string, string> = {
@@ -137,66 +125,6 @@ export function AddPedal() {
   )
 }
 
-function Selector({ control }: { control: ControlKey }) {
-  const def = sliderFor(control)
-  const value = useControlValue(control)
-  return (
-    <Tip text={def.help}>
-      <select
-        className={styles.selector}
-        aria-label={def.label}
-        value={Math.round(value) - def.min}
-        onChange={e => {
-          engine.armStep()
-          engine.set(control, def.min + Number(e.currentTarget.value))
-        }}
-      >
-        {def.choices!.map((c, i) => (
-          <option key={c} value={i}>
-            {c}
-          </option>
-        ))}
-      </select>
-    </Tip>
-  )
-}
-
-// The footswitch. The lamp is lit while the pedal is in the path.
-function Footswitch({
-  stage,
-  control,
-}: {
-  stage: string
-  control: ControlKey
-}) {
-  const bypassed = useControlValue(control) > 0.5
-  return (
-    <Tip
-      text={
-        bypassed
-          ? `${stage} is bypassed. Press to switch it back on at the sound you left.`
-          : `Press to take ${stage} out of the path. Its knobs stay where they are.`
-      }
-    >
-      <span className={styles.bay}>
-        <span
-          className={bypassed ? styles.lampOff : styles.lampOn}
-          aria-hidden="true"
-        />
-        <button
-          className={styles.foot}
-          aria-label={`bypass ${stage}`}
-          aria-pressed={bypassed}
-          onClick={() => {
-            engine.armStep()
-            engine.set(control, bypassed ? 0 : 1)
-          }}
-        />
-      </span>
-    </Tip>
-  )
-}
-
 function PedalFace({
   stage,
   seconds,
@@ -209,49 +137,31 @@ function PedalFace({
   onClose: () => void
 }) {
   const face = FACE[stage]!
-  const live = useBoardValue(c =>
-    face.sliders.filter(key => sliderFor(key).needs?.(c) ?? true).join(','),
-  ).split(',')
+  const bypassed = useControlValue(face.bypass) > 0.5
   return (
-    <div
-      className={styles.pedal}
-      style={cssVars({ '--pedal': face.colour })}
-      role="group"
-      aria-label={stage.toLowerCase()}
-    >
-      <div className={styles.head}>
-        <span className={styles.name}>{stage}</span>
-        <DeviceVerbs stage={stage} seconds={seconds} onClose={onClose} noMute />
-      </div>
-      <div className={styles.body}>
-        <div className={styles.stand}>
-          <Footswitch stage={stage} control={face.bypass} />
-          <Tip text={`Open ${stage} with all of its controls.`}>
-            <button
-              className={styles.more}
-              aria-label="all controls"
-              onClick={() => onOpen(stage)}
-            >
-              ⋯
-            </button>
-          </Tip>
-        </div>
-        <div className={styles.sliders}>
-          {face.switch && <Selector control={face.switch} />}
-          {face.sliders
-            .filter(key => live.includes(key))
-            .map(key => (
-              <ControlSlider key={key} def={sliderFor(key)} />
-            ))}
-        </div>
-      </div>
-    </div>
+    <StompFace
+      stage={stage}
+      face={face}
+      seconds={seconds}
+      onOpen={onOpen}
+      onClose={onClose}
+      footswitch={
+        <Footswitch
+          stage={stage}
+          bypassed={bypassed}
+          tip={
+            bypassed
+              ? `${stage} is bypassed. Press to switch it back on at the sound you left.`
+              : `Press to take ${stage} out of the path. Its knobs stay where they are.`
+          }
+          onPress={() => {
+            engine.armStep()
+            engine.set(face.bypass, bypassed ? 0 : 1)
+          }}
+        />
+      }
+    />
   )
-}
-
-export function usePedalStages() {
-  const { pedals: shown } = useStoreValue(bench)
-  return useRunOrder().filter(pedal => shown.includes(pedal))
 }
 
 export function PedalShelf({
