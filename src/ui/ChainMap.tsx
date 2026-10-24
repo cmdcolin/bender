@@ -111,7 +111,7 @@ export function ChainMap({
     [],
   )
   useStoreValue(added)
-  const folded = useStoreValue(mapFolded) && open !== null
+  const folded = useStoreValue(mapFolded) && (coarse || open !== null)
   const shown = shownOn(controls, benchNow)
   if (open) shown.add(open)
   const map = buildMap(controls, {
@@ -176,7 +176,7 @@ export function ChainMap({
         onOpen={onOpen}
         seconds={seconds}
       >
-        {open !== null && !coarse && (
+        {(coarse || open !== null) && (
           <Tip
             text={
               folded
