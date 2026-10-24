@@ -8,7 +8,8 @@ const KEY = 'bender.bench'
 // the player has brought up, none until asked for; an instrument whose fader is up shows
 // without being asked, unless it is in `closed`, the ones put away. `roll` is
 // the piano roll in the stage panels, and `grid` spreads the kit across the
-// main area as a drum machine with the whole grid; both wait to be asked for.
+// main area as a drum machine with the whole grid. The kit stages itself the
+// first time it runs, until the player folds it (`folded`).
 export interface Bench {
   instruments: readonly string[]
   closed: readonly string[]
@@ -16,6 +17,7 @@ export interface Bench {
   bends: readonly string[]
   roll: boolean
   grid: boolean
+  folded: boolean
 }
 
 export const INSTRUMENTS = [
@@ -35,6 +37,7 @@ const EMPTY: Bench = {
   bends: [],
   roll: false,
   grid: false,
+  folded: false,
 }
 
 const strings = (value: unknown): string[] =>
@@ -50,6 +53,7 @@ export function sanitizeBench(value: unknown): Bench {
   const bends = 'bends' in value ? value.bends : undefined
   const roll = 'roll' in value ? value.roll : undefined
   const grid = 'grid' in value ? value.grid : undefined
+  const folded = 'folded' in value ? value.folded : undefined
   return {
     instruments: strings(instruments),
     closed: strings(closed),
@@ -57,6 +61,7 @@ export function sanitizeBench(value: unknown): Bench {
     bends: strings(bends),
     roll: roll === true,
     grid: grid === true,
+    folded: folded === true,
   }
 }
 
@@ -81,9 +86,15 @@ export function stageKit(on: boolean) {
   setBench({
     ...b,
     grid: on,
+    folded: !on,
     ...(on && {
       instruments: [...b.instruments.filter(s => s !== 'Clatter'), 'Clatter'],
       closed: b.closed.filter(s => s !== 'Clatter'),
     }),
   })
+}
+
+export function stageOnRun() {
+  const b = bench.get()
+  if (!b.grid && !b.folded) setBench({ ...b, grid: true })
 }

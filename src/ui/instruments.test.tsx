@@ -93,3 +93,24 @@ test('the staged kit takes a shelf of its own above the keyboards', () => {
   ).toBeTruthy()
   setBench({ ...bench.get(), grid: false })
 })
+
+test('the kit stages itself when it runs, until the player folds it', () => {
+  setBench({ ...bench.get(), grid: false, folded: false })
+  render(<App />)
+  act(() => engine.setDrumsPlaying(true))
+  expect(bench.get().grid).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: 'grid' }))
+  act(() => engine.setDrumsPlaying(false))
+  act(() => engine.setDrumsPlaying(true))
+  expect(bench.get().grid).toBe(false)
+  act(() => engine.setDrumsPlaying(false))
+})
+
+test('running the kit leaves a closed kit closed', () => {
+  setBench({ ...bench.get(), grid: false, folded: false, closed: ['Clatter'] })
+  render(<App />)
+  act(() => engine.setDrumsPlaying(true))
+  expect(screen.queryByRole('group', { name: 'clatter' })).toBeNull()
+  act(() => engine.setDrumsPlaying(false))
+  setBench({ ...bench.get(), grid: false, closed: [] })
+})

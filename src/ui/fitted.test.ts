@@ -155,6 +155,7 @@ test('every instrument laid out on the bench has its box on the map', () => {
     bends: [],
     roll: false,
     grid: false,
+    folded: false,
   }
   const on = shownOn(stock(), all)
   for (const stage of ['Glint', 'Parlor', 'Gnash'])
@@ -170,6 +171,7 @@ test('taking an instrument off puts its face away', () => {
     bends: [],
     roll: false,
     grid: false,
+    folded: false,
   })
   takeOff(group('Glint'), stock())
   takeOff(group('Gnash'), stock())
@@ -182,5 +184,6 @@ test('taking an instrument off puts its face away', () => {
     bends: [],
     roll: false,
     grid: false,
+    folded: false,
   })
 })
