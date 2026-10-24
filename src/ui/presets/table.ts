@@ -46,6 +46,32 @@ const arpSync = (name: string) => ARP_SYNC_MODES.indexOf(name)
 /** And the recordings in the home keyboard's ROM. */
 const keys = (name: string) => PCM_VOICE_NAMES.indexOf(name)
 
+const ACID: Partial<Controls> = {
+  monoWave1: 1,
+  monoRange1: -1,
+  monoMix1: 1,
+  monoMix2: 0,
+  monoMix3: 0,
+  monoCutoff: 260,
+  monoEmph: 0.88,
+  monoContour: 3.2,
+  monoTrack: 0.5,
+  monoDrive: 2.2,
+  monoFD: 0.15,
+  monoFS: 0,
+  monoFR: 0.08,
+  monoAD: 0.3,
+  monoAS: 0.7,
+  monoAR: 0.03,
+  monoGate: 0.5,
+  monoGlide: 0.06,
+  modLfoHz: 0.08,
+  modLfoShape: 0,
+  mod0Src: 1,
+  mod0Dest: DEST.monoCutoff,
+  mod0Depth: 0.3,
+}
+
 export const PRESETS: PresetDef[] = [
   {
     name: 'mall strings',
@@ -118,6 +144,21 @@ export const PRESETS: PresetDef[] = [
       dlyMix: 0.3,
       delayMs: 300,
       dlyFb: 0.5,
+    },
+  },
+  {
+    name: 'techno',
+    blurb:
+      'Four on the floor at 130, clap on two and four, open hat between, and Growler’s acid line riding the toy’s tune',
+    patch: {
+      ...romMasks('techno'),
+      ...ACID,
+      monoLevel: 0.8,
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 130,
+      drumSwing: 0,
+      echoLevel: 0.25,
     },
   },
   {
@@ -2114,32 +2155,10 @@ export const PRESETS: PresetDef[] = [
       'One saw an octave up into the ladder with the emphasis near oscillation and no sustain on the filter contour, and the bay’s LFO sweeping the cutoff every twelve seconds',
     patch: {
       ...romMasks('rock'),
+      ...ACID,
       monoLevel: 1,
       chipLevel: 0,
       drumLevel: 0.7,
-      monoWave1: 1,
-      monoRange1: -1,
-      monoMix1: 1,
-      monoMix2: 0,
-      monoMix3: 0,
-      monoCutoff: 260,
-      monoEmph: 0.88,
-      monoContour: 3.2,
-      monoTrack: 0.5,
-      monoDrive: 2.2,
-      monoFD: 0.15,
-      monoFS: 0,
-      monoFR: 0.08,
-      monoAD: 0.3,
-      monoAS: 0.7,
-      monoAR: 0.03,
-      monoGate: 0.5,
-      monoGlide: 0.06,
-      modLfoHz: 0.08,
-      modLfoShape: 0,
-      mod0Src: 1,
-      mod0Dest: DEST.monoCutoff,
-      mod0Depth: 0.3,
     },
   },
   {
