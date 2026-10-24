@@ -1,5 +1,5 @@
 import { SUPPLY } from '../dsp/supplies.ts'
-import { machinesOn } from './controls/supply.ts'
+import { machinesOn, sharedLoads } from './controls/supply.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { RailLamp } from './RailLamp.tsx'
 import styles from './SupplyReading.module.css'
@@ -17,6 +17,7 @@ export function SupplyReading() {
   const second = useBoardValue(c => list(machinesOn(c, SUPPLY.second)))
   const bench = useBoardValue(c => list(machinesOn(c, SUPPLY.bench)))
   const all = useBoardValue(c => machinesOn(c, SUPPLY.shared).length === 5)
+  const loads = useBoardValue(c => list(sharedLoads(c)))
 
   return (
     <div className={styles.readings}>
@@ -30,6 +31,7 @@ export function SupplyReading() {
               : 'Feeds nothing: every machine is on other supplies.'}
         </p>
       </div>
+      {loads && <p className={styles.loads}>Also sagged by {loads}.</p>}
       {second && (
         <div className={styles.reading}>
           <RailLamp cells={SUPPLY.second} />

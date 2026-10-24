@@ -378,6 +378,8 @@ const MIN_W = 100
 const STAGE_W = 150
 const PAD_X = 9
 const ROW_GAP = 6
+/** the lead from the supply box down to the frame's rail */
+const FEED_H = 10
 /** the channel the folded path's cable runs up, between the two columns */
 const COL_GAP = 28
 const INST_GAP = 12
@@ -1053,8 +1055,10 @@ function measure(p: Parts) {
 function layDown(m: Measured) {
   const { board, chipRows, underRow, laneUsed, trigs, lower, hasBoard } = m
   const { lineRows, mix, loop, down, upCol, bus, busShown, foot, fittings } = m
+  const { supply } = m
 
-  board.y = MARGIN
+  if (supply) supply.y = MARGIN
+  board.y = supply ? supply.y + supply.h + FEED_H : MARGIN
   const railY = board.y + CAP_H + 2
   const chipY = board.y + BOX_H + RAIL_H / 2 + 2
   for (const n of chipRows[0] ?? []) n.y = chipY
@@ -1253,8 +1257,7 @@ function layAcross(d: LaidDown) {
     notes.push(noTrigChip)
   }
   if (supply) {
-    supply.x = board.x + board.w - FRAME_PAD - supply.w
-    supply.y = board.y
+    supply.x = board.x + (board.w - supply.w) / 2
     notes.push(supply)
   }
 
@@ -1312,6 +1315,17 @@ function boardWires(m: Laid) {
         dash: '1 2',
         door: SUPPLY,
       },
+    )
+  if (m.supply)
+    bar(
+      'supply-feed',
+      m.supply,
+      board,
+      [
+        [midX(m.supply), m.supply.y + m.supply.h],
+        [midX(m.supply), railY],
+      ],
+      { color: k.dim, door: SUPPLY },
     )
   for (const toy of chips.filter(n => onSharedCells(m.c, n.label)))
     bar(

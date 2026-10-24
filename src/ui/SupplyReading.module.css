@@ -11,6 +11,12 @@
   gap: var(--space-sm);
 }
 
+.loads {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--accent2);
+}
+
 .feeds {
   margin: 0;
   font-size: var(--fs-xs);

@@ -1,3 +1,6 @@
+import { asEvent, EVENT, EVENT_KEYS } from '../../drums.ts'
+import { MIC } from '../../dsp/micJacks.ts'
+import { DEST } from '../../dsp/modbus.ts'
 import { SUPPLY, SUPPLY_KEYS, SUPPLY_NAMES } from '../../dsp/supplies.ts'
 
 import type { Controls } from '../../controls.ts'
@@ -17,6 +20,40 @@ export const SUPPLY_OF: Record<SupplyKey, string> = {
 /** The machines a supply feeds, in panel order. */
 export const machinesOn = (c: Controls, supply: number) =>
   SUPPLY_KEYS.filter(k => Math.round(c[k]) === supply).map(k => SUPPLY_OF[k])
+
+const onShared = (c: Controls, key: SupplyKey | 'distSupply') =>
+  Math.round(c[key]) === SUPPLY.shared
+
+const kitFaults = (c: Controls) =>
+  [...EVENT_KEYS, 'drumEventLive' as const].some(k => {
+    const e = asEvent(c[k])
+    return e === EVENT.drop || e === EVENT.reboot
+  })
+
+/** What outside the Power supply panel is sagging the shared cells. */
+export const sharedLoads = (c: Controls): string[] =>
+  [
+    c.drumTrigLoad > 0 &&
+      c.drumLevel > 0 &&
+      onShared(c, 'drumSupply') &&
+      'Clatter’s trigger load',
+    kitFaults(c) && 'the kit’s drop and reboot steps',
+    c.distMix > 0 && onShared(c, 'distSupply') && 'the Clipper amp',
+    c.couple > 0 && 'Wear’s coupling',
+    c.heatAmt > 0 && 'Wear’s heat',
+    c.micLevel > 0 &&
+      Math.round(c.micPatch) === MIC.toyRail &&
+      'the mic on the rail',
+    Math.round(c.fbDest) === 2 &&
+      (c.fbAmt > 0 || c.fb2Amt > 0 || c.fb3Amt > 0) &&
+      'the feedback bus',
+    ([0, 1, 2, 3] as const).some(
+      i =>
+        Math.round(c[`mod${i}Src`]) !== 0 &&
+        c[`mod${i}Depth`] !== 0 &&
+        Math.round(c[`mod${i}Dest`]) === DEST.starve,
+    ) && 'a patch bay wire on Starve',
+  ].filter(s => s !== false)
 
 const onSecond = (c: Controls) =>
   machinesOn(c, SUPPLY.second).length > 0 ||
