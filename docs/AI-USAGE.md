@@ -14,6 +14,9 @@ through a request. It has loaded the dying toy preset and is entering a C minor
 arpeggio into the melody memory. The bar across the top of the page and the Stop
 Claude button show that the extension is controlling the tab.
 
+[Techno with an AI agent](AGENT-TECHNO.md) walks through building a groove and
+bending it, request by request.
+
 ## Claude in Chrome
 
 1. Install the

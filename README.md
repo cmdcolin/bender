@@ -79,6 +79,8 @@ pnpm dev
 - [MIDI](docs/MIDI.md) — setting up a controller
 - [AI usage](docs/AI-USAGE.md) — playing bender from Claude in Chrome or Claude
   Code through `window.bender`
+- [Techno with an AI agent](docs/AGENT-TECHNO.md) — Claude Code builds a groove
+  and bends it
 - [Development](docs/DEVELOPMENT.md) — testing, benchmarking, releases
 - [Data flow](docs/dataflow.md) — how a block gets rendered across the two
   threads
