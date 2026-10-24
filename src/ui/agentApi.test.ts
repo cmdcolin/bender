@@ -38,6 +38,11 @@ test('set applies valid values and reports adjusted, unknown and failed ones', (
   })
 })
 
+test('set takes one control as a key and a value', () => {
+  expect(bender.set('drumBpm', 130).applied).toEqual({ drumBpm: '130 bpm' })
+  expect(engine.controls.get().drumBpm).toBe(130)
+})
+
 test('each set call adds one undo step', () => {
   bender.set({ chipStarve: 0.5, dlyFb: 0.9 })
   bender.set({ chipStarve: 0.7 })
@@ -255,6 +260,19 @@ test('load finds a preset by name prefix and throws on an unknown name', () => {
   expect(bender.load('dying').loaded).toBe('dying toy')
   expect(bender.board().preset).toBe('dying toy')
   expect(() => bender.load('nope')).toThrow(/bender.presets\(\) lists all/)
+})
+
+test('listen says a burst of meters is a backlog from a lagging page', async () => {
+  engine.running.set(true)
+  try {
+    const heard = bender.listen(150)
+    setTimeout(() => {
+      for (let i = 0; i < 60; i++) engine.meter.set({ ...engine.meter.get() })
+    }, 20)
+    expect((await heard).meters).toMatch(/more than due, so the page lagged/)
+  } finally {
+    engine.running.set(false)
+  }
 })
 
 test('listen ignores the meter message that covers audio from before the call', async () => {

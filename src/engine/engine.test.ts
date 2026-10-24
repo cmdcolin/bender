@@ -1191,3 +1191,16 @@ test('recording the second melody on the kit clock runs the kit, not the song', 
   expect(engine.songPlaying.get()).toBe(false)
   expect(engine.lineRuns()).toBe(true)
 })
+
+test('a shared groove starts without the demo song, a bent song starts with it', () => {
+  const groove = new Engine()
+  groove.set('drumKick', 0x8888)
+  groove.runLink()
+  expect(groove.drumsPlaying.get()).toBe(true)
+  expect(groove.songPlaying.get()).toBe(false)
+
+  const bent = new Engine()
+  bent.set('chipStarve', 0.8)
+  bent.runLink()
+  expect(bent.songPlaying.get()).toBe(true)
+})

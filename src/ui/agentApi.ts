@@ -63,7 +63,7 @@ const HELP = `window.bender controls bender, a circuit-bent toy keyboard and dru
 
 const GUIDE = {
   read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. bender has about 250 controls, so search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help.`,
-  change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }) accepts numbers, choice names and unique prefixes of choice names, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists keys that match no control with the closest real keys, and failed lists values set could not read; set leaves those controls unchanged. A number of seconds as the second argument glides the controls there on animation frames, which the browser pauses in a hidden tab. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds.`,
+  change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of choice names, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists keys that match no control with the closest real keys, and failed lists values set could not read; set leaves those controls unchanged. A number of seconds as the second argument glides the controls there on animation frames, which the browser pauses in a hidden tab. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds.`,
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory with one token per step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold the previous note. tune also switches the chip to play the memory at tuneRate steps per second. An array of up to three strings writes chords, one string per lane. bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. An x is a hit, a question mark is a hit with probability drumChance, and a dot is a rest. Each character is a sixteenth note, so a beat is four characters. The string length sets the row's loop length, an empty string clears the row, and rows missing from the call keep their pattern. drumBpm sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}. bender.board().drums reads all of these back in the same form.`,
   line: `The bassline. bender.line('. A2 A2 A3 . A2 A2 A2', { accent: '...x', slide: '' }) writes a second 32-step memory, one token per step as in tune, and turns it on. Its counter steps with the kit's sixteenths and runs while the kit runs, so a step lines up with a drum character; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, the mono synth, whose 16′ and 32′ ranges sound an octave or two under the written note; on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep what they had. The result lists warnings for anything keeping the line silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate; bender.find('Growler') lists the rest. The techno and acid techno presets load a groove to riff on.`,
@@ -75,6 +75,7 @@ type Topic = keyof typeof GUIDE
 const isTopic = (topic: string): topic is Topic => Object.hasOwn(GUIDE, topic)
 
 const MAX_LISTEN_MS = 20000
+const BACKLOG = 1.25
 const START_WAIT_MS = 1000
 const CHOICES_SHOWN = 4
 const ROW_HELP_CHARS = 90
@@ -86,6 +87,13 @@ declare global {
 }
 
 type Value = number | string
+
+interface SetReport {
+  applied: Record<string, string>
+  adjusted: string[]
+  unknown: string[]
+  failed: string[]
+}
 
 const groupOf = (key: ControlKey) => GROUP_BY_KEY.get(key) ?? 'board'
 
@@ -412,8 +420,10 @@ async function listen(ms = 1500) {
     // meter every METER_EVERY blocks from inside its render, so the rate is the
     // one reading on the board that says whether the audio thread is keeping
     // up: short of its own budget means blocks went unrendered, which is a hole
-    // in the sound rather than anything the panel did.
-    meters: `${meters} in ${(span / 1000).toFixed(1)}s, ${perSecond.toFixed(1)}/s expected`,
+    // in the sound rather than anything the panel did. Over budget means the
+    // page's own thread stalled and then took a backlog at once, which an agent
+    // otherwise reads as the meters being broken.
+    meters: `${meters} in ${(span / 1000).toFixed(1)}s, ${perSecond.toFixed(1)}/s expected${meters > perSecond * (span / 1000) * BACKLOG ? '; more than due, so the page lagged and delivered a backlog, and the readings span more time than asked' : ''}`,
     peak: decibels(peak),
     limiter: `${(-20 * Math.log10(1 - duck)).toFixed(2)} dB gain reduction`,
     rail: Number(rail.toFixed(2)),
@@ -491,7 +501,13 @@ export function createBenderApi() {
       }
     },
 
-    set(changes: Record<string, Value>, seconds = 0) {
+    set(
+      changes: Record<string, Value> | string,
+      ...rest: [seconds?: number] | [value: Value, seconds?: number]
+    ): SetReport {
+      if (typeof changes === 'string')
+        return this.set({ [changes]: rest[0] ?? '' }, rest[1] ?? 0)
+      const seconds = Number(rest[0] ?? 0)
       const applied: Record<string, string> = {}
       const adjusted: string[] = []
       const unknown: string[] = []

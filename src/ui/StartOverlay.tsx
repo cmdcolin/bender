@@ -20,7 +20,7 @@ export function StartOverlay(props: { onClose: () => void }) {
       return
     }
     engine.fadeIn()
-    engine.runAll()
+    engine.runLink()
     onClose()
   }
 

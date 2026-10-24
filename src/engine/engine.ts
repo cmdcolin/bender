@@ -19,6 +19,7 @@ import {
   DRUM_VOICES,
   GRID_ROWS,
   heardStep,
+  PATTERN_KEYS,
   quantizeStep,
   stepBit,
   STEPS,
@@ -1639,6 +1640,15 @@ export class Engine {
       a tab puts back what it was running (see runState). */
   runAll() {
     this.setRun(true, true)
+  }
+
+  /** What a shared link's start button runs. A groove plays without the toy's
+      demo song under it; a board with no groove to play is the song somebody
+      bent, so that one starts it. */
+  runLink() {
+    const c = this.controls.get()
+    const groove = c.monoSeqOn !== 0 || PATTERN_KEYS.some(k => c[k] !== 0)
+    this.setRun(!groove || c.chipTune === YOURS, true)
   }
 
   // A key, on one keybed or the other. The memory is the toy's, so only the
