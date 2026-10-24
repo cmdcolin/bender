@@ -43,6 +43,7 @@ import {
   setPhraseLock,
   type MorphSeconds,
 } from './morph.ts'
+import { openStage } from './openStage.ts'
 import { read, write } from './persist.ts'
 import { PinnedStrip } from './PinnedStrip.tsx'
 import { Presets } from './PresetRow.tsx'
@@ -415,7 +416,8 @@ export function App(props: { openedFromLink?: boolean }) {
   const sampleError = useStoreValue(engine.sampleError)
   const remapping = useStoreValue(remapOpen)
   const coarse = useCoarse()
-  const [open, setOpen] = useState<string | null>(null)
+  const open = useStoreValue(openStage)
+  const setOpen = openStage.set
   const openGroup = GROUPS.find(g => g.name === open)
   const show = (name: string | null) => {
     if (name) add([name])

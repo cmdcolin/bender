@@ -1,5 +1,6 @@
 import { DeviceVerbs } from './DeviceVerbs.tsx'
 import styles from './Faceplate.module.css'
+import { useOpenFace } from './openStage.ts'
 
 import type { ReactNode } from 'react'
 
@@ -17,8 +18,9 @@ export function Faceplate({
   children: ReactNode
 }) {
   const name = stage.toLowerCase()
+  const ring = useOpenFace(stage)
   return (
-    <section className={styles.face} aria-label={name}>
+    <section className={`${styles.face} ${ring}`} aria-label={name}>
       <div className={styles.head}>
         <span className={styles.label}>{name}</span>
         <DeviceVerbs stage={stage} seconds={seconds} onClose={onClose} />

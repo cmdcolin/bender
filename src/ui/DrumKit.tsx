@@ -22,6 +22,7 @@ import styles from './DrumKit.module.css'
 import { FaceBadge } from './FaceBadge.tsx'
 import { TrigPlate } from './GateCables.tsx'
 import { useCoarse, useWidth } from './measure.ts'
+import { useOpenFace } from './openStage.ts'
 import { RailLamp } from './RailLamp.tsx'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
@@ -59,11 +60,12 @@ export function DrumKit({
   const width = useWidth(kit)
   const micCramped =
     width !== undefined && width >= ROOMY_KIT && width < ROOMY_FOR_MIC
+  const ring = useOpenFace('Clatter')
 
   return (
     <div
       ref={setKit}
-      className={staged ? styles.kitStaged : styles.kit}
+      className={`${staged ? styles.kitStaged : styles.kit} ${ring}`}
       role="group"
       aria-label="clatter"
     >

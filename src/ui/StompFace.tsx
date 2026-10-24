@@ -2,6 +2,7 @@ import { engine } from '../engine/engine.ts'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import { DeviceVerbs } from './DeviceVerbs.tsx'
+import { useOpenFace } from './openStage.ts'
 import styles from './Pedals.module.css'
 import { ControlSlider } from './Slider.tsx'
 import { Tip } from './Tip.tsx'
@@ -94,9 +95,10 @@ export function StompFace({
   const live = useBoardValue(c =>
     face.sliders.filter(key => sliderFor(key).needs?.(c) ?? true).join(','),
   ).split(',')
+  const ring = useOpenFace(stage)
   return (
     <div
-      className={styles.pedal}
+      className={`${styles.pedal} ${ring}`}
       style={cssVars({ '--pedal': face.colour })}
       role="group"
       aria-label={stage.toLowerCase()}

@@ -30,6 +30,7 @@ import { letterKeys } from './letters.ts'
 import { useCoarse, useWidth } from './measure.ts'
 import { menuCheck, menuItem } from './menuItems.ts'
 import { MiniRoll } from './MiniRoll.tsx'
+import { useOpenFace } from './openStage.ts'
 import { Tip } from './Tip.tsx'
 
 import type { NoteDest } from '../engine/messages.ts'
@@ -128,6 +129,7 @@ export function Keybed({
   const [bed, setBed] = useState<HTMLDivElement | null>(null)
   const width = useWidth(bed)
   const coarse = useCoarse()
+  const ring = useOpenFace(stage ?? '')
   const drawn =
     width === undefined
       ? OCTAVES_DRAWN
@@ -376,7 +378,7 @@ export function Keybed({
 
   return (
     <div
-      className={`${styles.body} ${short ? styles.short : ''} ${caseClass ?? ''}`}
+      className={`${styles.body} ${short ? styles.short : ''} ${caseClass ?? ''} ${ring}`}
       role="group"
       aria-label={label}
     >
