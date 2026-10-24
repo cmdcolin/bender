@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import {
+  nextWriteAt,
+  observe,
+  type Opened,
+  type WriteGate,
+} from 'skillet-shared/session-gate'
 
 import { engine } from '../engine/engine.ts'
 import { putSession } from './cloud.ts'
@@ -16,46 +22,6 @@ import { newVoiceId } from './voiceModel.ts'
 // no two writes land closer together than `MIN_GAP_MS`. A morph therefore
 // writes once every ten seconds while the address bar writes four times a
 // second, and a board identical to the one on the account writes nothing.
-// CROSS_REPO_SYNC(current-session-gate)
-export const SETTLE_MS = 5000
-export const MIN_GAP_MS = 10000
-
-// The query last written to the account, and when it landed.
-export interface WriteGate {
-  query: string | null
-  at: number
-}
-
-// When a newly settled board may be written, or null when the account already
-// has it. The later of the two gates wins: the debounce measures from now, the
-// rate limit from the last write that landed.
-export function nextWriteAt(
-  gate: WriteGate,
-  query: string,
-  now: number,
-): number | null {
-  if (query === gate.query) return null
-  return Math.max(now + SETTLE_MS, gate.at + MIN_GAP_MS)
-}
-
-// The board this page opened on, and whether it has moved off it since.
-export interface Opened {
-  query: string | null
-  moved: boolean
-}
-
-// The app button on the home page opens the stock board, and a demo or a
-// shared link opens a finished one. None of those is a session the visitor
-// made, and writing one put it over the board the account held, which is what
-// the resume card then opened on. The first board the page shows is where it
-// opened, and the session starts when the board first differs from it.
-export function observe(opened: Opened, query: string | null): Opened {
-  if (query === null || opened.moved) return opened
-  if (opened.query === null) return { query, moved: false }
-  return query === opened.query ? opened : { ...opened, moved: true }
-}
-// CROSS_REPO_SYNC_END(current-session-gate)
-
 // Subscribed to the engine rather than given the board as a prop: a slider drag
 // and a morph each move controls every frame, and whoever held that prop would
 // put the whole panel through React to build a string nobody reads until the

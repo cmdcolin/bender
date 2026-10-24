@@ -1,4 +1,5 @@
 import { createCloud } from 'skillet-shared/cloud'
+import { FIREBASE_CONFIG } from 'skillet-shared/firebase-config'
 
 import {
   forget as removeStored,
@@ -17,24 +18,6 @@ import type { RecentSession, SavedVoice } from './voiceModel.ts'
 // `benderUsers/{uid}`. The rules for that collection are deployed from the
 // videoskillet repository's `firestore.rules`; there is no rules file here.
 //
-// The config is committed on purpose. A Firebase web config is a set of public
-// identifiers rather than credentials: it ships inside the bundle of every
-// Firebase web app ever deployed, and the apiKey only names the project to
-// Google's endpoints. The rules are what stop a stranger writing, and the
-// authorized-domains list is what stops one using the project as their own auth
-// backend.
-// CROSS_REPO_SYNC(firebase-config)
-const CONFIG = {
-  apiKey: 'AIzaSyBHZnQdnaDc5BEYbqwKO8zs0t_wyzLaGFo',
-  authDomain: 'ntscjs-d4f56.firebaseapp.com',
-  projectId: 'ntscjs-d4f56',
-  storageBucket: 'ntscjs-d4f56.firebasestorage.app',
-  messagingSenderId: '881016589781',
-  appId: '1:881016589781:web:9eabd469a30d89b6d7815c',
-  measurementId: 'G-ZFH59EM495',
-}
-// CROSS_REPO_SYNC_END(firebase-config)
-
 const COLLECTION = 'benderUsers'
 
 // Whether this browser has been signed in before. Not a credential and trusted
@@ -55,7 +38,7 @@ export const SIGNED_IN_HINT = 'bender_signed_in'
 const APPCHECK_SITE_KEY = '6LfXUr8tAAAAAAWJh1jC0NfYTmhiAmdq-Nd8c9nQ'
 
 const cloud = createCloud({
-  config: CONFIG,
+  config: FIREBASE_CONFIG,
   collection: COLLECTION,
   listField: 'voices',
   signedInHint: SIGNED_IN_HINT,

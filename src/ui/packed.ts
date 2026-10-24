@@ -1,3 +1,5 @@
+import { fromBase64Url, toBase64Url } from 'skillet-shared/base64url'
+
 import {
   DEFAULT_CONTROLS,
   type ControlKey,
@@ -991,54 +993,6 @@ function putVarint(out: number[], n: number) {
   }
   out.push(n)
 }
-
-const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
-
-// Written out rather than handed to btoa, which wants a binary string and then
-// wants three characters swapped back out of its answer to be url-safe. The
-// alphabet above is already the one a fragment carries as itself.
-//
-// Nothing pads: dropping the '=' costs the decoder nothing, because n bytes
-// always come back out of ceil(n * 4 / 3) characters exactly.
-function toBase64Url(bytes: readonly number[]): string {
-  let out = ''
-  for (let i = 0; i < bytes.length; i += 3) {
-    const n =
-      ((bytes[i] ?? 0) << 16) | ((bytes[i + 1] ?? 0) << 8) | (bytes[i + 2] ?? 0)
-    const left = bytes.length - i
-    out += (B64[(n >> 18) & 63] ?? '') + (B64[(n >> 12) & 63] ?? '')
-    if (left > 1) out += B64[(n >> 6) & 63] ?? ''
-    if (left > 2) out += B64[n & 63] ?? ''
-  }
-  return out
-}
-
-// '+' and '/' are read as themselves because the plain alphabet is what most
-// encoders reach for. Everything else outside the alphabet ends the board
-// rather than voiding it — '=' from something that pads, and, the case this is
-// really for, whatever the link picked up on its way here. A full stop at the
-// end of the sentence it was pasted into, the bracket of a markdown link, the
-// next word autolinked along with it: a link that arrives with one character
-// too many has lost no more of itself than one whose tail a chat window ate,
-// and that one already opens the board it can still read.
-// CROSS_REPO_SYNC(packed-base64)
-function fromBase64Url(text: string): number[] {
-  const bytes: number[] = []
-  let acc = 0
-  let bits = 0
-  for (const ch of text) {
-    const v = B64.indexOf(ch === '+' ? '-' : ch === '/' ? '_' : ch)
-    if (v < 0) break
-    acc = (acc << 6) | v
-    bits += 6
-    if (bits >= 8) {
-      bits -= 8
-      bytes.push((acc >> bits) & 0xff)
-    }
-  }
-  return bytes
-}
-// CROSS_REPO_SYNC_END(packed-base64)
 
 /** A board as bytes: every control off stock, by position in URL_KEY_ORDER. */
 export function packControls(
