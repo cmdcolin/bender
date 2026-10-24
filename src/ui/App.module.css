@@ -178,6 +178,20 @@
   appearance: none;
 }
 
+/* Firefox pads a native select past .btn's padding, hence the drawn chevron.
+   The element in the selector outranks .action's padding and background. */
+select.morph {
+  padding-right: var(--space-xl);
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 9px) 55%,
+    calc(100% - 5px) 55%;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+}
+
 .flight {
   composes: actionOn from './button.module.css';
   position: relative;
