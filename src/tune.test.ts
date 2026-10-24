@@ -13,6 +13,8 @@ import {
   laneText,
   NOTE_HI,
   NOTE_LO,
+  parseSeqFlags,
+  seqFlagsText,
   parseLane,
   REST,
   TUNE_STEPS,
@@ -126,4 +128,12 @@ test('the key of a melody is read off its lowest note', () => {
   expect(keyOf([3, 6, 10])).toEqual({ key: 3, minor: true })
   // A third of neither kind decides nothing, so it stays major.
   expect(keyOf([5, 12])).toEqual({ key: 5, minor: false })
+})
+
+test('accent and slide rows read and write both words of the memory', () => {
+  const text = 'x...|x...|....|...x|x'
+  const [lo, hi] = parseSeqFlags(text)
+  expect([lo, hi]).toEqual([0b1000_1000_0000_0001, 0b1000_0000_0000_0000])
+  expect(seqFlagsText(lo, hi, 17)).toBe('x...x..........xx')
+  expect(() => parseSeqFlags('x'.repeat(33))).toThrow('33 steps')
 })

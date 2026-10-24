@@ -257,6 +257,25 @@ export const seqFlagBit = (step: number) => 1 << (15 - (step & 15))
 export const hasSeqFlag = (lo: number, hi: number, step: number) =>
   ((step < 16 ? lo : hi) & seqFlagBit(step)) !== 0
 
+/** An accent or slide row as `x` and `.` a step, ignoring spaces and `|`, as
+    the low and high words. */
+export function parseSeqFlags(text: string): [number, number] {
+  const chars = text.toLowerCase().replace(/[\s|]/g, '').split('')
+  if (chars.length > TUNE_STEPS)
+    throw new Error(`${chars.length} steps; the maximum is ${TUNE_STEPS}`)
+  const words: [number, number] = [0, 0]
+  for (const [s, ch] of chars.entries()) {
+    if (ch === 'x') words[s < 16 ? 0 : 1] |= seqFlagBit(s)
+    else if (ch !== '.') throw new Error(`'${ch}' is not a step; use x or .`)
+  }
+  return words
+}
+
+export const seqFlagsText = (lo: number, hi: number, len: number) =>
+  Array.from({ length: asTuneLen(len) }, (_, s) =>
+    hasSeqFlag(lo, hi, s) ? 'x' : '.',
+  ).join('')
+
 /** How many steps the memory plays before it comes round: a whole number of the
     steps it has. */
 export const asTuneLen = (v: number) =>

@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
 557 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
-145 presets, 23 stage settings and 57 named cuts. The generator reads everything
+146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 145 presets, and a roll button on every heading as well as
+- **Whole boards.** 146 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -1552,7 +1552,7 @@ result:
 
 ### Presets
 
-145 presets. Each name is a link that opens the app with that board loaded, and
+146 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1567,9 +1567,13 @@ the board waits until you press play.
   down, so the only copy you hear is the keyed one
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
   — Starved rail, sagging pitch, watchdog reboots mid-tune
-- [**techno**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:130,drumKick:34952,drumHat:56797,drumClap:2056,drumOpen:8738,drumAccent:8738,monoLevel:0.8,monoGate:0.5,monoGlide:0.06,monoRange1:-1,monoMix1:1,monoMix2:0,monoMix3:0,monoCutoff:260,monoEmph:0.88,monoContour:3.2,monoTrack:0.5,monoDrive:2.2,monoFD:0.15,monoFS:0,monoFR:0.08,monoAD:0.3,monoAS:0.7,monoAR:0.03,echoLevel:0.25,modLfoHz:0.08,mod0Src:1,mod0Dest:76,mod0Depth:0.3)
-  — Four on the floor at 130, clap on two and four, open hat between, and
-  Growler’s acid line riding the toy’s tune
+- [**techno**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep1:-12,monoSeqStep2:-12,monoSeqStep3:-12,monoSeqStep5:-12,monoSeqStep6:-12,monoSeqStep7:0,monoSeqStep9:-12,monoSeqStep10:-12,monoSeqStep11:-12,monoSeqStep13:-12,monoSeqStep14:0,monoSeqStep15:-14,monoSeqAccentLo:8738,drumLevel:0.9,drumBpm:130,drumKick:34952,drumHat:56797,drumClap:2056,drumOpen:8738,drumAccent:8738,monoLevel:1.2,monoKeyGate:1,monoGate:0.45,monoWave2:2,monoRange1:-1,monoRange2:-1,monoMix1:1,monoMix2:0.5,monoMix3:0,monoCutoff:380,monoEmph:0.45,monoContour:2.4,monoTrack:0.5,monoDrive:1.8,monoFD:0.12,monoFS:0,monoFR:0.06,monoAD:0.18,monoAS:0.3,monoAR:0.03)
+  — Four on the floor at 130, clap on two and four, closed hats choked by an
+  open one on every offbeat, and Growler rolling three sixteenths of bass after
+  each kick
+- [**acid techno**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep0:-12,monoSeqStep1:-12,monoSeqStep2:0,monoSeqStep3:-12,monoSeqStep5:-9,monoSeqStep6:-12,monoSeqStep7:-6,monoSeqStep8:-12,monoSeqStep10:0,monoSeqStep11:-14,monoSeqStep12:-12,monoSeqStep13:-9,monoSeqStep15:-12,monoSeqAccentLo:37412,monoSeqSlideLo:8464,drumLevel:0.9,drumBpm:132,drumKick:34952,drumHat:56797,drumClap:2056,drumOpen:8738,drumAccent:8738,monoLevel:1.2,monoKeyGate:1,monoGate:0.5,monoAccent:0.9,monoGlide:0.06,monoRange1:-1,monoMix1:1,monoMix2:0,monoMix3:0,monoCutoff:500,monoEmph:0.88,monoContour:3.2,monoTrack:0.5,monoDrive:2.2,monoFD:0.15,monoFS:0,monoFR:0.08,monoAD:0.3,monoAS:0.7,monoAR:0.03,echoLevel:0.2,modLfoHz:0.08,mod0Src:1,mod0Dest:76,mod0Depth:0.3)
+  — The techno kit at 132 under a 303-style line on Growler: one saw into the
+  ladder near oscillation, accents opening it and slides tying notes together
 - [**paperclip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.5,chipStarve:0.3,chipCap:0.6,chipClipHz:3,chipClipClock:0.45,drumLevel:0.25,drumKick:32912,drumSnare:2056,drumHat:8738,brownAmt:0.25,humLevel:0.2,faultCluster:0.55)
   — Bare metal on the timing pin — every touch dives an octave and snaps back
 - [**flat batteries**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.6,chipBattery:0.75,drumLevel:0.55,drumBits:5,drumKick:32912,drumSnare:2056,drumHat:8738,tapeMix:0.45,tapeHiss:0.5)

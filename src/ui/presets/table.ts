@@ -1,5 +1,6 @@
 import { DATA_LINES, DRUM_ROMS } from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
+import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
 import { DEST } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
 import {
@@ -23,6 +24,12 @@ import {
 } from '../../dsp/stages/toyDrum.ts'
 import { SUPPLY } from '../../dsp/supplies.ts'
 import { ANY_CHOICE } from '../../dsp/trigbus.ts'
+import {
+  MONO_SEQ_STEP_KEYS,
+  parseLane,
+  parseSeqFlags,
+  REST,
+} from '../../tune.ts'
 
 import type { Controls } from '../../controls.ts'
 
@@ -70,6 +77,50 @@ const ACID: Partial<Controls> = {
   mod0Src: 1,
   mod0Dest: DEST.monoCutoff,
   mod0Depth: 0.3,
+}
+
+/** Growler's memory stepping with the kit's sixteenths, its gate jumper cut so
+    the toy's tune stays off it. */
+function line(notes: string, accent = '', slide = ''): Partial<Controls> {
+  const steps = parseLane(notes)
+  const [monoSeqAccentLo, monoSeqAccentHi] = parseSeqFlags(accent)
+  const [monoSeqSlideLo, monoSeqSlideHi] = parseSeqFlags(slide)
+  return {
+    ...Object.fromEntries(
+      MONO_SEQ_STEP_KEYS.map((k, i) => [k, steps[i] ?? REST]),
+    ),
+    monoSeqOn: 1,
+    monoSeqTo: 0,
+    monoSeqSync: MEMORY_SYNC_MODES.indexOf('sixteenths'),
+    monoSeqLen: steps.length,
+    monoSeqAccentLo,
+    monoSeqAccentHi,
+    monoSeqSlideLo,
+    monoSeqSlideHi,
+    monoKeyGate: 1,
+  }
+}
+
+const ROLLING: Partial<Controls> = {
+  monoWave1: 1,
+  monoRange1: -1,
+  monoWave2: 2,
+  monoRange2: -1,
+  monoMix1: 1,
+  monoMix2: 0.5,
+  monoMix3: 0,
+  monoCutoff: 380,
+  monoEmph: 0.45,
+  monoContour: 2.4,
+  monoTrack: 0.5,
+  monoDrive: 1.8,
+  monoFD: 0.12,
+  monoFS: 0,
+  monoFR: 0.06,
+  monoAD: 0.18,
+  monoAS: 0.3,
+  monoAR: 0.03,
+  monoGate: 0.45,
 }
 
 export const PRESETS: PresetDef[] = [
@@ -149,16 +200,41 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'techno',
     blurb:
-      'Four on the floor at 130, clap on two and four, open hat between, and Growler’s acid line riding the toy’s tune',
+      'Four on the floor at 130, clap on two and four, closed hats choked by an open one on every offbeat, and Growler rolling three sixteenths of bass after each kick',
     patch: {
       ...romMasks('techno'),
-      ...ACID,
-      monoLevel: 0.8,
+      ...ROLLING,
+      ...line(
+        '. A2 A2 A2 | . A2 A2 A3 | . A2 A2 A2 | . A2 A3 G2',
+        '..x...x...x...x.',
+      ),
+      monoLevel: 1.2,
       chipLevel: 0,
       drumLevel: 0.9,
       drumBpm: 130,
       drumSwing: 0,
-      echoLevel: 0.25,
+    },
+  },
+  {
+    name: 'acid techno',
+    blurb:
+      'The techno kit at 132 under a 303-style line on Growler: one saw into the ladder near oscillation, accents opening it and slides tying notes together',
+    patch: {
+      ...romMasks('techno'),
+      ...ACID,
+      ...line(
+        'A2 A2 A3 A2 . C3 A2 D#3 | A2 . A3 G2 A2 C3 . A2',
+        'x..x..x...x..x..',
+        '..x....x...x....',
+      ),
+      monoCutoff: 500,
+      monoAccent: 0.9,
+      monoLevel: 1.2,
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 132,
+      drumSwing: 0,
+      echoLevel: 0.2,
     },
   },
   {
