@@ -165,6 +165,8 @@ test('drums writes the named rows and leaves the others unchanged', () => {
     "the accent row accepts only 'x' and '.'",
   )
   expect(() => bender.drums({ cowbell: 'x' })).toThrow(/rows: kick, snare/)
+  bender.drums({ kick: 'x...', bpm: 131 })
+  expect(engine.controls.get().drumBpm).toBe(131)
 })
 
 test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
@@ -219,7 +221,6 @@ test('line writes the bassline memory on the kit clock and says why it is silent
   })
   expect(out.warnings).toEqual([
     'monoLevel is 0, so Growler is silent',
-    "Growler also plays the toy's tune; set monoKeyGate: 'no, cut' to hear the line alone",
     'the kit clocks the line and is stopped; bender.play() starts both',
   ])
   expect(bender.board().line?.line).toBe('. A2 A2 A3')
@@ -238,6 +239,7 @@ test('an invalid line throws and leaves the board unchanged', () => {
     "accent: 'o' is not a step; use x or .",
   )
   expect(() => bender.line('')).toThrow('the line is empty')
+  expect(() => bender.line('A1')).toThrow(/write a bassline an octave up/)
   expect(engine.controls.get().monoSeqOn).toBe(0)
 })
 
