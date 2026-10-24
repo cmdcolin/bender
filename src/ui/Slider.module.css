@@ -325,17 +325,27 @@
   grid-column: 2 / 4;
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--gap-ctl-sm);
+}
+
+.picks {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--pick-w)), 1fr)
+  );
   gap: var(--gap-ctl-sm);
 }
 
 .choice {
   composes: pick from './button.module.css';
-  flex: 1 1 auto;
 }
 
 .choiceOn {
   composes: pickOn from './button.module.css';
-  flex: 1 1 auto;
 }
 
 /* The same one-of-a-set as .choice, folded up into a list — for a set too long

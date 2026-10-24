@@ -385,10 +385,13 @@ const fitsAsButtons = (choices: readonly string[]) =>
 
 // Rough widths in px of a character and of a button's padding, and of the room a
 // docked panel leaves a row of picks. A set that fits joins up into one group;
-// one that does not wraps as separate buttons that each grow to fill their line.
+// one that does not wraps into a grid of columns as wide as its longest pick.
 const PICK_CHAR_PX = 5
 const PICK_PAD_PX = 18
 const PICK_ROOM_PX = 245
+
+const pickWidth = (choices: readonly string[]) =>
+  Math.max(...choices.map(c => c.length)) * PICK_CHAR_PX + PICK_PAD_PX
 
 const fitsOneLine = (choices: readonly string[]) =>
   choices.reduce((px, c) => px + c.length * PICK_CHAR_PX + PICK_PAD_PX, 0) <=
@@ -521,19 +524,24 @@ export function ControlSlider({
                 onChange={c => pick(choices.indexOf(c))}
               />
             ) : (
-              choices.map((c, i) => (
-                <button
-                  key={c}
-                  className={
-                    Math.round(value) - def.min === i
-                      ? styles.choiceOn
-                      : styles.choice
-                  }
-                  onClick={() => pick(i)}
-                >
-                  {c}
-                </button>
-              ))
+              <span
+                className={styles.picks}
+                style={cssVars({ '--pick-w': `${pickWidth(choices)}px` })}
+              >
+                {choices.map((c, i) => (
+                  <button
+                    key={c}
+                    className={
+                      Math.round(value) - def.min === i
+                        ? styles.choiceOn
+                        : styles.choice
+                    }
+                    onClick={() => pick(i)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </span>
             )}
             {def.lane === undefined ? null : (
               <Mod
