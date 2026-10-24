@@ -62,7 +62,7 @@ function ShelfPart({
             onClick={() => putBack(group, seconds)}
             aria-label={`reset ${group.name}`}
           >
-            {touched}
+            {touched} ↺
           </button>
         </Tip>
       )}
