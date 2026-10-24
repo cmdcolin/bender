@@ -12,7 +12,7 @@
   --fixing-size: 6px;
   /* Shorter, narrower keys than the toy's: this one had sixty of them in the
      same width of moulding and the travel to match. */
-  --bed-h: 64px;
+  --bed-h: 50px;
   --key-w: #d9d6ce;
   --key-w-edge: #8e8b84;
   --key-b: #1b1c1f;
@@ -79,5 +79,11 @@
 @container (max-width: 620px) {
   .window {
     display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .case {
+    --bed-h: 64px;
   }
 }

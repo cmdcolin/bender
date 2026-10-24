@@ -212,11 +212,13 @@ function Strip({
         {dial('Send', 'Aux')}
         {dial('High')}
         {dial('Mid')}
-        {dial('MidHz')}
+        {dial('MidHz', 'Freq')}
         {dial('Low')}
-        {dial('Pan')}
       </div>
-      <Dial def={sliderFor(fader(track))} fader />
+      <div className={styles.out}>
+        {dial('Pan')}
+        <Dial def={sliderFor(fader(track))} fader />
+      </div>
     </div>
   )
 }

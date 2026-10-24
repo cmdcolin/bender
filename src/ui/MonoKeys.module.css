@@ -9,7 +9,7 @@
   --case-round: 3px;
   --fixing: #3a2416;
   --fixing-size: 6px;
-  --bed-h: 76px;
+  --bed-h: 58px;
   --key-w: #f1ede4;
   --key-w-edge: #9c978c;
   --key-b: #111;
@@ -86,5 +86,11 @@
 @container (max-width: 620px) {
   .knobs {
     display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .case {
+    --bed-h: 76px;
   }
 }

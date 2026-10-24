@@ -19,7 +19,7 @@ const CENTRE = 20
 const BODY = 12
 const TICKS = 11
 const KNOB_TRAVEL_PX = 160
-const FADER_TRAVEL_PX = 80
+const FADER_TRAVEL_PX = 56
 const DETENT = 0.02
 
 const point = (pos: number, r: number) => {

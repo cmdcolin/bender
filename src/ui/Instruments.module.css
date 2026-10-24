@@ -9,8 +9,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 36px var(--space-md);
-  margin-top: 30px;
+  gap: 24px var(--space-md);
+  margin-top: 16px;
 }
 
 .lane {
@@ -19,7 +19,7 @@
   padding-right: var(--gutter, 0);
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 26px;
 }
 
 .rack:has([data-trig-plate]) {
