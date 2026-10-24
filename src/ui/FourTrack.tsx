@@ -21,7 +21,7 @@ import { Tip } from './Tip.tsx'
 
 import type { ControlKey, Controls } from '../controls.ts'
 
-const HEIGHT = 22
+const HEIGHT = 16
 const MID = HEIGHT / 2
 
 // The tape lit while that loop is somewhere you can hear it, grey while it is
@@ -329,9 +329,11 @@ export function FourTrack() {
           />
         ))}
       </div>
-      {TRACK_NUMBERS.map(n => (
-        <Lane key={n} track={n} />
-      ))}
+      <div className={styles.lanes}>
+        {TRACK_NUMBERS.map(n => (
+          <Lane key={n} track={n} />
+        ))}
+      </div>
       <div className={styles.deck}>
         <Choice name="fourSpeed" />
         <Choice name="fourSide" />

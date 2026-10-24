@@ -55,13 +55,19 @@
   align-self: stretch;
 }
 
+.lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
+}
+
 .lane {
   display: flex;
   align-items: center;
   gap: var(--gap-ctl-sm);
-  padding: var(--space-xs) var(--space-sm);
-  border: 1px solid var(--border-quiet);
-  border-radius: 4px;
 }
 
 .laneNumber {

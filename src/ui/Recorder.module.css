@@ -3,6 +3,8 @@
   flex: none;
   width: 220px;
   align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
 }
 
 .deck {
@@ -35,7 +37,7 @@
   position: relative;
   display: flex;
   justify-content: center;
-  padding: var(--space-md);
+  padding: var(--space-xs);
   background: #1b1c20;
   border: 1px solid #3c3d44;
   border-radius: 8px;
@@ -51,7 +53,7 @@
   justify-content: center;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 7cqw;
+  font-size: 9cqw;
   letter-spacing: 0.08em;
   background: #0b0b0e;
   border: 1px solid #000;
