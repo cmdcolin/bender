@@ -3,7 +3,7 @@ import { MIC } from '../../dsp/micJacks.ts'
 import { DEST } from '../../dsp/modbus.ts'
 import { SUPPLY, SUPPLY_KEYS, SUPPLY_NAMES } from '../../dsp/supplies.ts'
 
-import type { Controls } from '../../controls.ts'
+import type { ControlKey, Controls } from '../../controls.ts'
 import type { Group, SliderDef } from './types.ts'
 
 export type SupplyKey = (typeof SUPPLY_KEYS)[number]
@@ -30,30 +30,65 @@ const kitFaults = (c: Controls) =>
     return e === EVENT.drop || e === EVENT.reboot
   })
 
+interface RailLoad {
+  name: string
+  keys: readonly ControlKey[]
+  on: (c: Controls) => boolean
+}
+
+const RAIL_LOADS: readonly RailLoad[] = [
+  {
+    name: 'Clatter’s trigger load',
+    keys: ['drumTrigLoad'],
+    on: c => c.drumTrigLoad > 0 && c.drumLevel > 0 && onShared(c, 'drumSupply'),
+  },
+  {
+    name: 'the kit’s drop and reboot steps',
+    keys: [...EVENT_KEYS, 'drumEventLive'],
+    on: kitFaults,
+  },
+  {
+    name: 'the Clipper amp',
+    keys: ['distMix'],
+    on: c => c.distMix > 0 && onShared(c, 'distSupply'),
+  },
+  { name: 'Wear’s coupling', keys: ['couple'], on: c => c.couple > 0 },
+  { name: 'Wear’s heat', keys: ['heatAmt'], on: c => c.heatAmt > 0 },
+  {
+    name: 'the mic on the rail',
+    keys: ['micLevel'],
+    on: c => c.micLevel > 0 && Math.round(c.micPatch) === MIC.toyRail,
+  },
+  {
+    name: 'the feedback bus',
+    keys: ['fbAmt', 'fb2Amt', 'fb3Amt'],
+    on: c =>
+      Math.round(c.fbDest) === 2 &&
+      (c.fbAmt > 0 || c.fb2Amt > 0 || c.fb3Amt > 0),
+  },
+  {
+    name: 'a patch bay wire on Starve',
+    keys: [],
+    on: c =>
+      ([0, 1, 2, 3] as const).some(
+        i =>
+          Math.round(c[`mod${i}Src`]) !== 0 &&
+          c[`mod${i}Depth`] !== 0 &&
+          Math.round(c[`mod${i}Dest`]) === DEST.starve,
+      ),
+  },
+]
+
 /** What outside the Power supply panel is sagging the shared cells. */
 export const sharedLoads = (c: Controls): string[] =>
-  [
-    c.drumTrigLoad > 0 &&
-      c.drumLevel > 0 &&
-      onShared(c, 'drumSupply') &&
-      'Clatter’s trigger load',
-    kitFaults(c) && 'the kit’s drop and reboot steps',
-    c.distMix > 0 && onShared(c, 'distSupply') && 'the Clipper amp',
-    c.couple > 0 && 'Wear’s coupling',
-    c.heatAmt > 0 && 'Wear’s heat',
-    c.micLevel > 0 &&
-      Math.round(c.micPatch) === MIC.toyRail &&
-      'the mic on the rail',
-    Math.round(c.fbDest) === 2 &&
-      (c.fbAmt > 0 || c.fb2Amt > 0 || c.fb3Amt > 0) &&
-      'the feedback bus',
-    ([0, 1, 2, 3] as const).some(
-      i =>
-        Math.round(c[`mod${i}Src`]) !== 0 &&
-        c[`mod${i}Depth`] !== 0 &&
-        Math.round(c[`mod${i}Dest`]) === DEST.starve,
-    ) && 'a patch bay wire on Starve',
-  ].filter(s => s !== false)
+  RAIL_LOADS.filter(l => l.on(c)).map(l => l.name)
+
+/** Knobs whose only job is to load the shared cells; a blind roll leaves them off. */
+export const RAIL_KNOBS = ['drumTrigLoad', 'couple', 'heatAmt'] as const
+
+/** Whether this control is, right now, one of the loads on the shared cells. */
+export const sagsSharedCells = (c: Controls, key: ControlKey) =>
+  RAIL_LOADS.some(l => l.keys.includes(key) && l.on(c))
 
 const onSecond = (c: Controls) =>
   machinesOn(c, SUPPLY.second).length > 0 ||

@@ -11,6 +11,7 @@ import {
   groupKeys,
   sliderFor,
 } from '../controls/index.ts'
+import { sharedLoads } from '../controls/supply.ts'
 import { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll.ts'
 import { mine, yours } from './testBoard.ts'
 
@@ -363,12 +364,10 @@ test('the slot rack rolls a chain you can pick apart', () => {
   }
 })
 
-test('random rarely loads the shared supply with the kit’s trigger current', () => {
+test('random rarely sags the shared supply', () => {
   const before = mine()
-  let on = 0
-  for (let seed = 1; seed <= 300; seed++) {
-    const after = randomLook(before, mulberry32(seed))
-    if (after.drumTrigLoad > 0) on++
-  }
-  expect(on / 300).toBeLessThan(0.15)
+  let sagged = 0
+  for (let seed = 1; seed <= 600; seed++)
+    if (sharedLoads(randomLook(before, mulberry32(seed))).length) sagged++
+  expect(sagged / 600).toBeLessThan(0.2)
 })

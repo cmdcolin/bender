@@ -21,6 +21,7 @@ import {
   wireKeys,
 } from './bayWire.ts'
 import { choiceName, sliderFor, snapToStep } from './controls/index.ts'
+import { sagsSharedCells } from './controls/supply.ts'
 import {
   useBoardValue,
   useControlValue,
@@ -93,6 +94,22 @@ function Bind({ def }: { def: SliderDef }) {
         </button>
       </Tip>
     </>
+  )
+}
+
+function RailTag({ def }: { def: SliderDef }) {
+  const sags = useBoardValue(c => sagsSharedCells(c, def.key))
+  if (!sags) return null
+  return (
+    <Tip text="Drawing on the shared cells right now, so it sags every machine on them, Plinky included. Power supply lists everything doing this, and a machine's Supply setting moves it off.">
+      <span
+        className={styles.rail}
+        role="img"
+        aria-label="sags the shared rail"
+      >
+        ↯
+      </span>
+    </Tip>
   )
 }
 
@@ -551,6 +568,7 @@ export function ControlSlider({
                 onOpen={next => setWireOpen(next)}
               />
             )}
+            <RailTag def={def} />
             <Bind def={def} />
             <Pin def={def} label={label} />
           </span>
@@ -775,6 +793,7 @@ export function ControlSlider({
               onOpen={next => setWireOpen(next)}
             />
           )}
+          <RailTag def={def} />
           <Bind def={def} />
           <Pin def={def} label={label} />
         </span>

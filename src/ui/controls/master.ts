@@ -175,6 +175,7 @@ export const MASTER_GROUPS: Group[] = [
     sliders: [
       {
         key: 'heatAmt',
+        shy: true,
         label: 'Heat',
         min: 0,
         max: 1,
@@ -193,6 +194,7 @@ export const MASTER_GROUPS: Group[] = [
       },
       {
         key: 'couple',
+        shy: true,
         label: 'Cross-coupling',
         min: 0,
         max: 1,

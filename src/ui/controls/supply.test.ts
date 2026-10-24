@@ -3,7 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../../controls.ts'
 import { EVENT } from '../../drums.ts'
 import { SUPPLY } from '../../dsp/supplies.ts'
-import { sharedLoads } from './supply.ts'
+import { sagsSharedCells, sharedLoads } from './supply.ts'
 
 test('a stock board puts nothing else on the shared cells', () => {
   expect(sharedLoads(DEFAULT_CONTROLS)).toEqual([])
@@ -32,4 +32,13 @@ test('a kit on the bench supply loads nothing', () => {
     drumSupply: SUPPLY.bench,
   }
   expect(sharedLoads(c)).toEqual([])
+})
+
+test('a control is tagged only while it loads the shared cells', () => {
+  const c = { ...DEFAULT_CONTROLS, drumLevel: 0.8, drumTrigLoad: 0.5 }
+  expect(sagsSharedCells(c, 'drumTrigLoad')).toBe(true)
+  expect(sagsSharedCells(c, 'couple')).toBe(false)
+  expect(
+    sagsSharedCells({ ...c, drumSupply: SUPPLY.bench }, 'drumTrigLoad'),
+  ).toBe(false)
 })

@@ -28,6 +28,7 @@ import {
   sliderFor,
   snapToStep,
 } from '../controls/index.ts'
+import { RAIL_KNOBS } from '../controls/supply.ts'
 import { fromPos, ordinary, pastNormal, toPos } from '../slider-scale.ts'
 import { applyPreset } from './apply.ts'
 import { coherePatch, cohereTriggers, cohereVoices } from './patch.ts'
@@ -91,6 +92,11 @@ const shyValue = (def: SliderDef, rand: () => number) => {
 const calmShy = (next: Controls, rand: () => number): Controls => {
   for (const def of ALL_SLIDERS)
     if (def.shy) next[def.key] = shyValue(def, rand)
+  return next
+}
+
+const unloadRail = (next: Controls): Controls => {
+  for (const key of RAIL_KNOBS) next[key] = DEFAULT_CONTROLS[key]
   return next
 }
 
@@ -174,9 +180,11 @@ export function randomLook(current: Controls, rand: () => number): Controls {
   // preset never asked for it. The shy controls get rolled shy whatever the
   // preset had to say about them.
   const rolled = keepLevels(
-    calmShy(
-      thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand),
-      rand,
+    unloadRail(
+      calmShy(
+        thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand),
+        rand,
+      ),
     ),
     current,
   )
