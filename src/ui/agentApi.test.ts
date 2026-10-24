@@ -236,6 +236,21 @@ test('an invalid line throws and leaves the board unchanged', () => {
   expect(engine.controls.get().monoSeqOn).toBe(0)
 })
 
+test('play leaves a demo song stopped unless asked for by name', () => {
+  bender.line('A2 A3')
+  expect(bender.play()).toMatchObject({
+    song: 'stopped',
+    line: 'playing on Growler',
+  })
+  expect(engine.drumsPlaying.get()).toBe(true)
+  bender.tune('C4 E4')
+  expect(bender.play().song).toMatch(/^playing yours/)
+  bender.stop()
+  bender.reset()
+  expect(bender.play('song').song).toMatch(/^playing lullaby/)
+  bender.stop()
+})
+
 test('load finds a preset by name prefix and throws on an unknown name', () => {
   expect(bender.load('dying').loaded).toBe('dying toy')
   expect(bender.board().preset).toBe('dying toy')

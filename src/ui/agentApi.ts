@@ -66,8 +66,8 @@ const GUIDE = {
   change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }) accepts numbers, choice names and unique prefixes of choice names, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists keys that match no control with the closest real keys, and failed lists values set could not read; set leaves those controls unchanged. A number of seconds as the second argument glides the controls there on animation frames, which the browser pauses in a hidden tab. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds.`,
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory with one token per step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold the previous note. tune also switches the chip to play the memory at tuneRate steps per second. An array of up to three strings writes chords, one string per lane. bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. An x is a hit, a question mark is a hit with probability drumChance, and a dot is a rest. Each character is a sixteenth note, so a beat is four characters. The string length sets the row's loop length, an empty string clears the row, and rows missing from the call keep their pattern. drumBpm sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}. bender.board().drums reads all of these back in the same form.`,
-  line: `The bassline. bender.line('. A2 A2 A3 . A2 A2 A2', { accent: '...x', slide: '' }) writes a second 32-step memory, one token per step as in tune, and turns it on. Its counter steps with the kit's sixteenths, so a step lines up with a drum character; sync: 'eighths' or 'off' changes that, and off runs at monoSeqRate. It plays on Growler, the mono synth, whose 16′ and 32′ ranges sound an octave or two under the written note; on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep what they had. The result lists warnings for anything keeping the line silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate; bender.find('Growler') lists the rest. The techno and acid techno presets load a groove to riff on.`,
-  sound: `Sound. The browser keeps audio suspended until the page receives a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the melody, the bassline and the drums, bender.play('song') or bender.play('drums') starts one, and bender.stop() stops both. A screenshot measures nothing of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due, where short means the audio thread missed blocks, plus the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), the watchdog reboots, the sources with signal, the notes each audible machine played, the drum hits. bender.link() returns a URL that loads the current board in any tab.`,
+  line: `The bassline. bender.line('. A2 A2 A3 . A2 A2 A2', { accent: '...x', slide: '' }) writes a second 32-step memory, one token per step as in tune, and turns it on. Its counter steps with the kit's sixteenths and runs while the kit runs, so a step lines up with a drum character; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, the mono synth, whose 16′ and 32′ ranges sound an octave or two under the written note; on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep what they had. The result lists warnings for anything keeping the line silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate; bender.find('Growler') lists the rest. The techno and acid techno presets load a groove to riff on.`,
+  sound: `Sound. Audio stays suspended until the page gets a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the drums, the bassline and a melody written with tune; the toy's demo songs start only with bender.play('song'), bender.play('drums') starts the kit alone, and bender.stop() stops all. A screenshot measures nothing of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due (short means missed audio blocks), the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), the watchdog reboots, the sources with signal, the notes each audible machine played, the drum hits. bender.link() returns a URL that loads this board.`,
 }
 
 type Topic = keyof typeof GUIDE
@@ -275,9 +275,11 @@ function lineWarnings(c: Controls) {
     notes.push(
       `${target.name} also plays the toy's tune; set ${target.gate}: 'no, cut' to hear the line alone`,
     )
-  if (c.monoSeqSync !== 0 && !engine.drumsPlaying.get())
+  if (!engine.lineRuns(c))
     notes.push(
-      'the kit clocks the line and is stopped; bender.play() starts both',
+      c.monoSeqSync === 0
+        ? "unsynced, the line runs with the toy's song, which is stopped; bender.play('song') starts both"
+        : 'the kit clocks the line and is stopped; bender.play() starts both',
     )
   return notes
 }
@@ -343,7 +345,7 @@ function summary() {
     line:
       c.monoSeqOn === 0
         ? 'off'
-        : `${engine.songPlaying.get() ? 'playing' : 'stopped'} on ${show('monoSeqTo', c.monoSeqTo)}`,
+        : `${engine.lineRuns(c) ? 'playing' : 'stopped'} on ${show('monoSeqTo', c.monoSeqTo)}`,
     drums: engine.drumsPlaying.get()
       ? `playing at ${show('drumBpm', c.drumBpm)}`
       : 'stopped',
@@ -680,7 +682,11 @@ export function createBenderApi() {
     play(which: 'both' | 'song' | 'drums' = 'both') {
       if (!['both', 'song', 'drums'].includes(which))
         throw new Error(`play accepts 'both', 'song' or 'drums'`)
-      if (which !== 'drums') engine.setSongPlaying(true)
+      // A demo song starts only when asked for by name: play() is how an agent
+      // starts a groove, and the toy's lullaby over it is never what was meant.
+      const written = engine.controls.get().chipTune === YOURS
+      if (which === 'song' || (which === 'both' && written))
+        engine.setSongPlaying(true)
       if (which !== 'song') engine.setDrumsPlaying(true)
       return summary()
     },

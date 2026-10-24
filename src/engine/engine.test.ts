@@ -1161,3 +1161,33 @@ test('a pattern and a preset pressed in one bar land on the same downbeat', () =
   expect(engine.waiting.get()).toBeNull()
   vi.useRealTimers()
 })
+
+// The demo songs are opt-in: only the toy's own play button starts one.
+test('space starts the kit and leaves a demo song stopped on a fresh board', () => {
+  const engine = new Engine()
+  engine.toggleRun()
+  expect(engine.drumsPlaying.get()).toBe(true)
+  expect(engine.songPlaying.get()).toBe(false)
+
+  const written = new Engine()
+  written.set('chipTune', YOURS)
+  written.toggleRun()
+  expect(written.songPlaying.get()).toBe(true)
+})
+
+test('space puts back a demo song somebody started by hand', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.toggleRun()
+  engine.toggleRun()
+  expect(engine.songPlaying.get()).toBe(true)
+})
+
+test('recording the second melody on the kit clock runs the kit, not the song', () => {
+  const engine = new Engine()
+  engine.set('monoSeqSync', 1)
+  engine.armSeqRecord(true, 'mono')
+  expect(engine.drumsPlaying.get()).toBe(true)
+  expect(engine.songPlaying.get()).toBe(false)
+  expect(engine.lineRuns()).toBe(true)
+})

@@ -24,14 +24,19 @@ const MEMORY: Partial<Controls> = {
   drumBpm: 120,
 }
 
-function memorySteps(overrides: Partial<Controls>, drums = true, seconds = 4) {
+function memorySteps(
+  overrides: Partial<Controls>,
+  drums = true,
+  seconds = 4,
+  song = true,
+) {
   let steps = 0
   let last = -1
   renderBender(
     { ...MEMORY, ...overrides },
     seconds,
     built => {
-      built.transport.tune = true
+      built.transport.tune = song
       built.transport.drums = drums
     },
     undefined,
@@ -59,6 +64,15 @@ test('synced, the memory stands still while the kit is stopped', () => {
   expect(
     memorySteps({ monoSeqSync: memorySync('sixteenths') }, false),
   ).toBeLessThan(0.5)
+})
+
+// A bassline under a groove must not need the toy's song, or starting one
+// starts the demo tune over it.
+test('synced, the memory runs off the kit’s run line and not the song’s', () => {
+  const sync = { monoSeqSync: memorySync('sixteenths') }
+  expect(memorySteps(sync, true, 4, false)).toBeCloseTo(8, 0)
+  expect(memorySteps({}, true, 4, false)).toBeLessThan(0.5)
+  expect(memorySteps({}, false, 4, true)).toBeCloseTo(3, 0)
 })
 
 test('synced, the memory keeps stepping with the kit’s fader down', () => {

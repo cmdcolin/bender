@@ -1,3 +1,4 @@
+import { engine } from '../engine/engine.ts'
 import {
   isNote,
   MONO_SEQ_STEP_KEYS,
@@ -7,13 +8,26 @@ import {
   TUNE_LANE_KEYS,
   TUNE_STEPS,
 } from '../tune.ts'
-import { useBoardValue, useMeterValue } from './ControlsContext.ts'
+import {
+  useBoardValue,
+  useMeterValue,
+  useStoreValue,
+} from './ControlsContext.ts'
 import styles from './TuneRoll.module.css'
 
 // Where each memory's counter is standing. It only moves when a step does, so a
 // roll redraws at the tune's rate rather than at the meter's.
 export const useTunePos = () => useMeterValue(m => m.tunePos)
 export const useSeqPos = () => useMeterValue(m => m.monoSeqPos)
+
+/** Whether the second melody's counter is running: the kit's run line when it
+    is synced to the kit, the song's otherwise. */
+export function useLinePlaying() {
+  const synced = useBoardValue(c => c.monoSeqSync !== 0)
+  const song = useStoreValue(engine.songPlaying)
+  const drums = useStoreValue(engine.drumsPlaying)
+  return synced ? drums : song
+}
 
 // Ninety-six numbers read through one subscription rather than ninety-six. What
 // the board hands back has to be comparable with Object.is or every write to any

@@ -12,7 +12,13 @@ import {
 } from './ControlsContext.ts'
 import styles from './MiniRoll.module.css'
 import { Tip } from './Tip.tsx'
-import { useLanes, useSeqPos, useSteps, useTunePos } from './tuneRoll.ts'
+import {
+  useLanes,
+  useLinePlaying,
+  useSeqPos,
+  useSteps,
+  useTunePos,
+} from './tuneRoll.ts'
 
 import type { NoteDest, SeqDest } from '../engine/messages.ts'
 
@@ -59,6 +65,7 @@ function TuneMini({ onOpen }: Omit<Props, 'dest'>) {
   const lanes = useLanes()
   const len = asTuneLen(useControlValue('tuneLen'))
   const pos = useTunePos()
+  const playing = useStoreValue(engine.songPlaying)
   const armed = useStoreValue(engine.tuneRecord)
   if (!mine && !armed) return null
   return (
@@ -66,6 +73,7 @@ function TuneMini({ onOpen }: Omit<Props, 'dest'>) {
       lanes={lanes}
       len={len}
       pos={pos}
+      playing={playing}
       armed={armed}
       memory="tune"
       stage="Plinky"
@@ -83,6 +91,7 @@ function SeqMini({ dest, onOpen }: Props & { dest: SeqDest }) {
   const steps = useSteps()
   const len = asTuneLen(useControlValue('monoSeqLen'))
   const pos = useSeqPos()
+  const playing = useLinePlaying()
   const armed = useStoreValue(engine.seqRecord)
   if (!here) return null
   return (
@@ -90,6 +99,7 @@ function SeqMini({ dest, onOpen }: Props & { dest: SeqDest }) {
       lanes={[steps]}
       len={len}
       pos={pos}
+      playing={playing}
       armed={armed}
       memory="seq"
       stage="Growler"
@@ -102,6 +112,7 @@ function Strip({
   lanes,
   len,
   pos,
+  playing,
   armed,
   memory,
   stage,
@@ -110,12 +121,12 @@ function Strip({
   lanes: number[][]
   len: number
   pos: number
+  playing: boolean
   armed: boolean
   memory: 'tune' | 'seq'
   stage: string
   onOpen?: (stage: string) => void
 }) {
-  const playing = useStoreValue(engine.songPlaying)
   const recording = armed && playing
   const taken = useStoreValue(engine.noteTaken)
   // A note taken before the strip mounted is old news, not one to flash.
@@ -193,7 +204,7 @@ function Strip({
         recording
           ? 'Recording: every key you press lands on the step under the playhead. Opens the piano roll.'
           : armed
-            ? 'Armed, but the song is stopped, so nothing is written. Opens the piano roll.'
+            ? 'Armed, but the memory is stopped, so nothing is written. Opens the piano roll.'
             : 'The melody memory in miniature. Opens the piano roll.'
       }
     >

@@ -1591,9 +1591,16 @@ export class Engine {
     this.setRun(this.songPlaying.get(), on)
   }
 
-  // What space puts back. Both to begin with: on a board nobody has run yet,
-  // "play" means play the board.
-  private lastRun = { song: true, drums: true }
+  // What space puts back. Nothing yet on a board nobody has run: see
+  // firstRun.
+  private lastRun: { song: boolean; drums: boolean } | null = null
+
+  // The first press of space plays the board without breaking into a demo
+  // song: the kit, and the toy only when what it is set to play is a melody
+  // somebody wrote. A demo song starts from the toy's own play button.
+  private firstRun() {
+    return { song: this.controls.get().chipTune === YOURS, drums: true }
+  }
 
   // What a board arriving already running plays into: a link opens a full
   // circuit nobody has heard yet, so the first sound out of it starts from
@@ -1621,7 +1628,8 @@ export class Engine {
       this.lastRun = { song, drums }
       this.setRun(false, false)
     } else {
-      this.setRun(this.lastRun.song, this.lastRun.drums)
+      const run = this.lastRun ?? this.firstRun()
+      this.setRun(run.song, run.drums)
     }
   }
 
@@ -1711,13 +1719,26 @@ export class Engine {
       }
     }
     this.seqRecord.set(on)
-    if (on) this.setSongPlaying(true)
+    if (on) this.setLinePlaying(true)
+  }
+
+  /** The second melody runs off the kit's run line when it is synced to the
+      kit, and off the song's otherwise. */
+  lineRuns(c: Controls = this.controls.get()) {
+    return c.monoSeqSync !== 0
+      ? this.drumsPlaying.get()
+      : this.songPlaying.get()
+  }
+
+  setLinePlaying(on: boolean) {
+    if (this.controls.get().monoSeqSync !== 0) this.setDrumsPlaying(on)
+    else this.setSongPlaying(on)
   }
 
   private recordsSeq(dest: NoteDest) {
     return (
       this.seqRecord.get() &&
-      this.songPlaying.get() &&
+      this.lineRuns() &&
       dest === SEQ_DESTS[Math.round(this.controls.get().monoSeqTo)]
     )
   }

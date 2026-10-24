@@ -7,6 +7,8 @@ Open the app and press keys. Everything else is something to try.
 - **Click a box on the map** to open its knobs
 - **Turn Starve up** under Power supply while a chord rings
 - **Hit share.** The link is the whole board
+- **Press space** to run the drums, Growler's bassline and a melody you
+  recorded. The toy's demo songs play only from Plinky's own ▶
 
 Each machine's panel opens on a drawing of its circuit. Press a box in a drawing
 to open that part's controls.

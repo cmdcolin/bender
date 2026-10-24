@@ -24,6 +24,7 @@ import {
   clampBase,
   isC,
   ROWS,
+  useLinePlaying,
   useSeqPos,
   useSteps,
 } from './tuneRoll.ts'
@@ -49,7 +50,7 @@ export function MonoRoll() {
   const steps = useSteps()
   const len = asTuneLen(useControlValue('monoSeqLen'))
   const on = Math.round(useControlValue('monoSeqOn')) === 1
-  const playing = useStoreValue(engine.songPlaying)
+  const playing = useLinePlaying()
   const armed = useStoreValue(engine.seqRecord)
   const pos = useSeqPos()
   const [base, setBase] = useState(() => baseFor([steps]))
@@ -78,11 +79,11 @@ export function MonoRoll() {
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
-        <Tip text={playing ? 'Stop the song.' : 'Run the song.'}>
+        <Tip text={playing ? 'Stop the memory.' : 'Run the memory.'}>
           <button
             className={playing ? styles.playOn : styles.play}
             aria-pressed={playing}
-            onClick={() => engine.setSongPlaying(!playing)}
+            onClick={() => engine.setLinePlaying(!playing)}
           >
             {playing ? '❚❚' : '▶'}
           </button>

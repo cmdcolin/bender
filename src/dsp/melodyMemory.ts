@@ -90,9 +90,12 @@ export class MelodyMemory {
     if (this.power.rebooted()) {
       this.fresh = true
     }
+    const every = MEMORY_SYNC_STEPS[Math.round(p[IDX.monoSeqSync]!)] ?? 0
+    // Synced, the kit is the clock and its run line is the one that counts, so
+    // a bassline never needs the toy's song running under it.
     const running =
       p[IDX.monoSeqOn]! > 0.5 &&
-      this.transport.tune &&
+      (every ? this.transport.drums : this.transport.tune) &&
       !rail.booting &&
       !rail.latched &&
       !rail.dead
@@ -102,7 +105,6 @@ export class MelodyMemory {
       return
     }
     const len = asTuneLen(p[IDX.monoSeqLen]!)
-    const every = MEMORY_SYNC_STEPS[Math.round(p[IDX.monoSeqSync]!)] ?? 0
     const kitHz = ctx.trig.kitStepHz
     const rate = every
       ? Math.max(kitHz / every, 0.01)

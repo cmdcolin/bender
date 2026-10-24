@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 52 controls are shy, mostly the ones that act on the
+names it still sets it. 55 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -247,7 +247,7 @@ puts the knife on, and the rows under it show the controls it set:
 | Tank coupling   | off to full                                                                                                        | A wire from the kick’s network into the tom’s drive                                                                                                     |
 | Trigger pulse   | 0.05 to 8 ms                                                                                                       | How long the one-shot holds the trigger line down                                                                                                       |
 | Pulse sharing   | off to full                                                                                                        | How much charge a one-shot fired alongside others loses to them, since the one-shots all charge off one timing rail                                     |
-| Trigger load    | off to full                                                                                                        | How much the one-shots’ charge costs the supply                                                                                                         |
+| Trigger load †  | off to full                                                                                                        | How much the one-shots’ charge costs the supply                                                                                                         |
 | Snappy          | off to full                                                                                                        | What the snare is made of                                                                                                                               |
 | Clap gap        | 0.5 to 250 ms                                                                                                      | The period of the small oscillator that fires the clap’s bursts                                                                                         |
 | Clap bursts     | 1 to 64                                                                                                            | How many bursts the oscillator fires before the clap rings out                                                                                          |
@@ -1448,9 +1448,9 @@ the rack on the Signal order panel shows it happening.
 
 | control          | range       | what it does                                                                                                       |
 | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| Heat             | off to full | How far the board’s own temperature drags its thresholds                                                           |
+| Heat †           | off to full | How far the board’s own temperature drags its thresholds                                                           |
 | Fault clustering | off to full | Whether faults arrive at a flat rate or in bursts                                                                  |
-| Cross-coupling   | off to full | Wires the loop’s brightness against its supply                                                                     |
+| Cross-coupling † | off to full | Wires the loop’s brightness against its supply                                                                     |
 | Dry joints       | off to full | How intermittent the solder is under the bend slots                                                                |
 | Re-solder        | off to full | How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin |
 
