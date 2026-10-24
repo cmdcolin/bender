@@ -442,7 +442,9 @@ export function App(props: { openedFromLink?: boolean }) {
 
   const lib = useSavedVoices()
   const libUid = lib.user?.uid ?? null
-  const signedIn = lib.status === 'ready'
+  // Signed in covers an account still being restored and one whose list
+  // failed to load.
+  const signedIn = lib.user !== null || lib.status === 'loading'
 
   const suggestName = () =>
     suggestVoiceName(
