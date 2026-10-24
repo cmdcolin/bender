@@ -224,6 +224,8 @@ voltage you set, or jams one.
 - **Knife on the bus** cuts, grounds or bridges a wire inside a chip
 - **Pedals:** add tape echo, spring reverb, chorus, a tube amp or dirt boxes
   from the **Add pedal** menu
+- **Bends:** the **Add bend** menu puts a ring mod, crusher, octave or any other
+  bend in the first empty chain position and opens its panel
 
 ![The patch bay: three of four wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](../public/guide/guide-patchbay.jpg)
 

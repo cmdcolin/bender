@@ -250,6 +250,31 @@ test('Add pedal names each pedal with what it is, benches the pick and brings it
   expect(screen.queryByRole('menuitem', { name: /^Ember/ })).toBeNull()
 })
 
+test('Add bend slots the pick into the first empty position, brings its mix up and opens its panel', () => {
+  const opened: string[] = []
+  engine.set('bendSlot0', 1)
+  for (const k of [1, 2, 3, 4, 5] as const) engine.set(`bendSlot${k}`, 0)
+  engine.set('octMix', 0)
+  render(<Instruments seconds={0} onOpen={s => opened.push(s)} />)
+  fireEvent.click(screen.getByRole('button', { name: /^Add bend/ }))
+  fireEvent.click(screen.getByRole('menuitem', { name: /^Octave/ }))
+  const after = engine.controls.get()
+  expect(after.bendSlot0).toBe(1)
+  expect(after.bendSlot1).toBe(8)
+  expect(after.octMix).toBe(0.5)
+  expect(opened).toEqual(['Octave'])
+  expect(shownOn(after).has('Octave')).toBe(true)
+  expect(screen.queryByRole('menuitem', { name: /^Octave/ })).toBeNull()
+})
+
+test('Add bend on a full chain trades out the last position', () => {
+  for (const k of [0, 1, 2, 3, 4, 5] as const) engine.set(`bendSlot${k}`, k + 1)
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(screen.getByRole('button', { name: /^Add bend/ }))
+  fireEvent.click(screen.getByRole('menuitem', { name: /^Octave/ }))
+  expect(engine.controls.get().bendSlot5).toBe(8)
+})
+
 test('a pedal face bypasses its pedal, opens its panel and puts itself away', () => {
   const opened: string[] = []
   bench.set({

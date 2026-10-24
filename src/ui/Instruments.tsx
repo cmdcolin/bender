@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
+import { AddBend } from './AddBend.tsx'
 import { AddMenu } from './AddMenu.tsx'
 import { INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
@@ -151,6 +152,7 @@ export function Instruments({
           onPick={bringUp}
         />
         <AddPedal />
+        <AddBend onOpen={onOpen} />
         <MicMenu className={styles.add} />
         <BendKeysSwitch />
       </div>
