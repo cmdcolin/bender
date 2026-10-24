@@ -214,6 +214,7 @@ test('line writes the bassline memory on the kit clock and says why it is silent
   })
   expect(out).toMatchObject({
     line: '. A2 A2 A3',
+    sounds: "A0 to A1, at Growler's 32′ osc 1 range",
     accent: '..x.',
     slide: '.x..',
     sync: 'sixteenths',
@@ -239,7 +240,7 @@ test('an invalid line throws and leaves the board unchanged', () => {
     "accent: 'o' is not a step; use x or .",
   )
   expect(() => bender.line('')).toThrow('the line is empty')
-  expect(() => bender.line('A1')).toThrow(/write a bassline an octave up/)
+  expect(() => bender.line('A1')).toThrow(/so A3 sounds A1/)
   expect(engine.controls.get().monoSeqOn).toBe(0)
 })
 

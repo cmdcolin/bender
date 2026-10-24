@@ -103,9 +103,7 @@ function line(notes: string, accent = '', slide = ''): Partial<Controls> {
 
 const ROLLING: Partial<Controls> = {
   monoWave1: 1,
-  monoRange1: -1,
   monoWave2: 2,
-  monoRange2: -1,
   monoMix1: 1,
   monoMix2: 0.5,
   monoMix3: 0,
@@ -205,7 +203,7 @@ export const PRESETS: PresetDef[] = [
       ...romMasks('techno'),
       ...ROLLING,
       ...line(
-        '. A2 A2 A2 | . A2 A2 A3 | . A2 A2 A2 | . A2 A3 G2',
+        '. A3 A3 A3 | . A3 A3 A4 | . A3 A3 A3 | . A3 A4 G3',
         '..x...x...x...x.',
       ),
       monoLevel: 1.2,
@@ -222,8 +220,9 @@ export const PRESETS: PresetDef[] = [
     patch: {
       ...romMasks('techno'),
       ...ACID,
+      monoRange1: -2,
       ...line(
-        'A2 A2 A3 A2 . C3 A2 D#3 | A2 . A3 G2 A2 C3 . A2',
+        'A3 A3 A4 A3 . C4 A3 D#4 | A3 . A4 G3 A3 C4 . A3',
         'x..x..x...x..x..',
         '..x....x...x....',
       ),
