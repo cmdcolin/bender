@@ -106,10 +106,10 @@ test('describe names find for a group name', () => {
 
 test('help and every guide topic fit in one browser tool result', () => {
   expect(bender.help.length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
-  for (const topic of ['read', 'change', 'music', 'drums', 'sound'])
+  for (const topic of ['read', 'change', 'music', 'drums', 'line', 'sound'])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, line, sound",
   )
 })
 
@@ -189,6 +189,51 @@ test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
   expect(() => bender.drums({ event: 'z' })).toThrow(/'z' is not a event/)
   expect(() => bender.drums({ 'kick bars': '5:4' })).toThrow(/one of 1:1/)
   expect(() => bender.drums({ hat: '[xxxxx]' })).toThrow(/a bracket holds/)
+})
+
+test('line writes the bassline memory on the kit clock and says why it is silent', () => {
+  const out = bender.line('. A2 A2 | A3', { accent: '..x.', slide: '.x' })
+  const c = engine.controls.get()
+  expect(c).toMatchObject({
+    monoSeqOn: 1,
+    monoSeqLen: 4,
+    monoSeqSync: 1,
+    monoSeqStep0: REST,
+    monoSeqStep1: -12,
+    monoSeqStep3: 0,
+    monoSeqStep4: REST,
+    monoSeqAccentLo: 0b0010_0000_0000_0000,
+    monoSeqSlideLo: 0b0100_0000_0000_0000,
+  })
+  expect(out).toMatchObject({
+    line: '. A2 A2 A3',
+    accent: '..x.',
+    slide: '.x..',
+    sync: 'sixteenths',
+    'plays on': 'Growler',
+  })
+  expect(out.warnings).toEqual([
+    'monoLevel is 0, so Growler is silent',
+    "Growler also plays the toy's tune; set monoKeyGate: 'no, cut' to hear the line alone",
+    'the kit clocks the line and is stopped; bender.play() starts both',
+  ])
+  expect(bender.board().line?.line).toBe('. A2 A2 A3')
+  expect(bender.summary().line).toBe('stopped on Growler')
+
+  bender.line('C3 C3', { sync: 'eighths' })
+  expect(engine.controls.get()).toMatchObject({
+    monoSeqSync: 2,
+    monoSeqSlideLo: 0b0100_0000_0000_0000,
+  })
+  expect(bender.summary().undo).toBe(2)
+})
+
+test('an invalid line throws and leaves the board unchanged', () => {
+  expect(() => bender.line('A2', { accent: 'xo' })).toThrow(
+    "accent: 'o' is not a step; use x or .",
+  )
+  expect(() => bender.line('')).toThrow('the line is empty')
+  expect(engine.controls.get().monoSeqOn).toBe(0)
 })
 
 test('load finds a preset by name prefix and throws on an unknown name', () => {

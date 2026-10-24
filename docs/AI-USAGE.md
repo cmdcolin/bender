@@ -4,7 +4,7 @@ bender publishes `window.bender`, a JavaScript API for the page. A browsing
 agent such as Claude in Chrome calls it to read and change the board, write
 melodies and drum patterns, and measure the sound. The app page carries a
 `<meta name="ai-instructions">` tag and logs a console message, and each says to
-read `bender.help` first. `bender.help` returns an overview and lists four
+read `bender.help` first. `bender.help` returns an overview and lists six
 topics, and `bender.guide(topic)` documents the calls in each.
 
 ![bender in Chrome with the Claude side panel open on the right. The panel shows the request "This page is bender, a circuit-bent toy keyboard, and it has a scripting API on window.bender. Load the dying toy preset, write a C minor arpeggio into the melody memory with a kick on every beat, play both, and tell me what bender.listen hears", followed by the steps Claude took: capturing the page, clicking, reading page text. On the left, the Toy keyboard section is open with its tune set to yours and the notes of the arpeggio in the piano roll.](img/claude-in-chrome.jpg)
@@ -62,7 +62,7 @@ Then ask Claude Code to open the public URL, or
 
 | Call                                   | Effect                                                                                                                               |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `bender.guide(topic)`                  | the calls for `read`, `change`, `music` or `sound`                                                                                   |
+| `bender.guide(topic)`                  | the calls for `read`, `change`, `music`, `drums`, `line` or `sound`                                                                  |
 | `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                                                                          |
 | `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text                                                           |
 | `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                        |
@@ -74,9 +74,10 @@ Then ask Claude Code to open the public URL, or
 | `bender.undo()`, `bender.redo()`       | steps through the history, which gains one step per call that changes the board                                                      |
 | `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`                                                                |
 | `bender.drums(rows)`                   | writes drum rows from step text, such as `{ kick: 'x(3,8)', hat: 'x.[xxx].' }`, and the ratchet, nudge, event and bar condition rows |
+| `bender.line(text, flags?)`            | writes the bassline memory, which Growler plays on the kit's sixteenths, with `accent` and `slide` rows such as `'..x.'`             |
 | `bender.start()`                       | starts audio, or reports that the page needs a click first                                                                           |
 | `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                      |
-| `bender.listen(ms)`                    | peak level, limiter gain reduction, supply rail, reboots, sources, notes and drum hits                                               |
+| `bender.listen(ms)`                    | peak level, limiter gain reduction, supply rail, reboots, sources, the notes of each audible machine and drum hits                   |
 | `bender.link()`                        | a `#set=` URL for the current board                                                                                                  |
 
 ## Limitations
