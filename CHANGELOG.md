@@ -2,6 +2,48 @@
 
 All notable changes to bender are documented here.
 
+## [1.18.1](https://github.com/cmdcolin/bender/compare/v1.18.0...v1.18.1) - 2026-10-24
+
+### Features
+- *(ui)* [`04cc261`](https://github.com/cmdcolin/bender/commit/04cc2614153dca6c4ae6245356256ece84019e4f) pedal mode selectors are dropdowns
+- *(ui)* [`f6e9eab`](https://github.com/cmdcolin/bender/commit/f6e9eab81f739e5e28f525a4ac820949ba23a172) move the header, verbs and presets off the panel
+- *(ui)* [`0338611`](https://github.com/cmdcolin/bender/commit/0338611d45fa477ba94aee6f556a7a14de33d9db) a shuffle icon named randomize replaces the roll button
+- *(ui)* [`bd5e912`](https://github.com/cmdcolin/bender/commit/bd5e9128fa9751d2da05624613030caec54c9172) the pocket's dice glyphs become the shuffle icon
+- *(ui)* [`8c585e9`](https://github.com/cmdcolin/bender/commit/8c585e9f47b2d639679c99d346302d48d837508a) cut repeated controls from the panel
+- *(ui)* [`b636a15`](https://github.com/cmdcolin/bender/commit/b636a152d483f0128668f7995b2da332f935fbf0) pin undo and redo to the top right of the header
+- *(ui)* [`58604b6`](https://github.com/cmdcolin/bender/commit/58604b6f8582a1c7123bcfc63ba8b915c143a8df) a techno preset
+- *(ui)* [`30dcfa2`](https://github.com/cmdcolin/bender/commit/30dcfa2243f7bfe4d68124fbb9bccb870e78c8e8) power supply stands on its own in the map, and names its other loads
+- *(ui)* [`e90765d`](https://github.com/cmdcolin/bender/commit/e90765d1a2b00b5f2ce9a556f0b275e46676acef) techno rolls a bassline, and acid techno joins it
+- *(ui)* [`b8028af`](https://github.com/cmdcolin/bender/commit/b8028af433f04a795904e0bbdf840dac5f687669) bender.line writes the bassline memory for agents
+- *(ui)* [`ca36d6d`](https://github.com/cmdcolin/bender/commit/ca36d6d6c7ef127b6ce0aaa8f6f4da3948bffa3e) rolls leave the shared-supply loads off, and a loading control wears a tag
+- *(engine)* [`28807f9`](https://github.com/cmdcolin/bender/commit/28807f9368261865812724a61d0e305263ef59fb) the demo songs play only when you ask for one
+- *(ui)* [`851ef13`](https://github.com/cmdcolin/bender/commit/851ef13e6226e16e448c0bbd1b7a05b249988d93) Add bend menu on the bench bar
+- *(ui)* [`562455d`](https://github.com/cmdcolin/bender/commit/562455d47f933e98ff2d0195efc44b96c77b0a04) the bench packs tighter, so all four keyboards and the tapes fit closer to one screen
+- *(ui)* [`6b3aa34`](https://github.com/cmdcolin/bender/commit/6b3aa3490102db50bf69f730e1056389d0fabfdb) a smaller recorder and denser four-track loops
+
+### Fixes
+- *(ui)* [`e9dd213`](https://github.com/cmdcolin/bender/commit/e9dd213d743aa306dee65581a30bc0b8e07d9b36) slam skips controls that need what the roll cannot see
+- *(ui)* [`9d2130c`](https://github.com/cmdcolin/bender/commit/9d2130cef57972c3b36b9ad0756693d90b59c05f) hide "why sign in?" from a signed-in account
+- *(ui)* [`ef5e38c`](https://github.com/cmdcolin/bender/commit/ef5e38c3a06b5029f1542427796cea1f4896ea45) wrapped choice rows lay out as an even grid
+- *(ui)* [`b14330d`](https://github.com/cmdcolin/bender/commit/b14330d8c8b5105aaeb84cb5df557045125ff64f) random rarely turns on the kit's trigger load
+- *(engine)* [`4687828`](https://github.com/cmdcolin/bender/commit/46878283659149fda6e390c5e49a97a9ac42e927) a shared groove starts without the demo song
+- *(ui)* [`12ecaf3`](https://github.com/cmdcolin/bender/commit/12ecaf3584f043eaafaa1305ba9457de00fd09eb) bender.drums takes the tempo, and line points a low bass up an octave
+- *(ui)* [`da08489`](https://github.com/cmdcolin/bender/commit/da084892208cc69a8759542271f451e4c4359828) line says where Growler sounds the bass
+
+### Refactor
+- [`11495f7`](https://github.com/cmdcolin/bender/commit/11495f7d9c2a0ef126ecec1d07cad9d02923bb08) take history, relative time, posts and tokens from skillet-shared
+- [`d99d495`](https://github.com/cmdcolin/bender/commit/d99d495756f98f6002bfd215156495221dfe5c33) take analytics, wire routing and need() from skillet-shared
+- [`6214e67`](https://github.com/cmdcolin/bender/commit/6214e67727298a3fa26e1c01a9cafcbdda1f5c4f) take site bar, footer, social meta, signed-in hint and site CSS from skillet-shared
+- [`50883b8`](https://github.com/cmdcolin/bender/commit/50883b8d0443dc99fa70bfa02fe5712459dfa351) take the saved-list model and Firebase cloud from skillet-shared
+- [`155fc82`](https://github.com/cmdcolin/bender/commit/155fc82b1cb432170b730b82fdf03185d5d9ab25) take base64url, the session write gate and the Firebase config from skillet-shared
+
+### Documentation
+- [`a35c308`](https://github.com/cmdcolin/bender/commit/a35c308f74743fed8d141c70bd1c806536e53d28) techno with an AI agent, from groove to bends
+
+### Chores
+- [`feff969`](https://github.com/cmdcolin/bender/commit/feff96944f300d559c1e2a9273e1f27d821eed1a) release waits for CI to pass on the commit and on the tag
+- [`a01ea0d`](https://github.com/cmdcolin/bender/commit/a01ea0d661d43140540383bd26018e6eddf2f52a) use skillet-shared 0.2.0, which ships compiled JS
+
 ## [1.18.0](https://github.com/cmdcolin/bender/compare/v1.17.0...v1.18.0) - 2026-10-23
 
 ### Features
