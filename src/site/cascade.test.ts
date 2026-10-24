@@ -32,8 +32,8 @@ test('the layout imports every stylesheet, shared ones first', () => {
   )
   expect(imported).toEqual([
     '../theme.css',
-    '../site/site.css',
-    '../site/footer.css',
+    'skillet-shared/site.css',
+    'skillet-shared/footer.css',
     '../site/home.css',
     '../site/guide.css',
   ])

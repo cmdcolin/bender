@@ -3,11 +3,12 @@ import BoardRedirect from '../components/BoardRedirect.astro'
 import Hero from '../components/Hero.astro'
 import HomeSkeleton from '../components/HomeSkeleton.astro'
 import Showcase from '../components/Showcase.astro'
-import SignedInHint from '../components/SignedInHint.astro'
-import SocialMeta from '../components/SocialMeta.astro'
+import SignedInHint from 'skillet-shared/components/SignedInHint.astro'
+import SocialMeta from 'skillet-shared/components/SocialMeta.astro'
 import WhySignInCard from '../components/WhySignInCard.astro'
 import Page from '../layouts/Page.astro'
 import { SHARE_SHOT } from '../site/shareShot.ts'
+import { SIGNED_IN_HINT } from '../ui/cloud.ts'
 import { ORIGIN } from '../site/site.ts'
 
 const TITLE = 'bender — a circuit bender in the browser'
@@ -32,7 +33,7 @@ const SHARE_IMAGE = `${ORIGIN}${SHARE_SHOT.file}`
 
   <Fragment slot="head">
     <BoardRedirect />
-    <SignedInHint />
+    <SignedInHint hint={SIGNED_IN_HINT} />
     <script>
       import '../home/main.ts'
       import '../home/listen.ts'

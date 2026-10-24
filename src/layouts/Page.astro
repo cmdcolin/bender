@@ -7,9 +7,10 @@
 // `/app/` does not use this. The instrument carries no bar and no footer, and
 // its head says things no other page says.
 import Analytics from '../components/Analytics.astro'
-import Footer from '../components/Footer.astro'
-import SiteBar from '../components/SiteBar.astro'
+import Footer from 'skillet-shared/components/Footer.astro'
+import SiteBar from 'skillet-shared/components/SiteBar.astro'
 import { siteRoot } from '../site/paths.ts'
+import { SITE } from '../site/site.ts'
 // Every stylesheet the site has, here and in this order, because the order is
 // the cascade and a page cannot be trusted to land after the shared sheets:
 // Astro emits a layout's stylesheets *after* the importing page's, so a sheet
@@ -22,8 +23,8 @@ import { siteRoot } from '../site/paths.ts'
 // on specificity, which is a rule nobody can check by eye and which had already
 // silently cost the landing page and the guide all their vertical padding.
 import '../theme.css'
-import '../site/site.css'
-import '../site/footer.css'
+import 'skillet-shared/site.css'
+import 'skillet-shared/footer.css'
 import '../site/home.css'
 import '../site/guide.css'
 
@@ -72,8 +73,8 @@ const {
     <Analytics />
   </head>
   <body id="top">
-    <SiteBar account={account} current={current} />
+    <SiteBar site={SITE} account={account} current={current} />
     <slot />
-    <Footer />
+    <Footer site={SITE} />
   </body>
 </html>
