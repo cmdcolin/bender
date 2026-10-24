@@ -102,3 +102,19 @@ test('the deck names the scale lock while it is on and says nothing with it off'
   act(() => engine.set('keyScale', 0))
   expect(screen.queryByText('A minor')).toBeNull()
 })
+
+test('the bed is one tab stop, and arrows walk its keys', () => {
+  bed()
+  const stops = screen
+    .getAllByRole('button', { name: /^key / })
+    .filter(k => k.tabIndex === 0)
+  expect(stops.map(k => k.getAttribute('aria-label'))).toEqual(['key C3'])
+  act(() => key('C3').focus())
+  fireEvent.keyDown(key('C3'), { key: 'ArrowRight' })
+  expect(document.activeElement).toBe(key('C#3'))
+  expect(key('C#3').tabIndex).toBe(0)
+  expect(key('C3').tabIndex).toBe(-1)
+  fireEvent.keyDown(key('C#3'), { key: 'ArrowLeft' })
+  fireEvent.keyDown(key('C3'), { key: 'ArrowLeft' })
+  expect(document.activeElement).toBe(key('C3'))
+})

@@ -2,6 +2,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type KeyboardEvent as KeyEvent,
   type PointerEvent,
   type ReactNode,
 } from 'react'
@@ -62,6 +63,14 @@ type Lit = 'hand' | 'chip' | 'dark'
 const KEY_CLASS = {
   white: { dark: styles.white, hand: styles.whiteOn, chip: styles.whiteChip },
   black: { dark: styles.black, hand: styles.blackOn, chip: styles.blackChip },
+}
+
+// The bed is one tab stop; arrows walk the keys a semitone at a time.
+const STEPS: Record<string, number> = {
+  ArrowLeft: -1,
+  ArrowDown: -1,
+  ArrowRight: 1,
+  ArrowUp: 1,
 }
 
 interface Props {
@@ -136,6 +145,26 @@ export function Keybed({
       : octavesFor(width, coarse ? MIN_KEY.coarse : MIN_KEY.fine)
   const short = drawn < OCTAVES_DRAWN
   const top = topKey(drawn)
+  const [stop, setStop] = useState(0)
+  const aim = (note: number, e: KeyEvent) => {
+    const to =
+      e.key === 'Home'
+        ? 0
+        : e.key === 'End'
+          ? top
+          : e.key in STEPS
+            ? note + STEPS[e.key]!
+            : undefined
+    if (to === undefined) return false
+    e.preventDefault()
+    e.stopPropagation()
+    bed
+      ?.querySelector<HTMLElement>(
+        `[data-note="${Math.min(Math.max(to, 0), top)}"]`,
+      )
+      ?.focus()
+    return true
+  }
   const shift = octave * 12
   const at = (key: number) => pitch(key, shift)
   // Two lights on one board. What a hand is holding down — this one's pointer,
@@ -356,6 +385,9 @@ export function Keybed({
         className={`${KEY_CLASS[black ? 'black' : 'white'][lit]} ${off ? (black ? styles.outsideBlack : styles.outsideWhite) : ''}`}
         aria-label={`key ${semitoneName(at(note))}`}
         aria-pressed={lit !== 'dark'}
+        data-note={note}
+        tabIndex={note === Math.min(stop, top) ? 0 : -1}
+        onFocus={() => setStop(note)}
         onPointerDown={e => {
           if (black) e.stopPropagation()
           grab(note)(e)
@@ -364,7 +396,9 @@ export function Keybed({
         onPointerUp={() => release(note)}
         onPointerLeave={() => isDown(note) && release(note)}
         onPointerCancel={cancel(note)}
-        onKeyDown={e => claimPress(e) && press(note, e.altKey)}
+        onKeyDown={e =>
+          aim(note, e) || (claimPress(e) && press(note, e.altKey))
+        }
         onKeyUp={e => claimRelease(e) && release(note)}
       >
         {letters && noteLetters[note] && (
