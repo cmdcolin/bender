@@ -18,6 +18,13 @@ const mixOf = (stage: string) => BENDS[idOf(stage) - 1]!.mix
 export const positionOf = (c: Controls, stage: string) =>
   BEND_SLOT_KEYS.findIndex(k => Math.round(c[k]) === idOf(stage)) + 1
 
+/** The step of the walk where the signal first meets the bend, counting from
+    1; 0 when no position holds it. The walk is the chain's running order, which
+    differs from the positions while Re-solder is moving them. */
+export const stepOf = (c: Controls, walk: readonly number[], stage: string) =>
+  walk.findIndex(slot => Math.round(c[BEND_SLOT_KEYS[slot]!]) === idOf(stage)) +
+  1
+
 /** Whether the bend sits in the chain with its mix up, so the signal reaches it
     and some of it comes out. */
 export const sounds = (c: Controls, stage: string) =>

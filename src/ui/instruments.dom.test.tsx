@@ -349,6 +349,29 @@ test('a bend face in no position says so and its footswitch slots it in', () => 
   expect(engine.controls.get().combMix).toBe(0.7)
 })
 
+test('a bend face badge follows the relay and an open joint', () => {
+  const walkOf = (walk: number[], dropped = 0) =>
+    act(() =>
+      engine.meter.set({
+        ...engine.meter.get(),
+        walk: Uint8Array.from(walk),
+        dropped,
+      }),
+    )
+  chainOf(1, 4)
+  bench.set({ ...bench.get(), bends: ['Comb'] })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  expect(screen.getByRole('img', { name: 'position 2' })).toBeTruthy()
+  walkOf([1, 0, 2, 3, 4, 5])
+  expect(
+    screen.getByRole('img', { name: 'position 2, running at 1' }).textContent,
+  ).toBe('2→1')
+  walkOf([1, 0, 2, 3, 4, 5], 0b1)
+  expect(screen.getByRole('img', { name: 'position 2, dropped' })).toBeTruthy()
+  walkOf([0, 1, 2, 3, 4, 5])
+  expect(screen.getByRole('img', { name: 'position 2' })).toBeTruthy()
+})
+
 test('bend faces sit in chain order', () => {
   chainOf(8, 4)
   engine.set('octMix', 0.5)

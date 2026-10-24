@@ -1,8 +1,8 @@
 import { bench, setBench } from './bench.ts'
-import { positionOf, sounds, switchOff, switchOn } from './bendChain.ts'
+import { positionOf, sounds, stepOf, switchOff, switchOn } from './bendChain.ts'
 import { useBendStages } from './bendStages.ts'
 import { BEND_SLOT_KEYS } from './controls/index.ts'
-import { useBoardValue } from './ControlsContext.ts'
+import { useBoardValue, useMeterValue } from './ControlsContext.ts'
 import styles from './Pedals.module.css'
 import { Footswitch, StompFace, type Face } from './StompFace.tsx'
 import { Tip } from './Tip.tsx'
@@ -48,22 +48,45 @@ const FACE: Record<string, Face> = {
   },
 }
 
+function reading(stage: string, at: number, step: number, open: boolean) {
+  if (at === 0)
+    return {
+      text: 'off',
+      label: 'in no position',
+      tip: `${stage} is in no position, so the signal never reaches it.`,
+    }
+  if (open)
+    return {
+      text: 'drop',
+      label: `position ${at}, dropped`,
+      tip: `The joint under ${stage} is open, so it is out of the path until the joint closes.`,
+    }
+  if (step !== at)
+    return {
+      text: `${at}→${step}`,
+      label: `position ${at}, running at ${step}`,
+      tip: `${stage} is set to position ${at}, and Re-solder has moved it to ${step}.`,
+    }
+  return {
+    text: String(at),
+    label: `position ${at}`,
+    tip: `${stage} runs at position ${at} of ${BEND_SLOT_KEYS.length} in the bend chain.`,
+  }
+}
+
 function Position({ stage }: { stage: string }) {
   const at = useBoardValue(c => positionOf(c, stage))
+  const [order, mask] = useMeterValue(
+    m => `${m.walk.join('')}:${m.dropped}`,
+  ).split(':')
+  const walk = order!.split('').map(Number)
+  const step = useBoardValue(c => stepOf(c, walk, stage))
+  const open = step > 0 && (Number(mask) & (1 << (step - 1))) !== 0
+  const { text, label, tip } = reading(stage, at, step, open)
   return (
-    <Tip
-      text={
-        at > 0
-          ? `${stage} runs at position ${at} of ${BEND_SLOT_KEYS.length} in the bend chain.`
-          : `${stage} is in no position, so the signal never reaches it.`
-      }
-    >
-      <span
-        className={styles.badge}
-        role="img"
-        aria-label={at > 0 ? `position ${at}` : 'in no position'}
-      >
-        {at > 0 ? at : 'off'}
+    <Tip text={tip}>
+      <span className={styles.badge} role="img" aria-label={label}>
+        {text}
       </span>
     </Tip>
   )
