@@ -2,6 +2,36 @@
 
 All notable changes to bender are documented here.
 
+## [1.19.0](https://github.com/cmdcolin/bender/compare/v1.18.1...v1.19.0) - 2026-10-25
+
+### Features
+- *(ui)* [`c923925`](https://github.com/cmdcolin/bender/commit/c92392528506cd8b7e0a1fd97af91ae91137d519) bends get opt-in faces on the bench
+- *(ui)* [`a64d684`](https://github.com/cmdcolin/bender/commit/a64d6847fa1f8da81b0c1364693432aefd99112e) bend face badge follows Re-solder and Dry joints
+- *(ui)* [`a183381`](https://github.com/cmdcolin/bender/commit/a1833818f8d86ec584f5f336256a40cc66e3b7c7) stage the drum machine across the main area
+- *(ui)* [`2be319d`](https://github.com/cmdcolin/bender/commit/2be319d600262b911a3773fb0b50ed47d7c6c718) a stage open in the panel rings its face on the bench
+- *(ui)* [`14a6d1e`](https://github.com/cmdcolin/bender/commit/14a6d1e46a29751d7bb194544d928a7071a7151b) phones can fold the map away under the stage chips
+- *(ui)* [`e8c943a`](https://github.com/cmdcolin/bender/commit/e8c943a06d0a51c599cc9a991a6a077f18f1c378) the kit stages its grid the first time it runs
+- *(ui)* [`ecb62b6`](https://github.com/cmdcolin/bender/commit/ecb62b6975f850c3f40edc308423bdd7b1077989) each keyboard is one tab stop, and arrows walk its keys
+- *(ui)* [`61cb572`](https://github.com/cmdcolin/bender/commit/61cb572817199289e3c2b1d3ebdf4013e438bf23) a reload reopens the stage the tab had open
+- *(ui)* [`48e4a3d`](https://github.com/cmdcolin/bender/commit/48e4a3d56586f8d1a1bcaca6db2e6dda07fdb8e2) the first Tab press shows a skip-to-the-board button
+- *(ui)* [`fb27427`](https://github.com/cmdcolin/bender/commit/fb27427412f2b4d1fb455d8ae94d1d7c3fd8e2ca) the phone header packs into three rows
+- *(ui)* [`2e01687`](https://github.com/cmdcolin/bender/commit/2e016876ed2ccfd9cf579af2d562c385f4e341b8) a fresh tab opens Plinky in the panel
+- *(ui)* [`f67a61e`](https://github.com/cmdcolin/bender/commit/f67a61ede4bbc20dcde931739c042aedd6e7eba2) a thin box's card shows the rows of the parts it is wired to
+- *(ui)* [`d60a278`](https://github.com/cmdcolin/bender/commit/d60a2786afe0c8c6f0dc56aa56b6c49fa7a67615) every stage's thin cards borrow their neighbours' rows
+- *(dsp)* [`5803ce7`](https://github.com/cmdcolin/bender/commit/5803ce748f6dd3ebbe0e85753230826f7b74f796) Parlor's buses can have a neighbouring pair of wires crossed
+- *(dsp)* [`93008ba`](https://github.com/cmdcolin/bender/commit/93008ba0b12d03f60e64e66e8b2a839e1277fee4) Wraith's play heads can be dirty
+- *(dsp)* [`8bcef1a`](https://github.com/cmdcolin/bender/commit/8bcef1a0c73acee74c6ae4924778ead59c7763dc) Clipper's LM386 takes the datasheet bass boost, pin 5 to pin 1
+
+### Fixes
+- *(ui)* [`830a433`](https://github.com/cmdcolin/bender/commit/830a433edcb3d74bdbb7451a0c255c55326e8663) bend face badge says now N where Re-solder moved it
+- *(ui)* [`791a20c`](https://github.com/cmdcolin/bender/commit/791a20c085f8f57bd42f7570318af7ed5faaca98) stage title keeps one line and its controls wrap under it
+- *(ui)* [`9e3d474`](https://github.com/cmdcolin/bender/commit/9e3d474b837937335b3b27af4f748538b08e6c5d) shelf reset counts wear a ↺
+- *(ui)* [`269e971`](https://github.com/cmdcolin/bender/commit/269e971e92d803cb5c217926d8e2c8b2234a5bde) morph and land menus draw a chevron
+- *(ui)* [`f0ef472`](https://github.com/cmdcolin/bender/commit/f0ef472f432523a7b7e4f6a18194bbdd982af420) fit the bench beside the panel at laptop widths
+
+### Tests
+- *(ui)* [`9e0b333`](https://github.com/cmdcolin/bender/commit/9e0b333f5d73649d40a751f322d604b20a4915ec) hear the delay pedal on a preset by how far the take moved
+
 ## [1.18.1](https://github.com/cmdcolin/bender/compare/v1.18.0...v1.18.1) - 2026-10-24
 
 ### Features
