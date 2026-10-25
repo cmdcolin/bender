@@ -416,6 +416,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const sampleError = useStoreValue(engine.sampleError)
   const remapping = useStoreValue(remapOpen)
   const coarse = useCoarse()
+  const board = useRef<HTMLElement>(null)
   const open = useStoreValue(openStage)
   const setOpen = openStage.set
   const openGroup = GROUPS.find(g => g.name === open)
@@ -542,6 +543,9 @@ export function App(props: { openedFromLink?: boolean }) {
       }}
       onDrop={onDrop}
     >
+      <button className={styles.skip} onClick={() => board.current?.focus()}>
+        skip to the board
+      </button>
       <header className={styles.bar}>
         <div className={styles.barMain}>
           <Tip text="What this is, where the docs and the source are, and which build you are on.">
@@ -654,7 +658,12 @@ export function App(props: { openedFromLink?: boolean }) {
           <BodyPad onOpen={show} />
         </main>
 
-        <aside className={styles.panel} aria-label="the board">
+        <aside
+          ref={board}
+          tabIndex={-1}
+          className={styles.panel}
+          aria-label="the board"
+        >
           <HuntDialog landed={landed} onDismiss={dismissLanded} />
 
           {showStart && <StartOverlay onClose={() => setShowStart(false)} />}

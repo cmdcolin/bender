@@ -102,6 +102,22 @@
   }
 }
 
+.skip {
+  composes: action from './button.module.css';
+  position: fixed;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  z-index: 10;
+}
+
+.skip:not(:focus) {
+  clip-path: inset(50%);
+}
+
+.panel:focus {
+  outline: none;
+}
+
 .nameplate {
   display: flex;
   align-items: baseline;
