@@ -1,3 +1,4 @@
+import { TAPE_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import styles from './Diagram.module.css'
 import {
@@ -9,6 +10,8 @@ import {
   type BoxSpec,
   card,
   useOpensOnAim,
+  besideOf,
+  opensOf,
 } from './diagram.ts'
 import {
   Bend,
@@ -329,7 +332,11 @@ export function TapePathDiagram() {
           </>
         )}
       </ChipDrawing>
-      <BoxRows card={card(pick)} keys={open} />
+      <BoxRows
+        card={card(pick)}
+        keys={open}
+        beside={besideOf(opensOf(boxes), TAPE_WIRED, pick.selected)}
+      />
     </>
   )
 }

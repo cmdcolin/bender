@@ -1,4 +1,5 @@
 import { cabDb, stackDb } from '../dsp/stages/amp.ts'
+import { EMBER_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import styles from './Diagram.module.css'
 import {
@@ -9,6 +10,8 @@ import {
   type BoxSpec,
   card,
   useOpensOnAim,
+  besideOf,
+  opensOf,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 
@@ -211,7 +214,11 @@ export function AmpPathDiagram() {
           </>
         )}
       </ChipDrawing>
-      <BoxRows card={card(pick)} keys={open?.keys} />
+      <BoxRows
+        card={card(pick)}
+        keys={open?.keys}
+        beside={besideOf(opensOf(boxes), EMBER_WIRED, pick.selected)}
+      />
     </>
   )
 }

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
@@ -70,14 +70,18 @@ test('the sync wire lights once Sync is on', () => {
   expect(sync().getAttribute('class')).toMatch(/noteOn/)
 })
 
-test('the sync and FM words open just their own knob', () => {
+test('the sync and FM words open their own knob over the oscillators', () => {
   open()
-  press('sync')
-  expect(screen.getByText('Sync')).not.toBeNull()
-  expect(screen.queryByText('Osc 1 wave')).toBeNull()
-  press('FM')
-  expect(screen.queryByText('Sync')).toBeNull()
-  expect(screen.getByText('Lin FM')).not.toBeNull()
+  for (const [word, own] of [
+    ['sync', 'Sync'],
+    ['FM', 'Lin FM'],
+  ] as const) {
+    press(word)
+    const wired = screen.getByText('wired to oscillators').parentElement!
+    expect(within(wired).queryByText(own), word).toBeNull()
+    expect(within(wired).getByText('Osc 1 wave'), word).not.toBeNull()
+    expect(screen.getByText(own), word).not.toBeNull()
+  }
 })
 
 test('the noise and feedback words open the mixer', () => {

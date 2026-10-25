@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
@@ -46,7 +46,8 @@ test('the DAC opens the converter rows and the sample ROM opens the kit rows', (
   fireEvent.click(box('sample ROM'))
   expect(screen.getByText('Kit')).not.toBeNull()
   expect(screen.getByText('verbs for Sample ROM')).not.toBeNull()
-  expect(screen.queryByText('Bit depth')).toBeNull()
+  const wired = screen.getByText('wired to DAC').parentElement!
+  expect(within(wired).getByText('Bit depth')).not.toBeNull()
 })
 
 test('pressing pattern shows the bus rows, and pressing triggers shows only its verbs', () => {

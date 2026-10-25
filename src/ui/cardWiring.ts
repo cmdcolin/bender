@@ -123,3 +123,27 @@ export const STRIP_WIRED: Wiring = {
   loop: ['rec', 'cue'],
   cue: ['loop', 'pan'],
 }
+
+export const EMBER_WIRED: Wiring = { speaker: ['power amp'] }
+
+export const FEEDBACK_WIRED: Wiring = { 'patched into': ['return amps'] }
+
+export const TAPE_WIRED: Wiring = {
+  'NR in': ['rec head'],
+  'rec head': ['NR in'],
+  'replay head': ['NR out'],
+  'NR out': ['replay head'],
+}
+
+export const PLINKY_WIRED: Wiring = { 'key matrix': ['voices'] }
+
+export const CLATTER_WIRED: Wiring = { 'sample ROM': ['DAC'] }
+
+export const GLINT_WIRED: Wiring = { clocks: ['modulator', 'carrier'] }
+
+export const GROWLER_WIRED: Wiring = {
+  sync: ['oscillators'],
+  FM: ['oscillators'],
+}
+
+export const SUPPLY_WIRED: Wiring = { 'second cells': ['cells'] }

@@ -1,3 +1,4 @@
+import { FEEDBACK_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { sliderFor } from './controls/index.ts'
 import {
@@ -8,6 +9,8 @@ import {
   type BoxSpec,
   card,
   useOpensOnAim,
+  besideOf,
+  opensOf,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 import styles from './FeedbackLoops.module.css'
@@ -176,7 +179,11 @@ export function FeedbackLoops() {
           </>
         )}
       </ChipDrawing>
-      <BoxRows card={card(pick)} keys={open} />
+      <BoxRows
+        card={card(pick)}
+        keys={open}
+        beside={besideOf(opensOf(boxes), FEEDBACK_WIRED, pick.selected)}
+      />
     </>
   )
 }

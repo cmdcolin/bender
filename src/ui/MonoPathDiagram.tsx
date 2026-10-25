@@ -1,4 +1,5 @@
 import { MONO_SEQ_STEP_KEYS } from '../tune.ts'
+import { GROWLER_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import chip from './ChipLook.module.css'
 import styles from './Diagram.module.css'
@@ -14,6 +15,8 @@ import {
   spread,
   chainPaths,
   useOpensOnAim,
+  besideOf,
+  opensOf,
 } from './diagram.ts'
 import {
   Bend,
@@ -410,6 +413,7 @@ export function MonoPathDiagram({
           <BoxRows
             title={drawn?.name ?? open.id!}
             keys={open.id === 'voice card' ? [] : open.keys}
+            beside={besideOf(opensOf([...words, oscs]), GROWLER_WIRED, open.id)}
             verbs={part && verbs(part)}
           />
         </OpenBox>

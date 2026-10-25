@@ -217,6 +217,13 @@ export const boxMaker =
 /** The rows each box of a drawing opens. */
 export type Opens = Readonly<Record<string, readonly ControlKey[]>>
 
+export const opensOf = (
+  boxes: readonly { id?: string; keys?: readonly ControlKey[] }[],
+): Opens =>
+  Object.fromEntries(
+    boxes.flatMap(b => (b.id && b.keys ? [[b.id, b.keys] as const] : [])),
+  )
+
 /** For each box that opens only a row or two, the boxes it is wired to. Its
     card shows their rows under its own, so no card is a dead end. */
 export type Wiring = Readonly<Record<string, readonly string[]>>

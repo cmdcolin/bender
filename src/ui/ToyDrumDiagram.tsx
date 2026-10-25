@@ -1,3 +1,4 @@
+import { CLATTER_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS } from './controls/index.ts'
 import diagram from './Diagram.module.css'
@@ -12,6 +13,8 @@ import {
   type BoxSpec,
   lefts,
   useOpensOnAim,
+  besideOf,
+  opensOf,
 } from './diagram.ts'
 import {
   Bend,
@@ -324,6 +327,7 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
             <BoxRows
               title={open?.name ?? pick.selected}
               keys={open?.id === 'triggers' ? [] : open?.keys}
+              beside={besideOf(opensOf(picks), CLATTER_WIRED, open?.id)}
               verbs={open && verbs?.(BOXES[open.id].part)}
             />
           )}

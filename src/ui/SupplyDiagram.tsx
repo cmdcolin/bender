@@ -1,4 +1,5 @@
 import { SUPPLY } from '../dsp/supplies.ts'
+import { SUPPLY_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS } from './controls/index.ts'
 import { machinesOn } from './controls/supply.ts'
@@ -14,6 +15,7 @@ import {
   type BoxSpec,
   card,
   useOpensOnAim,
+  besideOf,
 } from './diagram.ts'
 import {
   Bend,
@@ -208,6 +210,7 @@ export function SupplyDiagram() {
         card={card(pick)}
         hint="Press a box for its settings."
         keys={isBox(pick.selected) ? BOX_KEYS[pick.selected] : undefined}
+        beside={besideOf(BOX_KEYS, SUPPLY_WIRED, pick.selected)}
         note={
           pick.selected === SECOND && !second
             ? 'Set a machine’s Supply to second cells to run it off these.'

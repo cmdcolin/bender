@@ -1,3 +1,4 @@
+import { GLINT_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   boxWidth,
@@ -9,6 +10,8 @@ import {
   chainPaths,
   spread,
   useOpensOnAim,
+  besideOf,
+  opensOf,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
@@ -222,6 +225,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
           <BoxRows
             title={open.id}
             keys={open.id === 'die' ? [] : open.keys}
+            beside={besideOf(opensOf(boxes), GLINT_WIRED, open.id)}
             verbs={part && verbs(part)}
           />
         </OpenBox>

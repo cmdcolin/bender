@@ -1,6 +1,7 @@
 import { TUNE_ALL_STEP_KEYS } from '../tune.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
+import { PLINKY_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import diagram from './Diagram.module.css'
@@ -16,6 +17,7 @@ import {
   chainPaths,
   lefts,
   useOpensOnAim,
+  besideOf,
 } from './diagram.ts'
 import { BoxRows, GlyphBox, OpenBox, PickPart, Wire } from './DiagramParts.tsx'
 import { rollGlyph, ROLL_GLYPH_W } from './rollGlyph.tsx'
@@ -199,12 +201,13 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
   const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
   const written = useReadings(WRITTEN_KEYS).touched(...WRITTEN_KEYS)
   const pick = useSelectedBox(KEYBOARD)
-  useOpensOnAim(pick, {
+  const opens = {
     ...NODE_KEYS,
     bus: BUS_KEYS,
     [KEYBOARD]: KEYBOARD_KEYS,
     [ROLL]: MEMORY_KEYS,
-  })
+  }
+  useOpensOnAim(pick, opens)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow = useFlow('Plinky')
@@ -426,6 +429,7 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
             <BoxRows
               title={open}
               keys={open === 'bus' ? BUS_KEYS : NODE_KEYS[open]}
+              beside={besideOf(opens, PLINKY_WIRED, open)}
               verbs={open === 'bus' ? verbs?.(BUS) : verbs?.(DIE)}
             />
           )}
