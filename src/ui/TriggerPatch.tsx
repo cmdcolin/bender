@@ -1,12 +1,18 @@
+import { TRIGGER_CHIPS, TRIGGER_OPENS, TRIGGER_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import diagramStyles from './Diagram.module.css'
-import { useReadings, useSelectedBox, card, useOpensOnAim } from './diagram.ts'
+import {
+  besideOf,
+  card,
+  useOpensOnAim,
+  useReadings,
+  useSelectedBox,
+} from './diagram.ts'
 import { BoxRows, BoxView, Pressable } from './DiagramParts.tsx'
 import styles from './TriggerPatch.module.css'
 
-import type { ControlKey } from '../controls.ts'
 import type { ReactNode } from 'react'
 
 const TO_KEYS = sliderFor('trigToKeys').choices!
@@ -14,36 +20,11 @@ const TO_DRUM = sliderFor('trigToDrum').choices!
 const NOTE = sliderFor('trigKeysNote').choices!
 const STRUCK = sliderFor('fmStruck').choices!
 
-// The machines with no sequencer of their own: each takes the toy keyboard's
-// notes through one jumper and the kit's hits through one strike selector.
-const CHIPS = [
-  { name: 'Glint', struck: 'fmStruck', gate: 'fmKeyGate' },
-  { name: 'Parlor', struck: 'pcmStruck', gate: 'pcmKeyGate' },
-  { name: 'Growler', struck: 'monoStruck', gate: 'monoKeyGate' },
-] as const satisfies readonly {
-  name: string
-  struck: ControlKey
-  gate: ControlKey
-}[]
-
-type ChipName = (typeof CHIPS)[number]['name']
+type ChipName = (typeof TRIGGER_CHIPS)[number]['name']
 type Wire = 'kit → keys' | 'keys → kit' | `${'kit' | 'keys'} → ${ChipName}`
 type Pick = Wire | ChipName
 
-const OPENS = new Map<string, readonly ControlKey[]>([
-  ['kit → keys', ['trigToKeys', 'trigKeysNote']],
-  ['keys → kit', ['trigToDrum']],
-  ...CHIPS.flatMap(
-    c =>
-      [
-        [`kit → ${c.name}`, [c.struck]],
-        [`keys → ${c.name}`, [c.gate]],
-        [c.name, [c.struck, c.gate]],
-      ] as const,
-  ),
-])
-
-const READ = CHIPS.flatMap(c => [c.struck, c.gate])
+const READ = TRIGGER_CHIPS.flatMap(c => [c.struck, c.gate])
 
 const BOX_W = 84
 const BOX_H = 20
@@ -62,7 +43,7 @@ const CHIP_W = KEYS_MID - CHIP_INSET - CHIP_X
 const CHIP_H = 20
 const CHIP_TOP = TOP + BOX_H + 20
 const CHIP_PITCH = CHIP_H + 6
-const HEIGHT = CHIP_TOP + CHIPS.length * CHIP_PITCH
+const HEIGHT = CHIP_TOP + TRIGGER_CHIPS.length * CHIP_PITCH
 
 const KIT = 'var(--cool)'
 const KEYS = 'var(--accent2)'
@@ -132,11 +113,9 @@ const source = (x: number, name: string) => (
 // wire that makes one machine strike another. A wire is dashed and grey while
 // its setting is off. Pressing a wire opens its row underneath, and pressing a
 // machine opens both of its rows.
-const HOLDS = Object.fromEntries(OPENS)
-
 export function TriggerPatch() {
   const pick = useSelectedBox()
-  useOpensOnAim(pick, HOLDS)
+  useOpensOnAim(pick, TRIGGER_OPENS)
   const r = useReadings(READ)
   const toKeys = Math.round(useControlValue('trigToKeys'))
   const toDrum = Math.round(useControlValue('trigToDrum'))
@@ -151,11 +130,11 @@ export function TriggerPatch() {
     : 'Plinky does not play the kit.'
 
   const readout = useBoardValue(c =>
-    CHIPS.map(
+    TRIGGER_CHIPS.map(
       ch => `${Math.round(c[ch.struck])}${c[ch.gate] >= 0.5 ? 'c' : 's'}`,
     ).join(','),
   ).split(',')
-  const machines = CHIPS.map((chip, i) =>
+  const machines = TRIGGER_CHIPS.map((chip, i) =>
     machineParts(chip, CHIP_TOP + i * CHIP_PITCH, readout[i]!),
   )
 
@@ -252,7 +231,7 @@ export function TriggerPatch() {
                 key={m.name}
                 box={{
                   id: m.name,
-                  keys: OPENS.get(m.name),
+                  keys: TRIGGER_OPENS[m.name],
                   x: CHIP_X,
                   y: m.top,
                   w: CHIP_W,
@@ -272,7 +251,8 @@ export function TriggerPatch() {
       <BoxRows
         card={card(pick)}
         hint="Press a wire to set it, or a machine to set both of its wires."
-        keys={OPENS.get(pick.selected ?? '')}
+        keys={TRIGGER_OPENS[pick.selected ?? '']}
+        beside={besideOf(TRIGGER_OPENS, TRIGGER_WIRED, pick.selected)}
       />
     </>
   )
@@ -286,7 +266,11 @@ interface Part {
 // The three drawn parts of a machine under the pair — the kit's wire onto it,
 // the keyboard's wire onto it and the box — from `code`, its strike choice
 // followed by `c` for a cut jumper or `s` for a soldered one.
-function machineParts(chip: (typeof CHIPS)[number], top: number, code: string) {
+function machineParts(
+  chip: (typeof TRIGGER_CHIPS)[number],
+  top: number,
+  code: string,
+) {
   const struck = Number.parseInt(code, 10)
   const gateCut = code.endsWith('c')
   const struckOn = struck > 0

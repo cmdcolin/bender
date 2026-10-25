@@ -213,3 +213,30 @@ export const boxMaker =
     touched: touched(...keys),
     help,
   })
+
+/** The rows each box of a drawing opens. */
+export type Opens = Readonly<Record<string, readonly ControlKey[]>>
+
+/** For each box that opens only a row or two, the boxes it is wired to. Its
+    card shows their rows under its own, so no card is a dead end. */
+export type Wiring = Readonly<Record<string, readonly string[]>>
+
+export interface Beside {
+  names: readonly string[]
+  keys: readonly ControlKey[]
+}
+
+/** The rows a thin box's card borrows from the boxes `wiring` ties it to. */
+export function besideOf(
+  opens: Opens,
+  wiring: Wiring,
+  id: string | null | undefined,
+): Beside | undefined {
+  const names = id ? wiring[id] : undefined
+  if (!names) return undefined
+  const own = opens[id!] ?? []
+  const keys = [...new Set(names.flatMap(n => opens[n] ?? []))].filter(
+    k => !own.includes(k),
+  )
+  return { names, keys }
+}

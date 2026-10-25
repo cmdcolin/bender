@@ -1,3 +1,4 @@
+import { STRIP_WIRED, stripOpens } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { type Track } from './controls/index.ts'
 import {
@@ -8,6 +9,7 @@ import {
   type BoxSpec,
   card,
   useOpensOnAim,
+  besideOf,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 
@@ -59,6 +61,7 @@ const CAUTION =
 export function StripDiagram({ track }: { track: Track }) {
   const key = (name: Suffix) => `four${track}${name}` as const
   const keys = SUFFIXES.map(key)
+  const opens = stripOpens(track)
   const r = useReadings(keys)
   const pick = useSelectedBox()
   const val = (n: Suffix) => r.value(key(n))
@@ -85,7 +88,7 @@ export function StripDiagram({ track }: { track: Track }) {
     },
     {
       id: 'trim',
-      keys: [key('Trim')],
+      keys: opens.trim,
       x: TRIM_X,
       y: TOP,
       w: W,
@@ -96,7 +99,7 @@ export function StripDiagram({ track }: { track: Track }) {
     },
     {
       id: 'eq',
-      keys: [key('Low'), key('MidHz'), key('Mid'), key('High')],
+      keys: opens.eq,
       x: EQ_X,
       y: TOP,
       w: W,
@@ -115,7 +118,7 @@ export function StripDiagram({ track }: { track: Track }) {
     },
     {
       id: 'pan',
-      keys: [key('Pan')],
+      keys: opens.pan,
       x: PAN_X,
       y: TOP,
       w: W,
@@ -133,7 +136,7 @@ export function StripDiagram({ track }: { track: Track }) {
     },
     {
       id: 'rec',
-      keys: [key('Rec')],
+      keys: opens.rec,
       note: CAUTION,
       x: EQ_X,
       y: BOTTOM,
@@ -145,7 +148,7 @@ export function StripDiagram({ track }: { track: Track }) {
     },
     {
       id: 'loop',
-      keys: [key('Erase'), key('Len')],
+      keys: opens.loop,
       note: CAUTION,
       x: LOOP_X,
       y: BOTTOM,
@@ -156,7 +159,7 @@ export function StripDiagram({ track }: { track: Track }) {
     },
     {
       id: 'cue',
-      keys: [key('Cue')],
+      keys: opens.cue,
       x: CUE_X,
       y: BOTTOM,
       w: W,
@@ -168,7 +171,7 @@ export function StripDiagram({ track }: { track: Track }) {
   ]
   const sendBox: BoxSpec = {
     id: 'send',
-    keys: [key('Send')],
+    keys: opens.send,
     x: 0,
     y: 0,
     w: 0,
@@ -247,6 +250,7 @@ export function StripDiagram({ track }: { track: Track }) {
         card={card(pick, open?.name)}
         keys={open?.keys}
         note={open?.note}
+        beside={besideOf(opens, STRIP_WIRED, open?.id)}
       />
     </>
   )

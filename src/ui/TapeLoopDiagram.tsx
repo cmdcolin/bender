@@ -1,4 +1,5 @@
 import { HEAD_CHOICES } from '../dsp/stages/tapeDelay.ts'
+import { WRAITH_OPENS as OPENS, WRAITH_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import styles from './Diagram.module.css'
 import {
@@ -8,6 +9,7 @@ import {
   useSelectedBox,
   card,
   useOpensOnAim,
+  besideOf,
 } from './diagram.ts'
 import {
   BoxRows,
@@ -41,32 +43,6 @@ const KEYS = [
   'dlyRingHz',
   'dlyMute',
 ] as const
-
-// What each part of the drawing opens onto. Time, Feedback and the echo level
-// are rows of their own, since they are what the pedal is turned with.
-const OPENS = {
-  send: ['dlySend'],
-  heads: ['dlyHeads'],
-  tone: [
-    'dlyToneHz',
-    'dlyLoopMode',
-    'dlyLoopHz',
-    'dlyLoopRes',
-    'dlyLamp',
-    'dlyLampS',
-    'dlyRingHz',
-    'dlyRing',
-  ],
-  transport: [
-    'wowDepthMs',
-    'wowHz',
-    'flutter',
-    'tapeBrake',
-    'tapeMotorRail',
-    'dlySplice',
-    'dlyErase',
-  ],
-} as const
 
 const WIDTH = 420
 const HEIGHT = 84
@@ -292,6 +268,7 @@ export function TapeLoopDiagram() {
       <BoxRows
         card={card(pick)}
         keys={Object.entries(OPENS).find(([id]) => id === pick.selected)?.[1]}
+        beside={besideOf(OPENS, WRAITH_WIRED, pick.selected)}
       />
     </>
   )

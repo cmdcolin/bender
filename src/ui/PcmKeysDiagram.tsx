@@ -1,3 +1,4 @@
+import { PARLOR_OPENS as OPENS, PARLOR_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   boxWidth,
@@ -10,6 +11,7 @@ import {
   chainPaths,
   lefts,
   useOpensOnAim,
+  besideOf,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 
@@ -70,27 +72,27 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const path: [string, readonly Key[], string][] = [
     [
       'keys',
-      ['pcmStruck', 'pcmKeyGate', 'pcmChord'],
+      OPENS.keys,
       'What strikes a note: the toy’s gate line, the kit’s trigger lines and a hand on the bed. The chord button turns each strike into a voicing of up to four voices.',
     ],
     [
       'counter',
-      ['pcmClockX', 'pcmSignDir', 'pcmLatch'],
+      OPENS.counter,
       'The address counter. It walks the ROM at the rate the note asks for, so its clock sets the pitch and the aliasing together. Its up/down pin and the latch the four voices share sit here too.',
     ],
     [
       'ROM',
-      ['pcmVoice', 'pcmRunOn', 'pcmWrite'],
+      OPENS.ROM,
       'The recordings: one short loop per voice, cut into eight-bit words. The sampled voice reads the sampler’s reel instead. The loop comparator and the write strobe sit here too.',
     ],
     [
       'envelope',
-      ['pcmEnv', 'pcmRelease'],
+      OPENS.envelope,
       'The four buttons down the side of the case, and the capacitor that sets how long a note takes to die.',
     ],
     [
       'tone',
-      ['pcmTone'],
+      OPENS.tone,
       'The four voices sum into the eight-bit DAC, and a two-pole filter follows it.',
     ],
   ]
@@ -107,7 +109,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     xs.at(-1)!,
     TOP + ROW,
     widths.at(-1)!,
-    ['pcmLevel', 'pcmMute', 'pcmSupply'],
+    OPENS.mix,
     'The keyboard’s fader and mute, where it joins the source mix, and the supply it runs off.',
   )
   const at = (id: string) => row.find(b => b.id === id)!
@@ -133,21 +135,21 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       counter.x,
       TOP,
       counter.w,
-      ['pcmVibrato'],
+      OPENS.vibrato,
       'The die’s one LFO. It has no rate or depth register and no way to stop it; the button picks whether a voice listens to it, and whether it waits first.',
     ),
     bus(
       'addr bus',
       midOf(counter, rom),
       -BUS_LEAN,
-      ['pcmAddrLine', 'pcmAddrFault', 'pcmBusCut'],
+      OPENS['addr bus'],
       'The wires the counter names a word on. A knife through one makes the ROM hand back a real word from the wrong place.',
     ),
     bus(
       'data bus',
       midOf(rom, envelope),
       BUS_LEAN,
-      ['pcmDataLine', 'pcmDataFault', 'pcmBusCut'],
+      OPENS['data bus'],
       'The eight wires the ROM answers on. A knife through one keeps the pitch and changes the shape of every word.',
     ),
   ]
@@ -204,6 +206,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
           <BoxRows
             title={open.name}
             keys={open.keys}
+            beside={besideOf(OPENS, PARLOR_WIRED, open.id)}
             verbs={part && verbs(part)}
           />
         </OpenBox>

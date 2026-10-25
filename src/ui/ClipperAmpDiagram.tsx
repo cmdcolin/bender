@@ -1,6 +1,7 @@
 import { STOCK_GAIN } from '../dsp/stages/clipper.ts'
 import { SUPPLY, SUPPLY_NAMES } from '../dsp/supplies.ts'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
+import { CLIPPER_OPENS as OPENS, CLIPPER_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   boxHeight,
@@ -12,10 +13,10 @@ import {
   useOpensOnAim,
   useReadings,
   useSelectedBox,
+  besideOf,
 } from './diagram.ts'
 import { BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 
-import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './drawingFor.tsx'
 
 const KEYS = [
@@ -26,14 +27,6 @@ const KEYS = [
   'distBlock',
   'distSpeaker',
 ] as const
-
-const OPENS: Record<string, readonly ControlKey[]> = {
-  supply: ['distSupply', 'distDraw'],
-  LM386: ['distPinGain'],
-  'pin 7': ['distBypass'],
-  'coupling cap': ['distBlock'],
-  speaker: ['distSpeaker'],
-}
 
 const WIDTH = 380
 const HEAD = 24
@@ -170,6 +163,7 @@ export function ClipperAmpDiagram({ verbs }: DrawingProps) {
         card={card(pick)}
         hint="Press a box for its settings."
         keys={pick.selected ? OPENS[pick.selected] : undefined}
+        beside={besideOf(OPENS, CLIPPER_WIRED, pick.selected)}
         verbs={pick.selected === 'speaker' ? verbs?.('the speaker') : undefined}
       />
     </>

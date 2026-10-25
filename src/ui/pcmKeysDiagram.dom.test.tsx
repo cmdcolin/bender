@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
@@ -24,9 +24,19 @@ test('the keyboard opens on the ROM, and each box swaps in its own rows', () => 
   expect(screen.getByText('Chord memory')).not.toBeNull()
   fireEvent.click(box('data bus'))
   expect(screen.getByText('Data line')).not.toBeNull()
-  expect(screen.queryByText('Address line')).toBeNull()
+  expect(screen.queryByText('Chord memory')).toBeNull()
   fireEvent.click(box('addr bus'))
   expect(screen.getByText('Address line')).not.toBeNull()
+})
+
+test('a thin box borrows the rows of the boxes it is wired to', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<PcmKeysDiagram verbs={() => null} />)
+  fireEvent.click(box('data bus'))
+  const wired = screen.getByText('wired to addr bus, ROM').parentElement!
+  expect(within(wired).getByText('Address line')).not.toBeNull()
+  expect(within(wired).getByText('Voice')).not.toBeNull()
+  expect(within(wired).queryByText('Data line')).toBeNull()
 })
 
 test('the mix box opens the fader and mute', () => {

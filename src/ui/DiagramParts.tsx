@@ -10,6 +10,7 @@ import {
   GLYPH_GAP,
   LINE_H,
   rowShown,
+  type Beside,
   type BoxPick,
   type BoxSpec,
 } from './diagram.ts'
@@ -442,6 +443,7 @@ export function BoxRows({
   under,
   inOrder,
   card,
+  beside,
   title = card?.name,
 }: {
   keys: readonly ControlKey[] | undefined
@@ -458,9 +460,13 @@ export function BoxRows({
   inOrder?: boolean
   /** Frames the rows in the open box's card, the way the drawings with a close-up do. */
   card?: { name: string; onHide: () => void }
+  /** Rows of the boxes a thin box is wired to, under a divider. */
+  beside?: Beside
 }) {
   const shown = useBoardValue(c =>
-    (keys ?? []).filter(k => rowShown(k, c)).join(','),
+    [...(keys ?? []), ...(beside?.keys ?? [])]
+      .filter(k => rowShown(k, c))
+      .join(','),
   ).split(',')
   if (!keys) return hint ? <p className={styles.hint}>{hint}</p> : null
   const defs = keys.map(sliderFor)
@@ -468,6 +474,7 @@ export function BoxRows({
     .map(d => d.key)
     .filter(key => shown.includes(key))
   const last = rows.findLast(key => under?.keys.includes(key))
+  const borrowed = (beside?.keys ?? []).filter(key => shown.includes(key))
   const list = (
     <div className={styles.rows}>
       {note && <p className={styles.noteLine}>{note}</p>}
@@ -479,6 +486,16 @@ export function BoxRows({
           {key === last && under?.node}
         </Fragment>
       ))}
+      {borrowed.length > 0 && (
+        <div className={styles.beside}>
+          <p className={styles.besideLine}>
+            wired to {beside!.names.join(', ')}
+          </p>
+          {borrowed.map(key => (
+            <ControlSlider key={key} def={sliderFor(key)} />
+          ))}
+        </div>
+      )}
     </div>
   )
   return card ? <OpenBox {...card}>{list}</OpenBox> : list
