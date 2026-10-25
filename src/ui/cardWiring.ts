@@ -45,7 +45,7 @@ export const PARLOR_WIRED: Wiring = {
 // the pedal is turned with.
 export const WRAITH_OPENS = {
   send: ['dlySend'],
-  heads: ['dlyHeads'],
+  heads: ['dlyHeads', 'dlyHeadDirt'],
   tone: [
     'dlyToneHz',
     'dlyLoopMode',

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-559 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+560 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -1061,13 +1061,14 @@ loop joined once: _Splice_ sets how bad the join is, and _Erase_ sets how much
 of the last lap the erase head lets through under the new one.
 
 <details>
-<summary>22 controls</summary>
+<summary>23 controls</summary>
 
 | control        | range                                                                                              | what it does                                                                                                                     |
 | -------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | Time           | 20 ms to 4 s                                                                                       | Delay time                                                                                                                       |
 | Time sync      | off, sixteenths, eighth triplets, eighths, dotted eighths, quarters, dotted quarters, halves, bars | Sets the time from the kit’s tempo instead of the Time knob                                                                      |
 | Heads          | 1, 1+2, 1+3, 2+3, 1+2+3                                                                            | Which play heads are up                                                                                                          |
+| Dirty heads    | off to full                                                                                        | Oxide shed off the tape and caked on the play heads, holding the tape a few microns off the gap                                  |
 | Feedback       | 0 to 2, normal 0 to 1                                                                              | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                        |
 | Tone           | 500 Hz to 15 kHz                                                                                   | High-frequency loss per repeat — tape generation loss                                                                            |
 | Bus send       | off to full                                                                                        | How much of the whole board goes onto the tape                                                                                   |

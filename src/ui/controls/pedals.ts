@@ -149,6 +149,15 @@ export const PEDAL_GROUPS: Group[] = [
         help: 'Which play heads are up. Three sit along the tape at one, two and three times the spacing the Time knob sets, so bringing up more than one is a rhythm off a single repeat — and every head goes round the same loop, so the feedback carries all of them.',
       },
       {
+        key: 'dlyHeadDirt',
+        label: 'Dirty heads',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Oxide shed off the tape and caked on the play heads, holding the tape a few microns off the gap. The treble goes first and goes further on a long, slow repeat, and each lap of feedback passes the dirt again, so the tail dulls as it repeats. The heads clog unevenly, and now and then a crumb lifts one clear for a dropout.',
+      },
+      {
         key: 'dlyFb',
         label: 'Feedback',
         min: 0,

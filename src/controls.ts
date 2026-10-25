@@ -744,6 +744,7 @@ export const DEFAULT_CONTROLS = {
   tapeBrake: 0,
   tapeMotorRail: 0,
   dlyHeads: 0,
+  dlyHeadDirt: 0,
   dlySplice: 0,
   dlyErase: 0,
   dlyMix: 0,

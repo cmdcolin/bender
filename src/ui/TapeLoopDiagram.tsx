@@ -24,6 +24,7 @@ import {
 const KEYS = [
   'dlySend',
   'dlyHeads',
+  'dlyHeadDirt',
   'dlyFb',
   'dlyToneHz',
   'dlyLoopMode',

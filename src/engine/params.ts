@@ -718,6 +718,7 @@ export const PARAM_DEFS = [
   ['tapeBrake', 'slew'],
   ['tapeMotorRail', 'slew'],
   ['dlyHeads', 'step'],
+  ['dlyHeadDirt', 'slew'],
   ['dlySplice', 'slew'],
   ['dlyErase', 'slew'],
   ['dlyMix', 'slew'],

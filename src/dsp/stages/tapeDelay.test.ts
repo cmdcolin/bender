@@ -10,6 +10,7 @@ import {
   sine,
   tail,
 } from '../testRender.ts'
+import { spacingPoles } from './tapeDelay.ts'
 
 import type { Controls } from '../../controls.ts'
 import type { BuiltChain } from '../build.ts'
@@ -211,4 +212,46 @@ test('a lamp in the loop breathes where runaway feedback would pin', () => {
   expect(swing(pinned)).toBeLessThan(0.01)
   expect(swing(lit)).toBeGreaterThan(0.15)
   expect(rms(lit)).toBeGreaterThan(0.05)
+})
+
+// Wallace: spacing d off a gap loses 54.6 d/λ dB, a straight line in frequency.
+// The two poles stand in for it from the -3 dB point through a decade up.
+test('dirt on a head loses treble the way spacing loss says it does', () => {
+  const pole = (c: number, hz: number) => {
+    const w = (2 * Math.PI * hz) / SR
+    return c / Math.hypot(1 - (1 - c) * Math.cos(w), (1 - c) * Math.sin(w))
+  }
+  for (const [um, umPerS] of [
+    [6, 19e4],
+    [2, 9.5e4],
+    [12, 28.5e4],
+  ] as const) {
+    const [a, b] = spacingPoles(um, umPerS, SR)
+    const f3 = (3 * umPerS) / (54.6 * um)
+    for (let hz = f3; hz <= Math.min(8 * f3, 0.4 * SR); hz *= 1.5) {
+      const wallace = (54.6 * um * hz) / umPerS
+      const ours = -20 * Math.log10(pole(a, hz) * pole(b, hz))
+      expect(Math.abs(ours - wallace), `${um} µm at ${hz} Hz`).toBeLessThan(4)
+    }
+  }
+})
+
+test('dirty heads dull the repeats and leave the bass', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    sampleLevel: 1,
+    sampleMode: 1,
+    dlyMix: 1,
+    delayMs: 200,
+    dlyFb: 0.6,
+  }
+  const two = (b: BuiltChain) => {
+    const low = sine(300, 1)
+    const high = sine(6000, 1)
+    b.sampler.setBuffer(low.map((v, i) => 0.5 * (v + high[i]!)))
+  }
+  const clean = tail(renderBender(look, 2, two))
+  const dirty = tail(renderBender({ ...look, dlyHeadDirt: 1 }, 2, two))
+  expect(bin(dirty, 300)).toBeGreaterThan(0.85 * bin(clean, 300))
+  expect(bin(dirty, 6000)).toBeLessThan(0.3 * bin(clean, 6000))
 })
