@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-560 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+561 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -889,22 +889,23 @@ knife on, and the rows under it show the controls it set:
   the tune comes out as clicks and rattle
 
 <details>
-<summary>12 controls</summary>
+<summary>13 controls</summary>
 
-| control       | range                                    | what it does                                                                                                                    |
-| ------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Drive         | 0 to 60 dB                               | Gain into the shaping stage                                                                                                     |
-| Circuit       | soft, hard, fuzz, fold, rect             | Soft saturation, hard clip, asymmetric fuzz, wavefolder, or full rectifier                                                      |
-| Bias          | −1 to +1                                 | DC offset into the clipper                                                                                                      |
-| Tone          | 200 Hz to 20 kHz                         | Low-pass after the shaping — the tone knob on the pedal                                                                         |
-| Sub octave    | off to full                              | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
-| Mix           | off to full                              | Dry/wet                                                                                                                         |
-| Supply        | shared cells, second cells, bench supply | Which supply the toy’s LM386 runs off                                                                                           |
-| Draw          | off to full                              | How much current the amp pulls into its speaker, more when it clips                                                             |
-| Pins 1–8 gain | 20× to 600×                              | A cap across pins 1 and 8 takes the gain from 20 to 200 and past it                                                             |
-| Bypass pin    | off to full                              | Lifts the decoupling cap off pin 7                                                                                              |
-| Blocking      | off to full                              | How much the output coupling cap charges on hard clipping                                                                       |
-| Speaker       | off to full                              | Plays the amp through a cone instead of a line out, smaller as it goes up                                                       |
+| control        | range                                    | what it does                                                                                                                    |
+| -------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Drive          | 0 to 60 dB                               | Gain into the shaping stage                                                                                                     |
+| Circuit        | soft, hard, fuzz, fold, rect             | Soft saturation, hard clip, asymmetric fuzz, wavefolder, or full rectifier                                                      |
+| Bias           | −1 to +1                                 | DC offset into the clipper                                                                                                      |
+| Tone           | 200 Hz to 20 kHz                         | Low-pass after the shaping — the tone knob on the pedal                                                                         |
+| Sub octave     | off to full                              | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
+| Mix            | off to full                              | Dry/wet                                                                                                                         |
+| Supply         | shared cells, second cells, bench supply | Which supply the toy’s LM386 runs off                                                                                           |
+| Draw           | off to full                              | How much current the amp pulls into its speaker, more when it clips                                                             |
+| Pins 1–8 gain  | 20× to 600×                              | A cap across pins 1 and 8 takes the gain from 20 to 200 and past it                                                             |
+| Pin 5 to pin 1 | off to full                              | A pot and a 0.033 µF cap from the output back to the gain pin, the bass boost from the LM386 datasheet                          |
+| Bypass pin     | off to full                              | Lifts the decoupling cap off pin 7                                                                                              |
+| Blocking       | off to full                              | How much the output coupling cap charges on hard clipping                                                                       |
+| Speaker        | off to full                              | Plays the amp through a cone instead of a line out, smaller as it goes up                                                       |
 
 </details>
 

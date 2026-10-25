@@ -367,6 +367,16 @@ export const BEND_GROUPS: Group[] = [
         help: 'A cap across pins 1 and 8 takes the gain from 20 to 200 and past it. The bandwidth closes in as the gain rises, and from about 270 the amp sings on its own, lower the higher you go.',
       },
       {
+        key: 'distPinFb',
+        part: 'the amp',
+        label: 'Pin 5 to pin 1',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'A pot and a 0.033 µF cap from the output back to the gain pin, the bass boost from the LM386 datasheet. The treble gets more feedback than the bass, so the top end drops and the low end stands up into the clipping. Halfway is the datasheet’s 10 kΩ, about 8 dB of boost under a 500 Hz corner; all the way is 1 kΩ, a small, dark, thumping amp.',
+      },
+      {
         key: 'distBypass',
         part: 'the amp',
         label: 'Bypass pin',

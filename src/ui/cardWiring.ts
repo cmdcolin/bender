@@ -7,7 +7,7 @@ import type { Opens, Wiring } from './diagram.ts'
 
 export const CLIPPER_OPENS: Opens = {
   supply: ['distSupply', 'distDraw'],
-  LM386: ['distPinGain'],
+  LM386: ['distPinGain', 'distPinFb'],
   'pin 7': ['distBypass'],
   'coupling cap': ['distBlock'],
   speaker: ['distSpeaker'],

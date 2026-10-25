@@ -11,7 +11,7 @@ import { SUPPLY, Supplies } from '../supplies.ts'
 import { makeIo, rms, SR } from '../testRender.ts'
 import { ToyRail } from '../toyRail.ts'
 import { TriggerBus } from '../trigbus.ts'
-import { Clipper } from './clipper.ts'
+import { boostOhms, Clipper } from './clipper.ts'
 
 const blank = (): Ctx => ({
   sr: SR,
@@ -191,4 +191,20 @@ test('the mic on the bypass pin comes out of the amp', () => {
   const unpatched = stage({ distPinGain: 21 }, silent, 0.5, voice)
   expect(rms(unpatched)).toBeLessThan(0.01)
   expect(rms(patched)).toBeGreaterThan(0.1)
+})
+
+// The datasheet's bass boost, 10 kΩ and 0.033 µF from pin 5 to pin 1, leaves
+// 10k/(15k + 10k) of the gain above its corners and all of it below: 8 dB.
+test('pin 5 to pin 1 through the datasheet parts drops the top 8 dB and keeps the bass', () => {
+  expect(boostOhms(0.5)).toBeCloseTo(10e3, -1)
+  const level = (hz: number, distPinFb: number) =>
+    rms(
+      stage(
+        { driveDb: 0, distPinGain: 21, distPinFb },
+        sineAt(hz, 0.05),
+      ).subarray(SR / 2),
+    )
+  const db = (hz: number) => 20 * Math.log10(level(hz, 0.5) / level(hz, 0))
+  expect(db(30)).toBeGreaterThan(-1)
+  expect(db(5000)).toBeCloseTo(20 * Math.log10(10 / 25), 0)
 })

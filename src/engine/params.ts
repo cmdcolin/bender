@@ -646,6 +646,7 @@ export const PARAM_DEFS = [
   ['distSupply', 'step'],
   ['distDraw', 'slew'],
   ['distPinGain', 'ramp'],
+  ['distPinFb', 'slew'],
   ['distBypass', 'slew'],
   ['distBlock', 'slew'],
   ['distSpeaker', 'slew'],

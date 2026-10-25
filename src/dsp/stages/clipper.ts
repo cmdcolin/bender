@@ -69,6 +69,26 @@ const RETUNE_V = 0.002
 const BYP_DROP = 0.85
 const BYP_DAMP = 2.4
 
+// National's bass boost: a resistor and 0.033 µF from the output, pin 5, back
+// to pin 1, across the 15 kΩ the chip feeds back through inside. Where the cap
+// conducts the feedback grows and the gain falls, so the closed loop is a
+// shelf: full gain below 1/2π(15k+R)C and R/(15k+R) of it above 1/2πRC. The
+// wire is a pot from 100 kΩ, barely there, to 1 kΩ, which takes the top 24 dB
+// down; the datasheet's 10 kΩ sits halfway.
+const FB_INSIDE = 15e3
+const FB_CAP = 0.033e-6
+const FB_FAR = 100e3
+const FB_NEAR = 1e3
+
+/** The bass boost's resistor for a pot setting, ohms. */
+export const boostOhms = (x: number) => FB_FAR * Math.pow(FB_NEAR / FB_FAR, x)
+
+/** The one-pole coefficient under the shelf and how much of the top it keeps. */
+export function boostShelf(ohms: number, sr: number) {
+  const poleHz = 1 / (2 * Math.PI * (FB_INSIDE + ohms) * FB_CAP)
+  return { coef: lpCoef(poleHz, sr), keep: ohms / (FB_INSIDE + ohms) }
+}
+
 const RIPPLE_S = 0.08
 const LEAD = 0.005
 const LEAD_DRAW = 0.05
@@ -111,6 +131,7 @@ class Side {
   over = 0
   blocked = 0
   cone = new Cone()
+  boost = new OnePoleLP()
 
   reset() {
     this.s1 = 0
@@ -118,6 +139,7 @@ class Side {
     this.over = 0
     this.blocked = 0
     this.cone.reset()
+    this.boost.reset()
   }
 }
 
@@ -183,6 +205,7 @@ export class Clipper implements Stage {
       p[IDX.distBypass]! > 0 ||
       p[IDX.distBlock]! > 0 ||
       p[IDX.distSpeaker]! > 0 ||
+      p[IDX.distPinFb]! > 0 ||
       bay.read(DEST.distDraw) !== null ||
       bay.read(DEST.distPinGain) !== null ||
       Math.round(p[IDX.micPatch]!) === MIC.clipBypass
@@ -245,6 +268,8 @@ export class Clipper implements Stage {
     const block = p[IDX.distBlock]!
     const blockKeep = Math.exp(-1 / ((0.03 + 0.4 * block) * sr))
     const speaker = p[IDX.distSpeaker]!
+    const fb = p[IDX.distPinFb]!
+    const shelf = fb > 0 ? boostShelf(boostOhms(fb), sr) : null
 
     const fill = 1 / (AMP_FILL_S * sr)
     const rippleK = 1 / (RIPPLE_S * sr)
@@ -307,8 +332,16 @@ export class Clipper implements Stage {
         xl += this.sub(xl, 0) * subLevel * gateL * 0.7
         xr += this.sub(xr, 1) * subLevel * gateR * 0.7
       }
-      let yl = this.stage(left, (xl + ripple) * k + bias, mode, head, block)
-      let yr = this.stage(right, (xr + ripple) * k + bias, mode, head, block)
+      let inL = (xl + ripple) * k
+      let inR = (xr + ripple) * k
+      if (shelf) {
+        const lowL = left.boost.process(inL, shelf.coef)
+        const lowR = right.boost.process(inR, shelf.coef)
+        inL = lowL + shelf.keep * (inL - lowL)
+        inR = lowR + shelf.keep * (inR - lowR)
+      }
+      let yl = this.stage(left, inL + bias, mode, head, block)
+      let yr = this.stage(right, inR + bias, mode, head, block)
       if (block > 0) {
         left.blocked = flushDenormal(
           left.blocked * blockKeep + BLOCK_CHARGE * block * left.over,

@@ -672,6 +672,7 @@ export const DEFAULT_CONTROLS = {
   distSupply: 2,
   distDraw: 0,
   distPinGain: 20,
+  distPinFb: 0,
   distBypass: 0,
   distBlock: 0,
   distSpeaker: 0,

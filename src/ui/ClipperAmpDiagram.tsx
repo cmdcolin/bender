@@ -23,6 +23,7 @@ const KEYS = [
   'distSupply',
   'distDraw',
   'distPinGain',
+  'distPinFb',
   'distBypass',
   'distBlock',
   'distSpeaker',
@@ -54,7 +55,7 @@ export function ClipperAmpDiagram({ verbs }: DrawingProps) {
   const parts = [
     {
       name: 'LM386',
-      lit: r.value('distPinGain') > STOCK_GAIN,
+      lit: r.value('distPinGain') > STOCK_GAIN || r.value('distPinFb') > 0,
       help: 'The toy’s power amp. A cap across pins 1 and 8 lifts its gain from 20 toward 600, and past a few hundred it sings.',
     },
     {
@@ -108,6 +109,13 @@ export function ClipperAmpDiagram({ verbs }: DrawingProps) {
               d={`M${centre(amp)} ${TOP + BAR_H} V${CHIP_Y}`}
               look={supply === SUPPLY.bench ? 'plain' : 'dash'}
             />
+            {r.value('distPinFb') > 0 && (
+              <Wire
+                arrow={arrow}
+                d={`M${amp.x + amp.w + 6} ${MID} V${CHIP_Y - 8} H${amp.x + amp.w - 8} V${CHIP_Y}`}
+                look="on"
+              />
+            )}
             {loaded && (
               <Label x={centre(amp) + 4} y={CHIP_Y - 5}>
                 draw
