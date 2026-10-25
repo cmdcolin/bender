@@ -164,6 +164,10 @@
   margin-left: auto;
 }
 
+.account {
+  display: contents;
+}
+
 .btn {
   composes: action from './button.module.css';
 }
@@ -321,6 +325,30 @@ select.morph {
   }
   .bar {
     --verb-w: 0;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .barMain,
+  .actions,
+  .settings {
+    display: contents;
+  }
+  .nameplate,
+  .account {
+    order: -3;
+  }
+  .account {
+    display: flex;
+  }
+  .pinned {
+    order: -2;
+    margin-left: auto;
+  }
+  .bar::after {
+    content: '';
+    order: -1;
+    flex-basis: 100%;
+    margin-top: calc(-1 * var(--gap-ctl));
   }
   .body {
     flex-direction: column;

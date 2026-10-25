@@ -604,12 +604,14 @@ export function App(props: { openedFromLink?: boolean }) {
               status={lib.status}
               error={lib.error}
             />
-            <Account
-              user={lib.user}
-              status={lib.status}
-              onSignIn={lib.signIn}
-              onSignOut={lib.signOut}
-            />
+            <div className={styles.account}>
+              <Account
+                user={lib.user}
+                status={lib.status}
+                onSignIn={lib.signIn}
+                onSignOut={lib.signOut}
+              />
+            </div>
           </div>
         </div>
         <div className={styles.pinned}>
