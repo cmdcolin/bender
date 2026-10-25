@@ -6,9 +6,11 @@ import './testDom.ts'
 import { bench, setBench } from './bench.ts'
 import { onBoard } from './chain-map.ts'
 import { shownOn } from './fitted.ts'
+import { openStage } from './openStage.ts'
 import { startFresh } from './starterBoard.ts'
 
 beforeEach(() => {
+  openStage.set(null)
   setBench({ ...bench.get(), pedals: [] })
   localStorage.clear()
   engine.patch({
@@ -38,4 +40,9 @@ test('a tab with a bench of its own keeps it', () => {
   setBench({ ...bench.get(), pedals: ['Gnash'] })
   startFresh()
   expect(bench.get().pedals).toEqual(['Gnash'])
+})
+
+test('a fresh tab opens the toy keyboard in the panel', () => {
+  startFresh()
+  expect(openStage.get()).toBe('Plinky')
 })
