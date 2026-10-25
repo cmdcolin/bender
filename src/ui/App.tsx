@@ -43,7 +43,7 @@ import {
   setPhraseLock,
   type MorphSeconds,
 } from './morph.ts'
-import { openStage } from './openStage.ts'
+import { forgetStaleStage, openStage } from './openStage.ts'
 import { read, write } from './persist.ts'
 import { PinnedStrip } from './PinnedStrip.tsx'
 import { Presets } from './PresetRow.tsx'
@@ -427,6 +427,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const listed = useStoreValue(listView)
   const morphSeconds = useStoreValue(morphSetting)
   useEffect(loadPhraseLock, [])
+  useEffect(forgetStaleStage, [])
   const drifting = useStoreValue(engine.drifting)
   const [landed, setLanded] = useState(false)
   const dismissLanded = useCallback(() => setLanded(false), [])
