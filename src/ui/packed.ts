@@ -923,6 +923,8 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumStepCond14',
   'drumStepCond15',
   'drumFill',
+  'pcmAddrCross',
+  'pcmDataCross',
 ]
 
 // Retired controls that old links still carry, each read into the control that

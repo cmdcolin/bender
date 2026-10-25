@@ -228,6 +228,23 @@ test('an address fault folds the voice without moving the note', () => {
   )
 })
 
+// A crossed pair loses no bit: a low address pair reorders samples inside a
+// few words of each other, and a data pair bends every word the same way, so
+// neither moves the note while the shape of every lap changes.
+test('a low crossed pair reshapes the voice and keeps the note', () => {
+  const note = 12
+  const want = regHz(rateReg(noteHz(note)))
+  const plain = tail(held({}, note, 0.6), 0.4)
+  for (const crossed of [{ pcmAddrCross: 3 }, { pcmDataCross: 7 }]) {
+    const x = tail(held(crossed, note, 0.6), 0.4)
+    const name = JSON.stringify(crossed)
+    expect(rms(plain.map((v, i) => v - x[i]!)), name).toBeGreaterThan(
+      0.05 * rms(plain),
+    )
+    expect(Math.abs(peakNear(x, want) - want), name).toBeLessThan(4)
+  }
+})
+
 test('the sampled voice plays the reel, and nothing at all without one', () => {
   const bare = held({ pcmVoice: SAMPLED }, 0, 0.3)
   expect(rms(bare)).toBeLessThan(1e-6)

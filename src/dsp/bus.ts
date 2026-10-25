@@ -123,6 +123,29 @@ export class Bus {
   }
 }
 
+// Two neighbouring lines crossed on their way between the chips, the way a
+// hand-wired board comes out when two jumpers land in each other's holes. No
+// bit is lost or stuck: every word arrives with those two bits traded, so an
+// address walks its block out of order and a data word changes shape.
+
+/** Names for the crossed pairs of a bus `width` wires wide, lowest pair first. */
+export const crossNames = (prefix: string, width: number) => [
+  'off',
+  ...Array.from(
+    { length: width - 1 },
+    (_, i) => `${prefix}${i}↔${prefix}${i + 1}`,
+  ),
+]
+
+/** `word` with lines `pair - 1` and `pair` traded; pair 0 leaves it alone. */
+export function cross(word: number, pair: number): number {
+  if (pair <= 0) return word
+  const low = pair - 1
+  return ((word >> low) & 1) === ((word >> pair) & 1)
+    ? word
+    : word ^ (0b11 << low)
+}
+
 // The strobe: the pulse that tells the address latch to take what is on the
 // wires. It is not one of the four things above, because nothing here is a bit
 // held anywhere — both bytes cross the bus intact and the latch simply does not

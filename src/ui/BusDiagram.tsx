@@ -33,6 +33,8 @@ const BELOW = 8
 const TAP_ROOM = 26
 const PAD = 8
 const GLYPH_AT = 0.6
+const CROSS_AT = 0.42
+const CROSS_HALF = 4
 const TAP_AT = 0.9
 const LOOP_AT = 0.15
 const INJECT_AT = 0.3
@@ -208,11 +210,13 @@ function Trace({
   line,
   fault,
   cut,
+  crossed,
 }: {
   p: Placed
   line: number
   fault: number
   cut: number
+  crossed: number
 }) {
   const names = sliderFor(p.ribbon.line).choices!.slice(1)
   const n = names.length
@@ -239,13 +243,22 @@ function Trace({
       : fault + 1 < FAULT_NAMES.length
         ? `press for ${FAULT_NAMES[fault + 1]}`
         : 'press to lift the knife'
+  const cx = along(p, CROSS_AT)
+  const swapped = (i: number) =>
+    crossed > 0 && (i === crossed - 1 || i === crossed)
   const traces = names.map((name, i) => {
     const at = lineY(p, i)
     const hit = i === knifed || i === pair
-    const d =
-      i === knifed && fault === FAULT.cut
-        ? `M${p.x0} ${at} H${gx - 3} M${gx + 3} ${at} H${p.x1}`
-        : `M${p.x0} ${at} H${p.x1}`
+    const ends = [
+      p.x0,
+      ...(swapped(i) ? [cx - CROSS_HALF, cx + CROSS_HALF] : []),
+      ...(i === knifed && fault === FAULT.cut ? [gx - 3, gx + 3] : []),
+      p.x1,
+    ]
+    const d = ends
+      .filter((_, j) => j % 2 === 0)
+      .map((from, k) => `M${from} ${at} H${ends[2 * k + 1]}`)
+      .join(' ')
     return (
       <g
         key={i}
@@ -313,6 +326,16 @@ function Trace({
         )}
       </>
     )
+  const lowY = lineY(p, crossed - 1)
+  const highY = lineY(p, crossed)
+  const crossing = crossed > 0 && (
+    <path
+      d={`M${cx - CROSS_HALF} ${lowY} L${cx + CROSS_HALF} ${highY} M${cx - CROSS_HALF} ${highY} L${cx + CROSS_HALF} ${lowY}`}
+      className={styles.jumper}
+    >
+      <title>{`${names[crossed - 1]} and ${names[crossed]} crossed`}</title>
+    </path>
+  )
   return (
     <g
       className={styles.ribbon}
@@ -331,6 +354,7 @@ function Trace({
     >
       <title>{title}</title>
       {traces}
+      {crossing}
       {glyph}
       <text x={p.x0 + 3} y={low + 11} className={styles.bus}>
         {`${names[0]}–${names[n - 1]}`}
@@ -516,7 +540,9 @@ export function BusDiagram({ spec }: { spec: BusSpec }) {
   const keys = [
     spec.cut,
     ...spec.rows.flatMap(row => [
-      ...row.links.flat().flatMap(r => [r.line, r.fault]),
+      ...row.links
+        .flat()
+        .flatMap(r => [r.line, r.fault, ...(r.cross ? [r.cross] : [])]),
       ...(row.taps ?? []).flatMap(t => (t.also ? [t.key, t.also] : [t.key])),
       ...(row.feeds ?? []).map(f => f.key),
       ...(row.injects ?? []).map(j => j.key),
@@ -539,6 +565,7 @@ export function BusDiagram({ spec }: { spec: BusSpec }) {
                 line={read(p.ribbon.line)}
                 fault={read(p.ribbon.fault)}
                 cut={r.value(spec.cut)}
+                crossed={p.ribbon.cross ? read(p.ribbon.cross) : 0}
               />
             ))}
             {placed.chips.flat().map(box => (

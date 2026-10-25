@@ -11,7 +11,7 @@ import {
   THROW_ROW,
   VOICE_LABELS,
 } from '../../drums.ts'
-import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
+import { crossNames, FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
 import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
 import { FM_EFFECT_NAMES, FM_SFX_PICKS } from '../../dsp/stages/fmEffects.ts'
 import {
@@ -2069,6 +2069,8 @@ export const SOURCE_GROUPS: Group[] = [
       'pcmDataLine',
       'pcmDataFault',
       'pcmBusCut',
+      'pcmAddrCross',
+      'pcmDataCross',
       'pcmRunOn',
       'pcmWrite',
       'pcmSignDir',
@@ -2255,6 +2257,32 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'How far through the trace the knife cuts; only the cut fault uses it. All the way and the pin floats free. Back it off and the line conducts some of the time, so most words arrive and the rest come off the wire next door: a voice that flickers between itself and something else, at the rate the ROM is being read.',
+      },
+      {
+        key: 'pcmAddrCross',
+        part: 'knife on the bus',
+        label: 'Crossed address',
+        min: 0,
+        max: PCM_ADDR_LINES - 1,
+        step: 1,
+        unit: '',
+        choices: crossNames('A', PCM_ADDR_LINES),
+        ordered: true,
+        shy: true,
+        help: 'Two neighbouring address wires swapped between the counter and the ROM. Every word that comes back is a real sample, read out of order. A low pair keeps the note and leaves a fizz on top; from A3 up the pair shuffles grains, so the voice buzzes and can lock onto a new tone. A pair whose wires a voice’s loop never reaches does nothing on that voice.',
+      },
+      {
+        key: 'pcmDataCross',
+        part: 'knife on the bus',
+        label: 'Crossed data',
+        min: 0,
+        max: PCM_DATA_LINES - 1,
+        step: 1,
+        unit: '',
+        choices: crossNames('D', PCM_DATA_LINES),
+        ordered: true,
+        shy: true,
+        help: 'Two neighbouring data wires swapped between the ROM and the DAC. The pitch holds and every word is bent the same way: a low pair adds grit to the quiet parts, and D6↔D7 trades the sign for the bit below it, so a word just either side of zero lands half the scale away and quiet passages come out as a loud buzz.',
       },
       {
         key: 'pcmRunOn',

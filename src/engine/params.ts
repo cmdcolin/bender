@@ -457,6 +457,8 @@ export const PARAM_DEFS = [
   ['pcmDataLine', 'step'],
   ['pcmDataFault', 'step'],
   ['pcmBusCut', 'slew'],
+  ['pcmAddrCross', 'step'],
+  ['pcmDataCross', 'step'],
   ['pcmRunOn', 'slew'],
   ['pcmWrite', 'slew'],
   ['pcmSignDir', 'slew'],

@@ -1,6 +1,6 @@
 import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
-import { Bus, FAULT_NAMES } from '../bus.ts'
+import { Bus, cross, FAULT_NAMES } from '../bus.ts'
 import { DEST, hop } from '../modbus.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, SEQ_TO_PCM, voiceMask } from '../trigbus.ts'
@@ -150,6 +150,8 @@ export class PcmKeys implements Stage {
   private dataLine = -1
   private dataFault = 0
   private busCut = 1
+  private addrCross = 0
+  private dataCross = 0
 
   private rng = mulberry32(FAULT_SEED)
   private latched = 0
@@ -277,6 +279,7 @@ export class PcmKeys implements Stage {
       a = (a & this.keepMask) | (this.latched & ~this.keepMask)
       this.latched = own
     }
+    a = cross(a, this.addrCross)
     if (this.addrLine >= 0) {
       a = this.addrBus.read(a, this.addrLine, this.addrFault, this.busCut)
     }
@@ -285,9 +288,10 @@ export class PcmKeys implements Stage {
     let at = this.base + a
     if (at >= this.memLen) at -= this.memLen
     v.at = at
-    if (this.dataLine < 0) return (this.word(at) - DAC_STEPS) / DAC_STEPS
+    const word = cross(this.word(at), this.dataCross)
+    if (this.dataLine < 0) return (word - DAC_STEPS) / DAC_STEPS
     const d = this.dataBus.read(
-      this.word(at),
+      word,
       this.dataLine,
       this.dataFault,
       this.busCut,
@@ -400,6 +404,8 @@ export class PcmKeys implements Stage {
       bay.read(DEST.pcmDataFault),
     )
     this.busCut = clamp01(p[IDX.pcmBusCut]!)
+    this.addrCross = Math.round(p[IDX.pcmAddrCross]!)
+    this.dataCross = Math.round(p[IDX.pcmDataCross]!)
 
     const runOnBase = p[IDX.pcmRunOn]!
     const writeBase = p[IDX.pcmWrite]!

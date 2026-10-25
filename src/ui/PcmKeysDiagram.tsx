@@ -29,6 +29,8 @@ const KEYS = [
   'pcmDataLine',
   'pcmDataFault',
   'pcmBusCut',
+  'pcmAddrCross',
+  'pcmDataCross',
   'pcmEnv',
   'pcmRelease',
   'pcmTone',

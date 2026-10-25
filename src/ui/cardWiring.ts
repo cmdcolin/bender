@@ -29,8 +29,8 @@ export const PARLOR_OPENS = {
   tone: ['pcmTone'],
   mix: ['pcmLevel', 'pcmMute', 'pcmSupply'],
   vibrato: ['pcmVibrato'],
-  'addr bus': ['pcmAddrLine', 'pcmAddrFault', 'pcmBusCut'],
-  'data bus': ['pcmDataLine', 'pcmDataFault', 'pcmBusCut'],
+  'addr bus': ['pcmAddrLine', 'pcmAddrFault', 'pcmBusCut', 'pcmAddrCross'],
+  'data bus': ['pcmDataLine', 'pcmDataFault', 'pcmBusCut', 'pcmDataCross'],
 } as const satisfies Opens
 
 export const PARLOR_WIRED: Wiring = {

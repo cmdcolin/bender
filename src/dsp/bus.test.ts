@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { Bus, FAULT } from './bus.ts'
+import { Bus, cross, FAULT } from './bus.ts'
 import { romIndex } from './stages/roms.ts'
 import { pitchHz, render, rms, SR } from './testRender.ts'
 
@@ -12,6 +12,16 @@ test('a line shorted to a rail is gone from every word, in both directions', () 
   expect(bus.read(0b101101, 2, FAULT.ground, 1)).toBe(0b101001)
   expect(bus.read(0b101101, 1, FAULT.supply, 1)).toBe(0b101111)
   expect(bus.read(0b101101, 4, FAULT.supply, 1)).toBe(0b111101)
+})
+
+test('a crossed pair trades its two bits and leaves every other bit alone', () => {
+  expect(cross(0b101101, 0)).toBe(0b101101)
+  expect(cross(0b101101, 1)).toBe(0b101110)
+  expect(cross(0b101101, 2)).toBe(0b101011)
+  expect(cross(0b101101, 3)).toBe(0b101101)
+  for (let word = 0; word < 64; word++)
+    for (let pair = 1; pair < 6; pair++)
+      expect(cross(cross(word, pair), pair)).toBe(word)
 })
 
 // Bridged lines are not stuck — they have simply stopped being able to

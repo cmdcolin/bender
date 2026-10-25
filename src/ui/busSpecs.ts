@@ -9,6 +9,8 @@ import type { ControlKey } from '../controls.ts'
 export interface Ribbon {
   line: ControlKey
   fault: ControlKey
+  /** Which neighbouring pair of wires is crossed, 0 for none. */
+  cross?: ControlKey
 }
 
 type Pin =
@@ -66,10 +68,11 @@ export interface BusSpec {
 export const choice = (key: ControlKey, value: number) =>
   sliderFor(key).choices![Math.round(value)]!
 
-const ribbon = (line: ControlKey, fault: ControlKey): Ribbon => ({
-  line,
-  fault,
-})
+const ribbon = (
+  line: ControlKey,
+  fault: ControlKey,
+  cross?: ControlKey,
+): Ribbon => ({ line, fault, cross })
 
 export const BUS_SPECS: Record<string, BusSpec> = {
   'Plinky|knife on the bus': {
@@ -161,8 +164,8 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       {
         chips: ['counter', 'sample ROM', 'DAC'],
         links: [
-          [ribbon('pcmAddrLine', 'pcmAddrFault')],
-          [ribbon('pcmDataLine', 'pcmDataFault')],
+          [ribbon('pcmAddrLine', 'pcmAddrFault', 'pcmAddrCross')],
+          [ribbon('pcmDataLine', 'pcmDataFault', 'pcmDataCross')],
         ],
       },
     ],

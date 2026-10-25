@@ -477,6 +477,8 @@ export const DEFAULT_CONTROLS = {
   pcmDataLine: 0,
   pcmDataFault: 0,
   pcmBusCut: 1,
+  pcmAddrCross: 0,
+  pcmDataCross: 0,
   pcmRunOn: 0,
   pcmWrite: 0,
   pcmSignDir: 0,

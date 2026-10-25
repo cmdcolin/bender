@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-557 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+559 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 55 controls are shy, mostly the ones that act on the
+names it still sets it. 57 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -478,7 +478,7 @@ puts the knife on, and the rows under it show the controls it set:
   still
 
 <details>
-<summary>21 controls</summary>
+<summary>23 controls</summary>
 
 | control                            | range                                                                                                     | what it does                                                                                                                                                                |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -499,6 +499,8 @@ puts the knife on, and the rows under it show the controls it set:
 | Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires carrying the ROM’s output the knife is on                                                                                                          |
 | Data fault                         | cut, to ground, to +V, bridged                                                                            | To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was |
 | Cut depth                          | off to full                                                                                               | How far through the trace the knife cuts; only the cut fault uses it                                                                                                        |
+| Crossed address †                  | 14 of them, off through A12↔A13                                                                           | Two neighbouring address wires swapped between the counter and the ROM                                                                                                      |
+| Crossed data †                     | off, D0↔D1, D1↔D2, D2↔D3, D3↔D4, D4↔D5, D5↔D6, D6↔D7                                                      | Two neighbouring data wires swapped between the ROM and the DAC                                                                                                             |
 | Loop overrun                       | off to full                                                                                               | Weakens the comparator that sends the counter back to the loop start                                                                                                        |
 | Write strobe                       | off to full                                                                                               | Bridges the memory’s write strobe to the DAC clock, so the mix word ahead of the envelopes lands back in memory at the address a voice just read                            |
 | Sign on up/down                    | off to full                                                                                               | Wires the sign bit of each word through a marginal flip-flop to the counter’s up/down pin                                                                                   |
