@@ -5,11 +5,18 @@ import { afterEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
-import { setListView } from './listView.ts'
+import { GROUPS } from './controls/index.ts'
+import { setListView, setStageDrawings } from './listView.ts'
+import { OpenGroup } from './Section.tsx'
 import { StageList } from './StageList.tsx'
 import './testDom.ts'
 
-afterEach(() => act(() => setListView(false)))
+afterEach(() =>
+  act(() => {
+    setListView(false)
+    setStageDrawings(true)
+  }),
+)
 
 test('the list view stacks every stage on the board in place of the map', () => {
   render(<App />)
@@ -41,4 +48,18 @@ test('the list rolls, undoes and resets every stage in it at once', () => {
   act(() => screen.getAllByRole('button', { name: 'randomize' })[0]!.click())
   act(() => screen.getAllByRole('button', { name: /^reset \d+$/ })[0]!.click())
   expect(engine.controls.get()).toEqual(before)
+})
+
+test('a stage opens on its settings until the menu turns the diagrams on', () => {
+  act(() => setStageDrawings(false))
+  const plinky = GROUPS.find(g => g.name === 'Plinky')!
+  render(<OpenGroup group={plinky} onClose={() => {}} seconds={0} />)
+  const view = () => within(screen.getByRole('group', { name: 'Plinky view' }))
+  const pressed = () =>
+    view()
+      .getAllByRole('button')
+      .find(b => b.getAttribute('aria-pressed') === 'true')?.textContent
+  expect(pressed()).toBe('all settings')
+  act(() => setStageDrawings(true))
+  expect(pressed()).toBe('diagram')
 })

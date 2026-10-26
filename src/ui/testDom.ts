@@ -7,6 +7,7 @@ import { engine } from '../engine/engine.ts'
 import { bendRow, bendShape, redealEvery } from './bendKeys.ts'
 import { clearAdded } from './fitted.ts'
 import { letterKeys } from './letters.ts'
+import { stageDrawings } from './listView.ts'
 
 // What the panel needs under it that jsdom does not have, and a board back
 // where it booted between tests. Imported for its hooks — `import './testDom.ts'`
@@ -206,6 +207,10 @@ function resetBoard() {
   clearAdded()
   onGlass = false
 }
+
+// Most of these tests are about a stage's drawing, which a fresh profile opens
+// without. Set on import, because some test files walk the stages at load.
+stageDrawings.set(true)
 
 beforeAll(() => {
   stubAudio()

@@ -35,7 +35,7 @@ import {
   type Verbs,
 } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
-import { listView, VIEWS } from './listView.ts'
+import { listView, stageDrawings, VIEWS } from './listView.ts'
 import { MicCap } from './MicJacks.tsx'
 import { MicPatch, MicSwitch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
@@ -336,7 +336,9 @@ export function OpenGroup({
   stacked?: boolean
 }) {
   const shownEditors = useStoreValue(bench)
-  const listedEverywhere = useStoreValue(listView)
+  const listedPanel = useStoreValue(listView)
+  const drawnStages = useStoreValue(stageDrawings)
+  const listedEverywhere = listedPanel || !drawnStages
   const [here, setHere] = useState<{ everywhere: boolean; listed: boolean }>()
   const listed =
     here?.everywhere === listedEverywhere ? here.listed : listedEverywhere

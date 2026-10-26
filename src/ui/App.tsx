@@ -28,7 +28,7 @@ import { Instruments } from './Instruments.tsx'
 import { isTyping } from './isTyping.ts'
 import { remapOpen } from './keymap.ts'
 import { KeysDialog } from './KeysDialog.tsx'
-import { listView } from './listView.ts'
+import { listView, setStageDrawings, stageDrawings } from './listView.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
@@ -210,6 +210,7 @@ function AppMenu({
 }) {
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
+  const drawings = useStoreValue(stageDrawings)
   const pick = (then: () => void) => () => {
     setOpen(false)
     then()
@@ -262,6 +263,13 @@ function AppMenu({
             </button>
           )}
           <MidiMenuItem className={menuItem(false)} onPick={pick(onMidi)} />
+          <button
+            role="menuitem"
+            className={menuItem(false)}
+            onClick={pick(() => setStageDrawings(!drawings))}
+          >
+            {drawings ? 'hide stage diagrams' : 'show stage diagrams'}
+          </button>
         </Menu>
       )}
     </>

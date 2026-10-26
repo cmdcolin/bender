@@ -154,3 +154,12 @@ export async function until(page: Page, expression: string, ms = 60_000) {
     await sleep(100)
   }
 }
+
+/** Reload with the stage drawings on, which a fresh profile opens without. */
+export async function drawingsOn(page: Page) {
+  await page.send('Runtime.evaluate', {
+    expression: `localStorage.setItem('bender.stageDrawings', '1'); window.stale = true`,
+  })
+  await page.send('Page.reload')
+  await until(page, `!window.stale && ${APP_READY}`)
+}

@@ -5,6 +5,7 @@ import {
   chromePath,
   sleep,
   APP_READY,
+  drawingsOn,
   until,
   type Page,
 } from './chrome.ts'
@@ -275,6 +276,7 @@ async function shoot(url: string, shot: Shot, into: string) {
       mobile: false,
     })
     await until(page, APP_READY)
+    await drawingsOn(page)
     await dismissStart(page)
     await sleep(300)
     if (shot.act) {

@@ -3,6 +3,7 @@ import {
   chromePath,
   sleep,
   APP_READY,
+  drawingsOn,
   until,
   type Page,
 } from './chrome.ts'
@@ -79,6 +80,7 @@ async function main() {
       mobile: false,
     })
     await until(page, APP_READY)
+    await drawingsOn(page)
     await ask(
       page,
       `[...document.querySelectorAll('button')].find(e => (e.textContent ?? '').trim().toLowerCase().includes('look at it in silence'))?.click()`,

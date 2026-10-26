@@ -15,3 +15,14 @@ export function setListView(on: boolean) {
   listView.set(on)
   write(KEY, on ? '1' : '0')
 }
+
+const DRAWINGS_KEY = 'bender.stageDrawings'
+
+/** Whether an opened stage starts on its drawing. Off by default, so a first
+    look at a stage shows plain sliders. */
+export const stageDrawings = createStore(read(DRAWINGS_KEY) === '1')
+
+export function setStageDrawings(on: boolean) {
+  stageDrawings.set(on)
+  write(DRAWINGS_KEY, on ? '1' : '0')
+}
