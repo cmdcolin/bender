@@ -6,7 +6,7 @@ import { FAULT } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { ModBus } from '../modbus.ts'
 import { spectrum } from '../spectrum.ts'
-import { BLOCK, type Ctx } from '../stage.ts'
+import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import { render, renderBender, rms, SR } from '../testRender.ts'
 import { TriggerBus } from '../trigbus.ts'
 import {
@@ -39,6 +39,7 @@ const blank = (): Ctx => ({
   send: new Float32Array(BLOCK),
   bright: new Float32Array(BLOCK),
   gnd: new Float32Array(BLOCK),
+  regs: new Uint8Array(GLINT_REGS),
   heat: 0,
   fbDest: 0,
   mod: new ModBus(SR, 1),

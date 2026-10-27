@@ -4,6 +4,7 @@ import { snap } from '../../scale.ts'
 import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
+import { GLINT_REGS, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, N_DRUM_VOICES, SEQ_TO_FM, voiceMask } from '../trigbus.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
@@ -46,8 +47,6 @@ import {
 } from './fmVoices.ts'
 import { WIRE_REBOOT, WIRE_STUCK, WIRE_TOY } from './toySfx.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage.ts'
-
 // The other chip on the board: two operators a voice, four voices, and a
 // register file the CPU writes over a bus.
 //
@@ -69,7 +68,7 @@ import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 const N_CH = 4
 const DATA_WIDTH = 8
 const ADDR_WIDTH = 6
-const N_REGS = 64
+const N_REGS = GLINT_REGS
 
 // Where the percussion bank starts. Set the mode bit and everything from here
 // up stops belonging to the keyboard: the bass drum on the first of them, and
@@ -1656,9 +1655,8 @@ export class FmChip implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
-    // The kit owns the reported load and writes it first, so this adds to it:
-    // two chips on one supply are two chips' worth of current.
     rail.drawing += load / io.n
+    if (p[IDX.pcmGlint]! > 0) ctx.regs.set(this.regs)
   }
 
   // The four slots through the one converter. A stuck counter sends one

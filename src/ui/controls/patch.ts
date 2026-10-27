@@ -335,6 +335,7 @@ export const PATCH_GROUPS: Group[] = [
             'kit step tap',
             'toy kit on addr',
             'ground bounce',
+            'keys Glint on bus',
           ],
           groups: [
             {
@@ -438,6 +439,7 @@ export const PATCH_GROUPS: Group[] = [
                 'keys write strobe',
                 'keys sign on up/down',
                 'keys shared latch',
+                'keys Glint on bus',
               ],
             },
             {

@@ -9,7 +9,13 @@ import {
 import { pedalOrderAt } from '../pedals.ts'
 import { MIC } from './micJacks.ts'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
-import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage.ts'
+import {
+  BLOCK,
+  GLINT_REGS,
+  type Ctx,
+  type Stage,
+  type StereoBlock,
+} from './stage.ts'
 import { CRUSH_REF_TOY, CRUSH_WITH_TAP } from './stages/crusher.ts'
 import { RING_FROM_TAP } from './stages/ringmod.ts'
 import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
@@ -373,6 +379,7 @@ export class Chain {
       send: new Float32Array(BLOCK),
       bright: new Float32Array(BLOCK),
       gnd: new Float32Array(BLOCK),
+      regs: new Uint8Array(GLINT_REGS),
       heat: 0,
       fbDest: 0,
       mod: new ModBus(sr, seed ^ 0x51f),
@@ -434,6 +441,7 @@ export class Chain {
     this.ctx.send.fill(0)
     this.ctx.bright.fill(0)
     this.ctx.gnd.fill(0)
+    this.ctx.regs.fill(0)
     this.ground.reset()
     this.ctx.heat = 0
     this.thermal.reset()

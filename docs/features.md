@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-565 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+566 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Eight bends, six slots.** You pick which are on the board and in what order,
   so two always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 139 destinations, among
+- **A patch bay that modulates itself.** Four wires, 140 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 59 controls are shy, mostly the ones that act on the
+names it still sets it. 60 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -481,7 +481,7 @@ puts the knife on, and the rows under it show the controls it set:
   still
 
 <details>
-<summary>23 controls</summary>
+<summary>24 controls</summary>
 
 | control                            | range                                                                                                     | what it does                                                                                                                                                                |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -504,6 +504,7 @@ puts the knife on, and the rows under it show the controls it set:
 | Cut depth                          | off to full                                                                                               | How far through the trace the knife cuts; only the cut fault uses it                                                                                                        |
 | Crossed address †                  | 14 of them, off through A12↔A13                                                                           | Two neighbouring address wires swapped between the counter and the ROM                                                                                                      |
 | Crossed data †                     | off, D0↔D1, D1↔D2, D2↔D3, D3↔D4, D4↔D5, D5↔D6, D6↔D7                                                      | Two neighbouring data wires swapped between the ROM and the DAC                                                                                                             |
+| Glint on bus †                     | off, D7, D7–D6, D7–D5, D7–D4, D7–D3, D7–D2, D7–D1, D7–D0                                                  | Solders the six low address wires and the top data wires onto Glint’s register file, so each voice reads Glint’s 64 registers as its wave                                   |
 | Loop overrun                       | off to full                                                                                               | Weakens the comparator that sends the counter back to the loop start                                                                                                        |
 | Write strobe                       | off to full                                                                                               | Bridges the memory’s write strobe to the DAC clock, so the mix word ahead of the envelopes lands back in memory at the address a voice just read                            |
 | Sign on up/down                    | off to full                                                                                               | Wires the sign bit of each word through a marginal flip-flop to the counter’s up/down pin                                                                                   |
@@ -1254,7 +1255,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 139 of them, filt cut through ground bounce                                                                            | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 140 of them, filt cut through keys Glint on bus                                                                        | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

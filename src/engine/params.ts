@@ -467,6 +467,7 @@ export const PARAM_DEFS = [
   ['pcmWrite', 'slew'],
   ['pcmSignDir', 'slew'],
   ['pcmLatch', 'slew'],
+  ['pcmGlint', 'step'],
 
   ['monoLevel', 'slew'],
   ['monoMute', 'ramp'],

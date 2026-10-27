@@ -2325,6 +2325,27 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Two neighbouring data wires swapped between the ROM and the DAC. The pitch holds and every word is bent the same way: a low pair adds grit to the quiet parts, and D6↔D7 trades the sign for the bit below it, so a word just either side of zero lands half the scale away and quiet passages come out as a loud buzz.',
       },
       {
+        key: 'pcmGlint',
+        lane: 'keys Glint on bus',
+        part: 'knife on the bus',
+        label: 'Glint on bus',
+        min: 0,
+        max: PCM_DATA_LINES,
+        step: 1,
+        unit: '',
+        choices: [
+          'off',
+          'D7',
+          ...Array.from(
+            { length: PCM_DATA_LINES - 1 },
+            (_, i) => `D7–D${PCM_DATA_LINES - 2 - i}`,
+          ),
+        ],
+        ordered: true,
+        shy: true,
+        help: 'Solders the six low address wires and the top data wires onto Glint’s register file, so each voice reads Glint’s 64 registers as its wave. The control counts data wires down from D7, and at D7–D0 the wave is the register file alone. Every write Glint makes reshapes the wave: each note rewrites its pitch and key bytes, and an effect script rewrites it hundreds of times a second. The 64-word table sounds about six semitones over the key. Glint’s knives, Toy on bus and cold boot reach Parlor through the wires. While Glint is down, Parlor reads the registers as Glint left them.',
+      },
+      {
         key: 'pcmRunOn',
         lane: 'keys loop overrun',
         label: 'Loop overrun',

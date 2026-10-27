@@ -507,6 +507,16 @@ reaches the counter and the data.
     pad becomes a rectified buzz.
   - Lower wires punch a notch through each word, which sounds as gravel.
   - A bridge puts the words on a lattice and the wave in steps.
+- **Glint on bus:** solders the six low address wires and the top data wires
+  onto Glint's register file, so each voice reads Glint's 64 registers as its
+  wave.
+  - The control counts data wires down from D7. At D7–D0 the wave is the
+    register file alone.
+  - Each Glint note rewrites the pitch and key bytes, and an effect script
+    rewrites the wave hundreds of times a second.
+  - The table sounds about six semitones over the key.
+  - Glint's knives, Toy on bus and cold boot reach Parlor through the wires.
+  - While Glint is down, Parlor reads the registers as Glint left them.
 - _Tone:_ the two-pole filter against the images over every voice, since the ROM
   was cut at 9.9 kHz with no interpolation.
 - _ROM clock:_ drags the counter, so pitch and aliasing move together.

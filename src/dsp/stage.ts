@@ -61,6 +61,7 @@ export interface Ctx {
    */
   bright: Float32Array
   gnd: Float32Array
+  regs: Uint8Array
   /**
    * Last block's output, mono, taken where the feedback bus is tapped: past the
    * dc blocker and the safety clipper, before the limiter. What a record head
@@ -89,6 +90,7 @@ export interface Stage {
 }
 
 export const BLOCK = 128
+export const GLINT_REGS = 64
 
 // Blocks between meter posts. Everything downstream draws off a frame callback,
 // so posting faster than a frame buys nothing and costs the audio thread a 2 kB

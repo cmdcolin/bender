@@ -363,3 +363,18 @@ test('a shared latch reads each voice of a chord from its neighbour’s place', 
   expect(rms(latched)).toBeGreaterThan(0.005)
   expect(differs(tail(held({}, 12, 0.6), 0.3), lone)).toBeLessThan(0.15)
 })
+
+test('Glint on the bus plays Glint’s register file as the wave', () => {
+  const run = (pcmGlint: number, fmLevel: number) =>
+    tail(
+      play({ ...ALONE, pcmGlint, fmLevel }, 1.2, b => {
+        b.transport.tune = true
+        b.pcmKeys.noteOn(12)
+      }).out,
+      0.6,
+    )
+  const bridged = run(8, 0.001)
+  expect(rms(bridged)).toBeGreaterThan(0.01)
+  expect(differs(run(0, 0.001), bridged)).toBeGreaterThan(0.3)
+  expect(rms(run(8, 0))).toBeLessThan(rms(bridged) / 20)
+})

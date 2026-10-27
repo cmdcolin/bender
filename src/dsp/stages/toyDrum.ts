@@ -26,7 +26,7 @@ import { IDX, packParams } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { DEST, hop, ModBus } from '../modbus.ts'
-import { BLOCK } from '../stage.ts'
+import { BLOCK, GLINT_REGS } from '../stage.ts'
 import { Supplies, SupplyTap } from '../supplies.ts'
 import { ToyRail } from '../toyRail.ts'
 import { Transport } from '../transport.ts'
@@ -2114,6 +2114,7 @@ function cutRom(): DrumSlabs {
     fm: new Float32Array(BLOCK),
     bright: new Float32Array(BLOCK),
     gnd: new Float32Array(BLOCK),
+    regs: new Uint8Array(GLINT_REGS),
     send: new Float32Array(BLOCK),
     heat: 0,
     fbDest: 0,

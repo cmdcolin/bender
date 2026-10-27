@@ -2,6 +2,7 @@ import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
 import { Bus, cross, FAULT_NAMES } from '../bus.ts'
 import { DEST, hop } from '../modbus.ts'
+import { GLINT_REGS, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, SEQ_TO_PCM, voiceMask } from '../trigbus.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
@@ -20,7 +21,6 @@ import {
   SAMPLED,
 } from './pcmRom.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { Sampler } from './sampler.ts'
 
 const N_VOICES = 4
@@ -152,6 +152,8 @@ export class PcmKeys implements Stage {
   private busCut = 1
   private addrCross = 0
   private dataCross = 0
+  private glintMask = 0
+  private regs: Uint8Array | null = null
 
   private rng = mulberry32(FAULT_SEED)
   private latched = 0
@@ -288,7 +290,11 @@ export class PcmKeys implements Stage {
     let at = this.base + a
     if (at >= this.memLen) at -= this.memLen
     v.at = at
-    const word = cross(this.word(at), this.dataCross)
+    let word = cross(this.word(at), this.dataCross)
+    if (this.glintMask)
+      word =
+        (word & ~this.glintMask) |
+        ((this.regs![a & (GLINT_REGS - 1)]! ^ 0x80) & this.glintMask)
     if (this.dataLine < 0) return (word - DAC_STEPS) / DAC_STEPS
     const d = this.dataBus.read(
       word,
@@ -406,6 +412,13 @@ export class PcmKeys implements Stage {
     this.busCut = clamp01(p[IDX.pcmBusCut]!)
     this.addrCross = Math.round(p[IDX.pcmAddrCross]!)
     this.dataCross = Math.round(p[IDX.pcmDataCross]!)
+    const glint = hop(
+      p[IDX.pcmGlint]!,
+      PCM_DATA_LINES + 1,
+      bay.read(DEST.pcmGlint),
+    )
+    this.glintMask = (0xff << (PCM_DATA_LINES - glint)) & 0xff
+    this.regs = ctx.regs
 
     const runOnBase = p[IDX.pcmRunOn]!
     const writeBase = p[IDX.pcmWrite]!

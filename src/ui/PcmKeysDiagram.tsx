@@ -41,6 +41,7 @@ const KEYS = [
   'pcmWrite',
   'pcmSignDir',
   'pcmLatch',
+  'pcmGlint',
 ] as const
 
 type Key = (typeof KEYS)[number]

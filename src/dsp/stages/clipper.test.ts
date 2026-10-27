@@ -6,7 +6,7 @@ import { buildBender } from '../build.ts'
 import { MIC } from '../micJacks.ts'
 import { ModBus } from '../modbus.ts'
 import { magnitudes, spectrum } from '../spectrum.ts'
-import { BLOCK, type Ctx } from '../stage.ts'
+import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import { SUPPLY, Supplies } from '../supplies.ts'
 import { makeIo, rms, SR } from '../testRender.ts'
 import { ToyRail } from '../toyRail.ts'
@@ -30,6 +30,7 @@ const blank = (): Ctx => ({
   send: new Float32Array(BLOCK),
   bright: new Float32Array(BLOCK),
   gnd: new Float32Array(BLOCK),
+  regs: new Uint8Array(GLINT_REGS),
   heat: 0,
   fbDest: 0,
   mod: new ModBus(SR, 1),
