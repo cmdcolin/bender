@@ -332,6 +332,7 @@ export const PATCH_GROUPS: Group[] = [
             'oct rate',
             'oct chaos',
             'kit wander',
+            'kit step tap',
           ],
           groups: [
             {
@@ -389,6 +390,7 @@ export const PATCH_GROUPS: Group[] = [
                 'kit addr line',
                 'kit addr fault',
                 'kit DAC ref',
+                'kit step tap',
               ],
             },
             {

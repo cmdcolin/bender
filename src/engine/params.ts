@@ -289,6 +289,7 @@ export const PARAM_DEFS = [
   ['drumDataFault', 'step'],
   ['drumBusCut', 'slew'],
   ['drumSlip', 'slew'],
+  ['drumStepTap', 'slew'],
   ['drumChance', 'slew'],
   ['drumWander', 'slew'],
 

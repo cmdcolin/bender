@@ -295,6 +295,7 @@ export const DEFAULT_CONTROLS = {
   drumDataFault: 0,
   drumBusCut: 1,
   drumSlip: 0,
+  drumStepTap: 0,
   drumChance: 0.5,
   drumWander: 0,
 

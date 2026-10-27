@@ -570,6 +570,14 @@ with.
   - The pattern walks against the accent row and any row not sixteen steps long.
   - _Kit sync_ keeps the toy at the requested tempo while the kit slips.
   - At maximum the machine stays on one step at the step rate.
+- **Step tap:** clocks the step counter off a stage of Plinky's melody divider
+  in place of the tempo knob.
+  - High notes run the pattern fast and low notes slow, and a rest keeps the
+    last note's rate.
+  - The knob moves the wire from the sixth stage to the first. At the top the
+    counter steps at the note's pitch, so the pattern plays as a tone, and each
+    row you write changes its timbre.
+  - The kit stops while Plinky is down.
 - **Counter reset:** a voice's trigger line soldered to the counter's
   synchronous clear. After that voice strikes, the next clock edge loads step
   one.

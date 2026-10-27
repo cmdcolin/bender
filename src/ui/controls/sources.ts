@@ -1402,6 +1402,18 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'The wire clocking the step counter, and how often an edge comes out too slow to get over the threshold. Nothing is fetched wrong: the strobe lands, the memory answers and the step fires — the counter simply has not moved, so that step plays twice and the bar comes out a step longer than the one before it. The phase never comes back, so the kit walks against the accent row, against every row whose length is not sixteen, and against anything following its clock. All the way up nothing gets over the threshold at all and the machine stands on one step.',
       },
       {
+        key: 'drumStepTap',
+        lane: 'kit step tap',
+        part: 'knife on the bus',
+        label: 'Step tap',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'Clocks the step counter off a stage of Plinky’s melody divider in place of the tempo knob. High notes run the pattern fast and low notes slow, and a rest holds the last note’s rate. The knob moves the wire from the sixth stage to the first. Low on the knob the beat follows the tune. At the top the counter steps at the note’s pitch, the pattern sounds as a tone, and each row you write changes its timbre. Trigger floor divides the tone down. The kit stops while Plinky is down.',
+      },
+      {
         key: 'drumLoop',
         part: 'knife on the bus',
         label: 'Pattern loop',

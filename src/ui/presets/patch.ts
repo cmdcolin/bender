@@ -191,6 +191,7 @@ const LANDINGS: Landing[] = [
   at('dist pin gain', ['distMix'], { bend: 'dist' }),
   at('oct rate', ['octMix'], { bend: 'oct' }),
   at('oct chaos', ['octMix'], { bend: 'oct' }),
+  at('kit step tap', ['drumLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

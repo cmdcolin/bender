@@ -6,6 +6,7 @@ import { IDX, packParams } from '../../engine/params.ts'
 import { buildBender } from '../build.ts'
 import { DEST } from '../modbus.ts'
 import { spectrum } from '../spectrum.ts'
+import { BLOCK } from '../stage.ts'
 import {
   bin,
   deviation,
@@ -1740,4 +1741,38 @@ test('a word wider than the ladder reads as the whole ladder', () => {
   const wide = render({ ...at, drumBits: 24 }, 0.5)
   expect(wide.every(Number.isFinite)).toBe(true)
   expect(wide).toEqual(render({ ...at, drumBits: 16 }, 0.5))
+})
+
+const tapSteps = (tap: number, seconds: number) => {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  built.transport.tune = true
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0,
+    drumLevel: 1,
+    drumStepTap: tap,
+  })
+  const io = makeIo()
+  let steps = 0
+  let was = built.toyDrum.tick
+  for (let b = 0; b < (seconds * SR) / BLOCK; b++) {
+    built.chain.process(io, p)
+    steps += (built.toyDrum.tick - was + CYCLE) % CYCLE
+    was = built.toyDrum.tick
+  }
+  return steps
+}
+
+test('a step tap runs the kit off the melody divider, an octave a sixth of the knob', () => {
+  const low = tapSteps(1 / 6, 4)
+  const mid = tapSteps(0.5, 4)
+  expect(mid / low).toBeGreaterThan(3.6)
+  expect(mid / low).toBeLessThan(4.4)
+  expect(tapSteps(1, 1)).toBeGreaterThan(150)
+})
+
+test('a step tap at zero is the kit it always was', () => {
+  const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
+  expect(render({ ...look, drumStepTap: 0 }, 1)).toEqual(render(look, 1))
 })

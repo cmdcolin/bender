@@ -53,6 +53,7 @@ export class TriggerBus {
   /** The bar the kit last planned, and the faults Wander put on its columns. */
   wanderBar = -1
   readonly wanderEvents = new Uint8Array(STEPS)
+  readonly melodyHz = new Float32Array(BLOCK)
   /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
   readonly key = new Float32Array(BLOCK)
   /** Whether a hand is still on that key. A gate line carries a level and not
@@ -145,6 +146,7 @@ export class TriggerBus {
     this.kitStepHz = this.pendStepHz
     this.pendStepHz = 0
     this.drumStepLen = this.pendStepLen
+    this.melodyHz.fill(0, 0, n)
     this.key.fill(0, 0, n)
     this.keyHeld.fill(0, 0, n)
     this.seqKey.fill(0, 0, n)
@@ -167,6 +169,7 @@ export class TriggerBus {
     this.wanderEvents.fill(0)
     this.drumStepLen = 0
     this.pendStepLen = 0
+    this.melodyHz.fill(0)
     this.key.fill(0)
     this.keyHeld.fill(0)
     this.seqKey.fill(0)

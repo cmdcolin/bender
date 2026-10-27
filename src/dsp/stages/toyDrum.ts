@@ -259,6 +259,10 @@ const BANK_SYNC_TANK = [-1, 0, 1]
 // that supply, so the kick and the tom stay where they are.
 const BANK_STARVE_OCT = 3
 
+const TAP_STAGES = 6
+const tapDivisor = (tap: number) => octaves(TAP_STAGES * (1 - tap))
+const MIN_STEP_HZ = 0.01
+
 /** Which voice's trigger line holds up the metal bank's supply. Off, the bank
     free-runs; wired, the six stand still whenever that voice is silent. */
 export const BANK_GATE_NAMES = ['off', ...VOICE_LABELS.map(l => `on the ${l}`)]
@@ -1169,7 +1173,17 @@ export class ToyDrum implements Stage {
     const clock = rail.clockFactor
     const stepHz = (p[IDX.drumBpm]! / 60) * 4 * clock
     const modTempo = ctx.mod.read(DEST.drumBpm)
-    this.stepMs = 1000 / (modTempo ? stepHz * octaves(modTempo[0]!) : stepHz)
+    const tapBase = p[IDX.drumStepTap]!
+    const modTap = ctx.mod.read(DEST.drumStepTap)
+    const melody = ctx.trig.melodyHz
+    const rateAt = (i: number) => {
+      const tap = modTap
+        ? Math.min(Math.max(tapBase + modTap[i]!, 0), 1)
+        : tapBase
+      if (tap > 0) return melody[i]! / tapDivisor(tap)
+      return modTempo ? stepHz * octaves(modTempo[i]!) : stepHz
+    }
+    this.stepMs = 1000 / Math.max(rateAt(0), MIN_STEP_HZ)
     if (this.transport.drums) ctx.trig.kitClocking(1000 / this.stepMs)
     const baseSwing = p[IDX.drumSwing]!
     const modSwing = ctx.mod.read(DEST.drumSwing)
@@ -1437,8 +1451,8 @@ export class ToyDrum implements Stage {
           0.9,
         )
         const span = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
-        this.stepClock +=
-          (modTempo ? stepHz * octaves(modTempo[i]!) : stepHz) / this.sr
+        const rate = rateAt(i)
+        this.stepClock += rate / this.sr
         if (this.stepClock >= span) {
           this.stepClock -= span
           // A knife on the counter's clock, which is the one wire on this
@@ -1466,9 +1480,7 @@ export class ToyDrum implements Stage {
           const col = this.tick % STEPS
           const late = asNudge(p[NUDGE_IDX[col]!]!) / NUDGE_PARTS
           const next = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
-          const stepS =
-            (next * this.sr) /
-            (modTempo ? stepHz * octaves(modTempo[i]!) : stepHz)
+          const stepS = (next * this.sr) / Math.max(rate, MIN_STEP_HZ)
           if (!missed) ctx.trig.stepClocked(i, this.tick, stepS)
           if (!missed && col === 0) this.planBar(p, ctx)
           this.repeats = Math.max(

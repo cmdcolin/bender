@@ -1546,6 +1546,7 @@ export class ToyChip implements Stage {
       out *= level * 0.4
       supplies.tick(rail, i, Math.abs(out))
       ctx.step[i] = this.stepClock
+      ctx.trig.melodyHz[i] = rail.booting || rail.dead ? 0 : this.melodyHz
       // The chip's gate, brought out to the bus whether anything is soldered to
       // it or not: a note struck is a note struck, whether the ROM struck it,
       // your hand struck it or a drum hit came back round and struck it.
