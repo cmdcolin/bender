@@ -1,4 +1,4 @@
-import { N_DRUM_VOICES } from '../drums.ts'
+import { N_DRUM_VOICES, STEPS } from '../drums.ts'
 import { BLOCK } from './stage.ts'
 
 export { N_DRUM_VOICES }
@@ -50,6 +50,9 @@ export class TriggerBus {
   drumStepLen = 0
   /** The kit's unswung step rate last block, or 0 while its clock is stopped. */
   kitStepHz = 0
+  /** The bar the kit last planned, and the faults Wander put on its columns. */
+  wanderBar = -1
+  readonly wanderEvents = new Uint8Array(STEPS)
   /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
   readonly key = new Float32Array(BLOCK)
   /** Whether a hand is still on that key. A gate line carries a level and not
@@ -95,6 +98,11 @@ export class TriggerBus {
 
   get stepLenNow() {
     return this.pendStepLen
+  }
+
+  wandered(bar: number, events: Uint8Array) {
+    this.wanderBar = bar
+    this.wanderEvents.set(events)
   }
 
   kitClocking(stepHz: number) {
@@ -155,6 +163,8 @@ export class TriggerBus {
     this.pendStep.fill(0)
     this.kitStepHz = 0
     this.pendStepHz = 0
+    this.wanderBar = -1
+    this.wanderEvents.fill(0)
     this.drumStepLen = 0
     this.pendStepLen = 0
     this.key.fill(0)

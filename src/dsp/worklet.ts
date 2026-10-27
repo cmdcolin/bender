@@ -82,6 +82,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       drumClock: 0,
       drumStepMs: 0,
       hits: 0,
+      strays: 0,
       tunePos: 0,
       tuneFrac: 0,
       monoSeqPos: 0,
@@ -366,6 +367,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.drumClock = this.built.toyDrum.stepClock
       m.drumStepMs = this.built.toyDrum.stepMs
       m.hits = this.built.toyDrum.takeFired()
+      m.strays = this.built.toyDrum.wander.packed
       m.tunePos = this.built.toyChip.tunePos
       m.tuneFrac = this.built.toyChip.tuneFrac
       m.monoSeqPos = this.built.melody.at

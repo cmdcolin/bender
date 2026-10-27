@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { GRID_ROWS, rowText, stepBit } from '../drums.ts'
+import { packStrays, STRAYS } from '../dsp/wander.ts'
 import { engine } from '../engine/engine.ts'
 import styles from './DrumGrid.module.css'
 import { DrumGrid } from './DrumGrid.tsx'
@@ -137,4 +138,24 @@ test('the hits column spreads a row’s count evenly from its first hit', () => 
   expect(c.drumKickMaybe).toBe(0)
   fireEvent.click(screen.getByRole('button', { name: 'hits' }))
   expect(screen.getByRole('button', { name: 'len' })).toBeTruthy()
+})
+
+test('the moves row names the strays Wander put on the bar', () => {
+  render(<DrumGrid />)
+  expect(screen.queryByText(/^wander:/)).toBeNull()
+  act(() => engine.set('drumWander', 0.5))
+  act(() => engine.setDrumsPlaying(true))
+  expect(screen.getByText('wander: grid')).toBeTruthy()
+  const roll = STRAYS.findIndex(s => s.name === 'roll')
+  const fault = STRAYS.findIndex(s => s.name === 'fault')
+  act(() =>
+    engine.meter.set({
+      ...engine.meter.get(),
+      strays: packStrays(roll, fault),
+    }),
+  )
+  expect(screen.getByText('wander: roll + fault')).toBeTruthy()
+  act(() => engine.meter.set({ ...engine.meter.get(), strays: 0 }))
+  act(() => engine.setDrumsPlaying(false))
+  act(() => engine.set('drumWander', 0))
 })

@@ -9,6 +9,7 @@ import {
 import { IDX } from '../../engine/params.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
+import type { TriggerBus } from '../trigbus.ts'
 
 const EVENT_IDX = EVENT_KEYS.map(k => IDX[k])
 const BUFFER_S = 4
@@ -30,21 +31,33 @@ interface Voice {
 
 /** The fault on the kit's step `tick`, as the trigger bus carries it: one past
     the counter. A held fault throw wins over the row; a row set to fire every
-    few bars fires on the last of them. */
-export function eventOn(p: Float32Array, tick: number): number {
+    few bars fires on the last of them; Wander's fault fills a bar the row
+    leaves empty. */
+export function eventOn(
+  p: Float32Array,
+  tick: number,
+  trig?: TriggerBus,
+): number {
   const live = asEvent(p[IDX.drumEventLive]!)
   if (live !== 0) return live
   const every = EVENT_EVERY[asEventEvery(p[IDX.drumEventEvery]!)]!
   const bar = Math.floor((tick - 1) / STEPS)
-  if ((bar + 1) % every !== 0) return 0
-  return asEvent(p[EVENT_IDX[(tick - 1) % STEPS]!]!)
+  const col = (tick - 1) % STEPS
+  const set = (bar + 1) % every === 0 ? asEvent(p[EVENT_IDX[col]!]!) : 0
+  if (set !== 0 || !trig || trig.wanderBar !== bar) return set
+  return trig.wanderEvents[col]!
 }
 
 /** How many steps from `tick` on carry the same fault, so a run plays as one. */
-function runOf(p: Float32Array, tick: number, event: number): number {
+function runOf(
+  p: Float32Array,
+  tick: number,
+  event: number,
+  trig: TriggerBus,
+): number {
   if (asEvent(p[IDX.drumEventLive]!) !== 0) return LIVE_RUN
   let n = 1
-  while (n < STEPS && eventOn(p, tick + n) === event) n++
+  while (n < STEPS && eventOn(p, tick + n, trig) === event) n++
   return n
 }
 
@@ -86,6 +99,7 @@ export class StepFaults implements Stage {
   when(p: Float32Array) {
     if (this.cur.event !== 0 || this.seam > 0) return true
     if (p[IDX.drumEventLive]! !== 0) return true
+    if (p[IDX.drumWander]! !== 0) return true
     for (const idx of EVENT_IDX) if (p[idx]! !== 0) return true
     return false
   }
@@ -99,11 +113,11 @@ export class StepFaults implements Stage {
     for (let i = 0; i < io.n; i++) {
       const tick = steps[i]!
       if (tick > 0) {
-        const event = eventOn(p, tick)
+        const event = eventOn(p, tick, ctx.trig)
         const joins =
           event !== 0 && event === this.cur.event && this.cur.t < this.cur.len
         if (!joins && (event !== 0 || this.cur.event !== 0))
-          this.begin(event, len, runOf(p, tick, event))
+          this.begin(event, len, runOf(p, tick, event, ctx.trig))
       } else if (this.cur.event !== 0 && this.cur.t >= this.cur.len) {
         this.begin(0, 0, 1)
       }

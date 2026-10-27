@@ -146,6 +146,7 @@ export interface Meter {
   drumStepMs: number
   /** Voices the kit fired since the last meter, as the bit order of a step. */
   hits: number
+  strays: number
   /** Where the tune's own counter is standing and how far through that step,
       which is the clock a note played into the memory lands on. */
   tunePos: number
@@ -349,6 +350,7 @@ export class Engine {
       drumClock: 0,
       drumStepMs: 0,
       hits: 0,
+      strays: 0,
       tunePos: 0,
       tuneFrac: 0,
       monoSeqPos: 0,
@@ -621,6 +623,7 @@ export class Engine {
           drumClock: msg.drumClock,
           drumStepMs: msg.drumStepMs,
           hits: msg.hits,
+          strays: msg.strays,
           tunePos: msg.tunePos,
           tuneFrac: msg.tuneFrac,
           monoSeqPos: msg.monoSeqPos,

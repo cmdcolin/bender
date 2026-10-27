@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-561 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+562 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Eight bends, six slots.** You pick which are on the board and in what order,
   so two always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 135 destinations, among
+- **A patch bay that modulates itself.** Four wires, 136 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -228,7 +228,7 @@ puts the knife on, and the rows under it show the controls it set:
   sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>59 controls</summary>
+<summary>60 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -238,6 +238,7 @@ puts the knife on, and the rows under it show the controls it set:
 | Tempo           | 10 to 3000 bpm                                                                                                     | Sequencer clock                                                                                                                                         |
 | Swing           | 0 to 0.9                                                                                                           | Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving                                   |
 | Chance          | off to full                                                                                                        | How often a maybe step closes                                                                                                                           |
+| Wander          | off to full                                                                                                        | Now and then the kit plays a bar that strays from the grid, then goes back to it                                                                        |
 | Tune            | 0.125× to 8×                                                                                                       | The pitch trimmer inside the kit: every struck voice moves together                                                                                     |
 | Decay           | 0.25× to 16×                                                                                                       | Stretches or chokes every envelope at once                                                                                                              |
 | Ring            | off to full                                                                                                        | How much of each swing the transistor around the kick, tom and snare feeds back                                                                         |
@@ -1250,7 +1251,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 135 of them, filt cut through oct chaos                                                                                | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 136 of them, filt cut through kit wander                                                                               | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

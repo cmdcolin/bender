@@ -113,6 +113,17 @@
   composes: chip from './button.module.css';
 }
 
+.stray {
+  min-width: 22ch;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.strayOn {
+  composes: stray;
+  color: var(--accent);
+}
+
 .grid {
   display: flex;
   flex-direction: column;

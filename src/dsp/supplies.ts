@@ -140,7 +140,7 @@ export class Supplies {
     for (let i = 0; i < n; i++) {
       const tick = steps[i]!
       if (tick === 0) continue
-      const event = eventOn(p, tick)
+      const event = eventOn(p, tick, ctx.trig)
       this.dropLeft = event === EVENT.drop ? ctx.trig.drumStepLen : 0
       if (event === EVENT.reboot) this.shared.trip()
     }

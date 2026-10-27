@@ -138,6 +138,9 @@ export interface MeterMsg {
       The grid lights off this, so a hit from the mic, a bridged trigger line or
       a pad shows on the row it struck rather than only in the air. */
   hits: number
+  /** The strays Wander put on the bar the kit is playing, packed by
+      `packStrays`. */
+  strays: number
   /** Where the tune's step counter is standing, and how far through that step
       it has got — the clock a note played into the memory is quantized against.
       The chip's own, because every bend that drags it is in there. */

@@ -44,6 +44,7 @@ import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal } from '../util/softclip.ts'
+import { Wander } from '../wander.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -679,6 +680,8 @@ export class ToyDrum implements Stage {
   private clapCount = 3
   private rng: Rng
   private slipRng: Rng
+  readonly wander: Wander
+  private wanderAmt = 0
   private micTrig: Transient
   // The wires between the step counter and the pattern memory, and what a knife
   // has done to one of them. Read once a block: which trace you cut is not a
@@ -797,6 +800,7 @@ export class ToyDrum implements Stage {
     // And the clock's marginal edges off theirs, so a trace nobody has touched
     // draws nothing and the counter arrives where it always arrived.
     this.slipRng = mulberry32(seed ^ 0x5107)
+    this.wander = new Wander(mulberry32(seed ^ 0x3a4d))
     // Off its own stream: the resistors were soldered on before the kit made a
     // sound, and drawing them out of the noise source would move every hit.
     const parts = mulberry32(seed ^ 0x1adde4)
@@ -914,9 +918,17 @@ export class ToyDrum implements Stage {
         const step = this.stepAt(tick, v)
         const at = STEPS - 1 - step
         const bit = 1 << v
+        const strayed = this.wander.straying
         const cells =
-          this.loop > 0 ? this.loopCells[v]! : Math.round(p[VOICE_PARAM[v]!]!)
-        if ((Math.round(p[MAYBE_PARAM[v]!]!) >> at) & 1) {
+          this.loop > 0
+            ? this.loopCells[v]!
+            : strayed
+              ? this.wander.rows[v]!
+              : Math.round(p[VOICE_PARAM[v]!]!)
+        const maybe = strayed
+          ? this.wander.maybes[v]!
+          : Math.round(p[MAYBE_PARAM[v]!]!)
+        if ((maybe >> at) & 1) {
           if (roll) {
             const closed = this.rng() < this.chance
             if (!this.diceOnJunction || this.noiseGate > 0.5) {
@@ -934,9 +946,30 @@ export class ToyDrum implements Stage {
       if (this.loop > 0) this.circulate(bits)
     }
     const accentStep = this.stepAt(tick, ACCENT_ROW)
-    if ((Math.round(p[IDX.drumAccent]!) >> (STEPS - 1 - accentStep)) & 1)
-      bits |= ACCENT_BIT
-    return this.dataBus.read(bits, this.dataLine, this.dataFault, this.busCut)
+    const accent = this.wander.straying
+      ? this.wander.accent
+      : Math.round(p[IDX.drumAccent]!)
+    if ((accent >> (STEPS - 1 - accentStep)) & 1) bits |= ACCENT_BIT
+    const wire = this.dataLine < 0 && this.wander.wireLine >= 0
+    return this.dataBus.read(
+      bits,
+      wire ? this.wander.wireLine : this.dataLine,
+      wire ? this.wander.wireFault : this.dataFault,
+      this.busCut,
+    )
+  }
+
+  private planBar(p: Float32Array, ctx: Ctx) {
+    const w = this.wander
+    for (let v = 0; v < N_VOICES; v++) {
+      w.rows[v] = Math.round(p[VOICE_PARAM[v]!]!)
+      w.maybes[v] = Math.round(p[MAYBE_PARAM[v]!]!)
+      w.lens[v] = this.lens[v]!
+    }
+    w.accent = Math.round(p[IDX.drumAccent]!)
+    const bar = Math.floor(this.tick / STEPS)
+    w.plan(this.wanderAmt, bar)
+    ctx.trig.wandered(bar, w.events)
   }
 
   // What comes back round into the cells the counter just read. The register
@@ -1239,6 +1272,8 @@ export class ToyDrum implements Stage {
     const slotS = Math.max(p[IDX.drumSlot]!, 0) / 1e6 / clock
     const baseChance = p[IDX.drumChance]!
     const modChance = ctx.mod.read(DEST.drumChance)
+    const baseWander = p[IDX.drumWander]!
+    const modWander = ctx.mod.read(DEST.drumWander)
     this.chance = Math.min(Math.max(baseChance, 0), 1)
     this.diceOnJunction = Math.round(p[IDX.drumDice]!) === 1
     // All the way up is a voice that will not answer again until it has stopped
@@ -1392,6 +1427,7 @@ export class ToyDrum implements Stage {
       }
       if (modChance)
         this.chance = Math.min(Math.max(baseChance + modChance[i]!, 0), 1)
+      this.wanderAmt = modWander ? baseWander + modWander[i]! : baseWander
       if (this.scanBits) this.scanStep(ctx, i)
       if (this.transport.drums) {
         // Swing holds the offbeat back and takes it off the step after, so a
@@ -1434,7 +1470,11 @@ export class ToyDrum implements Stage {
             (next * this.sr) /
             (modTempo ? stepHz * octaves(modTempo[i]!) : stepHz)
           if (!missed) ctx.trig.stepClocked(i, this.tick, stepS)
-          this.repeats = RATCHETS[asRatchet(p[RATCHET_IDX[col]!]!)]!
+          if (!missed && col === 0) this.planBar(p, ctx)
+          this.repeats = Math.max(
+            RATCHETS[asRatchet(p[RATCHET_IDX[col]!]!)]!,
+            this.wander.ratchets[col]!,
+          )
           const cond = asStepCond(p[STEP_COND_IDX[col]!]!)
           this.colPlays = stepCondPlays(
             cond,

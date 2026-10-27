@@ -331,6 +331,7 @@ export const PATCH_GROUPS: Group[] = [
             'dist pin gain',
             'oct rate',
             'oct chaos',
+            'kit wander',
           ],
           groups: [
             {
@@ -377,6 +378,7 @@ export const PATCH_GROUPS: Group[] = [
                 'kit tempo',
                 'kit swing',
                 'kit chance',
+                'kit wander',
                 'kit decay',
                 'kit ring',
                 'retrigger',

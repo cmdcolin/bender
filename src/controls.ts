@@ -296,6 +296,7 @@ export const DEFAULT_CONTROLS = {
   drumBusCut: 1,
   drumSlip: 0,
   drumChance: 0.5,
+  drumWander: 0,
 
   // One sixteen-bit mask per voice, step 1 in the high bit. The kit starts
   // blank; share.ts gives links from before then the old 'rock' pattern back.

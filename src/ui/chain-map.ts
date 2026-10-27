@@ -97,6 +97,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   drumBpm: 'Clatter',
   drumSwing: 'Clatter',
   drumChance: 'Clatter',
+  drumWander: 'Clatter',
   drumDecay: 'Clatter',
   drumRing: 'Clatter',
   dlyLoopHz: 'Wraith',

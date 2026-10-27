@@ -860,6 +860,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How often a maybe step closes. Click a step twice on the grid and its contact stops going straight to the trigger line and goes through the kit’s dice instead — one knob for the whole kit, rolled fresh every time the counter reaches the step. At nothing those steps are drawn and silent; all the way up they are steps like any other; and anywhere in between is the sixteen-step pattern finally not repeating.',
       },
       {
+        key: 'drumWander',
+        lane: 'kit wander',
+        label: 'Wander',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Now and then the kit plays a bar that strays from the grid, then goes back to it. The last bar of every four strays most often. Low, a bar gets ghosts, a nudged hit, a dropped kick, a roll or a turnaround. Higher, rows shift, halve, double and trade places, the kit brakes or freezes the mix over the end of the bar, or a voice’s wire shorts for the bar. Near the top, two strays stack, and ratchets roll across the back half of the bar. The grid stays as you wrote it.',
+      },
+      {
         key: 'drumTune',
         lane: 'drum tune',
         label: 'Tune',

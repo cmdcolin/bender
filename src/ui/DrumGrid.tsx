@@ -39,6 +39,7 @@ import {
   type PanelRow,
   type StepState,
 } from '../drums.ts'
+import { strayNames } from '../dsp/wander.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
 import {
@@ -62,6 +63,22 @@ import type { ControlKey, Controls } from '../controls.ts'
 
 // Where a row's playhead stands, -1 while the kit is not running. Each row
 // reads its own, so a step redraws only the rows whose playhead moved.
+function Wandering({ live }: { live: boolean }) {
+  const wander = useControlValue('drumWander')
+  const strays = useSyncExternalStore(engine.meter.subscribe, () =>
+    live ? engine.meter.get().strays : 0,
+  )
+  if (wander <= 0) return null
+  const names = strayNames(strays)
+  return (
+    <Tip text="What Wander is doing to the bar the kit is playing. The grid plays as written on the bars it leaves alone.">
+      <span className={names.length ? styles.strayOn : styles.stray}>
+        wander: {names.length ? names.join(' + ') : 'grid'}
+      </span>
+    </Tip>
+  )
+}
+
 function useUnder(live: boolean, len: number): number {
   return useSyncExternalStore(engine.meter.subscribe, () =>
     live ? engine.meter.get().tick % len : -1,
@@ -263,6 +280,7 @@ export function DrumGrid({ staged = false }: { staged?: boolean }) {
             throw
           </button>
         </Tip>
+        <Wandering live={live} />
       </div>
 
       <div className={styles.grid}>

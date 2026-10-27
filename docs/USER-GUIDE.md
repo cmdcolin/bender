@@ -58,6 +58,19 @@ The rows under the grid work like a tracker's effect columns:
   played, **!p** only when it rested, and **F** plays only while you hold the
   **F** at the end of the row
 
+**Wander** varies the beat by itself. Now and then the kit plays one bar off the
+grid, then goes back to the grid as you wrote it:
+
+- **Low:** ghost hits, a nudged hit, a bar without the kick, a roll or a
+  turnaround
+- **Higher:** rows shift, halve, double or trade voices, the kit brakes or
+  freezes the mix over the end of the bar, or a voice's wire shorts for the bar
+- **Near the top:** two strays stack, and ratchets blast
+- The last bar of every four strays most often, and the moves row names what the
+  bar is doing
+- Wire the patch bay's phrase source to **kit wander**, and Wander rises and
+  falls over as many as 32 bars
+
 The event row's five faults also play live from the keyboard while the kit runs.
 Hold a key and the fault starts on the kit's next step and lasts until you let
 go:

@@ -337,7 +337,7 @@ export function varyPattern(masks: DrumMasks, rand: Rng): DrumMasks {
   return next
 }
 
-const rotate = (mask: number, len: number, by: number) => {
+export const rotate = (mask: number, len: number, by: number) => {
   // Steps past the row's length stay where they are: the sequencer never
   // reaches them, and turning them would be turning something nobody hears.
   let out = mask & zone(len)
@@ -364,22 +364,24 @@ export const shiftPattern = (masks: DrumMasks, lens: DrumLens, by: number) =>
 
 /** Twice as slow: every step of the first half of the bar is given two, and the
     second half is what the first half became. */
-export const halfTime = (masks: DrumMasks) =>
-  mapRows(masks, mask => {
-    let out = 0
-    for (let s = 0; s * 2 < STEPS; s++)
-      if (hasStep(mask, s)) out |= stepBit(s * 2)
-    return out
-  })
+export const halfTime = (masks: DrumMasks) => mapRows(masks, halveMask)
+
+export function halveMask(mask: number) {
+  let out = 0
+  for (let s = 0; s * 2 < STEPS; s++)
+    if (hasStep(mask, s)) out |= stepBit(s * 2)
+  return out
+}
 
 /** Twice as fast: the bar squeezed into half of itself, and said twice. */
-export const doubleTime = (masks: DrumMasks) =>
-  mapRows(masks, mask => {
-    let out = 0
-    for (let s = 0; s < STEPS; s++)
-      if (hasStep(mask, s)) out |= stepBit(Math.floor(s / 2))
-    return out | (out >>> (STEPS / 2))
-  })
+export const doubleTime = (masks: DrumMasks) => mapRows(masks, doubleMask)
+
+export function doubleMask(mask: number) {
+  let out = 0
+  for (let s = 0; s < STEPS; s++)
+    if (hasStep(mask, s)) out |= stepBit(Math.floor(s / 2))
+  return out | (out >>> (STEPS / 2))
+}
 
 /** What the panel puts above the grid. `back` is the modifier held while
     pressing: the same move the other way round, where a move has one. */

@@ -927,6 +927,7 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'pcmDataCross',
   'dlyHeadDirt',
   'distPinFb',
+  'drumWander',
 ]
 
 // Retired controls that old links still carry, each read into the control that
