@@ -169,6 +169,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   octChaos: 'Octave',
   drumStepTap: 'Clatter',
   chipKitAddr: 'Plinky',
+  gndBounce: 'Plinky',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

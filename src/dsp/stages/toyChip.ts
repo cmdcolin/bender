@@ -16,6 +16,7 @@ import { MIC } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
 import { SupplyTap, poweredUp, type Supplies } from '../supplies.ts'
 import { voiceMask } from '../trigbus.ts'
+import { GroundEdge } from '../util/bounce.ts'
 import { Burst } from '../util/burst.ts'
 import { CrossingRate } from '../util/crossings.ts'
 import { Drunk } from '../util/drift.ts'
@@ -277,6 +278,7 @@ const GHOST_COLS = [0, 4, 6, 8]
 // slides the wire from the ninth stage up to the first, where the tune steps at
 // half the note's pitch.
 const TAP_STAGES = 9
+const GND_TRIP = 0.45
 const tapDivisor = (tap: number) => octaves(TAP_STAGES * (1 - tap))
 
 // The envelope cap with a trigger across it and a leak beside it: the leak
@@ -478,6 +480,7 @@ export class ToyChip implements Stage {
   private outData = -1
   private outBit = 0
   private kitAddr = 0
+  private gndEdge = new GroundEdge(GND_TRIP)
   private kitCount = 0
   private micRate: CrossingRate
   private micEnv = new Follower()
@@ -1264,6 +1267,7 @@ export class ToyChip implements Stage {
       // latched die: the counter stops clocking and the note it was on stays on
       if (this.transport.tune && !latched) {
         this.stepClock += this.stepHzNow / this.sr
+        if (this.gndEdge.rise(ctx.gnd[i]!)) this.stepClock += 1
       }
       if (this.stepClock >= 1) {
         this.stepClock -= 1
@@ -1739,6 +1743,7 @@ export class ToyChip implements Stage {
     this.micAddr = 0
     this.micData = 0
     this.kitCount = 0
+    this.gndEdge.reset()
     this.dataBus.reset()
     this.addrBus.reset()
     this.bankBus.reset()

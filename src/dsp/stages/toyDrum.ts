@@ -37,6 +37,7 @@ import {
   voiceMask,
 } from '../trigbus.ts'
 import { bandpass, BiquadState, type Biquad } from '../util/biquad.ts'
+import { GroundEdge } from '../util/bounce.ts'
 import { BridgedT } from '../util/bridged.ts'
 import { coef, Transient } from '../util/follower.ts'
 import { MetalBank } from '../util/metal.ts'
@@ -262,6 +263,7 @@ const BANK_STARVE_OCT = 3
 const TAP_STAGES = 6
 const tapDivisor = (tap: number) => octaves(TAP_STAGES * (1 - tap))
 const MIN_STEP_HZ = 0.01
+const GND_TRIP = 0.3
 
 /** Which voice's trigger line holds up the metal bank's supply. Off, the bank
     free-runs; wired, the six stand still whenever that voice is silent. */
@@ -569,6 +571,7 @@ export class ToyDrum implements Stage {
   tick = 0
   /** How far into the current step the counter has got, in unswung steps. */
   stepClock = 0
+  private gndEdge = new GroundEdge(GND_TRIP)
   /** How long an unswung step lasts at the rate the counter is clocking now. */
   stepMs = 125
   private repeats = 0
@@ -1453,6 +1456,7 @@ export class ToyDrum implements Stage {
         const span = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
         const rate = rateAt(i)
         this.stepClock += rate / this.sr
+        if (this.gndEdge.rise(ctx.gnd[i]!)) this.stepClock += span
         if (this.stepClock >= span) {
           this.stepClock -= span
           // A knife on the counter's clock, which is the one wire on this
@@ -2010,6 +2014,7 @@ export class ToyDrum implements Stage {
 
   panic() {
     this.struckBits = 0
+    this.gndEdge.reset()
     this.struckGain = 0
     this.firedSince = 0
     this.thrown = 0
@@ -2108,6 +2113,7 @@ function cutRom(): DrumSlabs {
     toy: new Float32Array(BLOCK),
     fm: new Float32Array(BLOCK),
     bright: new Float32Array(BLOCK),
+    gnd: new Float32Array(BLOCK),
     send: new Float32Array(BLOCK),
     heat: 0,
     fbDest: 0,

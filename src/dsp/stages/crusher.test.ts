@@ -38,6 +38,7 @@ const blank = (): Ctx => ({
   fm: new Float32Array(BLOCK),
   send: new Float32Array(BLOCK),
   bright: new Float32Array(BLOCK),
+  gnd: new Float32Array(BLOCK),
   heat: 0,
   fbDest: 0,
   mod: new ModBus(SR, 1),

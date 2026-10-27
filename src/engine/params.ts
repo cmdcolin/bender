@@ -26,6 +26,7 @@ export const PARAM_DEFS = [
   ['chipClockX', 'slew'],
   ['chipSync', 'step'],
   ['chipStarve', 'slew'],
+  ['gndBounce', 'slew'],
   ['chipBattery', 'slew'],
   ['chipCap', 'slew'],
   ['chipClipHz', 'slew'],

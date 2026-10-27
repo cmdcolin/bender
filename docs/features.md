@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-564 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+565 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Eight bends, six slots.** You pick which are on the board and in what order,
   so two always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 138 destinations, among
+- **A patch bay that modulates itself.** Four wires, 139 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 58 controls are shy, mostly the ones that act on the
+names it still sets it. 59 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -751,13 +751,14 @@ touches, how hard it bites, how long it stays, and the charge and release rates.
 A release faster than the charge makes the touch a dive.
 
 <details>
-<summary>19 controls</summary>
+<summary>20 controls</summary>
 
 | control            | range                | what it does                                                                                                                      |
 | ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Starve †           | off to full          | Sags the shared cells                                                                                                             |
 | Batteries †        | off to full          | How flat the cells are                                                                                                            |
 | Lead resistance    | off to full          | A resistor in series with the cells                                                                                               |
+| Ground bounce †    | off to full          | Thins the ground trace every machine returns through                                                                              |
 | Reservoir          | off to full          | How much of the board’s capacitance sits behind whatever the starve is pulling on                                                 |
 | Watchdog           | 0.2 to 0.6 V         | The voltage at which the reset chip treats the supply as failed                                                                   |
 | Latch-up †         | off to full          | How often a brownout jams the chip instead of rebooting it                                                                        |
@@ -1253,7 +1254,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 138 of them, filt cut through toy kit on addr                                                                          | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 139 of them, filt cut through ground bounce                                                                            | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

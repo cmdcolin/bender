@@ -16,6 +16,7 @@ export const DEFAULT_CONTROLS = {
   chipClockX: 1,
   chipSync: 0,
   chipStarve: 0,
+  gndBounce: 0,
   chipBattery: 0,
   chipCap: 0,
   chipClipHz: 0,

@@ -16,6 +16,7 @@ import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
 import { DAC_REF_TOY } from './stages/toyDrum.ts'
 import { Thermal } from './thermal.ts'
 import { TriggerBus } from './trigbus.ts'
+import { GroundBounce } from './util/bounce.ts'
 import { Burst } from './util/burst.ts'
 import { DelayLine } from './util/delayline.ts'
 import { Follower, coef } from './util/follower.ts'
@@ -271,6 +272,7 @@ export class Chain {
   private readonly tapPrev = new Float32Array(BLOCK)
   private readonly tapPrevR = new Float32Array(BLOCK)
   private thermal: Thermal
+  private ground: GroundBounce
   private relayBurst: Burst
   private rng: Rng
   private joints: Joint[]
@@ -370,6 +372,7 @@ export class Chain {
       fm: new Float32Array(BLOCK),
       send: new Float32Array(BLOCK),
       bright: new Float32Array(BLOCK),
+      gnd: new Float32Array(BLOCK),
       heat: 0,
       fbDest: 0,
       mod: new ModBus(sr, seed ^ 0x51f),
@@ -377,6 +380,7 @@ export class Chain {
     }
     this.loops = Array.from({ length: N_LOOPS }, () => new DeskLoop(sr))
     this.thermal = new Thermal(sr)
+    this.ground = new GroundBounce(sr)
     this.rng = mulberry32(seed ^ 0x9e37)
     this.relayBurst = new Burst(sr, 3)
     this.joints = SLOT_IDX.map(
@@ -429,6 +433,8 @@ export class Chain {
     this.ctx.fm.fill(0)
     this.ctx.send.fill(0)
     this.ctx.bright.fill(0)
+    this.ctx.gnd.fill(0)
+    this.ground.reset()
     this.ctx.heat = 0
     this.thermal.reset()
     this.relayBurst.reset()
@@ -471,6 +477,11 @@ export class Chain {
     ctx.trig.swap(n)
     this.melody?.process(n, p, ctx)
     ctx.mod.build(n, p, ctx)
+    const bounce = p[IDX.gndBounce]!
+    const modBounce = ctx.mod.read(DEST.gndBounce)
+    if (bounce > 0 || modBounce)
+      this.ground.process(ctx.out, bounce, modBounce, ctx.gnd, n)
+    else ctx.gnd.fill(0, 0, n)
     ctx.railV.fill(1, 0, n)
     ctx.sag.fill(0, 0, n)
     ctx.step.fill(0, 0, n)

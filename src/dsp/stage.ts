@@ -60,6 +60,7 @@ export interface Ctx {
    * Two buses that disagree are what let the board argue with itself.
    */
   bright: Float32Array
+  gnd: Float32Array
   /**
    * Last block's output, mono, taken where the feedback bus is tapped: past the
    * dc blocker and the safety clipper, before the limiter. What a record head

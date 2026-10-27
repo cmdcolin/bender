@@ -193,6 +193,7 @@ const LANDINGS: Landing[] = [
   at('oct chaos', ['octMix'], { bend: 'oct' }),
   at('kit step tap', ['drumLevel']),
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
+  at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

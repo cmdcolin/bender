@@ -148,6 +148,18 @@ export const SUPPLY_GROUPS: Group[] = [
         help: 'A resistor in series with the cells: the rail still rests where it always rested, but every note has to pull its supply through the resistor to get there. So it sags on the attack and climbs back between hits — a toy that whoops on every note rather than one running out.',
       },
       {
+        key: 'gndBounce',
+        lane: 'ground bounce',
+        part: 'the cells',
+        label: 'Ground bounce',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'Thins the ground trace every machine returns through. Each loud attack lifts the ground under the logic, and a lift past a chip’s threshold reads as an extra clock edge: Plinky’s tune jumps ahead a note and Clatter’s counter takes an extra step. Clatter trips first. A loud hit that fires the next step early can fire the one after it too, so loud patterns stumble forward. Quiet playing leaves both counters alone.',
+      },
+      {
         key: 'chipCap',
         part: 'the cells',
         label: 'Reservoir',

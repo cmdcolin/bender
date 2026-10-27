@@ -334,6 +334,7 @@ export const PATCH_GROUPS: Group[] = [
             'kit wander',
             'kit step tap',
             'toy kit on addr',
+            'ground bounce',
           ],
           groups: [
             {
@@ -342,6 +343,7 @@ export const PATCH_GROUPS: Group[] = [
                 'chip clock',
                 'starve',
                 'second cells starve',
+                'ground bounce',
                 'toy level',
                 'toy data line',
                 'toy data fault',

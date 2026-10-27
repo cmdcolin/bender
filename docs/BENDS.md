@@ -75,6 +75,15 @@ box opens first, then the reset chip and clip boxes.
 - **Lead resistance:** a series resistor that drops voltage only under load. The
   rail sags on each attack and recovers between hits, so the toy whoops on every
   note and never runs low.
+- **Ground bounce:** thins the ground trace every machine returns through.
+  - Each loud attack lifts the ground under the logic, and a lift past a chip's
+    threshold reads as an extra clock edge.
+  - Plinky's tune jumps ahead a note and Clatter's counter takes an extra step.
+    Clatter trips first.
+  - A hit that fires the next step early can fire the one after it too. On the
+    rock beat at the top of the knob, the kit runs at six times its tempo and
+    the tune at twelve.
+  - A quieter board bounces less.
 - **Bend spot + pot:** solders a virtual pot onto the die at the clock, the
   counter (scrambles the melody), the DAC bias or the gate line.
 - **Output stages:** the four keyboard voices have separate output stages on
