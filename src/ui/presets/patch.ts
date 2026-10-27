@@ -195,6 +195,7 @@ const LANDINGS: Landing[] = [
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
   at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),
   at('keys Glint on bus', ['pcmLevel', 'fmLevel']),
+  at('toy out on keys', ['chipLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

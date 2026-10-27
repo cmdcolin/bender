@@ -914,3 +914,29 @@ test('the kit’s counter on the address lines folds the tune onto the beat', ()
   expect(deviation(tune(5, true), stock)).toBeGreaterThan(0.3)
   expect(tune(0, false)).toEqual(tune(0, true))
 })
+
+test('the output on a key column presses its own keys, and the loop outlives the tune', () => {
+  const run = (chipOutKeys: number) =>
+    renderBender(
+      { ...CHIP_ONLY, chipOutKeys },
+      5,
+      b => (b.transport.tune = true),
+      undefined,
+      (b, secs) => {
+        if (secs > 3) b.transport.tune = false
+      },
+    )
+  const stock = run(0)
+  const pressed = run(2)
+  expect(
+    deviation(pressed.subarray(0, 3 * 48000), stock.subarray(0, 3 * 48000)),
+  ).toBeGreaterThan(0.3)
+  expect(rms(tail(stock, 1))).toBeLessThan(0.005)
+  expect(rms(tail(pressed, 1))).toBeGreaterThan(0.05)
+})
+
+test('no wire on the key matrix is the toy it always was', () => {
+  expect(render({ ...CHIP_ONLY, chipOutKeys: 0, chipKeyScan: 400 }, 1)).toEqual(
+    render(CHIP_ONLY, 1),
+  )
+})

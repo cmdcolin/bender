@@ -272,6 +272,8 @@ const MASTER_HZ = A3_HZ * DIV_A3
 // two keys in different rows and columns also closes the other two corners.
 export const GHOST_MODES = ['off', '4 wide', '6 wide', '8 wide']
 const GHOST_COLS = [0, 4, 6, 8]
+export const MATRIX_COLS = 8
+const MATRIX_KEYS = 36
 
 // The tune's counter clocked off a stage of the melody's own pitch divider
 // rather than the tempo divider, so each note sets how long it lasts. The knob
@@ -480,6 +482,10 @@ export class ToyChip implements Stage {
   private outData = -1
   private outBit = 0
   private kitAddr = 0
+  private outKeys = -1
+  private pinKeys: number[] = []
+  private pinHigh = false
+  private scanPhase = 0
   private gndEdge = new GroundEdge(GND_TRIP)
   private kitCount = 0
   private micRate: CrossingRate
@@ -1039,6 +1045,14 @@ export class ToyChip implements Stage {
     this.outData =
       hop(p[IDX.chipOutData]!, ROM_DATA_LINES + 1, bay.read(DEST.chipOutData)) -
       1
+    const keyScan = p[IDX.chipKeyScan]!
+    const outKeys =
+      hop(p[IDX.chipOutKeys]!, MATRIX_COLS + 1, bay.read(DEST.chipOutKeys)) - 1
+    if (outKeys !== this.outKeys) {
+      this.outKeys = outKeys
+      this.releasePin()
+      this.pinHigh = false
+    }
     this.kitAddr = hop(
       p[IDX.chipKitAddr]!,
       ROM_ADDR_LINES + 1,
@@ -1559,6 +1573,17 @@ export class ToyChip implements Stage {
       this.lastOut = out
       if (this.outAddr >= 0 || this.outData >= 0)
         this.driveBus(tune, out > 0 ? 1 : 0)
+      if (this.outKeys >= 0) {
+        this.scanPhase += (keyScan * timing) / this.sr
+        if (this.scanPhase >= 1) {
+          this.scanPhase -= Math.floor(this.scanPhase)
+          if (out > 0 !== this.pinHigh) {
+            this.pinHigh = out > 0
+            if (this.pinHigh) this.pressPin()
+            else this.releasePin()
+          }
+        }
+      }
       out *= level * 0.4
       supplies.tick(rail, i, Math.abs(out))
       ctx.step[i] = this.stepClock
@@ -1645,6 +1670,23 @@ export class ToyChip implements Stage {
     if (bit === this.outBit) return
     this.outBit = bit
     this.reread(tune)
+  }
+
+  private pressPin() {
+    const cols = this.ghostCols || MATRIX_COLS
+    for (let k = this.outKeys % cols; k < MATRIX_KEYS; k += cols) {
+      if (this.heldKeys.includes(k) || this.pinKeys.includes(k)) continue
+      this.pinKeys.push(k)
+      this.strike(k, 1).held = true
+    }
+  }
+
+  private releasePin() {
+    for (const k of this.pinKeys) {
+      if (this.heldKeys.includes(k)) continue
+      for (const v of this.voices) if (v.note === k) v.held = false
+    }
+    this.pinKeys.length = 0
   }
 
   private kitStrike(tune: number[]) {
@@ -1743,6 +1785,9 @@ export class ToyChip implements Stage {
     this.micAddr = 0
     this.micData = 0
     this.kitCount = 0
+    this.pinKeys.length = 0
+    this.pinHigh = false
+    this.scanPhase = 0
     this.gndEdge.reset()
     this.dataBus.reset()
     this.addrBus.reset()

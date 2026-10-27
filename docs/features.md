@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-566 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+568 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random knife** under random ▾ draws from the same table.
 - **Eight bends, six slots.** You pick which are on the board and in what order,
   so two always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 140 destinations, among
+- **A patch bay that modulates itself.** Four wires, 141 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -116,7 +116,7 @@ puts the knife on, and the rows under it show the controls it set:
   itself
 
 <details>
-<summary>51 controls</summary>
+<summary>53 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -145,6 +145,8 @@ puts the knife on, and the rows under it show the controls it set:
 | Envelope cap        | stock, reversed, leaky                                                                                                         | The capacitor that shapes every note                                                                                                                                                          |
 | Voice short         | off to full                                                                                                                    | Shorts every voice output onto one node, where the lowest driver wins                                                                                                                         |
 | Ghost keys          | off, 4 wide, 6 wide, 8 wide                                                                                                    | Lifts the diodes off the key matrix                                                                                                                                                           |
+| Output on keys      | off, C0, C1, C2, C3, C4, C5, C6, C7                                                                                            | Solders the output pin onto one column of the key matrix                                                                                                                                      |
+| Key scan            | 5 Hz to 1 kHz                                                                                                                  | How often the key scanner reads the matrix, which sets how fast Output on keys flutters                                                                                                       |
 | Step tap            | off to full                                                                                                                    | Clocks the tune’s counter off the melody’s own pitch divider in place of the tempo divider, so each note sets how long it lasts: high notes rush and low ones linger                          |
 | Envelope relax      | off to full                                                                                                                    | Puts a trigger and a leak across the envelope cap                                                                                                                                             |
 | Envelope on divider | off to full                                                                                                                    | Bridges the envelope’s counter onto the pitch divider word, so each note dives as it fades, by up to three octaves at the top of the knob                                                     |
@@ -1255,7 +1257,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 140 of them, filt cut through keys Glint on bus                                                                        | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 141 of them, filt cut through toy out on keys                                                                          | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

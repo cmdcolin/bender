@@ -6,7 +6,13 @@ import type { ControlKey } from '../controls.ts'
 export const POT: readonly ControlKey[] = ['chipBendSpot', 'chipBendPot']
 
 export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
-  'key matrix': ['chipGhost', 'sfxWire', 'sfxPick'],
+  'key matrix': [
+    'chipGhost',
+    'chipOutKeys',
+    'chipKeyScan',
+    'sfxWire',
+    'sfxPick',
+  ],
   'tune ROM': [
     'chipOutAddr',
     'chipOutData',

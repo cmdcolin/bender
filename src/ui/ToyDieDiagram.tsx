@@ -48,6 +48,8 @@ const KEYS = [
   'chipOutAddr',
   'chipOutData',
   'chipKitAddr',
+  'chipOutKeys',
+  'chipKeyScan',
 ] as const
 
 const GROUP = GROUPS.find(g => g.name === 'Plinky')!
@@ -128,6 +130,8 @@ const BEND_BOX: Partial<Record<(typeof KEYS)[number], string>> = {
   chipXor: 'voices',
   chipDutyEnv: 'voices',
   chipGhost: 'key matrix',
+  chipOutKeys: 'key matrix',
+  chipKeyScan: 'key matrix',
 }
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)

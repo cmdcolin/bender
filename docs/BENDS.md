@@ -167,6 +167,20 @@ Bends:
 - **Ghost keys:** lifts the diodes off the key matrix. Two held keys in
   different rows and columns close the other two corners of their rectangle, and
   those sound as held keys. Four columns wide, A3 and F#4 add A#3 and F4.
+- **Output on keys:** solders the output pin onto one column of the key matrix,
+  C0 to C7.
+  - Each time the key scanner catches the pin high, every key in that column
+    reads as pressed. The scanner samples a waveform far faster than itself, so
+    the column flutters in a rhythm set by the note's pitch against the scan.
+  - The pressed keys sound through the output pin, so the pin presses them
+    again. Once the loop catches, the toy plays on after the tune stops, until
+    the knob comes off.
+  - Ghost keys sets the row width, eight keys when it is off. Eight wide, the
+    chord stacks minor sixths, and four wide, major thirds.
+  - The keys go out on the gate line, so Glint, Parlor or the kit wired to it
+    play them too.
+  - **Key scan:** 5 to 1000 Hz, 60 stock. At the bottom each chord holds for
+    about half a second, and the top buzzes. It counts off the chip clock.
 - **Step tap:** clocks the tune's counter off a stage of the melody's pitch
   divider.
   - High notes rush and low notes linger, and a rest keeps the last note's rate.
