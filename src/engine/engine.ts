@@ -69,6 +69,7 @@ import {
 import { openTake, sweepTakes } from './takeSink.ts'
 import { encodeWav, pcmMono, pcmStereo } from './wav.ts'
 
+import type { WildPack } from '../dsp/arc.ts'
 import type {
   FromWorklet,
   NoteDest,
@@ -147,6 +148,7 @@ export interface Meter {
   /** Voices the kit fired since the last meter, as the bit order of a step. */
   hits: number
   strays: number
+  arc: number
   /** Where the tune's own counter is standing and how far through that step,
       which is the clock a note played into the memory lands on. */
   tunePos: number
@@ -351,6 +353,7 @@ export class Engine {
       drumStepMs: 0,
       hits: 0,
       strays: 0,
+      arc: 0,
       tunePos: 0,
       tuneFrac: 0,
       monoSeqPos: 0,
@@ -624,6 +627,7 @@ export class Engine {
           drumStepMs: msg.drumStepMs,
           hits: msg.hits,
           strays: msg.strays,
+          arc: msg.arc,
           tunePos: msg.tunePos,
           tuneFrac: msg.tuneFrac,
           monoSeqPos: msg.monoSeqPos,
@@ -671,6 +675,7 @@ export class Engine {
     this.ctx = ctx
     this.node = node
     this.post({ kind: 'params', pack: this.packLive() })
+    this.post({ kind: 'wild', wild: this.wild })
     this.postTransport()
   }
 
@@ -688,6 +693,14 @@ export class Engine {
     }
     window.addEventListener('pointerdown', go, { signal: ctl.signal })
     window.addEventListener('keydown', go, { signal: ctl.signal })
+  }
+
+  private wild: WildPack | null = null
+
+  /** The board the arc bends toward, or null for none. */
+  setWild(wild: WildPack | null) {
+    this.wild = wild
+    this.post({ kind: 'wild', wild })
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {

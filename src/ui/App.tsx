@@ -16,10 +16,11 @@ import { versionLabel } from '../version.ts'
 import { AboutDialog } from './AboutDialog.tsx'
 import { Account } from './Account.tsx'
 import styles from './App.module.css'
+import { linkArc } from './arcLink.ts'
 import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
-import { useStoreValue } from './ControlsContext.ts'
+import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
 import { add, clearAdded, confine, confineToOne } from './fitted.ts'
@@ -49,6 +50,7 @@ import { PinnedStrip } from './PinnedStrip.tsx'
 import { Presets } from './PresetRow.tsx'
 import { mutate, presetNameFor } from './presets/index.ts'
 import { Recorder } from './Recorder.tsx'
+import { aimAt } from './reveal.ts'
 import { SavedVoices } from './SavedVoices.tsx'
 import { Scope } from './Scope.tsx'
 import { OpenGroup } from './Section.tsx'
@@ -276,6 +278,32 @@ function AppMenu({
   )
 }
 
+const ARC_HELP =
+  'Swing the board between the board you set and a wild twin of it, over bars. The first press turns Crazy up and opens its controls under Output; the button then shows how far into the wild twin the board stands.'
+
+function ArcButton() {
+  const depth = useControlValue('arcDepth')
+  const at = useSyncExternalStore(engine.meter.subscribe, () =>
+    Math.round(engine.meter.get().arc * 100),
+  )
+  return (
+    <Tip text={ARC_HELP}>
+      <button
+        className={depth > 0 ? styles.btnOn : styles.btn}
+        onClick={e => {
+          if (depth <= 0) engine.set('arcDepth', 0.7)
+          openStage.set('Output')
+          aimAt('arcDepth', e.currentTarget)
+        }}
+      >
+        <SteadyLabel widest="arc 100%">
+          {depth > 0 ? `arc ${at}%` : 'arc'}
+        </SteadyLabel>
+      </button>
+    </Tip>
+  )
+}
+
 function BoardVerbs({
   seconds,
   drifting,
@@ -344,6 +372,7 @@ function BoardVerbs({
           </button>
         </Tip>
       )}
+      <ArcButton />
       <Tip text="Back to the board the toy ships with, and every stage you added off the map. It lands in the walk, so undo brings back the controls you were on.">
         <button
           className={styles.btnQuiet}
@@ -479,6 +508,7 @@ export function App(props: { openedFromLink?: boolean }) {
   }
 
   useEffect(() => engine.autostart(), [])
+  useEffect(linkArc, [])
   useBoardUrl()
   useCurrentSession(libUid)
   useSyncedPrefs(libUid)

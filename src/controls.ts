@@ -919,6 +919,11 @@ export const DEFAULT_CONTROLS = {
 
   deckSpeed: 1,
   deckInertia: 0.12,
+  arcDepth: 0,
+  arcShape: 3,
+  arcBars: 2,
+  arcMoves: 0,
+  arcSeed: 0,
 }
 
 export type Controls = typeof DEFAULT_CONTROLS

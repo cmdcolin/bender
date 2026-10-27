@@ -1,6 +1,13 @@
+import type { WildPack } from '../dsp/arc.ts'
+
 export interface ParamsMsg {
   kind: 'params'
   pack: Float32Array
+}
+
+export interface WildMsg {
+  kind: 'wild'
+  wild: WildPack | null
 }
 
 export interface SampleMsg {
@@ -122,6 +129,7 @@ export type ToWorklet =
   | RecordMsg
   | PanicMsg
   | RetroFlushMsg
+  | WildMsg
 
 export interface MeterMsg {
   kind: 'meter'
@@ -141,6 +149,8 @@ export interface MeterMsg {
   /** The strays Wander put on the bar the kit is playing, packed by
       `packStrays`. */
   strays: number
+  /** How far into the wild board the arc stands, 0 to 1. */
+  arc: number
   /** Where the tune's step counter is standing, and how far through that step
       it has got — the clock a note played into the memory is quantized against.
       The chip's own, because every bend that drags it is in there. */

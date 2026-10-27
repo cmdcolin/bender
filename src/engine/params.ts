@@ -893,6 +893,12 @@ export const PARAM_DEFS = [
 
   ['deckSpeed', 'slew'],
   ['deckInertia', 'slew'],
+
+  ['arcDepth', 'step'],
+  ['arcShape', 'step'],
+  ['arcBars', 'step'],
+  ['arcMoves', 'step'],
+  ['arcSeed', 'step'],
 ] as const satisfies readonly (readonly [ControlKey, Smooth])[]
 
 export type ParamName = (typeof PARAM_DEFS)[number][0]

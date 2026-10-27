@@ -276,6 +276,33 @@ and **release** how long it takes to die once the gate shuts:
   seconds while the beat runs underneath
 - Off the keys, it opens while you hold a chord and dies when you let go
 
+## The arc
+
+**arc** in the header swings the board between the board you set and a wild twin
+of it. The first press turns **Crazy** up and opens the arc's controls under
+Output:
+
+- **Crazy:** how far the arc reaches into the wild twin. In the twin, about half
+  the knobs on the stages you can hear sit near an end of their travel, a fifth
+  of the switches sit on another choice and the kit's Wander is up. The arc
+  starts each knob moving at a different point, so a few parts change at a time
+- **Arc**, the shape the arc follows over its length:
+  - **hold:** Crazy the whole time
+  - **rise, snap back:** a climb to Crazy, then a cut back to your board
+  - **snap, fall back:** a cut to Crazy, then an easy return
+  - **swell:** out to Crazy and back
+  - **spikes:** your board on most bars, Crazy on a few, easing back within the
+    bar
+  - **weather:** a slow random wander between the two, a new heading every four
+    bars
+- **Arc length:** 4 to 128 bars at the kit's tempo, locked to its downbeat
+- **Moves:** **glide** travels smoothly; **jump** changes the board on the
+  downbeat, calm, halfway or Crazy for the whole bar
+- **Wild roll:** each number rolls a different twin off the same board
+- The panel keeps showing your board, and the button shows how far into the twin
+  the board stands. The arc runs on the audio thread, so it keeps going in a
+  hidden tab
+
 ## Pedals and tape
 
 - **Gnash:** six dirt-box circuits: screamer, rat, muff, germanium, octave, gate

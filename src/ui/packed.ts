@@ -934,6 +934,11 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'pcmGlint',
   'chipOutKeys',
   'chipKeyScan',
+  'arcDepth',
+  'arcShape',
+  'arcBars',
+  'arcMoves',
+  'arcSeed',
 ]
 
 // Retired controls that old links still carry, each read into the control that

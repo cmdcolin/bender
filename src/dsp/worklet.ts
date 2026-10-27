@@ -1,5 +1,6 @@
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params.ts'
+import { Arc } from './arc.ts'
 import { buildBender, type BuiltChain } from './build.ts'
 import { Deck } from './deck.ts'
 import { Smoother } from './smoother.ts'
@@ -18,6 +19,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   private built: BuiltChain
   private deck: Deck
   private smoother: Smoother
+  private arc = new Arc()
   private io: StereoBlock
   private micMono = new Float32Array(BLOCK)
   private scope = new Float32Array(SCOPE_LEN)
@@ -83,6 +85,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       drumStepMs: 0,
       hits: 0,
       strays: 0,
+      arc: 0,
       tunePos: 0,
       tuneFrac: 0,
       monoSeqPos: 0,
@@ -192,6 +195,9 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
         case 'retroFlush':
           this.postRetro(true)
+          break
+        case 'wild':
+          this.arc.setWild(msg.wild)
           break
       }
     }
@@ -305,7 +311,15 @@ class BenderProcessor extends AudioWorkletProcessor {
     // half speed still comes out at the pitch it went in.
     this.deck.pushMic(mic ? this.micMono : null, n)
 
-    this.smoother.step(this.target)
+    this.smoother.step(
+      this.arc.step(
+        this.target,
+        n,
+        sampleRate,
+        this.built.toyDrum.tick,
+        this.built.transport.drums,
+      ),
+    )
     this.deck.process(io, this.smoother.cur)
 
     // subarray builds a view object, and a view object on the audio thread is
@@ -368,6 +382,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.drumStepMs = this.built.toyDrum.stepMs
       m.hits = this.built.toyDrum.takeFired()
       m.strays = this.built.toyDrum.wander.packed
+      m.arc = this.arc.pos
       m.tunePos = this.built.toyChip.tunePos
       m.tuneFrac = this.built.toyChip.tuneFrac
       m.monoSeqPos = this.built.melody.at

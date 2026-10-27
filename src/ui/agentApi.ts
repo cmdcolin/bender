@@ -394,6 +394,7 @@ async function listen(ms = 1500) {
   let peak = 0
   let duck = 0
   let rail = 1
+  let arc = 0
   let hits = 0
   let sounding = 0
   const strays = new Set<string>()
@@ -413,6 +414,7 @@ async function listen(ms = 1500) {
     peak = Math.max(peak, m.peak)
     duck = Math.max(duck, m.duck)
     rail = Math.min(rail, m.rail)
+    arc = Math.max(arc, m.arc)
     hits |= m.hits
     for (const name of strayNames(m.strays)) strays.add(name)
     for (let k = 0; k < STEM_FILES.length; k++)
@@ -453,6 +455,7 @@ async function listen(ms = 1500) {
     growlerNotes: heard('mono', mono),
     drumHits: DRUM_VOICES.filter((_, v) => hits & (1 << v)).map(v => v.label),
     wander: [...strays],
+    arc: Number(arc.toFixed(2)),
   }
 }
 

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-568 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
+573 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
 146 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -1410,13 +1410,18 @@ The mains supply failing: sag, dropouts, crackle and hum.
 Gain, ahead of a dc block, soft clip and limiter that always run.
 
 <details>
-<summary>3 controls</summary>
+<summary>8 controls</summary>
 
-| control      | range                  | what it does                                                   |
-| ------------ | ---------------------- | -------------------------------------------------------------- |
-| Gain         | −60 to +12 dB          | Master gain before the safety clipper and limiter              |
-| Varispeed    | stopped to 2.000× fast | The capstan trimmer on the deck the whole instrument comes off |
-| Motor weight | 0 to 3 s               | How much weight the deck’s motor has                           |
+| control      | range                                                          | what it does                                                   |
+| ------------ | -------------------------------------------------------------- | -------------------------------------------------------------- |
+| Gain         | −60 to +12 dB                                                  | Master gain before the safety clipper and limiter              |
+| Varispeed    | stopped to 2.000× fast                                         | The capstan trimmer on the deck the whole instrument comes off |
+| Motor weight | 0 to 3 s                                                       | How much weight the deck’s motor has                           |
+| Crazy        | off to full                                                    | How far the arc carries the board toward its wild twin         |
+| Arc          | hold, rise, snap back, snap, fall back, swell, spikes, weather | How Crazy moves over the arc’s length                          |
+| Arc length   | 4 bars, 8 bars, 16 bars, 32 bars, 64 bars, 128 bars            | How many bars one arc lasts, at the kit’s tempo                |
+| Moves        | glide or jump                                                  | Glide moves the board smoothly along the arc                   |
+| Wild roll    | 0 to 999                                                       | Which wild twin the arc heads for                              |
 
 </details>
 
