@@ -285,6 +285,8 @@ export const BEND_ENDS: Partial<
   distBypass: [-0.5, 2],
   distBlock: [null, -7],
   distSpeaker: [0.5, -7],
+  drumStepTap: [0, 7],
+  gndBounce: [null, 0],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

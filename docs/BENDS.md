@@ -190,10 +190,10 @@ Bends:
   lines, A0 up to A4, one counter bit per wire.
   - In each bridged pair the low side wins, so an address bit survives only on
     steps where the kit's counter has that bit set.
-  - The kit's downbeat pulls every bridged line low, and the tune walks its own
-    path again as the counter fills up.
-  - Each kit step strikes the note it reads, so the tune plays in the kit's
-    rhythm.
+  - On the kit's downbeat its counter holds every bridged line low, and the toy
+    reaches its own addresses again as the kit counts up.
+  - Each kit step strikes the note the ROM returns, so the tune plays in the
+    kit's rhythm.
   - Clock slip, Counter reset and Step tap on the kit rearrange the tune with
     the beat.
 - **PWM tap:** takes the Volume PWM carrier from the melody's pitch divider, one

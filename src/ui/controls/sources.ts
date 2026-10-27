@@ -542,7 +542,7 @@ export const SOURCE_GROUPS: Group[] = [
           ),
         ],
         ordered: true,
-        help: 'Solders Clatter’s step counter onto the ROM’s low address lines, one counter bit per wire. In each bridged pair the low side wins, so an address bit survives only on steps where the kit’s counter has that bit set. The tune folds onto the beat: the kit’s downbeat pulls every bridged line low, and the tune walks its own path again as the counter fills up. Each kit step strikes the note it reads. Clock slip, Counter reset and Step tap on the kit rearrange the tune along with the beat.',
+        help: 'Solders Clatter’s step counter onto the ROM’s low address lines, one counter bit per wire. In each bridged pair the low side wins, so an address bit survives only on steps where the kit’s counter has that bit set. On the kit’s downbeat its counter holds every bridged line low, and the toy reaches its own addresses again as the kit counts up. Each kit step strikes the note the ROM returns. Clock slip, Counter reset and Step tap on the kit rearrange the tune along with the beat.',
       },
       {
         key: 'chipPwmTap',
@@ -1429,7 +1429,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         shy: true,
-        help: 'Clocks the step counter off a stage of Plinky’s melody divider in place of the tempo knob. High notes run the pattern fast and low notes slow, and a rest holds the last note’s rate. The knob moves the wire from the sixth stage to the first. Low on the knob the beat follows the tune. At the top the counter steps at the note’s pitch, the pattern sounds as a tone, and each row you write changes its timbre. Trigger floor divides the tone down. The kit stops while Plinky is down.',
+        help: 'Clocks the step counter off a stage of Plinky’s melody divider in place of the tempo knob. High notes run the pattern fast and low notes slow, and a rest holds the last note’s rate. The knob moves the wire from the sixth stage to the first. Low on the knob the kit’s tempo follows the melody’s pitch. At the top the counter steps at the note’s pitch, the pattern sounds as a tone, and each row you write changes its timbre. The kit stops while Plinky is down.',
       },
       {
         key: 'drumLoop',
@@ -2343,7 +2343,7 @@ export const SOURCE_GROUPS: Group[] = [
         ],
         ordered: true,
         shy: true,
-        help: 'Solders the six low address wires and the top data wires onto Glint’s register file, so each voice reads Glint’s 64 registers as its wave. The control counts data wires down from D7, and at D7–D0 the wave is the register file alone. Every write Glint makes reshapes the wave: each note rewrites its pitch and key bytes, and an effect script rewrites it hundreds of times a second. The 64-word table sounds about six semitones over the key. Glint’s knives, Toy on bus and cold boot reach Parlor through the wires. While Glint is down, Parlor reads the registers as Glint left them.',
+        help: 'Solders the six low address wires and the top data wires onto Glint’s register file, so each voice reads Glint’s 64 registers as its wave. The control counts data wires down from D7, and at D7–D0 the wave is the register file alone. Every write Glint makes reshapes the wave. Each note rewrites the pitch and key bytes, and an effect script rewrites the wave hundreds of times a second. The 64-word table sounds about six semitones over the key. Glint’s knives, Toy on bus and cold boot reach Parlor through the wires. While Glint is down, Parlor reads the registers as Glint left them.',
       },
       {
         key: 'pcmRunOn',
