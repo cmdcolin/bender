@@ -893,3 +893,24 @@ test('on reboot, a starved rail fires the effect each time the chip resets', () 
     )
   expect(deviation(starved(wire('reboot')), starved(0))).toBeGreaterThan(0.1)
 })
+
+test('the kit’s counter on the address lines folds the tune onto the beat', () => {
+  const tune = (chipKitAddr: number, drums: boolean) =>
+    renderBender({ ...CHIP_ONLY, chipKitAddr }, 4, b => {
+      b.transport.tune = true
+      b.transport.drums = drums
+    })
+  const pitches = (x: Float32Array) => {
+    const seen = new Set<number>()
+    const w = 0.05 * 48000
+    for (let i = 0; i + w <= x.length; i += w) {
+      const hz = pitchHz(x.subarray(i, i + w))
+      if (hz > 50) seen.add(Math.round(12 * Math.log2(hz / 110)))
+    }
+    return seen.size
+  }
+  const stock = tune(0, true)
+  expect(pitches(tune(5, false))).toBeLessThan(pitches(stock) / 2)
+  expect(deviation(tune(5, true), stock)).toBeGreaterThan(0.3)
+  expect(tune(0, false)).toEqual(tune(0, true))
+})

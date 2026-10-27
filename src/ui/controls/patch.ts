@@ -333,6 +333,7 @@ export const PATCH_GROUPS: Group[] = [
             'oct chaos',
             'kit wander',
             'kit step tap',
+            'toy kit on addr',
           ],
           groups: [
             {
@@ -370,6 +371,7 @@ export const PATCH_GROUPS: Group[] = [
                 'toy voice XOR',
                 'toy envelope bits',
                 'toy duty on envelope',
+                'toy kit on addr',
               ],
             },
             {

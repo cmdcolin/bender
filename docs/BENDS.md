@@ -177,6 +177,16 @@ Bends:
   The melody flips at audio rate between its note and one a fixed interval away:
   D0 a semitone, D2 a major third, D3 eight semitones, D5 about two and a half
   octaves. A rest or hold on the other side gates it.
+- **Kit on address:** solders Clatter's step counter onto the ROM's low address
+  lines, A0 up to A4, one counter bit per wire.
+  - In each bridged pair the low side wins, so an address bit survives only on
+    steps where the kit's counter has that bit set.
+  - The kit's downbeat pulls every bridged line low, and the tune walks its own
+    path again as the counter fills up.
+  - Each kit step strikes the note it reads, so the tune plays in the kit's
+    rhythm.
+  - Clock slip, Counter reset and Step tap on the kit rearrange the tune with
+    the beat.
 - **PWM tap:** takes the Volume PWM carrier from the melody's pitch divider, one
   octave under the note at the bottom of the knob and six at the top. A fading
   note grows a sub-octave growl, and chords and keys chop at the melody's rate.

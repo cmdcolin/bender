@@ -7,7 +7,13 @@ export const POT: readonly ControlKey[] = ['chipBendSpot', 'chipBendPot']
 
 export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
   'key matrix': ['chipGhost', 'sfxWire', 'sfxPick'],
-  'tune ROM': ['chipOutAddr', 'chipOutData', 'chipStepTap', ...POT],
+  'tune ROM': [
+    'chipOutAddr',
+    'chipOutData',
+    'chipKitAddr',
+    'chipStepTap',
+    ...POT,
+  ],
   clock: [
     'chipClockX',
     'chipDrift',

@@ -527,6 +527,24 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Solders the output pin onto one wire of the note code. Each swing of the waveform sets or clears that bit, so the melody flips between its note and one a fixed interval away at audio rate: D0 is a semitone, D2 a major third, D3 eight semitones and D5 two and a half octaves. The note the ROM returns sets how fast it flips back.',
       },
       {
+        key: 'chipKitAddr',
+        lane: 'toy kit on addr',
+        label: 'Kit on address',
+        part: 'inside the die',
+        min: 0,
+        max: ROM_ADDR_LINES,
+        step: 1,
+        unit: '',
+        choices: [
+          'off',
+          ...Array.from({ length: ROM_ADDR_LINES }, (_, i) =>
+            i === 0 ? 'A0' : `A0–A${i}`,
+          ),
+        ],
+        ordered: true,
+        help: 'Solders Clatter’s step counter onto the ROM’s low address lines, one counter bit per wire. In each bridged pair the low side wins, so an address bit survives only on steps where the kit’s counter has that bit set. The tune folds onto the beat: the kit’s downbeat pulls every bridged line low, and the tune walks its own path again as the counter fills up. Each kit step strikes the note it reads. Clock slip, Counter reset and Step tap on the kit rearrange the tune along with the beat.',
+      },
+      {
         key: 'chipPwmTap',
         lane: 'toy PWM tap',
         label: 'PWM tap',

@@ -47,6 +47,7 @@ const KEYS = [
   'chipFmClock',
   'chipOutAddr',
   'chipOutData',
+  'chipKitAddr',
 ] as const
 
 const GROUP = GROUPS.find(g => g.name === 'Plinky')!
@@ -121,6 +122,7 @@ const BEND_BOX: Partial<Record<(typeof KEYS)[number], string>> = {
   chipStepTap: 'tune ROM',
   chipOutAddr: 'tune ROM',
   chipOutData: 'tune ROM',
+  chipKitAddr: 'tune ROM',
   chipPwmTap: 'voices',
   chipShort: 'voices',
   chipXor: 'voices',

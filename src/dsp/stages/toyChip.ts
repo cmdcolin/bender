@@ -477,6 +477,8 @@ export class ToyChip implements Stage {
   private outAddr = -1
   private outData = -1
   private outBit = 0
+  private kitAddr = 0
+  private kitCount = 0
   private micRate: CrossingRate
   private micEnv = new Follower()
   private readonly micAttack: number
@@ -766,6 +768,7 @@ export class ToyChip implements Stage {
     }
     if (this.outAddr >= 0)
       addr = (addr & ~(1 << this.outAddr)) | (this.outBit << this.outAddr)
+    if (this.kitAddr > 0) addr &= ~((1 << this.kitAddr) - 1) | this.kitCount
     addr ^= this.micAddr
     return (
       this.addrBus.read(addr, this.addrLine, this.addrFault, this.busCut) %
@@ -1033,6 +1036,11 @@ export class ToyChip implements Stage {
     this.outData =
       hop(p[IDX.chipOutData]!, ROM_DATA_LINES + 1, bay.read(DEST.chipOutData)) -
       1
+    this.kitAddr = hop(
+      p[IDX.chipKitAddr]!,
+      ROM_ADDR_LINES + 1,
+      bay.read(DEST.chipKitAddr),
+    )
     const modCross = bay.read(DEST.chipCrosstalk)
     const modScan = bay.read(DEST.chipScan)
     const modPwm = bay.read(DEST.chipPwm)
@@ -1243,6 +1251,10 @@ export class ToyChip implements Stage {
       }
       if (micJack === MIC.toyAddr || micJack === MIC.toyData)
         this.micOnBus(tune, ctx.mic[i]!, micJack)
+      if (this.kitAddr > 0 && ctx.trig.drumStep[i]! > 0) {
+        this.kitCount = ctx.trig.drumStep[i]! - 1
+        if (this.transport.tune && !latched) this.kitStrike(tune)
+      }
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
       this.stepHzNow =
@@ -1631,6 +1643,19 @@ export class ToyChip implements Stage {
     this.reread(tune)
   }
 
+  private kitStrike(tune: number[]) {
+    const addr = this.romAddr(this.pos)
+    const step = this.readAt(tune, addr)
+    if (step === REST) this.note = REST
+    if (!isNote(step) || step === this.note) return
+    this.note = step
+    this.env = 1
+    this.keyNote = step
+    this.keyPending = true
+    this.harmonize(step)
+    this.strikeStacks(addr)
+  }
+
   private micOnBus(tune: number[], x: number, jack: number) {
     const lines = jack === MIC.toyAddr ? ROM_ADDR_LINES : ROM_DATA_LINES
     const env = this.micEnv.process(x, this.micAttack, this.micRelease)
@@ -1713,6 +1738,7 @@ export class ToyChip implements Stage {
     this.micEnv.reset()
     this.micAddr = 0
     this.micData = 0
+    this.kitCount = 0
     this.dataBus.reset()
     this.addrBus.reset()
     this.bankBus.reset()

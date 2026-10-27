@@ -56,6 +56,7 @@ export const PARAM_DEFS = [
   ['chipEnvDiv', 'slew'],
   ['chipOutAddr', 'step'],
   ['chipOutData', 'step'],
+  ['chipKitAddr', 'step'],
   ['chipPwmTap', 'slew'],
   ['chipFmClock', 'slew'],
   ['chipHold', 'slew'],

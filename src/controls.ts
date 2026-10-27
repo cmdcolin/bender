@@ -46,6 +46,7 @@ export const DEFAULT_CONTROLS = {
   chipEnvDiv: 0,
   chipOutAddr: 0,
   chipOutData: 0,
+  chipKitAddr: 0,
   chipPwmTap: 0,
   chipFmClock: 0,
   chipHold: 0,
