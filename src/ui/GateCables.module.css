@@ -226,14 +226,19 @@
   margin-top: 2px;
 }
 
-.kitGate {
+/* An input on a plate, its name under the socket. */
+.plateIn {
   composes: trigOut;
-  margin-right: 6px;
   padding: 0;
   border: 0;
   background: none;
   font: inherit;
   cursor: pointer;
+}
+
+.kitGate {
+  composes: plateIn;
+  margin-right: 6px;
 }
 
 /* Printed beside a jack, clear of the plug and the lanes past it. */
@@ -282,11 +287,6 @@
 .plateVoice {
   composes: plateName;
   color: var(--hits);
-}
-
-.adsrGate {
-  composes: trigOut;
-  cursor: default;
 }
 
 .adsrPair {

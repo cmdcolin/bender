@@ -310,7 +310,9 @@ test('dragging a cable end off its jack pulls the plug, and a cable from Plinky�
   )
   act(() => engine.set('fmKeyGate', 0))
   const input = screen.getByRole('button', { name: 'with Plinky' })
-  const output = container.querySelector<HTMLElement>('[data-gate-out]')!
+  const output = container.querySelector<HTMLElement>(
+    '[data-jack="gate:out:plinky"]',
+  )!
   const over = (el: Element | null) => {
     document.elementFromPoint = () => el
   }
@@ -431,7 +433,7 @@ test('a TRIG cable patches a kit voice into a keyboard, and moves or pulls with 
   const trig = (name: string) =>
     bed(name).getByRole('button', { name: 'kit trigger' })
   const voice = (n: number) =>
-    container.querySelector<HTMLElement>(`[data-trig-voice="${n}"]`)!
+    container.querySelector<HTMLElement>(`[data-jack="trig:out:${n}"]`)!
   const drag = (from: Element, to: Element) => {
     fireEvent.pointerDown(from, { button: 0, clientX: 0, clientY: 0 })
     fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
@@ -494,7 +496,9 @@ test('a MOD cable runs a patch bay source into a machine’s CV jack, and moves 
   })
   const cv = (name: string) =>
     screen.getByRole('button', { name: `${name} CV` })
-  const lfo = container.querySelector<HTMLElement>(`[data-mod-src="${LFO}"]`)!
+  const lfo = container.querySelector<HTMLElement>(
+    `[data-jack="mod:out:${LFO}"]`,
+  )!
   const drag = (from: Element, to: Element) => {
     fireEvent.pointerDown(from, { button: 0, clientX: 0, clientY: 0 })
     fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
@@ -535,7 +539,9 @@ test('the ADSR’s gate opens on held keys until a kit voice is patched in', asy
   expect(gate().getAttribute('aria-pressed')).toBe('false')
   expect(screen.getByText('keys')).toBeTruthy()
 
-  const snare = container.querySelector<HTMLElement>('[data-trig-voice="2"]')!
+  const snare = container.querySelector<HTMLElement>(
+    '[data-jack="trig:out:2"]',
+  )!
   fireEvent.pointerDown(snare, { button: 0, clientX: 0, clientY: 0 })
   fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
   document.elementFromPoint = () => gate()

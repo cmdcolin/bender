@@ -50,7 +50,7 @@ export function follow(
     drop(
       document
         .elementFromPoint(m.clientX, m.clientY)
-        ?.closest<HTMLElement>('[data-gate-jack]') ?? null,
+        ?.closest<HTMLElement>('[data-jack]') ?? null,
     )
   }
   window.addEventListener('pointermove', move)
