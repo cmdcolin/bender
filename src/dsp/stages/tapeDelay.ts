@@ -57,13 +57,15 @@ const DROP_S = 0.03
  * -3 dB point to eight times that, as one-pole coefficients.
  */
 export function spacingPoles(um: number, umPerS: number, sr: number) {
-  const f3 = (3 * umPerS) / (54.6 * um)
-  const top = 0.45 * sr
-  return [
-    lpCoef(Math.min(1.1 * f3, top), sr),
-    lpCoef(Math.min(5 * f3, top), sr),
-  ] as const
+  const f3 = spacingHz(um, umPerS)
+  return [lowPole(f3, sr), highPole(f3, sr)] as const
 }
+
+const spacingHz = (um: number, umPerS: number) => (3 * umPerS) / (54.6 * um)
+const lowPole = (f3: number, sr: number) =>
+  lpCoef(Math.min(1.1 * f3, 0.45 * sr), sr)
+const highPole = (f3: number, sr: number) =>
+  lpCoef(Math.min(5 * f3, 0.45 * sr), sr)
 
 // A sine carrier at full depth costs the tail 3 dB a lap, so the repeats die
 // faster for no reason anyone asked for. √2 is exactly what the modulation took
@@ -109,9 +111,13 @@ export class TapeDelay implements Stage {
   private gapLeft = 0
   private dirtRng: Rng
   private lift = [0, 0, 0]
-  private dirtPoles = HEAD_IDS.map(() => [0, 0])
-  private gapL = HEAD_IDS.map(() => [new OnePoleLP(), new OnePoleLP()])
-  private gapR = HEAD_IDS.map(() => [new OnePoleLP(), new OnePoleLP()])
+  private clogged = 0
+  private readonly poleA = new Float64Array(HEAD_IDS.length)
+  private readonly poleB = new Float64Array(HEAD_IDS.length)
+  private readonly gapL1 = HEAD_IDS.map(() => new OnePoleLP())
+  private readonly gapL2 = HEAD_IDS.map(() => new OnePoleLP())
+  private readonly gapR1 = HEAD_IDS.map(() => new OnePoleLP())
+  private readonly gapR2 = HEAD_IDS.map(() => new OnePoleLP())
   private readonly maxDelay: number
   private readonly loop: number
   private readonly gap: number
@@ -133,12 +139,13 @@ export class TapeDelay implements Stage {
     this.dirtRng = mulberry32(seed ^ 0x5eed)
   }
 
-  /** Each head's spacing for this block, as the poles that lose it. */
-  private clog(dirt: number, delaySec: number, n: number): boolean {
+  /** Each head's spacing for this block, as the poles that lose it; returns
+      the heads that have any. */
+  private clog(dirt: number, delaySec: number, n: number): number {
     const umPerS = (SPEED_UM_S / Math.max(delaySec, 0.02)) * this.motor
     const fall = Math.exp(-n / (DROP_S * this.sr))
     const odds = (dirt * DROPS_PER_S * n) / this.sr
-    let any = false
+    let clogged = 0
     for (const k of HEAD_IDS) {
       let lift = this.lift[k]! * fall
       if (lift < 0.05) lift = 0
@@ -147,12 +154,21 @@ export class TapeDelay implements Stage {
       this.lift[k] = lift
       const um = dirt * DIRT_UM * DIRT_SHARE[k]! + lift
       if (um <= 0) continue
-      any = true
-      const [a, b] = spacingPoles(um, Math.max(umPerS, 1), this.sr)
-      this.dirtPoles[k]![0] = a
-      this.dirtPoles[k]![1] = b
+      if (!(this.clogged & (1 << k))) this.wipeHead(k)
+      clogged |= 1 << k
+      const f3 = spacingHz(um, Math.max(umPerS, 1))
+      this.poleA[k] = lowPole(f3, this.sr)
+      this.poleB[k] = highPole(f3, this.sr)
     }
-    return any
+    this.clogged = clogged
+    return clogged
+  }
+
+  private wipeHead(k: number) {
+    this.gapL1[k]!.reset()
+    this.gapL2[k]!.reset()
+    this.gapR1[k]!.reset()
+    this.gapR2[k]!.reset()
   }
 
   when(p: Float32Array, ctx: Ctx) {
@@ -182,7 +198,7 @@ export class TapeDelay implements Stage {
     const splice = p[IDX.dlySplice]!
     const erase = p[IDX.dlyErase]!
     const heads = HEAD_MASKS[Math.round(p[IDX.dlyHeads]!)] ?? 1
-    const dirty = this.clog(p[IDX.dlyHeadDirt]!, baseDelay / this.sr, io.n)
+    const clogged = this.clog(p[IDX.dlyHeadDirt]!, baseDelay / this.sr, io.n)
     const nHeads = (heads & 1) + ((heads >> 1) & 1) + ((heads >> 2) & 1)
     const lap = fixedTap(this.loop, this.maxDelay)
     const modSpeed = ctx.mod.read(DEST.tapeSpeed)
@@ -252,12 +268,11 @@ export class TapeDelay implements Stage {
         )
         let l = this.lineL.readHermite(d)
         let r = this.lineR.readHermite(d * 1.007)
-        if (dirty) {
-          const [a, b] = this.dirtPoles[k]!
-          const [l1, l2] = this.gapL[k]!
-          const [r1, r2] = this.gapR[k]!
-          l = l2!.process(l1!.process(l, a!), b!)
-          r = r2!.process(r1!.process(r, a!), b!)
+        if (clogged & (1 << k)) {
+          const a = this.poleA[k]!
+          const b = this.poleB[k]!
+          l = this.gapL2[k]!.process(this.gapL1[k]!.process(l, a), b)
+          r = this.gapR2[k]!.process(this.gapR1[k]!.process(r, a), b)
         }
         sumL += l
         sumR += r
@@ -339,6 +354,7 @@ export class TapeDelay implements Stage {
     this.spliceIn = 0
     this.gapLeft = 0
     this.lift = [0, 0, 0]
-    for (const f of [...this.gapL, ...this.gapR].flat()) f.reset()
+    this.clogged = 0
+    for (const k of HEAD_IDS) this.wipeHead(k)
   }
 }

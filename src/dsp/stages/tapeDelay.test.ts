@@ -1,5 +1,9 @@
 import { expect, test } from 'vitest'
 
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { ModBus } from '../modbus.ts'
+import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import {
   SR,
   bin,
@@ -10,9 +14,9 @@ import {
   sine,
   tail,
 } from '../testRender.ts'
-import { spacingPoles } from './tapeDelay.ts'
+import { TriggerBus } from '../trigbus.ts'
+import { spacingPoles, TapeDelay } from './tapeDelay.ts'
 
-import type { Controls } from '../../controls.ts'
 import type { BuiltChain } from '../build.ts'
 
 // The echo returns on a fader of its own, so the dry is always in the room
@@ -254,4 +258,52 @@ test('dirty heads dull the repeats and leave the bass', () => {
   const dirty = tail(renderBender({ ...look, dlyHeadDirt: 1 }, 2, two))
   expect(bin(dirty, 300)).toBeGreaterThan(0.85 * bin(clean, 300))
   expect(bin(dirty, 6000)).toBeLessThan(0.3 * bin(clean, 6000))
+})
+
+test('a head that clogs again starts from clean filters', () => {
+  const tape = new TapeDelay(SR, 1)
+  const zeros = () => new Float32Array(BLOCK)
+  const ctx: Ctx = {
+    sr: SR,
+    mic: zeros(),
+    fb: zeros(),
+    railV: zeros().fill(1),
+    sag: zeros(),
+    droop: zeros(),
+    env: zeros(),
+    out: zeros(),
+    step: zeros(),
+    carrier: zeros(),
+    logic: zeros(),
+    toy: zeros(),
+    fm: zeros(),
+    send: zeros(),
+    bright: zeros(),
+    gnd: zeros(),
+    regs: new Uint8Array(GLINT_REGS),
+    heat: 0,
+    fbDest: 0,
+    mod: new ModBus(SR, 1),
+    trig: new TriggerBus(),
+  }
+  const look = { dlyMix: 1, delayMs: 50, dlyFb: 0, wowDepthMs: 0, flutter: 0 }
+  const dirty = packParams({ ...DEFAULT_CONTROLS, ...look, dlyHeadDirt: 1 })
+  const clean = packParams({ ...DEFAULT_CONTROLS, ...look, dlyHeadDirt: 0 })
+  const io = { l: zeros(), r: zeros(), n: BLOCK }
+  const tone = sine(400, 0.5)
+  for (let at = 0; at + BLOCK <= tone.length; at += BLOCK) {
+    io.l.set(tone.subarray(at, at + BLOCK))
+    io.r.set(io.l)
+    tape.process(io, dirty, ctx)
+  }
+  ;(tape as unknown as { lift: number[] }).lift.fill(0)
+  for (let b = 0; b < SR / BLOCK; b++) {
+    io.l.fill(0)
+    io.r.fill(0)
+    tape.process(io, clean, ctx)
+  }
+  io.l.fill(0)
+  io.r.fill(0)
+  tape.process(io, dirty, ctx)
+  expect(Math.max(...io.l.map(Math.abs))).toBeLessThan(1e-6)
 })
