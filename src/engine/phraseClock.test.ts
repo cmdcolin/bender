@@ -27,3 +27,8 @@ test('without a tempo there is nothing to wait for', () => {
 test('the wait counts from where the report stood and how old it is', () => {
   expect(msUntilTick(16, { ...at(15, 0.5), ageMs: 20 })).toBe(42.5)
 })
+
+test('a change chained to one that just set off lands a run later', () => {
+  expect(landingTick(at(4), 1, 1)).toBe(16)
+  expect(landingTick(at(4), 1, 1, 16)).toBe(32)
+})

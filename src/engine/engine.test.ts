@@ -1221,3 +1221,23 @@ test('a pattern landing as a locked morph arrives leaves the board on target', (
   expect(engine.controls.get().dlyFb).toBe(0.5)
   vi.useRealTimers()
 })
+
+test('a locked drift rolls once per leg', () => {
+  vi.useFakeTimers()
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.phraseLock.set(1)
+  counter(engine, 3)
+  let rolls = 0
+  engine.startDrift(() => {
+    rolls++
+    return board({ dlyFb: 0.1 * rolls })
+  })
+  expect(engine.waiting.get()).toEqual({ tick: 32 })
+  counter(engine, 18, 0.35)
+  vi.advanceTimersByTime(20)
+  expect(rolls).toBe(1)
+  expect(engine.waiting.get()).toEqual({ tick: 48 })
+  engine.stopDrift()
+  vi.useRealTimers()
+})

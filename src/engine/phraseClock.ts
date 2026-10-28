@@ -17,16 +17,18 @@ export interface CounterReport {
 export const msUntilTick = (tick: number, r: CounterReport) =>
   (tick - r.tick - r.clock) * r.stepMs - r.ageMs
 
-/** The first downbeat of a run of `bars` that a change taking `seconds` can
-    still reach in full, or null while the counter has no tempo to go by. */
+/** The first downbeat of a run of `bars` past `past` that a change taking
+    `seconds` can still reach in full, or null while the counter has no tempo
+    to go by. */
 export function landingTick(
   r: CounterReport,
   bars: number,
   seconds: number,
+  past = -1,
 ): number | null {
   if (r.stepMs <= 0 || bars <= 0) return null
   const run = bars * STEPS
   let at = (Math.floor(r.tick / run) + 1) * run
-  while (msUntilTick(at, r) < seconds * 1000) at += run
+  while (at <= past || msUntilTick(at, r) < seconds * 1000) at += run
   return at
 }

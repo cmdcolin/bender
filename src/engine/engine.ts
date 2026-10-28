@@ -96,7 +96,8 @@ interface Queued {
   land: () => void
   seconds: number
   tick: number
-  after?: () => void
+  after?: (landed: number) => void
+  past?: number
 }
 const DRIFT_TRAIL = 12
 // Below this a stem is silence, and silence gets no file: a fader left down is
@@ -848,6 +849,7 @@ export class Engine {
       this.counterReport(),
       this.phraseLock.get(),
       q.seconds,
+      q.past,
     )
     if (tick === null) return false
     const after = q.after ?? this.queued.get(slot)?.after
@@ -900,7 +902,7 @@ export class Engine {
     this.armed = null
     q.land()
     this.flush()
-    q.after?.()
+    q.after?.(q.tick)
   }
 
   private cancelQueue(slot?: QueueSlot) {
@@ -981,7 +983,7 @@ export class Engine {
     }, DRIFT_TAP_S * 1000)
     // Each leg chains the next. Under the phrase lock a leg sets off so as to
     // arrive on a downbeat, and the next leaves for the downbeat after it.
-    const leg = () => {
+    const leg = (past?: number) => {
       this.driftTimer = undefined
       this.armed = null
       const seconds = this.phraseSeconds() * 0.85
@@ -990,6 +992,7 @@ export class Engine {
           land: () => this.travel(next(), seconds),
           seconds,
           after: leg,
+          past,
         })
       )
         return
