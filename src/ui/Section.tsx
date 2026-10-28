@@ -148,13 +148,7 @@ function PartFold({
     if ([...rows, ...hosted].some(d => d.key === key)) setOpen(true)
   })
   return (
-    <Fold
-      name={name}
-      badge={says}
-      startOpen={startOpen}
-      open={open}
-      onToggle={setOpen}
-    >
+    <Fold name={name} badge={says} open={open} onToggle={setOpen}>
       {caution && <p className={styles.caution}>{caution}</p>}
       <PartVerbs
         cuts={cuts}

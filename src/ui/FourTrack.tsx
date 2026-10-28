@@ -350,7 +350,6 @@ export function FourTrack() {
       <Fold
         name="channel strip"
         badge={moved > 0 ? `${moved} moved` : undefined}
-        startOpen={false}
         open={open}
         onToggle={setOpen}
       >

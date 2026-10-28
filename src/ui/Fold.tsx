@@ -5,23 +5,21 @@ import type { ReactNode } from 'react'
 export function Fold({
   name,
   badge,
-  startOpen,
   open,
   onToggle,
   children,
 }: {
   name: string
   badge?: string
-  startOpen: boolean
-  open?: boolean
-  onToggle?: (open: boolean) => void
+  open: boolean
+  onToggle: (open: boolean) => void
   children: ReactNode
 }) {
   return (
     <details
       className={styles.fold}
-      open={open ?? startOpen}
-      onToggle={onToggle ? e => onToggle(e.currentTarget.open) : undefined}
+      open={open}
+      onToggle={e => onToggle(e.currentTarget.open)}
     >
       <summary className={styles.head}>
         {name}
