@@ -1,5 +1,5 @@
 import { engine } from '../engine/engine.ts'
-import { BEND_SLOT_KEYS, BENDS } from './controls/index.ts'
+import { BEND_SLOT_KEYS, BENDS, bendAt } from './controls/index.ts'
 
 import type { Controls } from '../controls.ts'
 
@@ -30,18 +30,28 @@ export const stepOf = (c: Controls, walk: readonly number[], stage: string) =>
 export const sounds = (c: Controls, stage: string) =>
   positionOf(c, stage) > 0 && c[mixOf(stage)] > 0
 
-/** Puts the bend in the first empty position, or trades out the last one when
-    the chain is full, and brings its mix back to where it last sounded. A bend
-    already in the chain keeps its position. */
+const silent = (c: Controls, slot: number) => {
+  const bend = bendAt(c[BEND_SLOT_KEYS[slot]!])
+  return !bend || c[bend.mix] === 0
+}
+
+/** The first empty position, else the last one holding a silent bend, else the
+    last position. */
+const freeSlot = (c: Controls) => {
+  const empty = BEND_SLOT_KEYS.findIndex(k => Math.round(c[k]) === 0)
+  if (empty !== -1) return empty
+  const quiet = BEND_SLOT_KEYS.findLastIndex((_, i) => silent(c, i))
+  return quiet === -1 ? BEND_SLOT_KEYS.length - 1 : quiet
+}
+
+/** Puts the bend in a free position (see freeSlot) and brings its mix back to
+    where it last sounded. A bend already in the chain keeps its position. */
 export function switchOn(stage: string) {
   const board = engine.controls.get()
   const mix = mixOf(stage)
   const next = { ...board }
-  if (positionOf(board, stage) === 0) {
-    const empty = BEND_SLOT_KEYS.findIndex(k => Math.round(board[k]) === 0)
-    next[BEND_SLOT_KEYS[empty === -1 ? BEND_SLOT_KEYS.length - 1 : empty]!] =
-      idOf(stage)
-  }
+  if (positionOf(board, stage) === 0)
+    next[BEND_SLOT_KEYS[freeSlot(board)]!] = idOf(stage)
   if (board[mix] === 0) next[mix] = lastMix.get(stage) ?? ADDED_MIX
   if (
     BEND_SLOT_KEYS.every(k => next[k] === board[k]) &&
