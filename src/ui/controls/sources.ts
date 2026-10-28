@@ -2140,6 +2140,7 @@ export const SOURCE_GROUPS: Group[] = [
       'pcmWrite',
       'pcmSignDir',
       'pcmLatch',
+      'pcmGlint',
     ],
     sliders: [
       {
