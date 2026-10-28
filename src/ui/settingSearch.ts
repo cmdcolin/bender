@@ -1,6 +1,7 @@
+import { rowShown } from './rowShown.ts'
 import { formerName } from './stageNames.ts'
 
-import type { ControlKey } from '../controls.ts'
+import type { ControlKey, Controls } from '../controls.ts'
 import type { Group } from './controls/types.ts'
 
 export interface SettingHit {
@@ -15,12 +16,14 @@ const words = (query: string) =>
 export function findSettings(
   groups: readonly Group[],
   query: string,
+  c?: Controls,
 ): SettingHit[] {
   const want = words(query)
   if (want.length === 0) return []
   const hits = groups.flatMap(g =>
     g.sliders
       .filter(def => {
+        if (c && !rowShown(def, c)) return false
         const hay = [def.label, def.lane, def.part, g.name, formerName(g.name)]
           .join(' ')
           .toLowerCase()

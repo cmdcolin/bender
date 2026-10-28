@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+import { engine } from '../engine/engine.ts'
 import { aimAt } from './reveal.ts'
 import styles from './SettingFind.module.css'
 import { findSettings } from './settingSearch.ts'
@@ -19,7 +20,7 @@ export function SettingFind({
 }) {
   const [query, setQuery] = useState('')
   const root = useRef<HTMLDivElement>(null)
-  const hits = findSettings(groups, query)
+  const hits = findSettings(groups, query, engine.controls.get())
   return (
     <div className={styles.find} ref={root}>
       <input

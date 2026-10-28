@@ -47,8 +47,9 @@ import { PatchBay } from './PatchBay.tsx'
 import { PcmKeysDiagram } from './PcmKeysDiagram.tsx'
 import { BenchToggle } from './Pedals.tsx'
 import { cutsFor } from './presets/index.ts'
-import { scrollIntoPanel } from './reveal.ts'
+import { scrollIntoPanel, useOnAim } from './reveal.ts'
 import { useStanding } from './rollBack.ts'
+import { rowShown } from './rowShown.ts'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider.tsx'
 import { slidersFirst } from './slidersFirst.ts'
@@ -82,15 +83,11 @@ function panelRows(group: Group): SliderDef[] {
   return rows
 }
 
-function shown(def: SliderDef, c: Controls): boolean {
-  return !def.needs || def.needs(c) || c[def.key] !== DEFAULT_CONTROLS[def.key]
-}
-
 const useShownKeys = (defs: SliderDef[]): Set<string> =>
   new Set(
     useBoardValue(c =>
       defs
-        .filter(d => shown(d, c))
+        .filter(d => rowShown(d, c))
         .map(d => d.key)
         .join(','),
     ).split(','),
@@ -146,8 +143,18 @@ function PartFold({
   const badge = standing || hostedStanding
   const says = badge || (moved > 0 ? `${moved} moved` : undefined)
   const caution = group.caution?.part === name ? group.caution.text : null
+  const [open, setOpen] = useState(startOpen)
+  useOnAim(key => {
+    if ([...rows, ...hosted].some(d => d.key === key)) setOpen(true)
+  })
   return (
-    <Fold name={name} badge={says} startOpen={startOpen}>
+    <Fold
+      name={name}
+      badge={says}
+      startOpen={startOpen}
+      open={open}
+      onToggle={setOpen}
+    >
       {caution && <p className={styles.caution}>{caution}</p>}
       <PartVerbs
         cuts={cuts}

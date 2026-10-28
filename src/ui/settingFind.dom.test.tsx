@@ -35,3 +35,12 @@ test('a hit opens its stage on the box that holds the row', async () => {
     ).not.toBeNull(),
   )
 })
+
+test('a row its stage hides gives no hit until the row shows', () => {
+  const find = (c = DEFAULT_CONTROLS) =>
+    findSettings(GROUPS, 'clip on clock', c).map(h => h.key)
+  expect(find()).toEqual([])
+  expect(find({ ...DEFAULT_CONTROLS, chipClipHz: 5 })).toEqual([
+    'chipClipClock',
+  ])
+})

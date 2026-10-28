@@ -734,6 +734,7 @@ export function App(props: { openedFromLink?: boolean }) {
               <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
               {openGroup ? (
                 <OpenGroup
+                  key={openGroup.name}
                   group={openGroup}
                   onClose={() => setOpen(null)}
                   seconds={morphSeconds}
