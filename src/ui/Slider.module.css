@@ -74,8 +74,7 @@
    question, and on a touch screen it never arrives at all. Quiet enough at rest
    to read as a name rather than a link, and it takes the text's own colour
    under the pointer. */
-.label,
-.labelTouched {
+.label {
   font-size: var(--fs-sm);
   color: var(--fg2);
   white-space: nowrap;
@@ -88,13 +87,8 @@
   text-underline-offset: 2px;
 }
 
-.label:hover,
-.labelTouched:hover {
+.label:hover {
   text-decoration-color: currentcolor;
-}
-
-.labelTouched {
-  color: var(--accent);
 }
 
 /* The row draws its own stock mark (.defmark), so the trough's is off. */
@@ -114,7 +108,7 @@
   white-space: nowrap;
 }
 
-/* Accent is the panel's word for "you moved this", the same as the label. */
+/* Accent is the panel's word for "you moved this". */
 .readoutTouched {
   composes: readout;
   color: var(--accent);
@@ -393,8 +387,7 @@ select.listOn {
   row-gap: var(--space-2xs);
 }
 
-.rowSplit .label,
-.rowSplit .labelTouched {
+.rowSplit .label {
   grid-area: name;
 }
 

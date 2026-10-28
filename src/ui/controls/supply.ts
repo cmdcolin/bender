@@ -102,6 +102,7 @@ export const supplyRow = (key: SupplyKey): SliderDef => ({
   step: 1,
   unit: '',
   choices: SUPPLY_NAMES,
+  menu: true,
   help: `Which supply ${SUPPLY_OF[key]} runs off. The shared cells bend every machine on them together. Second cells have their own knobs in Power supply and their own reboots. The bench supply never sags.`,
 })
 

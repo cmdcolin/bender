@@ -12,6 +12,9 @@ export interface SliderDef {
   /** The choices run in order, D0 up to D7, so the panel draws them as a stepped
       track you can sweep through. */
   ordered?: true
+  /** A setting you pick once and leave, drawn as a dropdown however few its
+      choices. */
+  menu?: true
   /** `log` spends even travel per decade; `symlog` is that, mirrored around a
       `split.at`, for a knob whose middle is a stop but whose ends are still
       wide. Naming a `split.normal` moves each half's own centre of gravity off

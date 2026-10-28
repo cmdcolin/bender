@@ -510,14 +510,14 @@ export function ControlSlider({
         <div className={styles.row} data-control={def.key}>
           <Tip ref={tip} text={def.help}>
             <span
-              className={touched ? styles.labelTouched : styles.label}
+              className={styles.label}
               onClick={() => tip.current?.toggle()}
             >
               {label}
             </span>
           </Tip>
           <span className={styles.choices}>
-            {!fitsAsButtons(choices) ? (
+            {def.menu || !fitsAsButtons(choices) ? (
               <select
                 className={touched ? styles.listOn : styles.list}
                 aria-label={label}
@@ -657,7 +657,7 @@ export function ControlSlider({
       >
         <Tip ref={tip} text={helpWithNormal(def)}>
           <span
-            className={touched ? styles.labelTouched : styles.label}
+            className={styles.label}
             onClick={() => tip.current?.toggle()}
             onDoubleClick={() => write(def.key, stock)}
           >
