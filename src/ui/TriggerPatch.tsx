@@ -1,5 +1,13 @@
 import { TRIGGER_CHIPS, TRIGGER_OPENS, TRIGGER_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
+import {
+  cableName,
+  KIT_TO_PLINKY,
+  PLINKY_TO_KIT,
+  SIGNAL_COLOUR,
+  wireId,
+  type Connection,
+} from './connections.ts'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import diagramStyles from './Diagram.module.css'
@@ -20,11 +28,7 @@ const TO_DRUM = sliderFor('trigToDrum').choices!
 const NOTE = sliderFor('trigKeysNote').choices!
 const STRUCK = sliderFor('fmStruck').choices!
 
-type ChipName = (typeof TRIGGER_CHIPS)[number]['name']
-type Wire = 'kit → keys' | 'keys → kit' | `${'kit' | 'keys'} → ${ChipName}`
-type Pick = Wire | ChipName
-
-const READ = TRIGGER_CHIPS.flatMap(c => [c.struck, c.gate])
+const READ = TRIGGER_CHIPS.flatMap(c => [c.struck.key, c.gate.key])
 
 const BOX_W = 84
 const BOX_H = 20
@@ -45,8 +49,8 @@ const CHIP_TOP = TOP + BOX_H + 20
 const CHIP_PITCH = CHIP_H + 6
 const HEIGHT = CHIP_TOP + TRIGGER_CHIPS.length * CHIP_PITCH
 
-const KIT = 'var(--cool)'
-const KEYS = 'var(--accent2)'
+const KIT = SIGNAL_COLOUR.hits
+const KEYS = SIGNAL_COLOUR.notes
 const OFF = 'var(--fg4)'
 
 const arrowTo = (x: number, y: number, dir: 1 | -1) =>
@@ -122,6 +126,12 @@ export function TriggerPatch() {
   const note = Math.round(useControlValue('trigKeysNote'))
   const upOn = toKeys > 0
   const downOn = toDrum > 0
+  const upTag = useBoardValue(c =>
+    upOn ? cableName(c, KIT_TO_PLINKY) : offTag(KIT_TO_PLINKY),
+  )
+  const downTag = useBoardValue(c =>
+    downOn ? cableName(c, PLINKY_TO_KIT) : offTag(PLINKY_TO_KIT),
+  )
   const upTitle = upOn
     ? `${TO_KEYS[toKeys]} on the kit strikes a key, playing ${NOTE[note]}.`
     : 'The kit does not play Plinky.'
@@ -131,14 +141,14 @@ export function TriggerPatch() {
 
   const readout = useBoardValue(c =>
     TRIGGER_CHIPS.map(
-      ch => `${Math.round(c[ch.struck])}${c[ch.gate] >= 0.5 ? 'c' : 's'}`,
+      ch => `${Math.round(c[ch.struck.key])}${ch.gate.plugged(c) ? 's' : 'c'}`,
     ).join(','),
   ).split(',')
   const machines = TRIGGER_CHIPS.map((chip, i) =>
     machineParts(chip, CHIP_TOP + i * CHIP_PITCH, readout[i]!),
   )
 
-  const press = (id: Pick, hit: string, drawn: ReactNode) => {
+  const press = (id: string, hit: string, drawn: ReactNode) => {
     const selected = pick.selected === id
     return (
       <Pressable
@@ -168,7 +178,7 @@ export function TriggerPatch() {
             {source(RIGHT_X, 'Plinky')}
 
             {press(
-              'kit → keys',
+              wireId(KIT_TO_PLINKY),
               `M ${LEFT_X + BOX_W} ${UP_Y} H ${RIGHT_X}`,
               bridge(
                 upOn,
@@ -177,21 +187,21 @@ export function TriggerPatch() {
                 LEFT_X + BOX_W,
                 RIGHT_X,
                 UP_Y,
-                'kit plays keys',
+                upTag,
                 UP_Y - 4,
               ),
             )}
             {press(
-              'keys → kit',
+              wireId(PLINKY_TO_KIT),
               `M ${RIGHT_X} ${DOWN_Y} H ${LEFT_X + BOX_W}`,
               bridge(
                 downOn,
-                KIT,
+                KEYS,
                 downTitle,
                 RIGHT_X,
                 LEFT_X + BOX_W,
                 DOWN_Y,
-                'keys play kit',
+                downTag,
                 DOWN_Y + 12,
               ),
             )}
@@ -211,20 +221,18 @@ export function TriggerPatch() {
               className={styles.tag}
               fill="var(--fg3)"
             >
-              keyboard notes
+              Plinky’s notes
             </text>
 
             {[false, true].flatMap(live =>
               machines
                 .filter(m => m.struckOn === live)
-                .map(m =>
-                  press(`kit → ${m.name}`, m.strike.hit, m.strike.drawn),
-                ),
+                .map(m => press(m.strikeId, m.strike.hit, m.strike.drawn)),
             )}
             {[false, true].flatMap(live =>
               machines
                 .filter(m => !m.gateCut === live)
-                .map(m => press(`keys → ${m.name}`, m.gate.hit, m.gate.drawn)),
+                .map(m => press(m.gateId, m.gate.hit, m.gate.drawn)),
             )}
             {machines.map(m => (
               <BoxView
@@ -238,7 +246,7 @@ export function TriggerPatch() {
                   h: CHIP_H,
                   name: m.name,
                   off: !m.played,
-                  touched: r.touched(m.struckKey, m.gateKey),
+                  touched: r.touched(m.struck.key, m.jumper.key),
                   help: `What plays the ${m.name}: the kit's strike and Plinky's jumper.`,
                 }}
                 selected={pick.selected === m.name}
@@ -257,6 +265,8 @@ export function TriggerPatch() {
     </>
   )
 }
+
+const offTag = (x: Connection) => `${x.signal} → ${x.to}`
 
 interface Part {
   hit: string
@@ -329,8 +339,10 @@ function machineParts(
   }
   return {
     name: chip.name,
-    struckKey: chip.struck,
-    gateKey: chip.gate,
+    struck: chip.struck,
+    jumper: chip.gate,
+    strikeId: wireId(chip.struck),
+    gateId: wireId(chip.gate),
     top,
     played,
     struckOn,

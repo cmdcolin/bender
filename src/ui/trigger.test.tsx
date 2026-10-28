@@ -25,12 +25,12 @@ const openPatch = () =>
 test('each trigger wire opens its own rows, drawn once', () => {
   openPatch()
   const wires: [string, string[]][] = [
-    ['kit → keys', ['Kit voice that plays Plinky', 'The note it plays']],
-    ['keys → kit', ['Kit voice Plinky plays']],
-    ['kit → Glint', ['Kit voice that plays this chip']],
-    ['keys → Glint', ['Plays Plinky’s notes']],
-    ['kit → Parlor', ['Kit voice that plays this keyboard']],
-    ['keys → Growler', ['Plays Plinky’s notes']],
+    ['Clatter → Plinky', ['Kit voice that plays Plinky', 'The note it plays']],
+    ['Plinky → Clatter', ['Kit voice Plinky plays']],
+    ['Clatter → Glint', ['Kit voice that plays this chip']],
+    ['Plinky → Glint', ['Plays Plinky’s notes']],
+    ['Clatter → Parlor', ['Kit voice that plays this keyboard']],
+    ['Plinky → Growler', ['Plays Plinky’s notes']],
   ]
   expect(screen.queryByText('Kit voice that plays this chip')).toBeNull()
   for (const [wire, rows] of wires) {

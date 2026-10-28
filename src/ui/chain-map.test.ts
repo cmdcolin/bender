@@ -277,8 +277,8 @@ test('cutting the jumpers dims the key line from the far end in', () => {
 
 test('a bridge from the kit names the chip it strikes', () => {
   const map = buildMap({ ...DEFAULT_CONTROLS, fmStruck: 1, monoStruck: 2 })
-  expect(hop(map, 'Clatter', 'Glint')?.label?.text).toBe('kick → FM')
-  expect(hop(map, 'Clatter', 'Growler')?.label?.text).toBe('snare → mono')
+  expect(hop(map, 'Clatter', 'Glint')?.label?.text).toBe('kick → Glint')
+  expect(hop(map, 'Clatter', 'Growler')?.label?.text).toBe('snare → Growler')
 })
 
 // One row, and which one the chip stands next to is the whole of what
@@ -322,7 +322,7 @@ test('a patched trigger bridge deepens the board rather than crossing it', () =>
     box(plain, 'toy_board')!.h,
   )
   const trig = hop(bridged, 'Clatter', 'Plinky')!
-  expect(trig.color).toBe(PANEL.mod)
+  expect(trig.color).toBe(PANEL.hits)
   // The row itself does not move: the lane is under it, and what is in the lane
   // is what the frame grows for.
   expect(box(bridged, 'Glint')!.y).toBe(box(plain, 'Glint')!.y)
@@ -733,11 +733,10 @@ test('a bridged trigger line draws between the two boxes', () => {
   })
   const up = hop(both, 'Clatter', 'Plinky')!
   const down = hop(both, 'Plinky', 'Clatter')!
-  expect(up.label?.text).toBe('kick → keys')
-  expect(down.label?.text).toBe('keys → the step')
-  // Patched rather than soldered, so it draws in the patch colour and dashed —
-  // the key line beside it is neither.
-  expect(up.color).toBe(PANEL.mod)
+  expect(up.label?.text).toBe('kick → Plinky')
+  expect(down.label?.text).toBe('Plinky → the step')
+  expect(up.color).toBe(PANEL.hits)
+  expect(down.color).toBe(PANEL.accent2)
   expect(up.dash).toBeTruthy()
   expect(up.door).toBe('Trigger patch')
   expect(both.doors).toContain('Trigger patch')
@@ -750,8 +749,8 @@ test('a bridged trigger line draws between the two boxes', () => {
 test('the kit’s line onto the FM chip is a bridge like the other two', () => {
   const struck = buildMap({ ...DEFAULT_CONTROLS, fmStruck: ANY_CHOICE })
   const trig = hop(struck, 'Clatter', 'Glint')!
-  expect(trig.label?.text).toBe('any hit → FM')
-  expect(trig.color).toBe(PANEL.mod)
+  expect(trig.label?.text).toBe('any hit → Glint')
+  expect(trig.color).toBe(PANEL.hits)
   expect(trig.dash).toBeTruthy()
   // It opens the trigger patch with the other two, which is where all four of
   // the board's trigger wires are drawn — a lane where one wire opened
@@ -968,6 +967,7 @@ test('the panel palette matches the tokens it copies', () => {
     border: PANEL.border,
     accent: PANEL.accent,
     accent2: PANEL.accent2,
+    hits: PANEL.hits,
     raise: PANEL.raise,
   }).toEqual({
     bg: token('surface'),
@@ -976,6 +976,7 @@ test('the panel palette matches the tokens it copies', () => {
     border: token('border-hover'),
     accent: token('accent'),
     accent2: token('accent2'),
+    hits: token('hits'),
     raise: token('surface-raised'),
   })
 })

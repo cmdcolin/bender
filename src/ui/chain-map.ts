@@ -9,6 +9,7 @@ import {
 } from '../dsp/stages/tape.ts'
 import { SUPPLY as ON, SUPPLY_KEYS } from '../dsp/supplies.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
+import { cableName, TRIGGER_CABLES, type Signal } from './connections.ts'
 import {
   bendAt,
   BENDS,
@@ -346,6 +347,8 @@ export interface Palette {
   accent2: string
   /** control wires, cool against the warm signal path */
   mod: string
+  /** the kit's trigger lines, wherever a cable carries them */
+  hits: string
   /** fill behind the stage whose controls the panel is showing */
   open: string
   /** fill under the two toys, which sit in the rack rather than beside it */
@@ -362,6 +365,7 @@ export const PANEL: Palette = {
   accent: '#ff5d3b',
   accent2: '#ffb03b',
   mod: '#5ea9d8',
+  hits: '#a184e8',
   open: '#332622',
   raise: '#26262e',
 }
@@ -572,35 +576,17 @@ interface Bridge {
   from: string
   to: string
   label: string
+  signal: Signal
 }
 
-// The trigger lines you can bridge the three boxes on the board with, where one
-// is patched. The third is the kit's lines clipped onto the FM chip's key
-// input, which the chip's own panel carries — the chip has no sequencer, so
-// where it is struck from is a setting of the chip. It runs in this lane and
-// opens the trigger patch with the other two all the same: the patch draws all
-// four of the board's trigger wires, and a lane where one wire opened somewhere
-// else would be a lane you have to click to find out about.
 function triggerBridges(c: Controls): Bridge[] {
-  const bridges: Bridge[] = []
-  for (const [key, from, to, end] of [
-    ['trigToKeys', 'Clatter', 'Plinky', 'keys'],
-    ['trigToDrum', 'Plinky', 'Clatter', 'kit'],
-    ['fmStruck', 'Clatter', FM_CHIP, 'FM'],
-    ['pcmStruck', 'Clatter', PCM_KEYS, 'home keys'],
-    ['monoStruck', 'Clatter', MONO, 'mono'],
-  ] as const) {
-    const choice = Math.round(c[key])
-    if (choice <= 0) continue
-    const named = sliderFor(key).choices?.[choice] ?? 'trig'
-    bridges.push({
-      id: key,
-      from,
-      to,
-      label: key === 'trigToDrum' ? `keys → ${named}` : `${named} → ${end}`,
-    })
-  }
-  return bridges
+  return TRIGGER_CABLES.filter(x => x.plugged(c)).map(x => ({
+    id: x.key,
+    from: x.from,
+    to: x.to,
+    label: cableName(c, x),
+    signal: x.signal,
+  }))
 }
 
 const mapNode = (
@@ -1482,7 +1468,7 @@ function boardWires(m: Laid) {
             [x, port(to)],
           ],
       {
-        color: k.mod,
+        color: t.signal === 'hits' ? k.hits : k.accent2,
         dash: '4 3',
         door: 'Trigger patch',
         key: t.id,

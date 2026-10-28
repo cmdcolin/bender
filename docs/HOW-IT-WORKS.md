@@ -71,7 +71,7 @@ rail down, so the chips' pitch dives and the kit's tempo slows. A machine whose
   after each hit on its voice.
 - **Jumpers:** each of the three has a **Plays Plinky’s notes** jumper. With it
   cut, the chip plays from its keybed and from any trigger bridge you patch
-  across from the drums. Each bridge on the map reads `kick → FM`: the kit
+  across from the drums. Each bridge on the map reads `kick → Glint`: the kit
   voice, then the machine it strikes. See [the trigger patch](USER-GUIDE.md) in
   the user guide.
 - **In the panel:** the map puts the five on two rows, with the drums under the

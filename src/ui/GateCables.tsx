@@ -11,6 +11,12 @@ import { N_DRUM_VOICES, VOICE_LABELS } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
 import {
+  connectionInto,
+  MACHINE_OF,
+  SIGNAL_COLOUR,
+  type Signal,
+} from './connections.ts'
+import {
   useBoardValue,
   useControlValue,
   useStoreSelect,
@@ -41,22 +47,15 @@ type Taker = Exclude<NoteDest, 'toy'>
 
 const TAKERS: Taker[] = ['fm', 'pcm', 'mono']
 
-const CABLE_COLOUR: Record<Taker, string> = {
-  fm: '#e3a72f',
-  pcm: '#2fb3cf',
-  mono: '#d9503c',
-}
+const GATE_COLOUR = SIGNAL_COLOUR.notes
+const TRIG_COLOUR = SIGNAL_COLOUR.hits
 
 const TRIG_TAKERS: NoteDest[] = ['toy', 'fm', 'pcm', 'mono']
 
-const TRIG_CONTROL: Record<NoteDest, ControlKey> = {
-  toy: 'trigToKeys',
-  fm: 'fmStruck',
-  pcm: 'pcmStruck',
-  mono: 'monoStruck',
-}
+const controlInto = (taker: NoteDest, signal: Signal) =>
+  connectionInto(MACHINE_OF[taker], signal)!.key
 
-const TRIG_COLOUR = '#a184e8'
+const trigControl = (taker: NoteDest) => controlInto(taker, 'hits')
 
 const ANY_HIT = N_DRUM_VOICES + 1
 
@@ -223,7 +222,7 @@ function grab(taker: Taker, end: End, e: ReactPointerEvent) {
 }
 
 const struckBy = (taker: NoteDest) =>
-  Math.round(engine.controls.get()[TRIG_CONTROL[taker]])
+  Math.round(engine.controls.get()[trigControl(taker)])
 
 const trigEndOf = (el: HTMLElement | null): TrigEnd | null => {
   const taker = TRIG_TAKERS.find(t => t === el?.dataset.trigTaker)
@@ -248,10 +247,10 @@ function grabTrig(start: TrigEnd, e: ReactPointerEvent) {
           ? end
           : null
       engine.armStep()
-      if (carried) engine.set(TRIG_CONTROL[carried], 0)
+      if (carried) engine.set(trigControl(carried), 0)
       const taker = fixed.taker ?? landed?.taker
       const voice = fixed.voice ?? landed?.voice
-      if (taker && voice) engine.set(TRIG_CONTROL[taker], voice)
+      if (taker && voice) engine.set(trigControl(taker), voice)
     },
   )
 }
@@ -263,25 +262,24 @@ const setGate = (control: ControlKey, cut: boolean) => {
 
 const setTrig = (taker: NoteDest, voice: number) => {
   engine.armStep()
-  engine.set(TRIG_CONTROL[taker], voice)
+  engine.set(trigControl(taker), voice)
 }
 
 /** The input jack on a keyboard's right edge. Pressing it plugs the cable in or
     pulls it out. */
 export function GateJumper({
   taker,
-  control,
   notes,
   cutTip,
   solderedTip,
 }: {
   taker: Taker
-  control: ControlKey
   /** What this machine is sounding, which includes the toy's notes with the jumper on. */
   notes: Store<ReadonlySet<number>>
   cutTip: string
   solderedTip: string
 }) {
+  const control = controlInto(taker, 'notes')
   const cut = useControlValue(control) > 0.5
   const toySounding = useStoreValue(engine.chipNotes).size > 0
   const sounding = useStoreValue(notes).size > 0
@@ -314,7 +312,7 @@ export function GateJumper({
           if (!swallow) setGate(control, !cut)
         }}
       >
-        <Socket colour={CABLE_COLOUR[taker]} lamp={lamp} target={target} />
+        <Socket colour={GATE_COLOUR} lamp={lamp} target={target} />
       </button>
     </Tip>
   )
@@ -323,7 +321,7 @@ export function GateJumper({
 /** A keyboard's TRIG input, under its gate jack, or at the top of Plinky's
     edge. Pressing it patches in every hit on the kit, or pulls the cable. */
 export function TrigJack({ taker }: { taker: NoteDest }) {
-  const voice = Math.round(useControlValue(TRIG_CONTROL[taker]))
+  const voice = Math.round(useControlValue(trigControl(taker)))
   const target = useStoreSelect(
     dragging,
     d => d?.line === 'trig' && d.fixed.voice !== undefined,
@@ -408,7 +406,7 @@ function OutputSocket({ taker }: { taker: Taker }) {
       data-gate-end="out"
       onPointerDown={e => grab(taker, 'out', e)}
     >
-      <Socket colour={CABLE_COLOUR[taker]} target={target} />
+      <Socket colour={GATE_COLOUR} target={target} />
     </span>
   )
 }
@@ -434,7 +432,7 @@ function TrigOut({ voice }: { voice: number }) {
     d => d?.line === 'trig' && d.fixed.taker !== undefined,
   )
   const lit = useBoardValue(c =>
-    TRIG_TAKERS.some(t => Math.round(c[TRIG_CONTROL[t]]) === voice),
+    TRIG_TAKERS.some(t => Math.round(c[trigControl(t)]) === voice),
   )
   const place = useCallback(
     (el: HTMLElement | null) => keep(trigOuts, voice, el),
@@ -580,7 +578,7 @@ export function GateBench({ children }: { children: ReactNode }) {
   const { routes, jacks } = useStoreValue(spots)
   const drag = useStoreValue(dragging)
   const struck = useBoardValue(c =>
-    TRIG_TAKERS.map(t => Math.round(c[TRIG_CONTROL[t]])).join(','),
+    TRIG_TAKERS.map(t => Math.round(c[trigControl(t)])).join(','),
   )
   const plugged = useMemo(() => {
     const voices = struck.split(',').map(Number)
@@ -679,12 +677,7 @@ function Held({
     const from = drag.end === 'out' ? loose : held.from
     const to = drag.end === 'in' ? loose : held.to
     return (
-      <Wire
-        path={hanging(from, to)}
-        from={from}
-        to={to}
-        colour={CABLE_COLOUR[drag.taker]}
-      />
+      <Wire path={hanging(from, to)} from={from} to={to} colour={GATE_COLOUR} />
     )
   }
   const { fixed } = drag
@@ -911,7 +904,7 @@ function Cable({
       path={path}
       from={spot.from}
       to={spot.to}
-      colour={CABLE_COLOUR[taker]}
+      colour={GATE_COLOUR}
       sounding={sounding}
       pull={{
         title:

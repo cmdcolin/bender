@@ -13,6 +13,9 @@
      where a travel runs backwards below the middle, the two halves have to be
      tellable apart at a glance rather than by reading the sign. */
   --cool: #49b6ff;
+  /* The kit's trigger lines, on every cable and drawing that carries a hit.
+     Plinky's notes take --accent2. */
+  --hits: #a184e8;
   /* A fill, where tokens.css's --danger is text: panic, a live recording. */
   --alarm: #ff3355;
   /* The alarm's border and its hover wash, for a button that removes. */

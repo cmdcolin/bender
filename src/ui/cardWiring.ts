@@ -1,4 +1,11 @@
-import type { ControlKey } from '../controls.ts'
+import {
+  connectionInto,
+  KEY_LINE,
+  KIT_TO_PLINKY,
+  PLINKY_TO_KIT,
+  wireId,
+} from './connections.ts'
+
 import type { Track } from './controls/index.ts'
 import type { Opens, Wiring } from './diagram.ts'
 
@@ -78,35 +85,29 @@ export const WRAITH_WIRED: Wiring = {
   heads: ['send', 'transport'],
 }
 
-// The machines with no sequencer of their own: each takes the toy keyboard's
-// notes through one jumper and the kit's hits through one strike selector.
-export const TRIGGER_CHIPS = [
-  { name: 'Glint', struck: 'fmStruck', gate: 'fmKeyGate' },
-  { name: 'Parlor', struck: 'pcmStruck', gate: 'pcmKeyGate' },
-  { name: 'Growler', struck: 'monoStruck', gate: 'monoKeyGate' },
-] as const satisfies readonly {
-  name: string
-  struck: ControlKey
-  gate: ControlKey
-}[]
+export const TRIGGER_CHIPS = KEY_LINE.map(jumper => ({
+  name: jumper.to,
+  struck: connectionInto(jumper.to, 'hits')!,
+  gate: jumper,
+}))
 
 export const TRIGGER_OPENS: Opens = Object.fromEntries([
-  ['kit → keys', ['trigToKeys', 'trigKeysNote']],
-  ['keys → kit', ['trigToDrum']],
+  [wireId(KIT_TO_PLINKY), ['trigToKeys', 'trigKeysNote']],
+  [wireId(PLINKY_TO_KIT), ['trigToDrum']],
   ...TRIGGER_CHIPS.flatMap(c => [
-    [`kit → ${c.name}`, [c.struck]],
-    [`keys → ${c.name}`, [c.gate]],
-    [c.name, [c.struck, c.gate]],
+    [wireId(c.struck), [c.struck.key]],
+    [wireId(c.gate), [c.gate.key]],
+    [c.name, [c.struck.key, c.gate.key]],
   ]),
 ])
 
 export const TRIGGER_WIRED: Wiring = Object.fromEntries([
-  ['kit → keys', ['keys → kit']],
-  ['keys → kit', ['kit → keys']],
+  [wireId(KIT_TO_PLINKY), [wireId(PLINKY_TO_KIT)]],
+  [wireId(PLINKY_TO_KIT), [wireId(KIT_TO_PLINKY)]],
   ...TRIGGER_CHIPS.flatMap(c => [
-    [`kit → ${c.name}`, [c.name, 'keys → kit']],
-    [`keys → ${c.name}`, [c.name, 'kit → keys']],
-    [c.name, ['kit → keys', 'keys → kit']],
+    [wireId(c.struck), [c.name, wireId(PLINKY_TO_KIT)]],
+    [wireId(c.gate), [c.name, wireId(KIT_TO_PLINKY)]],
+    [c.name, [wireId(KIT_TO_PLINKY), wireId(PLINKY_TO_KIT)]],
   ]),
 ])
 
