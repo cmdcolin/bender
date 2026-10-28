@@ -2,6 +2,26 @@
 
 All notable changes to bender are documented here.
 
+## [1.21.0](https://github.com/cmdcolin/bender/compare/v1.20.0...v1.21.0) - 2026-10-28
+
+### Features
+- *(dsp)* [`b65a411`](https://github.com/cmdcolin/bender/commit/b65a41172c09f14c748cc25810a603c7529f7e85) a 1980s rack reverb bend with its memory and clock exposed
+- *(dsp)* [`d5cba68`](https://github.com/cmdcolin/bender/commit/d5cba681095adb902cbf1d7b50f40345e5703b96) give Parlor a Note length for strikes nobody holds
+- *(ui)* [`0bc383f`](https://github.com/cmdcolin/bender/commit/0bc383f2dbe0066eab9c914132e7a021dc84ea0d) patch the bench like a modular, with printed jacks
+- *(ui)* [`a402de9`](https://github.com/cmdcolin/bender/commit/a402de941153b7d900be4e4a0aea3d8c6a4aeb12) patch the bay's sources into machines with MOD cables
+- *(ui)* [`7c17aa2`](https://github.com/cmdcolin/bender/commit/7c17aa2d3e9864dabf2dcf56e350d798025422fa) an ADSR gate jack, and CV jacks that pick where they land
+
+### Fixes
+- *(ui)* [`6408b32`](https://github.com/cmdcolin/bender/commit/6408b329388b03055a5067197728b1df3ac60da9) drop the PickPart default that the React Compiler cannot lower
+
+### Refactor
+- *(ui)* [`27ec895`](https://github.com/cmdcolin/bender/commit/27ec895fcc0cfc8b30c0822616ece455820e1614) call a bus fault a fault, not a knife
+- *(ui)* [`4de08cc`](https://github.com/cmdcolin/bender/commit/4de08cce7e6d6584cf508d1874dc4b5403e5f41f) one table for the cables between machines
+- *(ui)* [`e4b96b3`](https://github.com/cmdcolin/bender/commit/e4b96b3cd122d6dc901080c56f752f1b1b9e8022) split the bench cables into paths, drag and parts
+
+### Documentation
+- [`ef59818`](https://github.com/cmdcolin/bender/commit/ef59818d495e6fbef15a1f16f4ec264f6721abf6) retake the trigger patch shot in the cable colours
+
 ## [1.20.0](https://github.com/cmdcolin/bender/compare/v1.19.0...v1.20.0) - 2026-10-28
 
 ### Features
