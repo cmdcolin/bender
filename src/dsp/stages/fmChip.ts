@@ -1656,7 +1656,7 @@ export class FmChip implements Stage {
       io.r[i]! += out
     }
     rail.drawing += load / io.n
-    if (p[IDX.pcmGlint]! > 0) ctx.regs.set(this.regs)
+    ctx.regs.set(this.regs)
   }
 
   // The four slots through the one converter. A stuck counter sends one

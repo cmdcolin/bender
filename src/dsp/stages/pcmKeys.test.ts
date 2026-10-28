@@ -4,6 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
 import { packParams } from '../../engine/params.ts'
 import { buildBender, type BuiltChain } from '../build.ts'
 import { FAULT } from '../bus.ts'
+import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { bin, makeIo, rms, sine, SR, tail } from '../testRender.ts'
 import {
@@ -390,4 +391,23 @@ test('Glint on the bus plays Glint’s register file as the wave', () => {
   expect(rms(bridged)).toBeGreaterThan(0.01)
   expect(differs(run(0, 0.001), bridged)).toBeGreaterThan(0.3)
   expect(rms(run(8, 0))).toBeLessThan(rms(bridged) / 20)
+})
+
+test('a wire that turns Glint up reads the registers with the knob at zero', () => {
+  const run = (wire: Partial<Controls>) =>
+    tail(
+      play({ ...ALONE, fmLevel: 0.001, ...wire }, 1.2, b => {
+        b.transport.tune = true
+        b.pcmKeys.noteOn(12)
+      }).out,
+      0.6,
+    )
+  const knob = run({ pcmGlint: 8 })
+  const wired = run({
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.pcmGlint,
+    mod0Depth: 0.9,
+  })
+  expect(differs(knob, wired)).toBeLessThan(0.05)
 })
