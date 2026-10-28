@@ -195,7 +195,7 @@ export class Codec implements Stage {
     const err = Math.min(Math.max(errors, 0), 1)
 
     for (const lane of lanes) {
-      lane.frame.set(lane.input.subarray(0, 2 * n))
+      copy(lane.input, lane.frame, 2 * n)
       lane.input.copyWithin(0, n, 2 * n)
       size.mdct.forward(lane.frame, lane.coef)
       measure(lane, size.edges, cut)
@@ -218,10 +218,10 @@ export class Codec implements Stage {
       else if (lost || late) {
         if (conceal === 1) lane.coef.fill(0, 0, n)
         else if (conceal === 2) scatter(lane, n, rng)
-        else lane.coef.set(lane.held.subarray(0, n))
+        else copy(lane.held, lane.coef, n)
       } else {
         quantise(lane, size.edges, cut, n, err, rng)
-        lane.held.set(lane.coef.subarray(0, n))
+        copy(lane.coef, lane.held, n)
       }
       if (swap > 0) scramble(lane.coef, size.edges, cut, swap, rng)
       size.mdct.inverse(lane.coef, lane.frame)
@@ -247,6 +247,10 @@ export class Codec implements Stage {
     this.heard = false
     this.loss.reset()
   }
+}
+
+function copy(from: Float64Array, to: Float64Array, n: number) {
+  for (let k = 0; k < n; k++) to[k] = from[k]!
 }
 
 function measure(lane: Lane, edges: Uint16Array, cut: number) {

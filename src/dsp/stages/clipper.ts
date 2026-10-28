@@ -83,11 +83,12 @@ const FB_NEAR = 1e3
 /** The bass boost's resistor for a pot setting, ohms. */
 export const boostOhms = (x: number) => FB_FAR * Math.pow(FB_NEAR / FB_FAR, x)
 
-/** The one-pole coefficient under the shelf and how much of the top it keeps. */
-export function boostShelf(ohms: number, sr: number) {
-  const poleHz = 1 / (2 * Math.PI * (FB_INSIDE + ohms) * FB_CAP)
-  return { coef: lpCoef(poleHz, sr), keep: ohms / (FB_INSIDE + ohms) }
-}
+/** The one-pole coefficient under the shelf. */
+const boostCoef = (ohms: number, sr: number) =>
+  lpCoef(1 / (2 * Math.PI * (FB_INSIDE + ohms) * FB_CAP), sr)
+
+/** How much of the top the shelf keeps. */
+const boostKeep = (ohms: number) => ohms / (FB_INSIDE + ohms)
 
 const RIPPLE_S = 0.08
 const LEAD = 0.005
@@ -269,7 +270,10 @@ export class Clipper implements Stage {
     const blockKeep = Math.exp(-1 / ((0.03 + 0.4 * block) * sr))
     const speaker = p[IDX.distSpeaker]!
     const fb = p[IDX.distPinFb]!
-    const shelf = fb > 0 ? boostShelf(boostOhms(fb), sr) : null
+    const shelf = fb > 0
+    const shelfOhms = shelf ? boostOhms(fb) : 0
+    const shelfCoef = shelf ? boostCoef(shelfOhms, sr) : 0
+    const shelfKeep = shelf ? boostKeep(shelfOhms) : 0
 
     const fill = 1 / (AMP_FILL_S * sr)
     const rippleK = 1 / (RIPPLE_S * sr)
@@ -335,10 +339,10 @@ export class Clipper implements Stage {
       let inL = (xl + ripple) * k
       let inR = (xr + ripple) * k
       if (shelf) {
-        const lowL = left.boost.process(inL, shelf.coef)
-        const lowR = right.boost.process(inR, shelf.coef)
-        inL = lowL + shelf.keep * (inL - lowL)
-        inR = lowR + shelf.keep * (inR - lowR)
+        const lowL = left.boost.process(inL, shelfCoef)
+        const lowR = right.boost.process(inR, shelfCoef)
+        inL = lowL + shelfKeep * (inL - lowL)
+        inR = lowR + shelfKeep * (inR - lowR)
       }
       let yl = this.stage(left, inL + bias, mode, head, block)
       let yr = this.stage(right, inR + bias, mode, head, block)

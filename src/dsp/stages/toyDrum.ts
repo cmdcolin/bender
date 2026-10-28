@@ -262,6 +262,19 @@ const BANK_STARVE_OCT = 3
 
 const TAP_STAGES = 6
 const MIN_STEP_HZ = 0.01
+
+function stepRate(
+  i: number,
+  stepHz: number,
+  modTempo: Float32Array | null,
+  tapBase: number,
+  modTap: Float32Array | null,
+  melody: Float32Array,
+) {
+  const tap = modTap ? Math.min(Math.max(tapBase + modTap[i]!, 0), 1) : tapBase
+  if (tap > 0) return melody[i]! / tapDivisor(tap, TAP_STAGES)
+  return modTempo ? stepHz * octaves(modTempo[i]!) : stepHz
+}
 const GND_TRIP = 0.3
 
 /** Which voice's trigger line holds up the metal bank's supply. Off, the bank
@@ -1178,14 +1191,12 @@ export class ToyDrum implements Stage {
     const tapBase = p[IDX.drumStepTap]!
     const modTap = ctx.mod.read(DEST.drumStepTap)
     const melody = ctx.trig.melodyHz
-    const rateAt = (i: number) => {
-      const tap = modTap
-        ? Math.min(Math.max(tapBase + modTap[i]!, 0), 1)
-        : tapBase
-      if (tap > 0) return melody[i]! / tapDivisor(tap, TAP_STAGES)
-      return modTempo ? stepHz * octaves(modTempo[i]!) : stepHz
-    }
-    this.stepMs = 1000 / Math.max(rateAt(0), MIN_STEP_HZ)
+    this.stepMs =
+      1000 /
+      Math.max(
+        stepRate(0, stepHz, modTempo, tapBase, modTap, melody),
+        MIN_STEP_HZ,
+      )
     if (this.transport.drums) ctx.trig.kitClocking(1000 / this.stepMs)
     const baseSwing = p[IDX.drumSwing]!
     const modSwing = ctx.mod.read(DEST.drumSwing)
@@ -1453,7 +1464,7 @@ export class ToyDrum implements Stage {
           0.9,
         )
         const span = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
-        const rate = rateAt(i)
+        const rate = stepRate(i, stepHz, modTempo, tapBase, modTap, melody)
         this.stepClock += rate / this.sr
         if (this.gndEdge.rise(ctx.gnd[i]!)) this.stepClock += span
         if (this.stepClock >= span) {
