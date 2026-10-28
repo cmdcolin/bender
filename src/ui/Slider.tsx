@@ -335,6 +335,10 @@ function pull(def: SliderDef, pos: number): number {
 function helpWithNormal(def: SliderDef) {
   if (!def.normal) return def.help
   const [lo, hi] = def.normal.map(v => formatValue(def, v))
+  if (!def.split)
+    return def.normal[0] === def.min
+      ? `${def.help} The red line under the track runs past the normal range, above ${hi}.`
+      : `${def.help} The red lines under the track run outside the normal range, ${lo} to ${hi}.`
   return def.normal[0] === def.min
     ? `${def.help} The red tick marks the top of the normal range, ${hi}.`
     : `${def.help} The red ticks mark the normal range, ${lo} to ${hi}.`
@@ -371,10 +375,16 @@ function PlainTrack({
         <span className={styles.defmark} style={{ left: along(stock) }} />
       )}
       {start > 0 && (
-        <span className={styles.redline} style={{ left: along(start) }} />
+        <span
+          className={styles.redline}
+          style={{ left: 0, width: along(start) }}
+        />
       )}
       {end < 1 && (
-        <span className={styles.redline} style={{ left: along(end) }} />
+        <span
+          className={styles.redline}
+          style={{ left: along(end), right: 0 }}
+        />
       )}
       {stops &&
         Array.from({ length: stops + 1 }, (_, i) => (

@@ -211,11 +211,11 @@
   cursor: not-allowed;
 }
 
-/* A chip that undoes an afternoon of turning. Lit the way panic is, not the way
-   a roll is: recoverable off ctrl+z and still not a thing to press by accident. */
+/* A chip that undoes an afternoon of turning. Quiet at rest like the chips
+   beside it, and red only under the pointer: recoverable off ctrl+z and still
+   not a thing to press by accident. */
 .chipDanger {
   composes: chip;
-  color: var(--accent);
 }
 
 .chipDanger:hover:not(:disabled) {

@@ -424,18 +424,15 @@ select.listOn {
   pointer-events: none;
 }
 
-/* Where the normal stretch ends. Half height and hanging under the trough, so
-   it reads as a scale marking beneath the thumb rather than competing with the
-   stock mark. */
+/* The travel past the normal stretch, a faint line under the trough like the
+   red zone on a tachometer. */
 .redline {
   position: absolute;
-  top: 7px;
-  width: 2px;
-  height: 6px;
-  margin-left: -1px;
+  top: 11px;
+  height: 2px;
   border-radius: 1px;
   background: var(--alarm);
-  opacity: 0.85;
+  opacity: 0.45;
   pointer-events: none;
 }
 

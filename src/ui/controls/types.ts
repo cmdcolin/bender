@@ -82,9 +82,8 @@ export interface SliderDef {
     normal?: number
   }
   /** The stretch of a linear track the circuit was designed for. The track
-      gives it three quarters of the throw and draws a red tick at each edge
-      that has travel past it, the readout turns red beyond it, and the dice
-      roll inside it. */
+      gives it three quarters of the throw and underlines the travel past it
+      in red, the readout turns red beyond it, and the dice roll inside it. */
   normal?: readonly [number, number]
   /** Whether the row takes a speed tapped in rather than dialled: a tempo, a
       delay time, a wobble rate. The unit is what the press is worth — `bpm` is
