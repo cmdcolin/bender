@@ -723,12 +723,14 @@ export class Engine {
 
   private stopMorphTick: (() => void) | null = null
   private morphTarget: Controls | null = null
+  private glide: Glide | null = null
   private armed: Controls | null = null
 
   private cancelMorph() {
     this.stopMorphTick?.()
     this.stopMorphTick = null
     this.morphTarget = null
+    this.glide = null
     if (this.morphProgress.get() !== null) this.morphProgress.set(null)
   }
 
@@ -1105,11 +1107,22 @@ export class Engine {
   }
 
   /** A new pattern over the board as it stands, on the next downbeat of the
-      phrase lock while the kit runs, else at once. One entry in the walk. */
+      phrase lock while the kit runs, else at once. One entry in the walk. A
+      morph in flight carries on with the rest of the board. */
   writePattern(patch: Partial<Controls>) {
     const land = () => {
       this.armStep()
-      this.writeBoard({ ...this.controls.get(), ...patch })
+      const { glide, morphTarget } = this
+      if (!glide || !morphTarget) {
+        this.writeBoard({ ...this.controls.get(), ...patch })
+        return
+      }
+      this.stopHunt()
+      this.commitStep()
+      glide.release(Object.keys(patch))
+      this.morphTarget = { ...morphTarget, ...patch }
+      this.controls.set({ ...this.controls.get(), ...patch })
+      this.flushSoon()
     }
     if (!this.queue('pattern', { land, seconds: 0 })) land()
   }
@@ -1135,6 +1148,7 @@ export class Engine {
       return
     }
     this.morphTarget = target
+    this.glide = glide
     const start = performance.now()
     const tick = () => {
       const t = Math.min((performance.now() - start) / (seconds * 1000), 1)

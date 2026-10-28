@@ -25,8 +25,8 @@ export class Glide {
   // The keys that actually differ, split by how they travel. Worked out once: a
   // morph typically moves a couple of dozen of the two hundred controls, and
   // walking all of them every frame is work with a known answer.
-  private readonly travel: ControlKey[]
-  private readonly switching: ControlKey[]
+  private travel: ControlKey[]
+  private switching: ControlKey[]
 
   private readonly from: Controls
   private readonly to: Controls
@@ -71,5 +71,12 @@ export class Glide {
     for (const k of this.switching)
       next[k] = e < 0.5 ? this.from[k] : this.to[k]
     return next
+  }
+
+  /** Stop moving `keys`, leaving them to whatever the base holds. */
+  release(keys: readonly string[]) {
+    const gone = new Set(keys)
+    this.travel = this.travel.filter(k => !gone.has(k))
+    this.switching = this.switching.filter(k => !gone.has(k))
   }
 }
