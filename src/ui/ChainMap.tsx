@@ -25,6 +25,7 @@ import { aimAt } from './reveal.ts'
 import { SettingFind } from './SettingFind.tsx'
 import { Shelf } from './Shelf.tsx'
 import { formerName } from './stageNames.ts'
+import { throttle } from './throttle.ts'
 import { Tip } from './Tip.tsx'
 import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 import { watchTriggers } from './triggerWatch.ts'
@@ -52,22 +53,11 @@ const SAG_HOLD_MS = 1500
 function useSettledControls(): Controls {
   const [controls, setControls] = useState(engine.controls.get)
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | undefined
-    let drawnAt = 0
-    const draw = () => {
-      timer = undefined
-      drawnAt = performance.now()
-      setControls(engine.controls.get())
-    }
-    const off = engine.controls.subscribe(() => {
-      if (timer !== undefined) return
-      const wait = REDRAW_MS - (performance.now() - drawnAt)
-      if (wait <= 0) draw()
-      else timer = setTimeout(draw, wait)
-    })
+    const draw = throttle(() => setControls(engine.controls.get()), REDRAW_MS)
+    const off = engine.controls.subscribe(draw.call)
     return () => {
       off()
-      if (timer !== undefined) clearTimeout(timer)
+      draw.cancel()
     }
   }, [])
   return controls
