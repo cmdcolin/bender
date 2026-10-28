@@ -16,6 +16,7 @@ import { MonoSynth } from './stages/monoSynth.ts'
 import { Noise } from './stages/noise.ts'
 import { Octave } from './stages/octave.ts'
 import { PcmKeys } from './stages/pcmKeys.ts'
+import { RackVerb } from './stages/rackVerb.ts'
 import { RingMod } from './stages/ringmod.ts'
 import { Sampler } from './stages/sampler.ts'
 import { Screech } from './stages/screech.ts'
@@ -102,7 +103,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     sampler,
   ]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
-  // 6 filt, 7 shift, 8 oct, 9 codec — six slots for nine bends, so you pick.
+  // 6 filt, 7 shift, 8 oct, 9 codec, 10 rack verb — six slots for ten bends, so you pick.
   // The codec seeds off the build's seed rather than drawing one.
   chain.bendById = [
     undefined,
@@ -115,6 +116,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Shifter(sr),
     new Octave(sr),
     new Codec(sr, seed ^ 0xc0dec),
+    new RackVerb(sr, seed ^ 0x5eb),
   ]
   chain.pedals = [
     new Stompbox(sr),

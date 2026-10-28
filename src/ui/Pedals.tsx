@@ -109,6 +109,7 @@ const BY_SOUND: { section: string; kinds: Record<string, string> }[] = [
       Wraith: 'tape delay',
       Ricochet: 'delay pedal',
       Boing: 'spring reverb',
+      'Rack verb': 'digital reverb',
       Chorale: 'ensemble',
     },
   },

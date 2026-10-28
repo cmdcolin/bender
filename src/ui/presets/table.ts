@@ -1256,6 +1256,76 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'cheap cathedral',
+    blurb:
+      'The toy through a 1980s rack reverb at its largest program and nearly full decay, onto a tape that wanders',
+    patch: {
+      chipLevel: 0.6,
+      bendSlot0: 10,
+      rackMix: 0.65,
+      rackDecay: 0.97,
+      rackSize: 2.2,
+      rackPre: 90,
+      rackWander: 0.7,
+      tapeMix: 0.6,
+      tapeWow: 0.45,
+    },
+  },
+  {
+    name: 'slow clock',
+    blurb:
+      'The reverb’s sample clock dragged down to a quarter, so every delay runs four times as long and the images of the slow clock fold into a gritty tail',
+    patch: {
+      chipLevel: 0.6,
+      bendSlot0: 10,
+      rackMix: 0.7,
+      rackDecay: 0.94,
+      rackClock: 0.25,
+      rackDamp: 0.2,
+    },
+  },
+  {
+    name: 'leaky memory',
+    blurb:
+      'The reverb’s memory missing its refresh, so bits leak out of the tail and the room fizzes and sparkles as it fades',
+    patch: {
+      chipLevel: 0.6,
+      bendSlot0: 10,
+      rackMix: 0.6,
+      rackDecay: 0.96,
+      rackRefresh: 0.6,
+      rackBits: 10,
+    },
+  },
+  {
+    name: 'room from last week',
+    blurb:
+      'The reverb’s top address wire cut most of the way through, so the tank reads from the wrong half of the memory and audio from seconds ago comes back into the room',
+    patch: {
+      chipLevel: 0.6,
+      bendSlot0: 10,
+      rackMix: 0.6,
+      rackDecay: 0.9,
+      rackSize: 2,
+      rackAddrLine: 16,
+      rackAddrFault: 0,
+      rackBusCut: 0.6,
+    },
+  },
+  {
+    name: 'brownout hall',
+    blurb:
+      'The reverb clocked off the toy’s dying supply, so each sag slows the clock and drags the tail’s pitch down',
+    patch: {
+      chipLevel: 0.7,
+      chipStarve: 0.45,
+      bendSlot0: 10,
+      rackMix: 0.6,
+      rackDecay: 0.95,
+      rackDrag: 1,
+    },
+  },
+  {
     name: 'lean on it',
     blurb:
       'Skin on the pad rides the cutoff, and pressing harder opens the feedback',

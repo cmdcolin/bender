@@ -33,8 +33,8 @@ every stage.
 - **random**, **hunt an edge**, **mutate** and **drift** change only the stages
   on the map.
 
-**Six slots, nine bends.** You choose which six are on the board, and in what
-order. The map draws the other three loose in the rack at the head of the chain,
+**Six slots, ten bends.** You choose which six are on the board, and in what
+order. The map draws the other four loose in the rack at the head of the chain,
 dashed and soldered to nothing. Click the rack to reorder the slots, or click a
 loose bend to open its controls.
 

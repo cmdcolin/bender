@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-584 knobs and switches in 37 groups, nine bends for six slots, 18 ROM tunes, 153
+600 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -36,9 +36,9 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   _fault on the bus_ opens on a row of named cuts: press **machine-gun** or
   **the note never ends** and the rows under it show which controls it set.
   **Random bus fault** under random ▾ draws from the same table.
-- **Nine bends, six slots.** You pick which are on the board and in what order,
-  so three always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 143 destinations, among
+- **Ten bends, six slots.** You pick which are on the board and in what order,
+  so four always sit out. A mix at zero takes the stage out of the path.
+- **A patch bay that modulates itself.** Four wires, 145 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 153 presets, and a roll button on every heading as well as
+- **Whole boards.** 158 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 60 controls are shy, mostly the ones that act on the
+names it still sets it. 62 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -807,7 +807,7 @@ one.
 
 ## Pedals
 
-Nine pedals compete for six ordered sockets, so three always sit out. Each has a
+Ten pedals compete for six ordered sockets, so four always sit out. Each has a
 mix, and a mix at zero takes the stage out of the path. The other six follow the
 sockets: all of them are always on the board, their order is one control, and a
 pedal at zero mix leaves the path.
@@ -1059,6 +1059,39 @@ own artefacts until they ring.
 
 </details>
 
+### Rack verb
+
+A budget digital reverb from the 1980s. A plate program runs out of one 64K-word
+memory on a 29.8 kHz clock, with 12-bit words and fixed 10 kHz filters either
+side. A slow clock makes the room longer and grittier, and moving it bends the
+tail like tape speed. Refresh fail leaks bits out of the memory, a short word
+turns each tail into hash, and a fault on the address bus pulls audio from
+seconds ago into the room. Freeze holds the tank indefinitely.
+
+<details>
+<summary>16 controls</summary>
+
+| control        | range                          | what it does                                                                                                             |
+| -------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Decay          | 0 to 1.1, normal 0 to 0.98     | How much of the tank goes round again                                                                                    |
+| Size           | 0.05× to 2.9×                  | Scales every delay in the program                                                                                        |
+| Pre-delay      | 0 to 500 ms                    | The gap before the room answers, counted in the unit’s own clock ticks, so a slow clock lengthens it                     |
+| Damping        | 0 to 0.95                      | A low-pass inside the tank, so the top end dies first and each lap comes back darker                                     |
+| Wander         | off to full                    | Two slow sines swing a read tap in each half of the tank, so the tail detunes against itself and never settles on a ring |
+| Clock          | 0.1× to 1.5×                   | The sample clock, 29.8 kHz at 1×                                                                                         |
+| Supply drag    | off to full                    | Runs the clock off the board’s sagging supply, so a starve or a brownout slows the clock and drags the tail’s pitch down |
+| Word           | 4 to 16 bits                   | How many bits of each memory word the unit keeps, 12 as shipped                                                          |
+| Refresh fail   | off to full                    | The memory chips lose charge between refreshes, and bits leak out of words at random                                     |
+| Address line † | 17 of them, off through A15    | Which of the sixteen address wires to the memory the fault is on                                                         |
+| Address fault  | cut, to ground, to +V, bridged | What happened to the address wire                                                                                        |
+| Data line †    | 17 of them, off through D15    | Which of the sixteen data wires from the memory the fault is on, D15 the sign                                            |
+| Data fault     | cut, to ground, to +V, bridged | What happened to the data wire                                                                                           |
+| Cut depth      | off to full                    | How far through the trace the cut went, on either wire                                                                   |
+| Freeze         | off or hold                    | Shuts the input and holds the tank at full decay with no damping, so the room keeps whatever it held                     |
+| Mix            | off to full                    | Dry/wet                                                                                                                  |
+
+</details>
+
 ### Gnash
 
 Gnash models each circuit separately: _Screamer_ clips inside the feedback loop
@@ -1281,7 +1314,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 143 of them, filt cut through codec errors                                                                             | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 145 of them, filt cut through rack decay                                                                               | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -1505,9 +1538,9 @@ to move it, or move it with the arrow keys. To bring in a bend that is off the
 board, drag it or press it in the first section. A crusher into a filter and a
 filter into a crusher use the same two stages and sound different, and fuzz into
 a reverb gives a wall with a room behind it where a reverb into fuzz gives the
-room itself distorting. Nine bends compete for six positions, so three always
-sit out. All six pedals stay on the board, and a pedal leaves the path when its
-mix is at zero.
+room itself distorting. Ten bends compete for six positions, so four always sit
+out. All six pedals stay on the board, and a pedal leaves the path when its mix
+is at zero.
 
 The panel draws two racks in place of a row of sliders: the six bend-slot
 controls under _sockets_, and the one order control under _after the sockets_.
@@ -1549,7 +1582,7 @@ result:
 
 | control      | range                                                                                              | what it does                                                    |
 | ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct, codec                                        | Which pedal runs in this socket                                 |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct, codec, verb                                  | Which pedal runs in this socket                                 |
 | Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals after the sockets in |
 
 </details>
@@ -1592,7 +1625,7 @@ result:
 
 ### Presets
 
-153 presets. Each name is a link that opens the app with that board loaded, and
+158 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1777,6 +1810,22 @@ the board waits until you press play.
 - [**register shuffle**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:9,codecRate:64,codecScramble:0.35,codecMix:1)
   — Bands filed under the wrong bands, so the tune hops octaves and the bass
   sparkles in the treble
+- [**cheap cathedral**](https://cmdcolin.github.io/bender/app/#set=bendSlot0:10,rackDecay:0.97,rackSize:2.2,rackPre:90,rackWander:0.7,rackMix:0.65,tapeMix:0.6,tapeWow:0.45)
+  — The toy through a 1980s rack reverb at its largest program and nearly full
+  decay, onto a tape that wanders
+- [**slow clock**](https://cmdcolin.github.io/bender/app/#set=bendSlot0:10,rackDecay:0.94,rackDamp:0.2,rackClock:0.25,rackMix:0.7)
+  — The reverb’s sample clock dragged down to a quarter, so every delay runs
+  four times as long and the images of the slow clock fold into a gritty tail
+- [**leaky memory**](https://cmdcolin.github.io/bender/app/#set=bendSlot0:10,rackDecay:0.96,rackBits:10,rackRefresh:0.6,rackMix:0.6)
+  — The reverb’s memory missing its refresh, so bits leak out of the tail and
+  the room fizzes and sparkles as it fades
+- [**room from last week**](https://cmdcolin.github.io/bender/app/#set=bendSlot0:10,rackDecay:0.9,rackSize:2,rackAddrLine:16,rackBusCut:0.6,rackMix:0.6)
+  — The reverb’s top address wire cut most of the way through, so the tank reads
+  from the wrong half of the memory and audio from seconds ago comes back into
+  the room
+- [**brownout hall**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipStarve:0.45,bendSlot0:10,rackDecay:0.95,rackDrag:1,rackMix:0.6)
+  — The reverb clocked off the toy’s dying supply, so each sag slows the clock
+  and drags the tail’s pitch down
 - [**lean on it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
   — Skin on the pad rides the cutoff, and pressing harder opens the feedback
 - [**clock wobble**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)

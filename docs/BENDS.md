@@ -802,6 +802,35 @@ decoder, two frames late. The dry path waits the same two frames.
 - The patch bay's **codec rate** and **codec errors** lanes ride Bitrate and Bit
   errors.
 
+## The rack reverb
+
+The Rack verb bend is a budget digital reverb from the 1980s. A plate program
+runs out of one 64K-word memory on a 29.8 kHz sample clock, with fixed 10 kHz
+filters either side of the converters.
+
+- **Decay**, **Size**, **Pre-delay**, **Damping** and **Wander** set the
+  program. Decay past 1 grows the tank until the memory words clip. Size scales
+  every delay, and at the largest sizes the pre-delay shortens to fit the
+  memory.
+- **Clock:** a slower clock makes every delay longer, and the fixed filters pass
+  the images around it, so the tail turns long and gritty. Moving the clock
+  while the tail rings bends the tail's pitch.
+- **Supply drag** runs the clock off the board's sagging supply, so a starve or
+  a brownout drags the tail down.
+- **Word** keeps 4 to 16 bits of each memory word, 12 as shipped. The tank
+  truncates on every write, so a short word ends each tail in hash.
+- **Refresh fail:** bits leak out of words at random, and the damaged words go
+  round the tank, so the tail sparkles and then fizzes.
+- **Fault on the bus:** one of sixteen address or data wires cut, grounded,
+  pulled up or bridged.
+  - An address fault sends every read and write to the wrong word. A low line
+    roughens the tail, and a high one pulls in audio from seconds ago.
+  - A data line stuck high adds an offset that the tank feeds round until it
+    clips.
+- **Freeze** shuts the input and holds the tank at full decay. Refresh fail, the
+  word length and the knives keep working on what it holds.
+- The patch bay's **rack clock** and **rack decay** lanes ride Clock and Decay.
+
 ## The clipper's amp
 
 The Clipper's **the amp** fold rebuilds it as the toy's own LM386 on one of the

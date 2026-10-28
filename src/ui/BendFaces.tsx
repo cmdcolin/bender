@@ -51,6 +51,11 @@ const FACE: Record<string, Face> = {
     switch: 'codecConceal',
     sliders: ['codecRate', 'codecErrors', 'codecMix'],
   },
+  'Rack verb': {
+    colour: '#3d4a5e',
+    switch: 'rackFreeze',
+    sliders: ['rackDecay', 'rackClock', 'rackMix'],
+  },
 }
 
 function reading(stage: string, at: number, step: number, open: boolean) {

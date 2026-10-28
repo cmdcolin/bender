@@ -193,6 +193,8 @@ const LANDINGS: Landing[] = [
   at('oct chaos', ['octMix'], { bend: 'oct' }),
   at('codec rate', ['codecMix'], { bend: 'codec' }),
   at('codec errors', ['codecMix'], { bend: 'codec' }),
+  at('rack clock', ['rackMix'], { bend: 'verb' }),
+  at('rack decay', ['rackMix'], { bend: 'verb' }),
   at('kit step tap', ['drumLevel']),
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
   at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),
