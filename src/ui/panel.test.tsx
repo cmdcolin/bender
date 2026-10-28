@@ -174,6 +174,19 @@ test('space runs the board unless the focused part already took it', () => {
   run.mockRestore()
 })
 
+test('space presses a button the keyboard focused instead of running the board', () => {
+  render(<App />)
+  const run = vi.spyOn(engine, 'toggleRun').mockImplementation(() => {})
+  const button = document.createElement('button')
+  document.body.append(button)
+  button.focus()
+  const pressed = fireEvent.keyDown(button, { key: ' ', code: 'Space' })
+  expect(pressed).toBe(true)
+  expect(run).not.toHaveBeenCalled()
+  button.remove()
+  run.mockRestore()
+})
+
 // Every knob says what it is and where it stands, in its own units.
 test('a slider carries its name and its own units', () => {
   render(<OpenGroup group={group('Wraith')} onClose={() => {}} seconds={0} />)

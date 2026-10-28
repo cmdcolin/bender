@@ -26,7 +26,7 @@ import { useDrumKeys } from './drumKeys.ts'
 import { add, clearAdded, confine, confineToOne } from './fitted.ts'
 import { HuntDialog } from './HuntDialog.tsx'
 import { Instruments } from './Instruments.tsx'
-import { isTyping } from './isTyping.ts'
+import { isTyping, pressesSpace } from './isTyping.ts'
 import { remapOpen } from './keymap.ts'
 import { KeysDialog } from './KeysDialog.tsx'
 import { listView, setStageDrawings, stageDrawings } from './listView.ts'
@@ -518,7 +518,8 @@ export function App(props: { openedFromLink?: boolean }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey)
         return
-      if (e.defaultPrevented || isTyping(e.target)) return
+      if (e.defaultPrevented || isTyping(e.target) || pressesSpace(e.target))
+        return
       e.preventDefault()
       engine.toggleRun()
     }

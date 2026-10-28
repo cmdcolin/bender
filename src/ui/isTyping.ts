@@ -9,3 +9,13 @@ export function isTyping(target: EventTarget | null): boolean {
     return false
   return TYPING.has(target.tagName)
 }
+
+const PRESSABLE = 'button, summary, [role=button], [role=menuitem]'
+
+/** Whether Space presses a control the keyboard focused. A pointer press also
+    focuses a button, but without a focus ring, and leaves Space to the run
+    line. */
+export const pressesSpace = (target: EventTarget | null) =>
+  target instanceof Element &&
+  target.matches(PRESSABLE) &&
+  target.matches(':focus-visible')
