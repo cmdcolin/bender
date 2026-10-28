@@ -93,29 +93,6 @@
   container-type: inline-size;
 }
 
-/* The jumper's cable: wire in the button's text colour, the name set on it. */
-.gateCable {
-  flex: none;
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-width: 1.4;
-  stroke-linecap: round;
-}
-
-.gateCable rect,
-.gateCable text {
-  stroke: none;
-}
-
-.gateCable path {
-  fill: none;
-}
-
-.gateCable text {
-  font-size: 9px;
-  font-weight: 700;
-}
-
 /* The bed the keys are sunk into. touch-action keeps a finger dragged across it
    playing rather than scrolling the page, and the tap highlight is off because
    a grey box flashed over a key that is already lit says nothing the key has
