@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useMemo,
   useRef,
   useState,
@@ -291,15 +289,12 @@ function ModWire({ lane, label }: { lane: string; label: string }) {
   )
 }
 
-// The widest reading any row in a panel can print. Every row in it reserves
-// that much, so the tracks all end in the same place — and it is a floor rather
-// than a size, since a row drawn outside any panel, or one whose own reading
-// runs longer than its neighbours', still has to fit what it says.
 const cssVars = (vars: Record<`--${string}`, string | number>): CSSProperties =>
   vars
 
-const Reserved = createContext(0)
-
+// The widest reading any row in a panel can print. Every row in it reserves
+// that much, so the tracks all end in the same place; a row whose own reading
+// runs longer still fits it.
 export function ReserveReadout({
   defs,
   children,
@@ -315,7 +310,11 @@ export function ReserveReadout({
       ),
     [defs],
   )
-  return <Reserved.Provider value={chars}>{children}</Reserved.Provider>
+  return (
+    <div className={styles.reserve} style={cssVars({ '--reserve': chars })}>
+      {children}
+    </div>
+  )
 }
 
 // How much of the travel either side of a split's turn belongs to the turn
@@ -496,7 +495,6 @@ export function ControlSlider({
   // is wide, so a knob that pulled for the keyboard too would be one the
   // keyboard could never walk off the stop.
   const hand = useRef(false)
-  const reserved = useContext(Reserved)
   const stock = DEFAULT_CONTROLS[def.key]
   const touched = value !== stock
   const action = def.action
@@ -606,7 +604,7 @@ export function ControlSlider({
   const reading = (
     <span
       className={styles.value}
-      style={cssVars({ '--chars': Math.max(readoutChars(def), reserved) })}
+      style={cssVars({ '--chars': readoutChars(def) })}
     >
       {formatValue(def, value)}
     </span>

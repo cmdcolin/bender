@@ -114,6 +114,10 @@
   color: var(--accent);
 }
 
+.reserve {
+  display: contents;
+}
+
 /* The number itself, in a box wide enough for the widest reading anything in
    the panel can print — so a value that gains a character as it moves, or
    trades "frozen" for "2.40× reverse", doesn't push the track it is attached to
@@ -121,7 +125,7 @@
    rather than each ending wherever its own row's number left off. */
 .value {
   display: inline-block;
-  min-width: calc(var(--chars) * 1ch);
+  min-width: calc(max(var(--chars), var(--reserve, 0)) * 1ch);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
