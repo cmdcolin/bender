@@ -3,7 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
 import { packParams } from '../../engine/params.ts'
 import { DEST, ModBus } from '../modbus.ts'
-import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
+import { BLOCK, GLINT_REGS, type Ctx, type Stage } from '../stage.ts'
 import { bin, highEnergy, quiet, render, rms, SR } from '../testRender.ts'
 import { TriggerBus } from '../trigbus.ts'
 import { Codec } from './codec.ts'
@@ -195,4 +195,58 @@ test('scramble files a low tone under higher bands', () => {
   const high = (codecScramble: number) =>
     highEnergy(stage({ codecRate: 320, codecScramble }, low).l, 2000)
   expect(high(0.5)).toBeGreaterThan(high(0) * 5)
+})
+
+function sweep(
+  input: (t: number) => number,
+  board: (t: number) => Partial<Controls>,
+  seconds: number,
+) {
+  const codec: Stage = new Codec(SR)
+  const ctx = blank()
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const blocks = Math.ceil((seconds * SR) / BLOCK)
+  const out = new Float32Array(blocks * BLOCK)
+  for (let b = 0; b < blocks; b++) {
+    const p = packParams({ ...DEFAULT_CONTROLS, ...board(b * BLOCK) })
+    for (let i = 0; i < BLOCK; i++) io.l[i] = io.r[i] = input(b * BLOCK + i)
+    if (!codec.when || codec.when(p, ctx)) codec.process(io, p, ctx)
+    out.set(io.l, b * BLOCK)
+  }
+  return out
+}
+
+test('a giant frame delays the dry signal by its latency', () => {
+  const at = 6000
+  const out = stage({ codecFrame: 4, codecMix: 1e-3 }, t =>
+    t === at ? 1 : 0,
+  ).l
+  expect(Math.abs(out[at]!)).toBeLessThan(0.01)
+  expect(out[at + 4096]).toBeCloseTo(1 - 1e-3, 3)
+})
+
+test('the codec at no mix forgets what it heard before', () => {
+  const out = sweep(
+    t => (t < SR / 2 ? buzz(220)(t) : 0),
+    t => ({ codecMix: t < SR / 2 ? 1 : t < SR ? 0 : 0.5 }),
+    1.5,
+  )
+  expect(rms(out.subarray(SR + BLOCK))).toBe(0)
+})
+
+test('turning the mix to and from nothing fades rather than clicks', () => {
+  const sine = (t: number) => 0.5 * Math.sin((2 * Math.PI * 220 * t) / SR)
+  const out = sweep(
+    sine,
+    t => ({ codecMix: t < SR / 2 || t >= SR ? 1e-3 : 0 }),
+    1.5,
+  )
+  let jump = 0
+  for (let t = SR / 4; t < out.length; t++)
+    jump = Math.max(jump, Math.abs(out[t]! - out[t - 1]!))
+  expect(jump).toBeLessThan(0.03)
 })

@@ -85,6 +85,8 @@ export class Codec implements Stage {
   private readonly dryL = new Float32Array(2 * MAX_N)
   private readonly dryR = new Float32Array(2 * MAX_N)
   private dryAt = 0
+  private live = false
+  private heard = false
   private sizeIdx = -1
   private pos = 0
   private rng: Rng
@@ -98,24 +100,32 @@ export class Codec implements Stage {
     this.loss = new Burst(sr, 0.4)
   }
 
-  when(p: Float32Array) {
-    return p[IDX.codecMix]! > 0
-  }
-
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const pick = Math.min(
       Math.max(Math.round(p[IDX.codecFrame]!), 0),
       CODEC_FRAMES.length - 1,
     )
-    if (pick !== this.sizeIdx) {
+    const mix = p[IDX.codecMix]!
+    const entering = !this.live && this.heard
+    if (!this.live) {
+      if (mix <= 0) {
+        this.listen(io)
+        return
+      }
+      this.sizeIdx = pick
+      this.mid.reset()
+      this.side.reset()
+      this.pos = 0
+    } else if (pick !== this.sizeIdx) {
       this.sizeIdx = pick
       this.clear()
     }
+    const leaving = mix <= 0
+    this.live = !leaving
     const size = this.sizes[pick]!
     const n = size.mdct.n
     const latency = 2 * n
     const ring = this.dryL.length
-    const mix = p[IDX.codecMix]!
     const rateMod = ctx.mod.read(DEST.codecRate)
     const errMod = ctx.mod.read(DEST.codecErrors)
     const fb = p[IDX.codecFb]!
@@ -128,14 +138,22 @@ export class Codec implements Stage {
       const s = side.ready[this.pos]!
       mid.input[n + this.pos] = (l + r) / 2 + fb * softclip(m)
       side.input[n + this.pos] = (l - r) / 2 + fb * softclip(s)
-      this.dryL[this.dryAt] = l
-      this.dryR[this.dryAt] = r
       const back = (this.dryAt - latency + ring) % ring
       const dl = this.dryL[back]!
       const dr = this.dryR[back]!
+      this.dryL[this.dryAt] = l
+      this.dryR[this.dryAt] = r
       this.dryAt = (this.dryAt + 1) % ring
-      io.l[i] = dl * (1 - mix) + (m + s) * mix
-      io.r[i] = dr * (1 - mix) + (m - s) * mix
+      const outL = dl * (1 - mix) + (m + s) * mix
+      const outR = dr * (1 - mix) + (m - s) * mix
+      if (entering || leaving) {
+        const g = entering ? (i + 1) / io.n : 1 - (i + 1) / io.n
+        io.l[i] = l + (outL - l) * g
+        io.r[i] = r + (outR - r) * g
+      } else {
+        io.l[i] = outL
+        io.r[i] = outR
+      }
 
       this.pos++
       if (this.pos === n) {
@@ -148,6 +166,16 @@ export class Codec implements Stage {
           : p[IDX.codecErrors]!
         this.frame(size, p, kbps, errors, ctx.droop[i]!)
       }
+    }
+  }
+
+  private listen(io: StereoBlock) {
+    this.heard = true
+    const ring = this.dryL.length
+    for (let i = 0; i < io.n; i++) {
+      this.dryL[this.dryAt] = io.l[i]!
+      this.dryR[this.dryAt] = io.r[i]!
+      this.dryAt = (this.dryAt + 1) % ring
     }
   }
 
@@ -215,6 +243,8 @@ export class Codec implements Stage {
 
   panic() {
     this.clear()
+    this.live = false
+    this.heard = false
     this.loss.reset()
   }
 }
