@@ -48,13 +48,14 @@
   background: none;
   border: none;
   border-left: 1px solid var(--border);
-  color: var(--accent);
+  color: inherit;
   font: inherit;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
 
-.partReset:hover {
+.partReset:hover,
+.partReset:focus-visible {
   background: color-mix(in srgb, var(--alarm) 18%, transparent);
   color: var(--alarm);
 }
