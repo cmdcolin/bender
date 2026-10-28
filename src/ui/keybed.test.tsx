@@ -9,7 +9,7 @@ import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
 import { GateBench, ModPlate } from './GateCables.tsx'
 import { Keys } from './Keys.tsx'
-import { CV_DEST, LFO, modCables } from './modCables.ts'
+import { ADSR, CV_DEST, LFO, modCables } from './modCables.ts'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { measure, touch } from './testDom.ts'
@@ -134,9 +134,11 @@ test('moving the letters lets go of what they were holding', () => {
 
 test('the gate switch cuts the jumper, and the walk takes it back', () => {
   render(<FmKeys />)
-  fireEvent.click(screen.getByRole('button', { name: 'with Plinky' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Glint gate' }))
   expect(engine.controls.get().fmKeyGate).toBe(1)
-  expect(screen.getByRole('button', { name: 'own keys only' })).toBeTruthy()
+  expect(
+    screen.getByRole('button', { name: 'Glint gate', pressed: false }),
+  ).toBeTruthy()
   act(() => engine.undo(0))
   expect(engine.controls.get().fmKeyGate).toBe(0)
 })
@@ -145,7 +147,7 @@ test('the jumper lamp says off, wired, and sounding', () => {
   render(<MonoKeys />)
   const lamp = () =>
     screen
-      .getByRole('button', { name: /with Plinky|own keys only/ })
+      .getByRole('button', { name: 'Growler gate' })
       .querySelector('[data-lamp]')
       ?.getAttribute('data-lamp')
   act(() => engine.set('monoKeyGate', 0))
@@ -296,7 +298,7 @@ test('a GATE cable runs from Plinky to the keyboard, and pulling the plug remove
   fireEvent.click(grab)
   expect(cables().length).toBe(0)
   expect(engine.controls.get().fmKeyGate).toBe(1)
-  fireEvent.click(screen.getByRole('button', { name: 'own keys only' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Glint gate' }))
   expect(cables().length).toBe(1)
   expect(engine.controls.get().fmKeyGate).toBe(0)
 })
@@ -309,7 +311,7 @@ test('dragging a cable end off its jack pulls the plug, and a cable from Plinkyâ
     </GateBench>,
   )
   act(() => engine.set('fmKeyGate', 0))
-  const input = screen.getByRole('button', { name: 'with Plinky' })
+  const input = screen.getByRole('button', { name: 'Glint gate' })
   const output = container.querySelector<HTMLElement>(
     '[data-jack="gate:out:plinky"]',
   )!
@@ -324,14 +326,14 @@ test('dragging a cable end off its jack pulls the plug, and a cable from Plinkyâ
   }
   drag(input, document.body)
   expect(engine.controls.get().fmKeyGate).toBe(1)
-  drag(output, screen.getByRole('button', { name: 'own keys only' }))
+  drag(output, input)
   expect(engine.controls.get().fmKeyGate).toBe(0)
   drag(output, document.body)
   expect(engine.controls.get().fmKeyGate).toBe(0)
-  drag(screen.getByRole('button', { name: 'with Plinky' }), input)
+  drag(input, input)
   expect(engine.controls.get().fmKeyGate).toBe(0)
   drag(input, document.body)
-  drag(screen.getByRole('button', { name: 'own keys only' }), output)
+  drag(input, output)
   expect(engine.controls.get().fmKeyGate).toBe(0)
 })
 
@@ -350,8 +352,8 @@ test('a GATE cable moves to whichever GATE jack its end lands on, the kitâ€™s in
     engine.set('trigToDrum', 0)
   })
   const gate = (name: string) =>
-    bed(name).getByRole('button', { name: /^(with Plinky|own keys only)$/ })
-  const kit = () => screen.getByRole('button', { name: 'Plinky into the kit' })
+    bed(name).getByRole('button', { name: /^\w+ gate$/ })
+  const kit = () => screen.getByRole('button', { name: 'Clatter gate' })
   const drag = (from: Element, to: Element) => {
     fireEvent.pointerDown(from, { button: 0, clientX: 0, clientY: 0 })
     fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
@@ -402,7 +404,7 @@ test('a cancelled cable drag puts the cable back and changes nothing', () => {
   )
   act(() => engine.set('fmKeyGate', 0))
   const bench = container.querySelector('[data-gate-bench]')!
-  const input = screen.getByRole('button', { name: 'with Plinky' })
+  const input = screen.getByRole('button', { name: 'Glint gate' })
   const cancel = () => {
     fireEvent.pointerCancel(window)
     fireEvent.pointerUp(window, { clientX: 40, clientY: 40 })
@@ -431,7 +433,7 @@ test('a cable drag follows the pointer that picked it up and no other', () => {
   )
   act(() => engine.set('fmKeyGate', 0))
   const bench = container.querySelector('[data-gate-bench]')!
-  const input = screen.getByRole('button', { name: 'with Plinky' })
+  const input = screen.getByRole('button', { name: 'Glint gate' })
   document.elementFromPoint = () => document.body
   fireEvent.pointerDown(input, { button: 0, pointerId: 1 })
   fireEvent.pointerMove(window, { pointerId: 2, clientX: 40, clientY: 40 })
@@ -459,7 +461,7 @@ test('a TRIG cable patches a kit voice into a keyboard, and moves or pulls with 
     engine.set('trigToKeys', 0)
   })
   const trig = (name: string) =>
-    bed(name).getByRole('button', { name: 'kit trigger' })
+    bed(name).getByRole('button', { name: /^\w+ trig$/ })
   const voice = (n: number) =>
     container.querySelector<HTMLElement>(`[data-jack="trig:out:${n}"]`)!
   const drag = (from: Element, to: Element) => {
@@ -617,4 +619,53 @@ test('a MOD cable between two plates lays a path with no keyboard cable on the b
   const paths = [...container.querySelectorAll('path[class*=core]')]
   expect(paths.length).toBe(1)
   expect(paths[0]!.getAttribute('d')).not.toMatch(/NaN|Infinity/)
+})
+
+test('a press on an output picks up a cable for the next input pressed', async () => {
+  await new Promise(r => setTimeout(r, 0))
+  render(
+    <GateBench>
+      <ModPlate />
+      <Keys />
+      <FmKeys />
+      <MonoKeys />
+    </GateBench>,
+  )
+  act(() => {
+    for (const i of [0, 1, 2, 3] as const) engine.set(`mod${i}Src`, 0)
+  })
+  const jack = (name: string) => screen.getByRole('button', { name })
+  const into = (m: string) =>
+    modCables(engine.controls.get()).filter(c => c.machine === m)
+
+  fireEvent.click(jack('ADSR out'))
+  expect(jack('ADSR out').getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(jack('Glint CV'))
+  expect(into('Glint')).toMatchObject([{ src: ADSR }])
+  expect(jack('ADSR out').getAttribute('aria-pressed')).toBe('false')
+
+  fireEvent.click(jack('ADSR out'))
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(jack('ADSR out').getAttribute('aria-pressed')).toBe('false')
+  fireEvent.click(jack('Growler CV'))
+  expect(into('Growler')).toMatchObject([{ src: LFO }])
+})
+
+test('a MOD source gives out no cable while all four bay wires are in use', () => {
+  render(
+    <GateBench>
+      <ModPlate />
+      <FmKeys />
+    </GateBench>,
+  )
+  act(() => {
+    for (const i of [0, 1, 2, 3] as const) {
+      engine.set(`mod${i}Src`, LFO)
+      engine.set(`mod${i}Dest`, CV_DEST.Glint)
+    }
+  })
+  const adsr = screen.getByRole('button', { name: 'ADSR out' })
+  expect(adsr.getAttribute('data-full')).toBe('true')
+  fireEvent.click(adsr)
+  expect(adsr.getAttribute('aria-pressed')).toBe('false')
 })

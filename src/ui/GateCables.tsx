@@ -27,6 +27,7 @@ import {
   type Point,
   type Route,
 } from './cablePaths.ts'
+import { MACHINE_OF } from './connections.ts'
 import {
   useBoardValue,
   useStoreSelect,
@@ -78,7 +79,7 @@ export function GateJumper({
         end={end}
         notes={notes}
         className={styles.jack}
-        label={on ? 'with Plinky' : 'own keys only'}
+        label={`${MACHINE_OF[taker]} gate`}
         lamp={!on ? 'off' : toySounding && sounding ? 'sounding' : 'wired'}
       >
         <span className={styles.legend}>gate</span>
@@ -102,7 +103,7 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
       <Jack
         end={{ line: 'trig', side: 'in', id: taker }}
         className={styles.trig}
-        label="kit trigger"
+        label={`${MACHINE_OF[taker]} trig`}
       >
         <span className={voice > 0 ? styles.voice : styles.legend}>
           {voice > 0 ? voicePlate(voice) : 'trig'}
@@ -116,10 +117,11 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
     GATE input. Cables stack on it, one for each machine its notes reach. */
 export function GateOut() {
   return (
-    <Tip text="Plinky’s notes out. Drag a cable from here to a GATE jack on another machine, and that machine plays every note Plinky strikes">
+    <Tip text="Plinky’s notes out. Drag a cable from here to a GATE jack on another machine, or press here and then on that jack, and that machine plays every note Plinky strikes">
       <Jack
         end={{ line: 'gate', side: 'out', id: 'plinky' }}
         className={styles.out}
+        label="Plinky gate out"
       >
         <span className={styles.legend}>gate</span>
       </Jack>
@@ -131,11 +133,12 @@ function TrigOut({ voice }: { voice: number }) {
   const name = voiceName(voice)
   return (
     <Tip
-      text={`The ${name} trigger line. Drag a cable from here to a TRIG jack and every ${voice === ANY_CHOICE ? 'hit' : name} strikes it`}
+      text={`The ${name} trigger line. Drag a cable from here to a TRIG jack, or press here and then on that jack, and every ${voice === ANY_CHOICE ? 'hit' : name} strikes it`}
     >
       <Jack
         end={{ line: 'trig', side: 'out', id: String(voice) }}
         className={styles.trigOut}
+        label={`Clatter ${name} out`}
       >
         <span className={styles.plateName}>{voicePlate(voice)}</span>
       </Jack>
@@ -157,7 +160,7 @@ function KitGate() {
       <Jack
         end={{ line: 'gate', side: 'in', id: 'kit' }}
         className={styles.kitGate}
-        label="Plinky into the kit"
+        label="Clatter gate"
       >
         <span className={styles.plateName}>gate</span>
       </Jack>
@@ -299,9 +302,9 @@ function InHand() {
   const drag = useStoreValue(dragging)
   const { points } = useStoreValue(spots)
   return (
-    drag && (
+    drag?.at && (
       <svg className={styles.held} aria-hidden="true">
-        <Held drag={drag} points={points} />
+        <Held fixed={drag.fixed} pointer={drag.at} points={points} />
       </svg>
     )
   )
@@ -316,7 +319,7 @@ export function GateBench({ children }: { children: ReactNode }) {
   const at = useStoreValue(jacks)
   const routes = useStoreSelect(spots, s => s.routes)
   const held = useStoreSelect(dragging, heldKey)
-  const busy = useStoreSelect(dragging, d => d !== null)
+  const busy = useStoreSelect(dragging, d => d?.at != null)
   const shown = useBoardValue(c => writeCables(cablesOn(c)))
   const cables = useMemo(
     () =>
