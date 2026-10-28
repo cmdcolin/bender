@@ -31,6 +31,9 @@ export const wrap1 = (phase: number) =>
 // differs, and nothing downstream of a pitch bend can carry it.
 export const octaves = (x: number) => Math.exp(x * Math.LN2)
 
+export const tapDivisor = (tap: number, stages: number) =>
+  octaves(stages * (1 - tap))
+
 // What the chip's semitone zero is worth in hertz. The divider counts up from
 // A3 and the key line carries the same numbering, so anything that has to agree
 // with the toy about the pitch of a note — the toy itself, and now the ring

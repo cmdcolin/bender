@@ -21,7 +21,7 @@ import { Burst } from '../util/burst.ts'
 import { CrossingRate } from '../util/crossings.ts'
 import { Drunk } from '../util/drift.ts'
 import { coef, Follower } from '../util/follower.ts'
-import { A3_HZ, octaves, wrap1 } from '../util/pitch.ts'
+import { A3_HZ, octaves, tapDivisor, wrap1 } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 import {
@@ -281,7 +281,6 @@ const MATRIX_KEYS = 36
 // half the note's pitch.
 const TAP_STAGES = 9
 const GND_TRIP = 0.45
-const tapDivisor = (tap: number) => octaves(TAP_STAGES * (1 - tap))
 
 // The envelope cap with a trigger across it and a leak beside it: the leak
 // drains the cap up to seven octaves faster, and when it reaches a quarter the
@@ -1275,7 +1274,9 @@ export class ToyChip implements Stage {
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
       this.stepHzNow =
-        stepTap > 0 ? this.melodyHz / tapDivisor(stepTap) : stepHz * timing
+        stepTap > 0
+          ? this.melodyHz / tapDivisor(stepTap, TAP_STAGES)
+          : stepHz * timing
 
       // sequencer — the run/stop line freezes it where it stands, and so does a
       // latched die: the counter stops clocking and the note it was on stays on

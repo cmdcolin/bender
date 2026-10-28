@@ -42,7 +42,7 @@ import { BridgedT } from '../util/bridged.ts'
 import { coef, Transient } from '../util/follower.ts'
 import { MetalBank } from '../util/metal.ts'
 import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole.ts'
-import { octaves } from '../util/pitch.ts'
+import { octaves, tapDivisor } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal } from '../util/softclip.ts'
 import { Wander } from '../wander.ts'
@@ -261,7 +261,6 @@ const BANK_SYNC_TANK = [-1, 0, 1]
 const BANK_STARVE_OCT = 3
 
 const TAP_STAGES = 6
-const tapDivisor = (tap: number) => octaves(TAP_STAGES * (1 - tap))
 const MIN_STEP_HZ = 0.01
 const GND_TRIP = 0.3
 
@@ -1183,7 +1182,7 @@ export class ToyDrum implements Stage {
       const tap = modTap
         ? Math.min(Math.max(tapBase + modTap[i]!, 0), 1)
         : tapBase
-      if (tap > 0) return melody[i]! / tapDivisor(tap)
+      if (tap > 0) return melody[i]! / tapDivisor(tap, TAP_STAGES)
       return modTempo ? stepHz * octaves(modTempo[i]!) : stepHz
     }
     this.stepMs = 1000 / Math.max(rateAt(0), MIN_STEP_HZ)
