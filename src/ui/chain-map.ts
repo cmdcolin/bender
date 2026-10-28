@@ -415,7 +415,7 @@ const BAND_GAP = 12
 const ICON = 12
 const ICON_COL = 16
 /** a loose bend riding in the rack: its own row inside the box, and the pad
-    round the short name it wears in a slot */
+    round its name */
 const CHIP_H = 16
 const CHIP_GAP = 4
 const CHIP_PAD = 5
@@ -523,6 +523,11 @@ export interface Options {
 
 const caps = (label: string) => label.toUpperCase()
 const nameWidth = (label: string) => textWidth(caps(label), FONT)
+const chipW = (label: string) => nameWidth(label) + CHIP_PAD * 2
+const chipRoom = (
+  loose: readonly (typeof BENDS)[number][],
+  name: 'group' | 'label',
+) => CHIP_GAP * 2 + PAD_X + Math.max(0, ...loose.map(b => chipW(b[name])))
 
 const midX = (n: MapNode) => n.x + n.w / 2
 const midY = (n: MapNode) => n.y + n.h / 2
@@ -792,7 +797,6 @@ function pickParts(c: Controls, o: Options) {
   const slotted = bendOrder(c)
   const bends = slotted.filter(has)
   const loose = BENDS.filter(b => !slotted.includes(b.group) && has(b.group))
-  const chipW = loose.map(b => nameWidth(b.label) + CHIP_PAD * 2)
   for (const b of loose) doors.add(b.group)
   // The rack draws only a caption for its chips, and the run passes it by. Its
   // bounds anchor the chips and the run's arrow to the first bend.
@@ -943,7 +947,6 @@ function pickParts(c: Controls, o: Options) {
     path,
     rack,
     loose,
-    chipW,
     bus,
     busShown,
     pathAndBus,
@@ -967,7 +970,7 @@ function pickParts(c: Controls, o: Options) {
 // How the path folds and how wide everything is.
 function measure(p: Parts) {
   const { o, c, path, bus, busShown, pathAndBus, chipRows, lineRows, foot } = p
-  const { rack, mix, board, loose, chipW } = p
+  const { rack, mix, board, loose } = p
 
   // A short path reads straight down; folding it leaves a column of one.
   const fold = !!o.wrap && path.length > 4
@@ -980,14 +983,16 @@ function measure(p: Parts) {
   const [down, up] = [path.slice(0, cut), path.slice(cut)]
   const upCol = loop ? [bus, ...up.toReversed()] : up
   const cols = up.length ? 2 : 1
+  const spans = cols === 2 && !loop && down[0] === rack
 
   // One content width for the whole drawing, wide enough for the source band
   // and for the folded path both, and whichever came out narrower stretches to
   // it. The band is the usual winner: seven boxes across beats two columns.
   const stageNeed = Math.max(
     MIN_W,
-    // The widest chip in the rack, in the half of the column right of the run.
-    (CHIP_GAP * 2 + PAD_X + Math.max(0, ...chipW)) * 2,
+    // The widest chip in the rack, right of the run: its bench name in half a
+    // lone column or out across the second, its short name beside the loop.
+    chipRoom(loose, loop ? 'label' : 'group') * (spans ? 1 : 2),
     // The rack draws no box of its own, so its label costs no width — only
     // the stages actually on the path do.
     ...pathAndBus
@@ -1015,7 +1020,10 @@ function measure(p: Parts) {
   for (const n of foot) n.w = natural(n)
 
   // The loose bends sit right of the run, which passes them by, and wrap onto
-  // another row rather than off the box.
+  // another row rather than off the box. They may reach over the second
+  // column, which then starts under them. The chips show bench names when
+  // every one fits, and short names when any does not.
+  const chipEnd = (spans ? content : colW) - PAD_X
   const rackChips: {
     group: string
     label: string
@@ -1025,28 +1033,43 @@ function measure(p: Parts) {
   }[] = []
   {
     const indent = colW / 2 + CHIP_GAP * 2
+    const full = loose.every(b => indent + chipW(b.group) <= chipEnd)
     let [x, row] = [indent, 0]
-    for (const [i, b] of loose.entries()) {
-      const w = chipW[i]!
-      if (x > indent && x + w > colW - PAD_X) {
+    for (const b of loose) {
+      const label = full ? b.group : b.label
+      const w = chipW(label)
+      if (x > indent && x + w > chipEnd) {
         row++
         x = indent
       }
-      rackChips.push({ group: b.group, label: b.label, x, row, w })
+      rackChips.push({ group: b.group, label, x, row, w })
       x += w + CHIP_GAP
     }
   }
   const lastChip = rackChips[rackChips.length - 1]
   rack.h = Math.max(CHIP_H, (lastChip ? lastChip.row + 1 : 0) * CHIP_H) + 2
 
-  return { loop, down, up, upCol, cols, content, colW, boxW, rackChips }
+  const overUp = rackChips.some(ch => ch.x + ch.w > colW)
+
+  return {
+    loop,
+    down,
+    up,
+    upCol,
+    cols,
+    content,
+    colW,
+    boxW,
+    rackChips,
+    overUp,
+  }
 }
 
 // Every box's y, top to bottom.
 function layDown(m: Measured) {
   const { board, chipRows, underRow, laneUsed, trigs, lower, hasBoard } = m
   const { lineRows, mix, loop, down, upCol, bus, busShown, foot, fittings } = m
-  const { supply } = m
+  const { supply, rack, overUp } = m
 
   if (supply) supply.y = MARGIN
   board.y = supply ? supply.y + supply.h + FEED_H : MARGIN
@@ -1079,14 +1102,18 @@ function layDown(m: Measured) {
   mix.y = collectY + BAND_GAP
 
   const pathTop = mix.y + mix.h + (loop ? LABEL_H + ROW_GAP : ROW_GAP)
-  for (const col of [down, upCol]) {
-    let y = pathTop
+  const upTop = pathTop + (overUp ? rack.h + ROW_GAP : 0)
+  for (const [col, top] of [
+    [down, pathTop],
+    [upCol, upTop],
+  ] as const) {
+    let y = top
     for (const n of col) {
       n.y = y
       y += n.h + ROW_GAP
     }
   }
-  const bodyBottom = pathTop + Math.max(stack(down), stack(upCol))
+  const bodyBottom = Math.max(pathTop + stack(down), upTop + stack(upCol))
   if (!loop) bus.y = bodyBottom + BUS_GAP
   const captionY =
     loop || !busShown ? bodyBottom + BUS_GAP : bus.y + bus.h + ROW_GAP
