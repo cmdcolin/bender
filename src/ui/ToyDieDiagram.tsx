@@ -22,6 +22,7 @@ import {
 import { BoxRows, GlyphBox, OpenBox, PickPart, Wire } from './DiagramParts.tsx'
 import { rollGlyph, ROLL_GLYPH_W } from './rollGlyph.tsx'
 import { slidersFirst } from './slidersFirst.ts'
+import { isMute } from './stageLevels.ts'
 import { NODE_KEYS, POT } from './toyBoxKeys.ts'
 import { TuneRoll } from './TuneRoll.tsx'
 
@@ -68,7 +69,9 @@ const KEYBOARD_KEYS = [
     GROUP.sliders.filter(d => !d.part && !MEMORY_KEYS.includes(d.key)),
   ),
   ...slidersFirst(GROUP.sliders.filter(d => d.part === 'arp and key lock')),
-].map(d => d.key)
+]
+  .map(d => d.key)
+  .filter(k => !isMute(k))
 
 // What lights each box: its own knobs, leaving the pot to the box it sits on.
 const OWN_KEYS = Object.fromEntries(

@@ -27,6 +27,7 @@ import {
   type WireLook,
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
+import { isMute } from './stageLevels.ts'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
 
 import type { ControlKey } from '../controls.ts'
@@ -78,9 +79,9 @@ const HELP: Record<BoxId, string> = {
 }
 
 const PADS = 'pads'
-const PAD_KEYS = slidersFirst(GROUP.sliders.filter(d => !d.part)).map(
-  d => d.key,
-)
+const PAD_KEYS = slidersFirst(
+  GROUP.sliders.filter(d => !d.part && !isMute(d.key)),
+).map(d => d.key)
 
 const KEYS = [...Object.values(BOXES).flatMap(b => b.keys), ...PAD_KEYS]
 
