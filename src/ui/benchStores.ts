@@ -7,6 +7,9 @@ import type { Machine } from './connections.ts'
 /** A machine whose GATE jack takes Plinky's notes. */
 export type Taker = Exclude<NoteDest, 'toy'> | 'kit'
 
+/** A TRIG input: a keyboard's, or the ADSR's gate on the MOD plate. */
+export type TrigTaker = NoteDest | 'adsr'
+
 export interface GateIn {
   el: HTMLElement
   notes?: Store<ReadonlySet<number>>
@@ -14,7 +17,7 @@ export interface GateIn {
 
 export const inputs = createStore<ReadonlyMap<Taker, GateIn>>(new Map())
 export const gateOut = createStore<HTMLElement | null>(null)
-export const trigIns = createStore<ReadonlyMap<NoteDest, HTMLElement>>(
+export const trigIns = createStore<ReadonlyMap<TrigTaker, HTMLElement>>(
   new Map(),
 )
 export const trigOuts = createStore<ReadonlyMap<number, HTMLElement>>(new Map())
@@ -39,7 +42,7 @@ export type GateEnd = Taker | 'plinky'
 
 /** One end of a TRIG cable: a keyboard's input, or a voice's jack on the kit. */
 export type TrigEnd =
-  | { taker: NoteDest; voice?: undefined }
+  | { taker: TrigTaker; voice?: undefined }
   | { voice: number; taker?: undefined }
 
 /** One end of a MOD cable: a source's jack on the MOD plate, or a CV input. */
@@ -50,7 +53,7 @@ export type ModEnd =
 export type Drag = Point &
   (
     | { line: 'gate'; fixed: GateEnd; carried: Taker | null }
-    | { line: 'trig'; fixed: TrigEnd; carried: NoteDest | null }
+    | { line: 'trig'; fixed: TrigEnd; carried: TrigTaker | null }
     | { line: 'mod'; fixed: ModEnd; carried: number | null }
   )
 

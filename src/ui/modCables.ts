@@ -19,6 +19,7 @@ const WIRES = [
 
 const OFF = choiceValue('mod0Src', 'off')
 export const LFO = choiceValue('mod0Src', 'LFO')
+export const ADSR = choiceValue('mod0Src', 'ADSR')
 
 /** The bay's own modules, which keep a jack on the MOD plate whether or not a
     cable leaves them. Other sources get a jack while one does. */
@@ -133,3 +134,15 @@ export function cableSays(cable: ModCable): string {
       : `${Math.abs(cable.depth).toFixed(2)} ${cable.depth < 0 ? 'flipped' : 'straight'}`
   return `Wire ${cable.wire + 1}: ${sourceName(cable.src)} → ${destName(cable.dest)}, ${depth}`
 }
+
+/** Every destination the bay reaches on a machine, in the bay's order. */
+export const destsOf = (machine: Machine) =>
+  WIRE_TARGET.flatMap((box, dest) => (box === machine ? [dest] : []))
+
+/** A destination in the width of a jack's legend: the last word of its name. */
+export const shortDest = (dest: number) => destName(dest).split(' ').at(-1)!
+
+export const aimCv = (c: Controls, wire: number, dest: number) => ({
+  ...c,
+  [WIRES[wire]!.dest]: dest,
+})

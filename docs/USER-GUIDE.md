@@ -268,8 +268,12 @@ The patch bay's four wires also show on the bench as blue cables:
 - Every machine has a **CV** jack, the kit's on its plate. Plugging a cable in
   uses a spare wire, which lands on Plinky's or Glint's clock, Parlor's level,
   Growler's pitch or the kit's tune
-- The patch bay sets where a wire lands and how hard it pushes. A wire onto any
-  part of a machine on the bench draws into that machine's CV jack
+- A patched CV jack prints where its last cable lands, such as **pitch** or
+  **level**. Pressing that word lists everything the bay reaches on the machine
+- The patch bay sets how hard a wire pushes. A wire onto any part of a machine
+  on the bench draws into that machine's CV jack
+- The ADSR's **gate** jack sits beside its output. With no cable in, a held key
+  opens the ADSR; a cable from a voice on the kit's plate opens it on that hit
 
 **Step lanes** under the bay are two rows of sixteen values, **lane A** and
 **lane B**, each with its own length. A wire off a lane sends the value on the

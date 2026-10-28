@@ -2,14 +2,14 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
+import { DEST } from '../dsp/modbus.ts'
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
 import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
-import { GateBench } from './GateCables.tsx'
+import { GateBench, ModPlate } from './GateCables.tsx'
 import { Keys } from './Keys.tsx'
 import { CV_DEST, LFO, modCables } from './modCables.ts'
-import { ModPlate } from './ModJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { measure, touch } from './testDom.ts'
@@ -519,4 +519,51 @@ test('a MOD cable runs a patch bay source into a machine’s CV jack, and moves 
   expect(into('Plinky')).toMatchObject([{ src: LFO, dest: CV_DEST.Plinky }])
   fireEvent.click(cv('Plinky'))
   expect(into('Plinky')).toEqual([])
+})
+
+test('the ADSR’s gate opens on held keys until a kit voice is patched in', async () => {
+  await new Promise(r => setTimeout(r, 0))
+  const { container } = render(
+    <GateBench>
+      <ModPlate />
+      <Keys />
+      <DrumKit />
+    </GateBench>,
+  )
+  act(() => engine.set('modEnvGate', 0))
+  const gate = () => screen.getByRole('button', { name: 'ADSR gate' })
+  expect(gate().getAttribute('aria-pressed')).toBe('false')
+  expect(screen.getByText('keys')).toBeTruthy()
+
+  const snare = container.querySelector<HTMLElement>('[data-trig-voice="2"]')!
+  fireEvent.pointerDown(snare, { button: 0, clientX: 0, clientY: 0 })
+  fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
+  document.elementFromPoint = () => gate()
+  fireEvent.pointerUp(window, { clientX: 40, clientY: 40 })
+  expect(engine.controls.get().modEnvGate).toBe(3)
+
+  await new Promise(r => setTimeout(r, 0))
+  fireEvent.click(gate())
+  expect(engine.controls.get().modEnvGate).toBe(0)
+  fireEvent.click(gate())
+  expect(engine.controls.get().modEnvGate).toBe(1)
+})
+
+test('a patched CV jack names where its cable lands, and picking another aims the wire there', () => {
+  render(
+    <GateBench>
+      <Keys />
+      <FmKeys />
+    </GateBench>,
+  )
+  act(() => {
+    for (const i of [0, 1, 2, 3] as const) engine.set(`mod${i}Src`, 0)
+    engine.set('mod0Src', LFO)
+    engine.set('mod0Dest', CV_DEST.Glint)
+  })
+  const pick = screen.getByRole('combobox', { name: 'Glint CV lands on' })
+  expect(bed('glint').getByText('clock')).toBeTruthy()
+  fireEvent.change(pick, { target: { value: String(DEST.fmLevel) } })
+  expect(engine.controls.get().mod0Dest).toBe(DEST.fmLevel)
+  expect(bed('glint').getByText('level')).toBeTruthy()
 })

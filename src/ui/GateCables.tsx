@@ -24,6 +24,7 @@ import {
   type GateIn,
   type Taker,
   type TrigEnd,
+  type TrigTaker,
 } from './benchStores.ts'
 import { follow, pressIsClick } from './cableDrag.ts'
 import { Socket, Wire } from './CableParts.tsx'
@@ -52,10 +53,18 @@ import {
   useStoreValue,
 } from './ControlsContext.ts'
 import styles from './GateCables.module.css'
-import { CV_MACHINES, cvFacing, modCables } from './modCables.ts'
-import { CvJack, HeldMod, ModCable } from './ModJacks.tsx'
+import {
+  ADSR,
+  CV_MACHINES,
+  cvFacing,
+  modCables,
+  MODULES,
+  sourcesInUse,
+} from './modCables.ts'
+import { CvJack, HeldMod, ModCable, ModOut } from './ModJacks.tsx'
 import { Tip } from './Tip.tsx'
 
+import type { Controls } from '../controls.ts'
 import type { NoteDest } from '../engine/messages.ts'
 
 // The patch cords on the bench, in lanes down a gutter beside the keyboards:
@@ -78,13 +87,17 @@ const TAKERS: Taker[] = ['fm', 'pcm', 'mono', 'kit']
 const GATE_COLOUR = SIGNAL_COLOUR.notes
 const TRIG_COLOUR = SIGNAL_COLOUR.hits
 
-const TRIG_TAKERS: NoteDest[] = ['toy', 'fm', 'pcm', 'mono']
+const TRIG_TAKERS: TrigTaker[] = ['toy', 'fm', 'pcm', 'mono', 'adsr']
 
 const gateInto = (taker: Taker): Connection =>
   taker === 'kit' ? PLINKY_TO_KIT : connectionInto(MACHINE_OF[taker], 'notes')!
 
-const trigControl = (taker: NoteDest) =>
-  connectionInto(MACHINE_OF[taker], 'hits')!.key
+const trigControl = (taker: TrigTaker) =>
+  taker === 'adsr'
+    ? 'modEnvGate'
+    : connectionInto(MACHINE_OF[taker], 'hits')!.key
+
+const trigFacing = (taker: TrigTaker) => (taker === 'adsr' ? 'up' : 'right')
 
 const ANY_HIT = N_DRUM_VOICES + 1
 
@@ -143,8 +156,20 @@ function grab(start: GateEnd, e: ReactPointerEvent) {
   )
 }
 
-const struckBy = (taker: NoteDest) =>
-  Math.round(engine.controls.get()[trigControl(taker)])
+/** The kit voice in a TRIG input, from its control. The ADSR's gate counts
+    keys as 0, any hit as 1 and the voices after. */
+const voiceIn = (taker: TrigTaker, c: Controls) => {
+  const v = Math.round(c[trigControl(taker)])
+  if (taker !== 'adsr' || v === 0) return v
+  return v === 1 ? ANY_HIT : v - 1
+}
+
+const valueFor = (taker: TrigTaker, voice: number) => {
+  if (taker !== 'adsr' || voice === 0) return voice
+  return voice === ANY_HIT ? 1 : voice + 1
+}
+
+const struckBy = (taker: TrigTaker) => voiceIn(taker, engine.controls.get())
 
 const trigEndOf = (el: HTMLElement | null): TrigEnd | null => {
   const taker = TRIG_TAKERS.find(t => t === el?.dataset.trigTaker)
@@ -172,14 +197,14 @@ function grabTrig(start: TrigEnd, e: ReactPointerEvent) {
       if (carried) engine.set(trigControl(carried), 0)
       const taker = fixed.taker ?? landed?.taker
       const voice = fixed.voice ?? landed?.voice
-      if (taker && voice) engine.set(trigControl(taker), voice)
+      if (taker && voice) engine.set(trigControl(taker), valueFor(taker, voice))
     },
   )
 }
 
-const setTrig = (taker: NoteDest, voice: number) => {
+const setTrig = (taker: TrigTaker, voice: number) => {
   engine.armStep()
-  engine.set(trigControl(taker), voice)
+  engine.set(trigControl(taker), valueFor(taker, voice))
 }
 
 const useGatePlugged = (taker: Taker) =>
@@ -324,9 +349,7 @@ function TrigOut({ voice }: { voice: number }) {
     dragging,
     d => d?.line === 'trig' && d.fixed.taker !== undefined,
   )
-  const lit = useBoardValue(c =>
-    TRIG_TAKERS.some(t => Math.round(c[trigControl(t)]) === voice),
-  )
+  const lit = useBoardValue(c => TRIG_TAKERS.some(t => voiceIn(t, c) === voice))
   const place = useCallback(
     (el: HTMLElement | null) => keep(trigOuts, voice, el),
     [voice],
@@ -408,6 +431,82 @@ export function TrigPlate() {
   )
 }
 
+/** The ADSR's gate input, beside its output on the MOD plate. With no cable
+    in, it opens on a key held on any keyboard. */
+function AdsrGate() {
+  const voice = useBoardValue(c => voiceIn('adsr', c))
+  const target = useStoreSelect(
+    dragging,
+    d => d?.line === 'trig' && d.fixed.voice !== undefined,
+  )
+  const place = useCallback(
+    (el: HTMLElement | null) => keep(trigIns, 'adsr', el),
+    [],
+  )
+  return (
+    <Tip
+      text={
+        voice > 0
+          ? `The kit’s ${voiceName(voice)} line opens the ADSR. Press to pull the cable, and a held key opens it instead`
+          : 'The ADSR’s gate. With no cable in, a key held on any keyboard opens it. Press to patch in every hit, or drag a cable here from a jack on top of the kit'
+      }
+    >
+      <span className={styles.adsrGate}>
+        <button
+          ref={place}
+          className={styles.plateJack}
+          aria-pressed={voice > 0}
+          aria-label="ADSR gate"
+          data-gate-jack=""
+          data-trig-taker="adsr"
+          onPointerDown={e => grabTrig({ taker: 'adsr' }, e)}
+          onClick={() => {
+            if (pressIsClick()) setTrig('adsr', voice > 0 ? 0 : ANY_HIT)
+          }}
+        >
+          <Socket
+            colour={TRIG_COLOUR}
+            lamp={voice > 0 ? 'wired' : 'off'}
+            target={target}
+          />
+        </button>
+        <span className={voice > 0 ? styles.plateVoice : styles.plateName}>
+          {voice > 0 ? plateName(voice) : 'keys'}
+        </span>
+      </span>
+    </Tip>
+  )
+}
+
+/** The patch bay's sources as a jack plate over the keyboards: the bay's own
+    modules, the ADSR's gate, and any other source a wire picks up. */
+export function ModPlate() {
+  const used = useBoardValue(c => [...sourcesInUse(c)].join(','))
+  const sources = useMemo(() => {
+    const extra = used
+      .split(',')
+      .filter(Boolean)
+      .map(Number)
+      .filter(s => !MODULES.includes(s))
+    return [...MODULES, ...extra.toSorted((a, b) => a - b)]
+  }, [used])
+  return (
+    <div className={styles.modPlate} data-mod-plate="">
+      <span className={styles.modName}>mod</span>
+      {sources.map(src =>
+        src === ADSR ? (
+          <span key={src} className={styles.adsrPair}>
+            <ModOut src={src} />
+            <AdsrGate />
+          </span>
+        ) : (
+          <ModOut key={src} src={src} />
+        ),
+      )}
+    </div>
+  )
+}
+
 const centre = (el: Element, origin: DOMRect): Point => {
   const r = el.getBoundingClientRect()
   return {
@@ -431,14 +530,14 @@ const run = (
 interface Ends {
   ins: ReadonlyMap<Taker, GateIn>
   out: HTMLElement | null
-  tIns: ReadonlyMap<NoteDest, HTMLElement>
+  tIns: ReadonlyMap<TrigTaker, HTMLElement>
   tOuts: ReadonlyMap<number, HTMLElement>
   mOuts: ReadonlyMap<number, HTMLElement>
   cvs: ReadonlyMap<Machine, HTMLElement>
 }
 
 interface Patched {
-  struck: ReadonlyMap<NoteDest, number>
+  struck: ReadonlyMap<TrigTaker, number>
   mods: readonly { wire: number; src: number; machine: Machine }[]
 }
 
@@ -476,7 +575,7 @@ function route(origin: DOMRect, ends: Ends, patched: Patched): Layout {
       run(
         `trig:${t}`,
         plate(`trig:out:${patched.struck.get(t)}`),
-        edge(`trig:in:${t}`),
+        trigFacing(t) === 'up' ? plate(`trig:in:${t}`) : edge(`trig:in:${t}`),
       ),
     ),
     ...patched.mods.flatMap(m =>
@@ -514,7 +613,9 @@ export function GateBench({ children }: { children: ReactNode }) {
   const { routes, jacks } = useStoreValue(spots)
   const drag = useStoreValue(dragging)
   const voices = useBoardValue(c =>
-    TRIG_TAKERS.map(t => Math.round(c[trigControl(t)])).join(','),
+    TRIG_TAKERS.map(t =>
+      t === 'adsr' && !sourcesInUse(c).has(ADSR) ? 0 : voiceIn(t, c),
+    ).join(','),
   )
   const wired = useBoardValue(c =>
     modCables(c)
@@ -653,7 +754,10 @@ function Held({
       ? jacks.get(`trig:out:${fixed.voice}`)
       : jacks.get(`trig:in:${fixed.taker}`)
   if (!at) return null
-  const stays: Anchor = { at, facing: fixed.voice ? 'up' : 'right' }
+  const stays: Anchor = {
+    at,
+    facing: fixed.taker === undefined ? 'up' : trigFacing(fixed.taker),
+  }
   const loose: Anchor = { at: drag, facing: fixed.voice ? 'right' : 'up' }
   const from = fixed.voice ? stays : loose
   const to = fixed.voice ? loose : stays
@@ -699,7 +803,7 @@ const MACHINE_NAME: Record<Taker, string> = {
   kit: 'the kit',
 }
 
-function TrigCable({ taker, spot }: { taker: NoteDest; spot: Route }) {
+function TrigCable({ taker, spot }: { taker: TrigTaker; spot: Route }) {
   const path = useMemo(() => laid(spot.bends), [spot])
   return (
     <Wire

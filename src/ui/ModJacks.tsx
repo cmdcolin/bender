@@ -28,14 +28,17 @@ import {
   cableSays,
   CV_MACHINES,
   cvFacing,
+  aimCv,
+  destName,
+  destsOf,
   MOD_COLOUR,
   LFO,
   modCables,
-  MODULES,
   moveCv,
   patchCv,
   plateName,
   pullCv,
+  shortDest,
   sourceName,
   sourcesInUse,
   spareWire,
@@ -92,7 +95,7 @@ function grabMod(start: ModEnd, e: ReactPointerEvent, wire?: number) {
   )
 }
 
-function ModOut({ src }: { src: number }) {
+export function ModOut({ src }: { src: number }) {
   const target = useStoreSelect(
     dragging,
     d => d?.line === 'mod' && d.fixed.machine !== undefined,
@@ -130,25 +133,38 @@ function ModOut({ src }: { src: number }) {
   )
 }
 
-/** The patch bay's sources as a jack plate over the keyboards: the bay's own
-    modules, and any other source a wire picks up. */
-export function ModPlate() {
-  const used = useBoardValue(c => [...sourcesInUse(c)].join(','))
-  const sources = useMemo(() => {
-    const extra = used
-      .split(',')
-      .filter(Boolean)
-      .map(Number)
-      .filter(s => !MODULES.includes(s))
-    return [...MODULES, ...extra.toSorted((a, b) => a - b)]
-  }, [used])
+/** Where the last cable into a CV jack lands, as a short legend over a picker
+    holding every destination the bay reaches on that machine. */
+function CvDest({
+  machine,
+  wire,
+  dest,
+  onPlate,
+}: {
+  machine: Machine
+  wire: number
+  dest: number
+  onPlate: boolean
+}) {
   return (
-    <div className={styles.modPlate} data-mod-plate="">
-      <span className={styles.modName}>mod</span>
-      {sources.map(src => (
-        <ModOut key={src} src={src} />
-      ))}
-    </div>
+    <label className={onPlate ? styles.plateDest : styles.cvDest}>
+      {shortDest(dest)}
+      <select
+        className={styles.destPick}
+        aria-label={`${machine} CV lands on`}
+        title={`Lands on ${destName(dest)}`}
+        value={dest}
+        onChange={e =>
+          write(aimCv(engine.controls.get(), wire, Number(e.target.value)))
+        }
+      >
+        {destsOf(machine).map(d => (
+          <option key={d} value={d}>
+            {destName(d)}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
@@ -161,6 +177,10 @@ export function CvJack({ machine }: { machine: Machine }) {
       .map(cableSays)
       .join('. '),
   )
+  const last = useBoardValue(c => {
+    const m = modCables(c).findLast(each => each.machine === machine)
+    return m ? `${m.wire}:${m.dest}` : ''
+  })
   const target = useStoreSelect(
     dragging,
     d => d?.line === 'mod' && d.fixed.src !== undefined,
@@ -170,7 +190,8 @@ export function CvJack({ machine }: { machine: Machine }) {
     [machine],
   )
   const onPlate = cvFacing(machine) === 'up'
-  return (
+  const [wire, dest] = last.split(':').map(Number)
+  const jack = (
     <Tip
       text={
         says
@@ -180,7 +201,7 @@ export function CvJack({ machine }: { machine: Machine }) {
     >
       <button
         ref={place}
-        className={onPlate ? styles.kitCv : styles.cv}
+        className={onPlate ? styles.plateJack : styles.cv}
         aria-pressed={says !== ''}
         aria-label={`${machine} CV`}
         data-gate-jack=""
@@ -189,8 +210,8 @@ export function CvJack({ machine }: { machine: Machine }) {
         onClick={() => {
           if (!pressIsClick()) return
           const c = engine.controls.get()
-          const last = lastInto(machine)
-          write(last ? pullCv(c, last.wire) : patchCv(c, LFO, machine))
+          const was = lastInto(machine)
+          write(was ? pullCv(c, was.wire) : patchCv(c, LFO, machine))
         }}
       >
         <Socket
@@ -198,9 +219,25 @@ export function CvJack({ machine }: { machine: Machine }) {
           lamp={says ? 'wired' : 'off'}
           target={target}
         />
-        <span className={onPlate ? styles.plateName : styles.legend}>cv</span>
+        {!onPlate && !last && <span className={styles.legend}>cv</span>}
       </button>
     </Tip>
+  )
+  const legend = last ? (
+    <CvDest machine={machine} wire={wire!} dest={dest!} onPlate={onPlate} />
+  ) : (
+    onPlate && <span className={styles.plateName}>cv</span>
+  )
+  return onPlate ? (
+    <span className={styles.kitCv}>
+      {jack}
+      {legend}
+    </span>
+  ) : (
+    <>
+      {jack}
+      {legend}
+    </>
   )
 }
 
