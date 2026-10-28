@@ -269,7 +269,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How intermittent the solder is under the bend slots. A cold joint drops its stage out of the path outright — a click on the way out, another on the way back, and whatever was ringing left mid-ring. The board rewrites its own signal path while it plays.',
+        help: 'How intermittent the solder is under the onboard slots. A cold joint drops its stage out of the path outright — a click on the way out, another on the way back, and whatever was ringing left mid-ring. The board rewrites its own signal path while it plays.',
       },
       {
         key: 'relayRate',
@@ -278,7 +278,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin. Every bend keeps the values you gave it — the order and the routing move. The one roll that changes topology.',
+        help: 'How often the board re-solders itself: two onboard slots swap places, or the feedback return jumps to a different pin. Every effect keeps the values you gave it — the order and the routing move. The one roll that changes topology.',
       },
     ],
   },

@@ -1,16 +1,14 @@
 import { useState } from 'react'
 
 import { Menu } from './Menu.tsx'
-import { menuItem } from './menuItems.ts'
+import { menuItem, menuSection } from './menuItems.ts'
 
 export interface AddChoice {
   stage: string
   kind: string
+  section?: string
 }
 
-/** A button that opens a list of what is not on the bench yet, each named with
-    what it is: "Glint (FM synth)". The list stays up for the next pick and
-    shuts on the last one. */
 export function AddMenu({
   className,
   text,
@@ -43,7 +41,16 @@ export function AddMenu({
           label={text}
           onClose={() => setOpen(false)}
         >
-          {choices.map(({ stage, kind }) => (
+          {choices.map(({ stage, kind, section }, i) => [
+            section && section !== choices[i - 1]?.section && (
+              <div
+                key={`section:${section}`}
+                role="presentation"
+                className={menuSection}
+              >
+                {section}
+              </div>
+            ),
             <button
               key={stage}
               role="menuitem"
@@ -54,8 +61,8 @@ export function AddMenu({
               }}
             >
               {stage} ({kind})
-            </button>
-          ))}
+            </button>,
+          ])}
         </Menu>
       )}
     </>

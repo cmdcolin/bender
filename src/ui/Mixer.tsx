@@ -138,7 +138,7 @@ export function Mixer() {
           {all ? '▴ hide' : '▾ show'} {away.length} off the board
         </button>
       )}
-      <Tip text="What the channels above add up to, before a single bend — read where the faders meet rather than at the output, so it says which of them is eating the headroom rather than what the limiter did about it.">
+      <Tip text="What the channels above add up to, before a single effect — read where the faders meet rather than at the output, so it says which of them is eating the headroom rather than what the limiter did about it.">
         <div className={styles.bus}>
           <span className={styles.busName}>mix bus</span>
           <span className={styles.busTrack}>{bar(TAPS.length - 1)}</span>

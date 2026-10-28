@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 
 import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
-import { AddBend } from './AddBend.tsx'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, INSTRUMENTS, stageOnRun } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
@@ -165,7 +164,6 @@ export function Instruments({
           onPick={bringUp}
         />
         <AddPedal />
-        <AddBend />
         <MicMenu className={styles.add} />
         <BendKeysSwitch />
       </div>
@@ -185,8 +183,8 @@ export function Instruments({
             {(kit.length > 0 || pedals.length > 0 || bends.length > 0) && (
               <div className={styles.rack}>
                 {kit}
-                <PedalShelf seconds={seconds} onOpen={onOpen} />
                 <BendShelf seconds={seconds} onOpen={onOpen} />
+                <PedalShelf seconds={seconds} onOpen={onOpen} />
               </div>
             )}
           </div>

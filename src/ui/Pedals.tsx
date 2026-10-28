@@ -2,7 +2,10 @@ import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, setBench } from './bench.ts'
+import { switchOn } from './bendChain.ts'
+import { BENDS } from './controls/index.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
+import { add } from './fitted.ts'
 import styles from './Pedals.module.css'
 import { useRunOrder, usePedalStages } from './pedalStages.ts'
 import { Footswitch, StompFace, type Face } from './StompFace.tsx'
@@ -99,9 +102,18 @@ const KIND: Record<string, string> = {
   Ember: 'tube amp',
 }
 
-// The mix is the last slider on a pedal's face. A pedal added with its mix at 0
-// would sit on the bench bypassed.
-function bringUp(stage: string) {
+const ONBOARD_KIND: Record<string, string> = {
+  'Ring mod': 'ring modulator',
+  Crusher: 'bit crusher',
+  Clipper: 'distortion',
+  Comb: 'comb filter',
+  'Glitch buffer': 'stutter',
+  'Screech filter': 'resonant filter',
+  'Freq shifter': 'frequency shifter',
+  Octave: 'octave sub and up',
+}
+
+function bringUpPedal(stage: string) {
   show(bench.get().pedals, stage)
   const mix = FACE[stage]!.sliders.at(-1)!
   if (engine.controls.get()[mix] === 0) {
@@ -110,17 +122,34 @@ function bringUp(stage: string) {
   }
 }
 
+function bringUpOnboard(stage: string) {
+  switchOn(stage)
+  add([stage])
+  const { bends } = bench.get()
+  setBench({ ...bench.get(), bends: [...bends, stage] })
+}
+
 export function AddPedal() {
-  const { pedals: shown } = useStoreValue(bench)
-  const choices = useRunOrder()
-    .filter(stage => !shown.includes(stage))
-    .map(stage => ({ stage, kind: KIND[stage]! }))
+  const { pedals, bends } = useStoreValue(bench)
+  const order = useRunOrder()
+  const choices = [
+    ...BENDS.filter(b => !bends.includes(b.group)).map(b => ({
+      stage: b.group,
+      kind: ONBOARD_KIND[b.group]!,
+      section: 'Onboard',
+    })),
+    ...order
+      .filter(stage => !pedals.includes(stage))
+      .map(stage => ({ stage, kind: KIND[stage]!, section: 'Pedals' })),
+  ]
   return (
     <AddMenu
       className={styles.add}
       text="Add pedal"
       choices={choices}
-      onPick={bringUp}
+      onPick={stage =>
+        isPedal(stage) ? bringUpPedal(stage) : bringUpOnboard(stage)
+      }
     />
   )
 }

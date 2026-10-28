@@ -100,7 +100,7 @@ export interface SliderDef {
 
 export const STAGE_ORDER = [
   'Sources',
-  'Bends',
+  'Onboard',
   'Pedals',
   'Patch',
   'Feedback',

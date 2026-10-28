@@ -477,7 +477,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
-              name: 'Bends',
+              name: 'Onboard',
               choices: [
                 'filt cut',
                 'filt res',

@@ -805,10 +805,10 @@ one.
 
 </details>
 
-## Bends
+## Onboard
 
-Eight bends compete for six ordered slots, so two always sit out. Each has a
-mix, and a mix at zero takes the stage out of the path.
+Eight onboard effects compete for six ordered slots, so two always sit out. Each
+has a mix, and a mix at zero takes the stage out of the path.
 
 ### Ring mod
 
@@ -1031,8 +1031,8 @@ swaps the octave and the sub on a clock, up to audio rate.
 
 ## Pedals
 
-Six pedals follow the bends, and their order is not a rack: there are no
-sockets, all six are always on the board, and a pedal at zero mix leaves the
+Six pedals follow the onboard effects, and their order is not a rack: there are
+no sockets, all six are always on the board, and a pedal at zero mix leaves the
 path.
 
 ### Gnash
@@ -1462,13 +1462,13 @@ the rack on the Signal order panel shows it happening.
 <details>
 <summary>5 controls</summary>
 
-| control          | range       | what it does                                                                                                       |
-| ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| Heat †           | off to full | How far the board’s own temperature drags its thresholds                                                           |
-| Fault clustering | off to full | Whether faults arrive at a flat rate or in bursts                                                                  |
-| Cross-coupling † | off to full | Wires the loop’s brightness against its supply                                                                     |
-| Dry joints       | off to full | How intermittent the solder is under the bend slots                                                                |
-| Re-solder        | off to full | How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin |
+| control          | range       | what it does                                                                                                          |
+| ---------------- | ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| Heat †           | off to full | How far the board’s own temperature drags its thresholds                                                              |
+| Fault clustering | off to full | Whether faults arrive at a flat rate or in bursts                                                                     |
+| Cross-coupling † | off to full | Wires the loop’s brightness against its supply                                                                        |
+| Dry joints       | off to full | How intermittent the solder is under the onboard slots                                                                |
+| Re-solder        | off to full | How often the board re-solders itself: two onboard slots swap places, or the feedback return jumps to a different pin |
 
 </details>
 
@@ -1525,7 +1525,7 @@ result:
 
 | control      | range                                                                                              | what it does                                  |
 | ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct                                               | Which bend runs in this position              |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct                                               | Which onboard effect runs in this position    |
 | Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals in |
 
 </details>

@@ -50,7 +50,7 @@ export const BEND_SLOT_KEYS: ControlKey[] = ([0, 1, 2, 3, 4, 5] as const).map(
 export const BEND_GROUPS: Group[] = [
   {
     name: 'Ring mod',
-    place: 'Bends',
+    place: 'Onboard',
     sliders: [
       {
         key: 'ringHz',
@@ -108,7 +108,7 @@ export const BEND_GROUPS: Group[] = [
   },
   {
     name: 'Crusher',
-    place: 'Bends',
+    place: 'Onboard',
     sliders: [
       {
         key: 'bits',
@@ -272,7 +272,7 @@ export const BEND_GROUPS: Group[] = [
   },
   {
     name: 'Clipper',
-    place: 'Bends',
+    place: 'Onboard',
     sliders: [
       {
         key: 'driveDb',
@@ -410,7 +410,7 @@ export const BEND_GROUPS: Group[] = [
   },
   {
     name: 'Comb',
-    place: 'Bends',
+    place: 'Onboard',
     sliders: [
       {
         key: 'combHz',
@@ -457,7 +457,7 @@ export const BEND_GROUPS: Group[] = [
   },
   {
     name: 'Screech filter',
-    place: 'Bends',
+    place: 'Onboard',
     folded: ['dropped'],
     sliders: [
       {
@@ -546,7 +546,7 @@ export const BEND_GROUPS: Group[] = [
   },
   {
     name: 'Glitch buffer',
-    place: 'Bends',
+    place: 'Onboard',
     sliders: [
       {
         key: 'glitchProb',
@@ -620,7 +620,7 @@ export const BEND_GROUPS: Group[] = [
   },
   {
     name: 'Freq shifter',
-    place: 'Bends',
+    place: 'Onboard',
     sliders: [
       {
         key: 'shiftHz',
@@ -667,7 +667,7 @@ export const BEND_GROUPS: Group[] = [
   },
   {
     name: 'Octave',
-    place: 'Bends',
+    place: 'Onboard',
     sliders: [
       {
         key: 'octGain',

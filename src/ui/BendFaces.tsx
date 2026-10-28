@@ -70,7 +70,7 @@ function reading(stage: string, at: number, step: number, open: boolean) {
   return {
     text: String(at),
     label: `position ${at}`,
-    tip: `${stage} runs at position ${at} of ${BEND_SLOT_KEYS.length} in the bend chain.`,
+    tip: `${stage} runs at position ${at} of ${BEND_SLOT_KEYS.length} in the onboard chain.`,
   }
 }
 

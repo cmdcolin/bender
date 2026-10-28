@@ -50,7 +50,7 @@ export const TAPE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['the end', 'the pedals', 'the bends'],
-        help: 'Where the machine sits in the signal path. At the end it prints the finished board. Ahead of the pedals or the bends, the board plays off tape into them: a microcassette ahead of the bends hands them a dictation machine’s 250 Hz to 4 kHz, hiss and all, to distort, delay and reverberate.',
+        help: 'Where the machine sits in the signal path. At the end it prints the finished board. Ahead of the pedals or the onboard effects, the board plays off tape into them: a microcassette ahead of the onboard effects hands them a dictation machine’s 250 Hz to 4 kHz, hiss and all, to distort, delay and reverberate.',
       },
       {
         key: 'tapeFormat',

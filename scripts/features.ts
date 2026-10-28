@@ -437,14 +437,14 @@ names it still sets it. ${
     const groups = byPlace.get(place)!
     if (!groups.length) continue
     out.push(`## ${place}\n`)
-    if (place === 'Bends') {
+    if (place === 'Onboard') {
       out.push(
-        `${cap(num(BENDS.length))} bends compete for ${num(slots)} ordered slots, so ${num(BENDS.length - slots)} always sit out. Each has a mix, and a mix at zero takes the stage out of the path.\n`,
+        `${cap(num(BENDS.length))} onboard effects compete for ${num(slots)} ordered slots, so ${num(BENDS.length - slots)} always sit out. Each has a mix, and a mix at zero takes the stage out of the path.\n`,
       )
     }
     if (place === 'Pedals') {
       out.push(
-        `${cap(num(groups.length))} pedals follow the bends, and their order is not a rack: there are no sockets, all ${num(groups.length)} are always on the board, and a pedal at zero mix leaves the path.\n`,
+        `${cap(num(groups.length))} pedals follow the onboard effects, and their order is not a rack: there are no sockets, all ${num(groups.length)} are always on the board, and a pedal at zero mix leaves the path.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))

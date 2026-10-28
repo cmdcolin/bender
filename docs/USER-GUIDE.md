@@ -235,16 +235,18 @@ voltage you set, or jams one.
   sets how a held key moves: **snap**, **swell**, **riser** (climbs over four
   bars, drops when you let go), **pluck** or **wobble** (pulses on the eighths)
 - **Knife on the bus** cuts, grounds or bridges a wire inside a chip
-- **Pedals:** add tape echo, spring reverb, chorus, a tube amp or dirt boxes
-  from the **Add pedal** menu
-- **Bends:** the **Add bend** menu puts a ring mod, crusher, octave or any other
-  bend on the bench as a pedal face, slotting it into the first empty chain
-  position if it has none
-  - The badge shows the chain position, or **off** when no position holds it
-  - The badge reads **now 5** while **Re-solder** has moved the bend, and
-    **drop** while one of the **Dry joints** has taken it out of the path
+- **Add pedal** lists two kinds of pedal:
+  - **Onboard:** ring mod, crusher, octave and five more, wired into the
+    circuit's six chain positions. Adding one slots it into the first empty
+    position, or trades out the last when all six are full
+  - **Pedals:** tape echo, spring reverb, chorus, a tube amp and a stompbox,
+    always all on the board after the onboard chain
+- **The badge on an onboard pedal** shows its chain position, or **off** when no
+  position holds it
+  - It reads **now 5** while **Re-solder** has moved the pedal, and **drop**
+    while one of the **Dry joints** has taken it out of the path
   - The footswitch sets the mix to 0 and back to where you left it, and slots
-    the bend in again if it has no position
+    the pedal in again if it has no position
 
 ![The patch bay: three of four wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](../public/guide/guide-patchbay.jpg)
 

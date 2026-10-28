@@ -234,16 +234,19 @@ test('no pedal sits on the bench until it is added from the menu', () => {
 test('Add pedal names each pedal with what it is, benches the pick and brings its mix up', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
-  expect(screen.getAllByRole('menuitem').map(item => item.textContent)).toEqual(
-    [
-      'Gnash (stompbox)',
-      'Wraith (tape delay)',
-      'Ricochet (delay pedal)',
-      'Boing (spring reverb)',
-      'Chorale (ensemble)',
-      'Ember (tube amp)',
-    ],
-  )
+  expect(
+    screen
+      .getAllByRole('menuitem')
+      .slice(-6)
+      .map(item => item.textContent),
+  ).toEqual([
+    'Gnash (stompbox)',
+    'Wraith (tape delay)',
+    'Ricochet (delay pedal)',
+    'Boing (spring reverb)',
+    'Chorale (ensemble)',
+    'Ember (tube amp)',
+  ])
   fireEvent.click(screen.getByRole('menuitem', { name: /^Ember/ }))
   expect(bench.get().pedals).toEqual(['Ember'])
   expect(group('ember')).not.toBeNull()
@@ -258,11 +261,11 @@ const chainOf = (...ids: number[]) => {
 }
 
 const addBend = (name: RegExp) => {
-  fireEvent.click(screen.getByRole('button', { name: /^Add bend/ }))
+  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
   fireEvent.click(screen.getByRole('menuitem', { name }))
 }
 
-test('Add bend slots the pick into the first empty position, brings its mix up and puts its face on the bench', () => {
+test('Add pedal slots an onboard pick the pick into the first empty position, brings its mix up and puts its face on the bench', () => {
   chainOf(1)
   engine.set('octMix', 0)
   render(<Instruments seconds={0} onOpen={() => {}} />)
@@ -278,14 +281,14 @@ test('Add bend slots the pick into the first empty position, brings its mix up a
   expect(screen.queryByRole('menuitem', { name: /^Octave/ })).toBeNull()
 })
 
-test('Add bend on a full chain trades out the last position', () => {
+test('Add pedal on a full onboard chain trades out the last position', () => {
   chainOf(1, 2, 3, 4, 5, 6)
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addBend(/^Octave/)
   expect(engine.controls.get().bendSlot5).toBe(8)
 })
 
-test('Add bend lists a bend in the chain at mix 0 and brings it up where it sits', () => {
+test('Add pedal lists an onboard pedal in the chain at mix 0 and brings it up where it sits', () => {
   chainOf(0, 8)
   engine.set('octMix', 0)
   render(<Instruments seconds={0} onOpen={() => {}} />)
@@ -297,9 +300,25 @@ test('Add bend lists a bend in the chain at mix 0 and brings it up where it sits
   expect(group('octave')).not.toBeNull()
 })
 
-test('every bend has a face', () => {
+test('Add pedal lists the onboard pedals first, under their own heading', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  fireEvent.click(screen.getByRole('button', { name: /^Add bend/ }))
+  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
+  const menu = screen.getByRole('menu')
+  expect(
+    [...menu.children]
+      .map(el =>
+        el.getAttribute('role') === 'presentation' ? el.textContent : null,
+      )
+      .filter(Boolean),
+  ).toEqual(['Onboard', 'Pedals'])
+  expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe(
+    'Ring mod (ring modulator)',
+  )
+})
+
+test('every onboard pedal has a face', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
     fireEvent.click(item)
   expect(bench.get().bends).toHaveLength(8)

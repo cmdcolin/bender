@@ -71,3 +71,11 @@
   accent-color: var(--accent);
   cursor: pointer;
 }
+
+.section {
+  padding: var(--space-xs) var(--space-md) 0;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
