@@ -29,11 +29,7 @@ import {
   type Point,
   type Route,
 } from './cablePaths.ts'
-import {
-  useBoardValue,
-  useStoreSelect,
-  useStoreValue,
-} from './ControlsContext.ts'
+import { useBoardValue, useStoreSelect } from './ControlsContext.ts'
 
 import type { Controls } from '../controls.ts'
 import type { Store } from '../listeners.ts'
@@ -129,6 +125,8 @@ export function Jack({
   )
 }
 
+export const hasAny = (s: ReadonlySet<number>) => s.size > 0
+
 /** A cable laid down the gutter, glowing while the machine it feeds sounds
     the notes it carries. */
 export function BenchCable({
@@ -142,8 +140,8 @@ export function BenchCable({
 }) {
   const kind = KINDS[cable.line]
   const says = useBoardValue(c => kind.says(c, cable))
-  const toySounding = useStoreValue(engine.chipNotes).size > 0
-  const heard = useStoreValue(notes ?? engine.chipNotes).size > 0
+  const toySounding = useStoreSelect(engine.chipNotes, hasAny)
+  const heard = useStoreSelect(notes ?? engine.chipNotes, hasAny)
   const path = useMemo(() => laid(spot.bends), [spot])
   return (
     <Wire

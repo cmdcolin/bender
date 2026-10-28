@@ -15,10 +15,11 @@ import {
   voiceIn,
   voiceName,
   writeCables,
+  type Cable,
   type End,
 } from './benchCables.ts'
-import { BenchCable, Held, Jack } from './BenchJack.tsx'
-import { dragging, jacks } from './benchStores.ts'
+import { BenchCable, hasAny, Held, Jack } from './BenchJack.tsx'
+import { dragging, jacks, type Drag } from './benchStores.ts'
 import {
   gutterFor,
   layRuns,
@@ -66,8 +67,8 @@ export function GateJumper({
   solderedTip: string
 }) {
   const on = useBoardValue(c => gateInto(taker).plugged(c))
-  const toySounding = useStoreValue(engine.chipNotes).size > 0
-  const sounding = useStoreValue(notes).size > 0
+  const toySounding = useStoreSelect(engine.chipNotes, hasAny)
+  const sounding = useStoreSelect(notes, hasAny)
   const end: End = { line: 'gate', side: 'in', id: taker }
   return (
     <Tip
@@ -262,13 +263,60 @@ const same = (a: Layout, b: Layout) =>
   JSON.stringify([[...a.routes], [...a.points]]) ===
   JSON.stringify([[...b.routes], [...b.points]])
 
+function lay(
+  root: HTMLElement,
+  at: ReturnType<typeof jacks.get>,
+  cables: readonly Cable[],
+) {
+  const origin = root.getBoundingClientRect()
+  const where = new Map(
+    [...at].map(([key, j]) => [key, centre(socketOf(j.el), origin)]),
+  )
+  const anchor = (end: End): Anchor => ({
+    at: where.get(jackKey(end))!,
+    facing: at.get(jackKey(end))!.facing,
+  })
+  const runs = cables.map(x => {
+    const from = anchor(outEnd(x))
+    const to = anchor(inEnd(x))
+    return {
+      id: cableKey(x),
+      from,
+      to,
+      inner: from.facing === 'right' && to.facing === 'right',
+    }
+  })
+  const edges = [...at].flatMap(([key, j]) =>
+    j.facing === 'right' ? [where.get(key)!.x] : [],
+  )
+  const edge = edges.length > 0 ? Math.max(...edges) : origin.width
+  const next = { routes: layRuns(runs, edge), points: where }
+  if (!same(spots.get(), next)) spots.set(next)
+}
+
+/** The cable in the hand, over everything on the bench. */
+function InHand() {
+  const drag = useStoreValue(dragging)
+  const { points } = useStoreValue(spots)
+  return (
+    drag && (
+      <svg className={styles.held} aria-hidden="true">
+        <Held drag={drag} points={points} />
+      </svg>
+    )
+  )
+}
+
+const heldKey = (d: Drag | null) => (d?.carried ? cableKey(d.carried) : null)
+
 /** The bench the machines sit on, with the cables laid down its gutter. The
     cables measure their own jacks, so they follow a case that grows or goes. */
 export function GateBench({ children }: { children: ReactNode }) {
   const bench = useRef<HTMLDivElement>(null)
   const at = useStoreValue(jacks)
-  const { routes, points } = useStoreValue(spots)
-  const drag = useStoreValue(dragging)
+  const routes = useStoreSelect(spots, s => s.routes)
+  const held = useStoreSelect(dragging, heldKey)
+  const busy = useStoreSelect(dragging, d => d !== null)
   const shown = useBoardValue(c => writeCables(cablesOn(c)))
   const cables = useMemo(
     () =>
@@ -278,42 +326,21 @@ export function GateBench({ children }: { children: ReactNode }) {
     [shown, at],
   )
   const gutter = at.size > 0 ? gutterFor(cables.length) : 0
+  const latest = useRef(cables)
+
+  useLayoutEffect(() => {
+    latest.current = cables
+    if (bench.current) lay(bench.current, at, cables)
+  }, [at, cables])
 
   useLayoutEffect(() => {
     const root = bench.current
     if (!root) return undefined
     let frame = 0
-    const measure = () => {
-      const origin = root.getBoundingClientRect()
-      const where = new Map(
-        [...at].map(([key, j]) => [key, centre(socketOf(j.el), origin)]),
-      )
-      const anchor = (end: End): Anchor => ({
-        at: where.get(jackKey(end))!,
-        facing: at.get(jackKey(end))!.facing,
-      })
-      const runs = cables.map(x => {
-        const from = anchor(outEnd(x))
-        const to = anchor(inEnd(x))
-        return {
-          id: cableKey(x),
-          from,
-          to,
-          inner: from.facing === 'right' && to.facing === 'right',
-        }
-      })
-      const edges = [...at].flatMap(([key, j]) =>
-        j.facing === 'right' ? [where.get(key)!.x] : [],
-      )
-      const edge = edges.length > 0 ? Math.max(...edges) : origin.width
-      const next = { routes: layRuns(runs, edge), points: where }
-      if (!same(spots.get(), next)) spots.set(next)
-    }
     const later = () => {
       cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(measure)
+      frame = requestAnimationFrame(() => lay(root, at, latest.current))
     }
-    measure()
     const watch = new ResizeObserver(later)
     watch.observe(root)
     for (const { el } of at.values()) watch.observe(caseOf(el))
@@ -323,16 +350,15 @@ export function GateBench({ children }: { children: ReactNode }) {
       watch.disconnect()
       window.removeEventListener('resize', later)
     }
-  }, [at, cables])
+  }, [at])
 
-  const held = drag?.carried ? cableKey(drag.carried) : null
   return (
     <div
       ref={bench}
       className={styles.bench}
       style={{ ['--gutter' as string]: `${gutter}px` }}
       data-gate-bench=""
-      data-dragging={drag !== null}
+      data-dragging={busy}
     >
       {children}
       <svg className={styles.cables} aria-hidden="true">
@@ -348,11 +374,7 @@ export function GateBench({ children }: { children: ReactNode }) {
           ) : null
         })}
       </svg>
-      {drag && (
-        <svg className={styles.held} aria-hidden="true">
-          <Held drag={drag} points={points} />
-        </svg>
-      )}
+      <InHand />
     </div>
   )
 }
