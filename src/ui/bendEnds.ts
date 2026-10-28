@@ -70,6 +70,7 @@ export const BEND_ENDS: Partial<
   fmDacSlip: [null, 1],
   pcmLevel: [0, 6],
   pcmRelease: [null, null],
+  pcmLength: [-1, null],
   pcmTone: [0, null],
   pcmClockX: [0, 0],
   pcmRunOn: [null, 2],

@@ -78,6 +78,7 @@ interface Voice {
   started: number
   age: number
   held: boolean
+  left: number
   gated: boolean
   gain: number
   dir: number
@@ -97,6 +98,7 @@ const newVoice = (): Voice => ({
   started: 0,
   age: 0,
   held: false,
+  left: 0,
   gated: false,
   gain: 1,
   dir: 1,
@@ -235,12 +237,14 @@ export class PcmKeys implements Stage {
     held: boolean,
     root: number,
     gated: boolean,
+    left: number,
   ) {
     const v = this.pick(note)
     v.note = note
     v.root = root
     v.gain = gain
-    v.held = held
+    v.held = held || left > 0
+    v.left = left
     v.gated = gated
     v.started = this.clock++
     v.age = 0
@@ -260,10 +264,11 @@ export class PcmKeys implements Stage {
     held: boolean,
     chord: number,
     gated = false,
+    left = 0,
   ) {
     this.lastNote = note
     for (const step of CHORDS[chord] ?? CHORDS[0]!) {
-      this.key(note + step, gain, held, note, gated)
+      this.key(note + step, gain, held, note, gated, left)
     }
   }
 
@@ -450,6 +455,7 @@ export class PcmKeys implements Stage {
     const vibStep = (VIB_HZ * scale * VIB_STEPS) / this.sr
     const clock = scale * p[IDX.pcmClockX]!
     const amp = rail.ampFactor * level * OUT_TRIM
+    const length = Math.round(p[IDX.pcmLength]! * this.sr)
 
     for (const q of this.queued) this.strike(q.note, q.gain, q.held, chord)
     this.queued.length = 0
@@ -465,16 +471,18 @@ export class PcmKeys implements Stage {
 
       const struck = gateOn ? ctx.trig.key[i]! : 0
       if (struck !== 0) {
-        this.strike(struck - KEY_BIAS, 1, ctx.trig.keyHeld[i]! > 0, chord, true)
+        const hand = ctx.trig.keyHeld[i]! > 0
+        this.strike(struck - KEY_BIAS, 1, hand, chord, true, hand ? 0 : length)
       }
       const sung = sings ? ctx.trig.seqKey[i]! : 0
-      if (sung !== 0) this.strike(sung - KEY_BIAS, 1, false, chord, true)
+      if (sung !== 0)
+        this.strike(sung - KEY_BIAS, 1, false, chord, true, length)
 
       if (drumMask !== 0) {
         const bits = Math.round(ctx.trig.drumBits[i]!) & drumMask
         if (bits !== 0) {
           const gain = Math.min(ctx.trig.drumGain[i]! / ACCENT_GAIN, 1)
-          this.strike(this.lastNote, gain, false, chord)
+          this.strike(this.lastNote, gain, false, chord, false, length)
         }
       }
 
@@ -495,6 +503,10 @@ export class PcmKeys implements Stage {
       let raw = 0
       for (const v of voices) {
         if (v.stage === IDLE) continue
+        if (v.left > 0 && --v.left === 0) {
+          v.held = false
+          v.stage = RELEASE
+        }
         this.stepEnv(v)
         v.age++
         const depth =

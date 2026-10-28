@@ -472,6 +472,7 @@ export const DEFAULT_CONTROLS = {
   pcmVoice: 0,
   pcmEnv: 0,
   pcmRelease: 0.35,
+  pcmLength: 0,
   pcmTone: 4000,
   pcmVibrato: 0,
   pcmChord: 0,

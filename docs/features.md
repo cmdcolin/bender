@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-600 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+601 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -483,7 +483,7 @@ puts the fault on, and the rows under it show the controls it set:
   still
 
 <details>
-<summary>24 controls</summary>
+<summary>25 controls</summary>
 
 | control                            | range                                                                                                     | what it does                                                                                                                                                                |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -493,6 +493,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Voice                              | strings, choir, pipe organ, e.piano, flute, brass, vibes, chime, music box, glass pad, synth pad, sampled | Which recording in the ROM the address counter walks                                                                                                                        |
 | Envelope                           | piano, organ, pad, chime                                                                                  | The four buttons down the side of the case                                                                                                                                  |
 | Release                            | 0.02 to 8 s                                                                                               | The one capacitor the envelope generator has that the buttons do not pick: how long a note takes to die once the key comes up                                               |
+| Note length                        | edge to 4.00 s                                                                                            | How long the key stays down for a strike nobody is holding, such as the demo song, the melody memory or a kit hit                                                           |
 | Tone                               | 1 to 8 kHz                                                                                                | The reconstruction filter behind the DAC — two poles and no more, which is all a keyboard at this price ever had                                                            |
 | Vibrato                            | off, vibrato, delayed                                                                                     | One LFO on the die with no rate register, no depth register and nothing that can stop it                                                                                    |
 | Chord memory                       | off, maj7, min7, min9, sus4, add9, power                                                                  | Puts a whole voicing under one key                                                                                                                                          |

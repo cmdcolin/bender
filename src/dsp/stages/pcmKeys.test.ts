@@ -275,6 +275,19 @@ test('the toy gate plays the keyboard, and cutting it stops', () => {
   expect(rms(cut)).toBeLessThan(1e-6)
 })
 
+test('note length holds the song’s keys down', () => {
+  const run = (over: Partial<Controls>) =>
+    rms(
+      play({ ...ALONE, pcmRelease: 0.05, ...over }, 2, b => {
+        b.transport.tune = true
+      }).out,
+    )
+  expect(run({ pcmLength: 0.4 })).toBeGreaterThan(run({}) * 2)
+  expect(run({ pcmEnv: 0, pcmLength: 0.03 })).toBeLessThan(
+    run({ pcmEnv: 0 }) / 2,
+  )
+})
+
 test('nothing on the keyboard can be made to put out something that is not a number', () => {
   const knobs: (keyof Controls)[] = [
     'pcmLevel',

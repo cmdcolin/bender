@@ -452,6 +452,7 @@ export const PARAM_DEFS = [
   ['pcmVoice', 'step'],
   ['pcmEnv', 'step'],
   ['pcmRelease', 'slew'],
+  ['pcmLength', 'slew'],
   ['pcmTone', 'slew'],
   ['pcmVibrato', 'step'],
   ['pcmChord', 'step'],

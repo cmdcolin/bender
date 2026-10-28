@@ -25,7 +25,7 @@ export const PARLOR_OPENS = {
   keys: ['pcmStruck', 'pcmKeyGate', 'pcmChord'],
   counter: ['pcmClockX', 'pcmSignDir', 'pcmLatch'],
   ROM: ['pcmVoice', 'pcmRunOn', 'pcmWrite'],
-  envelope: ['pcmEnv', 'pcmRelease'],
+  envelope: ['pcmEnv', 'pcmRelease', 'pcmLength'],
   tone: ['pcmTone'],
   mix: ['pcmLevel', 'pcmMute', 'pcmSupply'],
   vibrato: ['pcmVibrato'],

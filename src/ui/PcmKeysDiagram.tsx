@@ -33,6 +33,7 @@ const KEYS = [
   'pcmDataCross',
   'pcmEnv',
   'pcmRelease',
+  'pcmLength',
   'pcmTone',
   'pcmLevel',
   'pcmMute',
@@ -91,7 +92,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     [
       'envelope',
       OPENS.envelope,
-      'The four buttons down the side of the case, and the capacitor that sets how long a note takes to die.',
+      'The four buttons down the side of the case, the capacitor that sets how long a note takes to die, and how long a strike nobody holds keeps the key down.',
     ],
     [
       'tone',
