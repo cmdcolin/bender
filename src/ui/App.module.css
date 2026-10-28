@@ -340,9 +340,15 @@ select.morph {
   .account {
     display: flex;
   }
+  .share {
+    order: -2;
+  }
   .pinned {
     order: -2;
     margin-left: auto;
+  }
+  .bar button:not(.nameplate) {
+    padding-inline: var(--space-xs);
   }
   .bar::after {
     content: '';

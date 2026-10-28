@@ -15,7 +15,7 @@ export function ShareButton({ onCopy }: { onCopy: () => Promise<boolean> }) {
   return (
     <Tip text="Copies a link to this board. Whoever opens it gets every knob as you have it now.">
       <button
-        className={said === 'failed ✕' ? styles.btnBad : styles.btn}
+        className={`${said === 'failed ✕' ? styles.btnBad : styles.btn} ${styles.share}`}
         onClick={() =>
           void onCopy().then(ok => setSaid(ok ? 'copied ✓' : 'failed ✕'))
         }
