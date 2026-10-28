@@ -1110,8 +1110,8 @@ export class Engine {
   }
 
   /** A new pattern over the board as it stands, on the next downbeat of the
-      phrase lock while the kit runs, else at once. One entry in the walk. A
-      morph in flight carries on with the rest of the board. */
+      phrase lock while the kit runs, else at once. One entry in the walk. The
+      engine keeps a morph in flight moving the rest of the board. */
   writePattern(patch: Partial<Controls>) {
     const land = () => {
       this.armStep()
