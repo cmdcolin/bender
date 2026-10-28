@@ -89,17 +89,21 @@ export class Arc {
     this.wild = wild
   }
 
-  /** The params to play this block: `board` itself while the arc rests. */
+  /** The params to play this block: `board` itself while the arc rests.
+      `kitStepHz` is the kit's step rate, 0 while it stands still. */
   step(
     board: Float32Array,
     n: number,
     sr: number,
     kitTick: number,
-    kitRunning: boolean,
+    kitStepHz: number,
   ): Float32Array {
     const depth = Math.min(Math.max(board[IDX.arcDepth]!, 0), 1)
+    const kitRunning = kitStepHz > 0
     const bpm = Math.max(board[IDX.drumBpm]!, 1)
-    this.bars += (n / sr) * (bpm / (4 * 60))
+    this.bars += kitRunning
+      ? (n / sr) * (kitStepHz / STEPS)
+      : (n / sr) * (bpm / (4 * 60))
     if (kitRunning && kitTick !== this.lastTick && kitTick % STEPS === 0)
       this.bars = Math.round(this.bars)
     this.lastTick = kitTick

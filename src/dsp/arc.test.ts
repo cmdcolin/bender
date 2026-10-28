@@ -45,8 +45,7 @@ const wild = (
 
 const run = (arc: Arc, p: Float32Array, seconds: number) => {
   let out = p
-  for (let t = 0; t < seconds * SR; t += 128)
-    out = arc.step(p, 128, SR, 0, false)
+  for (let t = 0; t < seconds * SR; t += 128) out = arc.step(p, 128, SR, 0, 0)
   return out
 }
 
@@ -77,7 +76,7 @@ test('at no depth the arc hands back the board itself', () => {
   const arc = new Arc()
   arc.setWild(wild([{ key: 'filtHz', to: 4000 }]))
   const p = board({ arcDepth: 0 })
-  expect(arc.step(p, 128, SR, 0, false)).toBe(p)
+  expect(arc.step(p, 128, SR, 0, 0)).toBe(p)
   expect(arc.pos).toBe(0)
 })
 
@@ -90,7 +89,7 @@ test('held at full depth every moved param reaches its wild end', () => {
       { key: 'filtHz', to: 4000, blend: BLEND_LOG },
     ]),
   )
-  const out = arc.step(board({ arcDepth: 1 }), 128, SR, 0, false)
+  const out = arc.step(board({ arcDepth: 1 }), 128, SR, 0, 0)
   expect(out[IDX.filtRes]).toBeCloseTo(0.95)
   expect(out[IDX.drumDataLine]).toBe(3)
   expect(out[IDX.filtHz]).toBeCloseTo(4000)
@@ -111,7 +110,7 @@ test('each param waits for its own start, and a switch flips halfway', () => {
     128,
     SR,
     0,
-    false,
+    0,
   )
   expect(out[IDX.filtRes]).toBeCloseTo(0.4)
   expect(out[IDX.drumSlip]).toBe(0)
@@ -121,7 +120,7 @@ test('each param waits for its own start, and a switch flips halfway', () => {
 test('a log knob travels in ratios', () => {
   const arc = new Arc()
   arc.setWild(wild([{ key: 'filtHz', to: 8000, blend: BLEND_LOG }]))
-  const out = arc.step(board({ arcDepth: 0.5, filtHz: 80 }), 128, SR, 0, false)
+  const out = arc.step(board({ arcDepth: 0.5, filtHz: 80 }), 128, SR, 0, 0)
   expect(out[IDX.filtHz]).toBeCloseTo(800, 0)
 })
 
@@ -153,7 +152,7 @@ test('jump holds a bar where it started and snaps to calm, halfway or full', () 
   })
   const seen = new Set<number>()
   for (let t = 0; t < 4 * BAR_S * SR; t += 128) {
-    arc.step(p, 128, SR, 0, false)
+    arc.step(p, 128, SR, 0, 0)
     seen.add(arc.pos)
   }
   expect([...seen].toSorted((a, b) => a - b)).toEqual([0, 0.5, 1])
@@ -168,6 +167,18 @@ test("the arc's bar line locks to the kit's downbeat", () => {
     arcBars: bars(4),
   })
   run(arc, p, BAR_S * 0.7)
-  arc.step(p, 128, SR, 16, true)
+  arc.step(p, 128, SR, 16, 8)
+  expect(arc.pos).toBeCloseTo(0.25, 2)
+})
+
+test('the arc counts bars at the rate the kit actually steps', () => {
+  const arc = new Arc()
+  arc.setWild(wild([{ key: 'filtRes', to: 1 }]))
+  const p = board({
+    arcDepth: 1,
+    arcShape: shape('rise, snap back'),
+    arcBars: bars(4),
+  })
+  for (let t = 0; t < 2 * BAR_S * SR; t += 128) arc.step(p, 128, SR, 3, 4)
   expect(arc.pos).toBeCloseTo(0.25, 2)
 })
