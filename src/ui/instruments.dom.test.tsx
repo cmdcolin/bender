@@ -231,21 +231,29 @@ test('no pedal sits on the bench until it is added from the menu', () => {
   expect(group('ember')).toBeNull()
 })
 
-test('Add pedal names each pedal with what it is, benches the pick and brings its mix up', () => {
+test('Add pedal groups every pedal by sound, names it with what it is, benches the pick and brings its mix up', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
   expect(
-    screen
-      .getAllByRole('menuitem')
-      .slice(-6)
-      .map(item => item.textContent),
+    [...screen.getByRole('menu').children].map(el => el.textContent),
   ).toEqual([
+    'Dirt',
     'Gnash (stompbox)',
+    'Clipper (distortion)',
+    'Crusher (bit crusher)',
+    'Ember (tube amp)',
+    'Echo and space',
     'Wraith (tape delay)',
     'Ricochet (delay pedal)',
     'Boing (spring reverb)',
     'Chorale (ensemble)',
-    'Ember (tube amp)',
+    'Pitch and tone',
+    'Octave (octave sub and up)',
+    'Freq shifter (frequency shifter)',
+    'Ring mod (ring modulator)',
+    'Comb (comb filter)',
+    'Screech filter (resonant filter)',
+    'Glitch buffer (stutter)',
   ])
   fireEvent.click(screen.getByRole('menuitem', { name: /^Ember/ }))
   expect(bench.get().pedals).toEqual(['Ember'])
@@ -260,16 +268,16 @@ const chainOf = (...ids: number[]) => {
     engine.set(`bendSlot${k}`, ids[k] ?? 0)
 }
 
-const addBend = (name: RegExp) => {
+const addSocketed = (name: RegExp) => {
   fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
   fireEvent.click(screen.getByRole('menuitem', { name }))
 }
 
-test('Add pedal slots an onboard pick the pick into the first empty position, brings its mix up and puts its face on the bench', () => {
+test('Add pedal slots a socketed pick into the first empty socket, brings its mix up and puts its face on the bench', () => {
   chainOf(1)
   engine.set('octMix', 0)
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  addBend(/^Octave/)
+  addSocketed(/^Octave/)
   const after = engine.controls.get()
   expect(after.bendSlot0).toBe(1)
   expect(after.bendSlot1).toBe(8)
@@ -281,18 +289,18 @@ test('Add pedal slots an onboard pick the pick into the first empty position, br
   expect(screen.queryByRole('menuitem', { name: /^Octave/ })).toBeNull()
 })
 
-test('Add pedal on a full onboard chain trades out the last position', () => {
+test('Add pedal with all six sockets full trades out the last one', () => {
   chainOf(1, 2, 3, 4, 5, 6)
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  addBend(/^Octave/)
+  addSocketed(/^Octave/)
   expect(engine.controls.get().bendSlot5).toBe(8)
 })
 
-test('Add pedal lists an onboard pedal in the chain at mix 0 and brings it up where it sits', () => {
+test('Add pedal lists a socketed pedal at mix 0 and brings it up where it sits', () => {
   chainOf(0, 8)
   engine.set('octMix', 0)
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  addBend(/^Octave/)
+  addSocketed(/^Octave/)
   const after = engine.controls.get()
   expect(after.bendSlot0).toBe(0)
   expect(after.bendSlot1).toBe(8)
@@ -300,23 +308,7 @@ test('Add pedal lists an onboard pedal in the chain at mix 0 and brings it up wh
   expect(group('octave')).not.toBeNull()
 })
 
-test('Add pedal lists the onboard pedals first, under their own heading', () => {
-  render(<Instruments seconds={0} onOpen={() => {}} />)
-  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
-  const menu = screen.getByRole('menu')
-  expect(
-    [...menu.children]
-      .map(el =>
-        el.getAttribute('role') === 'presentation' ? el.textContent : null,
-      )
-      .filter(Boolean),
-  ).toEqual(['Onboard', 'Pedals'])
-  expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe(
-    'Ring mod (ring modulator)',
-  )
-})
-
-test('every onboard pedal has a face', () => {
+test('every socketed pedal has a face', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)

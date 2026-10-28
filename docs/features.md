@@ -805,10 +805,12 @@ one.
 
 </details>
 
-## Onboard
+## Pedals
 
-Eight onboard effects compete for six ordered slots, so two always sit out. Each
-has a mix, and a mix at zero takes the stage out of the path.
+Eight pedals compete for six ordered sockets, so two always sit out. Each has a
+mix, and a mix at zero takes the stage out of the path. The other six follow the
+sockets: all of them are always on the board, their order is one control, and a
+pedal at zero mix leaves the path.
 
 ### Ring mod
 
@@ -1028,12 +1030,6 @@ swaps the octave and the sub on a clock, up to audio rate.
 | Mix           | off to full       | Dry/wet                                                                                                                                                                                                |
 
 </details>
-
-## Pedals
-
-Six pedals follow the onboard effects, and their order is not a rack: there are
-no sockets, all six are always on the board, and a pedal at zero mix leaves the
-path.
 
 ### Gnash
 
@@ -1467,8 +1463,8 @@ the rack on the Signal order panel shows it happening.
 | Heat †           | off to full | How far the board’s own temperature drags its thresholds                                                              |
 | Fault clustering | off to full | Whether faults arrive at a flat rate or in bursts                                                                     |
 | Cross-coupling † | off to full | Wires the loop’s brightness against its supply                                                                        |
-| Dry joints       | off to full | How intermittent the solder is under the onboard slots                                                                |
-| Re-solder        | off to full | How often the board re-solders itself: two onboard slots swap places, or the feedback return jumps to a different pin |
+| Dry joints       | off to full | How intermittent the solder is under the pedal sockets                                                                |
+| Re-solder        | off to full | How often the board re-solders itself: two pedal sockets swap places, or the feedback return jumps to a different pin |
 
 </details>
 
@@ -1476,8 +1472,8 @@ the rack on the Signal order panel shows it happening.
 
 The Signal order panel orders both runs: the six positions the bends compete
 for, between the mix bus and the pedals, and the six pedals downstream of them.
-It draws two racks, _onboard effects_ first and _pedals_ second. Drag a box to
-move it, or move it with the arrow keys. To bring in a bend that is off the
+It draws two racks, _sockets_ first and _after the sockets_ second. Drag a box
+to move it, or move it with the arrow keys. To bring in a bend that is off the
 board, drag it or press it in the first section. A crusher into a filter and a
 filter into a crusher use the same two stages and sound different, and fuzz into
 a reverb gives a wall with a room behind it where a reverb into fuzz gives the
@@ -1486,14 +1482,14 @@ out. All six pedals stay on the board, and a pedal leaves the path when its mix
 is at zero.
 
 The panel draws two racks in place of a row of sliders: the six bend-slot
-controls under _onboard effects_, and the one order control under _pedals_. The
-pedal order is a single control with 720 values instead of a socket per pedal,
-so a roll, a link and a preset can all set it and every value is a valid order.
-Because the racks draw these controls, the panel shows no dropdown for either. A
-bend can sit in a position and still be inaudible, either because its dry/wet is
-at zero or because it already ran higher up, and its row shows which. The rows
-also show what _Solder_ is doing to the path while you play: a position the
-relay has moved shows where the board is running it, and one whose joint has
+controls under _sockets_, and the one order control under _after the sockets_.
+The pedal order is a single control with 720 values instead of a socket per
+pedal, so a roll, a link and a preset can all set it and every value is a valid
+order. Because the racks draw these controls, the panel shows no dropdown for
+either. A bend can sit in a position and still be inaudible, either because its
+dry/wet is at zero or because it already ran higher up, and its row shows which.
+The rows also show what _Solder_ is doing to the path while you play: a position
+the relay has moved shows where the board is running it, and one whose joint has
 opened shows that it is out of the path. Neither of those is a control, so these
 rows are the only place to see them. The pedal rows show nothing extra, because
 all six pedals are always on the board.
@@ -1523,10 +1519,10 @@ result:
 <details>
 <summary>7 controls</summary>
 
-| control      | range                                                                                              | what it does                                  |
-| ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct                                               | Which onboard effect runs in this position    |
-| Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals in |
+| control      | range                                                                                              | what it does                                                    |
+| ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct                                               | Which pedal runs in this socket                                 |
+| Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals after the sockets in |
 
 </details>
 

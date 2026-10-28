@@ -63,7 +63,7 @@ const BLURBS: Record<string, string> = {
   Octave:
     'An analog octave pedal after MicroSputter V2: a comparator with hysteresis clocks a divider for the sub, an XOR against its own delayed edge doubles it for the octave up, and a switch samples the input on every divider rise. With Track down, harmonics and the divider’s own output reach the comparator, and a slow recovery after each edge makes it fire on extra edges and drop others. Bounce swaps the octave and the sub on a clock, up to audio rate.',
   'Signal order':
-    'The Signal order panel orders both runs: the six positions the bends compete for, between the mix bus and the pedals, and the six pedals downstream of them. It draws two racks, *onboard effects* first and *pedals* second. Drag a box to move it, or move it with the arrow keys. To bring in a bend that is off the board, drag it or press it in the first section. A crusher into a filter and a filter into a crusher use the same two stages and sound different, and fuzz into a reverb gives a wall with a room behind it where a reverb into fuzz gives the room itself distorting. Eight bends compete for six positions, so two always sit out. All six pedals stay on the board, and a pedal leaves the path when its mix is at zero.',
+    'The Signal order panel orders both runs: the six positions the bends compete for, between the mix bus and the pedals, and the six pedals downstream of them. It draws two racks, *sockets* first and *after the sockets* second. Drag a box to move it, or move it with the arrow keys. To bring in a bend that is off the board, drag it or press it in the first section. A crusher into a filter and a filter into a crusher use the same two stages and sound different, and fuzz into a reverb gives a wall with a room behind it where a reverb into fuzz gives the room itself distorting. Eight bends compete for six positions, so two always sit out. All six pedals stay on the board, and a pedal leaves the path when its mix is at zero.',
   Gnash:
     'Gnash models each circuit separately: *Screamer* clips inside the feedback loop so the dry note passes under it; *rat* clips to ground behind a slew-limited op-amp; *muff* is two clipping stages and a scooped tone stack; *germanium* clips asymmetrically, with its bias moving down under the signal; *octave* rectifies into a ringing transformer; *gate* is misbiased to the edge of cutoff.',
   Wraith:
@@ -275,7 +275,7 @@ are counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.\n`
   if (g.editor?.kind === 'order')
     return `\nThe panel draws two racks in place of a row of sliders: the ${num(BEND_SLOT_KEYS.length)} bend-slot
-controls under *onboard effects*, and the one order control under *pedals*. The
+controls under *sockets*, and the one order control under *after the sockets*. The
 pedal order is a single control with ${num(PEDAL_ORDERS.length)} values instead of a socket per
 pedal, so a roll, a link and a preset can all set it and every value is a valid
 order. Because the racks draw these controls, the panel shows no dropdown for
@@ -437,14 +437,9 @@ names it still sets it. ${
     const groups = byPlace.get(place)!
     if (!groups.length) continue
     out.push(`## ${place}\n`)
-    if (place === 'Onboard') {
-      out.push(
-        `${cap(num(BENDS.length))} onboard effects compete for ${num(slots)} ordered slots, so ${num(BENDS.length - slots)} always sit out. Each has a mix, and a mix at zero takes the stage out of the path.\n`,
-      )
-    }
     if (place === 'Pedals') {
       out.push(
-        `${cap(num(groups.length))} pedals follow the onboard effects, and their order is not a rack: there are no sockets, all ${num(groups.length)} are always on the board, and a pedal at zero mix leaves the path.\n`,
+        `${cap(num(BENDS.length))} pedals compete for ${num(slots)} ordered sockets, so ${num(BENDS.length - slots)} always sit out. Each has a mix, and a mix at zero takes the stage out of the path. The other ${num(groups.length - BENDS.length)} follow the sockets: all of them are always on the board, their order is one control, and a pedal at zero mix leaves the path.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))

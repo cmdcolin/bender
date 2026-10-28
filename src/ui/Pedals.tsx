@@ -3,11 +3,10 @@ import { isPedal } from '../pedals.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, setBench } from './bench.ts'
 import { switchOn } from './bendChain.ts'
-import { BENDS } from './controls/index.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { add } from './fitted.ts'
 import styles from './Pedals.module.css'
-import { useRunOrder, usePedalStages } from './pedalStages.ts'
+import { usePedalStages } from './pedalStages.ts'
 import { Footswitch, StompFace, type Face } from './StompFace.tsx'
 import { Tip } from './Tip.tsx'
 
@@ -93,25 +92,37 @@ export function BenchToggle({ stage }: { stage: string }) {
   )
 }
 
-const KIND: Record<string, string> = {
-  Gnash: 'stompbox',
-  Wraith: 'tape delay',
-  Ricochet: 'delay pedal',
-  Boing: 'spring reverb',
-  Chorale: 'ensemble',
-  Ember: 'tube amp',
-}
-
-const ONBOARD_KIND: Record<string, string> = {
-  'Ring mod': 'ring modulator',
-  Crusher: 'bit crusher',
-  Clipper: 'distortion',
-  Comb: 'comb filter',
-  'Glitch buffer': 'stutter',
-  'Screech filter': 'resonant filter',
-  'Freq shifter': 'frequency shifter',
-  Octave: 'octave sub and up',
-}
+const BY_SOUND: { section: string; kinds: Record<string, string> }[] = [
+  {
+    section: 'Dirt',
+    kinds: {
+      Gnash: 'stompbox',
+      Clipper: 'distortion',
+      Crusher: 'bit crusher',
+      Ember: 'tube amp',
+    },
+  },
+  {
+    section: 'Echo and space',
+    kinds: {
+      Wraith: 'tape delay',
+      Ricochet: 'delay pedal',
+      Boing: 'spring reverb',
+      Chorale: 'ensemble',
+    },
+  },
+  {
+    section: 'Pitch and tone',
+    kinds: {
+      Octave: 'octave sub and up',
+      'Freq shifter': 'frequency shifter',
+      'Ring mod': 'ring modulator',
+      Comb: 'comb filter',
+      'Screech filter': 'resonant filter',
+      'Glitch buffer': 'stutter',
+    },
+  },
+]
 
 function bringUpPedal(stage: string) {
   show(bench.get().pedals, stage)
@@ -122,7 +133,7 @@ function bringUpPedal(stage: string) {
   }
 }
 
-function bringUpOnboard(stage: string) {
+function bringUpSocketed(stage: string) {
   switchOn(stage)
   add([stage])
   const { bends } = bench.get()
@@ -131,24 +142,18 @@ function bringUpOnboard(stage: string) {
 
 export function AddPedal() {
   const { pedals, bends } = useStoreValue(bench)
-  const order = useRunOrder()
-  const choices = [
-    ...BENDS.filter(b => !bends.includes(b.group)).map(b => ({
-      stage: b.group,
-      kind: ONBOARD_KIND[b.group]!,
-      section: 'Onboard',
-    })),
-    ...order
-      .filter(stage => !pedals.includes(stage))
-      .map(stage => ({ stage, kind: KIND[stage]!, section: 'Pedals' })),
-  ]
+  const choices = BY_SOUND.flatMap(({ section, kinds }) =>
+    Object.entries(kinds)
+      .filter(([stage]) => !pedals.includes(stage) && !bends.includes(stage))
+      .map(([stage, kind]) => ({ stage, kind, section })),
+  )
   return (
     <AddMenu
       className={styles.add}
       text="Add pedal"
       choices={choices}
       onPick={stage =>
-        isPedal(stage) ? bringUpPedal(stage) : bringUpOnboard(stage)
+        isPedal(stage) ? bringUpPedal(stage) : bringUpSocketed(stage)
       }
     />
   )

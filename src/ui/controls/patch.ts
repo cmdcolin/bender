@@ -477,7 +477,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
-              name: 'Onboard',
+              name: 'Pedals',
               choices: [
                 'filt cut',
                 'filt res',
@@ -497,11 +497,6 @@ export const PATCH_GROUPS: Group[] = [
                 'shift Hz',
                 'oct rate',
                 'oct chaos',
-              ],
-            },
-            {
-              name: 'Pedals',
-              choices: [
                 'stomp drive',
                 'delay time',
                 'delay filt',

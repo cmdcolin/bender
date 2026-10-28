@@ -70,7 +70,7 @@ function reading(stage: string, at: number, step: number, open: boolean) {
   return {
     text: String(at),
     label: `position ${at}`,
-    tip: `${stage} runs at position ${at} of ${BEND_SLOT_KEYS.length} in the onboard chain.`,
+    tip: `${stage} sits in socket ${at} of ${BEND_SLOT_KEYS.length}, so Dry joints can drop it and Re-solder can move it.`,
   }
 }
 

@@ -178,7 +178,7 @@ export const FOUR_TRACK_GROUP: Group = {
       normal: [0, 1],
       step: 0.01,
       unit: '×',
-      help: 'The stereo bus of the four-track’s desk, onto the board’s mix bus. With Input on the board and a loop recording, that is a loop round the whole board: what comes back next lap has been through every onboard effect and pedal and goes through them again.',
+      help: 'The stereo bus of the four-track’s desk, onto the board’s mix bus. With Input on the board and a loop recording, that is a loop round the whole board: what comes back next lap has been through every pedal and goes through them again.',
     },
     {
       key: 'fourAux',
