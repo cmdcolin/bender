@@ -94,7 +94,7 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
     <Tip
       text={
         voice > 0
-          ? `The kit’s ${voiceName(voice)} line strikes this keyboard. Press to pull the cable, or drag it to another jack on the kit`
+          ? `The kit’s ${voiceName(voice)} line strikes this keyboard. Press to pull the cable, or drag it to another TRIG jack`
           : 'The kit’s trigger input. Press to patch in every hit, or drag a cable here from a jack on top of the kit'
       }
     >
