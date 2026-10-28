@@ -1,4 +1,5 @@
-import { N_DRUM_VOICES, VOICE_LABELS } from '../drums.ts'
+import { VOICE_LABELS } from '../drums.ts'
+import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import {
   connectionInto,
   MACHINE_OF,
@@ -62,14 +63,14 @@ export function endOf(key: string | undefined): End | null {
 }
 
 /** A machine whose GATE jack takes Plinky's notes. */
-export type Taker = Exclude<NoteDest, 'toy'> | 'kit'
+type Taker = Exclude<NoteDest, 'toy'> | 'kit'
 const GATE_TAKERS: readonly Taker[] = ['fm', 'pcm', 'mono', 'kit']
 
 export const gateInto = (taker: Taker): Connection =>
   taker === 'kit' ? PLINKY_TO_KIT : connectionInto(MACHINE_OF[taker], 'notes')!
 
 /** A TRIG input: a keyboard's, or the ADSR's gate on the MOD plate. */
-export type TrigTaker = NoteDest | 'adsr'
+type TrigTaker = NoteDest | 'adsr'
 const TRIG_TAKERS: readonly TrigTaker[] = ['toy', 'fm', 'pcm', 'mono', 'adsr']
 
 const trigControl = (taker: TrigTaker): ControlKey =>
@@ -77,23 +78,21 @@ const trigControl = (taker: TrigTaker): ControlKey =>
     ? 'modEnvGate'
     : connectionInto(MACHINE_OF[taker], 'hits')!.key
 
-export const ANY_HIT = N_DRUM_VOICES + 1
-
 /** The kit voice in a TRIG input, from its control. The ADSR's gate counts
     keys as 0, any hit as 1 and the voices after. */
 export function voiceIn(taker: TrigTaker, c: Controls) {
   const v = Math.round(c[trigControl(taker)])
   if (taker !== 'adsr' || v === 0) return v
-  return v === 1 ? ANY_HIT : v - 1
+  return v === 1 ? ANY_CHOICE : v - 1
 }
 
 function valueFor(taker: TrigTaker, voice: number) {
   if (taker !== 'adsr' || voice === 0) return voice
-  return voice === ANY_HIT ? 1 : voice + 1
+  return voice === ANY_CHOICE ? 1 : voice + 1
 }
 
 export const voiceName = (voice: number) =>
-  voice === ANY_HIT ? 'any hit' : VOICE_LABELS[voice - 1]!
+  voice === ANY_CHOICE ? 'any hit' : VOICE_LABELS[voice - 1]!
 
 const PLATE_NAME: Record<string, string> = {
   'open hat': 'ohat',
@@ -101,7 +100,7 @@ const PLATE_NAME: Record<string, string> = {
   'any hit': 'any',
 }
 
-export const plateName = (voice: number) => {
+export const voicePlate = (voice: number) => {
   const name = voiceName(voice)
   return PLATE_NAME[name] ?? name
 }
@@ -176,7 +175,7 @@ const trig: Kind = {
   plug: (c, input, output) => setTrig(c, input, Number(output)),
   pull: (c, x) => setTrig(c, x.in, 0),
   move: (c, x, input) => setTrig(setTrig(c, x.in, 0), input, Number(x.out)),
-  fresh: String(ANY_HIT),
+  fresh: String(ANY_CHOICE),
   facing: (side, id) => (side === 'out' || id === 'adsr' ? 'up' : 'right'),
   says: (_, x) =>
     `The kit’s ${voiceName(Number(x.out))} line ${x.in === 'adsr' ? 'opens' : 'strikes'} ${NAMED[x.in]}`,

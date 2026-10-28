@@ -11,7 +11,7 @@ import {
   MODULES,
   moveCv,
   patchCv,
-  plateName,
+  sourcePlate,
   pullCv,
   shortDest,
   spareWire,
@@ -68,7 +68,7 @@ test('moving a cable keeps its source and depth, and pulling it frees the wire',
 
 test('every plate name fits under a jack', () => {
   for (let src = 1; src <= 15; src++)
-    expect(plateName(src).length, plateName(src)).toBeLessThanOrEqual(6)
+    expect(sourcePlate(src).length, sourcePlate(src)).toBeLessThanOrEqual(6)
 })
 
 test('a CV jack reaches every destination its machine owns, and a wire can aim at any', () => {

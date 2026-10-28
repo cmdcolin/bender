@@ -41,7 +41,7 @@ const PLATE_NAME: Record<string, string> = {
 
 export const sourceName = (src: number) => choiceName('mod0Src', src)
 
-export const plateName = (src: number) => {
+export const sourcePlate = (src: number) => {
   const name = sourceName(src)
   return PLATE_NAME[name] ?? name
 }
@@ -76,7 +76,7 @@ export const cvFacing = (machine: Machine): Facing =>
 const machineOf = (dest: number) =>
   CV_MACHINES.find(m => m === WIRE_TARGET[dest])
 
-export interface ModCable {
+interface ModCable {
   /** Which of the bay's four wires, from 0. */
   wire: number
   src: number

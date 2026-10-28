@@ -1,5 +1,4 @@
-import { engine } from '../engine/engine.ts'
-import { Jack } from './BenchJack.tsx'
+import { Jack, rewire } from './BenchJack.tsx'
 import { useBoardValue } from './ControlsContext.ts'
 import styles from './GateCables.module.css'
 import {
@@ -9,7 +8,7 @@ import {
   destName,
   destsOf,
   modCables,
-  plateName,
+  sourcePlate,
   shortDest,
   sourceName,
   spareWire,
@@ -33,7 +32,7 @@ export function ModOut({ src }: { src: number }) {
         end={{ line: 'mod', side: 'out', id: String(src) }}
         className={styles.modOut}
       >
-        <span className={styles.plateName}>{plateName(src)}</span>
+        <span className={styles.plateName}>{sourcePlate(src)}</span>
       </Jack>
     </Tip>
   )
@@ -60,12 +59,7 @@ function CvDest({
         aria-label={`${machine} CV lands on`}
         title={`Lands on ${destName(dest)}`}
         value={dest}
-        onChange={e => {
-          engine.armStep()
-          engine.writeBoard(
-            aimCv(engine.controls.get(), wire, Number(e.target.value)),
-          )
-        }}
+        onChange={e => rewire(c => aimCv(c, wire, Number(e.target.value)))}
       >
         {destsOf(machine).map(d => (
           <option key={d} value={d}>

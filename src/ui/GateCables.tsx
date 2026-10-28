@@ -1,9 +1,9 @@
 import { useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 
+import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
 import {
-  ANY_HIT,
   cableKey,
   cablesOn,
   gateInto,
@@ -11,7 +11,7 @@ import {
   jackKey,
   outEnd,
   parseCables,
-  plateName,
+  voicePlate,
   voiceIn,
   voiceName,
   writeCables,
@@ -50,7 +50,7 @@ import type { NoteDest } from '../engine/messages.ts'
 
 type Keyboard = 'fm' | 'pcm' | 'mono'
 
-const TRIG_VOICES = Array.from({ length: ANY_HIT }, (_, i) => i + 1)
+const TRIG_VOICES = Array.from({ length: ANY_CHOICE }, (_, i) => i + 1)
 
 /** The GATE jack on a keyboard's right edge. */
 export function GateJumper({
@@ -104,7 +104,7 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
         label="kit trigger"
       >
         <span className={voice > 0 ? styles.voice : styles.legend}>
-          {voice > 0 ? plateName(voice) : 'trig'}
+          {voice > 0 ? voicePlate(voice) : 'trig'}
         </span>
       </Jack>
     </Tip>
@@ -130,13 +130,13 @@ function TrigOut({ voice }: { voice: number }) {
   const name = voiceName(voice)
   return (
     <Tip
-      text={`The ${name} trigger line. Drag a cable from here to a TRIG jack and every ${voice === ANY_HIT ? 'hit' : name} strikes it`}
+      text={`The ${name} trigger line. Drag a cable from here to a TRIG jack and every ${voice === ANY_CHOICE ? 'hit' : name} strikes it`}
     >
       <Jack
         end={{ line: 'trig', side: 'out', id: String(voice) }}
         className={styles.trigOut}
       >
-        <span className={styles.plateName}>{plateName(voice)}</span>
+        <span className={styles.plateName}>{voicePlate(voice)}</span>
       </Jack>
     </Tip>
   )
@@ -202,7 +202,7 @@ function AdsrGate() {
         label="ADSR gate"
       >
         <span className={voice > 0 ? styles.plateVoice : styles.plateName}>
-          {voice > 0 ? plateName(voice) : 'keys'}
+          {voice > 0 ? voicePlate(voice) : 'keys'}
         </span>
       </Jack>
     </Tip>

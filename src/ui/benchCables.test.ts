@@ -2,8 +2,8 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { DEST } from '../dsp/modbus.ts'
+import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import {
-  ANY_HIT,
   cablesOn,
   dropped,
   endOf,
@@ -48,7 +48,7 @@ test('pressing an input pulls its cable, then plugs the line’s usual output', 
   const pulled = pressed(board, end('gate:in:fm'))
   expect(pulled.fmKeyGate).toBe(1)
   expect(pressed(pulled, end('gate:in:fm')).fmKeyGate).toBe(0)
-  expect(pressed(board, end('trig:in:mono')).monoStruck).toBe(ANY_HIT)
+  expect(pressed(board, end('trig:in:mono')).monoStruck).toBe(ANY_CHOICE)
   const cv = pressed(board, end('mod:in:Growler'))
   expect(cv.mod0Src).toBe(LFO)
   expect(cv.mod0Dest).toBe(CV_DEST.Growler)
@@ -63,7 +63,7 @@ test('a fresh cable plugs whichever way it is dragged', () => {
   ).toBe(2)
   expect(
     dropped(board, end('gate:out:plinky'), null, end('gate:in:kit')).trigToDrum,
-  ).toBe(ANY_HIT)
+  ).toBe(ANY_CHOICE)
 })
 
 test('a fresh cable dropped on its own side or another line changes nothing', () => {
@@ -91,7 +91,7 @@ test('the ADSR’s gate reads keys as empty and maps voices both ways', () => {
   const kick = KINDS.trig.plug(board, 'adsr', '1')
   expect(kick.modEnvGate).toBe(2)
   expect(voiceIn('adsr', kick)).toBe(1)
-  expect(KINDS.trig.plug(board, 'adsr', String(ANY_HIT)).modEnvGate).toBe(1)
+  expect(KINDS.trig.plug(board, 'adsr', String(ANY_CHOICE)).modEnvGate).toBe(1)
   expect(voiceIn('adsr', board)).toBe(0)
 })
 

@@ -38,7 +38,10 @@ import {
 import type { Controls } from '../controls.ts'
 import type { Store } from '../listeners.ts'
 
-function write(next: Controls, was: Controls) {
+/** Writes the board a change makes, as one step to walk back. */
+export function rewire(change: (c: Controls) => Controls) {
+  const was = engine.controls.get()
+  const next = change(was)
   if (next === was) return
   engine.armStep()
   engine.writeBoard(next)
@@ -56,10 +59,7 @@ function grab(start: End, e: ReactPointerEvent, cable?: Cable) {
   follow(
     e,
     at => dragging.set(at && { fixed, carried, ...at }),
-    over => {
-      const c = engine.controls.get()
-      write(dropped(c, fixed, carried, endOf(over?.dataset.jack)), c)
-    },
+    over => rewire(c => dropped(c, fixed, carried, endOf(over?.dataset.jack))),
   )
 }
 
@@ -120,9 +120,7 @@ export function Jack({
       data-jack={key}
       onPointerDown={e => grab(end, e)}
       onClick={() => {
-        if (!pressIsClick()) return
-        const c = engine.controls.get()
-        write(pressed(c, end), c)
+        if (pressIsClick()) rewire(c => pressed(c, end))
       }}
     >
       {socket}
@@ -156,10 +154,7 @@ export function BenchCable({
       sounding={notes !== undefined && heard && toySounding}
       pull={{
         title: `${says}. Pull the plug, or drag the end to another ${kind.jack} jack`,
-        run: () => {
-          const c = engine.controls.get()
-          write(kind.pull(c, cable), c)
-        },
+        run: () => rewire(c => kind.pull(c, cable)),
       }}
       onGrab={e => grab(inEnd(cable), e, cable)}
     />

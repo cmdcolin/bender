@@ -81,7 +81,7 @@ export const connectionInto = (to: Machine, signal: Signal) =>
 
 /** The kit voice at the kit's end of a cable, or undefined for a cable that
     never touches the kit. */
-export function kitVoice(c: Controls, x: Connection): string | undefined {
+function kitVoice(c: Controls, x: Connection): string | undefined {
   if (x.from !== 'Clatter' && x.to !== 'Clatter') return undefined
   return choiceName(x.key, Math.round(c[x.key]))
 }

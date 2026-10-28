@@ -3,7 +3,7 @@ import { createStore, type Store } from '../listeners.ts'
 import type { Cable, End } from './benchCables.ts'
 import type { Facing, Point } from './cablePaths.ts'
 
-export interface JackAt {
+interface JackAt {
   el: HTMLElement
   facing: Facing
   /** What the machine behind an input is sounding, for a cable that glows. */
