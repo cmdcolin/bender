@@ -74,8 +74,8 @@ function heldVsSent(fmStrobe: number, fmEffect: number) {
 }
 
 // The property that makes this a different bend rather than another flavour of
-// the bus faults: a knife on a data line changes what the byte says, and a
-// knife on an address line changes where it goes by mangling the number. A
+// the bus faults: a fault on a data line changes what the byte says, and a
+// fault on an address line changes where it goes by mangling the number. A
 // slipping strobe does neither. Both bytes arrive intact and land, in a real
 // register, exactly as the processor spelled them — just paired with the wrong
 // partner. Nothing is corrupted; something is misfiled.

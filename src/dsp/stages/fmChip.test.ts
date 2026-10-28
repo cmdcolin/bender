@@ -291,7 +291,7 @@ test('the demo song gets Note length, since nothing is holding those keys', () =
 })
 
 // Two param sets, swapped halfway, so the second half is the board after the
-// knife has been taken off the bus. Rendered rather than described because the
+// fault has been cleared. Rendered rather than described because the
 // claim is about what the chip is still doing once nothing is wrong any more.
 function afterTheFault(
   during: Partial<Controls>,
@@ -316,7 +316,7 @@ function afterTheFault(
 // long as your hand is on the knob; a byte that landed wrong in a register is a
 // sound that lasts until something writes that register again — and the
 // processor only rewrites the patch when a knob it knows about moves.
-test('a byte that landed wrong stays landed after the knife comes off', () => {
+test('a byte that landed wrong stays landed after the fault clears', () => {
   const fault = { fmDataLine: 3, fmDataFault: FAULT.supply }
   const clean = afterTheFault({}, {}, 4)
   const scarred = afterTheFault(fault, {}, 4)
@@ -385,7 +385,7 @@ test('the kit strikes the chip, and the note is decided at this end', () => {
 
 // The other bus on the chip, and the opposite bend. The processor never touches
 // this one — the operators read it eight times a sample — so nothing lands in a
-// register and nothing outlives the knife.
+// register and nothing outlives the fault.
 const WAVE_MIRROR = 9
 const WAVE_SIGN = 10
 
@@ -421,7 +421,7 @@ test('a sine with no sign bit has no fundamental left', () => {
   expect(bin(flat, 440)).toBeGreaterThan(bin(clean, 440) * 2)
 })
 
-test('the wave bend leaves nothing behind when the knife comes off', () => {
+test('the wave bend leaves nothing behind when the fault clears', () => {
   const clean = afterTheFault({}, {}, 4)
   const after = afterTheFault(
     { fmWaveLine: WAVE_MIRROR, fmWaveFault: FAULT.ground },
@@ -518,7 +518,7 @@ test('a data line on the table corrupts every fetch and scars no register', () =
   expect(regs).toEqual(cleanRegs)
 })
 
-test('a wire on the patch line lane moves the knife', () => {
+test('a wire on the patch line lane moves the fault', () => {
   const wire = {
     bodyX: 1,
     mod0Src: 5,
@@ -571,7 +571,7 @@ test('the blob is a bodge wire, so a panic does not take it off', () => {
   )
 })
 
-test('a wire on the blob is the bay reaching a knife', () => {
+test('a wire on the blob is the bay reaching a fault', () => {
   const at = (o: Partial<Controls>) =>
     playKeys(
       { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
@@ -901,7 +901,7 @@ test('the die holds fifteen patches and the case has buttons for eight', () => {
   expect(ROM_VOICE_NAMES.slice(FM_VOICE_NAMES.length)).toHaveLength(7)
   expect(new Set(ROM_PATCH_BYTES.map(b => b.join(','))).size).toBe(15)
   // And none of them is a patch that cannot sound. A carrier that never opens
-  // or a modulator attenuated to nothing is an instrument the knife would hand
+  // or a modulator attenuated to nothing is an instrument the fault would hand
   // you as silence, which is the one thing this bend is not for.
   for (const v of ROM_VOICES) {
     const bytes = pack(v)
@@ -1076,7 +1076,7 @@ test('the driver clears the test register and leaves the channels in garbage', (
   expect(chip.instRegs().some(n => n > 0)).toBe(true)
 })
 
-test('with a knife on the address the chip never finishes booting', () => {
+test('with a fault on the address the chip never finishes booting', () => {
   const { chip } = booted({ fmAddrLine: 1, fmAddrFault: FAULT.ground })
   expect(chip.testReg()).not.toBe(0)
 })

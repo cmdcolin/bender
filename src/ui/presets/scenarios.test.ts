@@ -22,12 +22,12 @@ test('the cross-cutting rolls keep the song, the pattern and your levels', () =>
 
 // The blind dice hardly ever wire a bus, and a wire drawn at random is as
 // likely to be one the ROM never drives as one you can hear. This roll draws
-// from the panel's own list instead, so what it hands over is always a knife
+// from the panel's own list instead, so what it hands over is always a fault
 // somebody found.
-test('the knife roll always lands on named cuts', () => {
+test('the fault roll always lands on named cuts', () => {
   const before = mine()
   for (let seed = 1; seed <= 20; seed++) {
-    const after = scenarioNamed('knife')(before, mulberry32(seed))
+    const after = scenarioNamed('bus fault')(before, mulberry32(seed))
     const standing = CUTS.filter(c => cutStands(c, after))
     const wired = new Set(
       CUTS.filter(c => cutWired(c.group, c.part, after)).map(c => c.group),

@@ -193,12 +193,12 @@ test('nothing the two new knobs can be set to leaves anything non-finite', () =>
   }
 })
 
-// The knife on the ROM's own wires. Every voice reads one part over one bus, so
+// The fault on the ROM's own wires. Every voice reads one part over one bus, so
 // these faults move a voice between slabs as well as bending what it reads.
 const window = (x: Float32Array, from: number, to: number) =>
   x.subarray(Math.round(from * SR), Math.round(to * SR))
 
-test('a ROM bus nobody has knifed is the sampled kit it always was', () => {
+test('a ROM bus nobody has faulted is the sampled kit it always was', () => {
   const kit: Partial<Controls> = { ...SAMPLED, chipLevel: 0, drumLevel: 0.9 }
   expect(
     render(
@@ -248,7 +248,7 @@ test('the sign wire on the ROM’s data bus folds every hit', () => {
   expect(highEnergy(folded, 4000)).toBeGreaterThan(highEnergy(kick, 4000) * 5)
 })
 
-test('no setting of the ROM knife leaves anything non-finite', () => {
+test('no setting of the ROM fault leaves anything non-finite', () => {
   for (const count of [0, 1, 2, 3])
     for (const line of [1, 9, 17])
       for (const fault of [0, 1, 2, 3]) {

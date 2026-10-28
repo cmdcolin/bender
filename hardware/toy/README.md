@@ -42,8 +42,8 @@ amp. 131 parts, 26 ICs, all through-hole.
 | App control             | Board                                                                     |
 | ----------------------- | ------------------------------------------------------------------------- |
 | Clock, starve           | RV2, RV1                                                                  |
-| Knife on the data bus   | cut or bridge SJ6-SJ11                                                    |
-| Knife on the address    | cut or bridge SJ1-SJ5                                                     |
+| Fault on the data bus   | cut or bridge SJ6-SJ11                                                    |
+| Fault on the address    | cut or bridge SJ1-SJ5                                                     |
 | Tune bank               | SW5                                                                       |
 | Loop from / to          | SW4 wires a data line onto the counter reset                              |
 | Supply                  | SW2 picks cells or the 5 V jack                                           |

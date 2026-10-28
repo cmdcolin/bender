@@ -1,14 +1,14 @@
 // Which wires actually do something, measured rather than reasoned about.
 //
-//   pnpm knife           every bus, every wire, every fault
-//   pnpm knife fm        one chip
+//   pnpm faults           every bus, every wire, every fault
+//   pnpm faults fm        one chip
 //
 // A bus fault is the one bend on this board whose result is a fact about a ROM
 // rather than about a knob: a line the program never drives is a wire you can
 // cut and hear nothing, and no amount of prose settles which lines those are.
-// So this renders the board twice per combination — knife on, knife off, same
+// So this renders the board twice per combination — fault on, fault off, same
 // everything else — and reports what came out. What it is for is the row of
-// named cuts in the panel: every one of those has to be a knife you can hear,
+// named cuts in the panel: every one of those has to be a fault you can hear,
 // and this is where the ones worth naming come from.
 //
 // Three numbers per wire. `change` is how far the board moved at all, against
@@ -26,7 +26,7 @@ import { romIndex } from '../src/dsp/stages/roms.ts'
 import { pitchHz, render, rms, SR } from '../src/dsp/testRender.ts'
 import { sliderFor } from '../src/ui/controls/index.ts'
 
-// The song and the pattern a knife is judged on. Stock sakura is 32 steps at
+// The song and the pattern a fault is judged on. Stock sakura is 32 steps at
 // three a second, so two seconds of it is six steps and the far end of the
 // address bus never comes round at all; the clock runs it up to where the whole
 // song goes past. The kit gets a bar whose halves differ for the same reason —
@@ -44,7 +44,7 @@ const BOARD: Partial<Controls> = {
   drumAccent: 0b1000_0000_0010_0000,
 }
 
-// One chip at a time, because the question is what this knife did and the other
+// One chip at a time, because the question is what this fault did and the other
 // two machines are only mix. The FM chip keeps the toy in under it: it has no
 // keyboard of its own and plays whatever strikes a note over there.
 interface BusDef {

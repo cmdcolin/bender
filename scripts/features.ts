@@ -31,7 +31,7 @@ const BLURBS: Record<string, string> = {
   Clatter:
     'A step grid with a length per row, so a five-step hat runs against a sixteen-step kick until they line back up. *Retrigger* repeats the current step at audio rate. *Cross-patch* connects one voice’s amplifier to another’s envelope, so a hit you can hear opens a voice nothing struck. *Address line* and *Data line* cut the wires between the step counter and the pattern memory: the counter keeps counting, the memory returns the wrong steps, and the machine plays a pattern nobody wrote.',
   Glint:
-    'The board’s FM synthesiser: two operators a voice, four voices, on the same rail. It has no sequencer: its key input is soldered onto the toy’s gate line, so out of the box it plays whatever strikes a note there. *Struck by* also clips the kit’s trigger lines on, and *Follows toy* cuts the gate jumper (it then reads *own keys only*), so Glint plays only from the keybed on its board. Once the chip is up in the mix, the panel draws that keybed under the toy’s, with a hold and octave for each, and the *keys* switch on either deck sets which of the two the computer’s letter keys play. A processor configures Glint a byte at a time over a bus, and *Data line* and *Address line* cut that bus: a byte that lands wrong stays wrong until the processor writes that register again, and if the wire carrying the key back up cannot go low, the note never ends. *Wave line* cuts the other bus, which the processor never touches. The sine is a table and a table is an address, so a knife there reshapes the wave as you play and leaves nothing behind. *Effect* plays a bird, surf, wind, a siren or crickets from the ROM. Each is a program of register writes, the busiest traffic the bus ever carries. The effect buttons over the keys run any of them while held.',
+    'The board’s FM synthesiser: two operators a voice, four voices, on the same rail. It has no sequencer: its key input is soldered onto the toy’s gate line, so out of the box it plays whatever strikes a note there. *Struck by* also clips the kit’s trigger lines on, and *Follows toy* cuts the gate jumper (it then reads *own keys only*), so Glint plays only from the keybed on its board. Once the chip is up in the mix, the panel draws that keybed under the toy’s, with a hold and octave for each, and the *keys* switch on either deck sets which of the two the computer’s letter keys play. A processor configures Glint a byte at a time over a bus, and *Data line* and *Address line* cut that bus: a byte that lands wrong stays wrong until the processor writes that register again, and if the wire carrying the key back up cannot go low, the note never ends. *Wave line* cuts the other bus, which the processor never touches. The sine is a table and a table is an address, so a fault there reshapes the wave as you play and leaves nothing behind. *Effect* plays a bird, surf, wind, a siren or crickets from the ROM. Each is a program of register writes, the busiest traffic the bus ever carries. The effect buttons over the keys run any of them while held.',
   Parlor:
     'An eight-bit sampling home keyboard, and the only machine on this board that makes pads, strings, choirs and bells. It has no oscillator: a ROM holds one short recording of each voice, an attack and then a loop, and a counter steps through that ROM at the rate the note asks for. The ROM was cut at 9.9 kHz and nothing interpolates on the way out, so every voice has its images over it, and *Tone*, a two-pole reconstruction filter, sets how much of that you hear. The rate is a twelve-bit divider, so the top octave comes out a few cents sharp and the bottom is in tune. *Address line* cuts the counter’s wires, so each word is real but read from the wrong place and a voice folds onto its first half or reads every sample twice. *Data line* cuts the wires out of the ROM; held high, the top wire folds the bottom half of every wave up onto the top of it. *Chord memory* puts a voicing under one key and fills all four voices with it. *sampled* plays whatever you dropped on the sampler across the keyboard, from a second and a half of memory, with the reel’s loop markers as its loop.',
   Growler:
@@ -146,7 +146,7 @@ const SCRIPTS: Record<string, string> = {
   'diagram-shots':
     'shoots every schematic in the panel to a directory, one png each',
   dash: "re-shoots the why-sign-in card's screenshot of the signed-in home page",
-  knife:
+  faults:
     'sweeps every wire and fault on every bus and reports which you can hear',
   spectrum:
     'sweeps every wire and fault on every bus and reports what each sounds like, by frequency',
@@ -302,7 +302,7 @@ function cuts(g: Group): string {
   if (!first) return ''
   const lines = mine.map(c => `- **${c.name}**: ${c.blurb}`).join('\n')
   return `\nNamed cuts, one press each under *${first.part}*, as in the panel.
-A press puts the knife on, and the rows under it show the controls it set:\n\n${lines}\n`
+A press puts the fault on, and the rows under it show the controls it set:\n\n${lines}\n`
 }
 
 function rigs(g: Group): string {
@@ -377,13 +377,13 @@ grey out. \`pnpm diagram\` renders it with the same layout the app uses.
   paperclip: bare metal dragged across the pads, touching the supply a few times
   a second. Each touch pulls the rail down, and the board recovers before the
   next.
-- **Put a knife through the bus.** Cut, ground, bridge or pull up a data or
+- **Cut or short a wire on the bus.** Cut, ground, bridge or pull up a data or
   address line, on the toy, the drum machine or Glint, and the chip reads the
   wrong byte; on Glint it *stays* wrong until the processor writes that
   register again. The wire, the fault and its depth only work together, so each
-  chip's *knife on the bus* opens on a row of named cuts: press **machine-gun**
+  chip's *fault on the bus* opens on a row of named cuts: press **machine-gun**
   or **the note never ends** and the rows under it show which controls it set.
-  **Random knife** under random ▾ draws from the same table.
+  **Random bus fault** under random ▾ draws from the same table.
 - **${cap(num(BENDS.length))} bends, ${num(slots)} slots.** You pick which are on the board and in what
   order, so ${num(BENDS.length - slots)} always sit out. A mix at zero takes the stage out of the path.
 - **A patch bay that modulates itself.** ${cap(num(wires.sliders.filter(s => s.label.endsWith('depth')).length))} wires, ${dests} destinations, among them
@@ -454,7 +454,7 @@ names it still sets it. ${
   board. **Mutate** perturbs the board you have instead of replacing it.
 - **A roll button on every heading**, with a
   *reset* beside it that shows how many controls it would put back. A heading
-  groups controls that only work together, so you can roll a knife on the toy's
+  groups controls that only work together, so you can roll a fault on the toy's
   bus without re-rolling the toy's clock and bend pot.
 - **Morph** moves between two boards over time, and pressing
   it mid-flight keeps the half-way board as an ordinary board. **Hunt** plays

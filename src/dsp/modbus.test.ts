@@ -332,7 +332,7 @@ test.each([
   depth: number
   byHand: Partial<Controls>
 }[])(
-  'a held wire on the $chip is the knife moved there by hand',
+  'a held wire on the $chip is the fault moved there by hand',
   ({ board, dest, depth, byHand }) => {
     const wired = render(
       { ...board, bodyX: 1, mod0Src: 5, mod0Dest: dest, mod0Depth: depth },

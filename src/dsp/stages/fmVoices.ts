@@ -72,7 +72,7 @@ export const TEST = {
 // operators stop reading the sine table altogether and take a shift register
 // instead — free-running since power-on, and the only noise anywhere on this
 // chip. Everything else it can make is a sine or a sum of them, which is why
-// nothing the knife finds on a chip in melody mode ever comes out as hiss.
+// nothing the fault finds on a chip in melody mode ever comes out as hiss.
 //
 // Being one byte is what makes it worth bending. The mode and all three keys
 // cross the data bus together, so a wire held high is a drum that never lifts,
@@ -337,7 +337,7 @@ export const FM_VOICES: Voice[] = [
 // processor writes to ask for them: the instrument nibble is one it always
 // sends as zero, because zero is the patch it just spent eight writes sending.
 //
-// Which makes them the one thing on this chip a knife *adds*. Every other fault
+// Which makes them the one thing on this chip a fault *adds*. Every other fault
 // takes a sound the board can already make and damages it; a wire under the top
 // of the volume register hands you an instrument the keyboard has no way to
 // play.
@@ -468,7 +468,7 @@ export const PATCH_DATA_LINES = 8
 // The kit the die keeps in ROM. The bass drum is the only one of the three
 // still running off the sine table, so it is the only one that needs a patch —
 // and because it lives in ROM rather than in the register file, nothing the
-// knife does to the patch bytes reaches it. What the knife reaches on these
+// fault does to the patch bytes reaches it. What the fault reaches on these
 // channels is the keys, the mode, the tuning and the volume nibbles.
 export const KIT = {
   bass: pack({
@@ -492,7 +492,7 @@ export const KIT = {
 /** Where the die keys the bass drum: not a note anybody chose, but nine bits of
     frequency and a block fixed in ROM, an octave under the keyboard's bottom.
     They go out through the frequency registers like any other note, so this is
-    the one part of the kit a knife on the bus can still retune. */
+    the one part of the kit a fault on the bus can still retune. */
 /** What the vibrato button steps through, which is which bits it sets. */
 export const FM_LFO_NAMES = ['off', 'vibrato', 'tremolo', 'both']
 

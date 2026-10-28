@@ -53,14 +53,14 @@
 }
 
 .bus,
-.knifed {
+.faulted {
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   fill: var(--fg3);
 }
 
-.knifed {
+.faulted {
   fill: var(--fg2);
 }
 

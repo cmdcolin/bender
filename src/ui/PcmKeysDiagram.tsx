@@ -47,8 +47,8 @@ const KEYS = [
 type Key = (typeof KEYS)[number]
 
 const PARTS: Record<string, string> = {
-  'addr bus': 'knife on the bus',
-  'data bus': 'knife on the bus',
+  'addr bus': 'fault on the bus',
+  'data bus': 'fault on the bus',
 }
 
 const TOP = 4
@@ -65,7 +65,7 @@ const midOf = (from: BoxSpec, to: BoxSpec) =>
 // The keyboard as the board wires it: a key strikes up to four voices, a
 // counter walks the sample ROM at the rate the note asks for, the ROM answers
 // with a word, and an envelope, a filter and the mix take it from there. The
-// counter and the ROM talk over two buses a knife can reach, which hang under
+// counter and the ROM talk over two buses a fault can reach, which hang under
 // the wires they sit on, and the die's one vibrato LFO feeds the counter from
 // above. Each box opens the knobs of the part it stands for.
 export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
@@ -146,14 +146,14 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       midOf(counter, rom),
       -BUS_LEAN,
       OPENS['addr bus'],
-      'The wires the counter names a word on. A knife through one makes the ROM hand back a real word from the wrong place.',
+      'The wires the counter names a word on. A fault on one makes the ROM hand back a real word from the wrong place.',
     ),
     bus(
       'data bus',
       midOf(rom, envelope),
       BUS_LEAN,
       OPENS['data bus'],
-      'The eight wires the ROM answers on. A knife through one keeps the pitch and changes the shape of every word.',
+      'The eight wires the ROM answers on. A fault on one keeps the pitch and changes the shape of every word.',
     ),
   ]
   useOpensOnAim(pick, boxes)

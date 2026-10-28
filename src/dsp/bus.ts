@@ -1,6 +1,6 @@
 import { mulberry32, type Rng } from './util/rng.ts'
 
-// The wires between two parts of a chip, and what a knife does to one of them.
+// The wires between two parts of a chip, and what a fault does to one of them.
 //
 // Every other bend on this board attacks the analogue — the supply, the clock,
 // the output stage. A bus fault leaves all of that working perfectly and
@@ -48,7 +48,7 @@ export class Bus {
   private rng: Rng
   /** The floating pin's charge, between the rails rather than on one of them. */
   private charge = 0
-  /** Which pin that charge belongs to — move the knife and it is a new pin. */
+  /** Which pin that charge belongs to — move the fault and it is a new pin. */
   private floating = -1
   /** The last word an unbroken bus carried, which is what a new cut holds. */
   private last = -1
@@ -66,8 +66,8 @@ export class Bus {
   private float(word: number, line: number, cut: number) {
     const bit = 1 << line
     // The pin floats from the moment the trace parts, so it starts on whatever
-    // the bus was carrying when the knife went through. A board that comes up
-    // with the knife already in it has no such word behind it, and a pin nobody
+    // the bus was carrying when the cut went through. A board that comes up
+    // with the fault already on it has no such word behind it, and a pin nobody
     // is driving is still charged to something rather than to nothing — so
     // there the seed decides which way it falls.
     if (line !== this.floating) {
@@ -89,7 +89,7 @@ export class Bus {
   /**
    * One word across the bus. `line` counts wires from the least significant and
    * is negative for a bus nobody has touched; `cut` is how far through the
-   * trace the knife went, which only the cut fault reads.
+   * trace the cut went, which only the cut fault reads.
    */
   read(word: number, line: number, fault: number, cut: number): number {
     if (line < 0 || line >= this.width) {
@@ -103,7 +103,7 @@ export class Bus {
       case FAULT.supply:
         return word | bit
       case FAULT.bridge: {
-        // The neighbour above, or below at the top of the bus — the knife is
+        // The neighbour above, or below at the top of the bus — the fault is
         // one blob of solder and there is always something on one side of it.
         const pair = bit | (line + 1 < this.width ? bit << 1 : bit >> 1)
         return (word & pair) === pair ? word | pair : word & ~pair

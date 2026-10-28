@@ -77,7 +77,7 @@ go:
 
 | key | throw   | fault                                       |
 | --- | ------- | ------------------------------------------- |
-| `.` | knife   | the whole board cut                         |
+| `.` | cut     | the whole board cut                         |
 | `;` | unplug  | the cells off the board; held long, reboots |
 | `/` | stop    | the whole mix braked to a stop over a beat  |
 | `i` | stutter | the whole mix rolled faster and faster      |
@@ -234,7 +234,7 @@ voltage you set, or jams one.
 - **Letter keys** switch on sixteen dealt bends. The envelope picker beside them
   sets how a held key moves: **snap**, **swell**, **riser** (climbs over four
   bars, drops when you let go), **pluck** or **wobble** (pulses on the eighths)
-- **Knife on the bus** cuts, grounds or bridges a wire inside a chip
+- **Fault on the bus** cuts, grounds or bridges a wire inside a chip
 - **Add pedal** lists every pedal by sound: dirt, echo and space, pitch and tone
 - **Sockets:** eight of the pedals (ring mod, crusher, octave and the rest)
   compete for six sockets. Adding one fills the first empty socket, or trades

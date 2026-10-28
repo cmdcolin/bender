@@ -318,7 +318,7 @@ export function DrumGrid({ staged = false }: { staged?: boolean }) {
           values={EVENTS.map((_, i) => i)}
           says={v => (v ? EVENT_LETTERS[v]! : '')}
           tail={<EventEvery />}
-          tip="A fault on the whole board for the length of its step: c a knife through the output lead, d the cells losing contact so the shared rail sags, b a tape brake on the mix, f the step's first half repeated, r the power pulled and put back. A run of one letter plays as one fault, so four b in a row brake over the whole beat and four f roll faster and faster. A reboot on the shared cells restarts the kit’s bar too, unless the kit runs off another supply. Click to go round, shift-click to go back."
+          tip="A fault on the whole board for the length of its step: c the output lead cut, d the cells losing contact so the shared rail sags, b a tape brake on the mix, f the step's first half repeated, r the power pulled and put back. A run of one letter plays as one fault, so four b in a row brake over the whole beat and four f roll faster and faster. A reboot on the shared cells restarts the kit’s bar too, unless the kit runs off another supply. Click to go round, shift-click to go back."
         />
         <CycleRow
           live={live}

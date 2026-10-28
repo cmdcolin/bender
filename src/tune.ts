@@ -73,7 +73,7 @@ export const asTuneStep = (v: number) => {
   return step === REST || step === HOLD ? step : foldNote(step)
 }
 
-/** A step as the word that crosses the bus, and back. The knife is between
+/** A step as the word that crosses the bus, and back. The fault is between
     these two, which is the point of there being two. */
 export const encodeTune = (step: number) =>
   step === HOLD ? WORD_HOLD : step === REST ? WORD_REST : step + WORD_BIAS

@@ -8,7 +8,7 @@ import type { Controls } from '../src/controls.ts'
 //   pnpm audible           every path
 //   pnpm audible kick      the paths whose board is named for one voice
 //
-// `knife.ts` asks whether a wire does anything and `spectrum.ts` asks what kind
+// `faults.ts` asks whether a wire does anything and `spectrum.ts` asks what kind
 // of sound it makes. This asks a question neither of them can: whether a branch
 // of the summing junction is connected at all. Those are not the same question,
 // because a path can be soldered in, cost a multiply a sample, carry a constant
@@ -22,7 +22,7 @@ import type { Controls } from '../src/controls.ts'
 // one covering it asserted on a number 50 dB down in the converter's own hash.
 //
 // Two numbers per path, and the second is the point. `rms` is how far the whole
-// take moved, which is the number knife reports and the number that hid this
+// take moved, which is the number faults reports and the number that hid this
 // bug: a click is three milliseconds long and a render is a second, so a path
 // that owns the attack outright moves the take's rms by a fraction of a percent.
 // `peak` is the tallest sample of the difference against the tallest sample of

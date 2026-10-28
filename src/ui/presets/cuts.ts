@@ -7,7 +7,7 @@ import { SUPPLY } from '../../dsp/supplies.ts'
 import { choiceValue, GROUPS, sliderFor } from '../controls/index.ts'
 import { formatValue } from '../slider-scale.ts'
 
-// A knife on a bus is three controls that only mean anything together — a wire,
+// A fault on a bus is three controls that only mean anything together — a wire,
 // what happened to it, and how far through the trace the blade went — and most
 // of the combinations are a wire you can cut and hear nothing. These are the
 // ones worth hearing, named for what comes out rather than for where the blade
@@ -21,7 +21,7 @@ export interface CutDef {
   patch: Partial<Controls>
 }
 
-const KNIFE = 'knife on the bus'
+const BUS = 'fault on the bus'
 const DIE = 'die and driver'
 const SAMPLE_ROM = 'Sample ROM'
 const AMP = 'the amp'
@@ -32,7 +32,7 @@ const pick = choiceValue
 export const CUTS: CutDef[] = [
   {
     group: 'Plinky',
-    part: KNIFE,
+    part: BUS,
     name: 'rests fill in',
     blurb:
       'A note wire held high — the song keeps its rhythm and its silences become notes',
@@ -43,7 +43,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Plinky',
-    part: KNIFE,
+    part: BUS,
     name: 'melody in clumps',
     blurb:
       'Two note wires soldered to each other, so the tune’s pitches fall on a lattice instead of on its intervals',
@@ -54,7 +54,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Plinky',
-    part: KNIFE,
+    part: BUS,
     name: 'the tune in the bass',
     blurb:
       'The two wires carrying the big intervals soldered to each other — a note that needs one of them gets neither, and the melody keeps its shape an octave or two lower',
@@ -65,7 +65,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Plinky',
-    part: KNIFE,
+    part: BUS,
     name: 'half a tune',
     blurb:
       'The top address wire on the floor — the song folds into its first half and stays there',
@@ -76,7 +76,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Plinky',
-    part: KNIFE,
+    part: BUS,
     name: 'every step twice',
     blurb:
       'The bottom address wire low — the counter counts as it always did and the ROM hands back each step twice',
@@ -87,7 +87,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Plinky',
-    part: KNIFE,
+    part: BUS,
     name: 'two songs at once',
     blurb:
       'A trace half cut — most steps arrive, and the rest come back off the wire next door, so the melody flickers between two versions of itself',
@@ -99,7 +99,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'machine-gun',
     blurb:
       'The hat’s trigger wire held high — it fires on every step the machine fetches, and everything soldered to the trigger bus receives the trigger',
@@ -110,7 +110,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'kick on every step',
     blurb:
       'The kick’s trigger wire held high — the kick fires on every step the machine fetches, and the bar goes under everything else',
@@ -121,7 +121,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'what both rows agree on',
     blurb:
       'Kick and snare soldered together — a busy pattern thins to the steps the pair have in common',
@@ -132,7 +132,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'accent on everything',
     blurb:
       'The wire above the voices held high — the accent bus fires on every step, so with Accent sag up each step’s weight depends on how many voices it strikes',
@@ -143,7 +143,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'every step twice',
     blurb:
       'The bottom address wire low — the playhead runs the bar you wrote and the memory answers with half of it, twice over',
@@ -154,7 +154,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'back half of the bar',
     blurb:
       'The top address wire high — you get the second half of the pattern and never the first',
@@ -165,7 +165,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'coming apart',
     blurb:
       'A trace half cut — most fetches land, the occasional one does not, and the pattern comes apart a step at a time',
@@ -177,7 +177,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'the bar walks',
     blurb:
       'The counter’s clock, missing an edge here and there — every step still fires, but one in six of them fires twice and the bar never comes back to where it started',
@@ -185,7 +185,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'five-step bar',
     blurb:
       'The snare’s trigger line on the counter’s clear pin. The first snare sends the counter back to step one, so the rock beat comes round every five steps',
@@ -193,7 +193,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'writes its own pattern',
     blurb:
       'An XOR in the loop the bar circulates through — every lap mixes each step with the next, so the beat grows into patterns nobody drew and comes back within 255 bars',
@@ -201,7 +201,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Clatter',
-    part: KNIFE,
+    part: BUS,
     name: 'inside out every other bar',
     blurb:
       'The circulating bar’s return inverted — each lap plays the last one’s gaps, so a sparse bar and a bar of every voice on nearly every step take turns',
@@ -240,7 +240,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'the note never ends',
     blurb:
       'The data bit that sets the key cannot go low, so the processor’s key-off write leaves the key on and no note ever stops',
@@ -251,7 +251,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'sub, not bells',
     blurb:
       'The top two octave bits soldered together, so the processor can write a high octave only by writing the very top one — every voice lands in the bottom of its range and the sub comes up with it',
@@ -262,7 +262,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'the bottom of every octave',
     blurb:
       'The bottom bit of every byte on the floor: the frequency loses its top bit, the operators lose the bottom of their multipliers, and a chip that was ringing sits down',
@@ -273,7 +273,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'an instrument with no button',
     blurb:
       'The top wire high, so the number naming which instrument a channel plays stops being zero — the channels leave the patch the panel sent and read the ROM on the die, where seven of the fifteen sounds have no button on the case',
@@ -284,7 +284,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'a patch nearly right',
     blurb:
       'A byte wire half cut — most writes land and the odd one arrives off the wire next door, so patches come out wrong and stay wrong',
@@ -296,7 +296,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'wrong register',
     blurb:
       'Every odd register filed on top of the even one below it — the four voices no longer have separate frequencies',
@@ -307,7 +307,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'octave up, with a cliff',
     blurb:
       'The wire that mirrors the quarter wave held, so the quarter runs twice — the note is right and the wave has a step in it',
@@ -318,10 +318,10 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'sine into noise',
     blurb:
-      'The sign wire of the sine table parted most of the way. A floating pin has no driver, and this bus is read eight times a sample by a different operator each turn, so it never settles anywhere — the one knife on this chip that comes out louder than no knife at all',
+      'The sign wire of the sine table parted most of the way. A floating pin has no driver, and this bus is read eight times a sample by a different operator each turn, so it never settles anywhere — the one fault on this chip that comes out louder than no fault at all',
     patch: {
       fmWaveLine: pick('fmWaveLine', 'W9'),
       fmWaveFault: pick('fmWaveFault', 'cut'),
@@ -330,7 +330,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'no fundamental',
     blurb:
       'The sign bit of the sine table held to ground — a rectified wave, all octave and nothing underneath it',
@@ -341,7 +341,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'nothing is ever quiet',
     blurb:
       'The top wire out of the sine table held high, so no sample the chip reads is worth less than half of full scale — the quiet parts of every wave fill in and the note comes out square-edged and buzzing, at the same pitch it always was',
@@ -352,7 +352,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'the table goes stale',
     blurb:
       'The top wire out of the sine table parted instead. Eight operators a sample take turns on this one datapath, so the pin holds whichever of them drove it last — the amplitude arrives from a different operator every turn and the chip turns to gravel',
@@ -363,7 +363,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'a patch that will not hold still',
     blurb:
       'The patch table’s P2 parted most of the way. That wire selects a patch’s tone bytes or its envelope bytes, and it carries a signal only some of the time, so every few milliseconds the operators read a different mix of the two and the note smears into static',
@@ -375,7 +375,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'nine times the note',
     blurb:
       'B3 out of the patch table held high: the top bit of both multipliers, so both operators run at nine times the note and the song comes out three octaves up as a whistle, on half a sine, every decay cut short off the same wire',
@@ -386,7 +386,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Parlor',
-    part: KNIFE,
+    part: BUS,
     name: 'the top bit sticks',
     blurb:
       'The top wire out of the sample ROM held high — the bottom half of every wave folds up onto the top of it, and the pad comes back as a rectified buzz at the pitch it always was',
@@ -397,7 +397,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Parlor',
-    part: KNIFE,
+    part: BUS,
     name: 'gravel',
     blurb:
       'A notch punched through every word the ROM hands back. The address is right and the sample is not, on every voice, so the note keeps its pitch and loses its surface',
@@ -408,7 +408,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Parlor',
-    part: KNIFE,
+    part: BUS,
     name: 'the voice in clumps',
     blurb:
       'Two of the top wires the ROM answers on soldered to each other — the words snap to a lattice and a voice that was a curve comes out in steps',
@@ -419,7 +419,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Parlor',
-    part: KNIFE,
+    part: BUS,
     name: 'half the wave',
     blurb:
       'The top address wire on the floor. The counter walks the whole recording and the ROM keeps handing back its first half, so every voice loops inside the attack',
@@ -430,7 +430,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Parlor',
-    part: KNIFE,
+    part: BUS,
     name: 'a word in four',
     blurb:
       'Two address wires soldered to each other, so the counter can only name one word in four — it walks the recording at the rate it always did and gets a staircase back',
@@ -441,10 +441,10 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Parlor',
-    part: KNIFE,
+    part: BUS,
     name: 'the loop goes stale',
     blurb:
-      'An address trace parted most of the way. The pin has no driver, so it holds whatever the last address left on it and then starts drifting after its neighbour — the one knife on this chip that never stands still',
+      'An address trace parted most of the way. The pin has no driver, so it holds whatever the last address left on it and then starts drifting after its neighbour — the one fault on this chip that never stands still',
     patch: {
       pcmAddrLine: pick('pcmAddrLine', 'A7'),
       pcmAddrFault: pick('pcmAddrFault', 'cut'),
@@ -453,7 +453,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Glint',
-    part: KNIFE,
+    part: BUS,
     name: 'one write late',
     blurb:
       'The latch misses often enough that every byte commits to the register the write before it named',
@@ -509,7 +509,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Crusher',
-    part: KNIFE,
+    part: BUS,
     name: 'the sign bit wanders',
     blurb:
       'The top wire into the DAC parted. Nothing drives the pin, so it holds a word and then drags after D14, and each half of the wave lands in the wrong half a few words at a time',
@@ -520,7 +520,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Crusher',
-    part: KNIFE,
+    part: BUS,
     name: 'every wave folded up',
     blurb:
       'The top wire held at +V, so every word reads as the top half: the bottom of each wave jumps up a whole half scale and lands on top of the rest',
@@ -531,7 +531,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Crusher',
-    part: KNIFE,
+    part: BUS,
     name: 'two bits that agree',
     blurb:
       'D14 soldered to D15. A word keeps both only where both are set, so the four quarters of the wave collapse onto two and the pitch climbs',
@@ -542,7 +542,7 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Crusher',
-    part: KNIFE,
+    part: BUS,
     name: 'a bit that comes and goes',
     blurb:
       'D13 parted most of the way: the bit floats after its neighbour, and every time the trace still conducts the real bit slams back',
@@ -644,7 +644,7 @@ export const cutsFor = (group: string, part: string): CutDef[] =>
 // bend has no level, so its dry/wet comes up instead.
 const AUDIBLE = 0.8
 
-// One knife rather than two: the heading goes back where it booted and the cut
+// One fault rather than two: the heading goes back where it booted and the cut
 // writes its own wires into it, so pressing a second cut is that cut and not
 // whatever the last one left behind. Everything outside the heading is left
 // exactly where your hand put it.
@@ -657,7 +657,7 @@ export function applyCut(cut: CutDef, current: Controls): Controls {
   return next
 }
 
-/** The knife off the group's buses, and nothing else on the board moved. */
+/** The fault off the group's buses, and nothing else on the board moved. */
 export function cutOff(
   group: string,
   part: string,
@@ -672,7 +672,7 @@ export function cutOff(
 export const cutWired = (group: string, part: string, c: Controls): boolean =>
   partKeys(group, part).some(key => c[key] !== DEFAULT_CONTROLS[key])
 
-/** Whether this cut is the knife the board is standing on. */
+/** Whether this cut is the fault the board is standing on. */
 export const cutStands = (cut: CutDef, c: Controls): boolean =>
   partKeys(cut.group, cut.part).every(
     key => c[key] === (cut.patch[key] ?? DEFAULT_CONTROLS[key]),

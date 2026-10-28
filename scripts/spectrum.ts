@@ -4,7 +4,7 @@
 //   pnpm spectrum fm       one chip
 //   pnpm spectrum cuts     the row of named cuts, and the presets
 //
-// `knife.ts` answers whether a wire does anything, which is a fact about a ROM.
+// `faults.ts` answers whether a wire does anything, which is a fact about a ROM.
 // This answers what it does, which is the question you actually have when
 // somebody says the bends all sound the same — and they usually mean the same
 // as each other rather than the same as no bend, so a list of how far each one
@@ -41,7 +41,7 @@ import { sliderFor } from '../src/ui/controls/index.ts'
 import { applyCut, CUTS, cutOff } from '../src/ui/presets/cuts.ts'
 import { PRESETS } from '../src/ui/presets/table.ts'
 
-// The same board `knife.ts` judges a wire on, for the same reasons: the song
+// The same board `faults.ts` judges a wire on, for the same reasons: the song
 // run up to where all of it goes past, and a bar whose halves differ.
 const BOARD: Partial<Controls> = {
   chipTune: romIndex('sakura'),
@@ -89,7 +89,7 @@ const CRUSH_MODES: [string, Partial<Controls>][] = CRUSH_ADC.slice(1).map(
 // The keyboard is two machines as well, and the second one is not a mode the
 // panel switches — it is whether there is a file on the sampler. A ROM voice is
 // a few partials on a loop; the sampled voice is whatever you dropped, and the
-// same knife on the same wires finds a different chip in each.
+// same fault on the same wires finds a different chip in each.
 const KEYS_MODES: [string, Partial<Controls>][] = [
   ['chime', { pcmVoice: PCM_VOICE_NAMES.indexOf('chime'), pcmEnv: 3 }],
   ['pad', { pcmVoice: PCM_VOICE_NAMES.indexOf('glass pad'), pcmEnv: 2 }],
@@ -101,7 +101,7 @@ const KEYS_MODES: [string, Partial<Controls>][] = [
 // The FM chip is three. The percussion bank hands its top two channels to a kit
 // in ROM and re-taps two operators onto a shift register; the effect ROM takes
 // a channel and turns the bus into the busiest traffic on the board. Both
-// change what a knife finds, and by more than a little: the same forty faults
+// change what a fault finds, and by more than a little: the same forty faults
 // on the data bus read 0.21 flat with one bottom in melody, and 0.94 flat with
 // eight in rhythm. Measuring melody alone reported this chip's dullest mode as
 // the chip.
@@ -325,7 +325,7 @@ function sweep(def: BusDef, board: Partial<Controls>, show: boolean): Row[] {
   const ref = rms(base)
   if (show) {
     header()
-    print(measure('no knife', base, ref))
+    print(measure('no fault', base, ref))
   }
   const rows: Row[] = []
   for (let wire = 1; wire <= wires.max; wire++) {
@@ -347,14 +347,14 @@ const only = process.argv[2]
 
 if (only === 'cuts') {
   console.log(
-    'The row of named cuts, each against the same board with no knife on it.\n',
+    'The row of named cuts, each against the same board with no fault on it.\n',
   )
   header()
   for (const cut of CUTS) {
-    const knife = applyCut(cut, { ...DEFAULT_CONTROLS, ...BOARD })
-    const bare = cutOff(cut.group, cut.part, knife)
+    const faulted = applyCut(cut, { ...DEFAULT_CONTROLS, ...BOARD })
+    const bare = cutOff(cut.group, cut.part, faulted)
     const ref = rms(render(bare, SECONDS))
-    const x = render(knife, SECONDS)
+    const x = render(faulted, SECONDS)
     print(
       measure(`${cut.group.split(' ')[0]!} ${cut.name}`, x, ref),
       rms(x) < 1e-4,

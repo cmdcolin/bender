@@ -26,9 +26,9 @@ const HOSTED: Record<string, readonly string[]> = {
     'the converter',
     'Sample ROM',
     'triggers and cross-patch',
-    'knife on the bus',
+    'fault on the bus',
   ],
-  'Plinky|inside the die': ['arp and key lock', 'knife on the bus'],
+  'Plinky|inside the die': ['arp and key lock', 'fault on the bus'],
   'Power supply|the cells': ['the reset chip', 'the clip', 'second cells'],
   'Clipper|the amp': ['the speaker'],
 }

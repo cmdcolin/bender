@@ -1,4 +1,4 @@
-// What a take is made of, by frequency — the measurement `knife.ts` and the
+// What a take is made of, by frequency — the measurement `faults.ts` and the
 // tests reach for when the question is not "did this wire do anything" but
 // "what kind of sound did it do".
 //
@@ -75,7 +75,7 @@ export interface Spectrum {
 
 /**
  * A whole take, averaged over every window in it — a bend that changes what it
- * is doing halfway through is one measurement, not two, which is what a knife
+ * is doing halfway through is one measurement, not two, which is what a fault
  * on a bus mostly is.
  */
 export function spectrum(x: Float32Array, sr: number, n = 4096): Spectrum {

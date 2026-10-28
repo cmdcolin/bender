@@ -19,7 +19,7 @@ import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
 
 import type { Verbs, Zoom } from './foldHosting.ts'
 
-const KNIFE = [
+const BUS_KEYS = [
   'fmDataLine',
   'fmDataFault',
   'fmAddrLine',
@@ -68,7 +68,7 @@ const KEYS = [
   'fmMute',
   'fmSupply',
   'fmVoice',
-  ...KNIFE,
+  ...BUS_KEYS,
   ...DIE,
 ] as const
 
@@ -76,7 +76,7 @@ type Key = (typeof KEYS)[number]
 
 // The folds these boxes took over, whose dice and named cuts go with them.
 const PARTS: Record<string, string> = {
-  bus: 'knife on the bus',
+  bus: 'fault on the bus',
   die: 'die and driver',
 }
 
@@ -115,8 +115,8 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     ],
     [
       'bus',
-      KNIFE,
-      'The eight data lines and six address lines the writes travel on: put a knife through one.',
+      BUS_KEYS,
+      'The eight data lines and six address lines the writes travel on: fault one.',
     ],
     [
       'modulator',

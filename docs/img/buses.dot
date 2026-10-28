@@ -3,7 +3,7 @@
 //
 // What this answers: "Data line" is a control on more than one panel and
 // means something different on each. The drawing says which two blocks each
-// bus runs between and how many wires it has, so a knife on one of them has a
+// bus runs between and how many wires it has, so a fault on one of them has a
 // direction rather than being a number you picked.
 //
 // The asymmetry is the point. On the toy chips the address bus runs INTO
@@ -36,7 +36,7 @@ digraph buses {
         fontname="Helvetica" fontsize=10 margin="0.16,0.08" fontcolor="#24292f"]
   edge [fontname="Helvetica" fontsize=9 penwidth=1.3 arrowsize=0.8]
 
-  // Memories are square where logic is rounded — the knife lands on the wires
+  // Memories are square where logic is rounded — the fault lands on the wires
   // either side of these, never inside them.
   node [style=filled shape=box] // reset below per-cluster
 

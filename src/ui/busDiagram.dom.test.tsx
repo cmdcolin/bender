@@ -87,7 +87,7 @@ test('the home keyboard draws its buses under either bus box', () => {
   expect(texts(drawing('parlor bus wiring'))).toContain('D0–D7')
 })
 
-test('the knifed trace carries its line name and fault in the drawing', () => {
+test('the faulted trace carries its line name and fault in the drawing', () => {
   set({ chipAddrLine: 4, chipAddrFault: 1 })
   open('Plinky')
   press('bus')
@@ -99,7 +99,7 @@ test('the knifed trace carries its line name and fault in the drawing', () => {
   expect(hit).toHaveLength(1)
 })
 
-test('a bridge lights the knifed trace and its neighbour', () => {
+test('a bridge lights the faulted trace and its neighbour', () => {
   set({ pcmDataLine: 8, pcmDataFault: 3 })
   open('Parlor')
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
@@ -149,7 +149,7 @@ test('the toy on the FM bus is labelled without its width', () => {
   expect(svg.querySelectorAll('circle[class*="dotAlarm"]')).toHaveLength(3)
 })
 
-test('pressing a trace knifes it, and pressing it again walks the faults', () => {
+test('pressing a trace faults it, and pressing it again walks the faults', () => {
   set({ chipAddrLine: 0, chipAddrFault: 0 })
   open('Plinky')
   press('bus')
@@ -186,11 +186,11 @@ test('pressing a soldered wire moves its knob on, and the last setting lifts it'
   expect(screen.queryByRole('button', { name: 'reset wire' })).toBeNull()
 })
 
-test('the arrow keys move the knife along a focused ribbon', () => {
+test('the arrow keys move the fault along a focused ribbon', () => {
   set({ pcmDataLine: 2 })
   open('Parlor')
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
-  const ribbon = screen.getByRole('button', { name: 'data line knife' })
+  const ribbon = screen.getByRole('button', { name: 'data line fault' })
   fireEvent.keyDown(ribbon, { key: 'ArrowDown' })
   expect(engine.controls.get().pcmDataLine).toBe(3)
   fireEvent.keyDown(ribbon, { key: 'ArrowUp' })

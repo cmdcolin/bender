@@ -28,7 +28,7 @@
     "guide-shots": "node scripts/guide-shots.ts",
     "diagram-shots": "node scripts/diagram-shots.ts",
     "ink": "node scripts/ink.ts",
-    "knife": "node scripts/knife.ts",
+    "faults": "node scripts/faults.ts",
     "panel": "node scripts/panel.ts",
     "soak": "node scripts/soak.ts",
     "toy": "node hardware/toy/build.ts",

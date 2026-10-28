@@ -12,7 +12,7 @@ const machine = (name: string): Group => GROUPS.find(g => g.name === name)!
 const kind = (name: string) => STAGE_ROLLS.find(r => r.name === name)!
 
 const FAULT = [
-  'knife on the bus',
+  'fault on the bus',
   'voice card faults',
   'die and driver',
   'the supply underneath',

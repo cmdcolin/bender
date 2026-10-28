@@ -60,7 +60,7 @@ export const THROWS: ThrowDef[] = [
   // The event row's faults, from the kit's next step for as long as the key is
   // down. The kit has to be running.
   {
-    name: 'knife',
+    name: 'cut',
     key: '.',
     blurb: 'Whole board cut from the kit’s next step',
     push: () => ({ drumEventLive: EVENT.cut }),

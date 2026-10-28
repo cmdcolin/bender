@@ -37,7 +37,7 @@ test('bridged lines agree, and agree low', () => {
 })
 
 // The pin floats from the moment the trace parts, so what it holds is whatever
-// the bus happened to be carrying when the knife went through — not zero, and
+// the bus happened to be carrying when the cut went through — not zero, and
 // not the value the knob was set to.
 test('a cut line freezes on the word that was on it', () => {
   const bus = new Bus(6)
@@ -76,7 +76,7 @@ test('a trace that still carries lets the bit through most of the time', () => {
   expect(wrong(1, alternating)).toBeGreaterThan(0.9)
 })
 
-// And how far through the trace the knife went is a knob, not a switch.
+// And how far through the trace the cut went is a knob, not a switch.
 test('the deeper the cut the further behind the bit falls', () => {
   const alternating = [0b000001, 0b000010, 0b000001, 0b000010]
   const depths = [0.3, 0.6, 0.85, 0.95, 1]
@@ -154,7 +154,7 @@ test('a data line held high fills in the rests', () => {
 })
 
 // A sixteen-step song leaves the top address line undriven, so there is nothing
-// up there for the knife to find — which is the honest answer, not a special
+// up there for the fault to find — which is the honest answer, not a special
 // case anybody wrote.
 test('an address line this ROM never drives is not a bend at all', () => {
   const clean = render(scale, LAP)

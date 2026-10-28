@@ -21,7 +21,7 @@ The FM chip's diagram shows its operators as a close-up under the chip's box.
 
 ![The FM chip's operators. The modulator has feedback, and the carrier and LFO sit beside it.](/bender/blog/fm-operators-zoom.webp)
 
-Each bus is a ribbon with a trace per bit. Press a trace to put the knife on it.
+Each bus is a ribbon with a trace per bit. Press a trace to fault it.
 
 ![The toy keyboard's buses. Song select and counter into the ROM, the ROM into the note table, the note table into the divider.](/bender/blog/bus-ribbons.webp)
 

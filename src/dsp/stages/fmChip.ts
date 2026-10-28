@@ -53,7 +53,7 @@ import { WIRE_REBOOT, WIRE_STUCK, WIRE_TOY } from './toySfx.ts'
 // The register file is the point. Nothing here is played — it is *configured*,
 // one byte at a time, by a processor that decides what the sound is and then
 // tells the chip. Every note is a handful of writes: the patch, the frequency,
-// the key going down, and later the key coming up. Put a knife through the wires
+// the key going down, and later the key coming up. Cut or short a wire
 // carrying those writes and the chip does not malfunction. It receives a byte
 // with one bit wrong and executes it perfectly, and it goes on executing it,
 // because a register holds what it was last told until something tells it
@@ -140,7 +140,7 @@ function dacGains(driveDb: number) {
 // Which makes the waveform an *address*, and an address is a bus like any other.
 // It is the one bus on the chip the processor never touches: the register file
 // is written a few times a note, and this is read eight times a sample, so a
-// knife here is the opposite bend to a knife on the data lines. Nothing
+// fault here is the opposite bend to a fault on the data lines. Nothing
 // accumulates and nothing persists. It is under your hand for as long as the
 // note is held, and it changes the shape of the wave rather than the number the
 // chip was told.
@@ -158,7 +158,7 @@ const sineQuarter = Float64Array.from({ length: QUARTER }, (_, i) =>
 // The table's own output word, before the sign goes back on it. The part keeps
 // a magnitude here and takes the sign off the phase — which is what makes the
 // output word eight wires of its own rather than the sample itself, and is why
-// a knife on those wires cuts a step into the amplitude without ever moving
+// a fault on those wires cuts a step into the amplitude without ever moving
 // the note.
 const sineMag = (addr: number) => {
   const i = addr & (QUARTER - 1)
@@ -308,7 +308,7 @@ interface Panel {
 // What the vibrato button does to a patch on its way past. There is no LFO
 // register to write, so the only thing the button can be is two bits in each of
 // two patch bytes — which is why it takes a voice change to apply it, and why a
-// knife on the bus can leave the button down with nothing wobbling.
+// fault on the bus can leave the button down with nothing wobbling.
 const LFO_BITS = [0, VIB, AM, AM | VIB]
 
 interface Op {
@@ -699,7 +699,7 @@ export class FmChip implements Stage {
   // The rhythm button, going down or coming up. Everything it does it does
   // through the register file, because there is no other way in: the mode bit
   // and the kit's tuning are writes like any other, so they cross the same
-  // wires and land wherever those wires let them. A knife on the bus can leave
+  // wires and land wherever those wires let them. A fault on the bus can leave
   // the button pressed with nothing switched over, or switched over with the
   // button up.
   private sendRhythm(on: boolean) {
@@ -984,7 +984,7 @@ export class FmChip implements Stage {
   }
 
   // The kit's rates, which come out of ROM rather than out of the register
-  // file — so a knife on the patch bytes never reaches them, and the drums stay
+  // file — so a fault on the patch bytes never reaches them, and the drums stay
   // crisp on a board where nothing else does. The rail still reaches them.
   private readKit(clockFactor: number) {
     // The kit is keyed off its own byte rather than off a key register, so
@@ -1052,7 +1052,7 @@ export class FmChip implements Stage {
   }
 
   // The eight bytes across the table's own wires, which only happens once a
-  // knife is on them. A stuck wire reads the same wrong byte every fetch.
+  // fault is on them. A stuck wire reads the same wrong byte every fetch.
   private fetchPatch(inst: number) {
     const out = this.fetched
     for (let b = 0; b < out.length; b++) {
@@ -1090,7 +1090,7 @@ export class FmChip implements Stage {
     if (half && addr & SIGN) return 0
     if (this.waveDataLine < 0 && this.blob <= 0) return sineAt(addr)
     let word = Math.round(sineMag(addr) * WAVE_DATA_FULL)
-    // The blob first and the knife after, because a pin the knife has taken to
+    // The blob first and the fault after, because a pin the fault has taken to
     // a rail is a pin the blob has lost: one is a bodge wire and the other is
     // a short, and a short wins.
     if (this.blob > 0) word = this.solder(word)
@@ -1332,7 +1332,7 @@ export class FmChip implements Stage {
       FAULT_NAMES.length,
       bay.read(DEST.fmPatchDataFault),
     )
-    // And the knife's own two: how far through the trace it went, and how far
+    // And the fault's own two: how far through the trace it went, and how far
     // across the pins the solder ran. Read per block like everything else here,
     // except the blob, which is a sound rather than a setting and takes its
     // wire per sample down in the loop.

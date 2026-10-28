@@ -300,10 +300,10 @@ test('the memory holds notes under the chip’s bottom A', () => {
   expect(low).toBeLessThan(140)
 })
 
-// Same six wires, same knife. What separates a bus fault from every other bend
+// Same six wires, same fault. What separates a bus fault from every other bend
 // on the board is that it leaves the chip working perfectly and changes what it
 // is told — so your tune comes out wrong in time, rather than not at all.
-test('the knife on the ROM bus reaches your tune too', () => {
+test('the fault on the ROM bus reaches your tune too', () => {
   // Long enough at this rate for the whole sixteen to come round twice.
   const song = { ...CHIP_ONLY, chipLevel: 1, chipTune: YOURS, tuneRate: 16 }
   const notes = memory({ 0: 0, 4: 7, 8: 12, 12: 7 })

@@ -413,7 +413,7 @@ export class ToyChip implements Stage {
   // chord envelopes run whether or not anyone can hear them.
   private accompLevel = 0
   private rng: Rng
-  // The two buses between the ROM and the rest of the chip, and where the knife
+  // The two buses between the ROM and the rest of the chip, and where the fault
   // is on them this block. Held here rather than passed down because every read
   // of the ROM has to go through the same fault — a sequencer that saw one note
   // and a divider that got another would be two chips.
@@ -461,7 +461,7 @@ export class ToyChip implements Stage {
   private divBus: Bus
   private divLine = -1
   private divFault = 0
-  // Bumped when the knife on the divider moves, so every voice reloads.
+  // Bumped when the fault on the divider moves, so every voice reloads.
   private divStamp = 0
   private melodyRatio = 1
   private melodyLoaded = NaN
@@ -540,7 +540,7 @@ export class ToyChip implements Stage {
     this.divBus = new Bus(DIV_LINES, seed ^ 0xd1f)
   }
 
-  // The pitch ratio a note loads into its divider. With no knife on the
+  // The pitch ratio a note loads into its divider. With no fault on the
   // divider word it is the exact ratio, so the stock board's pitches stay put.
   private divRatio(note: number): number {
     if (this.divLine < 0) return ratio(note)
@@ -802,7 +802,7 @@ export class ToyChip implements Stage {
 
   private readAt(tune: number[], addr: number): number {
     let yours = this.yours
-    // A knife on the song wires sends this read to another bank, at the same
+    // A fault on the song wires sends this read to another bank, at the same
     // address folded into that song's length.
     if (this.bankLine >= 0) {
       const bank = this.bankBus.read(

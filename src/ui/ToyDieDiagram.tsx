@@ -54,7 +54,7 @@ const KEYS = [
 
 const GROUP = GROUPS.find(g => g.name === 'Plinky')!
 
-const BUS = 'knife on the bus'
+const BUS = 'fault on the bus'
 const DIE = 'inside the die'
 const KEYBOARD = 'keyboard'
 const ROLL = 'piano roll'
@@ -203,7 +203,7 @@ function ClockTag({ x, y, pick }: { x: number; y: number; pick: BoxPick }) {
 export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
   const own = useReadings(BOX_KEYS)
-  const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
+  const faulted = useReadings(BUS_KEYS).touched(...BUS_KEYS)
   const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
   const written = useReadings(WRITTEN_KEYS).touched(...WRITTEN_KEYS)
   const pick = useSelectedBox(KEYBOARD)
@@ -326,7 +326,7 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
             <Wire
               arrow={arrow}
               d={`M${feed} ${bus.y + BOX_H} V${LOW}`}
-              look={knifed ? 'alarm' : 'plain'}
+              look={faulted ? 'alarm' : 'plain'}
             />
             <ClockTag x={rom.x + 7} y={TOP} pick={pick} />
             <ClockTag x={voices.x + voices.w - 24} y={LOW} pick={pick} />
@@ -396,8 +396,8 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
               pick={pick}
               box={bus}
               keys={BUS_KEYS}
-              lit={knifed}
-              help="The address and data wires between the counter, the tune ROM and the voices. The rows put a knife on them."
+              lit={faulted}
+              help="The address and data wires between the counter, the tune ROM and the voices. The rows put a fault on them."
             />
           </>
         )}

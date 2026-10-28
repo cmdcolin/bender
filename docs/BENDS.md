@@ -11,20 +11,20 @@ all three.
 The drawing shows the two blocks each bus joins and its width; the source is
 [buses.dot](img/buses.dot).
 
-- **Address bus:** a knife fetches the wrong thing, and the chip plays it
+- **Address bus:** a fault fetches the wrong thing, and the chip plays it
   perfectly at the same tempo.
-- **Data bus:** a knife mangles a correct fetch.
+- **Data bus:** a fault mangles a correct fetch.
 - **Glint:** both buses run into the register file, so a fault stays until the
   processor rewrites that register.
 - **Wire numbers:** on the drum data bus one wire is one voice, in row order. On
   Parlor's, one wire is one bit of the sample word.
 - **Toy and FM data lines:** the toy line holds a note code and the FM line
   holds whichever byte the processor sent, so find useful wires by trying them.
-- **Named cuts:** each cut under _knife on the bus_ saves one wire and fault
+- **Named cuts:** each cut under _fault on the bus_ saves one wire and fault
   worth keeping.
 - **Panel drawing:** each chip's bus box (**pattern** on the drum machine) draws
   one trace per bit, lowest on top.
-  - Knife rows, named cuts and drawing show while the box is open, and a knifed
+  - Fault rows, named cuts and drawing show while the box is open, and a faulted
     board opens it.
   - A cut turns the box's wire and the trace red, and the trace shows its line
     name.
@@ -143,11 +143,11 @@ Bends:
   - **Onto reset:** each rising edge of that bit sends the counter to step zero,
     so the song loops the stretch before the bit first rises. On _für elise_ D1
     loops seven steps and D4 sixteen.
-- **Song line:** a knife on the five wires that pick the song. The tune keeps
+- **Song line:** a fault on the five wires that pick the song. The tune keeps
   its tempo and length and plays another song's notes. A wire already matching
   the fault changes nothing: _für elise_ is song 4, so S2 held high leaves it
   alone and S0 held high plays _ode to joy_.
-- **Divider line:** a knife on the twelve-bit word each note loads into its
+- **Divider line:** a fault on the twelve-bit word each note loads into its
   pitch divider (A3 loads 512).
   - A low wire nudges the top of the keyboard.
   - A high wire moves notes by octaves: N8 held high turns 512 into 768, two
@@ -246,7 +246,7 @@ Bends:
   divider, plus a noise register for bomb and gun.
   - Clock, a flat battery and a pot on the timing pin lower and stretch each
     effect together.
-  - The divider knife, tone selector, Volume PWM, envelope bits and duty on
+  - The divider fault, tone selector, Volume PWM, envelope bits and duty on
     envelope reach the effect voice too.
   - The sweep loads whole divider words, so laser and bird climb in steps near
     the top.
@@ -266,7 +266,7 @@ write touches that register again.
   **bridged** to its neighbour (the driver pulling low wins) or **cut**.
   - A cut wire floats, holds the last bus value for a word or two, then follows
     its neighbour's edges a lap behind. It is the only fault that drifts.
-- **Cut depth:** how far the knife went. At partial depth the wire conducts some
+- **Cut depth:** how far the cut went. At partial depth the wire conducts some
   of the time, and the melody flickers between the version sent and the version
   the wire drifted to.
 - **Data line:** the key-up bit held high never ends the note, and held low the
@@ -304,7 +304,7 @@ write touches that register again.
     gets the modulator's settings.
   - Row lines P3 to P6: held at +V they put every channel on one of the die's
     patches. The processor only asks for row 0, so other row-line faults need a
-    data-line knife to pick another row.
+    data-line fault to pick another row.
   - Data lines: each moves one bit in all eight bytes. B0 drops the note an
     octave, and B5 is the hold bit, so a struck voice rings while the key is
     down.
@@ -330,7 +330,7 @@ write touches that register again.
   - An effect uses the same two channels, so each turns the other off.
 - **Vibrato:** the flag bits that wire an operator to the die's single LFO,
   tremolo at the top bit and vibrato below it. The button takes a patch write to
-  apply, so a knife can leave it down with nothing wobbling. Tremolo is hard to
+  apply, so a fault can leave it down with nothing wobbling. Tremolo is hard to
   hear with both operators wired, so switch the modulator off to hear it.
 - **Key scaling:** two bits at the top of each of two level bytes make a patch
   lose level the higher it plays. A fourth bit shortens envelopes at the top of
@@ -505,7 +505,7 @@ tuned so that no two share a harmonic.
 
 ## Parlor's sample bus
 
-A counter walks a ROM of one attack and loop per voice into a DAC. A knife
+A counter walks a ROM of one attack and loop per voice into a DAC. A fault
 reaches the counter and the data.
 
 - **Address line:** 14 counter wires into the memory. Every word is real but
@@ -738,7 +738,7 @@ The patch bay is four free wires.
 
 ## The crusher's converter
 
-The crusher's **the converter**, **the DAC** and **knife on the bus** folds
+The crusher's **the converter**, **the DAC** and **fault on the bus** folds
 rebuild it as one converter taking both channels in turn onto a 16-wire bus into
 an R-2R ladder.
 
@@ -746,7 +746,7 @@ an R-2R ladder.
   - **SAR:** resolves one bit per comparator decision, and the comparator slows
     as the board's supply sags. Bits it has no time for keep the last word, so a
     starved toy turns the crusher coarse while it browns out.
-  - **μ-law:** the telephone curve. A knife on a top wire jumps the level by
+  - **μ-law:** the telephone curve. A fault on a top wire jumps the level by
     octaves.
   - **ADPCM:** four-bit steps to a decoder that tracks the signal. A bad word
     drifts it until the next block header, 505 words later.
@@ -761,7 +761,7 @@ an R-2R ladder.
   crusher's own input.
 - **Logic gate:** combines each word with another machine's word by XOR, AND or
   OR.
-- **Knife on the bus:** both channels share the wires. A cut pin drags after its
+- **Fault on the bus:** both channels share the wires. A cut pin drags after its
   neighbour's edges, the loudest fault on audio words: D15 cut moves the take
   3.6×, D15 to a rail 2.3×.
 

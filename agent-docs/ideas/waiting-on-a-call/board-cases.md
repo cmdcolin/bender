@@ -23,5 +23,5 @@ piece of music uses, and it travels in the link beside the board.
   noise, the tape machine, the delays, the verb and two bend slots; "toy bender"
   the toy, the kit and the six slots.
 - **Scripts stay declarative.** A case could carry behaviour such as "every 8
-  bars, roll a knife", but a script in a shared link is a stranger's code, so a
+  bars, roll a fault", but a script in a shared link is a stranger's code, so a
   case holds data (macros, sides, triggers) and never something to `eval`.

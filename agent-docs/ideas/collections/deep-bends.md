@@ -20,7 +20,7 @@ stays bit-identical: every new control rests off.
 
 One converter takes both channels in turn onto a 16-wire bus into one R-2R
 ladder (`src/dsp/stages/crusher.ts`). Measured with `crushMix: 1` on the
-`pnpm knife` board, against the stock crusher at 16 bits (change is the rms
+`pnpm faults` board, against the stock crusher at 16 bits (change is the rms
 difference over the stock take's rms):
 
 | control                | setting            | change | centroid | flatness |
@@ -63,7 +63,7 @@ board down into its bass.
   toy's `DEAD_V` instead of slowing to a floor; the ladder's MSB rung is always
   short (backwards at zero) rather than random; the mic clock latches once per
   voice cycle with no multiplier, so a sung 200 Hz is a 200 Hz sample rate.
-- A separate knife on ADPCM's step table stays unbuilt, because the bus on the
+- A separate fault on ADPCM's step table stays unbuilt, because the bus on the
   nibble already gives the accumulating fault.
 
 ## 2. Clipper → the toy's LM386 into a speaker (built)
@@ -107,8 +107,8 @@ fully wet:
 
 - Spindle motor on the rail, tracking loss and sled skips.
 - CIRC error handling as interpolate → hold → mute.
-- A `Bus` knife on the anti-skip RAM.
-- An mp3-decoder mode: knifed MDCT bins, dropped frames repeating, birdies.
+- A `Bus` fault on the anti-skip RAM.
+- An mp3-decoder mode: faulted MDCT bins, dropped frames repeating, birdies.
 
 ## 5. Shifter → Bode shifter
 
@@ -119,5 +119,5 @@ fully wet:
 
 - Every bend on the supply: each reads `railV` and reports its load, so slot
   order decides who browns out whom.
-- Bends in the knife system: each slot with a `Bus` and named cuts, as the
+- Bends in the fault system: each slot with a `Bus` and named cuts, as the
   crusher has.

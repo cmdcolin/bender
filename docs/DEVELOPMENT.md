@@ -137,7 +137,7 @@ main and audio threads.
 - `pnpm features` regenerates [features.md](features.md) from the app's control
   tables and tooltips. A test fails the build if the committed file falls
   behind, so run it after changing a control, a preset, or a ROM.
-- `pnpm knife` sweeps every wire and fault on every bus and reports which ones
+- `pnpm faults` sweeps every wire and fault on every bus and reports which ones
   are audible.
 - `pnpm spectrum` sweeps the same space and reports what each one _sounds_ like:
   level, spectral centroid, flatness — 0 for a sine, 1 for noise — and where the
@@ -146,18 +146,18 @@ main and audio threads.
   fall in the same band means the chip's bends differ from each other by less
   than the panel implies. A chip that can be more than one machine gets a
   `reach` line per machine — Glint is swept again with its percussion bank on
-  and again with an effect running, because the same knife gives a different
+  and again with an effect running, because the same fault gives a different
   reach in each. `pnpm spectrum fm` does one chip and `pnpm spectrum cuts` the
   named cuts and the preset catalog; the whole sweep takes a few minutes.
 - `pnpm audible` checks whether each branch of the kit's summing junction is
-  connected at all, which `knife` and `spectrum` cannot. It takes each path out
+  connected at all, which `faults` and `spectrum` cannot. It takes each path out
   — one constant at a time, in a copy of `src` under the system temp dir, so
   nothing writes to the working tree — renders the board with and without it,
   and reports how far the take moved. `pnpm audible kick` does the paths named
   for one voice.
 
   Of the report's two columns, `rms` is how far the whole take moved, which is
-  the number `knife` reports; `peak` is the tallest sample of the difference
+  the number `faults` reports; `peak` is the tallest sample of the difference
   against the tallest sample of the take. A percussive path is small in `rms`
   and large in `peak`, and that asymmetry is expected — the kick's coupling cap
   moves the take's rms by 0.7% and its peak by 8.8%, because a click is three

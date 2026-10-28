@@ -77,7 +77,7 @@ test('a row arrives once it has something to act on', () => {
   expect(line().textContent).toContain('1 moved')
 })
 
-// A knife on a bus is three controls that only mean anything together, and most
+// A fault on a bus is three controls that only mean anything together, and most
 // of the combinations are a wire you can cut and hear nothing. The row of named
 // cuts is the way in: one press wires one, the rows under it say which controls
 // that was, and pressing another is that cut rather than the two of them at once.
@@ -405,7 +405,7 @@ test('a morph in flight puts the bar up instead', async () => {
 
 // A heading is where the board keeps the controls that only mean anything
 // together, so it gets its own dice: rolling the whole stage to hear a
-// different knife on the bus re-rolls the clock and the supply as well, and
+// different fault on the bus re-rolls the clock and the supply as well, and
 // what you get is a different board rather than a different cut.
 const inFold = (head: HTMLElement, name: RegExp) =>
   within(head.parentElement!).getByRole('button', { name })

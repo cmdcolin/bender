@@ -70,7 +70,7 @@ const idle = (): Voice => ({
   lag: 0,
 })
 
-// The kit's event row on the whole mix, past the tape: a knife through the
+// The kit's event row on the whole mix, past the tape: a cut in the
 // output lead, a tape brake, a glitch freeze. Each fault lands on the strobe
 // and lasts its step, or the whole run when the steps after it carry the same
 // fault. The drop and reboot steps act on the rail, in Supplies.

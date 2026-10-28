@@ -56,7 +56,7 @@ const BOXES: Record<BoxId, { part: string; keys: readonly ControlKey[] }> = {
     part: 'triggers and cross-patch',
     keys: keysOf('triggers and cross-patch'),
   },
-  pattern: { part: 'knife on the bus', keys: keysOf('knife on the bus') },
+  pattern: { part: 'fault on the bus', keys: keysOf('fault on the bus') },
 }
 
 const HELP: Record<BoxId, string> = {
@@ -72,9 +72,9 @@ const HELP: Record<BoxId, string> = {
   triggers:
     'What the trigger lines do before a one-shot hears them: retriggers, the floor a voice must drain to, the scan, the accent bus, the choke and the cross-patches.',
   pattern:
-    'The step counter and the pattern memory. You write the pattern on the grid, and the rows put a knife on the wires that clock the counter, address the memory and carry the word back.',
+    'The step counter and the pattern memory. You write the pattern on the grid, and the rows put a fault on the wires that clock the counter, address the memory and carry the word back.',
   'sample ROM':
-    'The kit sampled by itself. Switched on, the voices read their slabs from a ROM, and the address and data wires to it can take a knife.',
+    'The kit sampled by itself. Switched on, the voices read their slabs from a ROM, and the address and data wires to it can take a fault.',
 }
 
 const PADS = 'pads'

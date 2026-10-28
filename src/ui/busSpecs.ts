@@ -3,8 +3,8 @@ import { sliderFor } from './controls/index.ts'
 
 import type { ControlKey } from '../controls.ts'
 
-// Each bus a knife can reach, one trace a bit with the lowest on top. The
-// drawing reads the knifed trace and its fault off the board.
+// Each bus a fault can reach, one trace a bit with the lowest on top. The
+// drawing reads the faulted trace and its fault off the board.
 
 export interface Ribbon {
   line: ControlKey
@@ -75,7 +75,7 @@ const ribbon = (
 ): Ribbon => ({ line, fault, cross })
 
 export const BUS_SPECS: Record<string, BusSpec> = {
-  'Plinky|knife on the bus': {
+  'Plinky|fault on the bus': {
     label: 'plinky bus wiring',
     cut: 'chipBusCut',
     rows: [
@@ -106,7 +106,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'Clatter|knife on the bus': {
+  'Clatter|fault on the bus': {
     label: 'drum machine bus wiring',
     cut: 'drumBusCut',
     rows: [
@@ -157,7 +157,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'Parlor|knife on the bus': {
+  'Parlor|fault on the bus': {
     label: 'parlor bus wiring',
     cut: 'pcmBusCut',
     rows: [
@@ -170,7 +170,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'Crusher|knife on the bus': {
+  'Crusher|fault on the bus': {
     label: 'crusher bus wiring',
     cut: 'crushBusCut',
     rows: [
@@ -180,7 +180,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'Glint|knife on the bus': {
+  'Glint|fault on the bus': {
     label: 'glint bus wiring',
     cut: 'fmBusCut',
     rows: [

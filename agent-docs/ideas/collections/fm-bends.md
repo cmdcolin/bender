@@ -26,7 +26,7 @@ nothing is renumbered.
 
 Two scripts already answer the two questions.
 
-`pnpm knife fm` asks whether a wire does anything, which is a fact about a ROM
+`pnpm faults fm` asks whether a wire does anything, which is a fact about a ROM
 rather than about a knob. `pnpm spectrum fm` asks what it does, by frequency,
 and its `reach` line is the one to watch: how much of the space a chip's whole
 bend set covers.
@@ -57,9 +57,9 @@ Where those numbers stand, per bus and per mode:
 The wave data rows are item 2, measured. Of the buses that came before it, it is
 the only one that reads the same in melody as in rhythm, which is the point of
 it: it sits after the mode bit has decided anything, on the one datapath all
-eight operators take their turn on. `pnpm knife fm` is stricter than this report
-and calls 36 of its 40 audible; the four it does not are the bottom bit of an
-eight-bit magnitude. The patch rows are item 4; see its section.
+eight operators take their turn on. `pnpm faults fm` is stricter than this
+report and calls 36 of its 40 audible; the four it does not are the bottom bit
+of an eight-bit magnitude. The patch rows are item 4; see its section.
 
 The mode rows are new, and they corrected the premise this document was first
 written on. Measured in melody alone, the data bus reads 0.21 flat with nothing
@@ -81,7 +81,7 @@ mechanism the rhythm row is already demonstrating, with the mode gate taken off.
 
 One thing the measurement still cannot see: the instrument nibble only appears
 under a fault, and the report sweeps one bus at a time against a clean board, so
-a ROM patch selected by a knife on the data bus is measured but never labelled
+a ROM patch selected by a fault on the data bus is measured but never labelled
 as such. That is inherent to sweeping one wire at a time and probably not worth
 fixing.
 
@@ -210,20 +210,20 @@ Built as `fmPatchLine` / `fmPatchFault` and `fmPatchDataLine` /
 - Three address wires pick the byte and four the row. Row zero is the register
   file, so the processor's patch crosses the same wires as the die's.
 - Row zero on the bus is what makes it audible alone. The driver only writes
-  zero to the nibble, so a knife on the ROM rows by themselves would wait for a
+  zero to the nibble, so a fault on the ROM rows by themselves would wait for a
   data-bus fault to pick a row.
-- Every fetch reads the same wrong byte, and the patch comes back when the knife
+- Every fetch reads the same wrong byte, and the patch comes back when the fault
   comes off. Neither side is in the path until a line is chosen.
 
 Measured:
 
-- `pnpm knife fm` calls 19 of the address side's 35 audible and 37 of the data
+- `pnpm faults fm` calls 19 of the address side's 35 audible and 37 of the data
   side's 40. The 16 silent ones are cut, ground and bridge on the four row
   lines, which cannot move a row of zero.
 - The patch buses are where this chip goes down: 11 address faults and 15 data
-  faults land on knife's went-down list, against none for the wave data pins.
-  The multiplier table's bottom entry is 0.5, and B0 to ground halves both
-  operators' ratios, dropping the note an octave.
+  faults land on the faults sweep's went-down list, against none for the wave
+  data pins. The multiplier table's bottom entry is 0.5, and B0 to ground halves
+  both operators' ratios, dropping the note an octave.
 
 ## 5. Two clocks — landed
 
@@ -274,7 +274,7 @@ continuously. That is the effect ROM's traffic profile, reached from the panel,
 on any patch. It writes `REG.modLevel` alone rather than the whole patch, so
 what an LFO there floods the bus with is the one byte it is actually moving.
 
-`fmBusCut` and `fmNoiseBlob` followed, which are the knife itself: how far
+`fmBusCut` and `fmNoiseBlob` followed, which are the fault itself: how far
 through the trace it went, and how far across the pins the solder ran. Neither
 is a setting the factory shipped, which makes them the two strangest lanes in
 the bay — an LFO on the cut depth is a fault that comes and goes in time. Every
@@ -392,7 +392,7 @@ Measured on the `pnpm spectrum` board, FM stem:
 
 Every bend from the last two rounds has a name on the panel. Numbers are
 `pnpm spectrum cuts` on its board, the whole mix against the same board with the
-knife off; the rigs are the FM stem on the `pnpm spectrum` board.
+fault off; the rigs are the FM stem on the `pnpm spectrum` board.
 
 | name                             | where             | level | centroid | flat |
 | -------------------------------- | ----------------- | ----- | -------- | ---- |
@@ -415,14 +415,14 @@ knife off; the rigs are the FM stem on the `pnpm spectrum` board.
 Design calls:
 
 - The new die-level controls sit under their own fold, **die and driver**, so
-  each gets cuts the way the knife does.
+  each gets cuts the way the fault does.
 - The clocks have no fold, so they get rigs on the FM chip's own row. Clock is
   shown at its floor, a sub rumble with 0.87 of the stem under the sub band; CPU
   clock at its ceiling under the bird, which is flatter than any other rig.
 - The patch-table cuts are the flattest address fault and the brightest data
   fault in `pnpm spectrum fm`: P2 parted at 0.85 reads 0.53 flat on the FM stem,
   and B3 to +V puts 0.83 of it in the air band.
-- Three combinations needed a whole board: cold boot with the address knife,
+- Three combinations needed a whole board: cold boot with the address fault,
   cold boot on an LFO, and the allocator on a channel the kit or an effect owns.
   They are presets.
 
@@ -433,7 +433,7 @@ Design calls:
    tune, which a stuck allocator or slot can then take away.
 2. **The exp ROM's address bus.** The log path made it cheap: `logMul()` reads
    `EXP_TABLE` by an address the adder just formed, so a `Bus(8)` there is a
-   knife on an amplitude rather than a phase or a byte.
+   fault on an amplitude rather than a phase or a byte.
 3. **Mono.** A bodge wire putting one channel hard left would also make the slot
    counter's slips audible as movement, not just as level.
 4. **The test register's 0xf0 and the key register's sustain bit**, as above.
@@ -446,16 +446,16 @@ All four are possible now and none is surfaced.
 through a latch that sometimes does not clock means the patch smears
 continuously across the register file instead of four times a note.
 
-**An LFO on the cut depth.** A knife whose trace conducts in time: most writes
+**An LFO on the cut depth.** A cut whose trace conducts in time: most writes
 land, and the ones that do not land on the beat. Nothing else on this board has
 a fault that comes and goes on a clock.
 
-**The blob against a knife on the wave address.** They are the two halves of the
+**The blob against a fault on the wave address.** They are the two halves of the
 same table, and one is now broadband: a parted address line that no longer
 resolves to a sine, reading a word the shift register is holding down.
 
-**A knife on the block bits, now that key scaling reads them.** KSL wired the
+**A fault on the block bits, now that key scaling reads them.** KSL wired the
 octave into the level, so a fault on the frequency's top bits moves pitch,
 whether the note happens _and_ how loud it is — three things off one wire.
-`pnpm knife fm` will find the good ones; some of them probably deserve names in
+`pnpm faults fm` will find the good ones; some of them probably deserve names in
 the cuts row.

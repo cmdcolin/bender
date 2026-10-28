@@ -340,7 +340,7 @@ test('resetting the kit wipes the pattern it owns', () => {
 // button pressed, the panel silent, nothing to say why.
 test('a roll you pointed at lands somewhere you were not', () => {
   const rows = groupNamed('Glint')
-    .sliders.filter(s => s.part === 'knife on the bus')
+    .sliders.filter(s => s.part === 'fault on the bus')
     .filter(s => !s.needs || s.needs(DEFAULT_CONTROLS))
     .map(s => s.key)
   expect(rows.length).toBeGreaterThan(0)

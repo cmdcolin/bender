@@ -158,7 +158,7 @@ test('the keyboard box starts open on the playing rows, and the bus box swaps in
   expect(screen.getByText('Data line')).not.toBeNull()
 })
 
-test('a board that arrives knifed still opens on the keyboard', () => {
+test('a board that arrives faulted still opens on the keyboard', () => {
   set({ chipDataLine: 2, chipDataFault: 1 })
   open()
   expect(screen.getByRole('region', { name: 'keyboard' })).not.toBeNull()

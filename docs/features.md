@@ -29,13 +29,13 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   paperclip: bare metal dragged across the pads, touching the supply a few times
   a second. Each touch pulls the rail down, and the board recovers before the
   next.
-- **Put a knife through the bus.** Cut, ground, bridge or pull up a data or
+- **Cut or short a wire on the bus.** Cut, ground, bridge or pull up a data or
   address line, on the toy, the drum machine or Glint, and the chip reads the
   wrong byte; on Glint it _stays_ wrong until the processor writes that register
   again. The wire, the fault and its depth only work together, so each chip's
-  _knife on the bus_ opens on a row of named cuts: press **machine-gun** or
+  _fault on the bus_ opens on a row of named cuts: press **machine-gun** or
   **the note never ends** and the rows under it show which controls it set.
-  **Random knife** under random ▾ draws from the same table.
+  **Random bus fault** under random ▾ draws from the same table.
 - **Nine bends, six slots.** You pick which are on the board and in what order,
   so three always sit out. A mix at zero takes the stage out of the path.
 - **A patch bay that modulates itself.** Four wires, 143 destinations, among
@@ -97,8 +97,8 @@ and gate are each a place to solder a pot onto: _Bend spot_ picks which and
 _Bend pot_ sets how far. The panel _Power supply_ holds the battery rail that
 Plinky shares with four other machines.
 
-Named cuts, one press each under _knife on the bus_, as in the panel. A press
-puts the knife on, and the rows under it show the controls it set:
+Named cuts, one press each under _fault on the bus_, as in the panel. A press
+puts the fault on, and the rows under it show the controls it set:
 
 - **rests fill in**: A note wire held high — the song keeps its rhythm and its
   silences become notes
@@ -162,16 +162,16 @@ puts the knife on, and the rows under it show the controls it set:
 | Duty on envelope    | off to full                                                                                                                    | Ties the pulse width to the envelope                                                                                                                                                          |
 | Effect wire †       | 13 of them, off through stuck                                                                                                  | Solders a wire onto the effect buttons                                                                                                                                                        |
 | Button it presses   | laser, siren, ufo, bomb, gun, bird, random, next                                                                               | Which effect button the wire presses                                                                                                                                                          |
-| Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the knife is on                                                                                                                                    |
+| Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the fault is on                                                                                                                                    |
 | Data fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the wire                                                                                                                                                                     |
-| Address line †      | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the knife is on                                                                                                                            |
+| Address line †      | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the fault is on                                                                                                                            |
 | Address fault       | cut, to ground, to +V, bridged                                                                                                 | The same four things, on the address side                                                                                                                                                     |
-| Cut depth           | off to full                                                                                                                    | How far through the trace the knife cuts; only the cut fault uses it                                                                                                                          |
+| Cut depth           | off to full                                                                                                                    | How far through the trace the cut goes; only the cut fault uses it                                                                                                                            |
 | Loop wire †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | A jumper from one pin of the note latch back to the address side of the ROM                                                                                                                   |
 | Loop onto           | A0, A1, A2, A3, A4, reset                                                                                                      | Where the jumper lands                                                                                                                                                                        |
-| Song line †         | off, S0, S1, S2, S3, S4                                                                                                        | Which of the wires that pick the song the knife is on                                                                                                                                         |
+| Song line †         | off, S0, S1, S2, S3, S4                                                                                                        | Which of the wires that pick the song the fault is on                                                                                                                                         |
 | Song fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the song wire                                                                                                                                                                |
-| Divider line †      | 13 of them, off through N11                                                                                                    | Which wire of the pitch divider the knife is on                                                                                                                                               |
+| Divider line †      | 13 of them, off through N11                                                                                                    | Which wire of the pitch divider the fault is on                                                                                                                                               |
 | Divider fault       | cut, to ground, to +V, bridged                                                                                                 | What happened to the divider wire                                                                                                                                                             |
 
 </details>
@@ -191,8 +191,8 @@ The pattern grid is a widget, so the table below leaves it out. It has ten rows
 and a second 16-step mask on every voice for the steps that sometimes fire. That
 is 104 more controls, and a link stores them like the rest.
 
-Named cuts, one press each under _knife on the bus_, as in the panel. A press
-puts the knife on, and the rows under it show the controls it set:
+Named cuts, one press each under _fault on the bus_, as in the panel. A press
+puts the fault on, and the rows under it show the controls it set:
 
 - **machine-gun**: The hat’s trigger wire held high — it fires on every step the
   machine fetches, and everything soldered to the trigger bus receives the
@@ -273,10 +273,10 @@ puts the knife on, and the rows under it show the controls it set:
 | Kit             | analog or sampled                                                                                                  | Which kit is on the output                                                                                                                              |
 | ROM clock       | 8 to 44.1 kHz                                                                                                      | How fast the slabs are read back                                                                                                                        |
 | Slab counter †  | stops at its slab’s end, runs on through the ROM, counts down, counts down and runs on                             | The two pins on the counter that walks a slab                                                                                                           |
-| ROM address †   | 18 of them, off through A16                                                                                        | Which of the wires carrying an address to the sample ROM the knife is on                                                                                |
-| Address fault † | cut, to ground, to +V, bridged                                                                                     | What the knife did to that address wire                                                                                                                 |
-| ROM data †      | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the knife is on                                                                      |
-| Data fault †    | cut, to ground, to +V, bridged                                                                                     | What the knife did to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                |
+| ROM address †   | 18 of them, off through A16                                                                                        | Which of the wires carrying an address to the sample ROM the fault is on                                                                                |
+| Address fault † | cut, to ground, to +V, bridged                                                                                     | What happened to that address wire                                                                                                                      |
+| ROM data †      | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the fault is on                                                                      |
+| Data fault †    | cut, to ground, to +V, bridged                                                                                     | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
 | Retrigger       | 0 Hz to 4 kHz                                                                                                      | Retriggers the current step at this rate                                                                                                                |
 | Ratchet ramp    | −1 to +1                                                                                                           | How the repeats of a ratcheted step land                                                                                                                |
 | Trigger floor   | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                                                    |
@@ -289,13 +289,13 @@ puts the knife on, and the rows under it show the controls it set:
 | Cross bleed     | off to full                                                                                                        | How much of the other voice’s envelope each amplifier follows                                                                                           |
 | Clock slip †    | off to full                                                                                                        | The wire clocking the step counter, and how often an edge comes out too slow to get over the threshold                                                  |
 | Step tap †      | off to full                                                                                                        | Clocks the step counter off a stage of Plinky’s melody divider in place of the tempo knob                                                               |
-| Pattern loop †  | off, return inverted, return a step late, each row into the next, return through an XOR                            | Puts a knife in the shift register the bar circulates through, so every step re-enters the loop changed and the pattern rewrites itself a lap at a time |
+| Pattern loop †  | off, return inverted, return a step late, each row into the next, return through an XOR                            | Puts a fault in the shift register the bar circulates through, so every step re-enters the loop changed and the pattern rewrites itself a lap at a time |
 | Counter reset † | off, on the kick, on the snare, on the hat, on the clap, on the tom, on the bell, on the open hat, on the cymbal   | Which voice’s trigger line is soldered to the step counter’s clear pin                                                                                  |
-| Address line †  | off, A0, A1, A2, A3                                                                                                | Which of the four wires carrying a step number to the pattern memory the knife is on                                                                    |
-| Address fault † | cut, to ground, to +V, bridged                                                                                     | What the knife did to that address wire                                                                                                                 |
-| Data line †     | off, D0, D1, D2, D3, D4, D5, D6, D7, D8                                                                            | Which of the wires carrying the word back the knife is on — one wire a row, in the order of the grid, so D8 is the accent                               |
-| Data fault †    | cut, to ground, to +V, bridged                                                                                     | What the knife did to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                |
-| Cut depth       | off to full                                                                                                        | How far through the trace the knife cuts; only the cut fault uses it                                                                                    |
+| Address line †  | off, A0, A1, A2, A3                                                                                                | Which of the four wires carrying a step number to the pattern memory the fault is on                                                                    |
+| Address fault † | cut, to ground, to +V, bridged                                                                                     | What happened to that address wire                                                                                                                      |
+| Data line †     | off, D0, D1, D2, D3, D4, D5, D6, D7, D8                                                                            | Which of the wires carrying the word back the fault is on — one wire a row, in the order of the grid, so D8 is the accent                               |
+| Data fault †    | cut, to ground, to +V, bridged                                                                                     | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
+| Cut depth       | off to full                                                                                                        | How far through the trace the cut goes; only the cut fault uses it                                                                                      |
 
 </details>
 
@@ -313,7 +313,7 @@ time over a bus, and _Data line_ and _Address line_ cut that bus: a byte that
 lands wrong stays wrong until the processor writes that register again, and if
 the wire carrying the key back up cannot go low, the note never ends. _Wave
 line_ cuts the other bus, which the processor never touches. The sine is a table
-and a table is an address, so a knife there reshapes the wave as you play and
+and a table is an address, so a fault there reshapes the wave as you play and
 leaves nothing behind. _Effect_ plays a bird, surf, wind, a siren or crickets
 from the ROM. Each is a program of register writes, the busiest traffic the bus
 ever carries. The effect buttons over the keys run any of them while held.
@@ -329,8 +329,8 @@ result:
   script writes faster than the envelopes can follow, and the call turns to
   static over a chip still in tune
 
-Named cuts, one press each under _knife on the bus_, as in the panel. A press
-puts the knife on, and the rows under it show the controls it set:
+Named cuts, one press each under _fault on the bus_, as in the panel. A press
+puts the fault on, and the rows under it show the controls it set:
 
 - **the note never ends**: The data bit that sets the key cannot go low, so the
   processor’s key-off write leaves the key on and no note ever stops
@@ -352,8 +352,8 @@ puts the knife on, and the rows under it show the controls it set:
   the quarter runs twice — the note is right and the wave has a step in it
 - **sine into noise**: The sign wire of the sine table parted most of the way. A
   floating pin has no driver, and this bus is read eight times a sample by a
-  different operator each turn, so it never settles anywhere — the one knife on
-  this chip that comes out louder than no knife at all
+  different operator each turn, so it never settles anywhere — the one fault on
+  this chip that comes out louder than no fault at all
 - **no fundamental**: The sign bit of the sine table held to ground — a
   rectified wave, all octave and nothing underneath it
 - **nothing is ever quiet**: The top wire out of the sine table held high, so no
@@ -419,19 +419,19 @@ puts the knife on, and the rows under it show the controls it set:
 | Mod ratio                      | 17 of them, as patched through 15×                                                       | What the modulator runs at against the note, as a multiple of it                                                     |
 | Car ratio                      | 17 of them, as patched through 15×                                                       | The same table on the carrier, which moves the note itself — 2 is the same patch an octave up                        |
 | Mod decay                      | 17 of them, as patched through 2.52 s                                                    | How long the modulator takes to fall away, which makes an FM note a bell or an organ                                 |
-| Data line †                    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                      | Which of the eight wires carrying bytes to the register file the knife is on                                         |
-| Data fault                     | cut, to ground, to +V, bridged                                                           | What happened to the wire — the same four things a knife does to any trace                                           |
-| Address line †                 | off, A0, A1, A2, A3, A4, A5                                                              | Which of the six wires choosing the register the knife is on                                                         |
+| Data line †                    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                      | Which of the eight wires carrying bytes to the register file the fault is on                                         |
+| Data fault                     | cut, to ground, to +V, bridged                                                           | What happened to the wire — the same four faults any trace can take                                                  |
+| Address line †                 | off, A0, A1, A2, A3, A4, A5                                                              | Which of the six wires choosing the register the fault is on                                                         |
 | Address fault                  | cut, to ground, to +V, bridged                                                           | The same four things, on the address side                                                                            |
-| Wave line †                    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                              | Which of the ten wires addressing the sine table the knife is on                                                     |
+| Wave line †                    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                              | Which of the ten wires addressing the sine table the fault is on                                                     |
 | Wave fault †                   | cut, to ground, to +V, bridged                                                           | The same four things, on the wave ROM’s address                                                                      |
-| Wave data line †               | off, T0, T1, T2, T3, T4, T5, T6, T7                                                      | Which of the eight wires carrying the sine table’s output the knife is on                                            |
+| Wave data line †               | off, T0, T1, T2, T3, T4, T5, T6, T7                                                      | Which of the eight wires carrying the sine table’s output the fault is on                                            |
 | Wave data fault †              | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s way out                                                                         |
-| Patch line †                   | off, P0, P1, P2, P3, P4, P5, P6                                                          | Which of the seven wires addressing the patch table the knife is on                                                  |
+| Patch line †                   | off, P0, P1, P2, P3, P4, P5, P6                                                          | Which of the seven wires addressing the patch table the fault is on                                                  |
 | Patch fault †                  | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s address                                                                         |
-| Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                                      | Which of the eight wires carrying the patch table’s output the knife is on                                           |
+| Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                                      | Which of the eight wires carrying the patch table’s output the fault is on                                           |
 | Patch data fault †             | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s way out                                                                         |
-| Cut depth                      | off to full                                                                              | How far through the trace the knife cuts; only the cut fault uses it                                                 |
+| Cut depth                      | off to full                                                                              | How far through the trace the cut goes; only the cut fault uses it                                                   |
 | Strobe slip †                  | off to full                                                                              | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
 | DAC slot †                     | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4                                 | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot           |
 | Slot slip †                    | off to full                                                                              | The slot counter running slow against the converter, so now and then it reads one channel twice and skips the next   |
@@ -459,8 +459,8 @@ memory_ puts a voicing under one key and fills all four voices with it.
 _sampled_ plays whatever you dropped on the sampler across the keyboard, from a
 second and a half of memory, with the reel’s loop markers as its loop.
 
-Named cuts, one press each under _knife on the bus_, as in the panel. A press
-puts the knife on, and the rows under it show the controls it set:
+Named cuts, one press each under _fault on the bus_, as in the panel. A press
+puts the fault on, and the rows under it show the controls it set:
 
 - **the top bit sticks**: The top wire out of the sample ROM held high — the
   bottom half of every wave folds up onto the top of it, and the pad comes back
@@ -479,7 +479,7 @@ puts the knife on, and the rows under it show the controls it set:
   did and gets a staircase back
 - **the loop goes stale**: An address trace parted most of the way. The pin has
   no driver, so it holds whatever the last address left on it and then starts
-  drifting after its neighbour — the one knife on this chip that never stands
+  drifting after its neighbour — the one fault on this chip that never stands
   still
 
 <details>
@@ -499,11 +499,11 @@ puts the knife on, and the rows under it show the controls it set:
 | ROM clock                          | 0.05× to 16×                                                                                              | Drags the counter that walks the ROM                                                                                                                                        |
 | Kit voice that plays this keyboard | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                         | The kit’s trigger lines, clipped onto this keyboard’s key input                                                                                                             |
 | Plays Plinky’s notes               | yes, soldered or no, cut                                                                                  | The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input                                                                                           |
-| Address line †                     | 15 of them, off through A13                                                                               | Which of the counter’s wires to the ROM the knife is on                                                                                                                     |
-| Address fault                      | cut, to ground, to +V, bridged                                                                            | The same four things a knife does to any trace                                                                                                                              |
-| Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires carrying the ROM’s output the knife is on                                                                                                          |
+| Address line †                     | 15 of them, off through A13                                                                               | Which of the counter’s wires to the ROM the fault is on                                                                                                                     |
+| Address fault                      | cut, to ground, to +V, bridged                                                                            | The same four faults any trace can take                                                                                                                                     |
+| Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires carrying the ROM’s output the fault is on                                                                                                          |
 | Data fault                         | cut, to ground, to +V, bridged                                                                            | To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was |
-| Cut depth                          | off to full                                                                                               | How far through the trace the knife cuts; only the cut fault uses it                                                                                                        |
+| Cut depth                          | off to full                                                                                               | How far through the trace the cut goes; only the cut fault uses it                                                                                                          |
 | Crossed address †                  | 14 of them, off through A12↔A13                                                                           | Two neighbouring address wires swapped between the counter and the ROM                                                                                                      |
 | Crossed data †                     | off, D0↔D1, D1↔D2, D2↔D3, D3↔D4, D4↔D5, D5↔D6, D6↔D7                                                      | Two neighbouring data wires swapped between the ROM and the DAC                                                                                                             |
 | Glint on bus †                     | off, D7, D7–D6, D7–D5, D7–D4, D7–D3, D7–D2, D7–D1, D7–D0                                                  | Solders the six low address wires and the top data wires onto Glint’s register file, so each voice reads Glint’s 64 registers as its wave                                   |
@@ -835,8 +835,8 @@ bell.
 Bit depth and sample rate, both reducible until the signal breaks up, with
 jitter on the rate.
 
-Named cuts, one press each under _knife on the bus_, as in the panel. A press
-puts the knife on, and the rows under it show the controls it set:
+Named cuts, one press each under _fault on the bus_, as in the panel. A press
+puts the fault on, and the rows under it show the controls it set:
 
 - **the sign bit wanders**: The top wire into the DAC parted. Nothing drives the
   pin, so it holds a word and then drags after D14, and each half of the wave
@@ -867,9 +867,9 @@ puts the knife on, and the rows under it show the controls it set:
 | Ladder mismatch | off to full                                                                  | How far out the R-2R ladder’s resistors are                                                                        |
 | DAC reference   | fixed, the rail, the toy chip, the mic, the bus                              | What the DAC’s reference pin is wired to                                                                           |
 | Reference depth | off to full                                                                  | How much of the reference pin is that signal and how much the fixed voltage                                        |
-| Data line †     | 17 of them, off through D15                                                  | Which of the sixteen wires from the converter to the DAC the knife is on, D15 the top                              |
-| Data fault      | cut, to ground, to +V, bridged                                               | What the knife did to the wire                                                                                     |
-| Cut depth       | off to full                                                                  | How far through the trace the knife went                                                                           |
+| Data line †     | 17 of them, off through D15                                                  | Which of the sixteen wires from the converter to the DAC the fault is on, D15 the top                              |
+| Data fault      | cut, to ground, to +V, bridged                                               | What happened to the wire                                                                                          |
+| Cut depth       | off to full                                                                  | How far through the trace the cut went                                                                             |
 
 </details>
 
@@ -878,7 +878,7 @@ puts the knife on, and the rows under it show the controls it set:
 A rack of clipping circuits, with bias, a tone control and a sub octave.
 
 Named cuts, one press each under _the amp_, as in the panel. A press puts the
-knife on, and the rows under it show the controls it set:
+fault on, and the rows under it show the controls it set:
 
 - **motorboat**: The amp on the toy’s own cells, pulling hard: each loud stretch
   sags the rail, the toy dives about five semitones, the amp mutes, the rail
@@ -1561,7 +1561,7 @@ result:
   board. **Mutate** perturbs the board you have instead of replacing it.
 - **A roll button on every heading**, with a _reset_ beside it that shows how
   many controls it would put back. A heading groups controls that only work
-  together, so you can roll a knife on the toy's bus without re-rolling the
+  together, so you can roll a fault on the toy's bus without re-rolling the
   toy's clock and bend pot.
 - **Morph** moves between two boards over time, and pressing it mid-flight keeps
   the half-way board as an ordinary board. **Hunt** plays candidates and keeps
@@ -2066,7 +2066,7 @@ back.
 | `pnpm guide-shots`   | re-shoots the six pictures in docs/USER-GUIDE.md                                                                                                                                       |
 | `pnpm diagram-shots` | shoots every schematic in the panel to a directory, one png each                                                                                                                       |
 | `pnpm ink`           | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                        |
-| `pnpm knife`         | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                |
+| `pnpm faults`        | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                |
 | `pnpm panel`         | what the panel costs the browser per frame, in a real Chrome                                                                                                                           |
 | `pnpm soak`          | whether any stage gets slower the longer it runs                                                                                                                                       |
 | `pnpm toy`           | writes the hardwired toy board: schematic sheets, KiCad netlist, BOM and ROM images                                                                                                    |

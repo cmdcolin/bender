@@ -13,7 +13,7 @@ export const STEPS = 16
 
 // The wires between the step counter and the pattern memory: four to carry a
 // step number, and one a row to carry the word that comes back. Which is what
-// there is to put a knife through — see the bus bend in toyDrum.
+// there is to cut or short — see the bus bend in toyDrum.
 export const ADDR_LINES = 4
 
 // Every voice carries two masks. `key` is the steps that close every lap, and

@@ -93,14 +93,14 @@ function oneBend(current: Controls, rand: () => number): Controls {
   return next
 }
 
-// A knife on a bus, off the panel's own list of the ones worth hearing. The
+// A fault on a bus, off the panel's own list of the ones worth hearing. The
 // blind dice leave these wires alone — they are shy, and a wire picked at random
 // is as likely to be one this ROM never drives as one you can hear — so this is
 // the roll that names them, and it draws from the same table the panels do
 // rather than from the width of a bus. Half the time it wires a second chip as
 // well, which is the one thing the panels cannot do from where they sit: two
 // machines reading somebody else's bytes at once.
-function knife(current: Controls, rand: () => number): Controls {
+function busFault(current: Controls, rand: () => number): Controls {
   const draw = (from: CutDef[]) => from[Math.floor(rand() * from.length)]!
   const first = draw(CUTS)
   const board = applyCut(first, current)
@@ -398,11 +398,11 @@ export const SCENARIOS: ScenarioDef[] = [
     roll: oneBend,
   },
   {
-    name: 'knife',
-    label: 'random knife',
+    name: 'bus fault',
+    label: 'random bus fault',
     blurb:
       'A named cut on one chip’s bus, and half the time a second on another — the wires the blind dice leave alone',
-    roll: knife,
+    roll: busFault,
   },
   {
     name: 'wreck it',

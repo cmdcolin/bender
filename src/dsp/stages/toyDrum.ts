@@ -116,7 +116,7 @@ const N_VOICES = N_DRUM_VOICES
 
 // The word the pattern memory hands back, as bits. The voices are the low end
 // of it in the order of the rows, and the accent is the wire above them: one
-// more line for the knife, and the only one that says how hard rather than
+// more line for the fault, and the only one that says how hard rather than
 // whether.
 const ACCENT_BIT = 1 << N_VOICES
 const VOICE_BITS = ACCENT_BIT - 1
@@ -236,7 +236,7 @@ const TANK_COUPLE = 0.05
     holds its last answer while the junction is off. */
 export const DICE_NAMES = ['free', 'on the junction']
 
-/** Where a knife sits in the loop that circulates the bar. Off, the cells are
+/** Where a fault sits in the loop that circulates the bar. Off, the cells are
     the panel's grid; anything else plays a shadow of it that rewrites itself
     every lap, and turning it off loads the grid back. */
 export const LOOP_NAMES = [
@@ -513,7 +513,7 @@ const ROM_SEED = 0x50f7
 export type DrumSlabs = readonly Float32Array[]
 
 // The slabs sit end to end in one part, in the order of the rows, and every
-// voice reads them over the same wires. So a knifed address line lands one
+// voice reads them over the same wires. So a faulted address line lands one
 // voice's counter in another voice's slab, and a counter whose end stop has
 // been cut carries on through every slab after its own.
 const SLAB_LEN = ROM_SECS.map(s => Math.round(s * ROM_RATE))
@@ -690,7 +690,7 @@ export class ToyDrum implements Stage {
   readonly wander: Wander
   private wanderAmt = 0
   private micTrig: Transient
-  // The wires between the step counter and the pattern memory, and what a knife
+  // The wires between the step counter and the pattern memory, and what a fault
   // has done to one of them. Read once a block: which trace you cut is not a
   // thing that moves inside one.
   private addrBus: Bus
@@ -906,7 +906,7 @@ export class ToyDrum implements Stage {
   // rather than an amplifier: a data line held high strikes the voice for real,
   // stamping the bus and lighting the row, where the cross-patch only lends an
   // envelope. The accent is the wire above the voices and goes over the same
-  // bus as them, which is the whole of why it can be knifed: forced high it is
+  // bus as them, which is the whole of why it can be faulted: forced high it is
   // an accent on every step the machine fetches, and bridged to the cymbal it
   // is an accent only where the cymbal crashes.
   private wordAt(p: Float32Array, tick: number): number {
@@ -980,7 +980,7 @@ export class ToyDrum implements Stage {
   }
 
   // What comes back round into the cells the counter just read. The register
-  // hands out a column, and each bit re-enters the loop through the knife: so a
+  // hands out a column, and each bit re-enters the loop through the fault: so a
   // pattern rewrites itself a lap at a time and nothing ever writes the panel.
   private circulate(played: number) {
     this.loopHeld = played
@@ -1008,9 +1008,9 @@ export class ToyDrum implements Stage {
   // Loads the register from the panel the first time it is wired, and again
   // for any row the panel writes while it circulates.
   private wireLoop(p: Float32Array) {
-    const knife = Math.round(p[IDX.drumLoop]!)
+    const tap = Math.round(p[IDX.drumLoop]!)
     const was = this.loop
-    this.loop = knife > 0 && knife < LOOP_NAMES.length ? knife : 0
+    this.loop = tap > 0 && tap < LOOP_NAMES.length ? tap : 0
     if (this.loop === 0) return
     if (was === 0) {
       this.loopSeen.fill(-1)
@@ -1459,7 +1459,7 @@ export class ToyDrum implements Stage {
         if (this.gndEdge.rise(ctx.gnd[i]!)) this.stepClock += span
         if (this.stepClock >= span) {
           this.stepClock -= span
-          // A knife on the counter's clock, which is the one wire on this
+          // A fault on the counter's clock, which is the one wire on this
           // board whose fault accumulates. The strobe still lands and the
           // memory still answers, so the step fires either way — but the
           // counter only moves if the edge got over the threshold, and an edge

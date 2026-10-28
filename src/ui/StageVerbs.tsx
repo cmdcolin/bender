@@ -285,8 +285,8 @@ function CutRow({
         <Tip
           text={
             wired
-              ? `take the knife off ${group.name}'s buses and leave the rest of the stage alone`
-              : `there is no knife on ${group.name}'s buses`
+              ? `clear the faults on ${group.name}'s buses and leave the rest of the stage alone`
+              : `there is no fault on ${group.name}'s buses`
           }
         >
           <button

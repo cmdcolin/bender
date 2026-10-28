@@ -646,7 +646,7 @@ test('a bridged pair of data lines comes out only where both rows agree', () => 
 })
 
 // The accent is the ninth wire on that bus rather than a flag beside it, which
-// is the whole of why a knife can reach it: it is the one line that says how
+// is the whole of why a fault can reach it: it is the one line that says how
 // hard rather than whether.
 test('the accent wire held high weighs every step the machine fetches', () => {
   const bar: Partial<Controls> = {
@@ -680,7 +680,7 @@ test('the accent wire held low is a row you can see and cannot hear', () => {
   ).toEqual(soloVoice(bar, 2))
 })
 
-// The one wire on this board whose fault accumulates. Everything else the knife
+// The one wire on this board whose fault accumulates. Everything else the fault
 // reaches leaves the counter counting and hands back the wrong cell; this leaves
 // the cell right and the counter behind.
 const SLIP_BAR: Partial<Controls> = {
@@ -1479,7 +1479,7 @@ const LOOP_INVERT = 1
 const LOOP_NEXT = 3
 const LOOP_XOR = 4
 
-test('a knife inverting the return swaps every row for its gaps', () => {
+test('a fault inverting the return swaps every row for its gaps', () => {
   const [, second, third] = bars({ drumLoop: LOOP_INVERT }, 3)
   const [, stock] = bars({}, 2)
   const past = 0x7fff

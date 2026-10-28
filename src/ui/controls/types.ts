@@ -163,7 +163,7 @@ export interface Group {
       than yours. */
   borrows?: readonly ControlKey[]
   /** Which of the group's headings open folded, so a long panel opens on the
-      instrument and what you can do to it with a knife is one press away. A
+      instrument and what you can do to it with a fault is one press away. A
       heading holding something you have moved opens anyway. */
   folded?: string[]
   /** What a rig under this group's name puts back before it writes, where

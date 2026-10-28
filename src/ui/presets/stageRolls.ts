@@ -14,11 +14,11 @@ export interface StageRoll {
   roll: (group: Group, current: Controls, rand: () => number) => Controls
 }
 
-// The folds a fault lives in: the knife on the bus, the die's supply and the
+// The folds a fault lives in: the fault on the bus, the die's supply and the
 // card's own parts. Rolling them turns a machine into a different, broken one,
 // so the plain roll leaves them where they stand.
 const FAULT_PARTS: ReadonlySet<string> = new Set([
-  'knife on the bus',
+  'fault on the bus',
   'voice card faults',
   'die and driver',
   'the supply underneath',
@@ -83,7 +83,7 @@ export const STAGE_ROLLS: readonly StageRoll[] = [
     name: 'faults',
     label: 'faults',
     blurb:
-      'Rolls only the knife on the bus, the supply and the card faults. The sound controls stay put, so you hear what the faults do.',
+      'Rolls only the fault on the bus, the supply and the card faults. The sound controls stay put, so you hear what the faults do.',
     fits: group => hasAny(group, isFault),
     roll: (group, current, rand) =>
       rollKeys(current, keysOf(sliders(group, isFault)), rand, true),

@@ -14,7 +14,7 @@ import {
 } from './cuts.ts'
 import { mine } from './testBoard.ts'
 
-// A board with something going on for the knife to reach. Sakura is 32 steps at
+// A board with something going on for the fault to reach. Sakura is 32 steps at
 // three a second, so a stock board plays six of them in the two seconds a test
 // renders — cut the wire carrying the top of the address and the song never got
 // that far anyway. The clock runs the tune up to where the whole of it goes
@@ -44,9 +44,9 @@ test('every cut names controls that live under the heading it is offered from', 
   }
 })
 
-// One knife on a bus, not two: pressing a second cut on top of the first is
+// One fault on a bus, not two: pressing a second cut on top of the first is
 // that second cut, rather than whichever wires the first one left wired.
-test('a cut is the whole of what the knife did to that chip', () => {
+test('a cut is the whole of what the fault did to that chip', () => {
   const [first, second] = CUTS.filter(c => c.group === 'Plinky')
   const board = applyCut(second!, applyCut(first!, mine()))
   expect(cutStands(second!, board)).toBe(true)
@@ -64,7 +64,7 @@ test('a cut leaves the rest of the board where your hand put it', () => {
   for (const key of moved) expect(under.has(key), key).toBe(true)
 })
 
-// The FM chip boots at zero and has no keyboard of its own, so wiring a knife
+// The FM chip boots at zero and has no keyboard of its own, so wiring a fault
 // into it and hearing nothing is the one outcome that teaches nothing at all.
 test('a cut on a silent chip brings it up, and leaves a level you set alone', () => {
   const cut = CUTS.find(c => c.group === 'Glint')!
@@ -73,7 +73,7 @@ test('a cut on a silent chip brings it up, and leaves a level you set alone', ()
   expect(applyCut(cut, { ...mine(), fmLevel: 0.2 }).fmLevel).toBe(0.2)
 })
 
-test('none takes the knife off and says whether there is one on', () => {
+test('none takes the fault off and says whether there is one on', () => {
   const cut = CUTS.find(c => c.name === 'half a tune')!
   const wired = applyCut(cut, mine())
   expect(cutWired(cut.group, cut.part, wired)).toBe(true)
@@ -105,7 +105,7 @@ const tilt = (x: Float32Array) => {
   return Math.sqrt(acc / x.length) / (rms(x) + 1e-9)
 }
 
-// A knife on a bus is famous for the other direction — a stuck key screaming an
+// A fault on a bus is famous for the other direction — a stuck key screaming an
 // octave up, a rectified sine with no fundamental left in it. These two go the
 // other way, and a catalog that claimed bass and delivered another bright glitch
 // would be worth less than one that never mentioned it.
@@ -122,39 +122,39 @@ test.each([
     drumLevel: 0,
     ...(cut.group === 'Glint' ? { chipLevel: 0.2 } : { fmLevel: 0 }),
   }
-  const knife = { ...applyCut(cut, busy()), ...alone }
-  const bare = cutOff(cut.group, cut.part, knife)
-  expect(tilt(render(knife, 2))).toBeGreaterThan(1.4 * tilt(render(bare, 2)))
+  const faulted = { ...applyCut(cut, busy()), ...alone }
+  const bare = cutOff(cut.group, cut.part, faulted)
+  expect(tilt(render(faulted, 2))).toBeGreaterThan(1.4 * tilt(render(bare, 2)))
 })
 
-// The other direction the row is short of. A knife that comes out quieter than
-// no knife is the easy result — the note stops, the level drops, and the chip is
+// The other direction the row is short of. A fault that comes out quieter than
+// no fault is the easy result — the note stops, the level drops, and the chip is
 // worse at being a chip. This one claims the opposite in its blurb, which is a
 // falsifiable thing to have written down: nothing is driving that pin, so what
 // reaches the operator is neither the wave nor silence but the bus's own
 // traffic, and there is more of it than there was of the sine.
-test('sine into noise comes out louder and broader than no knife at all', () => {
+test('sine into noise comes out louder and broader than no fault at all', () => {
   const cut = CUTS.find(c => c.name === 'sine into noise')!
   // The kit out of the mix and the toy left in under it, as the bass cuts above
   // are measured: the FM chip has no keyboard of its own.
-  const knife = { ...applyCut(cut, busy()), drumLevel: 0, chipLevel: 0.2 }
-  const bare = cutOff(cut.group, cut.part, knife)
+  const faulted = { ...applyCut(cut, busy()), drumLevel: 0, chipLevel: 0.2 }
+  const bare = cutOff(cut.group, cut.part, faulted)
   const a = render(bare, 2)
-  const b = render(knife, 2)
+  const b = render(faulted, 2)
   expect(rms(b)).toBeGreaterThan(1.15 * rms(a))
   expect(highEnergy(b) / rms(b)).toBeGreaterThan(2 * (highEnergy(a) / rms(a)))
 })
 
-// The whole promise of the row: every chip on it is a knife you can hear. A cut
+// The whole promise of the row: every chip on it is a fault you can hear. A cut
 // that came out the same as no cut is a line of the catalog pointing at a wire
 // this board never drives, which is the failure the row exists to spare you.
 test.each(CUTS.map(c => [`${c.group}: ${c.name}`, c] as const))(
   'you can hear %s',
   (_name, cut) => {
-    const knife = applyCut(cut, busy())
-    const bare = cutOff(cut.group, cut.part, knife)
+    const faulted = applyCut(cut, busy())
+    const bare = cutOff(cut.group, cut.part, faulted)
     const a = render(bare, 2)
-    const b = render(knife, 2)
+    const b = render(faulted, 2)
     const diff = a.map((v, i) => v - b[i]!)
     expect(rms(diff)).toBeGreaterThan(0.1 * rms(a))
   },

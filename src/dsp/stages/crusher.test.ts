@@ -108,7 +108,7 @@ test('a bad ADPCM word drifts the decoder until the next block header', () => {
   const tone = sineAt(330, 0.05)
   const board = { crushAdc: adc('ADPCM') }
   const clean = stage(board, tone, 1)
-  const knifed = stage(
+  const faulted = stage(
     { ...board, crushDataLine: 13, crushDataFault: FAULT.supply },
     tone,
     1,
@@ -117,7 +117,7 @@ test('a bad ADPCM word drifts the decoder until the next block header', () => {
   let late = 0
   for (let s = 0; s < clean.length; s++) {
     const at = s % ADPCM_BLOCK
-    const e = Math.abs(knifed[s]! - clean[s]!)
+    const e = Math.abs(faulted[s]! - clean[s]!)
     if (at < 60) early += e
     else if (at >= ADPCM_BLOCK - 60) late += e
   }

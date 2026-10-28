@@ -8,19 +8,19 @@ description: Ranked further bends for the drum machine: a supply for the metal b
 Candidates, ranked, with where each one hooks. The companion to
 `agent-docs/ideas/collections/fm-bends.md`, written the same way and for the
 same reason: nothing here is a decision, and the ones that are cheap and the
-ones that change how the kit sounds with no knife on it are called out as such.
+ones that change how the kit sounds with no fault on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
 accent on the data bus), 4 (`drumDice`), 5 (`drumTrigLoad`), 6 (`drumClapGap`,
 `drumClapCount`), 7 (`drumPulseShare`), 8 (`DEST.drumBpm`), 9 (`drumLoop`), 10
-(the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`), 12 (`drumSweep`), 13
+(the sample ROM fault), 11 (`drumBankFm`, `drumBankSync`), 12 (`drumSweep`), 13
 (`drumTankCouple`) and 14 (`drumRef`), plus the counter's reset wire
 (`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other
 numbered item is still a candidate.
 
 ## How to judge one of these before building it
 
-`pnpm knife kit` and `pnpm spectrum kit` already answer the two questions, and
+`pnpm faults kit` and `pnpm spectrum kit` already answer the two questions, and
 for the kit they answer the first one so completely that it stops being a
 question. Where the numbers stand today:
 
@@ -46,12 +46,12 @@ ones fall out of reading the stage:
 **The kit has no bend that accumulates.** `stepAt` is a pure function of the
 tick, and so is `wordAt` up to the dice. Address and data faults are the same
 wrong cell every lap, deliberately — that is the sentence at the top of `bus.ts`
-and it is the right sentence. But it means every knife on this machine is a
+and it is the right sentence. But it means every fault on this machine is a
 different sixteen steps, and none of them is a machine that walks away from you.
 The dice is the only thing that varies and it varies independently every lap,
 which is white. Nothing on the kit is structured in time.
 
-**The step counter has no fault surface at all.** The knife reaches the wires
+**The step counter has no fault surface at all.** The fault reaches the wires
 _out_ of the counter and the wires _into_ the pattern memory. It does not reach
 the counter, its clock, its reset, or the accent line — which is a wire the
 panel names, draws a row for, and cannot cut. (The clock, the accent line and
@@ -106,7 +106,7 @@ The repeated step replays the maybes it decided a moment ago.
 
 Cost: small. ~20 lines in the stage, one control, one row in the panel.
 
-**Built.** `drumSlip`, 0 to 1, shy, under _knife on the bus_ above the address
+**Built.** `drumSlip`, 0 to 1, shy, under _fault on the bus_ above the address
 row, with a named cut (_the bar walks_) at 0.16. Off its own RNG stream, so a
 board nobody has touched renders the samples it always did — pinned by
 `a clock nobody has touched is the kit it always was`.
@@ -173,12 +173,12 @@ it zero. Measured on the metal voices alone (`pnpm spectrum` columns):
   voice, the metal speaks only under that voice, which no other bend on the kit
   does.
 
-## 3. The accent line has no knife
+## 3. The accent line has no fault
 
 `bitsAt` runs the voice word through `this.dataBus`, eight wires wide. The
 accent does not go through it — `accentAt` reads its own bit straight out of the
 param, and the stage says so: "the accent rides a line of its own and is not in
-this word." Its _address_ is knifed along with everyone else's, because
+this word." Its _address_ is faulted along with everyone else's, because
 `accentAt` calls `stepAt`; its data wire is the one wire on the pattern bus that
 nothing can reach.
 
@@ -201,7 +201,7 @@ Cost: very small, and it closes a gap the panel already implies.
 `fire` splits the word back out. The _Data line_ slider is nine wires wide, D8
 is the accent, and there is a named cut (_accent on everything_). Existing links
 are untouched — the voice wires kept their numbers, so D0–D7 still mean what
-they meant. `pnpm knife kit` and `pnpm spectrum kit` sweep the new wire for
+they meant. `pnpm faults kit` and `pnpm spectrum kit` sweep the new wire for
 free: both read the slider's max.
 
 ## 4. The dice, as a comparator on the noise transistor
@@ -276,7 +276,7 @@ part should average it (a chord does not stutter the tempo; a kick probably
 should still be allowed to flick a hat).
 
 Cost: small in the kit, but it touches `ToyRail`, which everything else on the
-board hangs off — and it changes how the kit sounds with no knife on it, which
+board hangs off — and it changes how the kit sounds with no fault on it, which
 is the cost that matters. Measure `pnpm ab` before and after.
 
 **Built** as `drumTrigLoad`, 0 to 1, off by default so neither the kit nor the
@@ -392,7 +392,7 @@ The large one, and the one to be suspicious of.
 
 Cheap machines of this vintage do not hold the bar in RAM the sequencer
 addresses. They circulate it: a shift register clocked by the step counter,
-output tied back to input, with the panel writing into the loop. Put the knife
+output tied back to input, with the panel writing into the loop. Put the fault
 _in the loop_ — invert a bit, delay the return by a step, tie one voice's output
 to another's input — and the pattern rewrites itself as it plays. Deterministic,
 period-finite, and the first thing on this machine that composes with itself.
@@ -409,7 +409,7 @@ small.
 
 And it destroys the pattern. That is authentic — it is what the bend does on the
 part — but it is a different relationship with the undo stack than every other
-knife on this board, all of which you can take back out.
+fault on this board, all of which you can take back out.
 
 Worth writing down. Not worth starting without deciding the writeback question
 first.
@@ -420,7 +420,7 @@ question went the shadow's way. Calls made:
 
 - Nothing writes the controls, so undo, the URL and presets never see it. The
   grid lights off `MeterMsg.hits`, so they show what struck.
-- The register loads from the panel when the knife goes in, and a row loads
+- The register loads from the panel when the fault goes in, and a row loads
   again whenever the panel writes it, which is the panel writing into the loop.
   Off hands back the grid; a reboot reloads it.
 - What re-enters is what played, dice included, so a maybe that came up is a hit
@@ -433,7 +433,7 @@ question went the shadow's way. Calls made:
 
 Measured on the `pnpm spectrum` board, kit stem:
 
-| knife                  | level | centroid | flat  | sub  | low  | high |
+| fault                  | level | centroid | flat  | sub  | low  | high |
 | ---------------------- | ----- | -------- | ----- | ---- | ---- | ---- |
 | off                    | 1.00× | 442 Hz   | 0.057 | 0.85 | 0.09 | 0.03 |
 | return inverted        | 1.72× | 1859 Hz  | 0.274 | 0.51 | 0.22 | 0.14 |
@@ -445,7 +445,7 @@ Inverted fills the empty rows, so on odd bars all eight voices strike most
 steps. A step late changes the spectrum least and the groove most: every row
 moves a step a bar.
 
-## 10. A knife on the sample ROM
+## 10. A fault on the sample ROM
 
 No bend reaches the sampled kit's memory, and bending a sample ROM is the
 best-known drum-machine bend (SK-1, RZ-1, HR-16).

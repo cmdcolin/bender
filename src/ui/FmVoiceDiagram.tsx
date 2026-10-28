@@ -143,7 +143,7 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
                 x={wireMid}
                 y={MID + 14}
                 textAnchor="middle"
-                className={bus.knifed}
+                className={bus.faulted}
               >
                 booster
               </text>
@@ -170,7 +170,7 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
               textAnchor="middle"
               className={
                 feedbackBoost
-                  ? bus.knifed
+                  ? bus.faulted
                   : feedback > 0
                     ? styles.noteOn
                     : styles.note

@@ -132,9 +132,9 @@ export function Chip({
   )
 }
 
-// Pressing a trace moves the knife onto it; pressing the knifed trace tries
-// the next fault, and the last one lifts the knife.
-function knife(r: Ribbon, i: number) {
+// Pressing a trace moves the fault onto it; pressing the faulted trace tries
+// the next fault, and the last one lifts the fault.
+function stepFault(r: Ribbon, i: number) {
   const board = engine.controls.get()
   const on = Math.round(board[r.line]) - 1
   const fault = Math.round(board[r.fault])
@@ -220,39 +220,39 @@ function Trace({
 }) {
   const names = sliderFor(p.ribbon.line).choices!.slice(1)
   const n = names.length
-  const knifed = line - 1
+  const faulted = line - 1
   const pair =
-    knifed >= 0 && fault === FAULT.bridge
-      ? knifed + 1 < n
-        ? knifed + 1
-        : knifed - 1
+    faulted >= 0 && fault === FAULT.bridge
+      ? faulted + 1 < n
+        ? faulted + 1
+        : faulted - 1
       : -1
   const gx = along(p, GLYPH_AT)
   const beside = fault === FAULT.ground || fault === FAULT.supply
-  const under = !beside && knifed >= n / 2
-  const y = lineY(p, knifed)
+  const under = !beside && faulted >= n / 2
+  const y = lineY(p, faulted)
   const low = bottom(p)
   const what = sliderFor(p.ribbon.line).label.toLowerCase()
   const title =
-    knifed < 0
-      ? `${what}: ${names[0]}–${names[n - 1]}, no knife`
-      : `${what}: ${names[knifed]} ${choice(p.ribbon.fault, fault)}`
+    faulted < 0
+      ? `${what}: ${names[0]}–${names[n - 1]}, no fault`
+      : `${what}: ${names[faulted]} ${choice(p.ribbon.fault, fault)}`
   const next = (i: number) =>
-    i !== knifed
-      ? 'press to knife it'
+    i !== faulted
+      ? 'press to fault it'
       : fault + 1 < FAULT_NAMES.length
         ? `press for ${FAULT_NAMES[fault + 1]}`
-        : 'press to lift the knife'
+        : 'press to clear the fault'
   const cx = along(p, CROSS_AT)
   const swapped = (i: number) =>
     crossed > 0 && (i === crossed - 1 || i === crossed)
   const traces = names.map((name, i) => {
     const at = lineY(p, i)
-    const hit = i === knifed || i === pair
+    const hit = i === faulted || i === pair
     const ends = [
       p.x0,
       ...(swapped(i) ? [cx - CROSS_HALF, cx + CROSS_HALF] : []),
-      ...(i === knifed && fault === FAULT.cut ? [gx - 3, gx + 3] : []),
+      ...(i === faulted && fault === FAULT.cut ? [gx - 3, gx + 3] : []),
       p.x1,
     ]
     const d = ends
@@ -265,7 +265,7 @@ function Trace({
         className={styles.line}
         onClick={e => {
           e.stopPropagation()
-          knife(p.ribbon, i)
+          stepFault(p.ribbon, i)
         }}
       >
         <title>{`${name}: ${next(i)}`}</title>
@@ -282,7 +282,7 @@ function Trace({
   })
   const dot = <Dot x={gx} y={y} look="alarm" />
   const glyph =
-    knifed < 0 ? null : fault === FAULT.ground ? (
+    faulted < 0 ? null : fault === FAULT.ground ? (
       <>
         <path
           d={`M${gx} ${y} V${low + 4} M${gx - 5} ${low + 4} H${gx + 5} M${gx - 3} ${low + 6.5} H${gx + 3} M${gx - 1} ${low + 9} H${gx + 1}`}
@@ -300,7 +300,7 @@ function Trace({
           x={gx}
           y={p.top - 9}
           textAnchor="middle"
-          className={styles.knifed}
+          className={styles.faulted}
         >
           +V
         </text>
@@ -309,7 +309,7 @@ function Trace({
     ) : fault === FAULT.bridge ? (
       <rect
         x={gx - 2.5}
-        y={lineY(p, Math.min(knifed, pair)) - 1.5}
+        y={lineY(p, Math.min(faulted, pair)) - 1.5}
         width={5}
         height={PITCH + 3}
         rx={1.5}
@@ -341,14 +341,14 @@ function Trace({
       className={styles.ribbon}
       role="button"
       tabIndex={0}
-      aria-label={`${what} knife`}
+      aria-label={`${what} fault`}
       onKeyDown={e => {
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
           e.preventDefault()
           nudge(p.ribbon, e.key === 'ArrowUp' ? -1 : 1)
         } else if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          knife(p.ribbon, Math.max(knifed, 0))
+          stepFault(p.ribbon, Math.max(faulted, 0))
         }
       }}
     >
@@ -359,7 +359,7 @@ function Trace({
       <text x={p.x0 + 3} y={low + 11} className={styles.bus}>
         {`${names[0]}–${names[n - 1]}`}
       </text>
-      {knifed >= 0 && (
+      {faulted >= 0 && (
         <text
           x={beside ? gx + 7 : under ? p.x1 - 3 : gx}
           y={
@@ -372,9 +372,9 @@ function Trace({
                   : p.top - 4
           }
           textAnchor={beside ? 'start' : under ? 'end' : 'middle'}
-          className={styles.knifed}
+          className={styles.faulted}
         >
-          {names[knifed]!}
+          {names[faulted]!}
         </text>
       )}
     </g>
@@ -422,7 +422,7 @@ function TapWire({
       <path d={d} className={styles.jumper} />
       <Dot x={fx} y={fy} look="alarm" />
       {end.pin ? (
-        <text x={end.x + 4} y={end.y + 10} className={styles.knifed}>
+        <text x={end.x + 4} y={end.y + 10} className={styles.faulted}>
           {end.pin}
         </text>
       ) : (
@@ -432,7 +432,7 @@ function TapWire({
         x={(fx + end.x) / 2}
         y={routeY + 11}
         textAnchor="middle"
-        className={styles.knifed}
+        className={styles.faulted}
       >
         {tap.name}
       </text>
@@ -471,7 +471,7 @@ function InjectWire({
         x={x - 4}
         y={rowTop + 23}
         textAnchor="end"
-        className={styles.knifed}
+        className={styles.faulted}
       >
         {inject.name}
       </text>
@@ -505,7 +505,7 @@ function FeedWire({
       x={x}
       y={y}
       textAnchor={anchor}
-      className={value > 0 ? styles.knifed : styles.bus}
+      className={value > 0 ? styles.faulted : styles.bus}
     >
       {feed.name}
     </text>

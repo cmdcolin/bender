@@ -198,8 +198,8 @@ test('a starving rail stretches the envelopes with the pitch', () => {
 
 test('a data line on the rail changes every word, and a trace that still conducts changes none', () => {
   const plain = held({}, 12, 0.3)
-  const knifed = held({ pcmDataLine: 7, pcmDataFault: FAULT.supply }, 12, 0.3)
-  expect(rms(plain.map((v, i) => v - knifed[i]!))).toBeGreaterThan(
+  const faulted = held({ pcmDataLine: 7, pcmDataFault: FAULT.supply }, 12, 0.3)
+  expect(rms(plain.map((v, i) => v - faulted[i]!))).toBeGreaterThan(
     0.05 * rms(plain),
   )
   // Cut all the way through is a pin nobody drives; cut none of the way is a

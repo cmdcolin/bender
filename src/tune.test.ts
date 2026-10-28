@@ -73,7 +73,7 @@ test('the two things that are not notes survive the trip and the bus', () => {
     expect(decodeTune(encodeTune(step))).toBe(step)
 })
 
-// Every word the bus can hand back has to mean something: a knife on a data
+// Every word the bus can hand back has to mean something: a fault on a data
 // line turns one word into another, and a code the memory could not read would
 // be a note that vanishes rather than a note that comes out wrong.
 test('every word a cut bus can produce reads back as a step', () => {
