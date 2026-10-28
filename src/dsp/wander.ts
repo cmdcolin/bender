@@ -245,17 +245,22 @@ export class Wander {
   /** Decide `bar`. The caller has loaded rows, maybes, accent and lens from the
       grid; a bar that strays rewrites them. */
   plan(amount: number, bar: number) {
-    this.ratchets.fill(0)
-    this.events.fill(0)
-    this.wireLine = -1
-    this.first = NO_STRAY
-    this.second = NO_STRAY
+    this.reset()
     const a = Math.min(Math.max(amount, 0), 1)
     if (a <= 0 || this.rand() >= Wander.odds(a, bar)) return
     amount = a
     this.first = this.stray(amount)
     if (amount > 0.75 && this.rand() < amount - 0.5)
       this.second = this.stray(amount)
+  }
+
+  reset() {
+    this.ratchets.fill(0)
+    this.events.fill(0)
+    this.wireLine = -1
+    this.wireFault = 0
+    this.first = NO_STRAY
+    this.second = NO_STRAY
   }
 
   private stray(amount: number) {

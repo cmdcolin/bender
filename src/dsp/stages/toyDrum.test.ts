@@ -3,7 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
 import { CYCLE, ROCK, STEPS } from '../../drums.ts'
 import { IDX, packParams } from '../../engine/params.ts'
-import { buildBender } from '../build.ts'
+import { buildBender, type BuiltChain } from '../build.ts'
 import { DEST } from '../modbus.ts'
 import { spectrum } from '../spectrum.ts'
 import { BLOCK } from '../stage.ts'
@@ -1775,4 +1775,27 @@ test('a step tap runs the kit off the melody divider, an octave a sixth of the k
 test('a step tap at zero is the kit it always was', () => {
   const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
   expect(render({ ...look, drumStepTap: 0 }, 1)).toEqual(render(look, 1))
+})
+
+test('panic calls off a stray bar and the step conditions it was holding', () => {
+  let strayed = false
+  const run = (built: BuiltChain) => (built.transport.drums = true)
+  renderBender({ drumWander: 1, drumBpm: 480 }, 4, run, undefined, built => {
+    const kit = built.toyDrum as unknown as {
+      wander: { straying: boolean; wireLine: number }
+      colPlays: boolean
+      lastCond: boolean
+      panic: () => void
+    }
+    if (!kit.wander.straying || strayed) return
+    strayed = true
+    kit.colPlays = false
+    kit.lastCond = false
+    kit.panic()
+    expect(kit.wander.straying).toBe(false)
+    expect(kit.wander.wireLine).toBe(-1)
+    expect(kit.colPlays).toBe(true)
+    expect(kit.lastCond).toBe(true)
+  })
+  expect(strayed).toBe(true)
 })

@@ -2066,6 +2066,9 @@ export class ToyDrum implements Stage {
     this.micTrig.reset()
     this.addrBus.reset()
     this.dataBus.reset()
+    this.wander.reset()
+    this.colPlays = true
+    this.lastCond = true
   }
 }
 
