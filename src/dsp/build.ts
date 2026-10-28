@@ -4,6 +4,7 @@ import { Amp } from './stages/amp.ts'
 import { Brownout } from './stages/brownout.ts'
 import { ChaosOsc } from './stages/chaosOsc.ts'
 import { Clipper } from './stages/clipper.ts'
+import { Codec } from './stages/codec.ts'
 import { Comb } from './stages/comb.ts'
 import { Crusher } from './stages/crusher.ts'
 import { Echo } from './stages/echo.ts'
@@ -101,7 +102,8 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     sampler,
   ]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
-  // 6 filt, 7 shift, 8 oct — six slots for eight bends, so you pick
+  // 6 filt, 7 shift, 8 oct, 9 codec — six slots for nine bends, so you pick.
+  // The codec seeds off the build's seed rather than drawing one.
   chain.bendById = [
     undefined,
     new RingMod(sr),
@@ -112,6 +114,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Screech(sr),
     new Shifter(sr),
     new Octave(sr),
+    new Codec(sr, seed ^ 0xc0dec),
   ]
   chain.pedals = [
     new Stompbox(sr),

@@ -31,7 +31,7 @@ export const ORDER_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['—', ...BENDS.map(b => b.label)],
-        help: 'Which pedal runs in this socket. The signal walks the sockets top to bottom on its way from the mix bus to the pedals after them, and a pedal named twice runs only at the first one. The pedals downstream have their own order control: six boxes that are always all on the board, where these are six sockets that eight pedals compete for.',
+        help: 'Which pedal runs in this socket. The signal walks the sockets top to bottom on its way from the mix bus to the pedals after them, and a pedal named twice runs only at the first one. The pedals downstream have their own order control: six boxes that are always all on the board, where these are six sockets that nine pedals compete for.',
       })),
       {
         key: 'pedalOrder',

@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-573 knobs and switches in 36 groups, eight bends for six slots, 18 ROM tunes,
-146 presets, 23 stage settings and 57 named cuts. The generator reads everything
+581 knobs and switches in 37 groups, nine bends for six slots, 18 ROM tunes, 150
+presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -36,9 +36,9 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   _knife on the bus_ opens on a row of named cuts: press **machine-gun** or
   **the note never ends** and the rows under it show which controls it set.
   **Random knife** under random ▾ draws from the same table.
-- **Eight bends, six slots.** You pick which are on the board and in what order,
-  so two always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 141 destinations, among
+- **Nine bends, six slots.** You pick which are on the board and in what order,
+  so three always sit out. A mix at zero takes the stage out of the path.
+- **A patch bay that modulates itself.** Four wires, 143 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 146 presets, and a roll button on every heading as well as
+- **Whole boards.** 150 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -807,7 +807,7 @@ one.
 
 ## Pedals
 
-Eight pedals compete for six ordered sockets, so two always sit out. Each has a
+Nine pedals compete for six ordered sockets, so three always sit out. Each has a
 mix, and a mix at zero takes the stage out of the path. The other six follow the
 sockets: all of them are always on the board, their order is one control, and a
 pedal at zero mix leaves the path.
@@ -1028,6 +1028,30 @@ swaps the octave and the sub on a clock, up to audio rate.
 | Rate          | 0.2 Hz to 1 kHz   | Changes per second on the free clock                                                                                                                                                                   |
 | Freeze        | off or on         | Stops the divider where it is, or on the hold voice, stops sampling and lets the cap leak                                                                                                              |
 | Mix           | off to full       | Dry/wet                                                                                                                                                                                                |
+
+</details>
+
+### Codec
+
+A perceptual codec, encoder into decoder: an MDCT, a bit budget spent on the
+loudest bands each frame, and a decoder that conceals lost frames. Low bitrates
+make bands flicker and the top end swirl, long frames smear hits into pre-echo,
+bit errors jump bands and chirp single bins, and a decoder near its deadline
+stutters when the supply sags.
+
+<details>
+<summary>8 controls</summary>
+
+| control      | range                     | what it does                                                                                                |
+| ------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Bitrate      | 4 to 320 kbps             | Bits per second for both channels                                                                           |
+| Frame        | short, normal, long, huge | Transform length: 128, 256, 512 or 1024 samples a hop                                                       |
+| Packet loss  | off to full               | Chance each frame never arrives                                                                             |
+| Conceal      | repeat, mute, noise       | What the decoder plays for a lost or late frame                                                             |
+| Bit errors   | off to full               | Corrupts the stream                                                                                         |
+| Decoder load | off to full               | How close the decoder runs to its deadline                                                                  |
+| Freeze       | off or hold               | Holds the last decoded spectrum and scrambles its signs every frame, a drone made from whatever was playing |
+| Mix          | off to full               | Dry/wet                                                                                                     |
 
 </details>
 
@@ -1253,7 +1277,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 141 of them, filt cut through toy out on keys                                                                          | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 143 of them, filt cut through codec errors                                                                             | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -1477,9 +1501,9 @@ to move it, or move it with the arrow keys. To bring in a bend that is off the
 board, drag it or press it in the first section. A crusher into a filter and a
 filter into a crusher use the same two stages and sound different, and fuzz into
 a reverb gives a wall with a room behind it where a reverb into fuzz gives the
-room itself distorting. Eight bends compete for six positions, so two always sit
-out. All six pedals stay on the board, and a pedal leaves the path when its mix
-is at zero.
+room itself distorting. Nine bends compete for six positions, so three always
+sit out. All six pedals stay on the board, and a pedal leaves the path when its
+mix is at zero.
 
 The panel draws two racks in place of a row of sliders: the six bend-slot
 controls under _sockets_, and the one order control under _after the sockets_.
@@ -1521,7 +1545,7 @@ result:
 
 | control      | range                                                                                              | what it does                                                    |
 | ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct                                               | Which pedal runs in this socket                                 |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct, codec                                        | Which pedal runs in this socket                                 |
 | Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals after the sockets in |
 
 </details>
@@ -1564,7 +1588,7 @@ result:
 
 ### Presets
 
-146 presets. Each name is a link that opens the app with that board loaded, and
+150 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1728,6 +1752,18 @@ the board waits until you press play.
   — Octave and sub swapped at audio rate, so the swap is a pitch too
 - [**stair hold**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:8,octTone:6000,octTrack:0.5,octUp:0.3,octSubSrc:1,octMix:0.8)
   — The sampled voice: steps and aliasing on every divider rise
+- [**dial-up rip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:9,codecRate:8,codecFrame:3,codecMix:1)
+  — The board as an 8 kbps download: a 3 kHz ceiling, bands flickering in and
+  out, the stereo folded to the middle
+- [**corrupt file**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:9,codecRate:48,codecErrors:0.7,codecMix:1)
+  — Bit errors through the stream: bands jump 24 dB for a frame, single bins
+  chirp, and lost sync turns the top of a frame to noise
+- [**bad stream**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:9,codecLoss:0.5,codecMix:1,faultCluster:0.8)
+  — Packets lost in bursts and repeated, so the tune buzzes at the frame rate
+  whenever the line drops
+- [**late frames**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipStarve:0.4,bendSlot0:9,codecRate:64,codecConceal:2,codecCpu:0.45,codecMix:1)
+  — A decoder at its deadline on a sagging supply: as the toy browns out, the
+  frames come late and the codec stutters with it
 - [**lean on it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
   — Skin on the pad rides the cutoff, and pressing harder opens the feedback
 - [**clock wobble**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)

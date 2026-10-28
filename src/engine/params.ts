@@ -699,6 +699,15 @@ export const PARAM_DEFS = [
   ['octFreeze', 'step'],
   ['octMix', 'slew'],
 
+  ['codecRate', 'slew'],
+  ['codecFrame', 'step'],
+  ['codecLoss', 'slew'],
+  ['codecConceal', 'step'],
+  ['codecErrors', 'slew'],
+  ['codecCpu', 'slew'],
+  ['codecFreeze', 'step'],
+  ['codecMix', 'slew'],
+
   ['stompCircuit', 'step'],
   ['stompDrive', 'ramp'],
   ['stompTone', 'slew'],

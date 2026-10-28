@@ -99,6 +99,7 @@ const BY_SOUND: { section: string; kinds: Record<string, string> }[] = [
       Gnash: 'stompbox',
       Clipper: 'distortion',
       Crusher: 'bit crusher',
+      Codec: 'lossy codec',
       Ember: 'tube amp',
     },
   },

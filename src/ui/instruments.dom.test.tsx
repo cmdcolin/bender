@@ -313,7 +313,7 @@ test('every socketed pedal has a face', () => {
   fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
     fireEvent.click(item)
-  expect(bench.get().bends).toHaveLength(8)
+  expect(bench.get().bends).toHaveLength(9)
   for (const name of [
     'ring mod',
     'crusher',
@@ -323,6 +323,7 @@ test('every socketed pedal has a face', () => {
     'screech filter',
     'freq shifter',
     'octave',
+    'codec',
   ])
     expect(group(name)).not.toBeNull()
 })

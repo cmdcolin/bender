@@ -196,8 +196,10 @@ export const DEST = {
   gndBounce: 138,
   pcmGlint: 139,
   chipOutKeys: 140,
+  codecRate: 141,
+  codecErrors: 142,
 } as const
-export const N_DEST = 141
+export const N_DEST = 143
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

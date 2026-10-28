@@ -46,6 +46,11 @@ const FACE: Record<string, Face> = {
     switch: 'octDiv',
     sliders: ['octUp', 'octSub', 'octMix'],
   },
+  Codec: {
+    colour: '#4a5a6b',
+    switch: 'codecConceal',
+    sliders: ['codecRate', 'codecErrors', 'codecMix'],
+  },
 }
 
 function reading(stage: string, at: number, step: number, open: boolean) {

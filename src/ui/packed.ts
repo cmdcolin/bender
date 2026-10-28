@@ -939,6 +939,14 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'arcBars',
   'arcMoves',
   'arcSeed',
+  'codecRate',
+  'codecFrame',
+  'codecLoss',
+  'codecConceal',
+  'codecErrors',
+  'codecCpu',
+  'codecFreeze',
+  'codecMix',
 ]
 
 // Retired controls that old links still carry, each read into the control that

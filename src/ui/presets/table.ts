@@ -1168,6 +1168,57 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'dial-up rip',
+    blurb:
+      'The board as an 8 kbps download: a 3 kHz ceiling, bands flickering in and out, the stereo folded to the middle',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 8,
+      codecFrame: 3,
+    },
+  },
+  {
+    name: 'corrupt file',
+    blurb:
+      'Bit errors through the stream: bands jump 24 dB for a frame, single bins chirp, and lost sync turns the top of a frame to noise',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 48,
+      codecErrors: 0.7,
+    },
+  },
+  {
+    name: 'bad stream',
+    blurb:
+      'Packets lost in bursts and repeated, so the tune buzzes at the frame rate whenever the line drops',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 32,
+      codecLoss: 0.5,
+      faultCluster: 0.8,
+    },
+  },
+  {
+    name: 'late frames',
+    blurb:
+      'A decoder at its deadline on a sagging supply: as the toy browns out, the frames come late and the codec stutters with it',
+    patch: {
+      chipLevel: 0.8,
+      chipStarve: 0.4,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 64,
+      codecCpu: 0.45,
+      codecConceal: 2,
+    },
+  },
+  {
     name: 'lean on it',
     blurb:
       'Skin on the pad rides the cutoff, and pressing harder opens the feedback',

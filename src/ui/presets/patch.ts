@@ -191,6 +191,8 @@ const LANDINGS: Landing[] = [
   at('dist pin gain', ['distMix'], { bend: 'dist' }),
   at('oct rate', ['octMix'], { bend: 'oct' }),
   at('oct chaos', ['octMix'], { bend: 'oct' }),
+  at('codec rate', ['codecMix'], { bend: 'codec' }),
+  at('codec errors', ['codecMix'], { bend: 'codec' }),
   at('kit step tap', ['drumLevel']),
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
   at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),

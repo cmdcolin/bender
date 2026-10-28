@@ -337,6 +337,8 @@ export const PATCH_GROUPS: Group[] = [
             'ground bounce',
             'keys Glint on bus',
             'toy out on keys',
+            'codec rate',
+            'codec errors',
           ],
           groups: [
             {
@@ -497,6 +499,8 @@ export const PATCH_GROUPS: Group[] = [
                 'shift Hz',
                 'oct rate',
                 'oct chaos',
+                'codec rate',
+                'codec errors',
                 'stomp drive',
                 'delay time',
                 'delay filt',

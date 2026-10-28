@@ -725,6 +725,15 @@ export const DEFAULT_CONTROLS = {
   octFreeze: 0,
   octMix: 0,
 
+  codecRate: 32,
+  codecFrame: 2,
+  codecLoss: 0,
+  codecConceal: 0,
+  codecErrors: 0,
+  codecCpu: 0,
+  codecFreeze: 0,
+  codecMix: 0,
+
   stompCircuit: 0,
   stompDrive: 18,
   stompTone: 0.5,

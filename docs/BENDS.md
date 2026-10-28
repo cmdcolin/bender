@@ -765,6 +765,34 @@ an R-2R ladder.
   neighbour's edges, the loudest fault on audio words: D15 cut moves the take
   3.6×, D15 to a rail 2.3×.
 
+## The codec
+
+The Codec bend runs the board through a perceptual encoder and straight into its
+decoder, two frames late. The dry path waits the same two frames.
+
+- **Bitrate:** each frame the encoder spends its bits on the loudest bands and
+  zeroes the rest.
+  - The low-pass sits near 16 kHz at 128 kbps, 10 kHz at 64 and 3 kHz at 8.
+  - Under about 64 kbps, bands flicker in and out frame to frame and the top end
+    swirls.
+  - Mid and side share the budget, and side pays a penalty that grows as the
+    rate falls, so a thin stream folds toward mono.
+- **Frame:** 128 to 1024 samples a hop. A long frame smears each hit backwards
+  into a pre-echo, and a short one buzzes at its frame rate when frames repeat.
+- **Packet loss** and **Conceal:** a lost frame is replayed (a buzz), muted, or
+  rebuilt from the last spectrum with scrambled signs (a hiss shaped like the
+  note). **Fault clustering** bunches losses into bursts.
+- **Bit errors:** a scalefactor bit flip jumps a band by up to 24 dB, a
+  coefficient bit flip chirps one bin at full scale, and a lost sync point turns
+  the rest of the frame above it into noise.
+- **Decoder load:** how close the decoder runs to its deadline. A sagging supply
+  slows it, so a starve or a brownout makes frames late and the decoder conceals
+  them.
+- **Freeze:** holds the last decoded spectrum with fresh signs each frame, a
+  drone made from whatever was playing.
+- The patch bay's **codec rate** and **codec errors** lanes ride Bitrate and Bit
+  errors.
+
 ## The clipper's amp
 
 The Clipper's **the amp** fold rebuilds it as the toy's own LM386 on one of the
