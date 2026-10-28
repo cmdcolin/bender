@@ -2,6 +2,34 @@
 
 All notable changes to bender are documented here.
 
+## [1.20.0](https://github.com/cmdcolin/bender/compare/v1.19.0...v1.20.0) - 2026-10-28
+
+### Features
+- *(ui)* [`cfd1ab8`](https://github.com/cmdcolin/bender/commit/cfd1ab8762e6d19491fdd21a78d5cf737ae4a00e) open a stage on its settings, and show the diagrams from the menu
+- *(dsp)* [`2ca197e`](https://github.com/cmdcolin/bender/commit/2ca197e084bfb497da7699ebf7a591f28caf768b) Wander strays the kit off the grid for a bar now and then
+- *(dsp)* [`7e0b000`](https://github.com/cmdcolin/bender/commit/7e0b000a329017f77e93ee9fa720316bd836593e) Clatter's step counter can run off Plinky's melody divider
+- *(dsp)* [`2b76e6e`](https://github.com/cmdcolin/bender/commit/2b76e6e9d6553ffb1ad70a81fdca899ab8143f35) Clatter's step counter onto Plinky's ROM address lines
+- *(dsp)* [`7f8c0c2`](https://github.com/cmdcolin/bender/commit/7f8c0c2881f5f5b10f7861a3dbd5b6964c95592b) ground bounce, where loud hits clock the toy and the kit early
+- *(dsp)* [`d9a6a48`](https://github.com/cmdcolin/bender/commit/d9a6a488560974ddd813aa875da57c6d32a3f446) Parlor can read Glint's register file as its wave
+- *(dsp)* [`c6af165`](https://github.com/cmdcolin/bender/commit/c6af1651b08a1612ea2d6096f879582835dedd8f) Plinky's output pin onto a column of its own key matrix
+- *(engine)* [`3e5a031`](https://github.com/cmdcolin/bender/commit/3e5a03117ae89d0ceaea2de97683cca23788d928) an arc swings the board between your board and a wild twin
+- *(ui)* [`ad37d8b`](https://github.com/cmdcolin/bender/commit/ad37d8bd47a43f07721721e7452a255a040e0dfa) one Add pedal menu holds the onboard effects and the pedals
+- *(ui)* [`77eaea6`](https://github.com/cmdcolin/bender/commit/77eaea65b9367ef7d9deb631a44a3196c2d379e6) every effect is a pedal, and Add pedal groups them by sound
+- *(dsp)* [`deb77d1`](https://github.com/cmdcolin/bender/commit/deb77d1ea2cc5e1d39819660436f8e616c3d5a96) a lossy codec bend, encoder into decoder
+- *(dsp)* [`0996988`](https://github.com/cmdcolin/bender/commit/0996988ed65f3ed1971807cea368affc1bf12c8b) codec generations, alias, scramble and a wider range
+
+### Fixes
+- *(ui)* [`f983a9a`](https://github.com/cmdcolin/bender/commit/f983a9a9b78158ac9f18e98991a828b166f66626) Parlor's drawing holds the Glint on bus row
+
+### Documentation
+- [`148b92f`](https://github.com/cmdcolin/bender/commit/148b92f3c8c3112cc6e7ea093d01f86168b60b8f) tighten the cross-chip bend help, remeasure the bend ends
+
+### Chores
+- *(ui)* [`e6a06cd`](https://github.com/cmdcolin/bender/commit/e6a06cd4b13df39c6710c284dc5ad6c4cd0abbb6) remeasure the bend ends
+
+### Other Changes
+- [`4c6965a`](https://github.com/cmdcolin/bender/commit/4c6965a42f9f2f52e72132eb02c183a91e62085d) Updates
+
 ## [1.19.0](https://github.com/cmdcolin/bender/compare/v1.18.1...v1.19.0) - 2026-10-25
 
 ### Features
