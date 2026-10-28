@@ -76,6 +76,7 @@ function Mute({
   const atZero = levelAt <= 0
   const muted = switched || atZero
   const pedal = isPedal(stage)
+  const lit = pedal ? !muted : muted
   const where = useHeardThrough(stage)
   const heard = !pedal && where.length > 0
   const popover = !pedal && level !== undefined && !bare
@@ -112,7 +113,7 @@ function Mute({
       >
         <button
           ref={setCap}
-          className={muted ? styles.capOn : styles.cap}
+          className={lit ? styles.capOn : styles.cap}
           data-control={bare ? control : undefined}
           aria-label={`${pedal ? 'bypass' : popover ? 'volume' : 'mute'} ${stage}`}
           aria-pressed={popover ? undefined : muted}
