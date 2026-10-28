@@ -73,6 +73,18 @@ test('Enter and Space on a focused key hold it until they come up', () => {
   }
 })
 
+test('a key held by Enter lets go when an arrow walks off it', () => {
+  bed()
+  const first = key('D3')
+  first.focus()
+  fireEvent.keyDown(first, { key: 'Enter' })
+  expect(engine.fmKeysDown.get().size).toBe(1)
+  fireEvent.keyDown(first, { key: 'ArrowRight' })
+  expect(document.activeElement).not.toBe(first)
+  fireEvent.keyUp(document.activeElement!, { key: 'Enter' })
+  expect(engine.fmKeysDown.get().size).toBe(0)
+})
+
 test('a key off the scale lights under the finger as well as the key it closes', () => {
   engine.set('keyScale', SCALE_NAMES.indexOf('major'))
   bed()

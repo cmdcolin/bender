@@ -388,6 +388,7 @@ export function Keybed({
         data-note={note}
         tabIndex={note === Math.min(stop, top) ? 0 : -1}
         onFocus={() => setStop(note)}
+        onBlur={() => isDown(note) && release(note)}
         onPointerDown={e => {
           if (black) e.stopPropagation()
           grab(note)(e)
