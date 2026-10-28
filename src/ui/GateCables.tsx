@@ -13,9 +13,9 @@ import { createStore, type Store } from '../listeners.ts'
 import { follow, pressIsClick } from './cableDrag.ts'
 import { Socket, Wire } from './CableParts.tsx'
 import {
+  boot,
   hanging,
   laid,
-  boot,
   PLUG,
   type Anchor,
   type Point,
@@ -24,8 +24,9 @@ import {
 import {
   connectionInto,
   MACHINE_OF,
+  PLINKY_TO_KIT,
   SIGNAL_COLOUR,
-  type Signal,
+  type Connection,
 } from './connections.ts'
 import {
   useBoardValue,
@@ -36,37 +37,34 @@ import {
 import styles from './GateCables.module.css'
 import { Tip } from './Tip.tsx'
 
-import type { ControlKey } from '../controls.ts'
 import type { NoteDest } from '../engine/messages.ts'
 
-// The patch cords on the bench. Two kinds run down a gutter beside the stack of
-// keyboards, each in a lane of its own, so none passes behind a case:
+// The patch cords on the bench, in lanes down a gutter beside the keyboards:
 //
-// - GATE: the jumper off Plinky's gate line. Plinky has an output jack per
-//   keyboard on its right edge, and each keyboard that can take the gate has an
-//   input jack on its right edge.
-// - TRIG: the kit's trigger lines. A plate on top of Clatter has a jack per
-//   voice and one for any hit, and every keyboard has a TRIG input under its
-//   gate jack. The jack a cable leaves from picks the voice that strikes.
+// - GATE (amber) carries Plinky's notes from a jack on its right edge to each
+//   keyboard's GATE jack, and to the GATE jack on the kit's plate.
+// - TRIG (purple) carries a kit voice from the plate on top of Clatter to a
+//   keyboard's TRIG jack. The jack a cable leaves from picks the voice.
 //
-// Pressing an input jack plugs it in or pulls it out, and pressing a cable
-// pulls it out. Dragging a jack carries a cable's end with the pointer: letting
-// go over a jack at the other end of that kind of cable plugs it in, and
-// letting go anywhere else pulls it out.
+// Pressing a jack plugs its cable in or pulls it out. Dragging an end carries
+// it with the pointer: letting go over a jack that takes that kind of cable
+// plugs it in there, and letting go anywhere else pulls it out.
 
-type Taker = Exclude<NoteDest, 'toy'>
+type Taker = Exclude<NoteDest, 'toy'> | 'kit'
+type Keyboard = Exclude<Taker, 'kit'>
 
-const TAKERS: Taker[] = ['fm', 'pcm', 'mono']
+const TAKERS: Taker[] = ['fm', 'pcm', 'mono', 'kit']
 
 const GATE_COLOUR = SIGNAL_COLOUR.notes
 const TRIG_COLOUR = SIGNAL_COLOUR.hits
 
 const TRIG_TAKERS: NoteDest[] = ['toy', 'fm', 'pcm', 'mono']
 
-const controlInto = (taker: NoteDest, signal: Signal) =>
-  connectionInto(MACHINE_OF[taker], signal)!.key
+const gateInto = (taker: Taker): Connection =>
+  taker === 'kit' ? PLINKY_TO_KIT : connectionInto(MACHINE_OF[taker], 'notes')!
 
-const trigControl = (taker: NoteDest) => controlInto(taker, 'hits')
+const trigControl = (taker: NoteDest) =>
+  connectionInto(MACHINE_OF[taker], 'hits')!.key
 
 const ANY_HIT = N_DRUM_VOICES + 1
 
@@ -81,19 +79,23 @@ const PLATE_NAME: Record<string, string> = {
   'any hit': 'any',
 }
 
-const LANE_IN = 8
+const plateName = (voice: number) => {
+  const name = voiceName(voice)
+  return PLATE_NAME[name] ?? name
+}
+
+const LANE_IN = 15
 const LANE_PITCH = 7
 const BAND_IN = 6
 const BAND_PITCH = 6
 
-interface Socket {
+interface GateIn {
   el: HTMLElement
-  control: ControlKey
-  notes: Store<ReadonlySet<number>>
+  notes?: Store<ReadonlySet<number>>
 }
 
-const inputs = createStore<ReadonlyMap<Taker, Socket>>(new Map())
-const outputs = createStore<ReadonlyMap<Taker, HTMLElement>>(new Map())
+const inputs = createStore<ReadonlyMap<Taker, GateIn>>(new Map())
+const gateOut = createStore<HTMLElement | null>(null)
 const trigIns = createStore<ReadonlyMap<NoteDest, HTMLElement>>(new Map())
 const trigOuts = createStore<ReadonlyMap<number, HTMLElement>>(new Map())
 
@@ -117,7 +119,8 @@ function keep<K, V>(
   store.set(next)
 }
 
-type End = 'out' | 'in'
+/** One end of a GATE cable: a machine's GATE input, or Plinky's output. */
+type GateEnd = Taker | 'plinky'
 
 /** One end of a TRIG cable: a keyboard's input, or a voice's jack on the kit. */
 type TrigEnd =
@@ -126,25 +129,40 @@ type TrigEnd =
 
 type Drag = Point &
   (
-    | { line: 'gate'; taker: Taker; end: End }
+    | { line: 'gate'; fixed: GateEnd; carried: Taker | null }
     | { line: 'trig'; fixed: TrigEnd; carried: NoteDest | null }
   )
 
 const dragging = createStore<Drag | null>(null)
 
-function grab(taker: Taker, end: End, e: ReactPointerEvent) {
+const plugged = (taker: Taker) => gateInto(taker).plugged(engine.controls.get())
+
+const setGate = (taker: Taker, on: boolean) => {
+  const x = gateInto(taker)
+  engine.armStep()
+  engine.set(x.key, on ? x.plugIn : x.pullOut)
+}
+
+const gateEndOf = (el: HTMLElement | null): GateEnd | null =>
+  el?.dataset.gateOut !== undefined
+    ? 'plinky'
+    : (TAKERS.find(t => t === el?.dataset.gateTaker) ?? null)
+
+/** Picks up a GATE cable: the one plugged into a machine's input, or a fresh
+    one out of Plinky's output or an empty input. */
+function grab(start: GateEnd, e: ReactPointerEvent) {
+  const carried = start !== 'plinky' && plugged(start) ? start : null
+  const fixed: GateEnd = carried ? 'plinky' : start
   follow(
     e,
-    at => dragging.set(at && { line: 'gate', taker, end, ...at }),
+    at => dragging.set(at && { line: 'gate', fixed, carried, ...at }),
     over => {
-      const socket = inputs.get().get(taker)
-      if (!socket) return
-      if (over?.dataset.gateTaker === taker && over.dataset.gateEnd === end)
-        return
+      const end = gateEndOf(over)
       const landed =
-        over?.dataset.gateTaker === taker && over.dataset.gateEnd !== end
-      const plugged = engine.controls.get()[socket.control] < 0.5
-      if (landed !== plugged) setGate(socket.control, !landed)
+        end && (end === 'plinky') !== (fixed === 'plinky') ? end : null
+      const taker = fixed === 'plinky' ? landed : fixed
+      if (carried && carried !== taker) setGate(carried, false)
+      if (landed && taker && taker !== 'plinky') setGate(taker, true)
     },
   )
 }
@@ -183,71 +201,76 @@ function grabTrig(start: TrigEnd, e: ReactPointerEvent) {
   )
 }
 
-const setGate = (control: ControlKey, cut: boolean) => {
-  engine.armStep()
-  engine.set(control, cut ? 1 : 0)
-}
-
 const setTrig = (taker: NoteDest, voice: number) => {
   engine.armStep()
   engine.set(trigControl(taker), voice)
 }
 
-/** The input jack on a keyboard's right edge. Pressing it plugs the cable in or
-    pulls it out. */
+const useGatePlugged = (taker: Taker) =>
+  useBoardValue(c => gateInto(taker).plugged(c))
+
+/** Whether a GATE input lights as somewhere to drop the cable in the hand. */
+const useGateTarget = (taker: Taker, on: boolean) =>
+  useStoreSelect(
+    dragging,
+    d =>
+      d?.line === 'gate' &&
+      d.fixed === 'plinky' &&
+      (!on || d.carried === taker),
+  )
+
+function useGateIn(taker: Taker, notes?: Store<ReadonlySet<number>>) {
+  return useCallback(
+    (el: HTMLElement | null) => keep(inputs, taker, el && { el, notes }),
+    [taker, notes],
+  )
+}
+
+/** The GATE jack on a keyboard's right edge. */
 export function GateJumper({
   taker,
   notes,
   cutTip,
   solderedTip,
 }: {
-  taker: Taker
-  /** What this machine is sounding, which includes the toy's notes with the jumper on. */
+  taker: Keyboard
+  /** What this machine is sounding, which includes Plinky's notes while the cable is in. */
   notes: Store<ReadonlySet<number>>
   cutTip: string
   solderedTip: string
 }) {
-  const control = controlInto(taker, 'notes')
-  const cut = useControlValue(control) > 0.5
+  const on = useGatePlugged(taker)
   const toySounding = useStoreValue(engine.chipNotes).size > 0
   const sounding = useStoreValue(notes).size > 0
-  const lamp = cut ? 'off' : toySounding && sounding ? 'sounding' : 'wired'
-  const target = useStoreSelect(
-    dragging,
-    d => d?.line === 'gate' && d.taker === taker && d.end === 'out',
-  )
-  const place = useCallback(
-    (el: HTMLElement | null) => {
-      if (el) keep(inputs, taker, { el, control, notes })
-      else keep(inputs, taker, null)
-    },
-    [taker, control, notes],
-  )
+  const lamp = !on ? 'off' : toySounding && sounding ? 'sounding' : 'wired'
+  const target = useGateTarget(taker, on)
+  const place = useGateIn(taker, notes)
   return (
     <Tip
-      text={`${cut ? cutTip : solderedTip}. The ring lights while Plinky’s notes are reaching it.`}
+      text={`${on ? solderedTip : cutTip}. The ring lights while Plinky’s notes are reaching it.`}
     >
       <button
         ref={place}
         className={styles.jack}
-        aria-pressed={!cut}
-        aria-label={cut ? 'own keys only' : 'with Plinky'}
+        aria-pressed={on}
+        aria-label={on ? 'with Plinky' : 'own keys only'}
         data-gate-jack=""
         data-gate-taker={taker}
         data-gate-end="in"
-        onPointerDown={e => grab(taker, 'in', e)}
+        onPointerDown={e => grab(taker, e)}
         onClick={() => {
-          if (pressIsClick()) setGate(control, !cut)
+          if (pressIsClick()) setGate(taker, !on)
         }}
       >
         <Socket colour={GATE_COLOUR} lamp={lamp} target={target} />
+        <span className={styles.legend}>gate</span>
       </button>
     </Tip>
   )
 }
 
-/** A keyboard's TRIG input, under its gate jack, or at the top of Plinky's
-    edge. Pressing it patches in every hit on the kit, or pulls the cable. */
+/** A keyboard's TRIG input, under its GATE jack. Pressing it patches in every
+    hit on the kit, or pulls the cable. */
 export function TrigJack({ taker }: { taker: NoteDest }) {
   const voice = Math.round(useControlValue(trigControl(taker)))
   const target = useStoreSelect(
@@ -268,7 +291,7 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
     >
       <button
         ref={place}
-        className={taker === 'toy' ? styles.trigTop : styles.trig}
+        className={styles.trig}
         aria-pressed={voice > 0}
         aria-label="kit trigger"
         data-gate-jack=""
@@ -283,46 +306,43 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
           lamp={voice > 0 ? 'wired' : 'off'}
           target={target}
         />
+        <span className={styles.legend}>trig</span>
+        {voice > 0 && (
+          <span className={styles.voice} data-trig-shows="">
+            {plateName(voice)}
+          </span>
+        )}
       </button>
     </Tip>
   )
 }
 
-function OutputSocket({ taker }: { taker: Taker }) {
+/** Plinky's GATE output, on its right edge where every other keyboard has its
+    GATE input. Cables stack on it, one for each machine its notes reach. */
+export function GateOut() {
   const target = useStoreSelect(
     dragging,
-    d => d?.line === 'gate' && d.taker === taker && d.end === 'in',
+    d => d?.line === 'gate' && d.fixed !== 'plinky',
   )
-  const place = useCallback(
-    (el: HTMLElement | null) => keep(outputs, taker, el),
-    [taker],
-  )
+  const lit = useBoardValue(c => TAKERS.some(t => gateInto(t).plugged(c)))
+  const place = useCallback((el: HTMLElement | null) => gateOut.set(el), [])
   return (
-    <span
-      ref={place}
-      className={styles.out}
-      data-gate-jack=""
-      data-gate-taker={taker}
-      data-gate-end="out"
-      onPointerDown={e => grab(taker, 'out', e)}
-    >
-      <Socket colour={GATE_COLOUR} target={target} />
-    </span>
-  )
-}
-
-/** Plinky's right edge: one output jack for each keyboard on the bench, the
-    nearest keyboard's lowest, so the cables nest in the gutter. */
-export function GateOut() {
-  const present = useStoreValue(inputs)
-  return (
-    <span className={styles.outs}>
-      {TAKERS.filter(t => present.has(t))
-        .toReversed()
-        .map(t => (
-          <OutputSocket key={t} taker={t} />
-        ))}
-    </span>
+    <Tip text="Plinky’s notes out. Drag a cable from here to a GATE jack on another machine, and that machine plays every note Plinky strikes">
+      <span
+        ref={place}
+        className={styles.out}
+        data-gate-jack=""
+        data-gate-out=""
+        onPointerDown={e => grab('plinky', e)}
+      >
+        <Socket
+          colour={GATE_COLOUR}
+          lamp={lit ? 'wired' : undefined}
+          target={target}
+        />
+        <span className={styles.legend}>gate</span>
+      </span>
+    </Tip>
   )
 }
 
@@ -355,19 +375,58 @@ function TrigOut({ voice }: { voice: number }) {
           lamp={lit ? 'wired' : undefined}
           target={target}
         />
-        <span className={styles.plateName}>{PLATE_NAME[name] ?? name}</span>
+        <span className={styles.plateName}>{plateName(voice)}</span>
       </span>
     </Tip>
   )
 }
 
-/** The jack plate on top of the kit: a trigger output per voice, and one that
-    fires on any hit. It shows while a keyboard with a TRIG jack is out. */
+/** The GATE input on the kit's plate, where Plinky's notes strike the kit. */
+function KitGate() {
+  const on = useGatePlugged('kit')
+  const target = useGateTarget('kit', on)
+  const place = useGateIn('kit')
+  return (
+    <Tip
+      text={
+        on
+          ? 'Plinky’s notes strike the kit. Kit voice Plinky plays, in the trigger patch, picks the voice. Press to pull the cable'
+          : 'The kit’s GATE input. Press to let every note Plinky plays strike the kit, or drag a cable here from Plinky'
+      }
+    >
+      <button
+        ref={place}
+        className={styles.kitGate}
+        aria-pressed={on}
+        aria-label="Plinky into the kit"
+        data-gate-jack=""
+        data-gate-taker="kit"
+        data-gate-end="in"
+        onPointerDown={e => grab('kit', e)}
+        onClick={() => {
+          if (pressIsClick()) setGate('kit', !on)
+        }}
+      >
+        <Socket
+          colour={GATE_COLOUR}
+          lamp={on ? 'wired' : 'off'}
+          target={target}
+        />
+        <span className={styles.plateName}>gate</span>
+      </button>
+    </Tip>
+  )
+}
+
+/** The jack plate on top of the kit: Plinky's GATE input, then a trigger
+    output per voice and one that fires on any hit. It shows while a keyboard
+    with a TRIG jack is out. */
 export function TrigPlate() {
   const takers = useStoreValue(trigIns)
   if (takers.size === 0) return null
   return (
     <div className={styles.plate} data-trig-plate="">
+      <KitGate />
       {TRIG_VOICES.map(v => (
         <TrigOut key={v} voice={v} />
       ))}
@@ -388,74 +447,85 @@ const socketOf = (el: HTMLElement) => el.querySelector('svg') ?? el
 const caseOf = (el: HTMLElement) =>
   el.closest<HTMLElement>('[role=group]') ?? el
 
-/** Every cable's lane in the gutter past the widest keyboard. GATE cables take
-    the inner lanes, the nearest keyboard's innermost; TRIG cables take the
-    outer lanes, the keyboard nearest the kit's innermost, and each crosses to
-    the gutter at a height of its own over the kit. */
+/** Every cable's lane in the gutter past the widest keyboard. GATE cables to
+    the keyboards take the inner lanes, the nearest keyboard's innermost. The
+    cables to and from the kit's plate take the outer lanes, the end nearest
+    the kit innermost, and each crosses to the gutter at a height of its own
+    over the kit. */
 function route(
   origin: DOMRect,
   ends: {
-    ins: ReadonlyMap<Taker, Socket>
-    outs: ReadonlyMap<Taker, HTMLElement>
+    ins: ReadonlyMap<Taker, GateIn>
+    out: HTMLElement | null
     tIns: ReadonlyMap<NoteDest, HTMLElement>
     tOuts: ReadonlyMap<number, HTMLElement>
   },
-  plugged: ReadonlyMap<NoteDest, number>,
+  struck: ReadonlyMap<NoteDest, number>,
 ): Layout {
-  const { ins, outs, tIns, tOuts } = ends
+  const { ins, out, tIns, tOuts } = ends
   const jacks = new Map<string, Point>()
-  for (const [t, s] of ins) jacks.set(`gate:in:${t}`, centre(s.el, origin))
-  for (const [t, el] of outs) jacks.set(`gate:out:${t}`, centre(el, origin))
-  for (const [t, el] of tIns) jacks.set(`trig:in:${t}`, centre(el, origin))
+  for (const [t, s] of ins)
+    jacks.set(`gate:in:${t}`, centre(socketOf(s.el), origin))
+  if (out) jacks.set('gate:out', centre(socketOf(out), origin))
+  for (const [t, el] of tIns)
+    jacks.set(`trig:in:${t}`, centre(socketOf(el), origin))
   for (const [v, el] of tOuts)
     jacks.set(`trig:out:${v}`, centre(socketOf(el), origin))
 
+  const plinky = jacks.get('gate:out')
   const gates = TAKERS.flatMap(taker => {
-    const socket = ins.get(taker)
-    const from = jacks.get(`gate:out:${taker}`)
     const to = jacks.get(`gate:in:${taker}`)
-    if (!socket || !from || !to) return []
-    const top = caseOf(socket.el).getBoundingClientRect().top - origin.top
-    return [{ taker, from, to, top: Math.round(top) }]
+    return taker !== 'kit' && plinky && to ? [{ taker, from: plinky, to }] : []
   }).toSorted((a, b) => a.to.y - b.to.y)
 
-  const trigs = TRIG_TAKERS.flatMap(taker => {
-    const from = jacks.get(`trig:out:${plugged.get(taker)}`)
-    const to = jacks.get(`trig:in:${taker}`)
-    return from && to ? [{ taker, from, to }] : []
-  })
-  const plate = Math.min(...trigs.map(t => t.from.y))
-  const nearest = trigs.toSorted(
-    (a, b) => Math.abs(a.to.y - plate) - Math.abs(b.to.y - plate),
+  const kitTo = jacks.get('gate:in:kit')
+  const plated = [
+    ...TRIG_TAKERS.flatMap(taker => {
+      const onPlate = jacks.get(`trig:out:${struck.get(taker)}`)
+      const onEdge = jacks.get(`trig:in:${taker}`)
+      return onPlate && onEdge
+        ? [{ id: `trig:${taker}`, onPlate, onEdge, intoKit: false }]
+        : []
+    }),
+    ...(plinky && kitTo
+      ? [{ id: 'gate:kit', onPlate: kitTo, onEdge: plinky, intoKit: true }]
+      : []),
+  ]
+  const plate = Math.min(...plated.map(t => t.onPlate.y))
+  const nearest = plated.toSorted(
+    (a, b) => Math.abs(a.onEdge.y - plate) - Math.abs(b.onEdge.y - plate),
   )
 
   const edge = Math.max(
     ...gates.flatMap(g => [g.from.x, g.to.x]),
-    ...trigs.map(t => t.to.x),
+    ...plated.map(t => t.onEdge.x),
   )
   const lane = (i: number) => edge + PLUG + LANE_IN + i * LANE_PITCH
 
   const routes = new Map<string, Route>()
-  gates.forEach(({ taker, from, to, top }, i) => {
+  gates.forEach(({ taker, from, to }, i) => {
     const a = boot({ at: from, facing: 'right' })
     const b = boot({ at: to, facing: 'right' })
     routes.set(`gate:${taker}`, {
       from: { at: from, facing: 'right' },
       to: { at: to, facing: 'right' },
       bends: [a, { x: lane(i), y: a.y }, { x: lane(i), y: b.y }, b],
-      tag: { x: lane(i) - 34, y: top - 18 },
     })
   })
-  nearest.forEach(({ taker, from, to }, i) => {
+  nearest.forEach(({ id, onPlate, onEdge, intoKit }, i) => {
     const x = lane(gates.length + i)
     const band = plate - PLUG - BAND_IN - (nearest.length - 1 - i) * BAND_PITCH
-    const a = boot({ at: from, facing: 'up' })
-    const b = boot({ at: to, facing: 'right' })
-    routes.set(`trig:${taker}`, {
-      from: { at: from, facing: 'up' },
-      to: { at: to, facing: 'right' },
-      bends: [a, { x: a.x, y: band }, { x, y: band }, { x, y: b.y }, b],
-    })
+    const top: Anchor = { at: onPlate, facing: 'up' }
+    const side: Anchor = { at: onEdge, facing: 'right' }
+    const a = boot(top)
+    const b = boot(side)
+    const bends = [a, { x: a.x, y: band }, { x, y: band }, { x, y: b.y }, b]
+    routes.set(
+      id,
+      intoKit
+        ? { from: side, to: top, bends: bends.toReversed() }
+        : { from: top, to: side, bends },
+    )
   })
   return { routes, jacks }
 }
@@ -469,22 +539,22 @@ const same = (a: Layout, b: Layout) =>
 export function GateBench({ children }: { children: ReactNode }) {
   const bench = useRef<HTMLDivElement>(null)
   const ins = useStoreValue(inputs)
-  const outs = useStoreValue(outputs)
+  const out = useStoreValue(gateOut)
   const tIns = useStoreValue(trigIns)
   const tOuts = useStoreValue(trigOuts)
   const { routes, jacks } = useStoreValue(spots)
   const drag = useStoreValue(dragging)
-  const struck = useBoardValue(c =>
+  const voices = useBoardValue(c =>
     TRIG_TAKERS.map(t => Math.round(c[trigControl(t)])).join(','),
   )
-  const plugged = useMemo(() => {
-    const voices = struck.split(',').map(Number)
-    return new Map(TRIG_TAKERS.map((t, i) => [t, voices[i]!]))
-  }, [struck])
+  const struck = useMemo(() => {
+    const each = voices.split(',').map(Number)
+    return new Map(TRIG_TAKERS.map((t, i) => [t, each[i]!]))
+  }, [voices])
 
   const lanes =
-    TAKERS.filter(t => ins.has(t) && outs.has(t)).length +
-    TRIG_TAKERS.filter(t => tIns.has(t) && tOuts.has(plugged.get(t)!)).length
+    (out ? TAKERS.filter(t => ins.has(t)).length : 0) +
+    TRIG_TAKERS.filter(t => tIns.has(t) && tOuts.has(struck.get(t)!)).length
   const gutter =
     ins.size + tIns.size > 0
       ? PLUG + LANE_IN + Math.max(1, lanes) * LANE_PITCH + 6
@@ -497,8 +567,8 @@ export function GateBench({ children }: { children: ReactNode }) {
     const measure = () => {
       const next = route(
         root.getBoundingClientRect(),
-        { ins, outs, tIns, tOuts },
-        plugged,
+        { ins, out, tIns, tOuts },
+        struck,
       )
       if (!same(spots.get(), next)) spots.set(next)
     }
@@ -518,7 +588,7 @@ export function GateBench({ children }: { children: ReactNode }) {
       watch.disconnect()
       window.removeEventListener('resize', later)
     }
-  }, [ins, outs, tIns, tOuts, plugged])
+  }, [ins, out, tIns, tOuts, struck])
 
   return (
     <div
@@ -532,17 +602,17 @@ export function GateBench({ children }: { children: ReactNode }) {
       <svg className={styles.cables} aria-hidden="true">
         {TAKERS.map(t => {
           const spot = routes.get(`gate:${t}`)
-          const socket = ins.get(t)
+          const gateIn = ins.get(t)
           return spot &&
-            socket &&
-            !(drag?.line === 'gate' && drag.taker === t) ? (
-            <Cable key={t} taker={t} socket={socket} spot={spot} />
+            gateIn &&
+            !(drag?.line === 'gate' && drag.carried === t) ? (
+            <Cable key={t} taker={t} notes={gateIn.notes} spot={spot} />
           ) : null
         })}
         {TRIG_TAKERS.map(t => {
           const spot = routes.get(`trig:${t}`)
           return spot &&
-            plugged.get(t)! > 0 &&
+            struck.get(t)! > 0 &&
             !(drag?.line === 'trig' && drag.carried === t) ? (
             <TrigCable key={t} taker={t} spot={spot} />
           ) : null
@@ -550,7 +620,7 @@ export function GateBench({ children }: { children: ReactNode }) {
       </svg>
       {drag && (
         <svg className={styles.held} aria-hidden="true">
-          <Held drag={drag} routes={routes} jacks={jacks} />
+          <Held drag={drag} jacks={jacks} />
         </svg>
       )}
     </div>
@@ -560,19 +630,24 @@ export function GateBench({ children }: { children: ReactNode }) {
 /** The cable in the hand, from the end still plugged in to the pointer. */
 function Held({
   drag,
-  routes,
   jacks,
 }: {
   drag: Drag
-  routes: ReadonlyMap<string, Route>
   jacks: ReadonlyMap<string, Point>
 }) {
   if (drag.line === 'gate') {
-    const held = routes.get(`gate:${drag.taker}`)
-    if (!held) return null
+    const at =
+      drag.fixed === 'plinky'
+        ? jacks.get('gate:out')
+        : jacks.get(`gate:in:${drag.fixed}`)
+    if (!at) return null
+    const stays: Anchor = {
+      at,
+      facing: drag.fixed === 'kit' ? 'up' : 'right',
+    }
     const loose: Anchor = { at: drag, facing: 'right' }
-    const from = drag.end === 'out' ? loose : held.from
-    const to = drag.end === 'in' ? loose : held.to
+    const from = drag.fixed === 'plinky' ? stays : loose
+    const to = drag.fixed === 'plinky' ? loose : stays
     return (
       <Wire path={hanging(from, to)} from={from} to={to} colour={GATE_COLOUR} />
     )
@@ -594,34 +669,39 @@ function Held({
 
 function Cable({
   taker,
-  socket,
+  notes,
   spot,
 }: {
   taker: Taker
-  socket: Socket
+  notes?: Store<ReadonlySet<number>>
   spot: Route
 }) {
-  const cut = useControlValue(socket.control) > 0.5
+  const on = useGatePlugged(taker)
   const toySounding = useStoreValue(engine.chipNotes).size > 0
-  const sounding = useStoreValue(socket.notes).size > 0 && toySounding
+  const heard = useStoreValue(notes ?? engine.chipNotes).size > 0
   const path = useMemo(() => laid(spot.bends), [spot])
-  if (cut) return null
+  if (!on) return null
   return (
     <Wire
       path={path}
       from={spot.from}
       to={spot.to}
       colour={GATE_COLOUR}
-      sounding={sounding}
+      sounding={notes !== undefined && heard && toySounding}
       pull={{
-        title:
-          'Pull the plug, or drag the end off: Plinky’s gate stops reaching this keyboard',
-        run: () => setGate(socket.control, true),
+        title: `Pull the plug, or drag the end to another GATE jack: Plinky’s notes stop reaching ${MACHINE_NAME[taker]}`,
+        run: () => setGate(taker, false),
       }}
-      onGrab={e => grab(taker, 'in', e)}
-      tag={spot.tag}
+      onGrab={e => grab(taker, e)}
     />
   )
+}
+
+const MACHINE_NAME: Record<Taker, string> = {
+  fm: 'Glint',
+  pcm: 'Parlor',
+  mono: 'Growler',
+  kit: 'the kit',
 }
 
 function TrigCable({ taker, spot }: { taker: NoteDest; spot: Route }) {

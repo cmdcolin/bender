@@ -33,8 +33,8 @@ export function PcmKeys({
           <GateJumper
             taker="pcm"
             notes={engine.pcmNotes}
-            cutTip="the jumper off Plinky’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-            solderedTip="the keyboard’s key input is soldered onto Plinky’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
+            cutTip="No cable in Parlor’s GATE jack, so the keyboard plays these keys, its TRIG cable and nothing else. Press to plug Plinky’s notes in"
+            solderedTip="Plinky’s notes reach Parlor through this cable, so the demo song plays it as well as these keys. Press to pull the cable"
           />
           <TrigJack taker="pcm" />
         </>

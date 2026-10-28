@@ -1,3 +1,4 @@
+import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { choiceName } from './controls/index.ts'
 
 import type { ControlKey, Controls } from '../controls.ts'
@@ -14,6 +15,9 @@ export interface Connection {
   from: Machine
   to: Machine
   plugged: (c: Controls) => boolean
+  /** The control's value with the cable plugged in by hand, and pulled out. */
+  plugIn: number
+  pullOut: number
 }
 
 export const MACHINE_OF: Record<NoteDest, Machine> = {
@@ -34,6 +38,8 @@ const jumper = (key: ControlKey, to: Machine): Connection => ({
   from: 'Plinky',
   to,
   plugged: c => c[key] < 0.5,
+  plugIn: 0,
+  pullOut: 1,
 })
 
 const voice = (
@@ -47,6 +53,8 @@ const voice = (
   from,
   to,
   plugged: c => Math.round(c[key]) > 0,
+  plugIn: ANY_CHOICE,
+  pullOut: 0,
 })
 
 export const KEY_LINE = [

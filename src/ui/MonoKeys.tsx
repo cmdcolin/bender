@@ -36,8 +36,8 @@ export function MonoKeys({
           <GateJumper
             taker="mono"
             notes={engine.monoNotes}
-            cutTip="the jumper off Plinky’s gate is cut, so notes reach the synth from these keys, the kit’s trigger lines and a controller. Press to solder it back on"
-            solderedTip="the synth’s key input is soldered onto Plinky’s gate, so the tune next door plays it too, an octave or two down. Press to cut the jumper"
+            cutTip="No cable in Growler’s GATE jack, so notes reach the synth from these keys, its TRIG cable and a controller. Press to plug Plinky’s notes in"
+            solderedTip="Plinky’s notes reach Growler through this cable, so the tune plays it too, an octave or two down. Press to pull the cable"
           />
           <TrigJack taker="mono" />
         </>

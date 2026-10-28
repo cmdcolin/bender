@@ -21,7 +21,6 @@ export interface Route {
   to: Anchor
   /** The corners the cable turns, plug boot to plug boot. */
   bends: Point[]
-  tag?: Point
 }
 
 export const boot = ({ at, facing }: Anchor): Point =>

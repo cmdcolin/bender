@@ -47,8 +47,8 @@ export function FmKeys({
           <GateJumper
             taker="fm"
             notes={engine.fmNotes}
-            cutTip="the jumper off Plinky’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-            solderedTip="the chip’s key input is soldered onto Plinky’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
+            cutTip="No cable in Glint’s GATE jack, so the chip plays these keys, its TRIG cable and nothing else. Press to plug Plinky’s notes in"
+            solderedTip="Plinky’s notes reach Glint through this cable, so the chip plays whatever Plinky strikes as well as these keys. Press to pull the cable"
           />
           <TrigJack taker="fm" />
         </>

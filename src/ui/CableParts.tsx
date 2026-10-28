@@ -1,5 +1,5 @@
 import { pressIsClick } from './cableDrag.ts'
-import { PLUG, type Anchor, type Path, type Point } from './cablePaths.ts'
+import { PLUG, type Anchor, type Path } from './cablePaths.ts'
 import styles from './GateCables.module.css'
 
 import type { PointerEvent as ReactPointerEvent } from 'react'
@@ -68,7 +68,7 @@ function Plug({ at, facing, colour }: Anchor & { colour: string }) {
 }
 
 /** One cable between two plugs, with an arrowhead pointing the way the signal
-    runs. A cable with a `pull` also takes a press anywhere along it. */
+    runs. A cable with a `pull` takes a press anywhere along it. */
 export function Wire({
   path,
   from,
@@ -77,7 +77,6 @@ export function Wire({
   sounding = false,
   pull,
   onGrab,
-  tag,
 }: {
   path: Path
   from: Anchor
@@ -86,7 +85,6 @@ export function Wire({
   sounding?: boolean
   pull?: { title: string; run: () => void }
   onGrab?: (e: ReactPointerEvent) => void
-  tag?: Point
 }) {
   const press = pull && {
     onPointerDown: onGrab,
@@ -114,25 +112,6 @@ export function Wire({
       />
       <Plug {...from} colour={colour} />
       <Plug {...to} colour={colour} />
-      {pull && tag && (
-        <g
-          className={styles.tag}
-          transform={`translate(${tag.x} ${tag.y}) rotate(-4)`}
-          {...press}
-        >
-          <title>{pull.title}</title>
-          <rect x="-21" y="-8" width="45" height="16" rx="3" />
-          <circle cx="-16" cy="0" r="1.6" />
-          <text x="-2" y="3" textAnchor="middle">
-            GATE
-          </text>
-          <polygon
-            className={styles.drop}
-            points="-4.5,-3.5 4.5,-3.5 0,4.5"
-            transform="translate(15 0)"
-          />
-        </g>
-      )}
     </g>
   )
 }

@@ -277,7 +277,7 @@ test('a touch screen keeps no keyboard settings', () => {
   expect(bed('plinky').queryByRole('checkbox')).toBeNull()
 })
 
-test('a soldered jumper draws a cable from Plinky to the keyboard, and pulling the plug removes it', () => {
+test('a GATE cable runs from Plinky to the keyboard, and pulling the plug removes it', () => {
   const { container } = render(
     <>
       <GateBench>
@@ -287,8 +287,8 @@ test('a soldered jumper draws a cable from Plinky to the keyboard, and pulling t
     </>,
   )
   act(() => engine.set('fmKeyGate', 0))
-  expect(container.querySelectorAll('[data-lamp="wired"]').length).toBe(1)
-  const cables = () => container.querySelectorAll('svg[aria-hidden] g > title')
+  expect(container.querySelectorAll('[data-lamp="wired"]').length).toBe(2)
+  const cables = () => container.querySelectorAll('path[class*=grab]')
   expect(cables().length).toBe(1)
   const grab = container.querySelector('path[class*=grab]')!
   fireEvent.click(grab)
@@ -299,7 +299,7 @@ test('a soldered jumper draws a cable from Plinky to the keyboard, and pulling t
   expect(engine.controls.get().fmKeyGate).toBe(0)
 })
 
-test('dragging a cable end off its jack pulls the plug, and dragging a jack to its partner plugs it', () => {
+test('dragging a cable end off its jack pulls the plug, and a cable from Plinky’s output plugs in where it lands', () => {
   const { container } = render(
     <GateBench>
       <Keys />
@@ -308,7 +308,7 @@ test('dragging a cable end off its jack pulls the plug, and dragging a jack to i
   )
   act(() => engine.set('fmKeyGate', 0))
   const input = screen.getByRole('button', { name: 'with Plinky' })
-  const output = container.querySelector<HTMLElement>('[data-gate-end=out]')!
+  const output = container.querySelector<HTMLElement>('[data-gate-out]')!
   const over = (el: Element | null) => {
     document.elementFromPoint = () => el
   }
@@ -323,10 +323,68 @@ test('dragging a cable end off its jack pulls the plug, and dragging a jack to i
   drag(output, screen.getByRole('button', { name: 'own keys only' }))
   expect(engine.controls.get().fmKeyGate).toBe(0)
   drag(output, document.body)
-  expect(engine.controls.get().fmKeyGate).toBe(1)
-  drag(output, screen.getByRole('button', { name: 'own keys only' }))
+  expect(engine.controls.get().fmKeyGate).toBe(0)
   drag(screen.getByRole('button', { name: 'with Plinky' }), input)
   expect(engine.controls.get().fmKeyGate).toBe(0)
+  drag(input, document.body)
+  drag(screen.getByRole('button', { name: 'own keys only' }), output)
+  expect(engine.controls.get().fmKeyGate).toBe(0)
+})
+
+test('a GATE cable moves to whichever GATE jack its end lands on, the kit’s included', async () => {
+  render(
+    <GateBench>
+      <Keys />
+      <FmKeys />
+      <PcmKeys />
+      <DrumKit />
+    </GateBench>,
+  )
+  act(() => {
+    engine.set('fmKeyGate', 0)
+    engine.set('pcmKeyGate', 1)
+    engine.set('trigToDrum', 0)
+  })
+  const gate = (name: string) =>
+    bed(name).getByRole('button', { name: /^(with Plinky|own keys only)$/ })
+  const kit = () => screen.getByRole('button', { name: 'Plinky into the kit' })
+  const drag = (from: Element, to: Element) => {
+    fireEvent.pointerDown(from, { button: 0, clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
+    document.elementFromPoint = () => to
+    fireEvent.pointerUp(window, { clientX: 40, clientY: 40 })
+  }
+
+  drag(gate('glint'), gate('parlor'))
+  expect(engine.controls.get().fmKeyGate).toBe(1)
+  expect(engine.controls.get().pcmKeyGate).toBe(0)
+
+  drag(gate('parlor'), kit())
+  expect(engine.controls.get().pcmKeyGate).toBe(1)
+  expect(engine.controls.get().trigToDrum).toBeGreaterThan(0)
+
+  await new Promise(r => setTimeout(r, 0))
+  fireEvent.click(kit())
+  expect(engine.controls.get().trigToDrum).toBe(0)
+})
+
+test('the jacks carry printed names, and a TRIG jack names the voice in it', () => {
+  render(
+    <GateBench>
+      <Keys />
+      <FmKeys />
+      <DrumKit />
+    </GateBench>,
+  )
+  act(() => {
+    engine.set('fmStruck', 1)
+    engine.set('trigToKeys', 0)
+  })
+  expect(bed('glint').getByText('gate')).toBeTruthy()
+  expect(bed('glint').getByText('trig')).toBeTruthy()
+  expect(bed('glint').getByText('kick')).toBeTruthy()
+  expect(bed('plinky').getByText('gate')).toBeTruthy()
+  expect(bed('plinky').queryByText('kick')).toBeNull()
 })
 
 test('a cancelled cable drag puts the cable back and changes nothing', () => {

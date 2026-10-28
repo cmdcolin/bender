@@ -28,7 +28,7 @@
   z-index: 2;
 }
 
-/* The input jack, half over the right edge of a keyboard's case. */
+/* A GATE jack, half over the right edge of a keyboard's case. */
 .jack {
   touch-action: none;
   position: absolute;
@@ -51,23 +51,9 @@
   outline-offset: 1px;
 }
 
-.outs {
-  position: absolute;
-  bottom: 16px;
-  right: -10px;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .out {
-  touch-action: none;
+  composes: jack;
   cursor: grab;
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
 }
 
 .socket {
@@ -199,50 +185,10 @@
   pointer-events: none;
 }
 
-/* A paper tag tied on the cable, which is also the way to pull the plug. */
-.tag {
-  pointer-events: auto;
-  touch-action: none;
-  cursor: pointer;
-}
-
-.tag rect {
-  fill: #efe5c6;
-  stroke: #b3a273;
-  stroke-width: 0.8;
-}
-
-.tag circle {
-  fill: none;
-  stroke: #9a8a5f;
-  stroke-width: 0.8;
-}
-
-.tag text {
-  fill: #4a4026;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-.tag .drop {
-  fill: #4a4026;
-  stroke: none;
-}
-
-.tag:hover rect {
-  fill: #f7efd6;
-}
-
-/* The TRIG input, under the gate jack on a keyboard's right edge. Plinky's
-   sits at the top, clear of its gate outputs. */
+/* The TRIG input, under the GATE jack on a keyboard's right edge. */
 .trig {
   composes: jack;
   top: 40px;
-}
-
-.trigTop {
-  composes: jack;
 }
 
 /* The jack plate bolted on top of the kit, a trigger output per voice. */
@@ -277,4 +223,35 @@
   text-transform: uppercase;
   color: var(--fg3);
   margin-top: 2px;
+}
+
+.kitGate {
+  composes: trigOut;
+  margin-right: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Printed beside a jack, clear of the plug and the lanes past it. */
+.legend {
+  position: absolute;
+  left: 19px;
+  top: -3px;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--fg3);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.voice {
+  composes: legend;
+  top: 19px;
+  color: var(--hits);
 }

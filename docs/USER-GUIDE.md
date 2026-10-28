@@ -201,19 +201,28 @@ mic cap on a machine, picks the jack.
 
 ## The trigger patch
 
-![The trigger patch: jumper wires between Clatter, Plinky, Glint, Parlor and Growler.](../public/guide/guide-trigger.jpg)
+![The trigger patch: cables between Clatter, Plinky, Glint, Parlor and Growler.](../public/guide/guide-trigger.jpg)
 
-Jumper wires between machines: Plinky's gate line and Clatter's trigger lines
-are bare traces, and a jumper bridges one onto another machine's key input. Drum
-hits play the keys, keys fire the drums, and the FM chip, Parlor and Growler
-listen to both.
+Cables between machines carry two signals:
 
-The bench draws the same wires as patch cables down a gutter beside the
-keyboards:
+- **Notes** (amber): every key Plinky strikes, from your keys, its tune or its
+  arpeggio
+- **Hits** (purple): one of Clatter's voices, or any hit
 
-- **GATE** runs from a jack on Plinky's right edge to each keyboard's top jack
-- **TRIG** runs from a voice's jack on top of Clatter to a keyboard's lower jack
-- Press a jack to plug it in or pull it out; drag a cable's end to repatch it
+Drum hits play the keys, keys fire the drums, and Glint, Parlor and Growler
+listen to both. The trigger patch and the map name each cable the same way,
+`kick → Glint` or `Plinky → Growler`.
+
+The bench draws the same cables down a gutter beside the keyboards. Every
+keyboard has a **GATE** jack on top and a **TRIG** jack under it:
+
+- Plinky's GATE jack is its notes out, and any number of cables stack on it
+- Every other GATE jack, the kit's included, takes Plinky's notes
+- Each voice on the plate on top of Clatter has a jack, and a cable from one
+  into a keyboard's TRIG jack lets that voice strike it. The TRIG jack prints
+  the voice it holds
+- Press a jack to plug its cable in or pull it out, or drag a cable's end onto
+  another jack to move it there
 
 ## Power supply
 
