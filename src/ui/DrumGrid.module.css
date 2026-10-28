@@ -491,3 +491,15 @@
     height: 20px;
   }
 }
+
+/* Sixteen across a phone held upright still leaves steps 12px wide, so the bar
+   folds into two rows of eight. */
+@media (max-width: 560px) {
+  .grid {
+    gap: var(--space-sm);
+  }
+  .cells,
+  .cellsMuted {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
