@@ -328,7 +328,10 @@ export function GateBench({ children }: { children: ReactNode }) {
       ),
     [shown, at],
   )
-  const gutter = at.size > 0 ? gutterFor(cables.length) : 0
+  const gutter =
+    at.size > 0
+      ? gutterFor(new Set(cables.map(x => jackKey(outEnd(x)))).size)
+      : 0
   const latest = useRef(cables)
 
   useLayoutEffect(() => {

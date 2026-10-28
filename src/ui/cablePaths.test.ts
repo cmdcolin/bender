@@ -110,6 +110,22 @@ test('runs on one plate cross above it at heights of their own', () => {
   for (const y of bands) expect(y).toBeLessThan(50 - PLUG)
 })
 
+test('runs out of one jack share a lane and leave it at their own inputs', () => {
+  const routes = layRuns(
+    [
+      { id: 'a', from: edge(100, 10), to: edge(100, 200), inner: true },
+      { id: 'b', from: edge(100, 10), to: edge(100, 400), inner: true },
+      { id: 'c', from: plate(300, 50), to: edge(100, 300) },
+    ],
+    100,
+  )
+  const lane = (id: string) => routes.get(id)!.bends[1]!.x
+  expect(lane('a')).toBe(lane('b'))
+  expect(lane('c')).toBeGreaterThan(lane('a'))
+  expect(routes.get('a')!.bends.at(-2)!.y).toBe(200)
+  expect(routes.get('b')!.bends.at(-2)!.y).toBe(400)
+})
+
 test('a plate-to-plate run crosses above both plates', () => {
   const route = layRuns(
     [{ id: 'a', from: plate(40, 20), to: plate(400, 300) }],

@@ -131,55 +131,67 @@ export interface Run {
   inner?: boolean
 }
 
-/** Every run's lane in the gutter past `edge`. Inner runs take the inner lanes,
-    the lowest end innermost; the rest take the outer lanes, the shortest
-    innermost. A run with an end on a plate crosses to the gutter above the
-    plate, at a height of its own among the runs on that plate. */
-export function layRuns(runs: readonly Run[], edge: number) {
-  const inner = runs
-    .filter(r => r.inner)
-    .toSorted((a, b) => a.to.at.y - b.to.at.y)
-  const outer = runs
-    .filter(r => !r.inner)
-    .toSorted(
-      (a, b) =>
-        Math.abs(a.to.at.y - a.from.at.y) - Math.abs(b.to.at.y - b.from.at.y),
-    )
-  const ordered = [...inner, ...outer]
-  const lane = (i: number) => edge + PLUG + LANE_IN + i * LANE_PITCH
+const source = (r: Run) => `${r.from.at.x} ${r.from.at.y}`
+const span = (r: Run) => Math.abs(r.to.at.y - r.from.at.y)
+const most = (runs: readonly Run[], by: (r: Run) => number) =>
+  Math.max(...runs.map(by))
 
-  const plates = new Map<number, number[]>()
-  ordered.forEach((r, i) => {
-    for (const end of [r.from, r.to])
-      if (end.facing === 'up') {
-        const on = plates.get(end.at.y) ?? []
-        if (!on.includes(i)) on.push(i)
-        plates.set(end.at.y, on)
-      }
+/** Every run's lane in the gutter past `edge`. Runs out of one jack share a
+    lane, each leaving it at its own input. Inner lanes go to bundles with an
+    inner run, the lowest end innermost; the rest take the outer lanes, the
+    shortest innermost. A run with an end on a plate crosses to the gutter
+    above the plate, at a height of its own among the runs on that plate. */
+export function layRuns(runs: readonly Run[], edge: number) {
+  const bundles = new Map<string, Run[]>()
+  for (const r of runs)
+    bundles.set(source(r), [...(bundles.get(source(r)) ?? []), r])
+  const all = [...bundles.values()]
+  const inner = all
+    .filter(b => b.some(r => r.inner))
+    .toSorted((a, b) => most(a, r => r.to.at.y) - most(b, r => r.to.at.y))
+  const outer = all
+    .filter(b => !b.some(r => r.inner))
+    .toSorted((a, b) => most(a, span) - most(b, span))
+  const lanes = [...inner, ...outer]
+  const laneX = (i: number) => edge + PLUG + LANE_IN + i * LANE_PITCH
+
+  const plates = new Map<number, string[]>()
+  const seat = (plateY: number, key: string) => {
+    const on = plates.get(plateY) ?? []
+    if (!on.includes(key)) on.push(key)
+    plates.set(plateY, on)
+  }
+  lanes.forEach((bundle, i) => {
+    for (const r of bundle) {
+      if (r.from.facing === 'up') seat(r.from.at.y, `lane ${i}`)
+      if (r.to.facing === 'up') seat(r.to.at.y, `run ${r.id}`)
+    }
   })
-  const band = (plateY: number, i: number) => {
+  const band = (plateY: number, key: string) => {
     const on = plates.get(plateY)!
     return (
-      plateY - PLUG - BAND_IN - (on.length - 1 - on.indexOf(i)) * BAND_PITCH
+      plateY - PLUG - BAND_IN - (on.length - 1 - on.indexOf(key)) * BAND_PITCH
     )
   }
 
   const routes = new Map<string, Route>()
-  ordered.forEach((r, i) => {
-    const x = lane(i)
-    const a = boot(r.from)
-    const b = boot(r.to)
-    const bends: Point[] = [a]
-    if (r.from.facing === 'up') {
-      const y = band(r.from.at.y, i)
-      bends.push({ x: a.x, y }, { x, y })
-    } else bends.push({ x, y: a.y })
-    if (r.to.facing === 'up') {
-      const y = band(r.to.at.y, i)
-      bends.push({ x, y }, { x: b.x, y })
-    } else bends.push({ x, y: b.y })
-    bends.push(b)
-    routes.set(r.id, { from: r.from, to: r.to, bends })
+  lanes.forEach((bundle, i) => {
+    const x = laneX(i)
+    for (const r of bundle) {
+      const a = boot(r.from)
+      const b = boot(r.to)
+      const bends: Point[] = [a]
+      if (r.from.facing === 'up') {
+        const y = band(r.from.at.y, `lane ${i}`)
+        bends.push({ x: a.x, y }, { x, y })
+      } else bends.push({ x, y: a.y })
+      if (r.to.facing === 'up') {
+        const y = band(r.to.at.y, `run ${r.id}`)
+        bends.push({ x, y }, { x: b.x, y })
+      } else bends.push({ x, y: b.y })
+      bends.push(b)
+      routes.set(r.id, { from: r.from, to: r.to, bends })
+    }
   })
   return routes
 }
