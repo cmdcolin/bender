@@ -26,7 +26,7 @@ export function ModOut({ src }: { src: number }) {
       text={
         full
           ? `The patch bay’s ${name}. All four of the bay’s cables are in use, so pull one before patching another`
-          : `The patch bay’s ${name}. Drag a cable from here to a machine’s CV jack, or press here and then on that jack, and it moves that machine`
+          : `The patch bay’s ${name}. Drag a cable from here to a machine’s CV jack and it moves that machine`
       }
     >
       <Jack

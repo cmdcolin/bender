@@ -117,7 +117,7 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
     GATE input. Cables stack on it, one for each machine its notes reach. */
 export function GateOut() {
   return (
-    <Tip text="Plinky’s notes out. Drag a cable from here to a GATE jack on another machine, or press here and then on that jack, and that machine plays every note Plinky strikes">
+    <Tip text="Plinky’s notes out. Drag a cable from here to a GATE jack on another machine, and that machine plays every note Plinky strikes">
       <Jack
         end={{ line: 'gate', side: 'out', id: 'plinky' }}
         className={styles.out}
@@ -133,7 +133,7 @@ function TrigOut({ voice }: { voice: number }) {
   const name = voiceName(voice)
   return (
     <Tip
-      text={`The ${name} trigger line. Drag a cable from here to a TRIG jack, or press here and then on that jack, and every ${voice === ANY_CHOICE ? 'hit' : name} strikes it`}
+      text={`The ${name} trigger line. Drag a cable from here to a TRIG jack and every ${voice === ANY_CHOICE ? 'hit' : name} strikes it`}
     >
       <Jack
         end={{ line: 'trig', side: 'out', id: String(voice) }}

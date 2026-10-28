@@ -621,7 +621,22 @@ test('a MOD cable between two plates lays a path with no keyboard cable on the b
   expect(paths[0]!.getAttribute('d')).not.toMatch(/NaN|Infinity/)
 })
 
-test('a press on an output picks up a cable for the next input pressed', async () => {
+test('a mouse click on an output picks up no cable', () => {
+  render(
+    <GateBench>
+      <ModPlate />
+      <FmKeys />
+    </GateBench>,
+  )
+  act(() => {
+    for (const i of [0, 1, 2, 3] as const) engine.set(`mod${i}Src`, 0)
+  })
+  const adsr = screen.getByRole('button', { name: 'ADSR out' })
+  fireEvent.click(adsr, { detail: 1 })
+  expect(adsr.getAttribute('aria-pressed')).toBe('false')
+})
+
+test('a key press on an output picks up a cable for the next input pressed', async () => {
   await new Promise(r => setTimeout(r, 0))
   render(
     <GateBench>

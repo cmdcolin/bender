@@ -71,7 +71,7 @@ function press(end: End) {
 }
 
 /** One jack, a button either way. A press on an input plugs or pulls its
-    cable; a press on an output picks up a cable for the next input pressed.
+    cable; a key press on an output picks up a cable for the next input pressed.
     A `full` output gives out no more cables. */
 export function Jack({
   end,
@@ -123,10 +123,10 @@ export function Jack({
       onPointerDown={e => {
         if (!full) grab(end, e)
       }}
-      onClick={() => {
+      onClick={e => {
         if (!pressIsClick() || full) return
-        if (out) carry(end)
-        else press(end)
+        if (!out) press(end)
+        else if (e.detail === 0) carry(end)
       }}
     >
       {socket}
