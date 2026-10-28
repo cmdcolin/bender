@@ -141,7 +141,7 @@ export function DrumKit({
       </div>
       {staged ? (
         <div className={styles.screen} ref={showStage}>
-          <DrumGrid staged />
+          <DrumGrid />
         </div>
       ) : (
         <Pattern playing={playing} />

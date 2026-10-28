@@ -1,9 +1,3 @@
-.wrap {
-  padding: var(--space-2xs) 0 var(--space-sm);
-  border-bottom: 1px solid var(--border-quiet);
-  margin-bottom: var(--space-xs);
-}
-
 /* On the kit's face the grid spans the main area, so the rows get room for
    their names and the steps grow to a finger's size. */
 .staged {
@@ -70,14 +64,6 @@
 
 .romOn {
   composes: pickOn from './button.module.css';
-}
-
-.play {
-  composes: chip from './button.module.css';
-}
-
-.playOn {
-  composes: chipOn from './button.module.css';
 }
 
 .slots {
@@ -190,26 +176,6 @@
   .padKey {
     display: none;
   }
-}
-
-/* Armed to record what you play in. It sits with the ROM buttons because it is
-   the other way a pattern gets written. */
-.rec {
-  composes: rom;
-  margin-left: auto;
-}
-
-.recOn {
-  composes: pickRecOn from './button.module.css';
-  margin-left: auto;
-}
-
-/* Armed with the kit stopped: nothing is being written, so the button is drawn
-   as the promise it is rather than as the filled lamp of one that is recording.
-   Amber outlined is the same amber, waiting. */
-.recIdle {
-  composes: pickRecIdle from './button.module.css';
-  margin-left: auto;
 }
 
 .cells,
