@@ -31,9 +31,12 @@ function pinnedAbove(el: HTMLElement): number {
 // scrollIntoView drags the whole document along, which reads as the page
 // jumping. Under the narrow layout the page is the scroller, so it moves — by
 // the same arithmetic, against the window, since scrollIntoView knows nothing
-// of what is pinned over the top of it.
+// of what is pinned over the top of it. Before the first press or key the page
+// stays put, so a stage restored or opened by the starter board leaves a fresh
+// tab at the top.
 export function scrollIntoPanel(el: HTMLElement) {
   const panel = scrollParent(el)
+  if (!panel && !navigator.userActivation?.hasBeenActive) return
   const box = el.getBoundingClientRect()
   const view = panel
     ? panel.getBoundingClientRect()
