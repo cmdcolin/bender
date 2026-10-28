@@ -1,4 +1,5 @@
-import { Jack, rewire } from './BenchJack.tsx'
+import { Jack } from './BenchJack.tsx'
+import { rewire } from './benchStores.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import styles from './GateCables.module.css'
 import {

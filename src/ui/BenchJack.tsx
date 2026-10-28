@@ -19,7 +19,13 @@ import {
   type Cable,
   type End,
 } from './benchCables.ts'
-import { dragging, placeJack, type Drag } from './benchStores.ts'
+import {
+  dragging,
+  hasAny,
+  placeJack,
+  rewire,
+  type Drag,
+} from './benchStores.ts'
 import { follow, pressIsClick } from './cableDrag.ts'
 import { Socket, Wire } from './CableParts.tsx'
 import {
@@ -31,17 +37,7 @@ import {
 } from './cablePaths.ts'
 import { useBoardValue, useStoreSelect } from './ControlsContext.ts'
 
-import type { Controls } from '../controls.ts'
 import type { Store } from '../listeners.ts'
-
-/** Writes the board a change makes, as one step to walk back. */
-export function rewire(change: (c: Controls) => Controls) {
-  const was = engine.controls.get()
-  const next = change(was)
-  if (next === was) return
-  engine.armStep()
-  engine.writeBoard(next)
-}
 
 /** Picks up a cable: the last one in an input, the one pressed along its
     length, or a fresh one out of an output or an empty input while the line
@@ -124,8 +120,6 @@ export function Jack({
     </button>
   )
 }
-
-export const hasAny = (s: ReadonlySet<number>) => s.size > 0
 
 /** A cable laid down the gutter, glowing while the machine it feeds sounds
     the notes it carries. */

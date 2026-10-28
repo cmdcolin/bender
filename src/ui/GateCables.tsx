@@ -18,8 +18,8 @@ import {
   type Cable,
   type End,
 } from './benchCables.ts'
-import { BenchCable, hasAny, Held, Jack } from './BenchJack.tsx'
-import { dragging, jacks, type Drag } from './benchStores.ts'
+import { BenchCable, Held, Jack } from './BenchJack.tsx'
+import { dragging, hasAny, jacks, type Drag } from './benchStores.ts'
 import {
   gutterFor,
   layRuns,

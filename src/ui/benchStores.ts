@@ -1,5 +1,7 @@
+import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
 
+import type { Controls } from '../controls.ts'
 import type { Cable, End } from './benchCables.ts'
 import type { Facing, Point } from './cablePaths.ts'
 
@@ -25,3 +27,14 @@ export function placeJack(key: string, at: JackAt | null) {
 export type Drag = Point & { fixed: End; carried: Cable | null }
 
 export const dragging = createStore<Drag | null>(null)
+
+/** Writes the board a change makes, as one step to walk back. */
+export function rewire(change: (c: Controls) => Controls) {
+  const was = engine.controls.get()
+  const next = change(was)
+  if (next === was) return
+  engine.armStep()
+  engine.writeBoard(next)
+}
+
+export const hasAny = (s: ReadonlySet<number>) => s.size > 0
