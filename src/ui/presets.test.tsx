@@ -34,7 +34,7 @@ const move = (x: number) =>
 const lift = () => fireEvent.pointerUp(chip(), { pointerId: 1 })
 
 test('a press takes the whole preset', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const target = applyPreset(first, engine.controls.get())
   act(() => {
     press(0)
@@ -47,7 +47,7 @@ test('a press takes the whole preset', () => {
 // keyboard activation — a bare click, no pointer events at all — must still
 // apply it once.
 test('the click trailing a release does not apply it twice', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const from = engine.controls.get()
   act(() => {
     press(0)
@@ -59,7 +59,7 @@ test('the click trailing a release does not apply it twice', () => {
 })
 
 test('a keyboard press applies it', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const target = applyPreset(first, engine.controls.get())
   act(() => {
     fireEvent.click(chip(), { detail: 0 })
@@ -70,7 +70,7 @@ test('a keyboard press applies it', () => {
 // A hand wobbling on the way down is still a click. Without the slop the board
 // would teleport part of the way to a preset with nothing to say why.
 test('a wobble under the slop is still a press', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const target = applyPreset(first, engine.controls.get())
   act(() => {
     press(0)
@@ -83,7 +83,7 @@ test('a wobble under the slop is still a press', () => {
 // Past the slop it is a scrub: the board follows the hand, and stops wherever
 // the hand stopped.
 test('a drag stops the board part of the way there', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const from = engine.controls.get()
   const target = applyPreset(first, from)
   const key = (Object.keys(first.patch) as (keyof typeof target)[]).find(
@@ -111,7 +111,7 @@ test('a drag stops the board part of the way there', () => {
 // travel is integrated a step at a time and clamped, so an overshoot is not a
 // debt to pay back before anything moves.
 test('a drag past the end does not bank travel the board never made', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const from = engine.controls.get()
   const target = applyPreset(first, from)
   const key = (Object.keys(first.patch) as (keyof typeof target)[]).find(
@@ -133,7 +133,7 @@ test('a drag past the end does not bank travel the board never made', () => {
 // However far the hand went and however many times it turned around, the whole
 // drag is one entry in the walk: the board as it stood before the hand landed.
 test('a whole drag is one step in the walk', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const from = engine.controls.get()
   act(() => {
     press(0)
@@ -153,7 +153,7 @@ test('a whole drag is one step in the walk', () => {
 // already standing on, so dragging back down retraces rather than setting off
 // somewhere new.
 test('re-grabbing a chip carries on along the same road', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const from = engine.controls.get()
   act(() => {
     press(0)
@@ -179,7 +179,7 @@ test('re-grabbing a chip carries on along the same road', () => {
 // as more randomisers. And the drag above is the best thing it does, and lived
 // only in a tooltip on a chip you had to already be pointing at.
 test('the row says what it is and what it does', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const head = screen.getByLabelText('presets')
   expect(head.textContent).toMatch(/^presets/)
   expect(head.textContent).toMatch(/drag one sideways/)
@@ -191,11 +191,13 @@ const COLLAPSED = 12 // how many the row shows shut, from PresetRow.tsx
 const toggle = () => screen.getByRole('button', { name: /show|hide/ })
 const chips = () => {
   const folding = toggle()
-  return screen.getAllByRole('button').filter(b => b !== folding).length
+  const close = screen.getByRole('button', { name: 'close presets' })
+  return screen.getAllByRole('button').filter(b => b !== folding && b !== close)
+    .length
 }
 
 test('the row starts folded and opens on ask', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   expect(chips()).toBe(COLLAPSED)
   expect(toggle().textContent).toBe(`show ${PRESETS.length - COLLAPSED} more`)
 
@@ -215,7 +217,7 @@ test('the row starts folded and opens on ask', () => {
 // must not take the chip you are standing on away with it.
 test('the chip you are standing on survives the fold', () => {
   const past = PRESETS[COLLAPSED + 5]!
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   act(() => {
     fireEvent.click(toggle(), { detail: 1 })
   })
@@ -246,7 +248,7 @@ test('the strip closes on its ✕', () => {
 })
 
 test('the find field narrows the row to matching presets', () => {
-  render(<Presets morphSeconds={0} />)
+  render(<Presets morphSeconds={0} onClose={() => {}} />)
   const last = PRESETS.at(-1)!
   const field = screen.getByRole('searchbox', { name: 'find a preset' })
   fireEvent.change(field, { target: { value: last.name } })

@@ -165,7 +165,7 @@ function PresetChip(props: {
 // arrive at the same row.
 export function Presets(props: {
   morphSeconds: MorphSeconds
-  onClose?: () => void
+  onClose: () => void
 }) {
   const [scrub, setScrub] = useState<Scrub | null>(null)
   const [open, setOpen] = useState(false)
@@ -191,14 +191,9 @@ export function Presets(props: {
   const rest = PRESETS.length - shown.length - (stray ? 1 : 0)
 
   return (
-    <section
-      className={props.onClose ? styles.strip : styles.section}
-      aria-label="presets"
-    >
+    <section className={styles.strip} aria-label="presets">
       <div className={styles.head}>
-        <span className={props.onClose ? styles.rowLabel : styles.title}>
-          presets
-        </span>
+        <span className={styles.rowLabel}>presets</span>
         <input
           className={styles.filter}
           type="search"
@@ -221,15 +216,13 @@ export function Presets(props: {
             {open ? 'hide' : `show ${rest} more`}
           </button>
         )}
-        {props.onClose && (
-          <button
-            className={styles.more}
-            aria-label="close presets"
-            onClick={props.onClose}
-          >
-            ✕
-          </button>
-        )}
+        <button
+          className={styles.more}
+          aria-label="close presets"
+          onClick={props.onClose}
+        >
+          ✕
+        </button>
       </div>
       <div className={styles.presets}>
         {[...shown, ...(stray ? [stray] : [])].map(p => (

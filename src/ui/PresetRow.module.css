@@ -1,10 +1,3 @@
-/* The heading the row never had, drawn to the same rule every other heading in
-   the panel is: a title, and the section's own verbs at the far end of it. */
-.section {
-  border-top: 1px solid var(--border-quiet);
-  padding-top: var(--space-xs);
-}
-
 .strip {
   flex: none;
   padding: 0 var(--space-sm);
@@ -29,10 +22,6 @@
   padding: var(--space-xs) var(--space-2xs);
   color: var(--fg);
   font-size: var(--fs-md);
-}
-
-.title {
-  font-weight: 600;
 }
 
 /* Where the drag is said. It is the best thing the row does — stopping part way
