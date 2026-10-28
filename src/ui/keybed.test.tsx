@@ -573,3 +573,20 @@ test('a patched CV jack names where its cable lands, and picking another aims th
   expect(engine.controls.get().mod0Dest).toBe(DEST.fmLevel)
   expect(bed('glint').getByText('level')).toBeTruthy()
 })
+
+test('a MOD cable between two plates lays a path with no keyboard cable on the bench', () => {
+  const { container } = render(
+    <GateBench>
+      <ModPlate />
+      <DrumKit />
+    </GateBench>,
+  )
+  act(() => {
+    for (const i of [0, 1, 2, 3] as const) engine.set(`mod${i}Src`, 0)
+    engine.set('mod0Src', LFO)
+    engine.set('mod0Dest', CV_DEST.Clatter)
+  })
+  const paths = [...container.querySelectorAll('path[class*=core]')]
+  expect(paths.length).toBe(1)
+  expect(paths[0]!.getAttribute('d')).not.toMatch(/NaN|Infinity/)
+})

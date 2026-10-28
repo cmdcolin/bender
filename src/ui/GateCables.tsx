@@ -302,11 +302,10 @@ export function GateBench({ children }: { children: ReactNode }) {
           inner: from.facing === 'right' && to.facing === 'right',
         }
       })
-      const edge = Math.max(
-        ...runs.flatMap(r =>
-          [r.from, r.to].flatMap(a => (a.facing === 'right' ? [a.at.x] : [])),
-        ),
+      const edges = [...at].flatMap(([key, j]) =>
+        j.facing === 'right' ? [where.get(key)!.x] : [],
       )
+      const edge = edges.length > 0 ? Math.max(...edges) : origin.width
       const next = { routes: layRuns(runs, edge), points: where }
       if (!same(spots.get(), next)) spots.set(next)
     }
