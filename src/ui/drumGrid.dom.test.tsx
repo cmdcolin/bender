@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import { GRID_ROWS, rowText, stepBit } from '../drums.ts'
 import { packStrays, STRAYS } from '../dsp/wander.ts'
@@ -118,6 +118,19 @@ test('a cond cell clicks round the conditions, and fill holds while pressed', ()
   expect(engine.held.get().get('fill')).toEqual({ drumFill: 1 })
   fireEvent.pointerUp(fill, { pointerId: 1 })
   expect(engine.held.get().has('fill')).toBe(false)
+})
+
+test('Space holds the fill without reaching the run line or re-pressing on repeat', () => {
+  render(<DrumGrid />)
+  const fill = screen.getByRole('button', { name: 'hold fill' })
+  const hold = vi.spyOn(engine, 'holdThrow')
+  expect(fireEvent.keyDown(fill, { key: ' ' })).toBe(false)
+  fireEvent.keyDown(fill, { key: ' ', repeat: true })
+  expect(hold).toHaveBeenCalledTimes(1)
+  expect(engine.held.get().has('fill')).toBe(true)
+  fireEvent.keyUp(fill, { key: ' ' })
+  expect(engine.held.get().has('fill')).toBe(false)
+  hold.mockRestore()
 })
 
 test('the hits column spreads a row’s count evenly from its first hit', () => {

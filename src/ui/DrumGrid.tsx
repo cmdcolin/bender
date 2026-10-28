@@ -56,6 +56,7 @@ import {
 import { SHUFFLE } from './DeviceVerbs.tsx'
 import styles from './DrumGrid.module.css'
 import { padKeyFor, toggleRowMute } from './drumKeys.ts'
+import { claimPress, claimRelease } from './keyPress.ts'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
 
@@ -855,11 +856,10 @@ function FillButton() {
         onPointerUp={up}
         onPointerCancel={up}
         onLostPointerCapture={up}
-        onKeyDown={e => {
-          if (e.key === ' ' || e.key === 'Enter')
-            engine.holdThrow(FILL, { drumFill: 1 })
-        }}
-        onKeyUp={up}
+        onKeyDown={e =>
+          claimPress(e) && engine.holdThrow(FILL, { drumFill: 1 })
+        }
+        onKeyUp={e => claimRelease(e) && up()}
         onContextMenu={e => e.preventDefault()}
         aria-label="hold fill"
       >
