@@ -64,6 +64,9 @@ export class TriggerBus {
   readonly keyHeld = new Float32Array(BLOCK)
   /** The keys a hand is holding down on any of the keyboards, by semitone. */
   readonly keysDown = new Set<number>()
+  /** Every key that has gone down, counted, so a press shorter than a block
+      still shows. */
+  keyPresses = 0
   /** A note the melody memory struck this block, biased; 0 where it struck
       nothing. Its own line, so the memory plays one machine while the toy's
       tune plays the others. */
@@ -153,6 +156,13 @@ export class TriggerBus {
     this.seqSpan.fill(0, 0, n)
     this.seqAccent.fill(0, 0, n)
     this.seqSlide.fill(0, 0, n)
+  }
+
+  keyGate(semitone: number, down: boolean) {
+    if (down) {
+      this.keysDown.add(semitone)
+      this.keyPresses++
+    } else this.keysDown.delete(semitone)
   }
 
   panic() {

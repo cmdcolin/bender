@@ -9,22 +9,23 @@ export interface AdsrRates {
   release: number
 }
 
+const fall = (s: number, sr: number) => Math.exp(-SETTLE / Math.max(s * sr, 1))
+
 /** Per-sample rates for attack, decay and release times in seconds, worked out
-    once a block rather than once a sample. */
+    once a block rather than once a sample, into `out` when given. */
 export function adsrRates(
   sr: number,
   attack: number,
   decay: number,
   sustain: number,
   release: number,
+  out: AdsrRates = { rise: 0, decay: 0, sustain: 0, release: 0 },
 ): AdsrRates {
-  const fall = (s: number) => Math.exp(-SETTLE / Math.max(s * sr, 1))
-  return {
-    rise: 1 / Math.max(attack * sr, 1),
-    decay: fall(decay),
-    sustain: Math.min(Math.max(sustain, 0), 1),
-    release: fall(release),
-  }
+  out.rise = 1 / Math.max(attack * sr, 1)
+  out.decay = fall(decay, sr)
+  out.sustain = Math.min(Math.max(sustain, 0), 1)
+  out.release = fall(release, sr)
+  return out
 }
 
 /** An attack, decay, sustain, release envelope, 0 to 1. The attack climbs in a

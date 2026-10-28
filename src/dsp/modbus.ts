@@ -8,7 +8,7 @@ import {
   LANE_MAX,
 } from '../lanes.ts'
 import { BLOCK } from './stage.ts'
-import { Adsr, adsrRates } from './util/adsr.ts'
+import { Adsr, adsrRates, type AdsrRates } from './util/adsr.ts'
 import { Chaos, Drunk } from './util/drift.ts'
 import { Decay, Follower, coef } from './util/follower.ts'
 import { wrap1 } from './util/pitch.ts'
@@ -403,7 +403,14 @@ export class ModBus {
   private phrasePos = 0
   private readonly env = new Adsr()
   private readonly envLane = new Float32Array(BLOCK)
+  private readonly rates: AdsrRates = {
+    rise: 0,
+    decay: 0,
+    sustain: 0,
+    release: 0,
+  }
   private keysWere = 0
+  private pressesWere = 0
   private holdLeft = 0
   private lfoPhase = 0
   private shValue = 0
@@ -550,18 +557,21 @@ export class ModBus {
       p[IDX.modEnvDecay]! / 1000,
       p[IDX.modEnvSustain]!,
       p[IDX.modEnvRelease]! / 1000,
+      this.rates,
     )
     const gate = Math.round(p[IDX.modEnvGate]!)
     const down = trig.keysDown.size
+    const pressed = trig.keyPresses !== this.pressesWere
+    this.pressesWere = trig.keyPresses
     const mask = gate === 1 ? -1 : voiceBit(gate - 2)
     const stepLen = trig.drumStepLen || this.sr / Math.max(kitHz, 0.5)
     const hold = Math.round(p[IDX.modEnvHold]!) * stepLen
     if (gate === 0) {
-      if (down > this.keysWere) this.env.trigger()
+      if (pressed) this.env.trigger()
       else if (down === 0 && this.keysWere > 0) this.env.release()
       this.holdLeft = 0
     }
-    this.keysWere = down
+    this.keysWere = pressed ? Math.max(down, 1) : down
     for (let i = 0; i < n; i++) {
       if (gate > 0) {
         if ((trig.drumBits[i]! & mask) !== 0) {

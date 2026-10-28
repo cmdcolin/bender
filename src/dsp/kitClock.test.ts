@@ -260,10 +260,30 @@ test('held keys keep the ADSR open, and the last one up lets it go', () => {
     modEnvGate: ENV_GATES.indexOf('keys'),
     modEnvSustain: 0.5,
   })
-  block.trig.keysDown.add(0)
+  block.trig.keyGate(0, true)
   for (let b = 0; b < blocksOf(1); b++) block()
   expect(block()[0]).toBeCloseTo(0.5, 2)
-  block.trig.keysDown.delete(0)
+  block.trig.keyGate(0, false)
   for (let b = 0; b < blocksOf(0.3); b++) block()
   expect(block()[0]).toBeLessThan(0.01)
+})
+
+test('a tap inside one block still opens the ADSR', () => {
+  const block = adsr({ modEnvGate: ENV_GATES.indexOf('keys') })
+  block.trig.keyGate(0, true)
+  block.trig.keyGate(0, false)
+  expect(block().at(-1)).toBeGreaterThan(0)
+})
+
+test('a legato change of key starts the attack again', () => {
+  const block = adsr({
+    modEnvGate: ENV_GATES.indexOf('keys'),
+    modEnvSustain: 0.2,
+  })
+  block.trig.keyGate(0, true)
+  for (let b = 0; b < blocksOf(1); b++) block()
+  block.trig.keyGate(2, true)
+  block.trig.keyGate(0, false)
+  for (let b = 0; b < blocksOf(0.005); b++) block()
+  expect(block().at(-1)).toBeGreaterThan(0.5)
 })
