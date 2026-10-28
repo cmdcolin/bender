@@ -21,6 +21,7 @@ import {
   type SliderDef,
 } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { MuteCap } from './DeviceVerbs.tsx'
 import { foldDrawing, zoomFor } from './drawingFor.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { firstLook, markLooked } from './firstLook.ts'
@@ -51,6 +52,7 @@ import { useStanding } from './rollBack.ts'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider.tsx'
 import { slidersFirst } from './slidersFirst.ts'
+import { isMute } from './stageLevels.ts'
 import { formerName } from './stageNames.ts'
 import {
   BoxVerbs,
@@ -104,6 +106,7 @@ function parts(group: Group): Part[] {
   for (const def of group.sliders) {
     if ((group.lead ?? []).includes(def.key)) continue
     if ((group.handled ?? []).includes(def.key)) continue
+    if (isMute(def.key)) continue
     const name = def.part ?? null
     const last = out[out.length - 1]
     if (last?.name === name) last.sliders.push(def)
@@ -389,6 +392,7 @@ export function OpenGroup({
           {group.name}
           {former && <span className={styles.was}> ({former})</span>}
         </span>
+        <MuteCap stage={group.name} />
         {(isPedal(group.name) || isBend(group.name)) && (
           <BenchToggle stage={group.name} />
         )}

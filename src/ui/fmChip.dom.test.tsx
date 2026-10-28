@@ -29,7 +29,7 @@ test('the chip opens on the modulator, and each box swaps in its own rows', () =
   expect(screen.queryByText('Data line')).toBeNull()
 })
 
-test('the output box holds the fader and mute, the processor the voice', () => {
+test('the output box holds the fader, the processor the voice', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(
     <OpenGroup
@@ -42,7 +42,8 @@ test('the output box holds the fader and mute, the processor the voice', () => {
   expect(screen.queryByText('Voice')).toBeNull()
   fireEvent.click(box('output'))
   expect(screen.getAllByText('Level')).toHaveLength(1)
-  expect(screen.getAllByText('Mute')).toHaveLength(1)
+  expect(screen.queryByText('Mute')).toBeNull()
+  expect(screen.getByRole('button', { name: 'mute Glint' })).not.toBeNull()
   fireEvent.click(box('processor'))
   expect(screen.getAllByText('Voice')).toHaveLength(1)
 })

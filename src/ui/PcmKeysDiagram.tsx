@@ -114,7 +114,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     TOP + ROW,
     widths.at(-1)!,
     OPENS.mix,
-    'The keyboard’s fader and mute, where it joins the source mix, and the supply it runs off.',
+    'The keyboard’s fader, where it joins the source mix, and the supply it runs off.',
   )
   const at = (id: string) => row.find(b => b.id === id)!
   const counter = at('counter')

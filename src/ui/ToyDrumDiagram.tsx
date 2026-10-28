@@ -294,7 +294,7 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
               w={padsW}
               h={BOX_H}
               name={PADS}
-              help="the kit's level, tempo, swing, chance, tuning, decay and mute"
+              help="the kit's level, tempo, swing, chance, wander, tuning and decay"
               lit={r.touched(...PAD_KEYS)}
               selected={pick.selected === PADS}
               onSelect={() => pick.toggle(PADS)}

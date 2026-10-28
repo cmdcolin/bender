@@ -28,3 +28,7 @@ export const levelOf = (stage: string): ControlKey | undefined =>
   LEVEL_OF[stage]
 
 export const muteOf = (stage: string): ControlKey | undefined => MUTE_OF[stage]
+
+const MUTES = new Set(Object.values(MUTE_OF))
+
+export const isMute = (key: ControlKey) => MUTES.has(key)

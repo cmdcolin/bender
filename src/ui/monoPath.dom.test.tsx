@@ -48,7 +48,7 @@ test('the filter, keys and out wire hold the rows no fold names', () => {
   expect(screen.getAllByText('Glide')).toHaveLength(1)
   press('out')
   expect(screen.getAllByText('Level')).toHaveLength(1)
-  expect(screen.getAllByText('Mute')).toHaveLength(1)
+  expect(screen.queryByText('Mute')).toBeNull()
 })
 
 test('the piano roll box opens the melody rows and the piano roll', () => {

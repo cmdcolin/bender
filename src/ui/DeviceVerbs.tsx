@@ -57,10 +57,13 @@ function Mute({
   stage,
   control,
   level,
+  bare,
 }: {
   stage: string
   control: ControlKey
   level?: ControlKey
+  /** A plain switch, for a panel that lists the Level beside it. */
+  bare?: boolean
 }) {
   const switched = useControlValue(control) > 0.5
   const levelAt = useBoardValue(c => (level ? c[level] : 1))
@@ -75,7 +78,7 @@ function Mute({
   const pedal = isPedal(stage)
   const where = useHeardThrough(stage)
   const heard = !pedal && where.length > 0
-  const popover = !pedal && level !== undefined
+  const popover = !pedal && level !== undefined && !bare
   const [open, setOpen] = useState(false)
   const [cap, setCap] = useState<HTMLButtonElement | null>(null)
   const close = useCallback(() => setOpen(false), [])
@@ -110,6 +113,7 @@ function Mute({
         <button
           ref={setCap}
           className={muted ? styles.capOn : styles.cap}
+          data-control={bare ? control : undefined}
           aria-label={`${pedal ? 'bypass' : popover ? 'volume' : 'mute'} ${stage}`}
           aria-pressed={popover ? undefined : muted}
           aria-expanded={popover ? open : undefined}
@@ -138,6 +142,13 @@ function Mute({
       )}
     </>
   )
+}
+
+export function MuteCap({ stage }: { stage: string }) {
+  const mute = muteOf(stage)
+  return mute ? (
+    <Mute stage={stage} control={mute} level={levelOf(stage)} bare />
+  ) : null
 }
 
 function stillHeardText(stage: string, where: string[], atZero: boolean) {

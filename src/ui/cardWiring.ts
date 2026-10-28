@@ -34,7 +34,7 @@ export const PARLOR_OPENS = {
   ROM: ['pcmVoice', 'pcmRunOn', 'pcmWrite'],
   envelope: ['pcmEnv', 'pcmRelease', 'pcmLength'],
   tone: ['pcmTone'],
-  mix: ['pcmLevel', 'pcmMute', 'pcmSupply'],
+  mix: ['pcmLevel', 'pcmSupply'],
   vibrato: ['pcmVibrato'],
   'addr bus': ['pcmAddrLine', 'pcmAddrFault', 'pcmBusCut', 'pcmAddrCross'],
   'data bus': [
@@ -49,6 +49,7 @@ export const PARLOR_OPENS = {
 export const PARLOR_WIRED: Wiring = {
   envelope: ['tone'],
   tone: ['envelope', 'mix'],
+  mix: ['tone'],
   vibrato: ['counter'],
   'addr bus': ['data bus', 'counter'],
   'data bus': ['addr bus', 'ROM'],
@@ -151,6 +152,7 @@ export const GLINT_WIRED: Wiring = { clocks: ['modulator', 'carrier'] }
 export const GROWLER_WIRED: Wiring = {
   sync: ['oscillators'],
   FM: ['oscillators'],
+  out: ['loudness'],
 }
 
 export const SUPPLY_WIRED: Wiring = { 'second cells': ['cells'] }

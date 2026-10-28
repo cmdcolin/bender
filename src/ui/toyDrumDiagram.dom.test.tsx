@@ -113,8 +113,9 @@ const openKit = () =>
 test('the pads box starts open on the kit rows, and the stage draws no folds', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   openKit()
-  for (const row of ['Level', 'Tempo', 'Swing', 'Mute'])
+  for (const row of ['Level', 'Tempo', 'Swing'])
     expect(screen.getByText(row)).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'mute Clatter' })).not.toBeNull()
   expect(document.querySelectorAll('summary')).toHaveLength(0)
   fireEvent.click(box('tanks'))
   expect(screen.queryByText('Tempo')).toBeNull()

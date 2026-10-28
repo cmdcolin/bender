@@ -78,7 +78,7 @@ const LOOSE: Partial<Record<BoxId, ControlKey[]>> = {
   filter: ['monoCutoff', 'monoEmph', 'monoContour', 'monoDrive'],
 }
 
-const OUT_KEYS: ControlKey[] = ['monoLevel', 'monoMute', 'monoSupply']
+const OUT_KEYS: ControlKey[] = ['monoLevel', 'monoSupply']
 
 const boxKeys = (id: BoxId) => [...keysOf(BOXES[id].part), ...(LOOSE[id] ?? [])]
 
@@ -413,7 +413,11 @@ export function MonoPathDiagram({
           <BoxRows
             title={drawn?.name ?? open.id!}
             keys={open.id === 'voice card' ? [] : open.keys}
-            beside={besideOf(opensOf([...words, oscs]), GROWLER_WIRED, open.id)}
+            beside={besideOf(
+              opensOf([...boxes, ...words, oscs]),
+              GROWLER_WIRED,
+              open.id,
+            )}
             verbs={part && verbs(part)}
           />
         </OpenBox>

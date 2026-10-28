@@ -39,13 +39,13 @@ test('a thin box borrows the rows of the boxes it is wired to', () => {
   expect(within(wired).queryByText('Data line')).toBeNull()
 })
 
-test('the mix box opens the fader and mute', () => {
+test('the mix box opens the fader and leaves the mute to the header', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<PcmKeysDiagram verbs={() => null} />)
   expect(screen.queryByText('Level')).toBeNull()
   fireEvent.click(box('mix'))
   expect(screen.getByText('Level')).not.toBeNull()
-  expect(screen.getByText('Mute')).not.toBeNull()
+  expect(screen.queryByText('Mute')).toBeNull()
 })
 
 const accent = (name: string) =>
