@@ -5,7 +5,7 @@ import { expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
-import { GROUPS } from './controls/index.ts'
+import { GROUPS, sliderFor } from './controls/index.ts'
 import { findSettings } from './settingSearch.ts'
 import './testDom.ts'
 
@@ -15,6 +15,14 @@ test('every word has to match the label, lane, fold or stage', () => {
   expect(findSettings(GROUPS, 'fm chip mute').map(h => h.key)).toEqual([
     'fmMute',
   ])
+})
+
+test('a bus fault row still answers to knife, its old name', () => {
+  const hits = findSettings(GROUPS, 'knife')
+  expect(hits.length).toBeGreaterThan(0)
+  expect(hits.every(h => sliderFor(h.key).part === 'fault on the bus')).toBe(
+    true,
+  )
 })
 
 test('labels that start with the word come first', () => {

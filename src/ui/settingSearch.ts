@@ -10,6 +10,8 @@ export interface SettingHit {
   stage: string
 }
 
+const FORMER_PART: Record<string, string> = { 'fault on the bus': 'knife' }
+
 const words = (query: string) =>
   query.toLowerCase().split(/\s+/).filter(Boolean)
 
@@ -24,7 +26,14 @@ export function findSettings(
     g.sliders
       .filter(def => {
         if (c && !rowShown(def, c)) return false
-        const hay = [def.label, def.lane, def.part, g.name, formerName(g.name)]
+        const hay = [
+          def.label,
+          def.lane,
+          def.part,
+          def.part && FORMER_PART[def.part],
+          g.name,
+          formerName(g.name),
+        ]
           .join(' ')
           .toLowerCase()
         return want.every(w => hay.includes(w))
