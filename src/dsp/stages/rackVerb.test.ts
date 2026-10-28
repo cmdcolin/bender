@@ -151,3 +151,33 @@ test('panic empties the memory', () => {
   verb.process(io, p, ctx)
   expect(rms(io.l)).toBe(0)
 })
+
+test('Wander at the smallest Size stays inside the swinging allpasses', () => {
+  const verb = new RackVerb(SR)
+  const spy = verb as unknown as {
+    read: (line: number, t: number) => number
+  }
+  const read = spy.read.bind(verb)
+  let worst = Infinity
+  spy.read = (line, t) => {
+    if (line === 5 || line === 9) worst = Math.min(worst, t)
+    return read(line, t)
+  }
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    rackMix: 1,
+    rackSize: 0.05,
+    rackWander: 1,
+  })
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const ctx = blank()
+  for (let b = 0; b < (2 * SR) / BLOCK; b++) {
+    for (let i = 0; i < BLOCK; i++) io.l[i] = io.r[i] = burst(b * BLOCK + i)
+    verb.process(io, p, ctx)
+  }
+  expect(worst).toBeGreaterThanOrEqual(1)
+})

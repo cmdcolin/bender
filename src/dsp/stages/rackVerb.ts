@@ -127,8 +127,11 @@ export class RackVerb implements Stage {
     this.dLine = Math.round(p[IDX.rackDataLine]!) - 1
     this.dFault = Math.round(p[IDX.rackDataFault]!)
     this.cut = p[IDX.rackBusCut]!
-    const excursion = EXCURSION * p[IDX.rackWander]!
-    this.layout(p[IDX.rackSize]!, p[IDX.rackPre]!, excursion)
+    const excursion = this.layout(
+      p[IDX.rackSize]!,
+      p[IDX.rackPre]!,
+      EXCURSION * p[IDX.rackWander]!,
+    )
     const k0 = SineOsc.rate(WANDER_HZ[0], RACK_BASE_HZ * clock)
     const k1 = SineOsc.rate(WANDER_HZ[1], RACK_BASE_HZ * clock)
     const sr = ctx.sr
@@ -159,13 +162,18 @@ export class RackVerb implements Stage {
 
   private layout(size: number, preMs: number, excursion: number) {
     const s = Math.min(Math.max(size, 0.05), RACK_MAX_SIZE)
+    for (let k = 1; k < BASE.length; k++)
+      this.len[k] = Math.max(Math.round(BASE[k]! * s), 2)
+    const reach = Math.min(
+      excursion,
+      this.len[L_AP1]! - 2,
+      this.len[R_AP1]! - 2,
+    )
     let at = 0
     for (let k = 1; k < BASE.length; k++) {
-      this.len[k] = Math.max(Math.round(BASE[k]! * s), 2)
       this.start[k] = at
       at +=
-        this.len[k]! +
-        (k === L_AP1 || k === R_AP1 ? Math.ceil(excursion) + 2 : 1)
+        this.len[k]! + (k === L_AP1 || k === R_AP1 ? Math.ceil(reach) + 2 : 1)
     }
     const room = RACK_WORDS - SPARE - at
     this.len[PRE] = Math.max(
@@ -180,6 +188,7 @@ export class RackVerb implements Stage {
       )
       this.tapAt[j] = Math.min(Math.max(t, 1), this.len[line]!)
     }
+    return reach
   }
 
   private tick(
