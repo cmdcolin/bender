@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-581 knobs and switches in 37 groups, nine bends for six slots, 18 ROM tunes, 150
+584 knobs and switches in 37 groups, nine bends for six slots, 18 ROM tunes, 153
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 150 presets, and a roll button on every heading as well as
+- **Whole boards.** 153 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one that spends the most
   time arriving at the limiter and backing off; **drift** shifts the board on a
@@ -1036,22 +1036,26 @@ swaps the octave and the sub on a clock, up to audio rate.
 A perceptual codec, encoder into decoder: an MDCT, a bit budget spent on the
 loudest bands each frame, and a decoder that conceals lost frames. Low bitrates
 make bands flicker and the top end swirl, long frames smear hits into pre-echo,
-bit errors jump bands and chirp single bins, and a decoder near its deadline
-stutters when the supply sags.
+bit errors jump bands and chirp single bins, a decoder near its deadline
+stutters when the supply sags, and fed back into itself the codec re-encodes its
+own artefacts until they ring.
 
 <details>
-<summary>8 controls</summary>
+<summary>11 controls</summary>
 
-| control      | range                     | what it does                                                                                                |
-| ------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Bitrate      | 4 to 320 kbps             | Bits per second for both channels                                                                           |
-| Frame        | short, normal, long, huge | Transform length: 128, 256, 512 or 1024 samples a hop                                                       |
-| Packet loss  | off to full               | Chance each frame never arrives                                                                             |
-| Conceal      | repeat, mute, noise       | What the decoder plays for a lost or late frame                                                             |
-| Bit errors   | off to full               | Corrupts the stream                                                                                         |
-| Decoder load | off to full               | How close the decoder runs to its deadline                                                                  |
-| Freeze       | off or hold               | Holds the last decoded spectrum and scrambles its signs every frame, a drone made from whatever was playing |
-| Mix          | off to full               | Dry/wet                                                                                                     |
+| control      | range                            | what it does                                                                                                                                                  |
+| ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bitrate      | 1 to 320 kbps                    | Bits per second for both channels                                                                                                                             |
+| Frame        | short, normal, long, huge, giant | Transform length: 128 to 2048 samples a hop                                                                                                                   |
+| Packet loss  | off to full                      | Chance each frame never arrives                                                                                                                               |
+| Conceal      | repeat, mute, noise              | What the decoder plays for a lost or late frame                                                                                                               |
+| Bit errors   | off to full                      | Corrupts the stream                                                                                                                                           |
+| Decoder load | off to full                      | How close the decoder runs to its deadline                                                                                                                    |
+| Generations  | 0 to 1.5, normal 0 to 1          | Feeds the decoded output back into the encoder, so the codec re-encodes its own artefacts every two frames, like a file uploaded and downloaded over and over |
+| Alias        | off to full                      | Leaves the time aliasing uncancelled, so every frame plays with a reversed copy of itself on top                                                              |
+| Scramble     | off to full                      | Chance per frame that the decoder files each band under another band, so the tune jumps between registers and the bass turns up in the treble                 |
+| Freeze       | off or hold                      | Holds the last decoded spectrum and scrambles its signs every frame, a drone made from whatever was playing                                                   |
+| Mix          | off to full                      | Dry/wet                                                                                                                                                       |
 
 </details>
 
@@ -1588,7 +1592,7 @@ result:
 
 ### Presets
 
-150 presets. Each name is a link that opens the app with that board loaded, and
+153 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1764,6 +1768,15 @@ the board waits until you press play.
 - [**late frames**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipStarve:0.4,bendSlot0:9,codecRate:64,codecConceal:2,codecCpu:0.45,codecMix:1)
   — A decoder at its deadline on a sagging supply: as the toy browns out, the
   frames come late and the codec stutters with it
+- [**generation loss**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.4,bendSlot0:9,codecRate:24,codecFb:1.1,codecMix:1)
+  — The codec re-encoding its own output until the artefacts ring on their own
+  at the frame rate
+- [**backwards frames**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:9,codecRate:96,codecFrame:4,codecAlias:1,codecMix:1)
+  — Giant frames with the aliasing left in: every note plays forwards and
+  backwards at once, 43 ms at a time
+- [**register shuffle**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:9,codecRate:64,codecScramble:0.35,codecMix:1)
+  — Bands filed under the wrong bands, so the tune hops octaves and the bass
+  sparkles in the treble
 - [**lean on it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
   — Skin on the pad rides the cutoff, and pressing harder opens the feedback
 - [**clock wobble**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)

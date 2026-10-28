@@ -167,3 +167,32 @@ test('the codec at no mix leaves the board as it was', () => {
   expect(rms(off)).toBeGreaterThan(0)
   expect(off).toEqual(empty)
 })
+
+test('generations past 1 keep the codec ringing after the input stops', () => {
+  const burst = (t: number) => (t < SR / 4 ? buzz(220)(t) : 0)
+  const tailOf = (codecFb: number) =>
+    rms(stage({ codecFb }, burst).l.subarray(SR / 2))
+  expect(tailOf(0)).toBe(0)
+  expect(tailOf(1.3)).toBeGreaterThan(0.01)
+})
+
+test('alias puts a reversed copy of a hit earlier in its frame', () => {
+  const onset = 10 * 512 + 400
+  const hit = (t: number) =>
+    t >= onset ? Math.exp(-(t - onset) / 30) * Math.sin(t * 0.7) : 0
+  const early = (codecAlias: number) =>
+    rms(
+      stage({ codecRate: 320, codecAlias }, hit).l.subarray(
+        onset + LATENCY - 300,
+        onset + LATENCY - 10,
+      ),
+    )
+  expect(early(1)).toBeGreaterThan(early(0) * 10)
+})
+
+test('scramble files a low tone under higher bands', () => {
+  const low = (t: number) => 0.5 * Math.sin((2 * Math.PI * 220 * t) / SR)
+  const high = (codecScramble: number) =>
+    highEnergy(stage({ codecRate: 320, codecScramble }, low).l, 2000)
+  expect(high(0.5)).toBeGreaterThan(high(0) * 5)
+})

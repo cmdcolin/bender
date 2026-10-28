@@ -4,6 +4,7 @@ import { Burst } from '../util/burst.ts'
 import { Mdct } from '../util/mdct.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
+import { softclip } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -12,8 +13,8 @@ import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 // that conceals what the stream lost. Mid and side share one budget, and side
 // pays a penalty for it, so a starved stream collapses towards mono.
 
-export const CODEC_FRAMES = [128, 256, 512, 1024] as const
-export const CODEC_FRAME_NAMES = ['short', 'normal', 'long', 'huge']
+export const CODEC_FRAMES = [128, 256, 512, 1024, 2048] as const
+export const CODEC_FRAME_NAMES = ['short', 'normal', 'long', 'huge', 'giant']
 export const CODEC_CONCEAL = ['repeat', 'mute', 'noise']
 
 const BAND_HZ = [
@@ -26,7 +27,7 @@ const SIDE_FULL_KBPS = 64
 const MAX_BITS = 15
 const DEADZONE = 0.18
 const SF_BIAS = 128
-const MIN_KBPS = 4
+const MIN_KBPS = 1
 const MAX_KBPS = 320
 const LOWPASS_HZ = 3000
 const LOWPASS_EXP = 0.6
@@ -117,15 +118,16 @@ export class Codec implements Stage {
     const mix = p[IDX.codecMix]!
     const rateMod = ctx.mod.read(DEST.codecRate)
     const errMod = ctx.mod.read(DEST.codecErrors)
+    const fb = p[IDX.codecFb]!
     const { mid, side } = this
 
     for (let i = 0; i < io.n; i++) {
       const l = io.l[i]!
       const r = io.r[i]!
-      mid.input[n + this.pos] = (l + r) / 2
-      side.input[n + this.pos] = (l - r) / 2
       const m = mid.ready[this.pos]!
       const s = side.ready[this.pos]!
+      mid.input[n + this.pos] = (l + r) / 2 + fb * softclip(m)
+      side.input[n + this.pos] = (l - r) / 2 + fb * softclip(s)
       this.dryL[this.dryAt] = l
       this.dryR[this.dryAt] = r
       const back = (this.dryAt - latency + ring) % ring
@@ -180,6 +182,8 @@ export class Codec implements Stage {
       cpu > 0 && cpu * (1 + LATE_DROOP * droop) + LATE_JITTER * rng() > 1
     const freeze = Math.round(p[IDX.codecFreeze]!) === 1
     const conceal = Math.round(p[IDX.codecConceal]!)
+    const swap = p[IDX.codecScramble]!
+    const alias = p[IDX.codecAlias]!
 
     for (const lane of lanes) {
       if (freeze) scatter(lane, n, rng)
@@ -191,11 +195,13 @@ export class Codec implements Stage {
         quantise(lane, size.edges, cut, n, err, rng)
         lane.held.set(lane.coef.subarray(0, n))
       }
+      if (swap > 0) scramble(lane.coef, size.edges, cut, swap, rng)
       size.mdct.inverse(lane.coef, lane.frame)
       for (let k = 0; k < n; k++) {
         lane.ready[k] = lane.tail[k]! + lane.frame[k]!
         lane.tail[k] = lane.frame[n + k]!
       }
+      if (alias > 0) mirror(lane.ready, n, alias)
     }
   }
 
@@ -333,4 +339,37 @@ function quantise(
 function scatter(lane: Lane, n: number, rng: Rng) {
   for (let k = 0; k < n; k++)
     lane.coef[k] = rng() < 0.5 ? lane.held[k]! : -lane.held[k]!
+}
+
+function scramble(
+  c: Float64Array,
+  edges: Uint16Array,
+  cut: number,
+  chance: number,
+  rng: Rng,
+) {
+  const bands = edges.length - 1
+  for (let b = 0; b < bands; b++) {
+    if (rng() >= chance) continue
+    const o = Math.floor(rng() * bands)
+    const width = Math.min(edges[b + 1]! - edges[b]!, edges[o + 1]! - edges[o]!)
+    for (let k = 0; k < width; k++) {
+      const i = edges[b]! + k
+      const j = edges[o]! + k
+      if (i >= cut && j >= cut) break
+      const t = c[i]!
+      c[i] = c[j]!
+      c[j] = t
+    }
+  }
+}
+
+function mirror(x: Float64Array, n: number, amount: number) {
+  const g = 1 / Math.sqrt(1 + amount * amount)
+  for (let k = 0; k < n / 2; k++) {
+    const a = x[k]!
+    const b = x[n - 1 - k]!
+    x[k] = (a + amount * b) * g
+    x[n - 1 - k] = (b + amount * a) * g
+  }
 }

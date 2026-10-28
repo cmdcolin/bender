@@ -241,6 +241,7 @@ test('Add pedal groups every pedal by sound, names it with what it is, benches t
     'Gnash (stompbox)',
     'Clipper (distortion)',
     'Crusher (bit crusher)',
+    'Codec (lossy codec)',
     'Ember (tube amp)',
     'Echo and space',
     'Wraith (tape delay)',

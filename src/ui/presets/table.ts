@@ -1219,6 +1219,43 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'generation loss',
+    blurb:
+      'The codec re-encoding its own output until the artefacts ring on their own at the frame rate',
+    patch: {
+      chipLevel: 0.4,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 24,
+      codecFb: 1.1,
+    },
+  },
+  {
+    name: 'backwards frames',
+    blurb:
+      'Giant frames with the aliasing left in: every note plays forwards and backwards at once, 43 ms at a time',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 96,
+      codecFrame: 4,
+      codecAlias: 1,
+    },
+  },
+  {
+    name: 'register shuffle',
+    blurb:
+      'Bands filed under the wrong bands, so the tune hops octaves and the bass sparkles in the treble',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 64,
+      codecScramble: 0.35,
+    },
+  },
+  {
     name: 'lean on it',
     blurb:
       'Skin on the pad rides the cutoff, and pressing harder opens the feedback',

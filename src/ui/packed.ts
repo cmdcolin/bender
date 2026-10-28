@@ -947,6 +947,9 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'codecCpu',
   'codecFreeze',
   'codecMix',
+  'codecFb',
+  'codecAlias',
+  'codecScramble',
 ]
 
 // Retired controls that old links still carry, each read into the control that

@@ -732,6 +732,9 @@ export const DEFAULT_CONTROLS = {
   codecErrors: 0,
   codecCpu: 0,
   codecFreeze: 0,
+  codecFb: 0,
+  codecAlias: 0,
+  codecScramble: 0,
   codecMix: 0,
 
   stompCircuit: 0,

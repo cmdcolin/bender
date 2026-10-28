@@ -706,6 +706,9 @@ export const PARAM_DEFS = [
   ['codecErrors', 'slew'],
   ['codecCpu', 'slew'],
   ['codecFreeze', 'step'],
+  ['codecFb', 'slew'],
+  ['codecAlias', 'slew'],
+  ['codecScramble', 'slew'],
   ['codecMix', 'slew'],
 
   ['stompCircuit', 'step'],
