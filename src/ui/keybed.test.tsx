@@ -8,6 +8,8 @@ import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
 import { GateBench } from './GateCables.tsx'
 import { Keys } from './Keys.tsx'
+import { CV_DEST, LFO, modCables } from './modCables.ts'
+import { ModPlate } from './ModJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { measure, touch } from './testDom.ts'
@@ -381,8 +383,10 @@ test('the jacks carry printed names, and a TRIG jack names the voice in it', () 
     engine.set('trigToKeys', 0)
   })
   expect(bed('glint').getByText('gate')).toBeTruthy()
-  expect(bed('glint').getByText('trig')).toBeTruthy()
+  expect(bed('plinky').getByText('trig')).toBeTruthy()
   expect(bed('glint').getByText('kick')).toBeTruthy()
+  expect(bed('glint').queryByText('trig')).toBeNull()
+  expect(bed('glint').getByText('cv')).toBeTruthy()
   expect(bed('plinky').getByText('gate')).toBeTruthy()
   expect(bed('plinky').queryByText('kick')).toBeNull()
 })
@@ -473,4 +477,46 @@ test('an effect button on Glint runs its effect ROM script while held', () => {
   fireEvent.pointerUp(surf)
   expect(sfx).toHaveBeenLastCalledWith('fm', 1, false)
   sfx.mockRestore()
+})
+
+test('a MOD cable runs a patch bay source into a machine’s CV jack, and moves or pulls with a drag', async () => {
+  await new Promise(r => setTimeout(r, 0))
+  const { container } = render(
+    <GateBench>
+      <ModPlate />
+      <Keys />
+      <FmKeys />
+      <MonoKeys />
+    </GateBench>,
+  )
+  act(() => {
+    for (const i of [0, 1, 2, 3] as const) engine.set(`mod${i}Src`, 0)
+  })
+  const cv = (name: string) =>
+    screen.getByRole('button', { name: `${name} CV` })
+  const lfo = container.querySelector<HTMLElement>(`[data-mod-src="${LFO}"]`)!
+  const drag = (from: Element, to: Element) => {
+    fireEvent.pointerDown(from, { button: 0, clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
+    document.elementFromPoint = () => to
+    fireEvent.pointerUp(window, { clientX: 40, clientY: 40 })
+  }
+  const into = (m: string) =>
+    modCables(engine.controls.get()).filter(c => c.machine === m)
+
+  drag(lfo, cv('Glint'))
+  expect(into('Glint')).toMatchObject([{ src: LFO, dest: CV_DEST.Glint }])
+
+  drag(cv('Glint'), cv('Growler'))
+  expect(into('Glint')).toEqual([])
+  expect(into('Growler')).toMatchObject([{ src: LFO }])
+
+  drag(cv('Growler'), document.body)
+  expect(into('Growler')).toEqual([])
+
+  await new Promise(r => setTimeout(r, 0))
+  fireEvent.click(cv('Plinky'))
+  expect(into('Plinky')).toMatchObject([{ src: LFO, dest: CV_DEST.Plinky }])
+  fireEvent.click(cv('Plinky'))
+  expect(into('Plinky')).toEqual([])
 })

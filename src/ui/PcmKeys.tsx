@@ -1,6 +1,7 @@
 import { engine } from '../engine/engine.ts'
 import { GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
+import { CvJack } from './ModJacks.tsx'
 import styles from './PcmKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
 import { SeqRec } from './SeqRec.tsx'
@@ -37,6 +38,7 @@ export function PcmKeys({
             solderedTip="Plinky’s notes reach Parlor through this cable, so the demo song plays it as well as these keys. Press to pull the cable"
           />
           <TrigJack taker="pcm" />
+          <CvJack machine="Parlor" />
         </>
       }
       extras={

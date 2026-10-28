@@ -1,6 +1,7 @@
 import { engine } from '../engine/engine.ts'
 import { GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
+import { CvJack } from './ModJacks.tsx'
 import styles from './MonoKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
 import { SeqRec } from './SeqRec.tsx'
@@ -40,6 +41,7 @@ export function MonoKeys({
             solderedTip="Plinky’s notes reach Growler through this cable, so the tune plays it too, an octave or two down. Press to pull the cable"
           />
           <TrigJack taker="mono" />
+          <CvJack machine="Growler" />
         </>
       }
       extras={

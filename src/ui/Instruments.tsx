@@ -23,6 +23,7 @@ import { GateBench } from './GateCables.tsx'
 import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MicMenu } from './MicJacks.tsx'
+import { ModPlate } from './ModJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal, PedalShelf } from './Pedals.tsx'
@@ -178,7 +179,10 @@ export function Instruments({
           bends.length > 0) && (
           <div className={styles.shelf}>
             {keyboards.length > 0 && (
-              <div className={styles.lane}>{keyboards}</div>
+              <div className={styles.lane}>
+                <ModPlate />
+                {keyboards}
+              </div>
             )}
             {(kit.length > 0 || pedals.length > 0 || bends.length > 0) && (
               <div className={styles.rack}>

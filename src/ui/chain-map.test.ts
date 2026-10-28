@@ -968,6 +968,7 @@ test('the panel palette matches the tokens it copies', () => {
     accent: PANEL.accent,
     accent2: PANEL.accent2,
     hits: PANEL.hits,
+    mod: PANEL.mod,
     raise: PANEL.raise,
   }).toEqual({
     bg: token('surface'),
@@ -977,6 +978,7 @@ test('the panel palette matches the tokens it copies', () => {
     accent: token('accent'),
     accent2: token('accent2'),
     hits: token('hits'),
+    mod: token('mod'),
     raise: token('surface-raised'),
   })
 })

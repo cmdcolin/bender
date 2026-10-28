@@ -261,6 +261,16 @@ voltage you set, or jams one.
 source to a knob. **LFO sync** runs the LFO in bars or note values of the kit's
 tempo and restarts each cycle on the beat it belongs to.
 
+The patch bay's four wires also show on the bench as blue cables:
+
+- The **MOD** plate over the keyboards has a jack for the LFO, the ADSR, the
+  phrase and both lanes, and for any other source a wire picks up
+- Every machine has a **CV** jack, the kit's on its plate. Plugging a cable in
+  uses a spare wire, which lands on Plinky's or Glint's clock, Parlor's level,
+  Growler's pitch or the kit's tune
+- The patch bay sets where a wire lands and how hard it pushes. A wire onto any
+  part of a machine on the bench draws into that machine's CV jack
+
 **Step lanes** under the bay are two rows of sixteen values, **lane A** and
 **lane B**, each with its own length. A wire off a lane sends the value on the
 step the kit stands on, so one step can starve the rail, the next can open the

@@ -16,6 +16,8 @@
   /* The kit's trigger lines, on every cable and drawing that carries a hit.
      Plinky's notes take --accent2. */
   --hits: #a184e8;
+  /* The patch bay's wires, from a source on the MOD plate to a CV jack. */
+  --mod: #5ea9d8;
   /* A fill, where tokens.css's --danger is text: panic, a live recording. */
   --alarm: #ff3355;
   /* The alarm's border and its hover wash, for a button that removes. */

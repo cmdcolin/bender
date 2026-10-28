@@ -27,7 +27,8 @@
 }
 
 .stage:has([data-trig-plate]),
-.rack:has([data-trig-plate]) {
+.rack:has([data-trig-plate]),
+.lane:has([data-mod-plate]) {
   padding-top: 40px;
 }
 

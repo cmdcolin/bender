@@ -21,9 +21,10 @@ export function Socket({
       height="20"
       data-lamp={lamp}
       data-target={target}
+      style={{ ['--jack' as string]: colour }}
       aria-hidden="true"
     >
-      <circle className={styles.ring} r="9.6" style={{ stroke: colour }} />
+      <circle className={styles.ring} r="9.6" />
       <circle className={styles.nut} r="8.4" />
       <circle className={styles.collar} r="6.4" />
       <circle className={styles.hole} r="3.6" />

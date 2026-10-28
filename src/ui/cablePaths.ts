@@ -112,3 +112,74 @@ export function hanging(from: Anchor, to: Anchor): Path {
     },
   }
 }
+
+const LANE_IN = 15
+const LANE_PITCH = 7
+const BAND_IN = 6
+const BAND_PITCH = 6
+
+/** The gutter a bench with this many lanes needs past the cases' edge. */
+export const gutterFor = (lanes: number) =>
+  PLUG + LANE_IN + Math.max(1, lanes) * LANE_PITCH + 6
+
+/** A cable to lay: each end on a case's right edge or on a plate, facing up.
+    An inner run takes the lanes nearest the cases. */
+export interface Run {
+  id: string
+  from: Anchor
+  to: Anchor
+  inner?: boolean
+}
+
+/** Every run's lane in the gutter past `edge`. Inner runs take the inner lanes,
+    the lowest end innermost; the rest take the outer lanes, the shortest
+    innermost. A run with an end on a plate crosses to the gutter above the
+    plate, at a height of its own among the runs on that plate. */
+export function layRuns(runs: readonly Run[], edge: number) {
+  const inner = runs
+    .filter(r => r.inner)
+    .toSorted((a, b) => a.to.at.y - b.to.at.y)
+  const outer = runs
+    .filter(r => !r.inner)
+    .toSorted(
+      (a, b) =>
+        Math.abs(a.to.at.y - a.from.at.y) - Math.abs(b.to.at.y - b.from.at.y),
+    )
+  const ordered = [...inner, ...outer]
+  const lane = (i: number) => edge + PLUG + LANE_IN + i * LANE_PITCH
+
+  const plates = new Map<number, number[]>()
+  ordered.forEach((r, i) => {
+    for (const end of [r.from, r.to])
+      if (end.facing === 'up') {
+        const on = plates.get(end.at.y) ?? []
+        if (!on.includes(i)) on.push(i)
+        plates.set(end.at.y, on)
+      }
+  })
+  const band = (plateY: number, i: number) => {
+    const on = plates.get(plateY)!
+    return (
+      plateY - PLUG - BAND_IN - (on.length - 1 - on.indexOf(i)) * BAND_PITCH
+    )
+  }
+
+  const routes = new Map<string, Route>()
+  ordered.forEach((r, i) => {
+    const x = lane(i)
+    const a = boot(r.from)
+    const b = boot(r.to)
+    const bends: Point[] = [a]
+    if (r.from.facing === 'up') {
+      const y = band(r.from.at.y, i)
+      bends.push({ x: a.x, y }, { x, y })
+    } else bends.push({ x, y: a.y })
+    if (r.to.facing === 'up') {
+      const y = band(r.to.at.y, i)
+      bends.push({ x, y }, { x: b.x, y })
+    } else bends.push({ x, y: b.y })
+    bends.push(b)
+    routes.set(r.id, { from: r.from, to: r.to, bends })
+  })
+  return routes
+}

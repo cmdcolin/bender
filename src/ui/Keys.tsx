@@ -6,6 +6,7 @@ import { EffectPads } from './EffectPads.tsx'
 import { GateOut, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './Keys.module.css'
+import { CvJack } from './ModJacks.tsx'
 import { RailLamp } from './RailLamp.tsx'
 import { Tip } from './Tip.tsx'
 
@@ -41,6 +42,7 @@ export function Keys({
         <>
           <GateOut />
           <TrigJack taker="toy" />
+          <CvJack machine="Plinky" />
         </>
       }
       extras={

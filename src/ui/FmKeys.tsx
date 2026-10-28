@@ -4,6 +4,7 @@ import { EffectPads } from './EffectPads.tsx'
 import styles from './FmKeys.module.css'
 import { GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
+import { CvJack } from './ModJacks.tsx'
 import { RailLamp } from './RailLamp.tsx'
 import { SeqRec } from './SeqRec.tsx'
 
@@ -51,6 +52,7 @@ export function FmKeys({
             solderedTip="Plinky’s notes reach Glint through this cable, so the chip plays whatever Plinky strikes as well as these keys. Press to pull the cable"
           />
           <TrigJack taker="fm" />
+          <CvJack machine="Glint" />
         </>
       }
       extras={

@@ -10,16 +10,32 @@ import {
 import { N_DRUM_VOICES, VOICE_LABELS } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
+import {
+  cvIns,
+  dragging,
+  gateOut,
+  inputs,
+  keep,
+  modOuts,
+  trigIns,
+  trigOuts,
+  type Drag,
+  type GateEnd,
+  type GateIn,
+  type Taker,
+  type TrigEnd,
+} from './benchStores.ts'
 import { follow, pressIsClick } from './cableDrag.ts'
 import { Socket, Wire } from './CableParts.tsx'
 import {
-  boot,
+  gutterFor,
   hanging,
   laid,
-  PLUG,
+  layRuns,
   type Anchor,
   type Point,
   type Route,
+  type Run,
 } from './cablePaths.ts'
 import {
   connectionInto,
@@ -27,6 +43,7 @@ import {
   PLINKY_TO_KIT,
   SIGNAL_COLOUR,
   type Connection,
+  type Machine,
 } from './connections.ts'
 import {
   useBoardValue,
@@ -35,6 +52,8 @@ import {
   useStoreValue,
 } from './ControlsContext.ts'
 import styles from './GateCables.module.css'
+import { CV_MACHINES, cvFacing, modCables } from './modCables.ts'
+import { CvJack, HeldMod, ModCable } from './ModJacks.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { NoteDest } from '../engine/messages.ts'
@@ -45,12 +64,13 @@ import type { NoteDest } from '../engine/messages.ts'
 //   keyboard's GATE jack, and to the GATE jack on the kit's plate.
 // - TRIG (purple) carries a kit voice from the plate on top of Clatter to a
 //   keyboard's TRIG jack. The jack a cable leaves from picks the voice.
+// - MOD (blue) carries a patch bay source from the MOD plate to a machine's CV
+//   jack, one of the bay's four wires (ModJacks.tsx).
 //
 // Pressing a jack plugs its cable in or pulls it out. Dragging an end carries
 // it with the pointer: letting go over a jack that takes that kind of cable
 // plugs it in there, and letting go anywhere else pulls it out.
 
-type Taker = Exclude<NoteDest, 'toy'> | 'kit'
 type Keyboard = Exclude<Taker, 'kit'>
 
 const TAKERS: Taker[] = ['fm', 'pcm', 'mono', 'kit']
@@ -84,56 +104,12 @@ const plateName = (voice: number) => {
   return PLATE_NAME[name] ?? name
 }
 
-const LANE_IN = 15
-const LANE_PITCH = 7
-const BAND_IN = 6
-const BAND_PITCH = 6
-
-interface GateIn {
-  el: HTMLElement
-  notes?: Store<ReadonlySet<number>>
-}
-
-const inputs = createStore<ReadonlyMap<Taker, GateIn>>(new Map())
-const gateOut = createStore<HTMLElement | null>(null)
-const trigIns = createStore<ReadonlyMap<NoteDest, HTMLElement>>(new Map())
-const trigOuts = createStore<ReadonlyMap<number, HTMLElement>>(new Map())
-
 interface Layout {
   routes: ReadonlyMap<string, Route>
   jacks: ReadonlyMap<string, Point>
 }
 
 const spots = createStore<Layout>({ routes: new Map(), jacks: new Map() })
-
-function keep<K, V>(
-  store: Store<ReadonlyMap<K, V>> & {
-    set: (m: ReadonlyMap<K, V>) => void
-  },
-  key: K,
-  value: V | null,
-) {
-  const next = new Map(store.get())
-  if (value === null) next.delete(key)
-  else next.set(key, value)
-  store.set(next)
-}
-
-/** One end of a GATE cable: a machine's GATE input, or Plinky's output. */
-type GateEnd = Taker | 'plinky'
-
-/** One end of a TRIG cable: a keyboard's input, or a voice's jack on the kit. */
-type TrigEnd =
-  | { taker: NoteDest; voice?: undefined }
-  | { voice: number; taker?: undefined }
-
-type Drag = Point &
-  (
-    | { line: 'gate'; fixed: GateEnd; carried: Taker | null }
-    | { line: 'trig'; fixed: TrigEnd; carried: NoteDest | null }
-  )
-
-const dragging = createStore<Drag | null>(null)
 
 const plugged = (taker: Taker) => gateInto(taker).plugged(engine.controls.get())
 
@@ -306,12 +282,9 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
           lamp={voice > 0 ? 'wired' : 'off'}
           target={target}
         />
-        <span className={styles.legend}>trig</span>
-        {voice > 0 && (
-          <span className={styles.voice} data-trig-shows="">
-            {plateName(voice)}
-          </span>
-        )}
+        <span className={voice > 0 ? styles.voice : styles.legend}>
+          {voice > 0 ? plateName(voice) : 'trig'}
+        </span>
       </button>
     </Tip>
   )
@@ -426,6 +399,7 @@ export function TrigPlate() {
   if (takers.size === 0) return null
   return (
     <div className={styles.plate} data-trig-plate="">
+      <CvJack machine="Clatter" />
       <KitGate />
       {TRIG_VOICES.map(v => (
         <TrigOut key={v} voice={v} />
@@ -447,87 +421,80 @@ const socketOf = (el: HTMLElement) => el.querySelector('svg') ?? el
 const caseOf = (el: HTMLElement) =>
   el.closest<HTMLElement>('[role=group]') ?? el
 
-/** Every cable's lane in the gutter past the widest keyboard. GATE cables to
-    the keyboards take the inner lanes, the nearest keyboard's innermost. The
-    cables to and from the kit's plate take the outer lanes, the end nearest
-    the kit innermost, and each crosses to the gutter at a height of its own
-    over the kit. */
-function route(
-  origin: DOMRect,
-  ends: {
-    ins: ReadonlyMap<Taker, GateIn>
-    out: HTMLElement | null
-    tIns: ReadonlyMap<NoteDest, HTMLElement>
-    tOuts: ReadonlyMap<number, HTMLElement>
-  },
-  struck: ReadonlyMap<NoteDest, number>,
-): Layout {
-  const { ins, out, tIns, tOuts } = ends
+const run = (
+  id: string,
+  from: Anchor | undefined,
+  to: Anchor | undefined,
+  inner = false,
+): Run[] => (from && to ? [{ id, from, to, inner }] : [])
+
+interface Ends {
+  ins: ReadonlyMap<Taker, GateIn>
+  out: HTMLElement | null
+  tIns: ReadonlyMap<NoteDest, HTMLElement>
+  tOuts: ReadonlyMap<number, HTMLElement>
+  mOuts: ReadonlyMap<number, HTMLElement>
+  cvs: ReadonlyMap<Machine, HTMLElement>
+}
+
+interface Patched {
+  struck: ReadonlyMap<NoteDest, number>
+  mods: readonly { wire: number; src: number; machine: Machine }[]
+}
+
+/** Every cable on the bench, measured off its jacks. A GATE cable to a
+    keyboard keeps its lane whether or not it is plugged in, so plugging one
+    does not shift the cases. */
+function route(origin: DOMRect, ends: Ends, patched: Patched): Layout {
+  const { ins, out, tIns, tOuts, mOuts, cvs } = ends
   const jacks = new Map<string, Point>()
-  for (const [t, s] of ins)
-    jacks.set(`gate:in:${t}`, centre(socketOf(s.el), origin))
-  if (out) jacks.set('gate:out', centre(socketOf(out), origin))
-  for (const [t, el] of tIns)
-    jacks.set(`trig:in:${t}`, centre(socketOf(el), origin))
-  for (const [v, el] of tOuts)
-    jacks.set(`trig:out:${v}`, centre(socketOf(el), origin))
+  const at = (key: string, el: HTMLElement) =>
+    jacks.set(key, centre(socketOf(el), origin))
+  for (const [t, s] of ins) at(`gate:in:${t}`, s.el)
+  if (out) at('gate:out', out)
+  for (const [t, el] of tIns) at(`trig:in:${t}`, el)
+  for (const [v, el] of tOuts) at(`trig:out:${v}`, el)
+  for (const [src, el] of mOuts) at(`mod:out:${src}`, el)
+  for (const [m, el] of cvs) at(`cv:in:${m}`, el)
 
-  const plinky = jacks.get('gate:out')
-  const gates = TAKERS.flatMap(taker => {
-    const to = jacks.get(`gate:in:${taker}`)
-    return taker !== 'kit' && plinky && to ? [{ taker, from: plinky, to }] : []
-  }).toSorted((a, b) => a.to.y - b.to.y)
+  const edge = (key: string): Anchor | undefined => {
+    const p = jacks.get(key)
+    return p && { at: p, facing: 'right' }
+  }
+  const plate = (key: string): Anchor | undefined => {
+    const p = jacks.get(key)
+    return p && { at: p, facing: 'up' }
+  }
 
-  const kitTo = jacks.get('gate:in:kit')
-  const plated = [
-    ...TRIG_TAKERS.flatMap(taker => {
-      const onPlate = jacks.get(`trig:out:${struck.get(taker)}`)
-      const onEdge = jacks.get(`trig:in:${taker}`)
-      return onPlate && onEdge
-        ? [{ id: `trig:${taker}`, onPlate, onEdge, intoKit: false }]
-        : []
-    }),
-    ...(plinky && kitTo
-      ? [{ id: 'gate:kit', onPlate: kitTo, onEdge: plinky, intoKit: true }]
-      : []),
+  const runs = [
+    ...TAKERS.flatMap(t =>
+      t === 'kit'
+        ? run('gate:kit', edge('gate:out'), plate('gate:in:kit'))
+        : run(`gate:${t}`, edge('gate:out'), edge(`gate:in:${t}`), true),
+    ),
+    ...TRIG_TAKERS.flatMap(t =>
+      run(
+        `trig:${t}`,
+        plate(`trig:out:${patched.struck.get(t)}`),
+        edge(`trig:in:${t}`),
+      ),
+    ),
+    ...patched.mods.flatMap(m =>
+      run(
+        `mod:${m.wire}`,
+        plate(`mod:out:${m.src}`),
+        cvFacing(m.machine) === 'up'
+          ? plate(`cv:in:${m.machine}`)
+          : edge(`cv:in:${m.machine}`),
+      ),
+    ),
   ]
-  const plate = Math.min(...plated.map(t => t.onPlate.y))
-  const nearest = plated.toSorted(
-    (a, b) => Math.abs(a.onEdge.y - plate) - Math.abs(b.onEdge.y - plate),
+  const x = Math.max(
+    ...runs.flatMap(r =>
+      [r.from, r.to].flatMap(a => (a.facing === 'right' ? [a.at.x] : [])),
+    ),
   )
-
-  const edge = Math.max(
-    ...gates.flatMap(g => [g.from.x, g.to.x]),
-    ...plated.map(t => t.onEdge.x),
-  )
-  const lane = (i: number) => edge + PLUG + LANE_IN + i * LANE_PITCH
-
-  const routes = new Map<string, Route>()
-  gates.forEach(({ taker, from, to }, i) => {
-    const a = boot({ at: from, facing: 'right' })
-    const b = boot({ at: to, facing: 'right' })
-    routes.set(`gate:${taker}`, {
-      from: { at: from, facing: 'right' },
-      to: { at: to, facing: 'right' },
-      bends: [a, { x: lane(i), y: a.y }, { x: lane(i), y: b.y }, b],
-    })
-  })
-  nearest.forEach(({ id, onPlate, onEdge, intoKit }, i) => {
-    const x = lane(gates.length + i)
-    const band = plate - PLUG - BAND_IN - (nearest.length - 1 - i) * BAND_PITCH
-    const top: Anchor = { at: onPlate, facing: 'up' }
-    const side: Anchor = { at: onEdge, facing: 'right' }
-    const a = boot(top)
-    const b = boot(side)
-    const bends = [a, { x: a.x, y: band }, { x, y: band }, { x, y: b.y }, b]
-    routes.set(
-      id,
-      intoKit
-        ? { from: side, to: top, bends: bends.toReversed() }
-        : { from: top, to: side, bends },
-    )
-  })
-  return { routes, jacks }
+  return { routes: layRuns(runs, x), jacks }
 }
 
 const same = (a: Layout, b: Layout) =>
@@ -542,23 +509,39 @@ export function GateBench({ children }: { children: ReactNode }) {
   const out = useStoreValue(gateOut)
   const tIns = useStoreValue(trigIns)
   const tOuts = useStoreValue(trigOuts)
+  const mOuts = useStoreValue(modOuts)
+  const cvs = useStoreValue(cvIns)
   const { routes, jacks } = useStoreValue(spots)
   const drag = useStoreValue(dragging)
   const voices = useBoardValue(c =>
     TRIG_TAKERS.map(t => Math.round(c[trigControl(t)])).join(','),
   )
-  const struck = useMemo(() => {
+  const wired = useBoardValue(c =>
+    modCables(c)
+      .map(m => `${m.wire}:${m.src}:${m.machine}`)
+      .join(','),
+  )
+  const patched = useMemo((): Patched => {
     const each = voices.split(',').map(Number)
-    return new Map(TRIG_TAKERS.map((t, i) => [t, each[i]!]))
-  }, [voices])
+    return {
+      struck: new Map(TRIG_TAKERS.map((t, i) => [t, each[i]!])),
+      mods: wired
+        .split(',')
+        .filter(Boolean)
+        .flatMap(w => {
+          const [wire, src, machine] = w.split(':')
+          const m = CV_MACHINES.find(n => n === machine)
+          return m ? [{ wire: Number(wire), src: Number(src), machine: m }] : []
+        }),
+    }
+  }, [voices, wired])
 
   const lanes =
     (out ? TAKERS.filter(t => ins.has(t)).length : 0) +
-    TRIG_TAKERS.filter(t => tIns.has(t) && tOuts.has(struck.get(t)!)).length
-  const gutter =
-    ins.size + tIns.size > 0
-      ? PLUG + LANE_IN + Math.max(1, lanes) * LANE_PITCH + 6
-      : 0
+    TRIG_TAKERS.filter(t => tIns.has(t) && tOuts.has(patched.struck.get(t)!))
+      .length +
+    patched.mods.filter(m => mOuts.has(m.src) && cvs.has(m.machine)).length
+  const gutter = ins.size + tIns.size + cvs.size > 0 ? gutterFor(lanes) : 0
 
   useLayoutEffect(() => {
     const root = bench.current
@@ -567,8 +550,8 @@ export function GateBench({ children }: { children: ReactNode }) {
     const measure = () => {
       const next = route(
         root.getBoundingClientRect(),
-        { ins, out, tIns, tOuts },
-        struck,
+        { ins, out, tIns, tOuts, mOuts, cvs },
+        patched,
       )
       if (!same(spots.get(), next)) spots.set(next)
     }
@@ -580,7 +563,12 @@ export function GateBench({ children }: { children: ReactNode }) {
     const watch = new ResizeObserver(later)
     watch.observe(root)
     for (const { el } of ins.values()) watch.observe(caseOf(el))
-    for (const el of [...tIns.values(), ...tOuts.values()])
+    for (const el of [
+      ...tIns.values(),
+      ...tOuts.values(),
+      ...mOuts.values(),
+      ...cvs.values(),
+    ])
       watch.observe(caseOf(el))
     window.addEventListener('resize', later)
     return () => {
@@ -588,7 +576,7 @@ export function GateBench({ children }: { children: ReactNode }) {
       watch.disconnect()
       window.removeEventListener('resize', later)
     }
-  }, [ins, out, tIns, tOuts, struck])
+  }, [ins, out, tIns, tOuts, mOuts, cvs, patched])
 
   return (
     <div
@@ -612,9 +600,15 @@ export function GateBench({ children }: { children: ReactNode }) {
         {TRIG_TAKERS.map(t => {
           const spot = routes.get(`trig:${t}`)
           return spot &&
-            struck.get(t)! > 0 &&
+            patched.struck.get(t)! > 0 &&
             !(drag?.line === 'trig' && drag.carried === t) ? (
             <TrigCable key={t} taker={t} spot={spot} />
+          ) : null
+        })}
+        {patched.mods.map(m => {
+          const spot = routes.get(`mod:${m.wire}`)
+          return spot && !(drag?.line === 'mod' && drag.carried === m.wire) ? (
+            <ModCable key={m.wire} wire={m.wire} spot={spot} />
           ) : null
         })}
       </svg>
@@ -635,6 +629,7 @@ function Held({
   drag: Drag
   jacks: ReadonlyMap<string, Point>
 }) {
+  if (drag.line === 'mod') return <HeldMod drag={drag} jacks={jacks} />
   if (drag.line === 'gate') {
     const at =
       drag.fixed === 'plinky'
