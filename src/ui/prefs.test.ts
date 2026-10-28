@@ -23,7 +23,6 @@ beforeEach(() => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
   morphSetting.set(1)
   keymap.set(DEFAULT_KEYMAP)
@@ -57,7 +56,6 @@ test('a stored setup keeps the fields that are the right shape', () => {
       bends: [],
       roll: false,
       grid: false,
-      folded: false,
     },
     morph: 4,
   })
@@ -77,7 +75,6 @@ test('a stored setup naming the old stages keeps them under the new names', () =
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
 })
 
@@ -90,7 +87,6 @@ test('applying a setup writes the stores and this machine keeps it', () => {
       bends: [],
       roll: false,
       grid: false,
-      folded: false,
     },
     morph: 8,
   })
@@ -101,7 +97,6 @@ test('applying a setup writes the stores and this machine keeps it', () => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
   expect(morphSetting.get()).toBe(8)
   expect(localStorage.getItem('bender.morphSeconds')).toBe('8')

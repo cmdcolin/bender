@@ -70,16 +70,23 @@ test('the kit records a hit and flashes the step it went to', () => {
   engine.setDrumsPlaying(false)
 })
 
-test('the pattern stages the kit with the whole grid, and grid folds it', () => {
+test('the pattern stages the kit with the whole grid, and small folds it', () => {
   setBench({ ...bench.get(), grid: false })
   render(<DrumKit />)
+  const small = screen.getByRole('button', { name: 'small' })
+  const large = screen.getByRole('button', { name: 'large' })
+  expect(small.getAttribute('aria-pressed')).toBe('true')
   expect(screen.queryByRole('button', { name: 'kick step 1' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'edit the drum pattern' }))
   expect(bench.get().grid).toBe(true)
+  expect(large.getAttribute('aria-pressed')).toBe('true')
   expect(screen.getByRole('button', { name: 'kick step 1' })).not.toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'grid' }))
+  fireEvent.click(screen.getByRole('button', { name: 'small' }))
   expect(bench.get().grid).toBe(false)
   expect(screen.queryByRole('button', { name: 'kick step 1' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'large' }))
+  expect(bench.get().grid).toBe(true)
+  setBench({ ...bench.get(), grid: false })
 })
 
 test('the staged kit takes a shelf of its own above the keyboards', () => {
@@ -94,20 +101,16 @@ test('the staged kit takes a shelf of its own above the keyboards', () => {
   setBench({ ...bench.get(), grid: false })
 })
 
-test('the kit stages itself when it runs, until the player folds it', () => {
-  setBench({ ...bench.get(), grid: false, folded: false })
+test('running the kit keeps it at the size the player left it', () => {
+  setBench({ ...bench.get(), grid: false })
   render(<App />)
-  act(() => engine.setDrumsPlaying(true))
-  expect(bench.get().grid).toBe(true)
-  fireEvent.click(screen.getByRole('button', { name: 'grid' }))
-  act(() => engine.setDrumsPlaying(false))
   act(() => engine.setDrumsPlaying(true))
   expect(bench.get().grid).toBe(false)
   act(() => engine.setDrumsPlaying(false))
 })
 
 test('running the kit leaves a closed kit closed', () => {
-  setBench({ ...bench.get(), grid: false, folded: false, closed: ['Clatter'] })
+  setBench({ ...bench.get(), grid: false, closed: ['Clatter'] })
   render(<App />)
   act(() => engine.setDrumsPlaying(true))
   expect(screen.queryByRole('group', { name: 'clatter' })).toBeNull()

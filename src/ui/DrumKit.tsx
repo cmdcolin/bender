@@ -30,10 +30,10 @@ import { useStruck } from './useStruck.ts'
 const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 
 // DrumKit draws the toy drum machine as a moulded case with switches that run
-// the pattern and arm recording, the pattern in miniature, and eight rubber
-// pads. A pad lights on every hit the kit reports, from the pads, the number
-// keys, the pattern or a trigger patch. Staged, the case spans the main area
-// and the miniature becomes the whole grid.
+// the pattern, arm recording and pick small or large, the pattern in
+// miniature, and eight rubber pads. A pad lights on every hit the kit reports,
+// from the pads, the number keys, the pattern or a trigger patch. Large, the
+// case spans the main area and the miniature becomes the whole grid.
 //
 // The pattern and the pads render as separate components, so a step redraws
 // only the pattern and a hit redraws only the pads that changed.
@@ -111,21 +111,26 @@ export function DrumKit({
               rec
             </button>
           </Tip>
-          <Tip
-            text={
-              staged
-                ? 'Folds the drum machine back into its small face.'
-                : 'Spreads the drum machine across the bench, the whole grid at full size.'
-            }
-          >
-            <button
-              className={staged ? styles.gridOn : styles.grid}
-              aria-pressed={staged}
-              onClick={() => stageKit(!staged)}
-            >
-              grid
-            </button>
-          </Tip>
+          <div className={styles.size} role="group" aria-label="kit size">
+            <Tip text="Folds the drum machine into its small face: the pattern in miniature over the pads.">
+              <button
+                className={staged ? styles.sizeOff : styles.sizeOn}
+                aria-pressed={!staged}
+                onClick={() => stageKit(false)}
+              >
+                small
+              </button>
+            </Tip>
+            <Tip text="Spreads the drum machine across the bench, the whole grid at full size.">
+              <button
+                className={staged ? styles.sizeOn : styles.sizeOff}
+                aria-pressed={staged}
+                onClick={() => stageKit(true)}
+              >
+                large
+              </button>
+            </Tip>
+          </div>
           <DeviceVerbs
             stage="Clatter"
             seconds={seconds}

@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
 import { AddMenu } from './AddMenu.tsx'
-import { bench, INSTRUMENTS, stageOnRun } from './bench.ts'
+import { bench, INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendShelf } from './BendFaces.tsx'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
@@ -105,13 +105,6 @@ export function Instruments({
   useEffect(() => {
     if (risen) add(risen.split('|'))
   }, [risen])
-  useEffect(
-    () =>
-      engine.drumsPlaying.subscribe(() => {
-        if (engine.drumsPlaying.get()) stageOnRun()
-      }),
-    [],
-  )
   const micOn = useStoreValue(engine.micOn)
   const micJack = Math.round(useControlValue('micPatch'))
   const over = useStoreValue(dragging)

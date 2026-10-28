@@ -186,12 +186,28 @@
   composes: cap from './button.module.css';
 }
 
-.grid {
-  composes: cap from './button.module.css';
+.size {
+  display: inline-flex;
 }
 
-.gridOn {
-  composes: capOn from './button.module.css';
+.sizeOff {
+  composes: capJoined from './button.module.css';
+}
+
+.sizeOn {
+  composes: capJoinedOn from './button.module.css';
+}
+
+.size > button + button {
+  margin-left: -1px;
+}
+
+.size > button:first-child {
+  border-radius: var(--ctl-radius) 0 0 var(--ctl-radius);
+}
+
+.size > button:last-child {
+  border-radius: 0 var(--ctl-radius) var(--ctl-radius) 0;
 }
 
 .recOn {

@@ -20,7 +20,6 @@ beforeEach(() => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
 })
 
@@ -410,7 +409,6 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
   render(<Instruments seconds={0} onOpen={s => opened.push(s)} />)
   expect(screen.getAllByRole('slider').length).toBeGreaterThan(2)
@@ -435,7 +433,6 @@ test('a pedal slider moves its own control and goes back to stock on a double pr
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const mix = screen.getByRole('slider', { name: 'Reverb level' })
@@ -454,7 +451,6 @@ test('a pedal selector switch goes to the next position on each press', () => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const before = engine.controls.get().stompCircuit
@@ -472,7 +468,6 @@ test('Wraith’s face trades its Time slider for the sync dropdown', () => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const time = sliderFor('delayMs').label
@@ -533,7 +528,6 @@ test('the instruments brought up are stored for the next load', () => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
 })
 
@@ -545,7 +539,6 @@ test('a stored bench that is not one reads as the default', () => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   }
   expect(parseBench('{')).toEqual(stock)
   expect(parseBench('7')).toEqual(stock)
@@ -558,7 +551,6 @@ test('a stored bench that is not one reads as the default', () => {
     bends: [],
     roll: false,
     grid: false,
-    folded: false,
   })
   expect(parseBench('{"instruments":[]}').pedals).toEqual([])
 })
