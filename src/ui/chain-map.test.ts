@@ -118,7 +118,7 @@ test('the tape machine draws where Tape at puts it', () => {
   const bends = at(2)
   checkLayout(bends)
   expect(hop(bends, 'mix', 'Tape_machine')).toBeTruthy()
-  expect(hop(bends, 'Tape_machine', 'rack')).toBeTruthy()
+  expect(box(bends, 'Tape_machine')!.y).toBeLessThan(box(bends, 'rack')!.y)
   expect(hop(bends, 'Brownout', 'Output')).toBeTruthy()
   const pedals = at(1)
   checkLayout(pedals)
@@ -136,8 +136,8 @@ test('bend slots draw in their live order, under the rack they sit in', () => {
     bendSlot1: 1,
     bendSlot2: 0,
   })
-  expect(hop(map, 'mix', 'rack')).toBeTruthy()
-  expect(hop(map, 'rack', 'Glitch_buffer')).toBeTruthy()
+  expect(hop(map, 'mix', 'Glitch_buffer')).toBeTruthy()
+  expect(box(map, 'rack')!.y).toBeLessThan(box(map, 'Glitch_buffer')!.y)
   expect(hop(map, 'Glitch_buffer', 'Ring_mod')).toBeTruthy()
 })
 
@@ -454,12 +454,14 @@ test("the README's diagrams are what the chain draws today — else `pnpm diagra
 })
 
 // Six slots and ten bends, so four are always in none of them. The rack heads
-// the run and carries those, each a door of its own — which is what stops a
-// stage that is on the board and not in the path from going missing off the map.
-test('the rack heads the run and carries the bends in no slot', () => {
+// the run and carries those beside it, each a door of its own — which is what
+// stops a stage that is on the board and not in the path from going missing
+// off the map, without drawing it in the signal's way.
+test('the rack heads the run and carries the bends in no slot beside it', () => {
   const map = buildMap({ ...DEFAULT_CONTROLS, bendSlot0: 7 })
   expect(box(map, 'rack')?.door).toBeUndefined()
-  expect(hop(map, 'rack', 'Freq_shifter')).toBeTruthy()
+  expect(hop(map, 'mix', 'Freq_shifter')).toBeTruthy()
+  expect(map.wires.some(w => w.from === 'rack' || w.to === 'rack')).toBe(false)
   const ring = box(map, 'Ring_mod')!
   expect(ring.kind).toBe('chip')
   expect(ring.door).toBe('Ring mod')
@@ -468,6 +470,7 @@ test('the rack heads the run and carries the bends in no slot', () => {
   const rack = box(map, 'rack')!
   expect(ring.y).toBeGreaterThan(rack.y)
   expect(ring.y + ring.h).toBeLessThanOrEqual(rack.y + rack.h)
+  expect(ring.x).toBeGreaterThan(rack.x + rack.w / 2)
 })
 
 test('a patch wire draws onto the group it is soldered to', () => {

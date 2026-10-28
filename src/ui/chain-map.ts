@@ -200,7 +200,7 @@ const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 
 /** what the empty trigger lane calls itself, which is also its door */
 const NO_TRIG = 'no trig patched'
-const UNUSED = 'unused'
+const SPARE = 'spare'
 
 /** the box on the supply rail, and its door */
 const SUPPLY = 'Power supply'
@@ -794,9 +794,9 @@ function pickParts(c: Controls, o: Options) {
   const loose = BENDS.filter(b => !slotted.includes(b.group) && has(b.group))
   const chipW = loose.map(b => nameWidth(b.label) + CHIP_PAD * 2)
   for (const b of loose) doors.add(b.group)
-  // The rack draws only a caption saying its chips do nothing. Its bounds
-  // anchor them and the run down to the first bend.
-  const rack = mapNode('rack', 'rack', loose.length ? UNUSED : '')
+  // The rack draws only a caption for its chips, and the run passes it by. Its
+  // bounds anchor the chips and the run's arrow to the first bend.
+  const rack = mapNode('rack', 'rack', loose.length ? SPARE : '')
   const tapeAt = Math.round(c.tapeAt)
   const tape = () => stage('Tape machine', c.tapeMix > 0)
   if (tapeAt === TAPE_AT_BENDS) lay(tape())
@@ -986,9 +986,8 @@ function measure(p: Parts) {
   // it. The band is the usual winner: seven boxes across beats two columns.
   const stageNeed = Math.max(
     MIN_W,
-    // Whatever the widest chip in the rack needs: a column cut to the names
-    // on the path would spill them out of it.
-    PAD_X * 2 + Math.max(0, ...chipW),
+    // The widest chip in the rack, in the half of the column right of the run.
+    (CHIP_GAP * 2 + PAD_X + Math.max(0, ...chipW)) * 2,
     // The rack draws no box of its own, so its label costs no width — only
     // the stages actually on the path do.
     ...pathAndBus
@@ -1015,8 +1014,8 @@ function measure(p: Parts) {
   board.w = content
   for (const n of foot) n.w = natural(n)
 
-  // The loose bends laid across the rack's own width, wrapping onto another row
-  // rather than off the box.
+  // The loose bends sit right of the run, which passes them by, and wrap onto
+  // another row rather than off the box.
   const rackChips: {
     group: string
     label: string
@@ -1025,21 +1024,15 @@ function measure(p: Parts) {
     w: number
   }[] = []
   {
-    const indent = loose.length ? textWidth(UNUSED, SMALL) + CHIP_GAP * 2 : 0
+    const indent = colW / 2 + CHIP_GAP * 2
     let [x, row] = [indent, 0]
     for (const [i, b] of loose.entries()) {
       const w = chipW[i]!
-      if (x > indent && PAD_X + x + w > colW - PAD_X) {
+      if (x > indent && x + w > colW - PAD_X) {
         row++
         x = indent
       }
-      rackChips.push({
-        group: b.group,
-        label: b.label,
-        x: PAD_X + x,
-        row,
-        w,
-      })
+      rackChips.push({ group: b.group, label: b.label, x, row, w })
       x += w + CHIP_GAP
     }
   }
@@ -1561,32 +1554,37 @@ function bandWires(m: Laid) {
     ],
     { color: k.border, door: mix.door },
   )
-  if (down.length)
+  const first = run(down)[0]
+  if (first)
     wire(
       'mix-path',
       mix,
-      down[0]!,
+      first,
       [
-        [midX(down[0]!), mix.y + mix.h],
-        [midX(down[0]!), down[0]!.y],
+        [midX(first), mix.y + mix.h],
+        [midX(first), first.y],
       ],
       { color: k.border, door: mix.door },
     )
 }
+
+// The boxes the signal runs through: the rack's chips sit beside the run.
+const run = (col: MapNode[]) => col.filter(n => n.kind !== 'rack')
 
 // The path: a hop from the foot of each box to the head of the next, and the
 // fold between the two columns.
 function pathWires(m: Laid) {
   const { k, wire, has, order, down, up, loop, colX, boxW } = m
   const orderDoor = has(order.label) ? order.door : undefined
-  for (const col of [down, up]) {
+  const [downRun, upRun] = [run(down), run(up)]
+  for (const col of [downRun, upRun]) {
     for (let i = 1; i < col.length; i++) {
       const [a, b] = [col[i - 1]!, col[i]!]
       wire(
         `${a.id}-${b.id}`,
         a,
         b,
-        loop && col === up
+        loop && col === upRun
           ? [
               [midX(a), a.y],
               [midX(b), b.y + b.h],
@@ -1604,7 +1602,7 @@ function pathWires(m: Laid) {
   // top of the right. The one line on the map that isn't a short hop, which is
   // what makes it read as the cable carrying the eye across.
   if (loop) {
-    const [a, b] = [down[down.length - 1]!, up[0]!]
+    const [a, b] = [downRun[downRun.length - 1]!, upRun[0]!]
     const turnY = Math.max(a.y + a.h, b.y + b.h) + ROW_GAP
     wire(
       'fold',
@@ -1618,8 +1616,8 @@ function pathWires(m: Laid) {
       ],
       { color: k.accent, door: orderDoor },
     )
-  } else if (up.length) {
-    const [a, b] = [down[down.length - 1]!, up[0]!]
+  } else if (upRun.length) {
+    const [a, b] = [downRun[downRun.length - 1]!, upRun[0]!]
     const chan = colX + boxW + COL_GAP / 2
     wire(
       'fold',
@@ -2398,11 +2396,11 @@ export function drawNode(
         ? [
             words(
               n.label,
-              n.x + PAD_X,
+              midX(n) - CHIP_GAP * 2,
               baseline(n.y + 2, CHIP_H - 2, SMALL),
               SMALL,
               k.dim,
-              'start',
+              'end',
             ),
           ]
         : [],
