@@ -91,6 +91,14 @@
   text-decoration-color: currentcolor;
 }
 
+@media (max-width: 760px) {
+  .label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.2;
+  }
+}
+
 /* The row draws its own stock mark (.defmark), so the trough's is off. */
 .track {
   composes: track from './range.module.css';

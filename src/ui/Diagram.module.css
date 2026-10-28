@@ -206,6 +206,7 @@
 }
 
 .openBox {
+  --bar-h: max(30px, calc(var(--ctl-h-sm) + 2 * var(--space-2xs)));
   position: relative;
   margin: var(--space-sm) 0 var(--space-xs);
   padding: 0 var(--space-xs) 0 var(--space-xl);
@@ -218,7 +219,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 30px;
+  min-height: var(--bar-h);
   margin: 0 calc(-1 * var(--space-xs)) 0 calc(-1 * var(--space-xl));
   padding: var(--space-2xs) var(--space-xs);
   border-bottom: 1px solid var(--border-quiet);
@@ -235,8 +236,10 @@
 
 .openBox [data-box-verbs] {
   position: absolute;
-  top: 4px;
+  top: 0;
   right: calc(var(--space-xs) + 1.5rem);
+  height: var(--bar-h);
+  align-items: center;
   padding: 0;
 }
 
