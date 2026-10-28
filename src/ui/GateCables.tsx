@@ -10,6 +10,17 @@ import {
 import { N_DRUM_VOICES, VOICE_LABELS } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
+import { follow, pressIsClick } from './cableDrag.ts'
+import { Socket, Wire } from './CableParts.tsx'
+import {
+  hanging,
+  laid,
+  boot,
+  PLUG,
+  type Anchor,
+  type Point,
+  type Route,
+} from './cablePaths.ts'
 import {
   connectionInto,
   MACHINE_OF,
@@ -70,12 +81,8 @@ const PLATE_NAME: Record<string, string> = {
   'any hit': 'any',
 }
 
-const PLUG = 18
-const SLACK = 18
 const LANE_IN = 8
 const LANE_PITCH = 7
-const CORNER = 10
-const ARROW_LIFT = 14
 const BAND_IN = 6
 const BAND_PITCH = 6
 
@@ -89,27 +96,6 @@ const inputs = createStore<ReadonlyMap<Taker, Socket>>(new Map())
 const outputs = createStore<ReadonlyMap<Taker, HTMLElement>>(new Map())
 const trigIns = createStore<ReadonlyMap<NoteDest, HTMLElement>>(new Map())
 const trigOuts = createStore<ReadonlyMap<number, HTMLElement>>(new Map())
-
-interface Point {
-  x: number
-  y: number
-}
-
-type Facing = 'right' | 'up'
-
-/** Where a plug sits, and which way its boot points out of the jack. */
-interface Anchor {
-  at: Point
-  facing: Facing
-}
-
-interface Route {
-  from: Anchor
-  to: Anchor
-  /** The corners the cable turns, plug boot to plug boot. */
-  bends: Point[]
-  tag?: Point
-}
 
 interface Layout {
   routes: ReadonlyMap<string, Route>
@@ -146,68 +132,10 @@ type Drag = Point &
 
 const dragging = createStore<Drag | null>(null)
 
-// A drag that ends on the jack it started from still ends in a click.
-let swallow = false
-
-const DRAG_FROM = 5
-
-/** Carries a cable end with the pointer once it has moved far enough, and
-    hands the drop to `drop`. A press that never moved stays a click. */
-function follow(
-  e: ReactPointerEvent,
-  hold: (at: Point) => void,
-  drop: (over: HTMLElement | null) => void,
-) {
-  if (e.button !== 0) return
-  const x0 = e.clientX
-  const y0 = e.clientY
-  let moved = false
-  const move = (m: PointerEvent) => {
-    if (!moved && Math.hypot(m.clientX - x0, m.clientY - y0) < DRAG_FROM) return
-    const origin = document
-      .querySelector('[data-gate-bench]')
-      ?.getBoundingClientRect()
-    if (!origin) return
-    moved = true
-    hold({ x: m.clientX - origin.left, y: m.clientY - origin.top })
-  }
-  const stop = () => {
-    window.removeEventListener('pointermove', move)
-    window.removeEventListener('pointerup', up)
-    window.removeEventListener('pointercancel', cancel)
-    window.removeEventListener('keydown', escape)
-  }
-  const cancel = () => {
-    stop()
-    dragging.set(null)
-  }
-  const escape = (k: KeyboardEvent) => {
-    if (k.key === 'Escape') cancel()
-  }
-  const up = (m: PointerEvent) => {
-    stop()
-    if (!moved) return
-    swallow = true
-    setTimeout(() => {
-      swallow = false
-    }, 0)
-    dragging.set(null)
-    drop(
-      document
-        .elementFromPoint(m.clientX, m.clientY)
-        ?.closest<HTMLElement>('[data-gate-jack]') ?? null,
-    )
-  }
-  window.addEventListener('pointermove', move)
-  window.addEventListener('pointerup', up)
-  window.addEventListener('pointercancel', cancel)
-  window.addEventListener('keydown', escape)
-}
-
 function grab(taker: Taker, end: End, e: ReactPointerEvent) {
   follow(
     e,
-    at => dragging.set({ line: 'gate', taker, end, ...at }),
+    at => dragging.set(at && { line: 'gate', taker, end, ...at }),
     over => {
       const socket = inputs.get().get(taker)
       if (!socket) return
@@ -239,7 +167,7 @@ function grabTrig(start: TrigEnd, e: ReactPointerEvent) {
   const fixed: TrigEnd = carried ? { voice: struckBy(carried) } : start
   follow(
     e,
-    at => dragging.set({ line: 'trig', fixed, carried, ...at }),
+    at => dragging.set(at && { line: 'trig', fixed, carried, ...at }),
     over => {
       const end = trigEndOf(over)
       const landed =
@@ -309,7 +237,7 @@ export function GateJumper({
         data-gate-end="in"
         onPointerDown={e => grab(taker, 'in', e)}
         onClick={() => {
-          if (!swallow) setGate(control, !cut)
+          if (pressIsClick()) setGate(control, !cut)
         }}
       >
         <Socket colour={GATE_COLOUR} lamp={lamp} target={target} />
@@ -347,7 +275,7 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
         data-trig-taker={taker}
         onPointerDown={e => grabTrig({ taker }, e)}
         onClick={() => {
-          if (!swallow) setTrig(taker, voice > 0 ? 0 : ANY_HIT)
+          if (pressIsClick()) setTrig(taker, voice > 0 ? 0 : ANY_HIT)
         }}
       >
         <Socket
@@ -357,34 +285,6 @@ export function TrigJack({ taker }: { taker: NoteDest }) {
         />
       </button>
     </Tip>
-  )
-}
-
-function Socket({
-  colour,
-  lamp,
-  target,
-}: {
-  colour: string
-  lamp?: string
-  target: boolean
-}) {
-  return (
-    <svg
-      className={styles.socket}
-      viewBox="-10 -10 20 20"
-      width="20"
-      height="20"
-      data-lamp={lamp}
-      data-target={target}
-      aria-hidden="true"
-    >
-      <circle className={styles.ring} r="9.6" style={{ stroke: colour }} />
-      <circle className={styles.nut} r="8.4" />
-      <circle className={styles.collar} r="6.4" />
-      <circle className={styles.hole} r="3.6" />
-      <path className={styles.glint} d="M-5 -2.6 A5.6 5.6 0 0 1 -1.6 -5.2" />
-    </svg>
   )
 }
 
@@ -487,9 +387,6 @@ const socketOf = (el: HTMLElement) => el.querySelector('svg') ?? el
 
 const caseOf = (el: HTMLElement) =>
   el.closest<HTMLElement>('[role=group]') ?? el
-
-const boot = ({ at, facing }: Anchor): Point =>
-  facing === 'right' ? { x: at.x + PLUG, y: at.y } : { x: at.x, y: at.y - PLUG }
 
 /** Every cable's lane in the gutter past the widest keyboard. GATE cables take
     the inner lanes, the nearest keyboard's innermost; TRIG cables take the
@@ -692,196 +589,6 @@ function Held({
   const to = fixed.voice ? loose : stays
   return (
     <Wire path={hanging(from, to)} from={from} to={to} colour={TRIG_COLOUR} />
-  )
-}
-
-/** A plug pushed into the jack at `at`, its boot pointing out of it. */
-function Plug({ at, facing, colour }: Anchor & { colour: string }) {
-  return (
-    <g
-      transform={`translate(${at.x} ${at.y}) rotate(${facing === 'right' ? -90 : 180})`}
-    >
-      <rect
-        className={styles.tip}
-        x="-2.4"
-        y="0"
-        width="4.8"
-        height="7.5"
-        rx="1.4"
-      />
-      <rect
-        className={styles.barrel}
-        x="-4.6"
-        y="7.5"
-        width="9.2"
-        height="5.5"
-        rx="1.6"
-      />
-      <rect
-        className={styles.boot}
-        x="-3.2"
-        y="13"
-        width="6.4"
-        height={PLUG - 13 + 1}
-        rx="1.4"
-        style={{ fill: colour }}
-      />
-    </g>
-  )
-}
-
-interface Path {
-  d: string
-  arrow: Point & { angle: number }
-}
-
-/** Straight runs through `bends` with rounded corners, and an arrowhead on the
-    last upright run, just short of the turn into the input jack. */
-function laid(bends: Point[]): Path {
-  const radius = (i: number) => {
-    const p = bends[i - 1]!
-    const q = bends[i]!
-    const r = bends[i + 1]!
-    const into = Math.abs(q.x - p.x) + Math.abs(q.y - p.y)
-    const out = Math.abs(r.x - q.x) + Math.abs(r.y - q.y)
-    return Math.min(CORNER, into / 2, out / 2)
-  }
-  const toward = (from: Point, to: Point, by: number) => {
-    const len = Math.abs(to.x - from.x) + Math.abs(to.y - from.y) || 1
-    return {
-      x: from.x + ((to.x - from.x) * by) / len,
-      y: from.y + ((to.y - from.y) * by) / len,
-    }
-  }
-  let d = `M${bends[0]!.x} ${bends[0]!.y}`
-  for (let i = 1; i < bends.length - 1; i++) {
-    const r = radius(i)
-    const q = bends[i]!
-    const enter = toward(q, bends[i - 1]!, r)
-    const leave = toward(q, bends[i + 1]!, r)
-    d += ` L${enter.x} ${enter.y} Q${q.x} ${q.y} ${leave.x} ${leave.y}`
-  }
-  const last = bends.at(-1)!
-  d += ` L${last.x} ${last.y}`
-
-  const corner = bends.length - 2
-  const top = bends[corner - 1]!
-  const turn = bends[corner]!
-  const run = Math.abs(turn.y - top.y)
-  const dir = turn.y >= top.y ? 1 : -1
-  return {
-    d,
-    arrow: {
-      x: turn.x,
-      y: turn.y - dir * Math.min(radius(corner) + ARROW_LIFT, run / 2),
-      angle: dir * 90,
-    },
-  }
-}
-
-const bezier = (t: number, p0: number, p1: number, p2: number, p3: number) =>
-  (1 - t) ** 3 * p0 +
-  3 * (1 - t) ** 2 * t * p1 +
-  3 * (1 - t) * t * t * p2 +
-  t ** 3 * p3
-
-const slope = (t: number, p0: number, p1: number, p2: number, p3: number) =>
-  3 * (1 - t) ** 2 * (p1 - p0) +
-  6 * (1 - t) * t * (p2 - p1) +
-  3 * t * t * (p3 - p2)
-
-/** A cable with one end in the hand, sagging out the way both plugs face. */
-function hanging(from: Anchor, to: Anchor): Path {
-  const a = boot(from)
-  const b = boot(to)
-  const reach = SLACK + Math.min(Math.hypot(a.x - b.x, a.y - b.y), 220) * 0.14
-  const out = (anchor: Anchor, p: Point) =>
-    anchor.facing === 'right'
-      ? { x: p.x + reach, y: p.y }
-      : { x: p.x, y: p.y - reach }
-  const c1 = out(from, a)
-  const c2 = out(to, b)
-  const heading = Math.atan2(
-    slope(0.5, a.y, c1.y, c2.y, b.y),
-    slope(0.5, a.x, c1.x, c2.x, b.x),
-  )
-  return {
-    d: `M${a.x} ${a.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${b.x} ${b.y}`,
-    arrow: {
-      x: bezier(0.5, a.x, c1.x, c2.x, b.x),
-      y: bezier(0.5, a.y, c1.y, c2.y, b.y),
-      angle: (heading * 180) / Math.PI,
-    },
-  }
-}
-
-/** One cable between two plugs, with an arrowhead pointing the way the signal
-    runs. A cable with a `pull` also takes a press anywhere along it. */
-function Wire({
-  path,
-  from,
-  to,
-  colour,
-  sounding = false,
-  pull,
-  onGrab,
-  tag,
-}: {
-  path: Path
-  from: Anchor
-  to: Anchor
-  colour: string
-  sounding?: boolean
-  pull?: { title: string; run: () => void }
-  onGrab?: (e: ReactPointerEvent) => void
-  tag?: Point
-}) {
-  const press = pull && {
-    onPointerDown: onGrab,
-    onClick: () => {
-      if (!swallow) pull.run()
-    },
-  }
-  return (
-    <g
-      className={sounding ? styles.cableOn : styles.cable}
-      style={{ ['--cable' as string]: colour }}
-    >
-      <path className={styles.sheath} d={path.d} />
-      <path className={styles.core} d={path.d} />
-      <path className={styles.sheen} d={path.d} />
-      {pull && (
-        <path className={styles.grab} d={path.d} {...press}>
-          <title>{pull.title}</title>
-        </path>
-      )}
-      <polygon
-        className={styles.arrow}
-        points="-6,-5 6,0 -6,5"
-        transform={`translate(${path.arrow.x} ${path.arrow.y}) rotate(${path.arrow.angle})`}
-      />
-      <Plug {...from} colour={colour} />
-      <Plug {...to} colour={colour} />
-      {pull && tag && (
-        <g
-          className={styles.tag}
-          transform={`translate(${tag.x} ${tag.y}) rotate(-4)`}
-          {...press}
-        >
-          <title>{pull.title}</title>
-          <rect x="-21" y="-8" width="45" height="16" rx="3" />
-          <circle cx="-16" cy="0" r="1.6" />
-          <text x="-2" y="3" textAnchor="middle">
-            GATE
-          </text>
-          <polygon
-            className={styles.drop}
-            points="-4.5,-3.5 4.5,-3.5 0,4.5"
-            transform="translate(15 0)"
-          />
-        </g>
-      )}
-    </g>
   )
 }
 
