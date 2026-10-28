@@ -403,32 +403,34 @@ export function OpenGroup({
           <EditorToggle which="roll" />
         )}
         {kind === 'drums' && <EditorToggle which="grid" />}
-        <StageVerbs group={group} seconds={seconds} />
-        {drawable && (
-          <ToggleButtonGroup
-            label={`${group.name} view`}
-            options={VIEWS}
-            value={listed ? 'all settings' : 'diagram'}
-            onChange={view =>
-              setHere({
-                everywhere: listedEverywhere,
-                listed: view === 'all settings',
-              })
-            }
-          />
-        )}
-        <MoreMenu group={group} seconds={seconds} onClose={onClose} />
-        {!stacked && (
-          <Tip text={`Close ${group.name} — the path stays.`}>
-            <button
-              className={styles.close}
-              onClick={onClose}
-              aria-label={`close ${group.name}`}
-            >
-              ×
-            </button>
-          </Tip>
-        )}
+        <span className={styles.trail}>
+          <StageVerbs group={group} seconds={seconds} />
+          {drawable && (
+            <ToggleButtonGroup
+              label={`${group.name} view`}
+              options={VIEWS}
+              value={listed ? 'all settings' : 'diagram'}
+              onChange={view =>
+                setHere({
+                  everywhere: listedEverywhere,
+                  listed: view === 'all settings',
+                })
+              }
+            />
+          )}
+          <MoreMenu group={group} seconds={seconds} onClose={onClose} />
+          {!stacked && (
+            <Tip text={`Close ${group.name} — the path stays.`}>
+              <button
+                className={styles.close}
+                onClick={onClose}
+                aria-label={`close ${group.name}`}
+              >
+                ×
+              </button>
+            </Tip>
+          )}
+        </span>
       </div>
       <div className={styles.body}>
         <ReserveReadout defs={panelRows(group)}>

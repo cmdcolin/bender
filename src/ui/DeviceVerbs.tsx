@@ -322,7 +322,7 @@ export function DeviceVerbs({
   const mute = muteOf(stage)
   const level = levelOf(stage)
   return (
-    <>
+    <span className={styles.verbs}>
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !mute && <FaceLevel control={level} />}
       {!noMic && <MicCap stage={stage} />}
@@ -338,6 +338,6 @@ export function DeviceVerbs({
           </button>
         </Tip>
       )}
-    </>
+    </span>
   )
 }

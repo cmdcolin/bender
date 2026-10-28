@@ -36,6 +36,12 @@
   white-space: nowrap;
 }
 
+.trail {
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+}
+
 .title {
   flex: 1 1 auto;
   display: flex;

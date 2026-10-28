@@ -1,3 +1,9 @@
+.verbs {
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+}
+
 .cap {
   composes: cap from './button.module.css';
 }
