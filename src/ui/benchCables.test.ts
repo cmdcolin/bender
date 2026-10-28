@@ -95,12 +95,19 @@ test('the ADSR’s gate reads keys as empty and maps voices both ways', () => {
   expect(voiceIn('adsr', board)).toBe(0)
 })
 
-test('the bench draws the ADSR’s gate cable only while a wire uses the ADSR', () => {
-  const gated = { ...board, modEnvGate: 3 }
+test('the ADSR’s gate starts empty, and a cable into it draws', () => {
   const drawn = (c: typeof board) =>
     cablesOn(c).some(x => x.line === 'trig' && x.in === 'adsr')
-  expect(drawn(gated)).toBe(false)
-  expect(drawn({ ...gated, mod0Src: ADSR, mod0Dest: DEST.fmLevel })).toBe(true)
+  expect(drawn({ ...board, modEnvGate: 3 })).toBe(true)
+  expect(drawn(DEFAULT_CONTROLS)).toBe(false)
+})
+
+test('MOD runs out of cables once all four wires are in use', () => {
+  const busy = { ...board, mod0Src: LFO, mod1Src: LFO, mod2Src: LFO }
+  expect(KINDS.mod.full?.(busy)).toBe(false)
+  expect(
+    KINDS.mod.full?.({ ...busy, mod3Src: ADSR, mod3Dest: DEST.fmLevel }),
+  ).toBe(true)
 })
 
 test('the cable list survives its string form', () => {

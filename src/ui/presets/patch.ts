@@ -264,7 +264,7 @@ const TAPS: Tap[] = [
   from('lane A', ['drumLevel'], { lane: LANE_KEYS[0] }),
   from('lane B', ['drumLevel'], { lane: LANE_KEYS[1] }),
   from('phrase', []),
-  from('ADSR', ['drumLevel']),
+  from('ADSR', ['drumLevel', 'modEnvGate']),
 ]
 
 const blank = (c: Controls, lane: readonly ControlKey[]) =>

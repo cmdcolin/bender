@@ -45,12 +45,13 @@ function write(next: Controls, was: Controls) {
 }
 
 /** Picks up a cable: the last one in an input, the one pressed along its
-    length, or a fresh one out of an output or an empty input. */
+    length, or a fresh one out of an output or an empty input while the line
+    has one to spare. */
 function grab(start: End, e: ReactPointerEvent, cable?: Cable) {
+  const board = engine.controls.get()
   const carried =
-    cable ??
-    (start.side === 'in' ? lastInto(engine.controls.get(), start) : null) ??
-    null
+    cable ?? (start.side === 'in' ? lastInto(board, start) : null) ?? null
+  if (!carried && KINDS[start.line].full?.(board)) return
   const fixed = carried ? outEnd(carried) : start
   follow(
     e,

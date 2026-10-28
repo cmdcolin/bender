@@ -872,7 +872,7 @@ export const DEFAULT_CONTROLS = {
   modLaneBLen: 16,
   modPhraseBars: 3,
   modPhraseShape: 0,
-  modEnvGate: 2,
+  modEnvGate: 0,
   modEnvAttack: 5,
   modEnvDecay: 300,
   modEnvSustain: 0,

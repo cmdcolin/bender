@@ -7,7 +7,6 @@ import {
   type Connection,
 } from './connections.ts'
 import {
-  ADSR,
   cableSays,
   CV_MACHINES,
   cvFacing,
@@ -17,7 +16,7 @@ import {
   moveCv,
   patchCv,
   pullCv,
-  sourcesInUse,
+  spareWire,
 } from './modCables.ts'
 
 import type { ControlKey, Controls } from '../controls.ts'
@@ -125,8 +124,8 @@ interface Kind {
   /** The legend on the inputs this line plugs into. */
   jack: string
   cables: (c: Controls) => Cable[]
-  /** Whether the bench draws a cable. Every cable counts for the jacks. */
-  shown?: (c: Controls, x: Cable) => boolean
+  /** Whether every cable this line has is already in use. */
+  full?: (c: Controls) => boolean
   plug: (c: Controls, input: string, output: string) => Controls
   pull: (c: Controls, x: Cable) => Controls
   move: (c: Controls, x: Cable, input: string) => Controls
@@ -174,7 +173,6 @@ const trig: Kind = {
       const v = voiceIn(t, c)
       return v > 0 ? [{ line: 'trig', id: t, out: String(v), in: t }] : []
     }),
-  shown: (c, x) => x.in !== 'adsr' || sourcesInUse(c).has(ADSR),
   plug: (c, input, output) => setTrig(c, input, Number(output)),
   pull: (c, x) => setTrig(c, x.in, 0),
   move: (c, x, input) => setTrig(setTrig(c, x.in, 0), input, Number(x.out)),
@@ -194,6 +192,7 @@ const mod: Kind = {
       out: String(m.src),
       in: m.machine,
     })),
+  full: c => spareWire(c) < 0,
   plug: (c, input, output) => {
     const m = asMachine(input)
     return m ? patchCv(c, Number(output), m) : c
@@ -217,10 +216,7 @@ const mod: Kind = {
 export const KINDS: Record<Line, Kind> = { gate, trig, mod }
 
 /** Every cable the bench draws. */
-export const cablesOn = (c: Controls) =>
-  LINES.flatMap(l =>
-    KINDS[l].cables(c).filter(x => KINDS[l].shown?.(c, x) ?? true),
-  )
+export const cablesOn = (c: Controls) => LINES.flatMap(l => KINDS[l].cables(c))
 
 export const lastInto = (c: Controls, end: End) =>
   KINDS[end.line].cables(c).findLast(x => x.in === end.id)
