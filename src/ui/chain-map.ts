@@ -200,6 +200,7 @@ const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 
 /** what the empty trigger lane calls itself, which is also its door */
 const NO_TRIG = 'no trig patched'
+const UNUSED = 'unused'
 
 /** the box on the supply rail, and its door */
 const SUPPLY = 'Power supply'
@@ -793,9 +794,9 @@ function pickParts(c: Controls, o: Options) {
   const loose = BENDS.filter(b => !slotted.includes(b.group) && has(b.group))
   const chipW = loose.map(b => nameWidth(b.label) + CHIP_PAD * 2)
   for (const b of loose) doors.add(b.group)
-  // The rack draws nothing. Its bounds anchor the loose chips and the run down
-  // to the first bend.
-  const rack = mapNode('rack', 'rack', '')
+  // The rack draws only a caption saying its chips do nothing. Its bounds
+  // anchor them and the run down to the first bend.
+  const rack = mapNode('rack', 'rack', loose.length ? UNUSED : '')
   const tapeAt = Math.round(c.tapeAt)
   const tape = () => stage('Tape machine', c.tapeMix > 0)
   if (tapeAt === TAPE_AT_BENDS) lay(tape())
@@ -1024,12 +1025,13 @@ function measure(p: Parts) {
     w: number
   }[] = []
   {
-    let [x, row] = [0, 0]
+    const indent = loose.length ? textWidth(UNUSED, SMALL) + CHIP_GAP * 2 : 0
+    let [x, row] = [indent, 0]
     for (const [i, b] of loose.entries()) {
       const w = chipW[i]!
-      if (x > 0 && PAD_X + x + w > colW - PAD_X) {
+      if (x > indent && PAD_X + x + w > colW - PAD_X) {
         row++
-        x = 0
+        x = indent
       }
       rackChips.push({
         group: b.group,
@@ -2388,12 +2390,27 @@ export function drawNode(
     ])
   }
 
-  if (n.kind === 'rack') return el('g', { className: 'node' }, [])
+  if (n.kind === 'rack')
+    return el(
+      'g',
+      { className: 'node' },
+      n.label
+        ? [
+            words(
+              n.label,
+              n.x + PAD_X,
+              baseline(n.y + 2, CHIP_H - 2, SMALL),
+              SMALL,
+              k.dim,
+              'start',
+            ),
+          ]
+        : [],
+    )
 
-  // A chip riding in the rack: a short name in a dashed outline, because there
-  // is nothing soldered to either end of it. A bend in none of the slots is one;
-  // so is the door onto the solder those slots sit in, which lights the way a
-  // stage does when what it names is doing something.
+  // A chip riding in the rack: a flat pill rather than a box, because nothing
+  // runs through it. A bend in none of the slots is one; so is the note that
+  // no trigger is patched.
   if (n.kind === 'chip') {
     const lead = iconCol(n.label)
     const ink = n.active || n.open ? k.fg : k.dim
@@ -2407,10 +2424,9 @@ export function drawNode(
             y: n.y,
             width: n.w,
             height: n.h,
-            rx: 3,
-            fill: 'none',
-            stroke: n.open ? k.fg : k.border,
-            strokeDasharray: '2 2',
+            rx: n.h / 2,
+            fill: k.raise,
+            stroke: n.open ? k.fg : 'none',
           }),
           ...(lead ? glyph(n, k, n.y + (n.h - ICON) / 2, CHIP_PAD) : []),
           words(
