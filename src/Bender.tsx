@@ -1,6 +1,7 @@
 import { engine } from './engine/engine.ts'
 import { exposeBenderApi } from './ui/agentApi.ts'
 import { App } from './ui/App.tsx'
+import { loadPhraseLock } from './ui/morph.ts'
 import { keepRunState } from './ui/runState.ts'
 import { boardFromLocation } from './ui/share.ts'
 import { startFresh } from './ui/starterBoard.ts'
@@ -18,6 +19,7 @@ if (shared) engine.patch(shared)
 const returning = keepRunState()
 if (!shared && !returning) startFresh()
 
+loadPhraseLock()
 exposeBenderApi()
 
 // A board somebody sent is one this tab has not seen: the overlay that says

@@ -37,7 +37,6 @@ import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
 import {
   MORPH_LABELS,
   MORPH_SECONDS,
-  loadPhraseLock,
   morphSetting,
   PHRASE_LOCK_LABELS,
   setMorph,
@@ -464,7 +463,6 @@ export function App(props: { openedFromLink?: boolean }) {
   const toggle = (name: string) => show(open === name ? null : name)
   const listed = useStoreValue(listView)
   const morphSeconds = useStoreValue(morphSetting)
-  useEffect(loadPhraseLock, [])
   useEffect(forgetStaleStage, [])
   const drifting = useStoreValue(engine.drifting)
   const [landed, setLanded] = useState(false)
