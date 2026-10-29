@@ -78,26 +78,15 @@
   color: var(--fg3);
 }
 
-.number,
-.numberOn {
-  width: 1.4em;
-  padding: 0;
+.number {
+  composes: pick from './button.module.css';
+  min-width: var(--ctl-h-sm);
   font-variant-numeric: tabular-nums;
-  font-size: var(--fs-sm);
-  color: var(--fg3);
-  background: none;
-  border: 1px solid transparent;
-  border-radius: var(--ctl-radius);
-  cursor: pointer;
-}
-
-.number:hover {
-  color: var(--fg);
 }
 
 .numberOn {
-  color: var(--accent);
-  border-color: var(--accent);
+  composes: number;
+  composes: pickOn from './button.module.css';
 }
 
 .select {

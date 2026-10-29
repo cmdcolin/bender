@@ -37,7 +37,8 @@
 .filter {
   flex: 0 1 20rem;
   min-width: 10rem;
-  padding: var(--space-2xs) var(--space-sm);
+  height: var(--ctl-h-sm);
+  padding: 0 var(--space-sm);
   font: inherit;
   font-size: var(--fs-xs);
   color: var(--fg);
