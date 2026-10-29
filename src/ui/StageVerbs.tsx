@@ -83,7 +83,6 @@ export function ScopeVerbs({
   resetTip,
   onRoll,
   onReset,
-  fold = false,
 }: {
   scope: string
   what: string
@@ -93,14 +92,12 @@ export function ScopeVerbs({
   resetTip: string
   onRoll: () => void
   onReset: () => void
-  fold?: boolean
 }) {
   const canUndo = useCanUndoRoll(scope)
-  const verb = fold ? styles.partVerb : styles.verb
   return (
     <>
       <Tip text={rollTip}>
-        <button className={verb} aria-label="randomize" onClick={onRoll}>
+        <button className={styles.verb} aria-label="randomize" onClick={onRoll}>
           {SHUFFLE}
         </button>
       </Tip>
@@ -109,7 +106,7 @@ export function ScopeVerbs({
           text={`put ${what} back where it stood before its last randomize, and leave every other control where it is now`}
         >
           <button
-            className={verb}
+            className={styles.verb}
             aria-label="undo randomize"
             onClick={() => undoRoll(scope, seconds)}
           >
@@ -119,10 +116,7 @@ export function ScopeVerbs({
       )}
       {moved > 0 && (
         <Tip text={resetTip}>
-          <button
-            className={fold ? styles.partVerbReset : styles.reset}
-            onClick={onReset}
-          >
+          <button className={styles.reset} onClick={onReset}>
             {`reset ${moved}`}
           </button>
         </Tip>
@@ -214,7 +208,6 @@ export function PartVerbs({
       lead={
         <span className={styles.partVerbs}>
           <ScopeVerbs
-            fold
             scope={scope}
             what={part}
             seconds={seconds}

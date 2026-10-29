@@ -17,11 +17,11 @@
 }
 
 .switch {
-  composes: chipQuiet from './button.module.css';
+  composes: chipQuiet square from './button.module.css';
 }
 
 .switchOn {
-  composes: chipOn from './button.module.css';
+  composes: chipOn square from './button.module.css';
 }
 
 .micError {

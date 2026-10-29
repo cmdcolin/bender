@@ -1,9 +1,9 @@
 .verb {
-  composes: chipQuiet from './button.module.css';
+  composes: chipQuiet square from './button.module.css';
 }
 
 .reset {
-  composes: chipDanger from './button.module.css';
+  composes: chipDanger square from './button.module.css';
   font-variant-numeric: tabular-nums;
 }
 
@@ -22,15 +22,6 @@
   display: flex;
   gap: var(--gap-ctl-sm);
   margin-right: var(--space-xs);
-}
-
-.partVerb {
-  composes: chipQuiet square from './button.module.css';
-}
-
-.partVerbReset {
-  composes: chipDanger square from './button.module.css';
-  font-variant-numeric: tabular-nums;
 }
 
 .cutOn {
