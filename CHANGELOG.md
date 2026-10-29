@@ -2,6 +2,85 @@
 
 All notable changes to bender are documented here.
 
+## [1.22.0](https://github.com/cmdcolin/bender/compare/v1.21.0...v1.22.0) - 2026-10-29
+
+### Features
+- *(ui)* [`5859c12`](https://github.com/cmdcolin/bender/commit/5859c128058771809355885738027a54c6ece2e5) a small/large switch on Clatter, and no jump to the grid on run
+- *(ui)* [`98d2314`](https://github.com/cmdcolin/bender/commit/98d2314be42caab829c493d2dc84db20733e869d) label the rack's spare bends 'unused' and draw them as flat pills
+- *(ui)* [`bd110d9`](https://github.com/cmdcolin/bender/commit/bd110d98791fe4467bbfee7d5d0b58ff5c5183f6) spare bends sit beside the run, not in it
+- *(ui)* [`d8cf3ff`](https://github.com/cmdcolin/bender/commit/d8cf3ff523355d22c3ac568f9ff4f8aaa4a01db3) mute and bypass as a speaker or power cap beside the stage name
+- *(ui)* [`d03a795`](https://github.com/cmdcolin/bender/commit/d03a795e7099d2c137da5eb362039a497cf51fa3) grey row names when moved, and Supply as a dropdown
+- *(ui)* [`92690da`](https://github.com/cmdcolin/bender/commit/92690dac32e0b135b44ac6cd9da156695e1b26a3) underline the travel past normal, and quiet reset chips at rest
+- *(ui)* [`02a5926`](https://github.com/cmdcolin/bender/commit/02a592684294d801971d04a4d57a8f13d9b7f3cb) press any bench jack from the keyboard, and name its machine
+- *(ui)* [`5e663e6`](https://github.com/cmdcolin/bender/commit/5e663e62bb0d3f7f9fe499900810e1b8bfc2227f) cables out of one jack share a lane down the bench
+- *(ui)* [`384406c`](https://github.com/cmdcolin/bender/commit/384406c04ce496237ec5c5e3bb6b38f9f3753b17) let a blog post's image be a URL
+- *(ui)* [`02c75f1`](https://github.com/cmdcolin/bender/commit/02c75f19811f155acb43381eb52a29f0ed341d9c) move the header bar into the top of the board column
+
+### Fixes
+- *(ui)* [`24fee1b`](https://github.com/cmdcolin/bender/commit/24fee1bd5a08d79a4ab661f86ad47ab9affb3e91) TRIG cables into the ADSR's gate stay drawn
+- *(ui)* [`e59ed5a`](https://github.com/cmdcolin/bender/commit/e59ed5a78c186424f28d3c1a07aabd24a58ebef9) stage view and folds follow the open stage and search
+- *(ui)* [`1e44970`](https://github.com/cmdcolin/bender/commit/1e449707af5a07128b4e21c6987ade8e19e322bf) switching a bend on trades out a silent one before a sounding one
+- *(ui)* [`605b8e0`](https://github.com/cmdcolin/bender/commit/605b8e0fe17dce3779871e95d1b7579a738463ff) Space presses a keyboard-focused button instead of running the board
+- *(ui)* [`a9de693`](https://github.com/cmdcolin/bender/commit/a9de6935140681abb8ce45d00e7528b7698c601e) the fill button claims Space and ignores key repeat
+- *(ui)* [`cf8f582`](https://github.com/cmdcolin/bender/commit/cf8f582c740dc6867a0fd7a39f59e065a6e755d9) a keybed key lets go of its note when focus leaves it
+- *(ui)* [`e8e6e8e`](https://github.com/cmdcolin/bender/commit/e8e6e8e69a655472c6733626d9f0259e46adc924) stomp faces keep an idle slider that is off stock, as the panel does
+- *(ui)* [`80ef512`](https://github.com/cmdcolin/bender/commit/80ef5127147cefced92bd434e2ebdc22ba9c381a) setting search still finds the bus fault rows by "knife"
+- *(ui)* [`2122b6c`](https://github.com/cmdcolin/bender/commit/2122b6cb83d618e23a15fd53dbe895cab3ce97bc) reroll the arc's wild board at most every 120 ms
+- *(dsp)* [`248035a`](https://github.com/cmdcolin/bender/commit/248035a84bbfaad1e1f7f2b6b50ceb8236b3862f) codec delays its dry signal at giant frames and fades its mix in and out
+- *(dsp)* [`d032b7c`](https://github.com/cmdcolin/bender/commit/d032b7c72a4a8a71324459ec369a5f1c79005316) FM chip hands its registers to the PCM chip every block
+- *(dsp)* [`ed27304`](https://github.com/cmdcolin/bender/commit/ed273047c0efa71ba1606b8ade30d863f1c8cb71) rack verb's Wander stays inside its allpasses at small sizes
+- *(dsp)* [`ecfd6cd`](https://github.com/cmdcolin/bender/commit/ecfd6cdcc69daf09132dceb5c6f77e37f1704b69) drum panic calls off a stray bar and its step conditions
+- *(dsp)* [`8cd42eb`](https://github.com/cmdcolin/bender/commit/8cd42ebd645a614f5358c615e4a51eed5ff715f0) ADSR keys gate counts presses, so taps and legato retrigger
+- *(dsp)* [`e0463bb`](https://github.com/cmdcolin/bender/commit/e0463bbe65a63ace4975a634a1f41ef2f90a4af1) tape delay filters only the dirty heads and wipes one that clogs again
+- *(engine)* [`7ef6d13`](https://github.com/cmdcolin/bender/commit/7ef6d137510904097baa0b7eed8cc782a0a9e9b3) a pattern landing mid-morph lets the morph finish
+- *(engine)* [`1b9d219`](https://github.com/cmdcolin/bender/commit/1b9d21906e6e33dfb382b15775482a30b97d8688) a locked drift rolls once per leg
+- *(dsp)* [`6a63df1`](https://github.com/cmdcolin/bender/commit/6a63df1b49d263f2bca9dee5853fabd9cf2ffa47) the arc counts bars at the kit's own step rate while it runs
+- *(ui)* [`b719b55`](https://github.com/cmdcolin/bender/commit/b719b55d2438191ffc2206ccb4cad64d2e8dbf57) give blog images their dimensions so the page does not shift
+- *(ui)* [`61709a0`](https://github.com/cmdcolin/bender/commit/61709a0fcab43ef157889af7cf837423c180d631) lay plate-to-plate cables against the bench's right edge
+- *(ui)* [`a4de9f8`](https://github.com/cmdcolin/bender/commit/a4de9f8cfd13bf553a7a28eb8612868f32771f42) a keyboard's TRIG tip names TRIG jacks as the drag target
+- *(ui)* [`89ac2e8`](https://github.com/cmdcolin/bender/commit/89ac2e8ca78628d58bb6a55a521ee6e607695a16) a cable drag cancelled with Escape no longer toggles its jack
+- *(ui)* [`7d6042c`](https://github.com/cmdcolin/bender/commit/7d6042c290611df6e199b9f0298ba0499c590cca) drop the mute row from Plinky's keyboard and Clatter's pads cards
+- *(ui)* [`ed49468`](https://github.com/cmdcolin/bender/commit/ed4946831f037273bf278645321962d7fc623a99) light a pedal's power cap while it is on, like its lamp
+- *(ui)* [`c8e0e48`](https://github.com/cmdcolin/bender/commit/c8e0e4893121d2309cdf766a862b9b096d2b0136) wrap a header's trailing caps as one group, not one at a time
+- *(ui)* [`ed9df06`](https://github.com/cmdcolin/bender/commit/ed9df062e9af152317a0ef0652885c577872ca9d) pack the phone header back into three rows with share on the first
+- *(ui)* [`91dcb97`](https://github.com/cmdcolin/bender/commit/91dcb97b05a34a9726ed77448bc0dbbf3c5d22ba) leave a fresh phone tab at the top until the first press
+- *(ui)* [`308fdd7`](https://github.com/cmdcolin/bender/commit/308fdd7f1c0fad5e465393fa0af4b8b073260ede) grey stage-chip reset counts at rest, red under the pointer or focus
+- *(ui)* [`09e929f`](https://github.com/cmdcolin/bender/commit/09e929f5a0cfa26821bfce7a63b4c4f2d0e6ccdd) spare bends on the map show their bench names
+- *(ui)* [`1b167f1`](https://github.com/cmdcolin/bender/commit/1b167f1ceb5c04e535c8d9c68bcb2f05b562d91b) fold the drum grid's sixteen steps into two rows of eight on a phone
+- *(ui)* [`5a52b88`](https://github.com/cmdcolin/bender/commit/5a52b885d0e6847235d0548f046c41514603000b) ring a map door under keyboard focus
+- *(ui)* [`9b2ec1e`](https://github.com/cmdcolin/bender/commit/9b2ec1e55b93fa6bc75ddf7d47efce68351d81f8) an open card's bar holds a finger-sized dice cap, and row names wrap on a phone
+- *(ui)* [`1a83c7b`](https://github.com/cmdcolin/bender/commit/1a83c7b7c1535894fe88ec41890b0c38a9793074) only a key press picks up a cable from an output jack
+- *(ui)* [`a89484e`](https://github.com/cmdcolin/bender/commit/a89484ed151b19b77204e0e336a9b441297882ff) glow a focused diagram box so focus shows on the open one
+- *(ui)* [`2b2bd2f`](https://github.com/cmdcolin/bender/commit/2b2bd2f94b13fc532225954431586bee2cc7b287) one button size across the stage and bench bars
+- *(ui)* [`fe82246`](https://github.com/cmdcolin/bender/commit/fe822460f69f011f285ac52d84beb25b22250752) blank cassette sits at the height of the deck switches beside it
+- *(ui)* [`9be9453`](https://github.com/cmdcolin/bender/commit/9be9453b7e36925ad0c33e2ee6c195103bbf15f5) lowercase the bench bar's labels like every other button
+- *(ui)* [`53e8257`](https://github.com/cmdcolin/bender/commit/53e825792e7a367b8048272016611a28d7b86caa) square every button in a stage heading
+- *(ui)* [`fb7b4db`](https://github.com/cmdcolin/bender/commit/fb7b4db278bcc96de7e4361fc7936f455760b161) four-track channel numbers and the preset filter match their rows
+- *(ui)* [`a6ba77f`](https://github.com/cmdcolin/bender/commit/a6ba77f333bf1bd673c8f5d8401570ae7699914d) wake the ADSR on any hit, and a toy loop wire only with a target
+- *(ui)* [`b90de16`](https://github.com/cmdcolin/bender/commit/b90de16ac5803b273c80b52367da1f5eb4fe485e) keep the toy loop wire landing as it was, and skip landings a stock board can't play
+
+### Performance
+- *(dsp)* [`247a6ba`](https://github.com/cmdcolin/bender/commit/247a6badbdb12477dd433523cd0499d51cedcf56) drop per-block allocations in the clipper, kit clock and codec
+- *(ui)* [`ba71139`](https://github.com/cmdcolin/bender/commit/ba711392857027a51861a283dd0e81f449012da3) a cable drag or a note re-renders only what it moves
+
+### Refactor
+- *(ui)* [`268da9f`](https://github.com/cmdcolin/bender/commit/268da9f49e19b3a5fa35496bd48c0fffdfbabe4a) one cable model for GATE, TRIG and MOD
+- *(ui)* [`362d60b`](https://github.com/cmdcolin/bender/commit/362d60b5eff24ef0dfc19d11267f1827a43da9e9) load the phrase lock at startup, not in a mount effect
+- *(ui)* [`db0e7c6`](https://github.com/cmdcolin/bender/commit/db0e7c655adf8405ee09bae059a1aa771e366d6a) drop DrumGrid's unstaged run and record buttons
+- *(ui)* [`cabeb0b`](https://github.com/cmdcolin/bender/commit/cabeb0b0ec2aa28f5879bd366f71b759a3860f5f) Fold takes one open prop instead of open and startOpen
+- *(ui)* [`2562a33`](https://github.com/cmdcolin/bender/commit/2562a33cd81de5652b20647cba1903cb156ec9be) the presets row always closes, so drop its other layout
+- *(ui)* [`2236019`](https://github.com/cmdcolin/bender/commit/2236019bf35eefd4d1279e36ff8d4778d834977c) drop the keybed's unused gateCable rules
+- *(ui)* [`a71a67d`](https://github.com/cmdcolin/bender/commit/a71a67d405336786c1912146ebc718381e459851) reserve the readout width with a CSS variable, not context
+- *(dsp)* [`d62009c`](https://github.com/cmdcolin/bender/commit/d62009cddbc090b590f4c8c0060f004e7358b2d1) one tapDivisor for the toy chip and the kit
+- *(ui)* [`87cf7ce`](https://github.com/cmdcolin/bender/commit/87cf7ce976a33e02722967ae1a0760e3a4370027) tidy the cable modules
+- *(ui)* [`291776f`](https://github.com/cmdcolin/bender/commit/291776f5e09b8836887e1629483b857396533b47) move rewire and hasAny beside the bench stores
+
+### Documentation
+- *(engine)* [`8fb2bde`](https://github.com/cmdcolin/bender/commit/8fb2bde6d5cd5779fe76ca67bd26c1965fe00445) name the engine as what keeps a morph moving under a pattern
+
+### Tests
+- *(ui)* [`40ca71d`](https://github.com/cmdcolin/bender/commit/40ca71d13aa4d324290c3bfda295866088ac14e3) aim at a folded setting directly now the search is gone
+
 ## [1.21.0](https://github.com/cmdcolin/bender/compare/v1.20.0...v1.21.0) - 2026-10-28
 
 ### Features
