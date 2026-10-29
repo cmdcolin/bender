@@ -152,7 +152,7 @@ export function Instruments({
       <div className={styles.bar}>
         <AddMenu
           className={styles.add}
-          text="Add instrument"
+          text="add instrument"
           choices={choices}
           onPick={bringUp}
         />

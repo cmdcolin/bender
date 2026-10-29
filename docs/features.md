@@ -63,7 +63,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   loss to each lap. The top end falls a little more every pass, and a layer of
   noise goes down under the last. _Hold_ raises the write level by what a lap
   lost, so a loop stays at its level.
-- **A microphone into the middle of the board.** _Mic into_ on the bench bar
+- **A microphone into the middle of the board.** _mic into_ on the bench bar
   solders the mic to one of 16 jacks: the toy's clock pin, so your pitch sets
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
@@ -730,7 +730,7 @@ A live microphone, the one source that need not reach the mix. _Mic patch_ picks
 the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus,
 the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s
 carrier, a trigger line, Spool’s capstan motor, Growler’s external input or
-Glint’s data bus. _Mic into_ on the bench bar and the mic cap on each machine
+Glint’s data bus. _mic into_ on the bench bar and the mic cap on each machine
 list the jacks with what a voice does at each.
 
 <details>

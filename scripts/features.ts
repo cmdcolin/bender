@@ -44,7 +44,7 @@ const BLURBS: Record<string, string> = {
     'A loaded audio file, looping through the chain. With *Struck by* on a voice and *Ending* on one-shot, it plays whatever you dropped as a seventh drum voice. A bay wire can connect to the reel’s capstan and both loop markers, so it can shift the reel’s pitch as a starve shifts the toy’s, or move the loop window around the recording while the head plays on.',
   Layercake:
     'A cassette four-track: a desk of four channel strips, each with knobs and a fader, in front of four tape loops, each cut to a separate length and all on one capstan. A channel takes its input from its loop, the board, the mic or the desk’s aux return, passes it through a trim preamp and three bands of EQ into a fader and an aux send, and records onto its loop over whatever the erase head left. With input on the board and a loop recording, the signal loops round the whole board, so each lap comes back through every bend again. With input on the aux and its send up, the desk is a mixer with nothing plugged in: the sweepable mid tunes the squeal and the op-amp rails clip it. *Wear* sheds oxide at the same places every lap, and *Batteries* lowers the motor and the rails together.',
-  Mic: 'A live microphone, the one source that need not reach the mix. *Mic patch* picks the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus, the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s carrier, a trigger line, Spool’s capstan motor, Growler’s external input or Glint’s data bus. *Mic into* on the bench bar and the mic cap on each machine list the jacks with what a voice does at each.',
+  Mic: 'A live microphone, the one source that need not reach the mix. *Mic patch* picks the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus, the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s carrier, a trigger line, Spool’s capstan motor, Growler’s external input or Glint’s data bus. *mic into* on the bench bar and the mic cap on each machine list the jacks with what a voice does at each.',
   'Mix bus':
     'The seven sources meet at this desk, and every fader appears here as well as on its machine’s panel, under the machine’s name, with a meter beside it that reads what that channel puts on the bus, and the bus’s own meter under the lot. A fader’s position does not show whether sound is coming out. Glint shows the difference: it boots at zero, and turned up with nothing striking it (no hand on its keys, no tune next door) it sits at three quarters and plays silence. *Bus drive* is the summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.',
   'Ring mod':
@@ -412,7 +412,7 @@ grey out. \`pnpm diagram\` renders it with the same layout the app uses.
   loss to each lap. The top end falls a little more every pass, and a layer of
   noise goes down under the last. *Hold* raises the write level by what a lap
   lost, so a loop stays at its level.
-- **A microphone into the middle of the board.** *Mic into* on the bench bar
+- **A microphone into the middle of the board.** *mic into* on the bench bar
   solders the mic to one of ${MIC_JACKS.length} jacks: the toy's clock pin, so
   your pitch sets its tempo; its address or data bus, so a yell scrambles the
   song; Spool's capstan motor; Glint's registers. The body contact pad uses the

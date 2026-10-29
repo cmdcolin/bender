@@ -96,7 +96,7 @@ downbeat. Set it to **4 bars**, for example, and while the kit runs:
 
 ## More machines
 
-Add them from the **Add instrument** menu.
+Add them from the **add instrument** menu.
 
 ### Glint
 
@@ -187,7 +187,7 @@ Record over it:
 
 Wire it in:
 
-- **Mic into → tape motor:** the tape runs as fast as you are loud and stops in
+- **mic into → tape motor:** the tape runs as fast as you are loud and stops in
   silence
 - **The patch bay** reaches the capstan and both loop markers, to bend the
   reel's pitch or slide the loop window along the recording
@@ -196,7 +196,7 @@ Wire it in:
 
 ### Mic
 
-Your microphone, soldered into the board. **Mic into** on the bench bar, or the
+Your microphone, soldered into the board. **mic into** on the bench bar, or the
 mic cap on a machine, picks the jack.
 
 ## The trigger patch
@@ -244,7 +244,7 @@ voltage you set, or jams one.
   sets how a held key moves: **snap**, **swell**, **riser** (climbs over four
   bars, drops when you let go), **pluck** or **wobble** (pulses on the eighths)
 - **Fault on the bus** cuts, grounds or bridges a wire inside a chip
-- **Add pedal** lists every pedal by sound: dirt, echo and space, pitch and tone
+- **add pedal** lists every pedal by sound: dirt, echo and space, pitch and tone
 - **Sockets:** eight of the pedals (ring mod, crusher, octave and the rest)
   compete for six sockets. Adding one fills the first empty socket, or trades
   out the last when all six are full

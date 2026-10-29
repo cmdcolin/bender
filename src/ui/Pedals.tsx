@@ -152,7 +152,7 @@ export function AddPedal() {
   return (
     <AddMenu
       className={styles.add}
-      text="Add pedal"
+      text="add pedal"
       choices={choices}
       onPick={stage =>
         isPedal(stage) ? bringUpPedal(stage) : bringUpSocketed(stage)

@@ -156,7 +156,7 @@ export function MicMenu({ className }: { className?: string }) {
           aria-expanded={open}
           onClick={() => setOpen(o => !o)}
         >
-          {MIC_GLYPH} Mic into ▾
+          {MIC_GLYPH} mic into ▾
         </button>
       </Tip>
       {open && (

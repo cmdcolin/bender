@@ -26,7 +26,7 @@ beforeEach(() => {
 const machine = (name: string) => screen.getByRole('group', { name })
 const group = (name: string) => screen.queryByRole('group', { name })
 const addInstrument = () =>
-  screen.getByRole('button', { name: /^Add instrument/ })
+  screen.getByRole('button', { name: /^add instrument/ })
 const addAll = () => {
   fireEvent.click(addInstrument())
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
@@ -98,7 +98,7 @@ test('adding a machine with its level down brings the level up to sound', () => 
 test('closing a machine hides it and the menu offers it again', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
-  expect(screen.queryByRole('button', { name: /^Add instrument/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /^add instrument/ })).toBeNull()
   putAway('Glint')
   expect(group('glint')).toBeNull()
   fireEvent.click(addInstrument())
@@ -224,7 +224,7 @@ test('a machine pulled down to no level stays on the bench', () => {
 test('no pedal sits on the bench until it is added from the menu', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   expect(group('gnash')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
+  fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
   fireEvent.click(screen.getByRole('menuitem', { name: /^Gnash/ }))
   expect(group('gnash')).not.toBeNull()
   expect(group('ember')).toBeNull()
@@ -232,7 +232,7 @@ test('no pedal sits on the bench until it is added from the menu', () => {
 
 test('Add pedal groups every pedal by sound, names it with what it is, benches the pick and brings its mix up', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
+  fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
   expect(
     [...screen.getByRole('menu').children].map(el => el.textContent),
   ).toEqual([
@@ -270,7 +270,7 @@ const chainOf = (...ids: number[]) => {
 }
 
 const addSocketed = (name: RegExp) => {
-  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
+  fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
   fireEvent.click(screen.getByRole('menuitem', { name }))
 }
 
@@ -311,7 +311,7 @@ test('Add pedal lists a socketed pedal at mix 0 and brings it up where it sits',
 
 test('every socketed pedal has a face', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
+  fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
     fireEvent.click(item)
   expect(bench.get().bends).toHaveLength(10)
