@@ -583,84 +583,6 @@ export function App(props: { openedFromLink?: boolean }) {
       <button className={styles.skip} onClick={() => board.current?.focus()}>
         skip to the board
       </button>
-      <header className={styles.bar}>
-        <div className={styles.barMain}>
-          <Tip text="What this is, where the docs and the source are, and which build you are on.">
-            <button
-              className={styles.nameplate}
-              onClick={() => setShowAbout(true)}
-            >
-              <span className={styles.brand}>bender</span>
-              <span className={styles.version}>{versionLabel}</span>
-            </button>
-          </Tip>
-          <BoardVerbs
-            seconds={morphSeconds}
-            drifting={drifting}
-            saveFlash={lib.flash?.kind}
-            signedIn={signedIn}
-            onLanded={setLanded}
-            onSave={askSave}
-          />
-          <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
-            <button
-              className={presetsShown ? styles.btnOn : styles.btnQuiet}
-              aria-pressed={presetsShown}
-              onClick={() => showPresets(!presetsShown)}
-            >
-              presets
-            </button>
-          </Tip>
-          <div className={styles.settings}>
-            <MorphControl
-              seconds={morphSeconds}
-              drifting={drifting}
-              onSet={setMorph}
-            />
-            <PhraseLockControl />
-            <MidiPanel
-              open={showMidi}
-              onToggle={() => setShowMidi(o => !o)}
-              onClose={() => setShowMidi(false)}
-            />
-            <ShareButton onCopy={() => copyLink(boardQuery())} />
-            <SavedVoices
-              voices={lib.voices}
-              recent={lib.recent}
-              onRecallSession={s => morphToQuery(s.query)}
-              onOpenSession={s => {
-                window.location.hash = s.query
-              }}
-              suggestName={suggestName}
-              onSave={name => lib.saveVoice(name, boardQuery())}
-              onRecall={recall}
-              onOpen={openVoice}
-              onDelete={lib.deleteVoice}
-              onCopyLink={voice => copyLink(voice.query)}
-              flash={lib.flash}
-              status={lib.status}
-              error={lib.error}
-            />
-            <div className={styles.account}>
-              <Account
-                user={lib.user}
-                status={lib.status}
-                onSignIn={lib.signIn}
-                onSignOut={lib.signOut}
-              />
-            </div>
-          </div>
-        </div>
-        <div className={styles.pinned}>
-          <History seconds={morphSeconds} />
-          <AppMenu
-            signedIn={signedIn}
-            coarse={coarse}
-            onWhy={() => setWhy({ pending: null })}
-            onMidi={() => setShowMidi(true)}
-          />
-        </div>
-      </header>
 
       <div className={styles.body}>
         <main className={styles.left}>
@@ -697,53 +619,133 @@ export function App(props: { openedFromLink?: boolean }) {
           <BodyPad onOpen={show} />
         </main>
 
-        <aside
-          ref={board}
-          tabIndex={-1}
-          className={styles.panel}
-          aria-label="the board"
-        >
-          <HuntDialog landed={landed} onDismiss={dismissLanded} />
-
-          {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
-
-          {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
-
-          {remapping && <KeysDialog onClose={() => remapOpen.set(false)} />}
-
-          {why && (
-            <WhySignInDialog
-              pendingName={why.pending}
-              onClose={() => {
-                setWhy(null)
-                lib.dropPending()
-              }}
-              onSignIn={() => {
-                setWhy(null)
-                lib.signIn()
-              }}
-              onCopyLink={() => copyLink(boardQuery())}
-            />
-          )}
-
-          {listed ? (
-            <StageList seconds={morphSeconds} />
-          ) : (
-            <>
-              <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
-              {openGroup ? (
-                <OpenGroup
-                  key={openGroup.name}
-                  group={openGroup}
-                  onClose={() => setOpen(null)}
+        <div className={styles.side}>
+          <header className={styles.bar}>
+            <div className={styles.barMain}>
+              <Tip text="What this is, where the docs and the source are, and which build you are on.">
+                <button
+                  className={styles.nameplate}
+                  onClick={() => setShowAbout(true)}
+                >
+                  <span className={styles.brand}>bender</span>
+                  <span className={styles.version}>{versionLabel}</span>
+                </button>
+              </Tip>
+              <BoardVerbs
+                seconds={morphSeconds}
+                drifting={drifting}
+                saveFlash={lib.flash?.kind}
+                signedIn={signedIn}
+                onLanded={setLanded}
+                onSave={askSave}
+              />
+              <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
+                <button
+                  className={presetsShown ? styles.btnOn : styles.btnQuiet}
+                  aria-pressed={presetsShown}
+                  onClick={() => showPresets(!presetsShown)}
+                >
+                  presets
+                </button>
+              </Tip>
+              <div className={styles.settings}>
+                <MorphControl
                   seconds={morphSeconds}
+                  drifting={drifting}
+                  onSet={setMorph}
                 />
-              ) : (
-                <PathHint />
-              )}
-            </>
-          )}
-        </aside>
+                <PhraseLockControl />
+                <MidiPanel
+                  open={showMidi}
+                  onToggle={() => setShowMidi(o => !o)}
+                  onClose={() => setShowMidi(false)}
+                />
+                <ShareButton onCopy={() => copyLink(boardQuery())} />
+                <SavedVoices
+                  voices={lib.voices}
+                  recent={lib.recent}
+                  onRecallSession={s => morphToQuery(s.query)}
+                  onOpenSession={s => {
+                    window.location.hash = s.query
+                  }}
+                  suggestName={suggestName}
+                  onSave={name => lib.saveVoice(name, boardQuery())}
+                  onRecall={recall}
+                  onOpen={openVoice}
+                  onDelete={lib.deleteVoice}
+                  onCopyLink={voice => copyLink(voice.query)}
+                  flash={lib.flash}
+                  status={lib.status}
+                  error={lib.error}
+                />
+                <div className={styles.account}>
+                  <Account
+                    user={lib.user}
+                    status={lib.status}
+                    onSignIn={lib.signIn}
+                    onSignOut={lib.signOut}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className={styles.pinned}>
+              <History seconds={morphSeconds} />
+              <AppMenu
+                signedIn={signedIn}
+                coarse={coarse}
+                onWhy={() => setWhy({ pending: null })}
+                onMidi={() => setShowMidi(true)}
+              />
+            </div>
+          </header>
+          <aside
+            ref={board}
+            tabIndex={-1}
+            className={styles.panel}
+            aria-label="the board"
+          >
+            <HuntDialog landed={landed} onDismiss={dismissLanded} />
+
+            {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
+
+            {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
+
+            {remapping && <KeysDialog onClose={() => remapOpen.set(false)} />}
+
+            {why && (
+              <WhySignInDialog
+                pendingName={why.pending}
+                onClose={() => {
+                  setWhy(null)
+                  lib.dropPending()
+                }}
+                onSignIn={() => {
+                  setWhy(null)
+                  lib.signIn()
+                }}
+                onCopyLink={() => copyLink(boardQuery())}
+              />
+            )}
+
+            {listed ? (
+              <StageList seconds={morphSeconds} />
+            ) : (
+              <>
+                <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
+                {openGroup ? (
+                  <OpenGroup
+                    key={openGroup.name}
+                    group={openGroup}
+                    onClose={() => setOpen(null)}
+                    seconds={morphSeconds}
+                  />
+                ) : (
+                  <PathHint />
+                )}
+              </>
+            )}
+          </aside>
+        </div>
       </div>
     </div>
   )
