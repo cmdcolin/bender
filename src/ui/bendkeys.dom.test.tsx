@@ -58,9 +58,9 @@ test('the grid draws only while the letters go to the bends', () => {
 
 test('the switch sends the letters here and back to the toy', () => {
   render(<BendKeysSwitch />)
-  fireEvent.click(screen.getByRole('button', { name: 'bend keys' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Bend keys' }))
   expect(letterKeys.get()).toBe('bends')
-  fireEvent.click(screen.getByRole('button', { name: 'bend keys' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Bend keys' }))
   expect(letterKeys.get()).toBe('toy')
 })
 

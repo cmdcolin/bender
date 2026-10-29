@@ -22,7 +22,6 @@ import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
 import { watchRail } from './railWatch.ts'
 import { aimAt } from './reveal.ts'
-import { SettingFind } from './SettingFind.tsx'
 import { Shelf } from './Shelf.tsx'
 import { formerName } from './stageNames.ts'
 import { throttle } from './throttle.ts'
@@ -209,6 +208,7 @@ export function StageBar({
     <div className={styles.addRow}>
       <ToggleButtonGroup
         label="stage view"
+        large
         options={PANEL_VIEWS}
         value={listed ? 'every stage' : 'map'}
         onChange={view => setListView(view === 'every stage')}
@@ -231,7 +231,6 @@ export function StageBar({
           if (open === name) onOpen(name)
         }}
       />
-      <SettingFind groups={on} open={open} onOpen={onOpen} />
     </div>
   )
 }

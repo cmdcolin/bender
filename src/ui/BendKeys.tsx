@@ -341,7 +341,7 @@ export function BendKeysSwitch() {
         aria-pressed={on}
         onClick={() => setLetters(!on)}
       >
-        bend keys
+        Bend keys
       </button>
     </Tip>
   )
