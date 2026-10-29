@@ -55,6 +55,7 @@ interface Landing {
   oneOf?: ControlKey[]
   bend?: string
   hands?: true
+  played?: true
   needs?: (c: Controls) => boolean
 }
 
@@ -132,12 +133,12 @@ const LANDINGS: Landing[] = [
   at('mono emphasis', ['monoLevel']),
   at('mono pitch', ['monoLevel']),
   at('toy crosstalk', ['chipLevel']),
-  at('toy scan', ['chipLevel']),
+  at('toy scan', ['chipLevel'], { played: true }),
   at('toy PWM', ['chipLevel']),
   at('toy short', ['chipLevel']),
   at('toy env cap', ['chipLevel']),
-  at('toy ghosts', ['chipLevel']),
-  at('toy loop wire', ['chipLevel', 'chipLoopTo']),
+  at('toy ghosts', ['chipLevel'], { played: true }),
+  at('toy loop wire', ['chipLevel']),
   at('toy loop onto', ['chipLevel', 'chipLoopFrom']),
   at('toy song line', ['chipLevel']),
   at('toy song fault', ['chipLevel', 'chipBankLine']),
@@ -250,9 +251,9 @@ const from = (
 const TAPS: Tap[] = [
   from('LFO', []),
   from('envelope', []),
-  // The rail sags under what the toy is drawing, so there is a droop to pick up
-  // only while the toy is running.
-  from('supply', ['chipLevel']),
+  // The rail only sags with the starve knob up, so there is a droop to pick up
+  // only while the toy is running on it.
+  from('supply', ['chipLevel', 'chipStarve']),
   from('ROM step', ['chipLevel']),
   from('drum hit', ['drumLevel']),
   from('fb bus', ['fbAmt']),
@@ -390,7 +391,7 @@ function landOn(
   woke: Set<ControlKey>,
   taken: Set<number> = new Set(),
 ): number {
-  const free = LANDINGS.filter(l => !taken.has(l.dest))
+  const free = LANDINGS.filter(l => !taken.has(l.dest) && !l.played)
   const live = free.filter(l => heard(next, l))
   const asleep = wake
     ? free.filter(l => !heard(next, l) && reachable(next, l))
