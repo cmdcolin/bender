@@ -137,7 +137,7 @@ const LANDINGS: Landing[] = [
   at('toy short', ['chipLevel']),
   at('toy env cap', ['chipLevel']),
   at('toy ghosts', ['chipLevel']),
-  at('toy loop wire', ['chipLevel']),
+  at('toy loop wire', ['chipLevel', 'chipLoopTo']),
   at('toy loop onto', ['chipLevel', 'chipLoopFrom']),
   at('toy song line', ['chipLevel']),
   at('toy song fault', ['chipLevel', 'chipBankLine']),
@@ -295,6 +295,10 @@ const WAKE_POS: Partial<Record<ControlKey, [number, number]>> = {
   heatAmt: [0.4, 0.8],
 }
 
+const WAKE_CHOICE: Partial<Record<ControlKey, string>> = {
+  modEnvGate: 'any hit',
+}
+
 function turnUp(
   next: Controls,
   key: ControlKey,
@@ -303,7 +307,10 @@ function turnUp(
 ) {
   if (isUp(next, key)) return
   const def = sliderFor(key)
-  if (def.choices) {
+  const choice = WAKE_CHOICE[key]
+  if (choice) {
+    next[key] = choiceValue(key, choice)
+  } else if (def.choices) {
     next[key] = def.min + 1 + Math.floor(rand() * (def.choices.length - 1))
   } else {
     const [lo, hi] = WAKE_POS[key] ?? [0.35, 1]
