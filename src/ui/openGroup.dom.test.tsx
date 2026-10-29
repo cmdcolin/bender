@@ -8,6 +8,7 @@ import { App } from './App.tsx'
 import { add } from './fitted.ts'
 import { setStageDrawings } from './listView.ts'
 import { openStage } from './openStage.ts'
+import { aimAt } from './reveal.ts'
 import './testDom.ts'
 
 test('a view picked on one stage stays on that stage', () => {
@@ -28,15 +29,12 @@ test('a view picked on one stage stays on that stage', () => {
   unmount()
 })
 
-test('a hit in a folded part opens the fold', async () => {
+test('aiming at a setting in a folded part opens the fold', async () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
-  act(() => openStage.set(null))
   act(() => add(['Board parts']))
+  act(() => openStage.set('Board parts'))
   render(<App />)
-  fireEvent.change(screen.getByRole('searchbox', { name: 'find a setting' }), {
-    target: { value: 'mixer drive' },
-  })
-  fireEvent.click(screen.getAllByRole('button', { name: /Mixer drive/ })[0]!)
+  act(() => aimAt('chipMixDrive'))
   await vi.waitFor(() =>
     expect(
       document.querySelector('aside [data-control="chipMixDrive"][data-aimed]'),
