@@ -1,8 +1,11 @@
+// CROSS_REPO_SYNC_FILE(wait-for-ci)
+//
 // Pushes HEAD if origin lacks it, then blocks until CI finishes on that commit.
 // Usage: node scripts/wait-for-ci.mjs [--job <name>]
-// With --job, waits for that job only (the release gate waits for `check` and
-// leaves the build and deploy to finish on their own). Exits 1 on a red run.
-// CI_WAIT_MINUTES bounds the wait (default 45).
+// Without --job, waits for every workflow run on the commit, so a release tag
+// waits on its own workflow as well as the deploy. With --job, waits for that
+// job only (the release gate waits for `check` and leaves the rest to finish on
+// their own). Exits 1 on a red run. CI_WAIT_MINUTES bounds the wait (default 45).
 
 import { execFileSync } from 'node:child_process'
 import { setTimeout as sleep } from 'node:timers/promises'
@@ -30,43 +33,56 @@ if (!out('git', ['branch', '-r', '--contains', sha])) {
   execFileSync('git', ['push', '--follow-tags'], { stdio: 'inherit' })
 }
 
-const latest = () =>
-  api(`repos/:owner/:repo/actions/runs?head_sha=${sha}`).workflow_runs[0]
-
-const progress = run => {
-  if (!job) return run
-  const found = api(`repos/:owner/:repo/actions/runs/${run.id}/jobs`).jobs.find(
-    j => j.name === job,
+// The API lists runs newest first; keep the newest per workflow, so a manual
+// re-run replaces the run it repeats.
+function latestRuns() {
+  const seen = new Set()
+  return api(
+    `repos/:owner/:repo/actions/runs?head_sha=${sha}`,
+  ).workflow_runs.filter(
+    run => !seen.has(run.workflow_id) && seen.add(run.workflow_id),
   )
-  return found ?? { ...run, status: 'queued', conclusion: null }
+}
+
+function findJob(runs) {
+  for (const run of runs) {
+    const found = api(
+      `repos/:owner/:repo/actions/runs/${run.id}/jobs`,
+    ).jobs.find(j => j.name === job)
+    if (found) return { ...found, name: job, html_url: run.html_url }
+  }
 }
 
 const started = Date.now()
-let announced
+const announced = new Set()
 
 for (;;) {
-  const run = latest()
-  const state = run && progress(run)
-
-  if (run && announced !== run.id) {
-    console.log(`Waiting for ${job ?? run.name} on ${short}: ${run.html_url}`)
-    announced = run.id
+  const runs = latestRuns()
+  for (const run of runs) {
+    if (!announced.has(run.id)) {
+      console.log(`${run.name} on ${short}: ${run.html_url}`)
+      announced.add(run.id)
+    }
   }
 
-  if (state?.status === 'completed') {
-    if (state.conclusion !== 'success') {
-      fail(`${job ?? run.name} ${state.conclusion}: ${run.html_url}`)
-    }
-    console.log(`${job ?? run.name} is green on ${short}`)
+  const watched = job ? [findJob(runs)].filter(Boolean) : runs
+  if (watched.length > 0 && watched.every(w => w.status === 'completed')) {
+    const red = watched.find(w => w.conclusion !== 'success')
+    if (red) fail(`${red.name} ${red.conclusion}: ${red.html_url}`)
+    console.log(`${watched.map(w => w.name).join(', ')} green on ${short}`)
     break
   }
 
   const waited = Date.now() - started
-  if (!run && waited > APPEAR_MS) {
+  if (runs.length === 0 && waited > APPEAR_MS) {
     fail(`no run appeared for ${short} in ${APPEAR_MS / 60_000} minutes`)
   }
   if (waited > WAIT_MS) {
-    fail(`still ${state?.status} after ${WAIT_MS / 60_000} minutes`)
+    const pending = watched.filter(w => w.status !== 'completed')
+    fail(
+      `still waiting on ${pending.map(w => `${w.name} (${w.status})`).join(', ') || 'a run'} ` +
+        `after ${WAIT_MS / 60_000} minutes`,
+    )
   }
   await sleep(POLL_MS)
 }
