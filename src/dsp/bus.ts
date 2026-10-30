@@ -1,4 +1,5 @@
 import { mulberry32, type Rng } from './util/rng.ts'
+import { flushDenormal } from './util/softclip.ts'
 
 // The wires between two parts of a chip, and what a fault does to one of them.
 //
@@ -82,7 +83,9 @@ export class Bus {
       return this.charge
     }
     const near = line + 1 < this.width ? bit << 1 : bit >> 1
-    this.charge += COUPLING * ((word & near ? 1 : 0) - this.charge)
+    this.charge = flushDenormal(
+      this.charge + COUPLING * ((word & near ? 1 : 0) - this.charge),
+    )
     return this.charge
   }
 
