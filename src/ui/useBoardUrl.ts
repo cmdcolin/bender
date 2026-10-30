@@ -19,6 +19,8 @@ import { boardFrom, boardFromLocation, boardUrl } from './share.ts'
 //
 // Trailing-debounced, and replaceState rather than pushState: browsers
 // rate-limit the history API, and one board is not thirty steps of back button.
+// A tab closing or reloading flushes the write still waiting, or the last thing
+// you turned is the one thing the reload forgets.
 export function useBoardUrl() {
   useEffect(() => {
     let id: ReturnType<typeof setTimeout>
@@ -26,16 +28,19 @@ export function useBoardUrl() {
     // already encode to it — a link that arrived in the old query form still
     // gets rewritten as a hash, because that is a different string.
     let last = window.location.href
-    const write = () => {
+    const flush = () => {
       clearTimeout(id)
-      id = setTimeout(() => {
-        // A board that encodes to what the bar already says is not a write:
-        // the pad is off the link, so moving it must not touch the history.
-        const url = boardUrl(engine.controls.get())
-        if (url === last) return
+      // A board that encodes to what the bar already says is not a write: the
+      // pad is off the link, so moving it must not touch the history.
+      const url = boardUrl(engine.controls.get())
+      if (url !== last) {
         last = url
         history.replaceState(null, '', url)
-      }, 250)
+      }
+    }
+    const write = () => {
+      clearTimeout(id)
+      id = setTimeout(flush, 250)
     }
     // A hash someone pasted or stepped back onto is a board arriving, and the
     // address bar is no longer a place a page load happens: changing it fires
@@ -57,10 +62,12 @@ export function useBoardUrl() {
     write()
     const off = engine.controls.subscribe(write)
     window.addEventListener('hashchange', read)
+    window.addEventListener('pagehide', flush)
     return () => {
       off()
       clearTimeout(id)
       window.removeEventListener('hashchange', read)
+      window.removeEventListener('pagehide', flush)
     }
   }, [])
 }

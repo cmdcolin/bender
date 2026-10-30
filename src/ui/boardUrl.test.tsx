@@ -4,6 +4,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { boardUrl } from './share.ts'
 import { useBoardUrl } from './useBoardUrl.ts'
 import './testDom.ts'
 
@@ -44,4 +45,13 @@ test('a bare url is the stock board, not nothing to do', () => {
   expect(engine.controls.get().filtRes).toBe(DEFAULT_CONTROLS.filtRes)
   // Your finger is the exception: the link never carried it either way.
   expect(engine.controls.get().bodyX).toBe(0.7)
+})
+
+test('the last turn before the tab goes is in the url it leaves', () => {
+  render(<Bar />)
+  act(() => engine.set('dlyFb', 1.3))
+  const leaving = boardUrl(engine.controls.get())
+  expect(window.location.href).not.toBe(leaving)
+  fireEvent(window, new Event('pagehide'))
+  expect(window.location.href).toBe(leaving)
 })
