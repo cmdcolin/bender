@@ -13,7 +13,7 @@ import {
 } from '../../tune.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
-import { DEST, hop } from '../modbus.ts'
+import { DEST, hop, type ModBus } from '../modbus.ts'
 import { SupplyTap, poweredUp, type Supplies } from '../supplies.ts'
 import { voiceMask } from '../trigbus.ts'
 import { GroundEdge } from '../util/bounce.ts'
@@ -335,8 +335,43 @@ const pulse = (phase: number, duty: number, inc: number) => {
   return phase < d ? 2 * (1 - d) : -2 * d
 }
 
+interface ChipLanes {
+  modSync: Float32Array | null
+  modXor: Float32Array | null
+  modBits: Float32Array | null
+  modDutyEnv: Float32Array | null
+  modFmClock: Float32Array | null
+  modHold: Float32Array | null
+  modTap: Float32Array | null
+  modRelax: Float32Array | null
+  modEnvDiv: Float32Array | null
+  modPwmTap: Float32Array | null
+  modCross: Float32Array | null
+  modScan: Float32Array | null
+  modPwm: Float32Array | null
+  modShort: Float32Array | null
+  modClock: Float32Array | null
+}
+
 export class ToyChip implements Stage {
   label = 'toyChip'
+  private readonly lanes: ChipLanes = {
+    modSync: null,
+    modXor: null,
+    modBits: null,
+    modDutyEnv: null,
+    modFmClock: null,
+    modHold: null,
+    modTap: null,
+    modRelax: null,
+    modEnvDiv: null,
+    modPwmTap: null,
+    modCross: null,
+    modScan: null,
+    modPwm: null,
+    modShort: null,
+    modClock: null,
+  }
   private phase = 0
   private pos = 0
   // What the melody oscillator is on, or REST for nothing. A sentinel rather
@@ -936,36 +971,29 @@ export class ToyChip implements Stage {
     }
   }
 
-  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    const level = p[IDX.chipLevel]!
-    // The nineteenth tune is the one you played in. It is not in the bank —
-    // the bank is what the chip shipped with — so it arrives as sixteen params
-    // and is copied into an array this owns, and from there down nothing in the
-    // stage knows which of the two it is playing.
-    const pick = Math.round(p[IDX.chipTune]!)
-    this.yours = pick === YOURS
-    this.romPick = pick
-    const rom = ROMS[pick] ?? ROMS[0]!
-    const tune = this.yours ? this.mine : rom.steps
-    // What the part itself counts at: the ROM's own nominal rate, or the knob
-    // that stands in for one when the chip is playing the memory. A lock
-    // replaces this number and nothing else. Everything downstream of it still
-    // drags the tune — Clock, a pot on the timing pin, the crystal wandering, a
-    // rail going flat — because all of that is in `timing` below and `timing` is
-    // still what the count is multiplied by. A toy that kept time through a
-    // dying battery would be half the instrument gone.
-    const nominalHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
-    const sync = Math.round(p[IDX.chipSync]!)
-    const stepHz = sync > 0 ? kitStepHz(p[IDX.drumBpm]!, sync) : nominalHz
-    this.mineLen = asTuneLen(p[IDX.tuneLen]!)
-    this.len = this.yours ? this.mineLen : rom.steps.length
-    this.poly = this.yours && Math.round(p[IDX.tunePoly]!) === 1
-    const clockX = p[IDX.chipClockX]!
-    const spot = Math.round(p[IDX.chipBendSpot]!)
-    const pot = p[IDX.chipBendPot]!
-    // Choice 0 on either selector is a bus nobody has been at, so the lines
-    // count from -1 and every read below is a straight one.
-    const bay = ctx.mod
+  // The bay's lanes and the wiring selectors, read once a block outside
+  // process(): TurboFan inlines against one budget per function, and the
+  // sample loop needs process()'s for the helpers it calls every sample.
+  private readLanes(bay: ModBus) {
+    const lanes = this.lanes
+    lanes.modSync = bay.read(DEST.chipHardSync)
+    lanes.modXor = bay.read(DEST.chipXor)
+    lanes.modBits = bay.read(DEST.chipEnvBits)
+    lanes.modDutyEnv = bay.read(DEST.chipDutyEnv)
+    lanes.modFmClock = bay.read(DEST.chipFmClock)
+    lanes.modHold = bay.read(DEST.chipHold)
+    lanes.modTap = bay.read(DEST.chipStepTap)
+    lanes.modRelax = bay.read(DEST.chipEnvRelax)
+    lanes.modEnvDiv = bay.read(DEST.chipEnvDiv)
+    lanes.modPwmTap = bay.read(DEST.chipPwmTap)
+    lanes.modCross = bay.read(DEST.chipCrosstalk)
+    lanes.modScan = bay.read(DEST.chipScan)
+    lanes.modPwm = bay.read(DEST.chipPwm)
+    lanes.modShort = bay.read(DEST.chipShort)
+    lanes.modClock = bay.read(DEST.chipClock)
+  }
+
+  private readWiring(p: Float32Array, bay: ModBus) {
     this.dataLine =
       hop(
         p[IDX.chipDataLine]!,
@@ -1000,6 +1028,62 @@ export class ToyChip implements Stage {
       LOOP_TARGETS.length,
       bay.read(DEST.chipLoopTo),
     )
+    this.outAddr =
+      hop(p[IDX.chipOutAddr]!, ROM_ADDR_LINES + 1, bay.read(DEST.chipOutAddr)) -
+      1
+    this.outData =
+      hop(p[IDX.chipOutData]!, ROM_DATA_LINES + 1, bay.read(DEST.chipOutData)) -
+      1
+    this.kitAddr = hop(
+      p[IDX.chipKitAddr]!,
+      ROM_ADDR_LINES + 1,
+      bay.read(DEST.chipKitAddr),
+    )
+    this.envCap = hop(
+      p[IDX.chipEnvCap]!,
+      ENV_CAPS.length,
+      bay.read(DEST.chipEnvCap),
+    )
+    this.bankLine =
+      hop(p[IDX.chipBankLine]!, BANK_LINES + 1, bay.read(DEST.chipBankLine)) - 1
+    this.bankFault = hop(
+      p[IDX.chipBankFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.chipBankFault),
+    )
+  }
+
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const level = p[IDX.chipLevel]!
+    // The nineteenth tune is the one you played in. It is not in the bank —
+    // the bank is what the chip shipped with — so it arrives as sixteen params
+    // and is copied into an array this owns, and from there down nothing in the
+    // stage knows which of the two it is playing.
+    const pick = Math.round(p[IDX.chipTune]!)
+    this.yours = pick === YOURS
+    this.romPick = pick
+    const rom = ROMS[pick] ?? ROMS[0]!
+    const tune = this.yours ? this.mine : rom.steps
+    // What the part itself counts at: the ROM's own nominal rate, or the knob
+    // that stands in for one when the chip is playing the memory. A lock
+    // replaces this number and nothing else. Everything downstream of it still
+    // drags the tune — Clock, a pot on the timing pin, the crystal wandering, a
+    // rail going flat — because all of that is in `timing` below and `timing` is
+    // still what the count is multiplied by. A toy that kept time through a
+    // dying battery would be half the instrument gone.
+    const nominalHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
+    const sync = Math.round(p[IDX.chipSync]!)
+    const stepHz = sync > 0 ? kitStepHz(p[IDX.drumBpm]!, sync) : nominalHz
+    this.mineLen = asTuneLen(p[IDX.tuneLen]!)
+    this.len = this.yours ? this.mineLen : rom.steps.length
+    this.poly = this.yours && Math.round(p[IDX.tunePoly]!) === 1
+    const clockX = p[IDX.chipClockX]!
+    const spot = Math.round(p[IDX.chipBendSpot]!)
+    const pot = p[IDX.chipBendPot]!
+    // Choice 0 on either selector is a bus nobody has been at, so the lines
+    // count from -1 and every read below is a straight one.
+    const bay = ctx.mod
+    this.readWiring(p, bay)
     const crossBase = p[IDX.chipCrosstalk]!
     const scanBase = p[IDX.chipScan]!
     const pwmBase = p[IDX.chipPwm]!
@@ -1014,22 +1098,24 @@ export class ToyChip implements Stage {
     const xorBase = p[IDX.chipXor]!
     const bitsBase = p[IDX.chipEnvBits]!
     const dutyEnvBase = p[IDX.chipDutyEnv]!
-    const modSync = bay.read(DEST.chipHardSync)
-    const modXor = bay.read(DEST.chipXor)
-    const modBits = bay.read(DEST.chipEnvBits)
-    const modDutyEnv = bay.read(DEST.chipDutyEnv)
-    const modFmClock = bay.read(DEST.chipFmClock)
-    const modHold = bay.read(DEST.chipHold)
-    const modTap = bay.read(DEST.chipStepTap)
-    const modRelax = bay.read(DEST.chipEnvRelax)
-    const modEnvDiv = bay.read(DEST.chipEnvDiv)
-    const modPwmTap = bay.read(DEST.chipPwmTap)
-    this.outAddr =
-      hop(p[IDX.chipOutAddr]!, ROM_ADDR_LINES + 1, bay.read(DEST.chipOutAddr)) -
-      1
-    this.outData =
-      hop(p[IDX.chipOutData]!, ROM_DATA_LINES + 1, bay.read(DEST.chipOutData)) -
-      1
+    this.readLanes(bay)
+    const {
+      modSync,
+      modXor,
+      modBits,
+      modDutyEnv,
+      modFmClock,
+      modHold,
+      modTap,
+      modRelax,
+      modEnvDiv,
+      modPwmTap,
+      modCross,
+      modScan,
+      modPwm,
+      modShort,
+      modClock,
+    } = this.lanes
     const keyScan = p[IDX.chipKeyScan]!
     const outKeys =
       hop(p[IDX.chipOutKeys]!, MATRIX_COLS + 1, bay.read(DEST.chipOutKeys)) - 1
@@ -1038,27 +1124,6 @@ export class ToyChip implements Stage {
       this.releasePin()
       this.pinHigh = false
     }
-    this.kitAddr = hop(
-      p[IDX.chipKitAddr]!,
-      ROM_ADDR_LINES + 1,
-      bay.read(DEST.chipKitAddr),
-    )
-    const modCross = bay.read(DEST.chipCrosstalk)
-    const modScan = bay.read(DEST.chipScan)
-    const modPwm = bay.read(DEST.chipPwm)
-    const modShort = bay.read(DEST.chipShort)
-    this.envCap = hop(
-      p[IDX.chipEnvCap]!,
-      ENV_CAPS.length,
-      bay.read(DEST.chipEnvCap),
-    )
-    this.bankLine =
-      hop(p[IDX.chipBankLine]!, BANK_LINES + 1, bay.read(DEST.chipBankLine)) - 1
-    this.bankFault = hop(
-      p[IDX.chipBankFault]!,
-      FAULT_NAMES.length,
-      bay.read(DEST.chipBankFault),
-    )
     // A ROM tune whose song wires have been got at can land on the memory, so
     // the memory is filled whenever a read might reach it.
     let stamp = this.mineLen
@@ -1105,7 +1170,6 @@ export class ToyChip implements Stage {
     const micClock = micJack === MIC.toyClock
     if (micJack !== MIC.toyAddr) this.micAddr = 0
     if (micJack !== MIC.toyData) this.micData = 0
-    const modClock = ctx.mod.read(DEST.chipClock)
     const accomp = p[IDX.chipAccomp]!
     this.accompLevel = accomp
     // Whichever of the kit's voices is bridged onto the gate, and what it plays.
@@ -1360,26 +1424,34 @@ export class ToyChip implements Stage {
         ? 1
         : expNeg((0.8 * stepHz * timing * drain) / this.sr)
       const cap = this.envCap
+      const voices = this.voices
       if (cap === ENV_LEAKY) {
         this.env = leak(this.env, envDecay)
         this.bassEnv = leak(this.bassEnv, envDecay)
         this.chordEnv = leak(this.chordEnv, envDecay)
-        for (const v of this.voices) if (!v.held) v.env = leak(v.env, envDecay)
+        for (let k = 0; k < voices.length; k++) {
+          const v = voices[k]!
+          if (!v.held) v.env = leak(v.env, envDecay)
+        }
       } else {
         this.env = fade(this.env, envDecay)
         this.bassEnv = fade(this.bassEnv, envDecay)
         this.chordEnv = fade(this.chordEnv, envDecay)
         // A reversed cap drains a held key too, since the hold switch sits
         // across the same cap.
-        for (const v of this.voices)
+        for (let k = 0; k < voices.length; k++) {
+          const v = voices[k]!
           if (!v.held || cap === ENV_REVERSED) v.env = fade(v.env, envDecay)
+        }
       }
       if (relax > 0) {
         if (this.env < RELAX_AT) this.env = 1
         if (this.bassEnv < RELAX_AT) this.bassEnv = 1
         if (this.chordEnv < RELAX_AT) this.chordEnv = 1
-        for (const v of this.voices)
+        for (let k = 0; k < voices.length; k++) {
+          const v = voices[k]!
           if (v.env > ENV_FLOOR && v.env < RELAX_AT) v.env = 1
+        }
       }
 
       // A latched output stage is jammed on rather than fading with the supply,
@@ -1407,7 +1479,7 @@ export class ToyChip implements Stage {
           this.bassPhase = 0
           this.chordPhase.fill(0)
           this.sfxPhase = 0
-          for (const v of this.voices) v.phase = 0
+          for (let k = 0; k < voices.length; k++) voices[k]!.phase = 0
         }
       }
       if (this.loadedStamp !== this.divStamp) {
@@ -1415,7 +1487,7 @@ export class ToyChip implements Stage {
         this.melodyLoaded = NaN
         this.bassLoaded = NaN
         this.chordLoaded = undefined
-        for (const v of this.voices) v.loaded = NaN
+        for (let k = 0; k < voices.length; k++) voices[k]!.loaded = NaN
       }
 
       let out = 0
