@@ -22,6 +22,7 @@ import { clamp01 } from '../util/clamp.ts'
 import { CrossingRate } from '../util/crossings.ts'
 import { Drunk } from '../util/drift.ts'
 import { coef, Follower } from '../util/follower.ts'
+import { removeAt } from '../util/list.ts'
 import { A3_HZ, octaves, tapDivisor, wrap1 } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
@@ -164,9 +165,13 @@ const MINOR_TRIADS = [
 const pitchClass = (n: number) => ((n % 12) + 12) % 12
 
 // Each ROM declares its own key, so the triads land in the song's key rather
-// than wherever the note numbers happen to start.
+// than wherever the note numbers happen to start. Every key's are laid out up
+// front, so changing song hands the chip a table rather than building one.
+const TRIADS_IN_KEY = [MAJOR_TRIADS, MINOR_TRIADS].map(triads =>
+  Array.from({ length: 12 }, (_, key) => triads.map(t => t.map(n => n + key))),
+)
 const triadsFor = (song: { key: number; minor?: boolean }) =>
-  (song.minor ? MINOR_TRIADS : MAJOR_TRIADS).map(t => t.map(n => n + song.key))
+  TRIADS_IN_KEY[song.minor ? 1 : 0]![pitchClass(song.key)]!
 
 const BASS_TRIM = 1.05
 const CHORD_TRIM = [0.9, 1.15, 1]
@@ -659,7 +664,7 @@ export class ToyChip implements Stage {
   noteOff(semitone: number) {
     const at = this.heldKeys.indexOf(semitone)
     if (at >= 0) {
-      this.heldKeys.splice(at, 1)
+      removeAt(this.heldKeys, at)
       this.sortHeld()
       // The last key up ends the figure rather than pausing it, so the next
       // chord starts on its own first note instead of halfway through the last.

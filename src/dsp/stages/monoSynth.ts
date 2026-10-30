@@ -5,6 +5,7 @@ import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, SEQ_TO_MONO, voiceMask } from '../trigbus.ts'
+import { removeAt } from '../util/list.ts'
 import { MonoVoice } from './monoVoice.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
@@ -91,7 +92,7 @@ export class MonoSynth implements Stage {
   private dropGateHeld(note: number): boolean {
     const i = this.gateHeld.indexOf(note)
     if (i < 0) return false
-    this.gateHeld.splice(i, 1)
+    removeAt(this.gateHeld, i)
     return true
   }
 
@@ -244,7 +245,7 @@ export class MonoSynth implements Stage {
         if (down < 0) this.keysDown.push(q.note)
         voice.noteOn(q.note, q.gain)
       } else {
-        if (down >= 0) this.keysDown.splice(down, 1)
+        if (down >= 0) removeAt(this.keysDown, down)
         voice.noteOff(q.note)
       }
     }

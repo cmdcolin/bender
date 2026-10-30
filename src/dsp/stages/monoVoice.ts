@@ -1,5 +1,6 @@
 import { Drunk } from '../util/drift.ts'
 import { Halfband } from '../util/halfband.ts'
+import { removeAt } from '../util/list.ts'
 import { DcBlocker } from '../util/onepole.ts'
 import { octaves, wrap1 } from '../util/pitch.ts'
 import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
@@ -407,7 +408,7 @@ export class MonoVoice {
     this.boostTarget = accent ? 1 + ACCENT_VCA * this.patch.accent : 1
     if (accent) this.accentEnv = 1
     const i = this.held.indexOf(note)
-    if (i >= 0) this.held.splice(i, 1)
+    if (i >= 0) removeAt(this.held, i)
     const legato = this.held.length > 0
     this.held.push(note)
     this.target = this.keyed(note)
@@ -421,7 +422,7 @@ export class MonoVoice {
   noteOff(note: number) {
     const i = this.held.indexOf(note)
     if (i < 0) return
-    this.held.splice(i, 1)
+    removeAt(this.held, i)
     if (this.held.length > 0) {
       this.target = this.keyed(this.held.at(-1)!)
       return

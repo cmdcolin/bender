@@ -414,17 +414,11 @@ export class Chain {
     return this.ctx.mod.read(dest)
   }
 
-  private allStages(): Stage[] {
-    return [
-      ...this.sources,
-      ...this.bendById.filter(s => s !== undefined),
-      ...this.pedals,
-      ...this.post,
-    ]
-  }
-
   panic() {
-    for (const s of this.allStages()) s.panic()
+    for (const s of this.sources) s.panic()
+    for (const s of this.bendById) s?.panic()
+    for (const s of this.pedals) s.panic()
+    for (const s of this.post) s.panic()
     this.supplies?.reset()
     this.fbRetL.fill(0)
     this.fbRetR.fill(0)
