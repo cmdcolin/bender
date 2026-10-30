@@ -996,11 +996,16 @@ export class Engine {
       )
     }, DRIFT_TAP_S * 1000)
     // Each leg chains the next. Under the phrase lock a leg sets off so as to
-    // arrive on a downbeat, and the next leaves for the downbeat after it.
+    // arrive on a downbeat, and the next leaves for the downbeat after it. A
+    // leg's own travel ends before the next sets off, so a board still on its
+    // way is one you set off, and the leg sits out rather than cut it short.
+    const rollLeg = (seconds: number) => {
+      if (this.morphTarget === null) this.travel(next(), seconds)
+    }
     const queueLeg = (past?: number) => {
       const seconds = this.phraseSeconds() * 0.85
       return this.queue('board', {
-        land: () => this.travel(next(), seconds),
+        land: () => rollLeg(seconds),
         seconds,
         after: carryOn,
         past,
@@ -1010,7 +1015,7 @@ export class Engine {
       this.driftTimer = undefined
       this.armed = null
       if (!queueLeg()) {
-        this.travel(next(), everyS * 0.85)
+        rollLeg(everyS * 0.85)
         this.driftTimer = setTimeout(leg, everyS * 1000)
       }
     }

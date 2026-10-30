@@ -133,7 +133,7 @@ test('a hunt banks one step, keeps a winner, and gives way to a hand', async () 
   // whole gesture, and it is the board you were on before it started.
   expect(engine.history.get().past).toHaveLength(1)
   expect(boards).toContain(landed)
-  expect(engine.controls.get().dlyFb).toBe(landed!.dlyFb)
+  expect(engine.controls.get().dlyFb).toBe(landed?.dlyFb)
 })
 
 // The dialog counts the candidates off, so the count has to be there to read
@@ -1313,6 +1313,28 @@ test('undo mid locked drift steps back and the drift carries on', () => {
   vi.useRealTimers()
 })
 
+test('a locked drift leg sits out while a slow undo is still on its way', () => {
+  vi.useFakeTimers()
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.phraseLock.set(1)
+  counter(engine, 3)
+  engine.morphTo(board({ dlyFb: 0.3 }), 0)
+  counter(engine, 16)
+  vi.advanceTimersByTime(1)
+  let rolls = 0
+  engine.startDrift(() => board({ dlyFb: 0.5 + 0.01 * ++rolls }))
+  engine.undo(8)
+  counter(engine, 18, 0.35)
+  vi.advanceTimersByTime(20)
+  expect(rolls).toBe(0)
+  expect(engine.drifting.get()).toBe(true)
+  expect(engine.waiting.get()).toEqual({ tick: 48 })
+  engine.stopDrift()
+  engine.stopMorph()
+  vi.useRealTimers()
+})
+
 test('a board set off at once mid locked drift keeps the drift going', () => {
   vi.useFakeTimers()
   const engine = new Engine()
@@ -1349,7 +1371,7 @@ test('a hunt calls off a board still waiting for the downbeat', async () => {
   await vi.advanceTimersByTimeAsync(100)
   const landed = await hunt
   expect(landed).not.toBeNull()
-  expect(engine.controls.get().dlyFb).toBe(landed!.dlyFb)
+  expect(engine.controls.get().dlyFb).toBe(landed?.dlyFb)
   expect(engine.controls.get().drumKick).not.toBe(0x8888)
   expect(engine.history.get().past).toHaveLength(1)
   vi.useRealTimers()
