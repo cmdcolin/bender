@@ -567,10 +567,8 @@ export function App(props: { openedFromLink?: boolean }) {
     <div
       className={styles.app}
       onDragOver={e => {
-        if (e.dataTransfer.types.includes('Files')) {
-          e.preventDefault()
-          dragging.set(true)
-        }
+        e.preventDefault()
+        if (e.dataTransfer.types.includes('Files')) dragging.set(true)
       }}
       onDragLeave={e => {
         if (
