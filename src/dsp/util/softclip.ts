@@ -19,6 +19,8 @@ export function softclip(x: number): number {
   )
 }
 
+// Two compares rather than Math.abs keeps this under V8's small-function size,
+// so callers inline it without spending their inlining budget on it.
 export function flushDenormal(x: number): number {
-  return Math.abs(x) < 1e-15 ? 0 : x
+  return x < 1e-15 && x > -1e-15 ? 0 : x
 }
