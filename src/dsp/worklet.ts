@@ -3,6 +3,7 @@ import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params.ts'
 import { Arc } from './arc.ts'
 import { buildBender, type BuiltChain } from './build.ts'
 import { Deck } from './deck.ts'
+import { pour, slab, type Tracks } from './slab.ts'
 import { Smoother } from './smoother.ts'
 import { BLOCK, METER_EVERY, type StereoBlock } from './stage.ts'
 import { PcmKeys } from './stages/pcmKeys.ts'
@@ -41,12 +42,10 @@ class BenderProcessor extends AudioWorkletProcessor {
   private peak = 0
   private duck = 0
   private recording = false
-  private recL = new Float32Array(REC_CHUNK)
-  private recR = new Float32Array(REC_CHUNK)
-  private recFill = 0
-  private retroL = new Float32Array(REC_CHUNK)
-  private retroR = new Float32Array(REC_CHUNK)
-  private retroFill = 0
+  private take = slab(REC_CHUNK)
+  private retro = slab(REC_CHUNK)
+  private readonly takeFull = () => this.flushRec(false)
+  private readonly retroFull = () => this.postRetro(false)
   private recStems = false
   // The source tapes, one mono slab each, standing whether anybody ever
   // records stems or not. 1 MB of the worklet's heap sitting idle is the
@@ -57,6 +56,7 @@ class BenderProcessor extends AudioWorkletProcessor {
     { length: MAX_SOURCES },
     () => new Float32Array(REC_CHUNK),
   )
+  private stemTracks: Tracks
 
   constructor() {
     super()
@@ -68,6 +68,11 @@ class BenderProcessor extends AudioWorkletProcessor {
     // into the deck's rings and the deck reads them back at whatever the
     // varispeed is set to, so every rate on the board moves together.
     this.deck = new Deck(this.built.chain, sampleRate)
+    this.stemTracks = {
+      from: this.deck.stems,
+      block: BLOCK,
+      into: this.stemSlabs,
+    }
     this.smoother = new Smoother(sampleRate, BLOCK)
     this.io = {
       l: new Float32Array(BLOCK),
@@ -175,7 +180,7 @@ class BenderProcessor extends AudioWorkletProcessor {
         }
         case 'record':
           if (msg.on) {
-            this.recFill = 0
+            this.take.fill = 0
             this.recStems = !!msg.stems
             this.built.chain.capturing = this.recStems
             if (this.recStems) this.deck.armStems()
@@ -218,12 +223,12 @@ class BenderProcessor extends AudioWorkletProcessor {
   // 2.7 ms, and it lands where the schedule can see it, where an allocation
   // lands whenever the collector decides.
   private flushRec(done: boolean) {
-    const n = this.recFill
-    this.recFill = 0
+    const n = this.take.fill
+    this.take.fill = 0
     this.port.postMessage({
       kind: 'rec',
-      l: this.recL,
-      r: this.recR,
+      l: this.take.l,
+      r: this.take.r,
       n,
       done,
       // A slab per source on the same terms, and only when the take asked for
@@ -233,64 +238,16 @@ class BenderProcessor extends AudioWorkletProcessor {
     })
   }
 
-  // The block onto the tape, in whatever piece of it fits before the slab is
-  // full. The tape used to ride inside the loop that also drew the trace and
-  // took the peak, one sample at a time, testing for the slab boundary as it
-  // went; with seven tracks on it the boundary is worth finding once and
-  // copying up to, and the walk it costs only happens while a take is running.
-  //
-  // A slab always ends where a block ends — REC_CHUNK is a whole number of
-  // blocks — so the loop runs once for every block the host asks for in full.
-  // It goes round twice for a short block that straddles the seam, which is
-  // the case that has to be right rather than fast.
-  private lay(l: Float32Array, r: Float32Array, n: number) {
-    const stems = this.recStems ? this.deck.stems : undefined
-    let at = 0
-    while (at < n) {
-      const take = Math.min(n - at, REC_CHUNK - this.recFill)
-      const fill = this.recFill
-      for (let i = 0; i < take; i++) {
-        this.recL[fill + i] = l[at + i]!
-        this.recR[fill + i] = r[at + i]!
-      }
-      if (stems) {
-        for (let k = 0; k < MAX_SOURCES; k++) {
-          const slab = this.stemSlabs[k]!
-          const base = k * BLOCK + at
-          for (let i = 0; i < take; i++) slab[fill + i] = stems[base + i]!
-        }
-      }
-      this.recFill = fill + take
-      at += take
-      if (this.recFill === REC_CHUNK) this.flushRec(false)
-    }
-  }
-
   private postRetro(done: boolean) {
-    const n = this.retroFill
-    this.retroFill = 0
+    const n = this.retro.fill
+    this.retro.fill = 0
     this.port.postMessage({
       kind: 'retro',
-      l: this.retroL,
-      r: this.retroR,
+      l: this.retro.l,
+      r: this.retro.r,
       n,
       done,
     })
-  }
-
-  private keepRetro(l: Float32Array, r: Float32Array, n: number) {
-    let at = 0
-    while (at < n) {
-      const take = Math.min(n - at, REC_CHUNK - this.retroFill)
-      const fill = this.retroFill
-      for (let i = 0; i < take; i++) {
-        this.retroL[fill + i] = l[at + i]!
-        this.retroR[fill + i] = r[at + i]!
-      }
-      this.retroFill = fill + take
-      at += take
-      if (this.retroFill === REC_CHUNK) this.postRetro(false)
-    }
   }
 
   process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean {
@@ -350,8 +307,18 @@ class BenderProcessor extends AudioWorkletProcessor {
     this.scopePos = scopePos
     this.peak = peak
 
-    if (this.recording) this.lay(l, r, n)
-    this.keepRetro(l, r, n)
+    // The take's slab, and its stems when it asked for them, as it goes; the
+    // last half minute whether or not anything is recording.
+    if (this.recording)
+      pour(
+        this.take,
+        l,
+        r,
+        n,
+        this.recStems ? this.stemTracks : null,
+        this.takeFull,
+      )
+    pour(this.retro, l, r, n, null, this.retroFull)
 
     this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {
