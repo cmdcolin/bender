@@ -1287,3 +1287,23 @@ test('a locked drift rolls once per leg', () => {
   engine.stopDrift()
   vi.useRealTimers()
 })
+
+test('a hunt calls off a board still waiting for the downbeat', async () => {
+  vi.useFakeTimers()
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.phraseLock.set(1)
+  counter(engine, 5)
+  engine.morphTo(board({ dlyFb: 0.5 }), 0)
+  engine.writePattern({ drumKick: 0x8888 })
+  const hunt = engine.hunt([board({ dlyFb: 0.4 }), board({ dlyFb: 0.9 })], 40)
+  expect(engine.waiting.get()).toBeNull()
+  counter(engine, 16)
+  await vi.advanceTimersByTimeAsync(100)
+  const landed = await hunt
+  expect(landed).not.toBeNull()
+  expect(engine.controls.get().dlyFb).toBe(landed!.dlyFb)
+  expect(engine.controls.get().drumKick).not.toBe(0x8888)
+  expect(engine.history.get().past).toHaveLength(1)
+  vi.useRealTimers()
+})

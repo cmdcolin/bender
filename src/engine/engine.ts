@@ -937,6 +937,7 @@ export class Engine {
     if (candidates.length === 0) return null
     const token = ++this.huntToken
     this.stopDrift()
+    this.cancelQueue()
     this.bank()
     this.hunting.set(true)
     this.hunted.set([])
