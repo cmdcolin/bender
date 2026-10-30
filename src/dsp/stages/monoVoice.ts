@@ -275,7 +275,7 @@ class Contour {
     this.s = s
   }
 
-  step(): number {
+  step() {
     switch (this.stage) {
       case 1:
         this.level += (1.3 - this.level) * this.ka
@@ -291,7 +291,6 @@ class Contour {
         this.level = flushDenormal(this.level * this.kr)
         break
     }
-    return this.level
   }
 }
 
@@ -549,8 +548,10 @@ export class MonoVoice {
         this.cv -= this.cv * droopK
         this.target -= this.target * droopK
       }
-      const fe = fEnv.step()
-      const ae = aEnv.step()
+      fEnv.step()
+      aEnv.step()
+      const fe = fEnv.level
+      const ae = aEnv.level
       this.accentEnv = flushDenormal(this.accentEnv * accentFall)
       this.accentCap = flushDenormal(
         this.accentCap + (this.accentEnv - this.accentCap) * accentCapK,
