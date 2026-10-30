@@ -33,6 +33,12 @@ from `scripts/push.mjs` and stay out of the changelog.
 Scope is optional; when used, pick from `dsp`, `engine`, `ui`, `home`, `midi` or
 `docs`.
 
+## Browsers
+
+Current Chrome, Firefox and Safari, down to Safari 16. `tsconfig.json` keeps
+`lib` at ES2022 plus `es2023.array` for that reason; anything newer, such as
+`Set.prototype.difference` or `AbortSignal.any`, needs a fallback.
+
 ## Hardware
 
 `hardware/toy/` is a hardwired board modelled on the toy chip
