@@ -792,7 +792,8 @@ export class Engine {
     seconds: number,
   ) {
     if (step === null) return
-    this.cancelQueue()
+    this.cancelQueue('pattern')
+    this.callOffBoard()
     this.armed = null
     this.history.set(step.history)
     this.travel(step.value, seconds)
@@ -801,7 +802,8 @@ export class Engine {
   // Stop where it has got to and keep the half-way board, which is a board like
   // any other. Grabbing a slider does the same thing, through set().
   stopMorph() {
-    this.cancelQueue()
+    this.cancelQueue('pattern')
+    this.callOffBoard()
     this.cancelMorph()
   }
 
@@ -822,7 +824,7 @@ export class Engine {
   /** A whole-board change that sets off at once, phrase lock or not. */
   morphNow(target: Controls, seconds = 1, forceKeys?: ReadonlySet<ControlKey>) {
     this.stopHunt()
-    this.cancelQueue('board')
+    this.callOffBoard()
     this.bank()
     this.travel(target, seconds, forceKeys)
   }
@@ -918,6 +920,14 @@ export class Engine {
     this.showWaiting()
   }
 
+  // A board that sets off at once calls off the one waiting for the downbeat,
+  // but not a drift chained to it: the drift carries on from the new board.
+  private callOffBoard() {
+    const after = this.queued.get('board')?.after
+    this.cancelQueue('board')
+    after?.(this.meter.get().tick)
+  }
+
   // Audition a row of boards and keep the one nearest the edge of running away.
   //
   // Every other roll on the board throws dice and hands you whatever came up.
@@ -987,21 +997,25 @@ export class Engine {
     }, DRIFT_TAP_S * 1000)
     // Each leg chains the next. Under the phrase lock a leg sets off so as to
     // arrive on a downbeat, and the next leaves for the downbeat after it.
-    const leg = (past?: number) => {
+    const queueLeg = (past?: number) => {
+      const seconds = this.phraseSeconds() * 0.85
+      return this.queue('board', {
+        land: () => this.travel(next(), seconds),
+        seconds,
+        after: carryOn,
+        past,
+      })
+    }
+    const leg = () => {
       this.driftTimer = undefined
       this.armed = null
-      const seconds = this.phraseSeconds() * 0.85
-      if (
-        this.queue('board', {
-          land: () => this.travel(next(), seconds),
-          seconds,
-          after: leg,
-          past,
-        })
-      )
-        return
-      this.travel(next(), everyS * 0.85)
-      this.driftTimer = setTimeout(leg, everyS * 1000)
+      if (!queueLeg()) {
+        this.travel(next(), everyS * 0.85)
+        this.driftTimer = setTimeout(leg, everyS * 1000)
+      }
+    }
+    const carryOn = (past: number) => {
+      if (!queueLeg(past)) this.driftTimer = setTimeout(leg, everyS * 1000)
     }
     leg()
   }
