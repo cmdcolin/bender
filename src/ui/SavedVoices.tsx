@@ -4,6 +4,7 @@ import { sinceWords } from 'skillet-shared/relative-time'
 import { Menu } from './Menu.tsx'
 import styles from './SavedVoices.module.css'
 import { Tip } from './Tip.tsx'
+import { useFlash } from './useFlash.ts'
 import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel.ts'
 
 import type { CloudStatus, VoiceFlash } from './useSavedVoices.ts'
@@ -58,7 +59,7 @@ export function SavedVoices(props: {
   // Read when the menu opens, so the words stay still while it is up.
   const [now, setNow] = useState(0)
   // Which row's link just went to the clipboard. A copy is otherwise silent.
-  const [copied, setCopied] = useState<string | null>(null)
+  const { shown: copied, flash: flashCopied } = useFlash<string>(1200)
 
   // Typing nothing saves under the suggestion the placeholder is already
   // showing. That is the whole ease of it: open, press save, done.
@@ -69,8 +70,7 @@ export function SavedVoices(props: {
   const copy = (voice: SavedVoice) => {
     void props.onCopyLink(voice).then(ok => {
       if (!ok) return
-      setCopied(voice.name)
-      setTimeout(() => setCopied(null), 1200)
+      flashCopied(voice.name)
     })
   }
 

@@ -1,6 +1,5 @@
-import { useState } from 'react'
-
 import { siteRoot, privacyUrl } from '../site/paths.ts'
+import { useFlash } from './useFlash.ts'
 import {
   FREE_WITHOUT,
   HOW,
@@ -26,12 +25,11 @@ export function WhySignInDialog(props: {
   pendingName: string | null
 }) {
   const { onClose } = props
-  const [copied, setCopied] = useState(false)
+  const { shown: copied, flash: flashCopied } = useFlash<true>(1600)
   const copy = () => {
     void props.onCopyLink().then(ok => {
       if (!ok) return
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1600)
+      flashCopied(true)
     })
   }
   return (
