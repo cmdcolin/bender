@@ -97,7 +97,7 @@ export function confine(
     if (!shown.has(owner)) held[key] = current[key]
   const out = cohereVoices(coherePatch(held, rand, { wake: false }), rand)
   const after = onBoard(out)
-  add([...shown].filter(name => !after.has(name)))
+  add(shown.difference(after))
   return out
 }
 
