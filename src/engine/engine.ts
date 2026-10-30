@@ -516,7 +516,9 @@ export class Engine {
   private masterGain: GainNode | null = null
   private micStream: MediaStream | null = null
   private micSource: MediaStreamAudioSourceNode | null = null
-  private archiveRoll: AbortController | null = null
+  // Whatever is on its way onto the tape, a roll or a dropped file. The last
+  // one asked for is the one that lands.
+  private tapeLoad: AbortController | null = null
   private dirty = false
   private flushQueued = false
   // The board on the wire, written over rather than drawn fresh each flush.
@@ -1295,13 +1297,24 @@ export class Engine {
         return
       }
     }
-    this.cancelRoll()
-    this.archiveSource.set(null)
+    const ctl = this.claimTape()
+    this.archiveStep.set(null)
     try {
-      await this.decodeOnto(await file.arrayBuffer(), file.name)
+      await this.decodeOnto(await file.arrayBuffer(), file.name, ctl.signal)
+      if (!ctl.signal.aborted) this.archiveSource.set(null)
     } catch {
-      this.sampleError.set(`${file.name} would not decode as audio`)
+      if (!ctl.signal.aborted)
+        this.sampleError.set(`${file.name} would not decode as audio`)
+    } finally {
+      if (this.tapeLoad === ctl) this.tapeLoad = null
     }
+  }
+
+  private claimTape() {
+    this.tapeLoad?.abort()
+    const ctl = new AbortController()
+    this.tapeLoad = ctl
+    return ctl
   }
 
   // Whatever the bytes came from, the tape takes them the same way: folded to
@@ -1397,9 +1410,7 @@ export class Engine {
     }) => Promise<Rolled | null>,
   ) {
     if (!this.ctx) return
-    this.archiveRoll?.abort()
-    const ctl = new AbortController()
-    this.archiveRoll = ctl
+    const ctl = this.claimTape()
     this.archiveStep.set(first)
     try {
       const got = await bring({
@@ -1420,13 +1431,13 @@ export class Engine {
     } catch {
       if (!ctl.signal.aborted) this.archiveStep.set('that one would not decode')
     } finally {
-      if (this.archiveRoll === ctl) this.archiveRoll = null
+      if (this.tapeLoad === ctl) this.tapeLoad = null
     }
   }
 
   cancelRoll() {
-    this.archiveRoll?.abort()
-    this.archiveRoll = null
+    this.tapeLoad?.abort()
+    this.tapeLoad = null
     this.archiveStep.set(null)
   }
 

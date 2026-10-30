@@ -1065,6 +1065,36 @@ test('a dropped file calls off a roll still in the air', async () => {
   expect(engine.archiveStep.get()).toBeNull()
 })
 
+test('a roll that lands over a file still decoding keeps the tape and its credit', async () => {
+  const { engine, decodes, bringTape, samples } = tapeDeck()
+  const dropped = engine.loadSample(new File([new Uint8Array(8)], 'mine.wav'))
+  await vi.waitFor(() => expect(decodes).toHaveLength(1))
+  const done = bringTape(async () => rolled)
+  await vi.waitFor(() => expect(decodes).toHaveLength(2))
+  decodes[1]!.resolve(decoded)
+  await done
+  decodes[0]!.resolve(decoded)
+  await dropped
+  expect(samples()).toHaveLength(1)
+  expect(engine.sampleName.get()).toBe('rolled')
+  expect(engine.archiveSource.get()?.id).toBe('x')
+})
+
+test('a file that lands after a roll takes the credit down', async () => {
+  const { engine, decodes, bringTape } = tapeDeck()
+  const done = bringTape(async () => rolled)
+  await vi.waitFor(() => expect(decodes).toHaveLength(1))
+  decodes[0]!.resolve(decoded)
+  await done
+  expect(engine.archiveSource.get()?.id).toBe('x')
+  const dropped = engine.loadSample(new File([new Uint8Array(8)], 'mine.wav'))
+  await vi.waitFor(() => expect(decodes).toHaveLength(2))
+  expect(engine.archiveSource.get()?.id).toBe('x')
+  decodes[1]!.resolve(decoded)
+  await dropped
+  expect(engine.archiveSource.get()).toBeNull()
+})
+
 // The second melody: written from whichever bed it is aimed at, and only that
 // one. Its counter arrives with the meter the way the toy's does.
 const atSeqStep = (engine: Engine, monoSeqPos: number, monoSeqFrac = 0) =>
