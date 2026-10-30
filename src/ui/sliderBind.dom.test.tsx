@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 import { Profiler } from 'react'
 import { afterEach, expect, test } from 'vitest'
 
@@ -27,4 +27,14 @@ test('a knob catching up on another control leaves this slider alone', () => {
   expect(renders).toBe(0)
   act(() => midi.pickups.set({ dlyMix: 0.2 }))
   expect(renders).toBeGreaterThan(0)
+})
+
+test('escape lets go of a slider waiting on a knob with the midi card shut', () => {
+  midi.status.set('ready')
+  render(<ControlSlider def={sliderFor('dlyMix')} />)
+  act(() => midi.arm('dlyMix'))
+  act(() => {
+    fireEvent.keyDown(window, { key: 'Escape' })
+  })
+  expect(midi.armed.get()).toBeNull()
 })

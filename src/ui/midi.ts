@@ -524,6 +524,7 @@ class Midi {
     this.stopLearn()
     this.kit.cancel()
     this.throwPads.arm(null)
+    this.splitLearn.set(false)
     this.armed.set(key)
   }
 
@@ -701,14 +702,17 @@ class Midi {
   }
 
   waiting() {
-    return [
-      this.armed,
-      this.learn,
-      this.padLearn,
-      this.armedPad,
-      this.armedThrow,
-      this.armedEffect,
-    ].some(s => s.get() !== null)
+    return (
+      this.splitLearn.get() ||
+      [
+        this.armed,
+        this.learn,
+        this.padLearn,
+        this.armedPad,
+        this.armedThrow,
+        this.armedEffect,
+      ].some(s => s.get() !== null)
+    )
   }
 
   stopLearn() {

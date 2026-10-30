@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -53,6 +54,13 @@ function write(key: SliderDef['key'], value: number) {
   engine.set(key, value)
 }
 
+function letGoOnEscape(e: KeyboardEvent) {
+  if (e.key === 'Escape' && !e.defaultPrevented) {
+    e.preventDefault()
+    midi.arm(null)
+  }
+}
+
 // The control's end of a knob: what it is bound to, whether it is waiting to be
 // bound, and — the part with nowhere else to live — where the physical knob is
 // sitting while it has yet to catch this value. Soft takeover makes a knob inert
@@ -64,8 +72,15 @@ function Bind({ def }: { def: SliderDef }) {
   const binding = useStoreSelect(midi.bindings, b => b[def.key])
   const waiting = useStoreSelect(midi.pickups, p => p[def.key])
   const current = useControlValue(def.key)
-  if (status !== 'ready') return null
   const mine = armed === def.key
+  useEffect(() => {
+    if (mine) {
+      window.addEventListener('keydown', letGoOnEscape)
+      return () => window.removeEventListener('keydown', letGoOnEscape)
+    }
+    return undefined
+  }, [mine])
+  if (status !== 'ready') return null
   return (
     <>
       {waiting === undefined ? null : (

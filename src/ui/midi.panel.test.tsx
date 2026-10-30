@@ -3,8 +3,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, expect, test, vi } from 'vitest'
 
+import { sliderFor } from './controls/index.ts'
 import { midi } from './midi.ts'
 import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
+import { ControlSlider } from './Slider.tsx'
 import './testDom.ts'
 
 // The wire lives behind a button in the nameplate row now rather than in a
@@ -88,6 +90,22 @@ test('escape with a knob waiting on the wire lets go of it and leaves the dialog
   expect(screen.queryByRole('dialog')).toBeNull()
 })
 
+test('escape with a slider armed before the card opened lets go of the slider and leaves the card', async () => {
+  midi.status.set('ready')
+  render(
+    <>
+      <ControlSlider def={sliderFor('dlyMix')} />
+      <Panel />
+    </>,
+  )
+  act(() => midi.arm('dlyMix'))
+  fireEvent.click(tab())
+  await act(() => import('./MidiWired.tsx'))
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(midi.armed.get()).toBeNull()
+  expect(screen.queryByRole('dialog')).not.toBeNull()
+})
+
 test('escape lets go of a waiting knob on a later open too', async () => {
   midi.status.set('ready')
   render(<Panel />)
@@ -99,6 +117,7 @@ test('escape lets go of a waiting knob on a later open too', async () => {
     () => midi.arm('combMix'),
     () => midi.armThrow('crush'),
     () => midi.learnSequence(),
+    () => midi.learnSplit(true),
   ]) {
     act(() => wait())
     fireEvent.keyDown(window, { key: 'Escape' })

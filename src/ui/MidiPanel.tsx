@@ -112,9 +112,11 @@ function MidiDialog(props: {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (midi.waiting()) midi.arm(null)
-        else onClose()
+      if (e.key === 'Escape' && !e.defaultPrevented) {
+        if (midi.waiting()) {
+          e.preventDefault()
+          midi.arm(null)
+        } else onClose()
       }
     }
     window.addEventListener('keydown', onKey)
