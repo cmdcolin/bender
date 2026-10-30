@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { bursts, crest, render, rms } from './testRender.ts'
+import { IDX } from '../engine/params.ts'
+import { bursts, crest, render, renderBender, rms, SR } from './testRender.ts'
 
 import type { Controls } from '../controls.ts'
 
@@ -118,4 +119,22 @@ test('the whole desk stays inside the ceiling and stays deterministic', () => {
   expect(peak).toBeLessThanOrEqual(0.891 + 1e-6)
   expect(rms(out)).toBeGreaterThan(0.01)
   expect(render(all, 1)).toEqual(render(all, 1))
+})
+
+test('a strip brought back up does not replay what it held going down', () => {
+  const x = renderBender(
+    { ...ONE, fbDelayMs: 200 },
+    1.5,
+    undefined,
+    undefined,
+    (_built, secs, p) => {
+      if (secs >= 0.5) {
+        p[IDX.fbAmt] = 0
+        p[IDX.crackleAmp] = 0
+      }
+      if (secs >= 1) p[IDX.fbAmt] = 0.5
+    },
+  )
+  expect(rms(x.subarray(0.9 * SR, SR))).toBeLessThan(1e-4)
+  expect(rms(x.subarray(1.02 * SR))).toBeLessThan(1e-4)
 })

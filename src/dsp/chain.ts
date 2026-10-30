@@ -157,6 +157,7 @@ class DeskLoop {
   delay = 1
   /** Fader up and a line to come back down: what makes this strip exist. */
   on = false
+  private wasOn = false
   amt = 0
   combG = 0
   /** This sample's read off the line, taken before anything writes, so a ring
@@ -172,8 +173,10 @@ class DeskLoop {
     this.lineR = new DelayLine(0.5 * sr + 4)
   }
 
-  open(amt: number, ms: number, tilt: number, sr: number) {
-    this.on = amt > 0
+  open(amt: number, ms: number, tilt: number, sr: number, wired = false) {
+    this.on = wired || amt > 0
+    if (this.on && !this.wasOn) this.clear()
+    this.wasOn = this.on
     this.setAmt(amt)
     this.delay = Math.max((ms / 1000) * sr, 1)
     this.tilt = tilt
@@ -217,14 +220,21 @@ class DeskLoop {
     this.lineR.write(this.wR)
   }
 
-  reset() {
+  // A strip that is down is never read or written, so what it held when it
+  // went down would come back up with it.
+  private clear() {
     this.lineL.reset()
     this.lineR.reset()
     this.ampL.reset()
     this.ampR.reset()
     this.tiltLpL.reset()
     this.tiltLpR.reset()
+  }
+
+  reset() {
+    this.clear()
     this.on = false
+    this.wasOn = false
     this.dL = 0
     this.dR = 0
     this.wL = 0
@@ -928,12 +938,17 @@ export class Chain {
     const modAmt = this.ctx.mod.read(DEST.fbAmt)
     const modMs = this.ctx.mod.read(DEST.fbMs)
     const loops = this.loops
-    loops[0]!.open(base, p[IDX.fbDelayMs]!, p[IDX.fbTone]!, this.sr)
-    loops[1]!.open(p[IDX.fb2Amt]!, p[IDX.fb2Ms]!, p[IDX.fb2Tone]!, this.sr)
-    loops[2]!.open(p[IDX.fb3Amt]!, p[IDX.fb3Ms]!, p[IDX.fb3Tone]!, this.sr)
     // A wire on the amount can bring the first strip up from a fader that is
     // all the way down, so the desk is running whenever anything could open it.
-    if (modAmt) loops[0]!.on = true
+    loops[0]!.open(
+      base,
+      p[IDX.fbDelayMs]!,
+      p[IDX.fbTone]!,
+      this.sr,
+      modAmt !== null,
+    )
+    loops[1]!.open(p[IDX.fb2Amt]!, p[IDX.fb2Ms]!, p[IDX.fb2Tone]!, this.sr)
+    loops[2]!.open(p[IDX.fb3Amt]!, p[IDX.fb3Ms]!, p[IDX.fb3Tone]!, this.sr)
     const baseDelay = loops[0]!.delay
 
     let live = 0
