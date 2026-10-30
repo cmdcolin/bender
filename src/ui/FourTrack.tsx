@@ -77,6 +77,17 @@ function Reel({ track }: { track: Track }) {
     const g = el.getContext('2d')
     if (!g) return undefined
     let raf = 0
+    const base = k * PEAK_BINS
+    const inputs = new Float64Array(7 + 2 * PEAK_BINS)
+    const drawn = new Float64Array(inputs.length).fill(Number.NaN)
+    const unchanged = () => {
+      let same = true
+      for (let i = 0; i < inputs.length; i++) {
+        if (drawn[i] !== inputs[i]) same = false
+        drawn[i] = inputs[i]!
+      }
+      return same
+    }
     const draw = () => {
       raf = 0
       const dpr = window.devicePixelRatio || 1
@@ -85,9 +96,22 @@ function Reel({ track }: { track: Track }) {
       if (el.width !== w || el.height !== h) {
         el.width = w
         el.height = h
+        drawn.fill(Number.NaN)
       }
       const m = engine.meter.get()
       const c = engine.controls.get()
+      inputs[0] = w
+      inputs[1] = h
+      inputs[2] = dpr
+      inputs[3] = m.fourLaps[k]!
+      inputs[4] = m.fourHeads[k]!
+      inputs[5] = heard(c, track) ? 1 : 0
+      inputs[6] = c[rec(track)] > 0 ? 1 : 0
+      for (let i = 0; i < PEAK_BINS; i++) {
+        inputs[7 + i] = m.fourPeaks[base + i] ?? 0
+        inputs[7 + PEAK_BINS + i] = m.fourShed[base + i] ?? 0
+      }
+      if (unchanged()) return
       g.fillStyle = BG
       g.fillRect(0, 0, w, h)
       g.font = `${10 * dpr}px ui-monospace, monospace`
@@ -102,7 +126,6 @@ function Reel({ track }: { track: Track }) {
       }
       const row = MID * dpr
       const bw = Math.max(w / PEAK_BINS, 1)
-      const base = k * PEAK_BINS
       g.beginPath()
       for (let i = 0; i < PEAK_BINS; i++) {
         const v = Math.min(m.fourPeaks[base + i] ?? 0, 1)
