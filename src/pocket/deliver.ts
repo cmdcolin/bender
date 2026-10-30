@@ -1,14 +1,7 @@
+import { download } from '../download.ts'
+
 const isAbort = (e: unknown) =>
   e instanceof DOMException && e.name === 'AbortError'
-
-function save(file: File) {
-  const url = URL.createObjectURL(file)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = file.name
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(url), 60_000)
-}
 
 // A phone saves a take through the share sheet; anything without one
 // downloads the file.
@@ -17,10 +10,10 @@ export async function deliver(file: File) {
     try {
       await navigator.share({ files: [file] })
     } catch (e) {
-      if (!isAbort(e)) save(file)
+      if (!isAbort(e)) download(file)
     }
   } else {
-    save(file)
+    download(file)
   }
 }
 

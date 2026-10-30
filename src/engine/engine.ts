@@ -12,6 +12,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
+import { download } from '../download.ts'
 import {
   asLen,
   asMask,
@@ -1574,16 +1575,8 @@ export class Engine {
   takeTo: ((file: File) => void) | null = null
 
   private deliver(file: File) {
-    if (this.takeTo) {
-      this.takeTo(file)
-      return
-    }
-    const url = URL.createObjectURL(file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = file.name
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    if (this.takeTo) this.takeTo(file)
+    else download(file)
   }
 
   private retro: { l: Float32Array; r: Float32Array }[] = []
