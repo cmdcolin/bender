@@ -41,6 +41,10 @@ const MIC_SPAN = MIC_RING - BLOCK / CREEP
 // chain the ring cannot hold.
 const MAX_SPEED = 4
 
+// How far off ×1 the head may run while it eases back onto a whole sample:
+// 1.7 cents, under what an ear hears, where landing in one callback was 6.6.
+const LAND_SLIP = 0.001
+
 // Four-point cubic Hermite, for every speed but ×1, which reads the ring
 // straight so that it is the chain's own output, sample for sample.
 function readRing(ring: Float32Array, base: number, pos: number) {
@@ -118,12 +122,10 @@ export class Deck {
       MAX_SPEED,
     )
     const speed = this.follow(target, p[IDX.deckInertia]!, n)
-    // Back at ×1 the head finishes this callback on a whole sample, a step a
-    // fraction of a percent off ×1 rather than a jump, and from there on plays
-    // the chain's own samples straight through.
+    // Back at ×1 the head eases onto a whole sample over a few callbacks, and
+    // from there on plays the chain's own samples straight through.
     const straight = speed === 1 && Number.isInteger(this.readPos)
-    const end =
-      speed === 1 ? Math.round(this.readPos) + n : this.readPos + n * speed
+    const end = speed === 1 ? this.landing(n) : this.readPos + n * speed
     const step = (end - this.readPos) / n
 
     if (speed > 0) {
@@ -220,6 +222,17 @@ export class Deck {
       this.speed = Math.abs(next - target) < 1e-6 ? target : next
     }
     return this.speed
+  }
+
+  private landing(n: number) {
+    const whole = Math.round(this.readPos)
+    const most = n * LAND_SLIP
+    const off = whole - this.readPos
+    return off > most
+      ? this.readPos + n + most
+      : off < -most
+        ? this.readPos + n - most
+        : whole + n
   }
 
   private runBlock(p: Float32Array, speed: number, wet: number, aa: number) {

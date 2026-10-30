@@ -258,6 +258,44 @@ test('landing back on ×1 is a glide rather than a jump', () => {
   expect(worstKink(trip)).toBeLessThan(1.1 * worstKink())
 })
 
+// The pitch of each block off a tone of exactly four cycles a block, in cents,
+// from how far its phase moved since the block before.
+function centsByBlock(out: Float32Array, hz: number) {
+  const phase: number[] = []
+  for (let at = 0; at < out.length; at += BLOCK) {
+    let re = 0
+    let im = 0
+    for (let i = 0; i < BLOCK; i++) {
+      const w = (2 * Math.PI * hz * i) / SR
+      re += out[at + i]! * Math.cos(w)
+      im -= out[at + i]! * Math.sin(w)
+    }
+    phase.push(Math.atan2(im, re))
+  }
+  return phase.slice(1).map((now, b) => {
+    const turn = (now - phase[b]!) / (2 * Math.PI)
+    const slip = turn - Math.round(turn)
+    return 1200 * Math.log2(1 + slip / ((hz * BLOCK) / SR))
+  })
+}
+
+test('landing back on ×1 bends the pitch less than an ear hears', () => {
+  const hz = (4 * SR) / BLOCK
+  const worstLanding = (tripTo: number) => {
+    const out = runDeck(HIGH, 1, {
+      setup: built => built.sampler.setBuffer(sine(hz, 1)),
+      each: secs => ({ deckSpeed: secs < 0.1 ? tripTo : 1, deckInertia: 0.02 }),
+    }).out
+    const cents = centsByBlock(out, hz)
+    const settled = cents.findIndex(
+      (c, b) => b * BLOCK > 0.1 * SR && Math.abs(c) < 0.05,
+    )
+    return Math.max(...cents.slice(settled).map(Math.abs))
+  }
+  for (const tripTo of [1.02, 1.0031, 0.9969])
+    expect(worstLanding(tripTo), `from ×${tripTo}`).toBeLessThan(2)
+})
+
 // Every block the chain runs ahead of the ear is a block late for a key, a
 // knob or a wire.
 test('at ×1 the chain runs no further ahead than the ear', () => {
