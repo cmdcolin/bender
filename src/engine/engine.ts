@@ -437,6 +437,9 @@ export class Engine {
   /** Why the audio engine cannot play: the worklet would not load, or its
       processor threw. '' while it is fine. */
   readonly fault = createStore('')
+  /** Blocks in which a stage went non-finite and was reset, and the last such
+      stage: the chain's `faults`, posted only when the count moves. */
+  readonly stageFaults = createStore({ count: 0, stage: '' })
   readonly micOn = createStore(false)
   /** Why the microphone would not open, or '' while it has not failed. */
   readonly micError = createStore('')
@@ -669,6 +672,8 @@ export class Engine {
           console.warn(
             `bender: ${newFaults} block(s) of non-finite audio contained, last from ${msg.faultStage}`,
           )
+        if (newFaults !== 0)
+          this.stageFaults.set({ count: msg.faults, stage: msg.faultStage })
         this.meter.set({
           peak: msg.peak,
           scope: msg.scope,

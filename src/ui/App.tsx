@@ -439,6 +439,9 @@ const copyLink = (query: string) => {
     .catch(() => false)
 }
 
+const faultText = (count: number, stage: string) =>
+  `bug: ${stage === 'chain' ? 'the board' : stage} went non-finite and was reset${count > 1 ? ` (${count} blocks)` : ''}`
+
 async function onDrop(e: DragEvent) {
   e.preventDefault()
   dragging.set(false)
@@ -450,6 +453,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const running = useStoreValue(engine.running)
   const fault = useStoreValue(engine.fault)
   const sampleError = useStoreValue(engine.sampleError)
+  const stageFaults = useStoreValue(engine.stageFaults)
   const remapping = useStoreValue(remapOpen)
   const coarse = useCoarse()
   const board = useRef<HTMLElement>(null)
@@ -609,6 +613,12 @@ export function App(props: { openedFromLink?: boolean }) {
               ) : sampleError !== '' ? (
                 <p className={styles.hint} role="alert">
                   <b className={styles.warn}>{sampleError}</b>
+                </p>
+              ) : stageFaults.count > 0 ? (
+                <p className={styles.hint} role="status">
+                  <b className={styles.warn}>
+                    {faultText(stageFaults.count, stageFaults.stage)}
+                  </b>
                 </p>
               ) : null}
             </div>
