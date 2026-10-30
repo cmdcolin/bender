@@ -1,3 +1,4 @@
+// CROSS_REPO_SYNC_FILE(use-flash)
 import { useEffect, useState } from 'react'
 
 /** A mark that shows for `ms` after each `flash`, the clock restarting on every
