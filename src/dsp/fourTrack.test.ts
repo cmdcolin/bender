@@ -238,3 +238,15 @@ test('panic clears a NaN off the tape', () => {
   expect(loop.tape[5]).toBe(0)
   expect(loop.tape[6]).toBe(0.25)
 })
+
+test('a blank cassette wipes the tape that was threaded', () => {
+  const deck = new FourTrack(SR)
+  const loop = deck.loops[0]!
+  loop.thread(SR)
+  loop.tape[SR - 1] = 0.25
+  loop.wear[0] = 1
+  deck.blank()
+  expect(loop.tape[SR - 1]).toBe(0)
+  expect(loop.wear[0]).toBe(0)
+  expect(loop.threaded).toBe(SR)
+})

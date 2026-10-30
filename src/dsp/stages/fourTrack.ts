@@ -422,8 +422,8 @@ class Loop {
   /** A blank cassette: the take, the wear and the drawing all gone, the tape
       threaded as long as it was. */
   blank() {
-    this.tape.fill(0)
-    this.wear.fill(0)
+    this.tape.fill(0, 0, this.threaded)
+    this.wear.fill(0, 0, Math.ceil(this.threaded / CELL))
     this.peaks.fill(0)
     this.shed.fill(0)
     this.pos = 0
