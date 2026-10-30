@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
@@ -53,5 +53,18 @@ test('the last turn before the tab goes is in the url it leaves', () => {
   const leaving = boardUrl(engine.controls.get())
   expect(window.location.href).not.toBe(leaving)
   fireEvent(window, new Event('pagehide'))
+  expect(window.location.href).toBe(leaving)
+})
+
+test('the last turn is in the url once the tab goes to the background', () => {
+  render(<Bar />)
+  act(() => engine.set('dlyFb', 1.1))
+  const leaving = boardUrl(engine.controls.get())
+  expect(window.location.href).not.toBe(leaving)
+  const hidden = vi
+    .spyOn(document, 'visibilityState', 'get')
+    .mockReturnValue('hidden')
+  fireEvent(document, new Event('visibilitychange'))
+  hidden.mockRestore()
   expect(window.location.href).toBe(leaving)
 })

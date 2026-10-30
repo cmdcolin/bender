@@ -19,8 +19,9 @@ import { boardFrom, boardFromLocation, boardUrl } from './share.ts'
 //
 // Trailing-debounced, and replaceState rather than pushState: browsers
 // rate-limit the history API, and one board is not thirty steps of back button.
-// A tab closing or reloading flushes the write still waiting, or the last thing
-// you turned is the one thing the reload forgets.
+// A tab closing, reloading or going to the background flushes the write still
+// waiting, or the last thing you turned is the one thing the reload forgets. A
+// mobile browser can discard a background tab without a pagehide.
 export function useBoardUrl() {
   useEffect(() => {
     let id: ReturnType<typeof setTimeout>
@@ -59,15 +60,21 @@ export function useBoardUrl() {
       engine.patch(boardFrom(boardFromLocation() ?? {}, engine.controls.get()))
     }
 
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') flush()
+    }
+
     write()
     const off = engine.controls.subscribe(write)
     window.addEventListener('hashchange', read)
     window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', onHide)
     return () => {
       off()
       clearTimeout(id)
       window.removeEventListener('hashchange', read)
       window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', onHide)
     }
   }, [])
 }
