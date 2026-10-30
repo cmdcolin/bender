@@ -823,6 +823,21 @@ const wire = (engine: Engine) => {
   return posted
 }
 
+test('each morph frame reaches the worklet in the frame that moved it', () => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] })
+  try {
+    const engine = new Engine()
+    const posted = wire(engine)
+    engine.morphTo(board({ dlyFb: 0.9 }), 1)
+    vi.advanceTimersByTime(50)
+    const moved = engine.controls.get().dlyFb
+    expect(moved).not.toBe(DEFAULT_CONTROLS.dlyFb)
+    expect(posted.at(-1)?.pack?.[IDX.dlyFb]).toBeCloseTo(moved)
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
 test('a hidden tab, with no animation frames, still reaches the worklet', () => {
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] })
   try {

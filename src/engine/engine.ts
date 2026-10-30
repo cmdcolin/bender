@@ -1175,27 +1175,28 @@ export class Engine {
     const land = () => {
       this.cancelMorph()
       this.controls.set(glide.at(this.controls.get(), 1))
-      this.flushSoon()
     }
     if (seconds <= 0) {
       land()
-      return
-    }
-    this.morphTarget = target
-    this.glide = glide
-    const start = performance.now()
-    const tick = () => {
-      const t = Math.min((performance.now() - start) / (seconds * 1000), 1)
-      if (t >= 1) {
-        land()
-        return
-      }
-      this.controls.set(glide.at(this.controls.get(), t))
-      this.morphProgress.set(t)
       this.flushSoon()
+    } else {
+      this.morphTarget = target
+      this.glide = glide
+      const start = performance.now()
+      // Already on a frame, so each step goes straight to the worklet rather
+      // than waiting for the next one.
+      const tick = () => {
+        const t = Math.min((performance.now() - start) / (seconds * 1000), 1)
+        if (t >= 1) land()
+        else {
+          this.controls.set(glide.at(this.controls.get(), t))
+          this.morphProgress.set(t)
+          this.stopMorphTick = nextFrame(tick)
+        }
+        this.flush()
+      }
       this.stopMorphTick = nextFrame(tick)
     }
-    this.stopMorphTick = nextFrame(tick)
   }
 
   private flushSoon() {
