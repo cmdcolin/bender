@@ -10,9 +10,10 @@ const without = (list: readonly string[], stage: string) =>
 export function useBenchFaces() {
   const { closed } = useStoreValue(bench)
   useStoreValue(added)
-  const onMap = useBoardValue(c =>
-    INSTRUMENTS.filter(stage => shownOn(c).has(stage)).join('|'),
-  ).split('|')
+  const onMap = useBoardValue(c => {
+    const shown = shownOn(c)
+    return INSTRUMENTS.filter(stage => shown.has(stage)).join('|')
+  }).split('|')
   return {
     shows: (stage: string) => !closed.includes(stage) && onMap.includes(stage),
     close: (stage: string) => {

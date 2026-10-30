@@ -49,11 +49,12 @@ export function Mixer() {
   const bars = useRef<(HTMLSpanElement | null)[]>([])
   const readout = useRef<HTMLSpanElement>(null)
   const [all, setAll] = useState(false)
-  const onMap = useBoardValue(c =>
-    ROWS.filter(r => shownOn(c).has(r.name))
+  const onMap = useBoardValue(c => {
+    const shown = shownOn(c)
+    return ROWS.filter(r => shown.has(r.name))
       .map(r => r.name)
-      .join('|'),
-  ).split('|')
+      .join('|')
+  }).split('|')
   const away = ROWS.filter(r => !onMap.includes(r.name))
 
   useEffect(() => {

@@ -99,9 +99,10 @@ export function Instruments({
   onOpen: (stage: string) => void
 }) {
   const { shows, close, bring } = useBenchFaces()
-  const risen = useBoardValue(c =>
-    INSTRUMENTS.filter(stage => onBoard(c).has(stage)).join('|'),
-  )
+  const risen = useBoardValue(c => {
+    const on = onBoard(c)
+    return INSTRUMENTS.filter(stage => on.has(stage)).join('|')
+  })
   useEffect(() => {
     if (risen) add(risen.split('|'))
   }, [risen])
