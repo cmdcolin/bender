@@ -281,6 +281,8 @@ interface Knobs {
   bypass: Float64Array
   gPower: number
   bias: number
+  /** `3 * sqrt(bias)`, which holds the pair's gain at zero to one */
+  biasNorm: number
   presence: number
   railPre: number
   railPow: number
@@ -363,11 +365,12 @@ function conduct(v: number): number {
 /** Two tubes back to back, each conducting its own half of the wave with a 3/2
     power law above cutoff. A cold bias leaves both nearly off around zero and
     the crossover shows. With both tubes healthy the gain at zero is one
-    whatever the bias; `weak` is the second tube's strength against the first. */
-function pushPull(x: number, bias: number, weak: number): number {
+    whatever the bias; `weakGm` is the second tube's strength against the first. */
+function pushPull(x: number, k: Knobs): number {
+  const { bias, weakGm } = k
   return (
-    (conduct(bias + x) - weak * conduct(bias * (0.6 + 0.4 * weak) - x)) /
-    (3 * Math.sqrt(bias))
+    (conduct(bias + x) - weakGm * conduct(bias * (0.6 + 0.4 * weakGm) - x)) /
+    k.biasNorm
   )
 }
 
@@ -410,7 +413,7 @@ class Channel {
       s + k.presence * (s - this.presenceLp.process(s, k.wire.presenceCoef))
     const drive = lifted * k.gPower + k.crackle * (2 * this.hash() - 1)
     const swing = v.swing * k.railPow
-    const pair = swing * softclip(pushPull(drive, k.bias, k.weakGm) / swing)
+    const pair = swing * softclip(pushPull(drive, k) / swing)
     this.drawn = Math.abs(pair)
     this.fed = k.micro === 0 ? 0 : this.ring.process(pair, this.tuned)
     const low = this.core.process(pair, k.wire.coreCoef)
@@ -547,6 +550,7 @@ export class Amp implements Stage {
       bypass: new Float64Array(3),
       gPower: 1,
       bias: 0.3,
+      biasNorm: 3 * Math.sqrt(0.3),
       presence: 0,
       railPre: 1,
       railPow: 1,
@@ -576,9 +580,8 @@ export class Amp implements Stage {
     k.drive[1] = dbGain(4 + 8 * gain)
     k.drive[2] = dbGain(v.recovery)
     const cap = p[IDX.ampCap]!
-    const specs = [v.first, v.first, v.second]
     for (let i = 0; i < 3; i++) {
-      const spec = specs[i]!
+      const spec = i === 2 ? v.second : v.first
       k.degen[i] = spec.degen * (1 - CAP_DEGEN * cap)
       k.bypass[i] = lpCoef(
         Math.min(spec.bypassHz * (1 + v.capCorner * cap), osr * 0.2),
@@ -588,6 +591,7 @@ export class Amp implements Stage {
     k.micro = (v.cascade ? -1 : 1) * MICRO_GAIN * p[IDX.ampMicro]! ** 2
     k.gPower = dbGain(-18 + 36 * p[IDX.ampMaster]!)
     k.bias = v.bias * Math.pow(30, p[IDX.ampBias]! - 0.5)
+    k.biasNorm = 3 * Math.sqrt(k.bias)
     k.presence = 1.6 * p[IDX.ampPresence]!
     stackDigital(
       v.stack,
