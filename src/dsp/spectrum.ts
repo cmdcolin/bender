@@ -79,7 +79,7 @@ export interface Spectrum {
  * on a bus mostly is.
  */
 export function spectrum(x: Float32Array, sr: number, n = 4096): Spectrum {
-  const hops = Math.max(1, Math.floor(x.length / n) - 1)
+  const hops = Math.max(1, Math.floor(x.length / n))
   const m = new Float64Array(n >> 1)
   for (let h = 0; h < hops; h++) {
     const w = magnitudes(x, h * n, n)
