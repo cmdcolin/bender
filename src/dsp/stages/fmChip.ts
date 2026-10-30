@@ -1353,6 +1353,7 @@ export class FmChip implements Stage {
     const modSlip = bay.read(DEST.fmDacSlip)
     this.blob = baseBlob
     const rail = this.power.pick(p[IDX.fmSupply]!)
+    const railAmp = rail.ampFactor
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 
     const drumMask = voiceMask(Math.round(p[IDX.fmStruck]!))
@@ -1647,7 +1648,7 @@ export class FmChip implements Stage {
         const word = (softclip(sum * drive) / drive) * makeup
         this.held = test & TEST.dacSign ? Math.abs(word) : word
       }
-      const out = this.held * rail.ampFactor * level * 0.3
+      const out = this.held * railAmp * level * 0.3
       load += Math.abs(out)
       io.l[i]! += out
       io.r[i]! += out

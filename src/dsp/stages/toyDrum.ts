@@ -1186,6 +1186,7 @@ export class ToyDrum implements Stage {
     // Same divider, same cells as the keyboard: flat batteries drag the tempo,
     // and everything else this chip counts — see perSample below.
     const clock = rail.clockFactor
+    const railAmp = rail.ampFactor
     const stepHz = (p[IDX.drumBpm]! / 60) * 4 * clock
     const modTempo = ctx.mod.read(DEST.drumBpm)
     const tapBase = p[IDX.drumStepTap]!
@@ -1910,8 +1911,8 @@ export class ToyDrum implements Stage {
               ? code + this.ladderErr(code, bits, ladder, ladderTol)
               : code) / q
         }
-        out = this.muxHeld * rail.ampFactor
-        send *= rail.ampFactor
+        out = this.muxHeld * railAmp
+        send *= railAmp
         // A multiplying converter: the reference pin scales every code, and
         // with audio on the pin the kit comes out as a product. Read ahead of
         // this sample's own write, so the bus is everything upstream of the kit.
