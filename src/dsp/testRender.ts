@@ -6,6 +6,8 @@ import { MAX_SOURCES, packParams } from '../engine/params.ts'
 import { buildBender, buildChain, type BuiltChain } from './build.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
 
+import type { Chain } from './chain.ts'
+
 // The kit's old stock pattern, which these renders were measured against.
 const BASE: Controls = { ...DEFAULT_CONTROLS, ...ROCK }
 
@@ -13,6 +15,15 @@ export const SR = 48000
 
 export function makeIo(): StereoBlock {
   return { l: new Float32Array(BLOCK), r: new Float32Array(BLOCK), n: BLOCK }
+}
+
+// The chain zeroes a stage that goes non-finite and plays on, so a take can
+// sound fine with a NaN inside it; every render here fails on one instead.
+function unfaulted(chain: Chain) {
+  if (chain.faults > 0)
+    throw new Error(
+      `${chain.faults} block(s) went non-finite, last in ${chain.faultStage}`,
+    )
 }
 
 export function render(
@@ -28,6 +39,7 @@ export function render(
     chain.process(io, p)
     out.set(io.l.subarray(0, BLOCK), b * BLOCK)
   }
+  unfaulted(chain)
   return out
 }
 
@@ -57,6 +69,7 @@ export function renderBender(
     built.chain.process(io, p, micFill ? mic : undefined)
     out.set(io.l.subarray(0, BLOCK), b * BLOCK)
   }
+  unfaulted(built.chain)
   return out
 }
 
@@ -80,6 +93,7 @@ export function renderStereo(
     l.set(io.l.subarray(0, BLOCK), b * BLOCK)
     r.set(io.r.subarray(0, BLOCK), b * BLOCK)
   }
+  unfaulted(built.chain)
   return { l, r }
 }
 
@@ -114,6 +128,7 @@ export function renderStems(
       )
     }
   }
+  unfaulted(built.chain)
   return { master, stems }
 }
 

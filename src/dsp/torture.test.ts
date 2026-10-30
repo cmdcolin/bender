@@ -15,7 +15,9 @@ function makeIo(): StereoBlock {
 }
 
 // The safety contract: whatever the params do — every feedback pinned past
-// unity included — no NaN and nothing past the limiter ceiling ever leaves.
+// unity included — no NaN and nothing past the limiter ceiling ever leaves,
+// and no stage goes non-finite for the chain to contain. The timeout is for a
+// hang: alone this takes seconds, but a loaded machine has taken it past 60.
 const TORTURE_SECONDS = process.env.BENDER_FULL ? 10 : 2
 
 test(`never-NaN torture: random param slams for ${TORTURE_SECONDS} s`, () => {
@@ -65,8 +67,8 @@ test(`never-NaN torture: random param slams for ${TORTURE_SECONDS} s`, () => {
       }
     }
   }
-  expect(true).toBe(true)
-}, 60000)
+  expect(chain.faults, `last from ${chain.faultStage}`).toBe(0)
+}, 300_000)
 
 test('panic silences the chain', () => {
   const sr = 48000
