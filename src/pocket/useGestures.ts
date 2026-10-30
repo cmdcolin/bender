@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import type { PointerEvent } from 'react'
 
@@ -25,6 +25,21 @@ export function useGestures(opts: {
 }) {
   const gesture = useRef<Gesture | null>(null)
   const box = useRef<DOMRect | null>(null)
+  const latest = useRef(opts)
+  useLayoutEffect(() => {
+    latest.current = opts
+  })
+  useEffect(
+    () => () => {
+      const g = gesture.current
+      if (g !== null) {
+        window.clearTimeout(g.timer)
+        gesture.current = null
+        if (g.kind === 'bend') latest.current.onLift()
+      }
+    },
+    [],
+  )
 
   const place = (e: PointerEvent): Point => {
     const r = box.current!
@@ -43,7 +58,7 @@ export function useGestures(opts: {
       const g = gesture.current
       if (g === null || g.kind !== 'pending') return
       g.kind = 'bend'
-      opts.onBend(at)
+      latest.current.onBend(at)
     }, HOLD_MS)
     gesture.current = {
       id: e.pointerId,
