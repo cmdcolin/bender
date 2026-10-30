@@ -20,20 +20,28 @@ type Handler = ((e: MIDIMessageEvent) => void) | null
 const input = { id: 'one', onmidimessage: null as Handler }
 const other = { id: 'two', onmidimessage: null as Handler }
 const sent: number[][] = []
-const output = { send: (bytes: number[]) => sent.push(bytes) }
+const output = {
+  id: 'one',
+  state: 'connected',
+  send: (bytes: number[]) => sent.push(bytes),
+}
 // The state-change listener is kept so a test can unplug the device: that is
 // the one thing a controller cannot tell the app about itself, since a port on
 // its way out sends nothing.
-let onStateChange: ((e: Event) => void) | null = null
-const portEvent = (port: { id: string; type: string; state: string }) =>
-  onStateChange?.({ port } as unknown as Event)
+interface FakePort {
+  id: string
+  type: string
+  state: string
+}
+let onStateChange: ((e: { port: FakePort }) => void) | null = null
+const portEvent = (port: FakePort) => onStateChange?.({ port })
 const access = {
   inputs: new Map([
     ['one', input],
     ['two', other],
   ]),
   outputs: new Map([['one', output]]),
-  addEventListener(_kind: string, fn: (e: Event) => void) {
+  addEventListener(_kind: string, fn: (e: { port: FakePort }) => void) {
     onStateChange = fn
   },
   removeEventListener: () => {},
@@ -944,6 +952,16 @@ test('a throw stays down when a port that never threw goes', () => {
   send(0x90, 60, 100)
   send(0x90, 60, 100)
   portEvent({ id: 'one', type: 'output', state: 'disconnected' })
+  unplug('two')
+  expect(engine.held.get().has('crush')).toBe(true)
+  send(0x80, 60, 0)
+})
+
+test('a throw stays down when a keyboard that only played notes goes', () => {
+  midi.armThrow('crush')
+  send(0x90, 60, 100)
+  send(0x90, 60, 100)
+  sendOther(0x90, 64, 100)
   unplug('two')
   expect(engine.held.get().has('crush')).toBe(true)
   send(0x80, 60, 0)

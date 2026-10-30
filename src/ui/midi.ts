@@ -363,6 +363,7 @@ interface Hand {
   down: Map<number, NoteDest[]>
   sustained: Map<number, NoteDest[]>
   pedal: boolean
+  threw: boolean
 }
 
 class Midi {
@@ -484,7 +485,11 @@ class Midi {
         write(ENABLED_KEY, '1')
         this.status.set('ready')
         this.listen(access)
-        this.outputsUp = new Set(access.outputs.keys())
+        this.outputsUp = new Set(
+          [...access.outputs.values()]
+            .filter(o => o.state === 'connected')
+            .map(o => o.id),
+        )
         this.lightAll()
         // A kit already running when the grant lands has never sent its start,
         // and a far end that never heard one ignores every pulse after it.
@@ -1067,7 +1072,12 @@ class Midi {
   private hand(port: string): Hand {
     let hand = this.hands.get(port)
     if (hand === undefined) {
-      hand = { down: new Map(), sustained: new Map(), pedal: false }
+      hand = {
+        down: new Map(),
+        sustained: new Map(),
+        pedal: false,
+        threw: false,
+      }
       this.hands.set(port, hand)
     }
     return hand
@@ -1148,7 +1158,7 @@ class Midi {
     this.hands.delete(port)
     if (hand !== undefined) {
       for (const [semitone, dests] of hand.down) this.end(semitone, dests)
-      this.throwPads.releaseAll()
+      if (hand.threw) this.throwPads.releaseAll()
     }
   }
 
@@ -1197,7 +1207,7 @@ class Midi {
       // up — whichever it was, the kit has had it and the chip must not.
       const channel = head & 0x0f
       if (!this.kit.binding && this.throwPads.play(channel, first, on)) {
-        this.hand(port)
+        this.hand(port).threw = true
         return
       }
       if (this.kit.play(channel, first, on, second)) return
