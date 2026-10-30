@@ -178,6 +178,7 @@ class BenderProcessor extends AudioWorkletProcessor {
             this.recFill = 0
             this.recStems = !!msg.stems
             this.built.chain.capturing = this.recStems
+            if (this.recStems) this.deck.armStems()
             this.recording = true
           } else if (this.recording) {
             this.recording = false

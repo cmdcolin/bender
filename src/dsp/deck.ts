@@ -186,6 +186,13 @@ export class Deck {
     this.rebase()
   }
 
+  /** A fresh stem tape. The chain splits its sources only while capturing, so
+      what the head reads from before the take began is last take's stems. */
+  armStems() {
+    this.ringStems.fill(0)
+    this.stems.fill(0)
+  }
+
   panic() {
     this.ringL.fill(0)
     this.ringR.fill(0)

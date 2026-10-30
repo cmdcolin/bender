@@ -280,3 +280,36 @@ test('at ×1 the chain runs no further ahead than the ear', () => {
   expect(rendered).toBeGreaterThan(0)
   expect(worst).toBe(0)
 })
+
+// The chain splits its sources only while the tape runs, and a slow deck reads
+// back into blocks rendered before it started.
+test('a stem take starts clean of the take before it', () => {
+  const built = buildBender(SR, SEED)
+  loadTone(built)
+  const deck = new Deck(built.chain, SR)
+  const smoother = new Smoother(SR, BLOCK)
+  const target = new Float32Array(N_PARAMS)
+  const io = makeIo()
+  const run = (board: Partial<Controls>, blocks: number) => {
+    packParams({ ...DEFAULT_CONTROLS, ...board, deckSpeed: 0.5 }, target)
+    for (let b = 0; b < blocks; b++) {
+      deck.pushMic(null, BLOCK)
+      smoother.step(target)
+      deck.process(io, smoother.cur)
+    }
+  }
+  const sampler = SOURCE_TAPS.indexOf('sampler')
+  const stem = () => deck.stems.subarray(sampler * BLOCK, (sampler + 1) * BLOCK)
+
+  deck.armStems()
+  built.chain.capturing = true
+  run(TONE, 40)
+  expect(rms(stem())).toBeGreaterThan(0.1)
+  built.chain.capturing = false
+  run(QUIET, 40)
+
+  deck.armStems()
+  built.chain.capturing = true
+  run(QUIET, 1)
+  expect(stem().every(v => v === 0)).toBe(true)
+})
