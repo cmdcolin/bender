@@ -88,6 +88,25 @@ test('escape with a knob waiting on the wire lets go of it and leaves the dialog
   expect(screen.queryByRole('dialog')).toBeNull()
 })
 
+test('escape lets go of a waiting knob on a later open too', async () => {
+  midi.status.set('ready')
+  render(<Panel />)
+  fireEvent.click(tab())
+  await act(() => import('./MidiWired.tsx'))
+  fireEvent.keyDown(window, { key: 'Escape' })
+  fireEvent.click(tab())
+  for (const wait of [
+    () => midi.arm('combMix'),
+    () => midi.armThrow('crush'),
+    () => midi.learnSequence(),
+  ]) {
+    act(() => wait())
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(midi.waiting()).toBe(false)
+    expect(screen.queryByRole('dialog')).not.toBeNull()
+  }
+})
+
 // The one thing that must survive being folded away. A stranded knob is one the
 // board has moved out from under — it does nothing until you sweep it back
 // through its value — and the count is the only thing on screen that says so.

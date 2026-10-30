@@ -100,9 +100,8 @@ function midiTabNote(status: MidiStatus, stranded: number): string | null {
 
 // Non-modal: every control binds from its own ⚟, in the panel behind this card,
 // so the panel has to stay reachable with the card up. A shown dialog gets no
-// `cancel` event, so Escape is bound by hand. If a control is armed, the first
-// Escape cancels the binding (handled by Wired); only the second Escape closes
-// the dialog.
+// `cancel` event, so Escape is bound by hand. If anything is waiting on the
+// wire, the first Escape cancels that; only the second closes the dialog.
 function MidiDialog(props: {
   status: MidiStatus
   onEnable: () => void
@@ -113,7 +112,10 @@ function MidiDialog(props: {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !midi.waiting()) onClose()
+      if (e.key === 'Escape') {
+        if (midi.waiting()) midi.arm(null)
+        else onClose()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -131,7 +133,7 @@ function MidiDialog(props: {
         <span className={styles.cardTitle}>midi</span>
         <button
           className={styles.close}
-          onClick={onClose}
+          onClick={() => onClose()}
           aria-label="close midi"
         >
           ×

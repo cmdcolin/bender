@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { noteName } from '../notes.ts'
@@ -422,17 +422,6 @@ export function Wired() {
   const [encoders, setEncoders] = useState(false)
   const device: DeviceProfile | undefined =
     DEVICE_PROFILES.find(d => d.name === deviceName) ?? DEVICE_PROFILES[0]
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      midi.arm(null)
-      midi.stopLearn()
-      midi.stopPadLearn()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
 
   const hint =
     armedEffect !== null
