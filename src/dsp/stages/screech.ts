@@ -1,5 +1,6 @@
 import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
+import { RATE_MASK } from '../util/lfo.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
@@ -47,6 +48,7 @@ export class Screech implements Stage {
   private motion = 0
   private liftLeft = 0
   private liftF = 0
+  private fWired = 0
 
   private readonly sr: number
 
@@ -91,8 +93,18 @@ export class Screech implements Stage {
     const fTop = svfF(Infinity, this.sr)
     const fBottom = svfF(30, this.sr)
 
+    // A wire on the cutoff is resolved every eighth sample and the coefficient
+    // ramped to it, rather than paying a sine and an exp on every one.
+    let ramp = mod ? this.fWired : fBase
+    let step = 0
     for (let i = 0; i < io.n; i++) {
-      let f = mod ? svfF(base * octaves(mod[i]! * 4), this.sr) : fBase
+      if (mod && (i & RATE_MASK) === 0) {
+        const span = Math.min(RATE_MASK + 1, io.n - i)
+        const to = svfF(base * octaves(mod[i + span - 1]! * 4), this.sr)
+        step = (to - ramp) / span
+      }
+      ramp += step
+      let f = ramp
       if (wiper > 0) {
         const moved = Math.abs(f - this.fPrev) / (this.fPrev + 1e-4)
         this.fPrev = f
@@ -139,6 +151,7 @@ export class Screech implements Stage {
       io.l[i] = io.l[i]! * (1 - mix) + wl * mix
       io.r[i] = io.r[i]! * (1 - mix) + wr * mix
     }
+    this.fWired = ramp
   }
 
   panic() {
