@@ -49,6 +49,7 @@ export class Supplies {
   readonly shared: ToyRail
   readonly second: ToyRail
   readonly bench: ToyRail
+  private readonly sharedParts: Parts = { ...PARTS }
   private readonly secondParts: Parts = { ...PARTS }
   private ctx: Ctx | null = null
   private starve = 0
@@ -94,16 +95,16 @@ export class Supplies {
       cluster,
       p[IDX.chipCap],
     )
-    this.shared.setParts({
-      lead: p[IDX.chipLeadR]!,
-      latchHold: p[IDX.chipLatchHold]!,
-      watchdog: p[IDX.chipWatchdog]!,
-      clipStarve: p[IDX.chipClipBite]!,
-      clipHold: p[IDX.chipClipHold]! / 1000,
-      dragPull: p[IDX.chipClipCharge]!,
-      dragDrop: p[IDX.chipClipRelease]!,
-      decouple: p[IDX.chipDecouple]! / 1000,
-    })
+    const parts = this.sharedParts
+    parts.lead = p[IDX.chipLeadR]!
+    parts.latchHold = p[IDX.chipLatchHold]!
+    parts.watchdog = p[IDX.chipWatchdog]!
+    parts.clipStarve = p[IDX.chipClipBite]!
+    parts.clipHold = p[IDX.chipClipHold]! / 1000
+    parts.dragPull = p[IDX.chipClipCharge]!
+    parts.dragDrop = p[IDX.chipClipRelease]!
+    parts.decouple = p[IDX.chipDecouple]! / 1000
+    this.shared.setParts(parts)
     this.starve = p[IDX.chipStarve]!
     this.starveLane = ctx.mod.read(DEST.starve)
     this.micToRail = Math.round(p[IDX.micPatch]!) === MIC.toyRail
