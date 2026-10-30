@@ -368,6 +368,29 @@ test('the sign bit on the up/down pin rocks a voice back and forth', () => {
   expect(rms(rocked)).toBeGreaterThan(0.005)
 })
 
+test('a fast note rocking in a tight loop stays inside it, written or not', () => {
+  for (const pcmWrite of [0, 1]) {
+    const { out } = play(
+      {
+        ...ALONE,
+        pcmVoice: SAMPLED,
+        pcmSignDir: 1,
+        pcmWrite,
+        pcmClockX: 4,
+        loopIn: 0.5,
+        loopOut: 0.5,
+      },
+      1,
+      b => {
+        b.sampler.setBuffer(sine(300, 2))
+        b.pcmKeys.noteOn(24)
+      },
+    )
+    expect(out.every(Number.isFinite), `write ${pcmWrite}`).toBe(true)
+    expect(rms(tail(out, 0.3)), `write ${pcmWrite}`).toBeGreaterThan(0.001)
+  }
+})
+
 test('a shared latch reads each voice of a chord from its neighbour’s place', () => {
   const chord = { pcmChord: 1 }
   const plain = tail(held(chord, 12, 0.6), 0.3)

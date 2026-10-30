@@ -513,7 +513,8 @@ export class PcmKeys implements Stage {
           vibrato === 2 ? Math.min(v.age / vibDelay, 1) : vibrato > 0 ? 1 : 0
         if (flip === 0) v.dir = 1
         v.pos += v.inc * clock * (1 + (this.vibFactor - 1) * depth) * v.dir
-        if (v.pos < this.loopStart && v.dir < 0) v.pos += span
+        if (v.pos < this.loopStart && v.dir < 0)
+          v.pos = this.loopEnd - ((this.loopStart - v.pos) % span)
         if (v.pos >= this.loopEnd && !v.runOn) {
           if (runOn > 0 && this.rng() < runOn) v.runOn = true
           else v.pos = this.loopStart + ((v.pos - this.loopStart) % span)
