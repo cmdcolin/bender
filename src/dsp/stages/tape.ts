@@ -144,7 +144,7 @@ const HYST_MAX = 1.5
 const SLOWEST = -2
 const LINE_MS = NOMINAL_MS + 3600 + 20
 const EMPH_HZ = 1200
-const AZIMUTH_MAX = 48
+const AZIMUTH_MS = 1
 /** how far above the -3 dB knee a pair of poles has to sit to still cross it
     there, `1/sqrt(sqrt(2)-1)`. */
 const GAP_POLE = 1.5538
@@ -658,9 +658,10 @@ export class Tape implements Stage {
     s.printDelay = (sp.printMs / 1000) * this.sr
     s.printCoef = lpCoef(2500, this.sr)
 
-    const azimuth = p[IDX.tapeAzimuth]! * AZIMUTH_MAX
+    const skew = p[IDX.tapeAzimuth]!
+    const azimuth = (skew * AZIMUTH_MS * this.sr) / 1000
     const gapL = Math.log(1 - lpCoef(gapHz, this.sr))
-    const gapR = gapL * (1 - (0.45 * azimuth) / AZIMUTH_MAX)
+    const gapR = gapL * (1 - 0.45 * skew)
     const wowAmt = p[IDX.tapeWow]! * sp.wobble * fm.wobble
     const flutAmt = p[IDX.tapeFlutter]! * sp.wobble * fm.wobble
     const driftCoef = lpCoef(0.12, this.sr)

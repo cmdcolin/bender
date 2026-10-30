@@ -8,15 +8,20 @@ import { bin, renderBender, sine } from './testRender.ts'
 
 const SR = 48000
 
-function render(overrides: Partial<Controls>, seconds: number, seed = 1) {
-  const chain = buildChain(SR, seed)
+function render(
+  overrides: Partial<Controls>,
+  seconds: number,
+  seed = 1,
+  sr = SR,
+) {
+  const chain = buildChain(sr, seed)
   const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
   const io: StereoBlock = {
     l: new Float32Array(BLOCK),
     r: new Float32Array(BLOCK),
     n: BLOCK,
   }
-  const blocks = Math.ceil((seconds * SR) / BLOCK)
+  const blocks = Math.ceil((seconds * sr) / BLOCK)
   const l = new Float32Array(blocks * BLOCK)
   const r = new Float32Array(blocks * BLOCK)
   for (let b = 0; b < blocks; b++) {
@@ -580,6 +585,21 @@ test('azimuth error collapses badly to mono', () => {
   }
   expect(Math.abs(collapse(0))).toBeLessThan(0.5)
   expect(collapse(1)).toBeLessThan(-2)
+})
+
+test('azimuth skews the heads by a time, whatever the sample rate', () => {
+  const collapse = (sr: number) => {
+    const { l, r } = render(
+      { ...TONE, ...STEADY, tapeMix: 1, tapeAzimuth: 1 },
+      1,
+      1,
+      sr,
+    )
+    const mono = new Float32Array(l.length)
+    for (let i = 0; i < l.length; i++) mono[i] = 0.5 * (l[i]! + r[i]!)
+    return db(rms(mono.subarray(sr / 2)) / rms(l.subarray(sr / 2)))
+  }
+  expect(Math.abs(collapse(96000) - collapse(48000))).toBeLessThan(0.5)
 })
 
 test('the machine at rest colours but does not wreck the signal', () => {
