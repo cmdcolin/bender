@@ -194,6 +194,8 @@ export class Sampler implements Stage {
   // thread has no several blocks to give. Offline callers hand over the buffer
   // alone and pay for the scan where nothing is listening.
   setBuffer(mono: Float32Array, peaks?: Float32Array) {
+    if (this.undoBuf.length < mono.length)
+      this.undoBuf = new Float32Array(mono.length)
     this.buf = mono
     this.pos = 0
     this.playing = true
@@ -276,8 +278,6 @@ export class Sampler implements Stage {
   }
 
   private snapshot(buf: Float32Array) {
-    if (this.undoBuf.length < buf.length)
-      this.undoBuf = new Float32Array(buf.length)
     this.undoBuf.set(buf)
     this.undoLen = buf.length
     this.undone = false
