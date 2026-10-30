@@ -352,6 +352,7 @@ export class ToyChip implements Stage {
   private poly = false
   private yours = false
   private len = 1
+  private mineLen = 1
   // What the memory held when its key was last worked out. The accompaniment
   // needs a key and yours is read off the notes, so it is worked out when they
   // change rather than every block.
@@ -813,7 +814,7 @@ export class ToyChip implements Stage {
       yours = bank === YOURS
       if (yours) tune = this.mine
       else tune = ROMS[bank % ROMS.length]!.steps
-      addr %= yours ? this.len : tune.length
+      addr %= yours ? this.mineLen : tune.length
     }
     const step = tune[addr]!
     let word = this.dataBus.read(
@@ -951,29 +952,9 @@ export class ToyChip implements Stage {
     const nominalHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
     const sync = Math.round(p[IDX.chipSync]!)
     const stepHz = sync > 0 ? kitStepHz(p[IDX.drumBpm]!, sync) : nominalHz
-    let stamp = 0
-    this.poly = false
-    if (this.yours) {
-      this.len = asTuneLen(p[IDX.tuneLen]!)
-      this.poly = Math.round(p[IDX.tunePoly]!) === 1
-      stamp = this.len
-      for (let i = 0; i < TUNE_STEPS; i++) {
-        const step = p[TUNE_IDX[i]!]!
-        this.mine[i] = step
-        stamp = (stamp * 31 + step) % 0x7fffffff
-      }
-      for (let lane = 0; lane < this.stacks.length; lane++) {
-        const idx = LANE_IDX[lane + 1]!
-        const steps = this.stacks[lane]!
-        for (let i = 0; i < TUNE_STEPS; i++) {
-          const step = p[idx[i]!]!
-          steps[i] = step
-          stamp = (stamp * 31 + step) % 0x7fffffff
-        }
-      }
-    } else {
-      this.len = rom.steps.length
-    }
+    this.mineLen = asTuneLen(p[IDX.tuneLen]!)
+    this.len = this.yours ? this.mineLen : rom.steps.length
+    this.poly = this.yours && Math.round(p[IDX.tunePoly]!) === 1
     const clockX = p[IDX.chipClockX]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
@@ -1073,6 +1054,25 @@ export class ToyChip implements Stage {
       FAULT_NAMES.length,
       bay.read(DEST.chipBankFault),
     )
+    // A ROM tune whose song wires have been got at can land on the memory, so
+    // the memory is filled whenever a read might reach it.
+    let stamp = this.mineLen
+    if (this.yours || this.bankLine >= 0) {
+      for (let i = 0; i < TUNE_STEPS; i++) {
+        const step = p[TUNE_IDX[i]!]!
+        this.mine[i] = step
+        stamp = (stamp * 31 + step) % 0x7fffffff
+      }
+      for (let lane = 0; lane < this.stacks.length; lane++) {
+        const idx = LANE_IDX[lane + 1]!
+        const steps = this.stacks[lane]!
+        for (let i = 0; i < TUNE_STEPS; i++) {
+          const step = p[idx[i]!]!
+          steps[i] = step
+          stamp = (stamp * 31 + step) % 0x7fffffff
+        }
+      }
+    }
     const divLine =
       hop(p[IDX.chipDivLine]!, DIV_LINES + 1, bay.read(DEST.chipDivLine)) - 1
     const divFault = hop(

@@ -1,3 +1,5 @@
+import { flushDenormal } from './softclip.ts'
+
 // Near enough to the target that a decay or release counts as there: e^-4.6 is
 // one percent, so a stage's time is how long it takes to go 99% of the way.
 const SETTLE = 4.6
@@ -54,7 +56,8 @@ export class Adsr {
         }
         break
       case 'decay':
-        this.level = r.sustain + (this.level - r.sustain) * r.decay
+        this.level =
+          r.sustain + flushDenormal((this.level - r.sustain) * r.decay)
         break
       case 'release':
         this.level *= r.release
