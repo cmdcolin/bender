@@ -1,8 +1,9 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import {
   POOLS,
   candidatesIn,
+  clockOrCaller,
   corsUrl,
   detailsUrl,
   fetchItem,
@@ -232,6 +233,41 @@ test('an item with no mp3 is null rather than a throw', async () => {
   const fake = (async () =>
     json(files({ name: 'a.flac', size: '10' }))) as unknown as typeof fetch
   expect(await fetchItem('x', 'X', { fetch: fake })).toBeNull()
+})
+
+test('without AbortSignal.any the clock and the caller both still call a read off', () => {
+  vi.useFakeTimers()
+  const caller = new AbortController()
+  const fromCaller = clockOrCaller(10_000, caller.signal)
+  const fromClock = clockOrCaller(500, undefined)
+  const late = new AbortController()
+  late.abort()
+  expect(clockOrCaller(500, late.signal).aborted).toBe(true)
+  caller.abort()
+  expect(fromCaller.aborted).toBe(true)
+  expect(fromClock.aborted).toBe(false)
+  vi.advanceTimersByTime(500)
+  expect(fromClock.aborted).toBe(true)
+  vi.useRealTimers()
+})
+
+test('a roll still lands where AbortSignal.any is missing', async () => {
+  const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any')
+  Reflect.deleteProperty(AbortSignal, 'any')
+  const fake = (async (url: string | URL) => {
+    const u = String(url)
+    return u.includes('advancedsearch')
+      ? json({ response: { docs: [{ identifier: 'a', title: 'A' }] } })
+      : u.includes('/metadata/')
+        ? json(files({ name: 'a.mp3', size: '3', length: '1' }))
+        : new Response(new Uint8Array([7]).buffer, { status: 200 })
+  }) as unknown as typeof globalThis.fetch
+  try {
+    const got = await roll({ pool: POOLS[0]!, rng: () => 0, fetch: fake })
+    expect(got?.id).toBe('a')
+  } finally {
+    if (any) Object.defineProperty(AbortSignal, 'any', any)
+  }
 })
 
 function json(body: unknown): Response {

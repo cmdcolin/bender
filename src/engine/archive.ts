@@ -240,11 +240,29 @@ export function pickFile(
 }
 
 // The caller's abort, or the clock running out, whichever comes first. A
-// signal that has already fired aborts the fetch at once.
+// signal that has already fired aborts the fetch at once. Safari before 17.4
+// has no AbortSignal.any, so there one controller hears both.
 const within = (ms: number, signal: AbortSignal | undefined) =>
-  AbortSignal.any(
-    signal ? [signal, AbortSignal.timeout(ms)] : [AbortSignal.timeout(ms)],
-  )
+  'any' in AbortSignal
+    ? AbortSignal.any(
+        signal ? [signal, AbortSignal.timeout(ms)] : [AbortSignal.timeout(ms)],
+      )
+    : clockOrCaller(ms, signal)
+
+export function clockOrCaller(ms: number, signal: AbortSignal | undefined) {
+  const either = new AbortController()
+  setTimeout(() => {
+    either.abort(new DOMException('signal timed out', 'TimeoutError'))
+  }, ms)
+  if (signal) {
+    if (signal.aborted) either.abort(signal.reason)
+    else
+      signal.addEventListener('abort', () => either.abort(signal.reason), {
+        once: true,
+      })
+  }
+  return either.signal
+}
 
 // A read that cannot hang the roll behind it.
 async function readJson(
