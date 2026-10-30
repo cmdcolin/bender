@@ -1,6 +1,7 @@
 import { IDX, MAX_SOURCES } from '../engine/params.ts'
 import { DEST } from './modbus.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
+import { hermite } from './util/delayline.ts'
 import { Lowpass, lpCoef } from './util/onepole.ts'
 import { octaves } from './util/pitch.ts'
 
@@ -42,17 +43,15 @@ const MAX_SPEED = 4
 
 // Four-point cubic Hermite, for every speed but ×1, which reads the ring
 // straight so that it is the chain's own output, sample for sample.
-function hermite(ring: Float32Array, base: number, pos: number): number {
+function readRing(ring: Float32Array, base: number, pos: number) {
   const idx = Math.floor(pos)
-  const t = pos - idx
-  const x0 = ring[base + ((idx - 1) & MASK)]!
-  const x1 = ring[base + (idx & MASK)]!
-  const x2 = ring[base + ((idx + 1) & MASK)]!
-  const x3 = ring[base + ((idx + 2) & MASK)]!
-  const c1 = 0.5 * (x2 - x0)
-  const c2 = x0 - 2.5 * x1 + 2 * x2 - 0.5 * x3
-  const c3 = 0.5 * (x3 - x0) + 1.5 * (x1 - x2)
-  return ((c3 * t + c2) * t + c1) * t + x1
+  return hermite(
+    ring[base + ((idx - 1) & MASK)]!,
+    ring[base + (idx & MASK)]!,
+    ring[base + ((idx + 1) & MASK)]!,
+    ring[base + ((idx + 2) & MASK)]!,
+    pos - idx,
+  )
 }
 
 export class Deck {
@@ -166,8 +165,8 @@ export class Deck {
     } else {
       let pos = this.readPos
       for (let i = 0; i < n; i++) {
-        io.l[i] = gain * hermite(this.ringL, 0, pos)
-        io.r[i] = gain * hermite(this.ringR, 0, pos)
+        io.l[i] = gain * readRing(this.ringL, 0, pos)
+        io.r[i] = gain * readRing(this.ringR, 0, pos)
         pos += step
       }
       if (this.chain.capturing) {
@@ -176,7 +175,7 @@ export class Deck {
           const to = k * BLOCK
           let at = this.readPos
           for (let i = 0; i < n; i++) {
-            this.stems[to + i] = gain * hermite(this.ringStems, from, at)
+            this.stems[to + i] = gain * readRing(this.ringStems, from, at)
             at += step
           }
         }

@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { BiquadState, flat, peak, shelf } from '../util/biquad.ts'
+import { hermite } from '../util/delayline.ts'
 import { coef } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
 import {
@@ -234,14 +235,13 @@ class Loop {
     const t = this.pos - i
     const i1 = i + 1 < n ? i + 1 : i + 1 - n
     const i2 = i1 + 1 < n ? i1 + 1 : i1 + 1 - n
-    const xm = tape[i > 0 ? i - 1 : n - 1]!
-    const x0 = tape[i]!
-    const x1 = tape[i1]!
-    const x2 = tape[i2]!
-    const c1 = 0.5 * (x1 - xm)
-    const c2 = xm - 2.5 * x0 + 2 * x1 - 0.5 * x2
-    const c3 = 0.5 * (x2 - xm) + 1.5 * (x0 - x1)
-    return ((c3 * t + c2) * t + c1) * t + x0
+    return hermite(
+      tape[i > 0 ? i - 1 : n - 1]!,
+      tape[i]!,
+      tape[i1]!,
+      tape[i2]!,
+      t,
+    )
   }
 
   /** How much oxide has come off under the head, 0 to 1, smoothed so a cell

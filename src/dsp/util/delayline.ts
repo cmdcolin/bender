@@ -69,17 +69,30 @@ export class DelayLine {
     const i = d | 0
     const f = d - i
     const p = this.pos - i
-    const ym1 = buf[p & mask]!
-    const y0 = buf[(p - 1) & mask]!
-    const y1 = buf[(p - 2) & mask]!
-    const y2 = buf[(p - 3) & mask]!
-    const c1 = 0.5 * (y1 - ym1)
-    const c2 = ym1 - 2.5 * y0 + 2 * y1 - 0.5 * y2
-    const c3 = 0.5 * (y2 - ym1) + 1.5 * (y0 - y1)
-    return ((c3 * f + c2) * f + c1) * f + y0
+    return hermite(
+      buf[p & mask]!,
+      buf[(p - 1) & mask]!,
+      buf[(p - 2) & mask]!,
+      buf[(p - 3) & mask]!,
+      f,
+    )
   }
 
   reset() {
     this.buf.fill(0)
   }
+}
+
+/** 4-point cubic Hermite between `x0` and `x1`, `t` of the way across. */
+export function hermite(
+  xm1: number,
+  x0: number,
+  x1: number,
+  x2: number,
+  t: number,
+) {
+  const c1 = 0.5 * (x1 - xm1)
+  const c2 = xm1 - 2.5 * x0 + 2 * x1 - 0.5 * x2
+  const c3 = 0.5 * (x2 - xm1) + 1.5 * (x0 - x1)
+  return ((c3 * t + c2) * t + c1) * t + x0
 }
