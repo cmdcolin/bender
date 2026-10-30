@@ -41,7 +41,6 @@ import {
   REST,
   TUNE_LANE_KEYS,
   laneForNote,
-  type TuneStepKey,
 } from '../tune.ts'
 import {
   LOAD_SECONDS,
@@ -191,6 +190,32 @@ export interface Meter {
   fourLaps: Float32Array
   fourPeaks: Float32Array
   fourShed: Float32Array
+}
+
+// The two memories a hand plays into: the toy's tune, three lanes deep, and the
+// second melody, one. Each reads its own counter off the meter.
+const MEMORIES = {
+  tune: {
+    pos: 'tunePos',
+    frac: 'tuneFrac',
+    stepMs: 'tuneStepMs',
+    len: 'tuneLen',
+    lanes: TUNE_LANE_KEYS,
+  },
+  seq: {
+    pos: 'monoSeqPos',
+    frac: 'monoSeqFrac',
+    stepMs: 'monoSeqStepMs',
+    len: 'monoSeqLen',
+    lanes: [MONO_SEQ_STEP_KEYS],
+  },
+} as const
+
+type MemoryName = keyof typeof MEMORIES
+
+function memoryKey(memory: MemoryName, step: number, lane: number) {
+  const keys = MEMORIES[memory].lanes[lane]!
+  return keys[step % keys.length]!
 }
 
 // Which sources are putting something on the bus, as a bit per tap, from the
@@ -1730,8 +1755,8 @@ export class Engine {
     this.post({ kind: 'noteOn', semitone: note, gain, dest })
     this.hold(note, true, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
-      this.writeNote(note)
-    if (this.recordsSeq(dest)) this.writeSeqNote(note)
+      this.writeNote('tune', note)
+    if (this.recordsSeq(dest)) this.writeNote('seq', note)
   }
 
   sfx(dest: 'toy' | 'fm', sfx: number, on: boolean) {
@@ -1745,8 +1770,8 @@ export class Engine {
     this.post({ kind: 'noteOff', semitone: note, dest })
     this.hold(note, false, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
-      this.writeHeld(note)
-    if (this.recordsSeq(dest)) this.writeSeqHeld(note)
+      this.writeHeld('tune', note)
+    if (this.recordsSeq(dest)) this.writeHeld('seq', note)
   }
 
   /** Whether a key, as pressed rather than as the scale lock snapped it, is
@@ -1839,90 +1864,47 @@ export class Engine {
     return ((ctx.baseLatency || 0) + (ctx.outputLatency || 0)) * 1000
   }
 
-  // Where each key that is down struck — the step, and which of the memory's
-  // three lanes took it, so that letting it go spells that note's length out in
-  // holds without writing over the lane beside it. A map because a hand plays
-  // chords, and the toy sounds four of them.
-  private struckAt = new Map<number, { step: number; lane: number }>()
+  // Where each key that is down struck, on each memory — the step, and which
+  // of the memory's lanes took it, so that letting it go spells that note's
+  // length out in holds without writing over the lane beside it. A map because
+  // a hand plays chords, and the toy sounds four of them.
+  private readonly struckAt: Record<
+    MemoryName,
+    Map<number, { step: number; lane: number }>
+  > = { tune: new Map(), seq: new Map() }
 
-  /** Which step of the memory a note played now belongs to. */
-  private tuneStep(): number {
+  /** Which step of a memory a note played now belongs to. */
+  private memoryStep(memory: MemoryName): number {
     const m = this.meter.get()
+    const reads = MEMORIES[memory]
     const { tick, phase } = heardStep({
-      tick: m.tunePos,
-      clock: m.tuneFrac,
-      stepMs: m.tuneStepMs,
+      tick: m[reads.pos],
+      clock: m[reads.frac],
+      stepMs: m[reads.stepMs],
       ageMs: performance.now() - this.meterAt,
       latencyMs: this.latencyMs(),
     })
-    return quantizeStep(tick, phase, asTuneLen(this.controls.get().tuneLen))
+    return quantizeStep(tick, phase, asTuneLen(this.controls.get()[reads.len]))
   }
 
-  private seqStruckAt = new Map<number, number>()
-
-  private seqStep(): number {
-    const m = this.meter.get()
-    const { tick, phase } = heardStep({
-      tick: m.monoSeqPos,
-      clock: m.monoSeqFrac,
-      stepMs: m.monoSeqStepMs,
-      ageMs: performance.now() - this.meterAt,
-      latencyMs: this.latencyMs(),
-    })
-    return quantizeStep(tick, phase, asTuneLen(this.controls.get().monoSeqLen))
-  }
-
-  private writeSeqNote(semitone: number) {
-    const step = this.seqStep()
-    const note = foldNote(semitone)
-    const key = MONO_SEQ_STEP_KEYS[step]!
-    this.seqStruckAt.set(semitone, step)
-    this.noteTaken.set({ memory: 'seq', step, at: performance.now() })
-    if (this.controls.get()[key] !== note) {
-      this.armStep()
-      this.set(key, note)
-    }
-  }
-
-  // Holds for a key let go of later, written under the same entry as its note.
-  private writeSeqHeld(semitone: number) {
-    const from = this.seqStruckAt.get(semitone)
-    if (from === undefined) return
-    this.seqStruckAt.delete(semitone)
-    const c = this.controls.get()
-    const len = asTuneLen(c.monoSeqLen)
-    const to = this.seqStep()
-    if (to === from) return
-    const held: Partial<Controls> = {}
-    for (let i = 1; i < len; i++) {
-      const at: number = (from + i) % len
-      const key = MONO_SEQ_STEP_KEYS[at]!
-      if (at === to || c[key] !== REST) break
-      held[key] = HOLD
-    }
-    if (Object.keys(held).length > 0) this.patch(held)
-  }
-
-  private stepKey(step: number, lane = 0): TuneStepKey {
-    const keys = TUNE_LANE_KEYS[lane]!
-    return keys[step % keys.length]!
-  }
-
-  // A note played by hand, filed on the step the chip is standing on. One entry
-  // in the walk per note, the same as a hit on the kit: a hand that has just
-  // played the wrong note wants that note back and nothing else.
-  private writeNote(semitone: number) {
-    const step = this.tuneStep()
+  // A note played by hand, filed on the step the memory is standing on. One
+  // entry in the walk per note, the same as a hit on the kit: a hand that has
+  // just played the wrong note wants that note back and nothing else.
+  private writeNote(memory: MemoryName, semitone: number) {
+    const step = this.memoryStep(memory)
     const c = this.controls.get()
     const note = foldNote(semitone)
-    // A chord played in lands as a chord: the melody lane takes the first note
-    // and the stacked chips take what your other fingers are holding. With the
-    // memory in mono there is one lane, and the last key down is the note on
-    // the step — which is what the toy did.
-    const lane = laneForNote(c, step, note, Math.round(c.tunePoly) === 1)
-    this.struckAt.set(semitone, { step, lane })
-    this.noteTaken.set({ memory: 'tune', step, at: performance.now() })
-    const key = this.stepKey(step, lane)
+    // A chord played into the tune lands as a chord: the melody lane takes the
+    // first note and the stacked chips take what your other fingers are
+    // holding. With the memory in mono there is one lane, and the last key down
+    // is the note on the step — which is what the toy did.
+    const lane =
+      memory === 'tune'
+        ? laneForNote(c, step, note, Math.round(c.tunePoly) === 1)
+        : 0
+    this.struckAt[memory].set(semitone, { step, lane })
+    this.noteTaken.set({ memory, step, at: performance.now() })
+    const key = memoryKey(memory, step, lane)
     if (c[key] !== note) {
       this.armStep()
       this.set(key, note)
@@ -1937,13 +1919,14 @@ export class Engine {
   // the walk: undo takes back the note rather than its tail, and then its head.
   // A step already carrying something is where the run stops — a note somebody
   // else played is not this note's to lengthen.
-  private writeHeld(semitone: number) {
-    const struck = this.struckAt.get(semitone)
+  private writeHeld(memory: MemoryName, semitone: number) {
+    const struck = this.struckAt[memory].get(semitone)
     if (struck !== undefined) {
-      this.struckAt.delete(semitone)
+      this.struckAt[memory].delete(semitone)
       const { step: from, lane } = struck
-      const len = asTuneLen(this.controls.get().tuneLen)
-      const to = this.tuneStep()
+      const c = this.controls.get()
+      const len = asTuneLen(c[MEMORIES[memory].len])
+      const to = this.memoryStep(memory)
       const held: Partial<Controls> = {}
       // Let go on the step it struck on and the note is that step and no more.
       // The counter says where the memory is, not how many times it has been
@@ -1953,8 +1936,8 @@ export class Engine {
       if (to !== from)
         for (let i = 1; i < len; i++) {
           const at = (from + i) % len
-          const key = this.stepKey(at, lane)
-          if (at === to || this.controls.get()[key] !== REST) break
+          const key = memoryKey(memory, at, lane)
+          if (at === to || c[key] !== REST) break
           held[key] = HOLD
         }
       if (Object.keys(held).length > 0) this.patch(held)
