@@ -179,12 +179,21 @@ function blep(t: number, dt: number): number {
   return 0
 }
 
+// The oscillators and the ladder take their doubles in fields and leave what
+// they make in one, rather than through arguments and returns: render() runs
+// out of V8's inlining budget long before it has inlined three of each, and a
+// call it does not inline boxes every double that crosses it.
 class Osc {
   phase = 0
+  /** the step `advance` takes, a cycle per sample */
   dt = 0
   wrapped = false
   /** samples since the wrap, when this sample wrapped */
   since = 0
+  /** soft sync's window, for `synced` */
+  window = 1
+  /** what `value` or `synced` made */
+  out = 0
   private held = 0
 
   reset() {
@@ -195,8 +204,8 @@ class Osc {
     this.held = 0
   }
 
-  advance(dt: number) {
-    this.dt = dt
+  advance() {
+    const dt = this.dt
     this.phase += dt
     this.wrapped = this.phase >= 1 || this.phase < 0
     if (this.phase >= 1) {
@@ -208,13 +217,15 @@ class Osc {
     }
   }
 
-  value(wave: number): number {
+  value(wave: number) {
     const p = this.phase
     const dt = Math.abs(this.dt)
-    if (wave === WAVE.tri) return p < 0.5 ? 4 * p - 1 : 3 - 4 * p
-    if (wave === WAVE.saw) return 2 * p - 1 - blep(p, dt)
-    const pw = PULSE_WIDTH[wave]!
-    return (p < pw ? 1 : -1) + blep(p, dt) - blep(wrap1(p + 1 - pw), dt)
+    if (wave === WAVE.tri) this.out = p < 0.5 ? 4 * p - 1 : 3 - 4 * p
+    else if (wave === WAVE.saw) this.out = 2 * p - 1 - blep(p, dt)
+    else {
+      const pw = PULSE_WIDTH[wave]!
+      this.out = (p < pw ? 1 : -1) + blep(p, dt) - blep(wrap1(p + 1 - pw), dt)
+    }
   }
 
   /**
@@ -223,7 +234,8 @@ class Osc {
    * sample and the one before it. Output runs a sample late so the one before
    * is still there to correct.
    */
-  synced(wave: number, master: Osc, window: number): number {
+  synced(wave: number, master: Osc) {
+    const window = this.window
     let now: number
     if (
       master.wrapped &&
@@ -237,11 +249,11 @@ class Osc {
       this.held += (jump / 2) * d * d
       now -= (jump / 2) * (1 - d) * (1 - d)
     } else {
-      now = this.value(wave)
+      this.value(wave)
+      now = this.out
     }
-    const out = this.held
+    this.out = this.held
     this.held = now
-    return out
   }
 }
 
@@ -300,8 +312,17 @@ class Ladder {
   private s2 = 0
   private s3 = 0
   private zi = 0
+  /** the sample in, and once `process` has run, the sample out */
+  y = 0
+  /** cutoff as a per-sample coefficient, resonance, and how far the last
+      pole's corner sits from the other three */
+  f = 0
+  r = 0
+  skew = 1
 
-  process(x: number, f: number, r: number, skew: number): number {
+  process() {
+    const { f, r, skew } = this
+    const x = this.y
     const ih = 0.5 * (x + this.zi)
     this.zi = x
     const f0 = f
@@ -336,7 +357,7 @@ class Ladder {
     this.s1 = flushDenormal(this.s1 + 2 * f1 * (y0 - y1))
     this.s2 = flushDenormal(this.s2 + 2 * f2 * (y1 - y2))
     this.s3 = flushDenormal(this.s3 + 2 * f3 * (y2 - t4 * y3))
-    return y3
+    this.y = y3
   }
 
   reset() {
@@ -522,7 +543,9 @@ export class MonoVoice {
     const wave1 = p.wave[1]
     const wave2 = p.wave[2]
     const sync = p.sync
-    const window = sync === SYNC.soft ? SOFT_WINDOW : 1
+    osc1.window = sync === SYNC.soft ? SOFT_WINDOW : 1
+    ladder.r = r
+    ladder.skew = skew
     const linFm = p.linFm
     const hiss = p.noise * 0.3 + FLOOR
     const loop = p.loop * 2
@@ -598,23 +621,30 @@ export class MonoVoice {
       let pair0 = 0
       for (let k = 0; k < OS; k++) {
         const fm0 = linFm === 0 ? dt0 : dt0 * (1 + linFm * this.v1)
-        osc0.advance(Math.min(Math.max(fm0, -0.45), 0.45))
-        osc1.advance(dt1)
-        osc2.advance(dt2)
-        const v1 =
-          sync === SYNC.off
-            ? osc1.value(wave1)
-            : osc1.synced(wave1, osc0, window)
+        osc0.dt = Math.min(Math.max(fm0, -0.45), 0.45)
+        osc0.advance()
+        osc1.dt = dt1
+        osc1.advance()
+        osc2.dt = dt2
+        osc2.advance()
+        if (sync === SYNC.off) osc1.value(wave1)
+        else osc1.synced(wave1, osc0)
+        const v1 = osc1.out
         this.v1 = v1
-        const v2 = osc2.value(wave2)
+        osc2.value(wave2)
+        const v2 = osc2.out
+        osc0.value(wave0)
         const mix =
-          lvl0 * osc0.value(wave0) +
+          lvl0 * osc0.out +
           lvl1 * v1 +
           lvl2 * v2 +
           hiss * this.noise() +
           loop * this.last +
           e
-        const v = ladder.process(mix * inGain, f, r, skew) * amp
+        ladder.y = mix * inGain
+        ladder.f = f
+        ladder.process()
+        const v = ladder.y * amp
         this.last = v
         this.sagEnv = flushDenormal(
           this.sagEnv + sagK * (Math.abs(v) - this.sagEnv),
