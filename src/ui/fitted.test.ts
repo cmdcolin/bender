@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
-import { bench } from './bench.ts'
+import { bench, sanitizeBench } from './bench.ts'
 import { buildMap, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY } from './controls/index.ts'
 import {
@@ -145,6 +145,13 @@ test('a stored list keeps the stage names the board still has', () => {
   expect([...parseAdded('["Ring mod","Gone pedal",3]')]).toEqual(['Ring mod'])
   expect(parseAdded('{').size).toBe(0)
   expect(parseAdded(null).size).toBe(0)
+})
+
+test('a stored bench renames old stages and keeps any other name as it is', () => {
+  expect(
+    sanitizeBench({ instruments: ['Toy keyboard', 'constructor', 'toString'] })
+      .instruments,
+  ).toEqual(['Plinky', 'constructor', 'toString'])
 })
 
 test('every instrument laid out on the bench has its box on the map', () => {

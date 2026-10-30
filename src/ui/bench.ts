@@ -39,7 +39,7 @@ const EMPTY: Bench = {
 
 const strings = (value: unknown): string[] =>
   Array.isArray(value)
-    ? value.filter(s => typeof s === 'string').map(s => RENAMED[s] ?? s)
+    ? value.filter(s => typeof s === 'string').map(s => RENAMED.get(s) ?? s)
     : []
 
 export function sanitizeBench(value: unknown): Bench {
