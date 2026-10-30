@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  nextWriteAt,
+  MIN_GAP_MS,
   observe,
+  SETTLE_MS,
   type Opened,
   type WriteGate,
 } from 'skillet-shared/session-gate'
@@ -29,7 +30,6 @@ import { newVoiceId } from './voiceModel.ts'
 export function useCurrentSession(uid: string | null) {
   const [sessionId] = useState(() => takeSessionId() ?? newVoiceId())
   const gate = useRef<WriteGate>({ query: null, at: 0 })
-  const live = useRef<string | null>(null)
   // Bender.tsx patches a linked board into the engine before the first render,
   // so the board at the first render is the one the page opened on.
   const [start] = useState(() =>
@@ -54,21 +54,22 @@ export function useCurrentSession(uid: string | null) {
         console.error('saving the current session failed', e)
       })
     }
-    const settle = () => {
+    let dirty = false
+    const flush = () => {
+      dirty = false
+      clearTimeout(timer)
       const query = boardHash(window.location.hash, engine.controls.get())
       opened.current = observe(opened.current, query)
-      if (!opened.current.moved) return
-      live.current = query
-      const due = nextWriteAt(gate.current, query, Date.now())
-      if (due === null) return
+      if (opened.current.moved && query !== gate.current.query) send(query)
+    }
+    // Hashing the board is the dear part, so a change only marks it and pushes
+    // the timer back; the hash waits for the timer or the hide.
+    const settle = () => {
+      dirty = true
       clearTimeout(timer)
       timer = setTimeout(
-        () => {
-          // The hide handler below may have written this board while the timer
-          // waited.
-          if (query !== gate.current.query) send(query)
-        },
-        Math.max(0, due - Date.now()),
+        flush,
+        Math.max(SETTLE_MS, gate.current.at + MIN_GAP_MS - Date.now()),
       )
     }
     // One last write on the way out, so a tab closed mid-debounce still leaves
@@ -77,12 +78,7 @@ export function useCurrentSession(uid: string | null) {
     // and a request started at pagehide dies with the document. Hiding the tab
     // happens earlier and leaves the page alive long enough.
     const onHide = () => {
-      if (
-        document.visibilityState === 'hidden' &&
-        live.current !== null &&
-        live.current !== gate.current.query
-      )
-        send(live.current)
+      if (document.visibilityState === 'hidden' && dirty) flush()
     }
     settle()
     const off = engine.controls.subscribe(settle)
