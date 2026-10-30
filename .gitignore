@@ -4,3 +4,4 @@ dist
 .claude
 .astro
 public/demos
+scripts/wasm-spike/*.wasm
