@@ -49,6 +49,8 @@ export interface AmpVoicing {
   block: number
   blockAtk: number
   blockRel: number
+  /** The supply every amp on it is running off this sample, 1 at full. */
+  rail: number
 }
 
 export const newVoicing = (): AmpVoicing => ({
@@ -58,6 +60,7 @@ export const newVoicing = (): AmpVoicing => ({
   block: 0,
   blockAtk: 0,
   blockRel: 0,
+  rail: 1,
 })
 
 export function ampVoicing(
@@ -124,8 +127,14 @@ export class LoopAmp {
   private slewY = 0
   private cap = 0
   private cutoff = false
+  /** The sample in, and once `process` has run the sample out. Handed through
+      here rather than as an argument and a return, because a call V8 declines
+      to inline boxes every double that crosses it. */
+  y = 0
 
-  process(x: number, rail: number, v: AmpVoicing): number {
+  process(v: AmpVoicing) {
+    const x = this.y
+    const rail = v.rail
     // Squared rather than proportional below the knee. A stage losing its bias
     // does not give up its gain in step with the volts — it holds on and then
     // goes, and it is that shoulder that decides whether a desk with a sagging
@@ -156,13 +165,15 @@ export class LoopAmp {
       if (this.cutoff) {
         if (into > BLOCK_RECOVER) {
           this.slewY = 0
-          return 0
+          this.y = 0
+          return
         }
         this.cutoff = false
       } else if (into >= 1) {
         this.cutoff = true
         this.slewY = 0
-        return 0
+        this.y = 0
+        return
       }
       y *= 1 - into
     }
@@ -175,14 +186,14 @@ export class LoopAmp {
 
     const ceil = rail * (1 + (y < 0 ? -v.asym : v.asym))
     const soft = softclip(y / ceil) * ceil
-    if (v.rails <= 0) return soft
     const hard = y > ceil ? ceil : y < -ceil ? -ceil : y
-    return soft + v.rails * (hard - soft)
+    this.y = v.rails <= 0 ? soft : soft + v.rails * (hard - soft)
   }
 
   reset() {
     this.slewY = 0
     this.cap = 0
     this.cutoff = false
+    this.y = 0
   }
 }

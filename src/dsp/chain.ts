@@ -168,6 +168,11 @@ class DeskLoop {
   /** This sample's return, which is what the bus sums and what the line keeps. */
   wL = 0
   wR = 0
+  /** The strip this one's return is patched across to, and how much of each
+      it hears: set once a block. */
+  other: DeskLoop = this
+  near = 1
+  cross = 0
 
   constructor(sr: number) {
     this.lineL = new DelayLine(0.5 * sr + 4)
@@ -205,18 +210,17 @@ class DeskLoop {
     return y
   }
 
-  run(
-    l: number,
-    r: number,
-    retL: number,
-    retR: number,
-    rail: number,
-    v: AmpVoicing,
-  ) {
-    const inL = this.send(l, this.tiltLpL) + this.combG * retL
-    const inR = this.send(r, this.tiltLpR) + this.combG * retR
-    this.wL = this.ampL.process(inL, rail, v)
-    this.wR = this.ampR.process(inR, rail, v)
+  /** One sample of the bus at `i` through the strip, with the rail in `v`. */
+  run(io: StereoBlock, i: number, v: AmpVoicing) {
+    const { other, near, cross, ampL, ampR } = this
+    const retL = near * this.dL + cross * other.dL
+    const retR = near * this.dR + cross * other.dR
+    ampL.y = this.send(io.l[i]!, this.tiltLpL) + this.combG * retL
+    ampR.y = this.send(io.r[i]!, this.tiltLpR) + this.combG * retR
+    ampL.process(v)
+    ampR.process(v)
+    this.wL = ampL.y
+    this.wR = ampR.y
     this.lineL.write(this.wL)
     this.lineR.write(this.wR)
   }
@@ -266,7 +270,6 @@ export class Chain {
   private readonly allEnv = new Follower()
   private readonly loops: DeskLoop[]
   /** Which strip each one's Cross send lands on, settled once a block. */
-  private readonly across = new Int32Array(N_LOOPS)
   // The supply the return amps share, and how loaded they are having it. The
   // desk is on the same board as everything else, so Starve and Brownout pull
   // it down from under them as well.
@@ -1026,7 +1029,7 @@ export class Chain {
     // fader is down is a loop that is simply cut, so Cross skips the strips that
     // aren't there and lands on the next one that is — and with only one strip
     // up it comes back to itself, because there is nothing to cross to.
-    const across = this.across
+    const cross = p[IDX.fbCross]!
     for (let k = 0; k < N_LOOPS; k++) {
       let j = k
       for (let hop = 1; hop <= N_LOOPS; hop++) {
@@ -1036,10 +1039,11 @@ export class Chain {
           break
         }
       }
-      across[k] = j
+      const lp = loops[k]!
+      lp.other = loops[j]!
+      lp.cross = cross
+      lp.near = 1 - cross
     }
-    const cross = p[IDX.fbCross]!
-    const near = 1 - cross
     const sag = p[IDX.fbSag]!
     // Current goes the instant it is asked for; it comes back through whatever
     // is feeding the reservoir. Held at one rate both ways the rail found a
@@ -1066,15 +1070,13 @@ export class Chain {
       }
       if (modMs)
         loops[0]!.delay = Math.max(baseDelay * octaves(2 * modMs[i]!), 1)
-      const l = io.l[i]!
-      const r = io.r[i]!
       // What the amps are drawing, and what is left of the rail to draw it
       // from. Read off what the desk itself put out last sample rather than off
       // the bus: the bus is everything, and what loads this supply is these
       // three amplifiers. The draw saturates rather than clipping, so a desk
       // being played hard keeps answering how hard rather than pinning on the
       // floor.
-      let rail = 1
+      amp.rail = 1
       if (sag > 0) {
         const draw = this.deskEnv.process(this.deskLast, deskA, deskR) * 3
         const want =
@@ -1084,7 +1086,7 @@ export class Chain {
             (want < this.deskRail ? railFall : railRise) *
               (want - this.deskRail),
         )
-        rail = Math.max(this.deskRail, 0.05)
+        amp.rail = Math.max(this.deskRail, 0.05)
       }
       for (const lp of loops) if (lp.on) lp.read()
       let sumL = 0
@@ -1092,15 +1094,7 @@ export class Chain {
       for (let k = 0; k < N_LOOPS; k++) {
         const lp = loops[k]!
         if (!lp.on) continue
-        const other = loops[across[k]!]!
-        lp.run(
-          l,
-          r,
-          near * lp.dL + cross * other.dL,
-          near * lp.dR + cross * other.dR,
-          rail,
-          amp,
-        )
+        lp.run(io, i, amp)
         sumL += lp.wL
         sumR += lp.wR
       }

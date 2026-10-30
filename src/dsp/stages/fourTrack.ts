@@ -115,6 +115,9 @@ class Strip {
   loOn = false
   midOn = false
   hiOn = false
+  trim = 0
+  /** The sample in, and once `process` has run the strip's out: see LoopAmp. */
+  y = 0
   private keyLo = NaN
   private keyMid = NaN
   private keyMidHz = NaN
@@ -145,13 +148,17 @@ class Strip {
     }
   }
 
-  process(x: number, trim: number, rail: number, v: AmpVoicing): number {
-    const into = (x * trim + this.gauss() * NOISE) / HEADROOM
-    let y = this.pre.process(into, rail, v)
+  process(v: AmpVoicing) {
+    const { pre, post } = this
+    pre.y = (this.y * this.trim + this.gauss() * NOISE) / HEADROOM
+    pre.process(v)
+    let y = pre.y
     if (this.loOn) y = this.lo.process(y, this.loC)
     if (this.midOn) y = this.mid.process(y, this.midC)
     if (this.hiOn) y = this.hi.process(y, this.hiC)
-    return this.post.process(y, rail, v) * HEADROOM
+    post.y = y
+    post.process(v)
+    this.y = post.y * HEADROOM
   }
 
   reset() {
@@ -521,7 +528,6 @@ export class FourTrack implements Stage {
   // The knobs, read once a block into arrays this owns.
   private readonly block = {
     input: new Int32Array(TRACKS),
-    trim: new Float64Array(TRACKS),
     fader: new Float64Array(TRACKS),
     send: new Float64Array(TRACKS),
     cue: new Float64Array(TRACKS),
@@ -636,7 +642,6 @@ export class FourTrack implements Stage {
     // Four cells power the desk and the motor. A flat set drops the op-amps'
     // rails, slows and hardens them, and drags the motor, and the louder the
     // desk works the more it drags.
-    const rail = 1 - 0.55 * battery
     const v = ampVoicing(
       0.5 + 0.4 * battery,
       0.1,
@@ -645,6 +650,7 @@ export class FourTrack implements Stage {
       sr,
       this.voicing,
     )
+    v.rail = 1 - 0.55 * battery
     const sag =
       battery * SAG * (1 - SAG_LOAD + SAG_LOAD * Math.min(this.load, 2))
     this.motor += this.motorC * (1 - sag - this.motor)
@@ -685,10 +691,11 @@ export class FourTrack implements Stage {
         k === 0 && midLane
           ? p[t.midHz]! * octaves(midLane[0]! * 2)
           : p[t.midHz]!
-      this.strips[k]!.tune(p[t.low]!, midHz, p[t.mid]!, p[t.high]!, sr)
+      const strip = this.strips[k]!
+      strip.tune(p[t.low]!, midHz, p[t.mid]!, p[t.high]!, sr)
       b.input[k] = Math.round(p[t.input]!)
       const trimDb = p[t.trim]!
-      b.trim[k] = trimDb <= TRIM_FLOOR_DB ? 0 : Math.pow(10, trimDb / 20)
+      strip.trim = trimDb <= TRIM_FLOOR_DB ? 0 : Math.pow(10, trimDb / 20)
       b.fader[k] = p[t.fader]!
       b.send[k] = p[t.send]!
       b.cue[k] = p[t.cue]!
@@ -778,7 +785,10 @@ export class FourTrack implements Stage {
               : src === INPUT_MIC
                 ? mic[i]!
                 : this.aux
-        const e = this.strips[k]!.process(x, b.trim[k]!, rail, v)
+        const strip = this.strips[k]!
+        strip.y = x
+        strip.process(v)
+        const e = strip.y
         this.e[k] = e
         const f = e * b.fader[k]!
         auxSum += f * b.send[k]!
@@ -795,9 +805,10 @@ export class FourTrack implements Stage {
         const sent =
           auxSum * (auxLane ? Math.max(auxMaster + auxLane[i]!, 0) : auxMaster)
         this.auxHp = flushDenormal(this.auxHp + this.auxC * (sent - this.auxHp))
-        this.aux =
-          this.amps.aux.process((sent - this.auxHp) / HEADROOM, rail, v) *
-          HEADROOM
+        const aux = this.amps.aux
+        aux.y = (sent - this.auxHp) / HEADROOM
+        aux.process(v)
+        this.aux = aux.y * HEADROOM
       }
 
       // The record heads write behind the play heads, and the tape moves on.
@@ -819,8 +830,13 @@ export class FourTrack implements Stage {
         loop.watch()
       }
 
-      const l = this.amps.l.process(busL / HEADROOM, rail, v) * HEADROOM
-      const r = this.amps.r.process(busR / HEADROOM, rail, v) * HEADROOM
+      const { l: ampL, r: ampR } = this.amps
+      ampL.y = busL / HEADROOM
+      ampL.process(v)
+      ampR.y = busR / HEADROOM
+      ampR.process(v)
+      const l = ampL.y * HEADROOM
+      const r = ampR.y * HEADROOM
       io.l[i]! += l * level
       io.r[i]! += r * level
     }
