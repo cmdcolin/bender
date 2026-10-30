@@ -102,6 +102,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       reboots: 0,
       rail2: 1,
       reboots2: 0,
+      faults: 0,
+      faultStage: '',
       notes: this.chipNotes,
       noteCount: 0,
       fmNotes: this.fmNotes,
@@ -362,6 +364,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.reboots = rail.rebootCount
       m.rail2 = this.built.supplies.second.v
       m.reboots2 = this.built.supplies.second.rebootCount
+      m.faults = this.built.chain.faults
+      m.faultStage = this.built.chain.faultStage
       m.noteCount = sounding
       m.fmNoteCount = fmSounding
       m.pcmNoteCount = pcmSounding

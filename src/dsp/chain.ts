@@ -322,6 +322,16 @@ export class Chain {
   duck = 0
 
   /**
+   * Blocks in which a stage put a non-finite sample on the bus, and the stage
+   * that did it last. That stage alone is panicked and its block zeroed. The
+   * whole board goes when two stages fault in one block, since the poison is
+   * then on a shared bus, or when it still reaches the output, read as `chain`.
+   */
+  faults = 0
+  faultStage = ''
+  private blockFaults = 0
+
+  /**
    * How loud each source, the mic and the bus itself have been since the last
    * read, held at the peak rather than averaged — a kick every half second is
    * a channel doing something, and a mean over that window says it is nearly
@@ -455,6 +465,7 @@ export class Chain {
     this.dropped = 0
     this.fbShift = 0
     this.limitEnv = 0
+    this.outGainWas = -1
     this.deskEnv.reset()
     this.deskRail = 1
     this.deskLast = 0
@@ -467,6 +478,7 @@ export class Chain {
   process(io: StereoBlock, p: Float32Array, mic?: Float32Array) {
     const { n } = io
     const ctx = this.ctx
+    this.blockFaults = 0
 
     const micLevel = p[IDX.micLevel]!
     let micPeak = 0
@@ -594,6 +606,12 @@ export class Chain {
         const gating = k === logicFrom
         if (gating) for (let i = 0; i < n; i++) ctx.logic[i] = prev[i]!
         s.process(io, p, ctx)
+        if (this.contain(s, io, n)) {
+          prev.fill(0, 0, n)
+          prevR.fill(0, 0, n)
+          if (carrying) ctx.carrier.fill(0, 0, n)
+          if (gating) ctx.logic.fill(0, 0, n)
+        }
         if (carrying) carRan = true
         if (gating) logicRan = true
         if (vca) {
@@ -730,6 +748,7 @@ export class Chain {
       }
       if (to === 1 && from === 1) {
         s.process(io, p, ctx)
+        this.contain(s, io, n)
         continue
       }
       for (let k = 0; k < n; k++) {
@@ -737,6 +756,7 @@ export class Chain {
         this.dryR[k] = io.r[k]!
       }
       s.process(io, p, ctx)
+      this.contain(s, io, n)
       const step = (to - from) / n
       for (let k = 0; k < n; k++) {
         const g = from + step * (k + 1)
@@ -747,28 +767,55 @@ export class Chain {
     }
     for (const s of this.post) {
       if (s === this.tape && tapeAt !== TAPE_AT_END) continue
-      if (!s.when || s.when(p, ctx)) s.process(io, p, ctx)
+      if (!s.when || s.when(p, ctx)) {
+        s.process(io, p, ctx)
+        this.contain(s, io, n)
+      }
     }
 
     this.tail(io, p, n)
     this.computeFeedback(io, p)
     this.duck = this.limit(io, n)
 
-    if (
+    const leaked =
       !Number.isFinite(io.l[0]!) ||
       !Number.isFinite(io.l[n - 1]!) ||
       !Number.isFinite(io.r[0]!) ||
       !Number.isFinite(this.fbRetL[0]!)
-    ) {
+    if (leaked) this.fault('chain')
+    if (leaked || this.blockFaults > 1) {
       this.panic()
       io.l.fill(0, 0, n)
       io.r.fill(0, 0, n)
     }
   }
 
+  private contain(s: Stage, io: StereoBlock, n: number) {
+    const { l, r } = io
+    let sum = 0
+    for (let i = 0; i < n; i++) sum += l[i]! + r[i]!
+    const poisoned = !Number.isFinite(sum)
+    if (poisoned) {
+      l.fill(0, 0, n)
+      r.fill(0, 0, n)
+      s.panic()
+      this.fault(s.label)
+    }
+    return poisoned
+  }
+
+  private fault(stage: string) {
+    this.faults++
+    this.faultStage = stage
+    this.blockFaults++
+  }
+
   private runTape(io: StereoBlock, p: Float32Array) {
     const t = this.tape
-    if (t && (!t.when || t.when(p, this.ctx))) t.process(io, p, this.ctx)
+    if (t && (!t.when || t.when(p, this.ctx))) {
+      t.process(io, p, this.ctx)
+      this.contain(t, io, io.n)
+    }
   }
 
   // The safety tail, in a method of its own so V8 compiles the loop apart from
@@ -909,7 +956,10 @@ export class Chain {
         dropped |= 1 << k
         continue
       }
-      if (!s.when || s.when(p, this.ctx)) s.process(io, p, this.ctx)
+      if (!s.when || s.when(p, this.ctx)) {
+        s.process(io, p, this.ctx)
+        this.contain(s, io, n)
+      }
     }
     this.dropped = dropped
   }

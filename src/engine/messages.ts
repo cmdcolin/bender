@@ -171,6 +171,10 @@ export interface MeterMsg {
   /** The second cells, and their watchdog's count. */
   rail2: number
   reboots2: number
+  /** Blocks in which a stage's output went non-finite, and the stage that last
+      did it: see the chain's own `faults`. */
+  faults: number
+  faultStage: string
   /** Every note the chip is sounding, in its own semitones — the tune, the
       backing and the key voices. The panel's keyboard lights off this, which is
       how a note nobody pressed (the ROM's, or one a drum hit struck) reaches the

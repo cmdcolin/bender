@@ -163,6 +163,8 @@ export interface Meter {
   reboots: number
   rail2: number
   reboots2: number
+  faults: number
+  faultStage: string
   /** What each source, the mic and the bus peaked at over the last meter — see
       the chain's taps. Read by the mixer's meters, which draw straight to the
       DOM off it rather than through a render. */
@@ -392,6 +394,8 @@ export class Engine {
       reboots: 0,
       rail2: 1,
       reboots2: 0,
+      faults: 0,
+      faultStage: '',
       taps: new Float32Array(N_TAPS),
       walk: Uint8Array.from([0, 1, 2, 3, 4, 5]),
       dropped: 0,
@@ -660,6 +664,11 @@ export class Engine {
           msg.monoNoteCount,
         )
         if (mono !== this.monoNotes.get()) this.monoNotes.set(mono)
+        const newFaults = msg.faults - this.meter.get().faults
+        if (newFaults > 0)
+          console.warn(
+            `bender: ${newFaults} block(s) of non-finite audio contained, last from ${msg.faultStage}`,
+          )
         this.meter.set({
           peak: msg.peak,
           scope: msg.scope,
@@ -680,6 +689,8 @@ export class Engine {
           reboots: msg.reboots,
           rail2: msg.rail2,
           reboots2: msg.reboots2,
+          faults: msg.faults,
+          faultStage: msg.faultStage,
           taps: msg.taps,
           walk: msg.walk,
           dropped: msg.dropped,
