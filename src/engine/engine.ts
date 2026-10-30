@@ -523,6 +523,15 @@ export class Engine {
   readonly pcmNotes = createStore<ReadonlySet<number>>(new Set())
   readonly monoKeysDown = createStore<ReadonlySet<number>>(new Set())
   readonly monoNotes = createStore<ReadonlySet<number>>(new Set())
+  private readonly keysDownOn: Record<
+    NoteDest,
+    ReturnType<typeof createStore<ReadonlySet<number>>>
+  > = {
+    toy: this.keysDown,
+    fm: this.fmKeysDown,
+    pcm: this.pcmKeysDown,
+    mono: this.monoKeysDown,
+  }
   // Which sources are actually putting something on the bus, as a bit per
   // SOURCE_TAPS slot. A run switch says a sequencer is walking; this says the
   // fader in front of it is up and the machine behind it is making a sound,
@@ -2015,14 +2024,7 @@ export class Engine {
   // Striking a note that is already down is no news to anything watching, so
   // the set only turns over when it really changes.
   private hold(semitone: number, down: boolean, dest: NoteDest) {
-    const store =
-      dest === 'fm'
-        ? this.fmKeysDown
-        : dest === 'pcm'
-          ? this.pcmKeysDown
-          : dest === 'mono'
-            ? this.monoKeysDown
-            : this.keysDown
+    const store = this.keysDownOn[dest]
     const notes = store.get()
     if (notes.has(semitone) === down) return
     const next = new Set(notes)
@@ -2037,10 +2039,8 @@ export class Engine {
     this.flush()
     this.post({ kind: 'panic' })
     for (const struck of Object.values(this.struck)) struck.clear()
-    if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
-    if (this.fmKeysDown.get().size > 0) this.fmKeysDown.set(new Set())
-    if (this.pcmKeysDown.get().size > 0) this.pcmKeysDown.set(new Set())
-    if (this.monoKeysDown.get().size > 0) this.monoKeysDown.set(new Set())
+    for (const down of Object.values(this.keysDownOn))
+      if (down.get().size > 0) down.set(new Set())
   }
 }
 
