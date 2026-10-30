@@ -1,7 +1,7 @@
 // A heap of bent hardware on the floor, seen from above, drawn as flat SVG
 // shapes. One seed always draws the same heap.
-export const PILE_WIDTH = 1200
-export const PILE_HEIGHT = 540
+const PILE_WIDTH = 1200
+const PILE_HEIGHT = 540
 
 const C = {
   red: '#e8553d',

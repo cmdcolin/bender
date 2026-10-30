@@ -21,7 +21,7 @@ export const TAP_GAP_MS = 2500
 /** How many gaps the reading is averaged over. Enough that one clumsy press is
     outvoted, few enough that the row still follows you when you change your
     mind about the speed halfway through. */
-export const TAP_GAPS = 4
+const TAP_GAPS = 4
 
 /** The run a press belongs to: the one that was going, or this press alone. */
 export function tapRun(times: readonly number[], now: number): number[] {

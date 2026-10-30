@@ -41,7 +41,7 @@ export type Heat = (typeof HEATS)[number]
 export const isHeat = (v: unknown): v is Heat => HEATS.some(h => h === v)
 
 /** Where a silent stage's mix or level goes when a key needs it heard. */
-export const GATE_POS = 0.75
+const GATE_POS = 0.75
 
 /** The two ends a key slams a control to. */
 export const LOW_POS = 0.03

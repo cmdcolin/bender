@@ -9,7 +9,6 @@
 // The list algebra and the name rules live in skillet-shared/saved-list; this
 // file gives them bender's names and its session cap.
 import {
-  ITEM_MAX,
   ITEM_NAME_MAX,
   cleanItemName,
   newItemId,
@@ -34,7 +33,6 @@ import type { RecentSession } from 'skillet-shared/saved-list'
 // How many sessions one account keeps. The rules refuse a longer list.
 export const RECENT_MAX = 8
 
-export const VOICE_MAX = ITEM_MAX
 export const VOICE_NAME_MAX = ITEM_NAME_MAX
 export const newVoiceId = newItemId
 export const cleanVoiceName = cleanItemName

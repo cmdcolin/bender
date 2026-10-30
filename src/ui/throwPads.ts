@@ -41,10 +41,10 @@ const readPad = (stored: object) => {
     : null
 }
 
-export const parseThrowPads = (raw: string | null): ThrowPadMap =>
+const parseThrowPads = (raw: string | null): ThrowPadMap =>
   parseMap(raw, throwName, readPad)
 
-export const parseEffectPads = (raw: string | null): EffectPadMap =>
+const parseEffectPads = (raw: string | null): EffectPadMap =>
   parseMap(
     raw,
     name => (isControlKey(name) ? name : null),

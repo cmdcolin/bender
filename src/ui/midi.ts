@@ -195,15 +195,15 @@ export const parseRoute = (raw: string | null): KeyRoute =>
   ROUTES.find(r => r === raw) ?? 'toy'
 
 /** Where the keybed is cut, as a MIDI note. Middle C, until you set it. */
-export const DEFAULT_SPLIT = 60
+const DEFAULT_SPLIT = 60
 
-export const parseSplit = (raw: string | null): number => {
+const parseSplit = (raw: string | null): number => {
   const n = Number(raw)
   return Number.isInteger(n) && n >= 0 && n <= 127 ? n : DEFAULT_SPLIT
 }
 
 /** Which beds a note played at `midiNote` reaches. */
-export const routeDests = (
+const routeDests = (
   route: KeyRoute,
   split: number,
   midiNote: number,

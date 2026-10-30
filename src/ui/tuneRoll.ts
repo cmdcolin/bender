@@ -58,8 +58,7 @@ export const isC = (note: number) => ((note % 12) + 12) % 12 === 3
 
 // The window's bottom, snapped to a C so the rows read as octaves rather than
 // as wherever the lowest note you played happened to land.
-export const octaveFloor = (note: number) =>
-  Math.floor((note - 3) / 12) * 12 + 3
+const octaveFloor = (note: number) => Math.floor((note - 3) / 12) * 12 + 3
 
 export const clampBase = (note: number) =>
   Math.min(Math.max(note, NOTE_LO), TOP_BASE)

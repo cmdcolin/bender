@@ -24,7 +24,7 @@ export const padKeyFor = (voice: number) => String(voice + 1)
 /** Which voice a physical key strikes, or -1 for a key that is not a pad. The
     number row and the pad on a numeric keypad alike — both are a row of digits
     under a hand, and a kit is played with whichever one you have. */
-export function padVoice(code: string): number {
+function padVoice(code: string): number {
   const digit = /^(?:Digit|Numpad)([0-9])$/.exec(code)
   const voice = digit ? Number(digit[1]) - 1 : -1
   return voice >= 0 && voice < N_DRUM_VOICES ? voice : -1

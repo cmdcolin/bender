@@ -29,7 +29,7 @@ const KEY = 'bender.morphSeconds'
 // A stored duration back onto the ring. Anything unrecognised — including a
 // first run, which has never stored anything — lands on 1s rather than a cut: an
 // explicit cut is a choice somebody made, not the value nobody has picked yet.
-export function parseMorph(raw: string | null): MorphSeconds {
+function parseMorph(raw: string | null): MorphSeconds {
   return MORPH_SECONDS.find(s => String(s) === raw) ?? 1
 }
 
@@ -50,7 +50,7 @@ export const PHRASE_LOCK_LABELS: Record<PhraseLock, string> = {
   16: '16 bars',
 }
 
-export const parsePhraseLock = (raw: string | null): PhraseLock =>
+const parsePhraseLock = (raw: string | null): PhraseLock =>
   PHRASE_LOCKS.find(b => String(b) === raw) ?? 0
 
 /** Puts back the lock the desk had last time; only the desk shows it. */

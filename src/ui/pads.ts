@@ -57,7 +57,7 @@ export const GM_PADS: Record<DrumVoiceKey, number[]> = {
 export const VOICE_KEYS: DrumVoiceKey[] = DRUM_VOICES.map(v => v.key)
 export const voiceLabel = (key: DrumVoiceKey) =>
   DRUM_VOICES.find(v => v.key === key)?.label ?? key
-export const voiceIndex = (key: DrumVoiceKey) => VOICE_KEYS.indexOf(key)
+const voiceIndex = (key: DrumVoiceKey) => VOICE_KEYS.indexOf(key)
 const isVoiceKey = (key: string): key is DrumVoiceKey =>
   VOICE_KEYS.some(v => v === key)
 

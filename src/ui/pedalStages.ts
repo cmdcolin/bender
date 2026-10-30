@@ -4,7 +4,7 @@ import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 
 /** The pedals in the order the signal meets them, which is the order both the
     menu and the shelf list them in. */
-export function useRunOrder() {
+function useRunOrder() {
   const at = useBoardValue(c => Math.round(c.pedalOrder))
   return pedalOrderAt(at).map(i => PEDALS[i]!.group)
 }

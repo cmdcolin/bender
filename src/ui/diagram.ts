@@ -105,18 +105,6 @@ export function useFlow(channel?: string): 'on' | 'plain' {
     : 'plain'
 }
 
-/** Opens `box` when the stage's editor appears, so the editor's rows show. */
-export function useBoxWhileEditing(
-  pick: BoxPick,
-  editing: boolean,
-  box: string,
-) {
-  const [was, setWas] = useState(editing)
-  if (editing === was) return
-  setWas(editing)
-  if (editing && pick.selected !== box) pick.toggle(box)
-}
-
 // Whether a row has anything to act on yet: a fault waits for a wire to be cut,
 // and a row you have already moved stays whatever the switch beside it says.
 export const rowShown = (key: ControlKey, c: Controls) => {

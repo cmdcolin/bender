@@ -71,6 +71,8 @@ export function parseBench(raw: string | null): Bench {
 
 export const bench = createStore<Bench>(parseBench(read(KEY)))
 
+export const hasStoredBench = () => read(KEY) !== null
+
 export function setBench(next: Bench) {
   bench.set(next)
   write(KEY, JSON.stringify(next))

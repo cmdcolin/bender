@@ -106,8 +106,7 @@ export function redealAll() {
 /** Steps of the kit's bar that fire a bend key: step n fires key n, held for
     the step. Not a control — the deal it points at is this session's. */
 export const bendRow = createStore(0)
-export const bendRowLit = (step: number) =>
-  (bendRow.get() & stepBit(step)) !== 0
+const bendRowLit = (step: number) => (bendRow.get() & stepBit(step)) !== 0
 export const toggleBendStep = (step: number) =>
   bendRow.set(bendRow.get() ^ stepBit(step))
 

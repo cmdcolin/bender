@@ -37,7 +37,7 @@ added.subscribe(() => writeSession(KEY, JSON.stringify([...added.get()])))
 
 /** The faces the bench lays out whatever the board holds: the instruments,
     pedals and bends brought up. */
-export const benchStages = (b: Bench): string[] => [
+const benchStages = (b: Bench): string[] => [
   ...b.instruments,
   ...b.pedals,
   ...b.bends,
