@@ -3,7 +3,7 @@ import { DEST } from '../modbus.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
-import { dampAt, Svf } from '../util/svf.ts'
+import { dampAt, Svf, svfF } from '../util/svf.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -68,11 +68,10 @@ export class Screech implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    const nyq = this.sr * 0.22
     // A hot tank drifts flat, the way every cheap filter does.
     const base = p[IDX.filtHz]! * (1 - 0.08 * ctx.heat)
     const mod = ctx.mod.read(DEST.filtHz)
-    const fBase = 2 * Math.sin((Math.PI * Math.min(base, nyq)) / this.sr)
+    const fBase = svfF(base, this.sr)
     const res = p[IDX.filtRes]!
     const modRes = ctx.mod.read(DEST.filtRes)
     const damp = dampAt(res)
@@ -89,18 +88,11 @@ export class Screech implements Stage {
     const popFade = Math.exp(-1 / (POP_FADE_S * this.sr))
     const motionK = 1 / (0.05 * this.sr)
     const liftOdds = (wiper * WIPER_HZ) / (MOTION_CAP * this.sr)
-    const fTop = 2 * Math.sin((Math.PI * nyq) / this.sr)
-    const fBottom = 2 * Math.sin((Math.PI * 30) / this.sr)
+    const fTop = svfF(Infinity, this.sr)
+    const fBottom = svfF(30, this.sr)
 
     for (let i = 0; i < io.n; i++) {
-      let f = mod
-        ? 2 *
-          Math.sin(
-            (Math.PI *
-              Math.min(Math.max(base * octaves(mod[i]! * 4), 10), nyq)) /
-              this.sr,
-          )
-        : fBase
+      let f = mod ? svfF(base * octaves(mod[i]! * 4), this.sr) : fBase
       if (wiper > 0) {
         const moved = Math.abs(f - this.fPrev) / (this.fPrev + 1e-4)
         this.fPrev = f
