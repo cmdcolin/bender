@@ -232,9 +232,9 @@ test('panic clears a NaN off the tape', () => {
   const deck = new FourTrack(SR)
   const loop = deck.loops[0]!
   loop.thread(SR)
-  loop.tape![5] = NaN
-  loop.tape![6] = 0.25
+  loop.tape[5] = NaN
+  loop.tape[6] = 0.25
   deck.panic()
-  expect(loop.tape![5]).toBe(0)
-  expect(loop.tape![6]).toBe(0.25)
+  expect(loop.tape[5]).toBe(0)
+  expect(loop.tape[6]).toBe(0.25)
 })

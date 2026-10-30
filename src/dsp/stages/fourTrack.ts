@@ -164,10 +164,10 @@ class Strip {
 
 // One loop of tape and the heads that run over it.
 class Loop {
-  tape: Float32Array | null = null
-  wear: Float32Array | null = null
+  readonly tape: Float32Array
+  readonly wear: Float32Array
   /** Frames of tape threaded so far. The buffer is cut for the longest loop
-      the first time, so threading more never copies on the audio thread. */
+      up front, so threading never allocates or copies on the audio thread. */
   threaded = 0
   /** Frames in the loop as cut, which the Length knob can move under the
       head; never more than the tape threaded. */
@@ -209,6 +209,8 @@ class Loop {
     this.gauss = gauss
     this.rng = rng
     this.maxFrames = MAX_LOOP_S * sr
+    this.tape = new Float32Array(this.maxFrames)
+    this.wear = new Float32Array(Math.ceil(this.maxFrames / CELL))
     this.enc = new Dbx(sr, false)
     this.dec = new Dbx(sr, true)
   }
@@ -217,18 +219,16 @@ class Loop {
   // loop is cut longer than what is on the spool. What was recorded stays
   // where it was; the new length is blank.
   thread(frames: number) {
-    if (frames <= this.threaded) return
-    this.threaded = Math.min(frames, this.maxFrames)
-    this.wearDirty = true
-    if (this.tape) return
-    this.tape = new Float32Array(this.maxFrames)
-    this.wear = new Float32Array(Math.ceil(this.maxFrames / CELL))
+    if (frames > this.threaded) {
+      this.threaded = Math.min(frames, this.maxFrames)
+      this.wearDirty = true
+    }
   }
 
   /** The head's reading at the current position, cubic between frames. */
   read(): number {
     const tape = this.tape
-    if (!tape || this.len < 4) return 0
+    if (this.len < 4) return 0
     const n = this.len
     const i = Math.floor(this.pos)
     const t = this.pos - i
@@ -248,8 +248,7 @@ class Loop {
       edge is a slope rather than a step. */
   oxide(smooth: number): number {
     const wear = this.wear
-    const want =
-      wear && this.len > 0 ? (wear[(this.pos * PER_CELL) | 0] ?? 0) : 0
+    const want = this.len > 0 ? (wear[(this.pos * PER_CELL) | 0] ?? 0) : 0
     this.worn = flushDenormal(this.worn + smooth * (want - this.worn))
     return this.worn
   }
@@ -321,7 +320,6 @@ class Loop {
   lay(from: number, to: number, u: number, keep: number, s: Settings) {
     const tape = this.tape
     const wear = this.wear
-    if (!tape || !wear) return
     const n = this.len
     const span = to - from
     if (span === 0) {
@@ -351,7 +349,7 @@ class Loop {
   // lap.
   scuff(amount: number) {
     const wear = this.wear
-    if (!wear || amount <= 0 || this.len < CELL) return
+    if (amount <= 0 || this.len < CELL) return
     const cell = (this.pos * PER_CELL) | 0
     if (cell === this.wearAt) return
     this.wearAt = cell
@@ -386,7 +384,7 @@ class Loop {
   watch() {
     const tape = this.tape
     const n = this.len
-    if (!tape || n === 0) return
+    if (n === 0) return
     if (n !== this.drawnLen) {
       this.drawnLen = n
       this.peaks.fill(0)
@@ -406,7 +404,7 @@ class Loop {
   /** Brings the wear drawing up to date, if anything has worn since. */
   drawWear() {
     const wear = this.wear
-    if (!wear || !this.wearDirty || this.len === 0) return
+    if (!this.wearDirty || this.len === 0) return
     this.wearDirty = false
     this.shed.fill(0)
     const cells = Math.ceil(this.len / CELL)
@@ -424,8 +422,8 @@ class Loop {
   /** A blank cassette: the take, the wear and the drawing all gone, the tape
       threaded as long as it was. */
   blank() {
-    this.tape?.fill(0)
-    this.wear?.fill(0)
+    this.tape.fill(0)
+    this.wear.fill(0)
     this.peaks.fill(0)
     this.shed.fill(0)
     this.pos = 0
@@ -457,7 +455,6 @@ class Loop {
     this.enc.reset()
     this.dec.reset()
     const tape = this.tape
-    if (!tape) return
     for (let i = 0; i < this.threaded; i++)
       if (!Number.isFinite(tape[i])) tape[i] = 0
   }
@@ -603,7 +600,7 @@ export class FourTrack implements Stage {
       this.peaks.set(loop.peaks, k * PEAK_BINS)
       this.shed.set(loop.shed, k * PEAK_BINS)
       this.heads[k] = loop.len > 0 ? loop.pos / loop.len : 0
-      this.laps[k] = loop.tape ? loop.len / this.sr / this.lastSpeed : 0
+      this.laps[k] = loop.threaded > 0 ? loop.len / this.sr / this.lastSpeed : 0
     }
   }
 
@@ -703,7 +700,7 @@ export class FourTrack implements Stage {
       b.used[k] = b.fader[k]! > 0 || b.rec[k]! > 0 ? 1 : 0
       // A track with no loop threaded has no oxide to read, hiss included.
       b.heard[k] =
-        this.loops[flip ? TRACKS - 1 - k : k]!.tape &&
+        this.loops[flip ? TRACKS - 1 - k : k]!.threaded > 0 &&
         (b.cue[k]! > 0 || (b.used[k] && b.input[k] === INPUT_TAPE))
           ? 1
           : 0
@@ -721,7 +718,7 @@ export class FourTrack implements Stage {
             MAX_LOOP_S * sr,
           ),
         )
-      if (loop.tape) {
+      if (loop.threaded > 0) {
         loop.len = Math.min(Math.max(frames, CELL), loop.threaded)
         if (loop.pos >= loop.len) loop.pos %= loop.len
       }
@@ -807,7 +804,7 @@ export class FourTrack implements Stage {
       for (let k = 0; k < TRACKS; k++) {
         const loop = this.loops[flip ? TRACKS - 1 - k : k]!
         const n = loop.len
-        if (!loop.tape || n === 0) continue
+        if (n === 0) continue
         const from = loop.pos
         const recLvl = b.rec[k]!
         if (recLvl > 0) {
