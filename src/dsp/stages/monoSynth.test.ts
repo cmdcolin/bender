@@ -73,6 +73,27 @@ test('the toy’s key-up leaves a note on its own bed alone', () => {
   expect(rms(x.subarray(0.8 * SR))).toBeGreaterThan(0.05)
 })
 
+test('a kit hit on a key still down leaves it sounding after the gate closes', () => {
+  const held = (monoStruck: number) =>
+    envelope(
+      renderBender(
+        {
+          ...ALONE,
+          drumLevel: 0.001,
+          monoKeyGate: 1,
+          monoStruck,
+          monoAR: 0.01,
+        },
+        2,
+        built => {
+          built.transport.drums = true
+          built.monoSynth.noteOn(0)
+        },
+      ).subarray(SR / 2),
+    ).reduce((a, v) => Math.min(a, v), Infinity)
+  expect(held(1)).toBeGreaterThan(held(0) * 0.5)
+})
+
 test('keys played with the fader down queue one event per note', () => {
   const built = buildBender(SR)
   for (let i = 0; i < 10_000; i++) {

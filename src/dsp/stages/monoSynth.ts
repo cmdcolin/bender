@@ -33,6 +33,7 @@ export class MonoSynth implements Stage {
   private readonly cutoffLane = new Float32Array(BLOCK)
   private readonly queued: { note: number; on: boolean; gain: number }[] = []
   private readonly gateHeld: number[] = []
+  private readonly keysDown: number[] = []
   private lastNote = A3_MIDI
   private gateNote = -1
   private gateLeft = 0
@@ -174,7 +175,7 @@ export class MonoSynth implements Stage {
       return
     }
     if (this.gateNote >= 0 && this.gateNote !== note) {
-      voice.noteOff(this.gateNote)
+      this.release(this.gateNote)
     }
     this.gateNote = note
     this.gateLeft = length
@@ -192,7 +193,7 @@ export class MonoSynth implements Stage {
     if (this.slideNext && from >= 0) {
       if (note !== from) {
         this.voice.noteOn(note, 1, accent, true)
-        this.voice.noteOff(from)
+        this.release(from)
         this.gateNote = note
         this.lastNote = note
       }
@@ -201,6 +202,13 @@ export class MonoSynth implements Stage {
       this.strike(note, false, 1, length, accent)
     }
     this.slideNext = slides
+  }
+
+  /** The gate letting go of a note, which a key still down on it outlasts. */
+  private release(note: number) {
+    if (!this.gateHeld.includes(note) && !this.keysDown.includes(note)) {
+      this.voice.noteOff(note)
+    }
   }
 
   private run(to: number) {
@@ -224,15 +232,21 @@ export class MonoSynth implements Stage {
       this.gateNote = -1
       this.queued.length = 0
       this.gateHeld.length = 0
+      this.keysDown.length = 0
     }
     this.patch(p, ctx)
     voice.bend = 12 * Math.log2(rail.pitchFactor)
 
     for (const q of this.queued) {
+      const down = this.keysDown.indexOf(q.note)
       if (q.on) {
         this.lastNote = q.note
+        if (down < 0) this.keysDown.push(q.note)
         voice.noteOn(q.note, q.gain)
-      } else voice.noteOff(q.note)
+      } else {
+        if (down >= 0) this.keysDown.splice(down, 1)
+        voice.noteOff(q.note)
+      }
     }
     this.queued.length = 0
 
@@ -279,7 +293,7 @@ export class MonoSynth implements Stage {
         const gain = Math.min(ctx.trig.drumGain[i]! / ACCENT_GAIN, 1)
         this.strike(this.lastNote, false, gain)
       } else if (closing) {
-        voice.noteOff(this.gateNote)
+        this.release(this.gateNote)
         this.gateNote = -1
       }
     }
@@ -300,6 +314,7 @@ export class MonoSynth implements Stage {
     this.voice.panic()
     this.queued.length = 0
     this.gateHeld.length = 0
+    this.keysDown.length = 0
     this.gateNote = -1
     this.gateLeft = 0
     this.slideNext = false
