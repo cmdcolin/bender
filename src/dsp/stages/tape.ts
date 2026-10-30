@@ -256,7 +256,7 @@ class TapeHead {
   private ripLow = 0
   private ripBand = 0
   private dropLeft = 0
-  private dropWait = -1
+  private dropHazard: number
   private dropDepth = 0
   private dropEnv = 0
   private dcX = 0
@@ -269,6 +269,7 @@ class TapeHead {
     const draw = mulberry32(seed)
     this.gauss = gaussian(mulberry32((draw() * 0x1_0000_0000) >>> 0))
     this.rng = mulberry32((draw() * 0x1_0000_0000) >>> 0)
+    this.dropHazard = this.nextHazard()
   }
 
   // gapLog is the log of this head's replay pole with the azimuth error already
@@ -386,23 +387,20 @@ class TapeHead {
     let drop = 0
     if (s.dropAmt > 0) {
       // When the next patch of shed oxide arrives, not whether this sample is
-      // it. Rolling a die every sample against a probability of three in a
-      // sample rate is a Poisson process written the expensive way round — the
-      // gaps between the arrivals are exponential, so one draw and a log settle
-      // the whole gap and the samples in between cost a decrement. A head was
-      // paying for a random number forty-eight thousand times a second to say
-      // no forty-eight thousand times.
-      //
-      // The first gap is drawn rather than served. A counter that starts at
-      // nought is a counter already expired, so every take opened on a dropout
-      // — on both heads at once and at whatever the knob was, which is a hole
-      // in the oxide arriving exactly where a hole in the oxide never does.
+      // it: each arrival draws an exponential budget of hazard and every sample
+      // spends the knob's rate from it, so the gaps are a Poisson process for
+      // the price of a subtract. Spending the rate, rather than counting down a
+      // gap drawn at whatever the rate was when the last patch went by, is what
+      // lets the knob move the next arrival — a gap drawn as the knob slewed up
+      // from nought was half a minute long and deaf to it until it ran out.
       if (this.dropLeft > 0) this.dropLeft--
-      else if (this.dropWait < 0) this.dropWait = this.nextGap(s.dropProb)
-      else if (--this.dropWait <= 0) {
-        this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * s.dropSr)
-        this.dropDepth = 0.3 + 0.7 * this.rng()
-        this.dropWait = this.nextGap(s.dropProb)
+      else {
+        this.dropHazard -= s.dropProb
+        if (this.dropHazard <= 0) {
+          this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * s.dropSr)
+          this.dropDepth = 0.3 + 0.7 * this.rng()
+          this.dropHazard = this.nextHazard()
+        }
       }
       this.dropEnv = flushDenormal(
         this.dropEnv +
@@ -463,10 +461,8 @@ class TapeHead {
     )
   }
 
-  // Samples to the next arrival. At least one, so a counter below zero means
-  // one that has never been drawn rather than one that has run out.
-  private nextGap(prob: number): number {
-    return Math.max(1, Math.ceil(-Math.log(1 - this.rng()) / prob))
+  private nextHazard() {
+    return -Math.log(1 - this.rng())
   }
 
   reset() {
@@ -485,7 +481,7 @@ class TapeHead {
     this.ripLow = 0
     this.ripBand = 0
     this.dropLeft = 0
-    this.dropWait = -1
+    this.dropHazard = this.nextHazard()
     this.dropDepth = 0
     this.dropEnv = 0
     this.dcX = 0

@@ -484,6 +484,53 @@ test('a take does not open on a dropout', () => {
   expect(clean).toBeGreaterThan(12)
 })
 
+// A knob wound up from a trickle sheds at the new rate straight away, rather
+// than once a gap drawn at the trickle has run its half minute out.
+test('turning the dropouts up brings the next one forward', () => {
+  const take = (from: number, seed: number) => {
+    const chain = buildChain(SR, seed)
+    const io: StereoBlock = {
+      l: new Float32Array(BLOCK),
+      r: new Float32Array(BLOCK),
+      n: BLOCK,
+    }
+    const trickle = packParams({
+      ...DEFAULT_CONTROLS,
+      ...TONE,
+      ...STEADY,
+      tapeMix: 1,
+      tapeDrop: from,
+    })
+    const full = packParams({
+      ...DEFAULT_CONTROLS,
+      ...TONE,
+      ...STEADY,
+      tapeMix: 1,
+      tapeDrop: 1,
+    })
+    const blocks = Math.ceil((3 * SR) / BLOCK)
+    const out = new Float32Array(blocks * BLOCK)
+    for (let b = 0; b < blocks; b++) {
+      chain.process(io, b * BLOCK < SR ? trickle : full)
+      out.set(io.l.subarray(0, BLOCK), b * BLOCK)
+    }
+    return out
+  }
+  let shed = 0
+  for (const seed of [1, 2, 3, 4, 5, 6]) {
+    const whole = take(0, seed)
+    const wound = take(0.01, seed)
+    let worst = 0
+    for (let i = SR + 4800; i + 1200 < wound.length; i += 600)
+      worst = Math.min(
+        worst,
+        db(rms(wound.subarray(i, i + 1200)) / rms(whole.subarray(i, i + 1200))),
+      )
+    if (worst < -3) shed++
+  }
+  expect(shed).toBeGreaterThan(4)
+})
+
 test('print-through leaves a ghost one spool wrap behind the signal', () => {
   const ghost = (print: number) => {
     const chain = buildChain(SR)
