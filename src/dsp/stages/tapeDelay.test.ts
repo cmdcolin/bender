@@ -115,6 +115,26 @@ test('a second head up is a second repeat at twice the spacing', () => {
   expect(second({ dlyHeads: 1 })).toBeGreaterThan(10 * second({}))
 })
 
+test('a head spaced past the end of the reel comes round the loop', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    sampleLevel: 1,
+    sampleMode: 1,
+    dlyMix: 1,
+    delayMs: 2000,
+    dlyFb: 0,
+  }
+  const burst = (b: BuiltChain) => b.sampler.setBuffer(sine(400, 0.1))
+  const early = (over: Partial<Controls>) =>
+    rms(
+      renderBender({ ...look, ...over }, 1, burst).subarray(
+        0.72 * SR,
+        0.78 * SR,
+      ),
+    )
+  expect(early({ dlyHeads: 2 })).toBeGreaterThan(10 * early({}))
+})
+
 // A square burst, then the echoes on their own. The carrier lands on the tap
 // before the regen sum, so what it does compounds lap by lap and the tail is
 // where it shows.

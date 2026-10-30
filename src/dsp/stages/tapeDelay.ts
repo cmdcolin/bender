@@ -257,15 +257,14 @@ export class TapeDelay implements Stage {
         this.maxDelay - delaySamples - 4,
       )
       // The transport's slip and wobble are the tape's, so every head sees
-      // the same pitch; the spacing is the head's own.
+      // the same pitch; the spacing is the head's own. A head spaced past the
+      // end of the reel has come round the loop, and reads that much less.
       let sumL = 0
       let sumR = 0
       for (const k of HEAD_IDS) {
         if (!(heads & (1 << k))) continue
-        const d = Math.min(
-          Math.max((k + 1) * delaySamples + this.slide + wobble, 1),
-          this.maxDelay,
-        )
+        const along = (k + 1) * delaySamples + this.slide + wobble
+        const d = Math.max(along < this.loop ? along : along % this.loop, 1)
         let l = this.lineL.readHermite(d)
         let r = this.lineR.readHermite(d * 1.007)
         if (clogged & (1 << k)) {
