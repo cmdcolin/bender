@@ -25,6 +25,8 @@ const output = { send: (bytes: number[]) => sent.push(bytes) }
 // the one thing a controller cannot tell the app about itself, since a port on
 // its way out sends nothing.
 let onStateChange: ((e: Event) => void) | null = null
+const portEvent = (port: { id: string; type: string; state: string }) =>
+  onStateChange?.({ port } as unknown as Event)
 const access = {
   inputs: new Map([
     ['one', input],
@@ -37,7 +39,7 @@ const access = {
   removeEventListener: () => {},
 }
 const unplug = (id = 'one') =>
-  onStateChange?.({ port: { id, state: 'disconnected' } } as unknown as Event)
+  portEvent({ id, type: 'input', state: 'disconnected' })
 
 vi.stubGlobal('navigator', {
   requestMIDIAccess: () => Promise.resolve(access),
@@ -636,13 +638,24 @@ test('a controller plugged in later gets every ring lit', () => {
   cc(35, 0)
   midi.setLights(true)
   sent.length = 0
-  onStateChange?.({ port: { state: 'connected' } } as unknown as Event)
+  portEvent({ id: 'later', type: 'output', state: 'connected' })
   expect(sent).toContainEqual([0xb0, 35, 0])
 
   midi.setLights(false)
   sent.length = 0
   midi.setLights(true)
   expect(sent).toContainEqual([0xb0, 35, 0])
+  midi.setLights(false)
+})
+
+test('opening a port already lit does not light it again', () => {
+  midi.arm('dlyMix')
+  cc(36, 0)
+  midi.setLights(true)
+  sent.length = 0
+  portEvent({ id: 'one', type: 'output', state: 'connected' })
+  portEvent({ id: 'one', type: 'input', state: 'connected' })
+  expect(sent).toEqual([])
   midi.setLights(false)
 })
 
@@ -916,6 +929,24 @@ test('all notes off lets go of a held throw pad', () => {
   send(0x90, 60, 100)
   midi.allNotesOff()
   expect(engine.held.get().has('crush')).toBe(false)
+})
+
+test('a pad device leaving the desk lets go of its throw', () => {
+  midi.armThrow('crush')
+  send(0x90, 60, 100)
+  send(0x90, 60, 100)
+  unplug()
+  expect(engine.held.get().has('crush')).toBe(false)
+})
+
+test('a throw stays down when a port that never threw goes', () => {
+  midi.armThrow('crush')
+  send(0x90, 60, 100)
+  send(0x90, 60, 100)
+  portEvent({ id: 'one', type: 'output', state: 'disconnected' })
+  unplug('two')
+  expect(engine.held.get().has('crush')).toBe(true)
+  send(0x80, 60, 0)
 })
 
 test('a pad bound to an effect pushes the control while it is down', () => {

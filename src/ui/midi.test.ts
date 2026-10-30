@@ -16,7 +16,7 @@ import {
 } from './midi.ts'
 import { gmVoice, GM_PADS, padGain, parsePads, VOICE_KEYS } from './pads.ts'
 import { omit } from './persist.ts'
-import { toPos } from './slider-scale.ts'
+import { fromPos, toPos } from './slider-scale.ts'
 
 test('a CC sweeps the whole of a control and lands on its grid', () => {
   const def = sliderFor('filtHz')
@@ -47,22 +47,35 @@ test('an enum control gets one step per choice', () => {
 })
 
 test('a knob with nothing to catch drives at once', () => {
-  const span = { min: 0, max: 1, step: 0.01 }
-  expect(hasCaught(span, undefined, undefined, 0.9)).toBe(true)
+  expect(hasCaught(sliderFor('drumBpm'), undefined, undefined, 900)).toBe(true)
 })
 
 test('a first message catches only when it lands near the value', () => {
-  const span = { min: 0, max: 1, step: 0.01 }
-  expect(hasCaught(span, 0.5, undefined, 0.5)).toBe(true)
-  expect(hasCaught(span, 0.5, undefined, 0.51)).toBe(true)
-  expect(hasCaught(span, 0.5, undefined, 0.9)).toBe(false)
+  const def = sliderFor('drumBpm')
+  const at = (pos: number) => fromPos(def, pos)
+  expect(hasCaught(def, at(0.5), undefined, at(0.5))).toBe(true)
+  expect(hasCaught(def, at(0.5), undefined, at(0.51))).toBe(true)
+  expect(hasCaught(def, at(0.5), undefined, at(0.9))).toBe(false)
+})
+
+// The window is in travel: 50 bpm is inside a 64th of the raw span above 20,
+// but a long way round a log knob from it.
+test('the first-message window is as narrow at the bottom of a log knob', () => {
+  const def = sliderFor('drumBpm')
+  expect(def.curve).toBe('log')
+  expect(50 - 20).toBeLessThan((def.max - def.min) / 64)
+  expect(hasCaught(def, 20, undefined, 50)).toBe(false)
+  expect(
+    hasCaught(def, 20, undefined, fromPos(def, toPos(def, 20) + 0.01)),
+  ).toBe(true)
 })
 
 test('a knob catches by sweeping through the value, from either side', () => {
-  const span = { min: 0, max: 1, step: 0.01 }
-  expect(hasCaught(span, 0.5, 0.2, 0.4)).toBe(false)
-  expect(hasCaught(span, 0.5, 0.2, 0.6)).toBe(true)
-  expect(hasCaught(span, 0.5, 0.9, 0.3)).toBe(true)
+  const def = sliderFor('drumBpm')
+  const at = (pos: number) => fromPos(def, pos)
+  expect(hasCaught(def, at(0.5), at(0.2), at(0.4))).toBe(false)
+  expect(hasCaught(def, at(0.5), at(0.2), at(0.6))).toBe(true)
+  expect(hasCaught(def, at(0.5), at(0.9), at(0.3))).toBe(true)
 })
 
 test('tempo comes off a run of ticks, and not off too few', () => {

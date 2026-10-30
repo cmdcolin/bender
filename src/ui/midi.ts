@@ -254,8 +254,6 @@ export const parseBindings = (raw: string | null): BindingMap =>
 
 const sourceId = (b: Binding) => `${b.channel}:${b.controller}`
 
-type Span = Pick<SliderDef, 'min' | 'max' | 'step' | 'curve'>
-
 // A 0..127 CC value → a stepped value in the control's range. A curved control
 // maps through its own travel, so a knob feels like the slider on screen rather
 // than racing through the useful end of the scale.
@@ -297,16 +295,17 @@ export function applyDelta(
   return snapToStep(def, fromPos(def, Math.min(1, Math.max(0, pos))))
 }
 
-// Half a control's span per MIDI step — the pickup tolerance for the very first
-// message of a binding, where there is no previous knob position to cross.
-const epsilon = (span: Span) => (span.max - span.min) / 64
+// About two CC steps of slider travel — the pickup tolerance for the very first
+// message of a binding, where there is no previous knob position to cross. In
+// travel rather than units, so the bottom of a log control is no easier to grab.
+const PICKUP_TRAVEL = 1 / 64
 
 // Soft takeover: has the knob earned the right to drive this control yet?
 // Three cases — nothing to catch; a first message with no earlier knob position
 // to have crossed from, so accept when it lands close enough; otherwise the
 // knob must have swept through the value on screen.
 export function hasCaught(
-  span: Span,
+  def: SliderDef,
   onScreen: number | undefined,
   knobWas: number | undefined,
   knobNow: number,
@@ -314,7 +313,7 @@ export function hasCaught(
   return onScreen === undefined
     ? true
     : knobWas === undefined
-      ? Math.abs(knobNow - onScreen) <= epsilon(span)
+      ? Math.abs(toPos(def, knobNow) - toPos(def, onScreen)) <= PICKUP_TRAVEL
       : (knobWas - onScreen) * (knobNow - onScreen) <= 0
 }
 
@@ -413,7 +412,10 @@ class Midi {
   readonly debug = createStore(read(DEBUG_KEY) === '1')
 
   private access: MIDIAccess | null = null
-  private onStateChange: ((e: Event) => void) | null = null
+  private onStateChange: ((e: MIDIConnectionEvent) => void) | null = null
+  // Outputs already lit. Chrome fires a statechange for every port we open as
+  // well as for every device plugged in, and only the second needs the rings.
+  private outputsUp = new Set<string>()
   private keyBySource = new Map<string, ControlKey>()
   private sweep: {
     keys: ControlKey[]
@@ -482,6 +484,7 @@ class Midi {
         write(ENABLED_KEY, '1')
         this.status.set('ready')
         this.listen(access)
+        this.outputsUp = new Set(access.outputs.keys())
         this.lightAll()
         // A kit already running when the grant lands has never sent its start,
         // and a far end that never heard one ignores every pulse after it.
@@ -490,13 +493,9 @@ class Midi {
         // Devices plugged in after the grant still get wired up — and one
         // pulled out mid-note never sends the note off, so what it was holding
         // is let go of here or it is held for ever.
-        this.onStateChange = (e: Event) => {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- statechange on MIDIAccess only ever carries a MIDIConnectionEvent
-          const port = (e as MIDIConnectionEvent).port
-          if (port?.state === 'disconnected') this.dropHand(port.id)
+        this.onStateChange = e => {
+          if (e.port !== null) this.portChanged(e.port)
           this.listen(access)
-          this.lit.clear()
-          this.lightAll()
         }
         access.addEventListener('statechange', this.onStateChange)
         // A source that stops sending ticks — or is unplugged — never sends the
@@ -1128,14 +1127,29 @@ class Midi {
     hand.sustained.clear()
   }
 
-  // The throw pads aren't kept per input, so any input letting go of everything
-  // lets go of all of them.
+  private portChanged(port: MIDIPort) {
+    const gone = port.state === 'disconnected'
+    if (port.type === 'input' && gone) this.dropHand(port.id)
+    if (port.type === 'output') {
+      const fresh = !gone && !this.outputsUp.has(port.id)
+      if (gone) this.outputsUp.delete(port.id)
+      else this.outputsUp.add(port.id)
+      if (fresh) {
+        this.lit.clear()
+        this.lightAll()
+      }
+    }
+  }
+
+  // The throw pads aren't kept per input, so any input that has thrown letting
+  // go of everything lets go of all of them.
   private dropHand(port: string) {
     const hand = this.hands.get(port)
     this.hands.delete(port)
-    if (hand !== undefined)
+    if (hand !== undefined) {
       for (const [semitone, dests] of hand.down) this.end(semitone, dests)
-    this.throwPads.releaseAll()
+      this.throwPads.releaseAll()
+    }
   }
 
   /** Let go of every note the wire is holding, pedal and all. */
@@ -1182,7 +1196,10 @@ class Midi {
       // Binding a pad, striking a voice, or swallowing the finger coming back
       // up — whichever it was, the kit has had it and the chip must not.
       const channel = head & 0x0f
-      if (!this.kit.binding && this.throwPads.play(channel, first, on)) return
+      if (!this.kit.binding && this.throwPads.play(channel, first, on)) {
+        this.hand(port)
+        return
+      }
       if (this.kit.play(channel, first, on, second)) return
       if (!this.notes.get()) return
       // A key pressed to say where the keybed is cut is a key that does not

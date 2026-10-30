@@ -275,3 +275,23 @@ test('loading a file drops the undo copy', () => {
   )
   expect(state).toBe(0)
 })
+
+test('undo restores a dropped file longer than the blank reel', () => {
+  const before = sine(220, 30, 0.5)
+  let restored: number[] = []
+  renderBender(
+    { ...PLAYING, loopRec: 1, loopErase: 1 },
+    0.6,
+    built => built.sampler.setBuffer(Float32Array.from(before)),
+    undefined,
+    (built, secs, p) => {
+      if (secs >= 0.4 && p[IDX.loopRec] === 1) {
+        p[IDX.loopRec] = 0
+        built.sampler.undo()
+        const tape = built.sampler.mono
+        restored = tape ? Array.from(tape.subarray(0, 48000)) : []
+      }
+    },
+  )
+  expect(restored).toEqual(Array.from(before.subarray(0, 48000)))
+})
