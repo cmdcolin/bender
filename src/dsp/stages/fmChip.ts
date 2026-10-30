@@ -1137,8 +1137,7 @@ export class FmChip implements Stage {
     const key = this.regs[REG.keyBlock + n]!
     const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
     const inc =
-      ((fnum / FNUM_FULL) * FNUM_HZ * Math.pow(2, (key >> 1) & 7) * pitch) /
-      this.sr
+      ((fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[(key >> 1) & 7]! * pitch) / this.sr
     const vol = this.volume(n)
 
     if (n === RHYTHM_CH) {
