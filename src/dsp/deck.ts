@@ -270,10 +270,11 @@ export class Deck {
   // 256 samples ahead and only 128 have arrived — so it rides a lag behind it,
   // and the servo trims the step by a few percent toward that lag rather than
   // jumping the head. A hand on the trimmer pitches the mic a hair; a jump
-  // would click.
+  // would click. The lag is one pass plus a block, the most the chain runs
+  // ahead of the read head, which at ×1 is a block late.
   private fillMic(speed: number) {
     const s = Math.max(speed, CREEP)
-    const want = 256 / s + 192
+    const want = BLOCK / s + BLOCK
     if (!this.micPrimed) {
       this.micPrimed = true
       this.micRead = this.micWrite - want

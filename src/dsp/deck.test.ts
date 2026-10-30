@@ -190,6 +190,22 @@ test('the mic comes out at the pitch it went in, whatever the deck is doing', ()
   expect(Math.abs(pitchHz(out) - hz) / hz).toBeLessThan(0.02)
 })
 
+test('at ×1 the mic comes out no more than a block late', () => {
+  const at = SR / 2
+  const bump = (buf: Float32Array, offset: number) => {
+    for (let i = 0; i < buf.length; i++) {
+      const k = offset + i - at + 16
+      buf[i] = k >= 0 && k < 32 ? 0.5 * Math.sin((Math.PI * k) / 32) ** 2 : 0
+    }
+  }
+  const out = runDeck({ ...QUIET, micLevel: 1 }, 1, { mic: bump }).out
+  let peak = 0
+  for (let i = 0; i < out.length; i++)
+    if (Math.abs(out[i]!) > Math.abs(out[peak]!)) peak = i
+  expect(out[peak]).toBeGreaterThan(0.1)
+  expect(peak - at).toBeLessThanOrEqual(BLOCK)
+})
+
 test('a hand dragging the trimmer to the stop and back leaves nothing broken', () => {
   const { out } = runDeck(
     { chipLevel: 0.8, drumLevel: 0.6, deckInertia: 0.4, deckSpeed: 2 },
