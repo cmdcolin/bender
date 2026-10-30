@@ -56,6 +56,9 @@ const MAX_REEL_S = 20
 // closes it is more likely a double press than a decision.
 const MIN_TAKE_S = 0.05
 
+const UNDO_CHUNK = 1024
+const chunksOf = (frames: number) => Math.ceil(frames / UNDO_CHUNK)
+
 // The two markers as frames. They round outward — the in point down, the out
 // point up — so a window is never narrower than the tape you asked for, and
 // only the in point is held back from the end: an out point clamped off the end
@@ -113,8 +116,11 @@ export class Sampler implements Stage {
   private taking = false
   private armed = false
   // One level of undo, held as the tape's other state: undoing swaps it with
-  // the reel, so undoing again is redo.
+  // the reel, so undoing again is redo. A chunk is copied over only as the
+  // record head first reaches it, so arming never copies the whole reel inside
+  // a block; a chunk never kept is the same on both.
   private undoBuf: Float32Array
+  private kept: Uint8Array
   private undoLen = 0
   private undone = false
   private readonly hissRng: Rng = mulberry32(0x7a9e)
@@ -141,6 +147,7 @@ export class Sampler implements Stage {
     this.motorRelease = coef(0.25, sr)
     this.blank = new Float32Array(Math.round(MAX_REEL_S * sr))
     this.undoBuf = new Float32Array(this.blank.length)
+    this.kept = new Uint8Array(chunksOf(this.blank.length))
   }
 
   /** Whether the reel is a first take still going on, with no end yet. */
@@ -194,8 +201,10 @@ export class Sampler implements Stage {
   // thread has no several blocks to give. Offline callers hand over the buffer
   // alone and pay for the scan where nothing is listening.
   setBuffer(mono: Float32Array, peaks?: Float32Array) {
-    if (this.undoBuf.length < mono.length)
+    if (this.undoBuf.length < mono.length) {
       this.undoBuf = new Float32Array(mono.length)
+      this.kept = new Uint8Array(chunksOf(mono.length))
+    }
     this.buf = mono
     this.pos = 0
     this.playing = true
@@ -267,10 +276,15 @@ export class Sampler implements Stage {
     const buf = this.buf
     if (!buf || this.undoLen === 0 || buf.length !== this.undoLen) return
     const other = this.undoBuf
-    for (let i = 0; i < buf.length; i++) {
-      const was = buf[i]!
-      buf[i] = other[i]!
-      other[i] = was
+    for (let c = 0; c < chunksOf(buf.length); c++) {
+      if (this.kept[c]) {
+        const end = Math.min((c + 1) * UNDO_CHUNK, buf.length)
+        for (let i = c * UNDO_CHUNK; i < end; i++) {
+          const was = buf[i]!
+          buf[i] = other[i]!
+          other[i] = was
+        }
+      }
     }
     this.undone = !this.undone
     this.binAt = -1
@@ -278,9 +292,18 @@ export class Sampler implements Stage {
   }
 
   private snapshot(buf: Float32Array) {
-    this.undoBuf.set(buf)
+    this.kept.fill(0, 0, chunksOf(buf.length))
     this.undoLen = buf.length
     this.undone = false
+  }
+
+  private keep(buf: Float32Array, at: number) {
+    const c = (at / UNDO_CHUNK) | 0
+    if (!this.kept[c]) {
+      this.kept[c] = 1
+      const end = Math.min((c + 1) * UNDO_CHUNK, buf.length)
+      for (let i = c * UNDO_CHUNK; i < end; i++) this.undoBuf[i] = buf[i]!
+    }
   }
 
   private struck(trig: number, ctx: Ctx, i: number): boolean {
@@ -386,6 +409,7 @@ export class Sampler implements Stage {
           const white = this.hissRng() * 2 - 1
           laid += hiss * this.hissColor.process(white, HISS_COLOR)
         }
+        if (this.undoLen > 0) this.keep(buf, idx)
         buf[idx] = softclip(laid)
       }
 
