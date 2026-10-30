@@ -47,3 +47,9 @@ test('a retrigger climbs on from the level it stands at', () => {
   env.trigger()
   expect(env.step(adsrRates(SR, 1, 1, 0.5, 2))).toBeGreaterThan(0.5)
 })
+
+test('held on a sustain of nothing, the decay arrives at zero', () => {
+  const env = new Adsr()
+  env.trigger()
+  expect(run(env, 300, adsrRates(SR, 0.01, 1, 0, 1))).toBe(0)
+})

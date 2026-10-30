@@ -167,7 +167,9 @@ export class Octave implements Stage {
         }
       }
       if (flip) this.bounce = 1 - this.bounce
-      this.cross += this.fadeA * (this.bounce - this.cross)
+      this.cross = flushDenormal(
+        this.cross + this.fadeA * (this.bounce - this.cross),
+      )
       const sel = bounceMode === 2 ? this.cross : this.bounce
 
       for (let c = 0; c < 2; c++) {

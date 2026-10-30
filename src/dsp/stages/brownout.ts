@@ -3,6 +3,7 @@ import { Burst } from '../util/burst.ts'
 import { coef, Follower } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -95,8 +96,10 @@ export class Brownout implements Stage {
             this.pumpTarget,
             Math.min(ctx.trig.drumGain[i]!, 1.5),
           )
-        this.pumpTarget *= pumpFall
-        this.pump += (this.pumpTarget - this.pump) * pumpRise
+        this.pumpTarget = flushDenormal(this.pumpTarget * pumpFall)
+        this.pump = flushDenormal(
+          this.pump + (this.pumpTarget - this.pump) * pumpRise,
+        )
       }
       const pumped = Math.min(kickPump * this.pump, 1)
       ctx.sag[i] = Math.max(sag, pumped)

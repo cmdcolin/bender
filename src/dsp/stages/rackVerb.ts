@@ -5,6 +5,7 @@ import { BiquadState, lowpass, type Biquad } from '../util/biquad.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -213,8 +214,8 @@ export class RackVerb implements Stage {
     this.write(R_D1, tr)
     tl = this.read(L_D1, this.len[L_D1]!)
     tr = this.read(R_D1, this.len[R_D1]!)
-    this.dampL = tl + damp * (this.dampL - tl)
-    this.dampR = tr + damp * (this.dampR - tr)
+    this.dampL = flushDenormal(tl + damp * (this.dampL - tl))
+    this.dampR = flushDenormal(tr + damp * (this.dampR - tr))
     tl = this.allpass(L_AP2, this.dampL * decay, g2)
     tr = this.allpass(R_AP2, this.dampR * decay, g2)
     this.write(L_D2, tl)
