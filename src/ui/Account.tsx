@@ -68,6 +68,7 @@ export function Account(props: {
           aria-expanded={open}
           onClick={() => setOpen(o => !o)}
         >
+          {/* CROSS_REPO_SYNC(account-avatar) */}
           {photo === null || broken ? (
             <span className={styles.initial} aria-hidden>
               {(name.trim()[0] ?? '?').toUpperCase()}
@@ -83,6 +84,7 @@ export function Account(props: {
               onError={() => setBroken(true)}
             />
           )}
+          {/* CROSS_REPO_SYNC_END(account-avatar) */}
         </button>
       </Tip>
       {open && (
