@@ -574,6 +574,7 @@ const rampGain = (ramp: number, k: number, n: number) => {
 
 export class ToyDrum implements Stage {
   label = 'toyDrum'
+  readonly writes = ['send'] as const
   /**
    * Steps clocked since the machine started, not the column it is on: with a
    * length per row there is no one column. Each row's playhead is this counter

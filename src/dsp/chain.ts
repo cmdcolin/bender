@@ -15,6 +15,7 @@ import {
   type Ctx,
   type Stage,
   type StereoBlock,
+  type WrittenBus,
 } from './stage.ts'
 import { CRUSH_REF_TOY, CRUSH_WITH_TAP } from './stages/crusher.ts'
 import { RING_FROM_TAP } from './stages/ringmod.ts'
@@ -322,10 +323,11 @@ export class Chain {
   duck = 0
 
   /**
-   * Blocks in which a stage put a non-finite sample on the bus, and the stage
-   * that did it last. That stage alone is panicked and its block zeroed. The
-   * whole board goes when two stages fault in one block, since the poison is
-   * then on a shared bus, or when it still reaches the output, read as `chain`.
+   * Blocks in which a stage put a non-finite sample on the bus, or on a bus it
+   * `writes`, and the stage that did it last. That stage alone is panicked and
+   * what it wrote zeroed. The whole board goes when two stages fault in one
+   * block, since the poison is then on a shared bus, or when it still reaches
+   * the output, read as `chain`.
    */
   faults = 0
   faultStage = ''
@@ -798,8 +800,25 @@ export class Chain {
     if (poisoned) {
       l.fill(0, 0, n)
       r.fill(0, 0, n)
+    }
+    const busPoisoned = s.writes !== undefined && this.poisonedBus(s.writes, n)
+    if (poisoned || busPoisoned) {
       s.panic()
       this.fault(s.label)
+    }
+    return poisoned
+  }
+
+  private poisonedBus(writes: readonly WrittenBus[], n: number) {
+    let poisoned = false
+    for (let k = 0; k < writes.length; k++) {
+      const bus = this.ctx[writes[k]!]
+      let sum = 0
+      for (let i = 0; i < n; i++) sum += bus[i]!
+      if (!Number.isFinite(sum)) {
+        bus.fill(0, 0, n)
+        poisoned = true
+      }
     }
     return poisoned
   }

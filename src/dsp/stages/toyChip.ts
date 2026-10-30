@@ -355,6 +355,7 @@ interface ChipLanes {
 
 export class ToyChip implements Stage {
   label = 'toyChip'
+  readonly writes = ['step'] as const
   private readonly lanes: ChipLanes = {
     modSync: null,
     modXor: null,

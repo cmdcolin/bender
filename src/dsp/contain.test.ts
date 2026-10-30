@@ -4,7 +4,12 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { ROCK } from '../drums.ts'
 import { IDX, packParams } from '../engine/params.ts'
 import { buildBender, type BuiltChain } from './build.ts'
-import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
+import {
+  BLOCK,
+  type Stage,
+  type StereoBlock,
+  type WrittenBus,
+} from './stage.ts'
 
 import type { Chain } from './chain.ts'
 
@@ -197,4 +202,51 @@ test('a non-finite block that reaches the output still panics the board', () => 
   expect(allFinite).toBe(true)
   expect(chain.faults).toBe(1)
   expect(after).toBeGreaterThan(0.1)
+})
+
+function poisonBusOnce(s: Stage, bus: WrittenBus) {
+  const inner = s.process.bind(s)
+  const state = { armed: false, struck: false }
+  s.process = (io, p, ctx) => {
+    inner(io, p, ctx)
+    if (state.armed && !state.struck) {
+      ctx[bus][37] = Number.NaN
+      state.struck = true
+    }
+  }
+  return state
+}
+
+const WRITERS = stagesOf(buildBender(SR, 3).chain).flatMap(s =>
+  (s.writes ?? []).map(bus => [s.label, bus] as const),
+)
+
+describe('a non-finite sample on a shared bus is blamed on its writer', () => {
+  test('every bus has a writer', () => {
+    expect(new Set(WRITERS.map(([, bus]) => bus))).toEqual(
+      new Set(['sag', 'send', 'step']),
+    )
+  })
+
+  test.each(WRITERS)('%s on %s', (label, bus) => {
+    const { built, stages, panics, io } = rig()
+    const chain = built.chain
+    const writer = stages.find(s => s.label === label)
+    if (!writer) throw new Error(`no stage ${label}`)
+    const p = boardFor(built, writer)
+    const poison = poisonBusOnce(writer, bus)
+    for (let b = 0; b < WARM_BLOCKS; b++) chain.process(io, p)
+    panics.clear()
+    poison.armed = true
+    let allFinite = true
+    for (let b = 0; b < AFTER_BLOCKS; b++) {
+      chain.process(io, p)
+      allFinite = allFinite && finite(io)
+    }
+    expect(poison.struck, `${label} never ran`).toBe(true)
+    expect(allFinite).toBe(true)
+    expect(chain.faults).toBe(1)
+    expect(chain.faultStage).toBe(label)
+    expect([...panics]).toEqual([[label, 1]])
+  })
 })

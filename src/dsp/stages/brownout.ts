@@ -24,6 +24,7 @@ const PUMP_RECOVER = 0.3
 
 export class Brownout implements Stage {
   label = 'brownout'
+  readonly writes = ['sag'] as const
   private sag = new Follower()
   private pump = 0
   private pumpTarget = 0

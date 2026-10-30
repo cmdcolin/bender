@@ -82,8 +82,13 @@ export interface Ctx {
   trig: TriggerBus
 }
 
+/** The buses a stage writes for others to read, which the chain checks after
+    that stage runs so a non-finite sample there is blamed on its writer. */
+export type WrittenBus = 'sag' | 'step' | 'send'
+
 export interface Stage {
   label: string
+  writes?: readonly WrittenBus[]
   when?(p: Float32Array, ctx: Ctx): boolean
   process(io: StereoBlock, p: Float32Array, ctx: Ctx): void
   panic(): void
