@@ -22,8 +22,8 @@ export interface WavSink {
 
 export interface Take {
   wav: (name: string, channels: 1 | 2) => WavSink
-  /** Bytes the take may still write before it must stop. */
-  room: () => number
+  /** Seconds the take may still record before it must stop. */
+  secondsLeft: () => number
   /** What runs out first: the browser's storage, memory or the wav format. */
   limit: () => 'storage' | 'memory' | 'size'
   /** Why a write failed, or '' while none has. */
@@ -97,6 +97,19 @@ async function openDir(id: string): Promise<FileSystemDirectoryHandle | null> {
   }
 }
 
+// Every file of a take grows a frame at a time together, so storage is spent at
+// all of them at once while the wav size cap is reached by the widest alone.
+export function runsOut(
+  storageBytes: number,
+  sizeBytes: number,
+  frameBytes: { all: number; widest: number },
+  sr: number,
+) {
+  const storage = storageBytes / (frameBytes.all * sr)
+  const size = sizeBytes / (frameBytes.widest * sr)
+  return { seconds: Math.min(storage, size), bySize: size < storage }
+}
+
 export function openTake(sr: number): Take {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   const lock = holdLock(id)
@@ -107,6 +120,7 @@ export function openTake(sr: number): Take {
   let written = 0
   let landed = 0
   let largest = 0
+  const frameBytes = { all: 0, widest: 0 }
   let failure = ''
 
   const fail = (e: unknown) => {
@@ -122,17 +136,16 @@ export function openTake(sr: number): Take {
     })
   }
 
+  const left = () => runsOut(free - written, WAV_MAX - largest, frameBytes, sr)
+
   return {
-    room: () => Math.min(free - written, WAV_MAX - largest),
-    limit: () =>
-      WAV_MAX - largest < free - written
-        ? 'size'
-        : streamed
-          ? 'storage'
-          : 'memory',
+    secondsLeft: () => left().seconds,
+    limit: () => (left().bySize ? 'size' : streamed ? 'storage' : 'memory'),
     failure: () => failure,
     end: lock.release,
     wav: (name, channels) => {
+      frameBytes.all += 2 * channels
+      frameBytes.widest = Math.max(frameBytes.widest, 2 * channels)
       let bytes = 0
       let handle: FileSystemFileHandle | null = null
       let stream: FileSystemWritableFileStream | null = null

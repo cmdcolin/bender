@@ -1454,15 +1454,11 @@ export class Engine {
       rec.frames += msg.n
       const sr = this.sampleRate()
       this.recSeconds.set(rec.frames / sr)
-      if (this.recording.get()) {
-        const bytesPerSecond = (4 + 2 * rec.stems.length) * sr
-        this.recNote.set(
-          roomNote(rec.take.room() / bytesPerSecond, rec.take.limit()),
-        )
-      }
+      if (this.recording.get())
+        this.recNote.set(roomNote(rec.take.secondsLeft(), rec.take.limit()))
     }
     if (rec && this.recording.get()) {
-      if (rec.take.room() <= 0) {
+      if (rec.take.secondsLeft() <= 0) {
         rec.full = rec.take.limit()
         this.stopRecording()
       } else if (rec.take.failure()) {

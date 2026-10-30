@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { openTake, sweepTakes } from './takeSink.ts'
+import { openTake, runsOut, sweepTakes } from './takeSink.ts'
 
 interface Entry {
   kind: 'file' | 'directory'
@@ -164,15 +164,33 @@ test('a take runs out of room at the quota the browser grants, less the reserve'
   const sink = take.wav('bender-1.wav', 2)
   sink.write(slab(10, 1))
   await sink.close()
-  expect(take.room()).toBe(100 - 40)
+  expect(take.secondsLeft() * 4 * SR).toBeCloseTo(100 - 40)
 })
 
 test('a memory take stops at the memory cap', () => {
   stubBrowser({ opfs: false })
   const take = openTake(SR)
-  expect(take.room()).toBe(128 * 1024 * 1024)
-  take.wav('bender-1.wav', 2).write(slab(1000, 1))
-  expect(take.room()).toBe(128 * 1024 * 1024 - 4000)
+  const sink = take.wav('bender-1.wav', 2)
+  expect(take.secondsLeft() * 4 * SR).toBeCloseTo(128 * 1024 * 1024)
+  sink.write(slab(1000, 1))
+  expect(take.secondsLeft() * 4 * SR).toBeCloseTo(128 * 1024 * 1024 - 4000)
+})
+
+test('a stem take spends storage at every file at once', () => {
+  stubBrowser({ opfs: false })
+  const take = openTake(SR)
+  take.wav('bender-1-master.wav', 2)
+  take.wav('bender-1-drums.wav', 1)
+  take.wav('bender-1-fm.wav', 1)
+  expect(take.secondsLeft() * 8 * SR).toBeCloseTo(128 * 1024 * 1024)
+})
+
+test('near the wav size cap a stem take has the time its master has', () => {
+  const stems = { all: 4 + 2 * 9, widest: 4 }
+  const left = runsOut(10e9, 4e8, stems, SR)
+  expect(left.bySize).toBe(true)
+  expect(left.seconds).toBeCloseTo(4e8 / (4 * SR))
+  expect(runsOut(1e8, 4e9, stems, SR).bySize).toBe(false)
 })
 
 test('a discarded sink leaves no file behind', async () => {
@@ -229,14 +247,16 @@ test('a take asks the browser again, and stops short when the disk has filled me
     const sink = take.wav('bender-1.wav', 2)
     await vi.waitFor(() => expect(take.limit()).toBe('storage'))
     sink.write(slab(10, 1))
-    expect(take.room()).toBe(1000 - 40)
+    expect(take.secondsLeft() * 4 * SR).toBeCloseTo(1000 - 40)
     await new Promise(r => setTimeout(r))
 
     space.quota = reserve + 100
     space.usage = 40
     vi.setSystemTime(Date.now() + 6000)
     sink.write(slab(10, 1))
-    await vi.waitFor(() => expect(take.room()).toBe(100 - 80))
+    await vi.waitFor(() =>
+      expect(take.secondsLeft() * 4 * SR).toBeCloseTo(100 - 80),
+    )
   } finally {
     vi.useRealTimers()
   }

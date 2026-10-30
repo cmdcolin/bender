@@ -742,12 +742,12 @@ test('a master-only take saves one file under the bare stamp', async () => {
   expect(suffixes(files)).toEqual(['.wav'])
 })
 
-const roomy = (room: number) => {
+const roomy = (seconds: number) => {
   const { files, chunk, engine } = recorder(false)
   const rec = (engine as unknown as { rec: Record<string, unknown> }).rec
   Object.assign(rec, {
     take: {
-      room: () => room,
+      secondsLeft: () => seconds,
       limit: () => 'storage',
       failure: () => '',
       end: () => {},
@@ -756,7 +756,7 @@ const roomy = (room: number) => {
   return { files, chunk, engine }
 }
 
-const MINUTE = 4 * 48000 * 60
+const MINUTE = 60
 
 test('a take warns when ten minutes of room are left, and keeps going', () => {
   const { chunk, engine } = roomy(3 * MINUTE)
