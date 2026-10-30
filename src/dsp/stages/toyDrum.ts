@@ -1403,7 +1403,7 @@ export class ToyDrum implements Stage {
     // The one-shot on the trigger line is a resistor and a cap, and like the
     // clap's bursts it is counted off the chip's own oscillator: a
     // sagging rail widens the pulse along with everything else.
-    const pulseS = (Math.max(p[IDX.drumPulse]!, 0.01) / 1000) * clock
+    const pulseS = Math.max(p[IDX.drumPulse]!, 0.01) / 1000 / clock
     this.pulseFall = Math.exp(-1 / (pulseS * this.sr))
     this.pulseRise = lpCoef(PULSE_EDGE / (TAU * pulseS), this.sr)
     // The line carries a fixed charge, so a wide one-shot is a low one. The

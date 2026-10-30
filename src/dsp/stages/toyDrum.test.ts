@@ -1033,6 +1033,24 @@ test('a narrow one-shot is a click and a wide one is neither', () => {
   expect(lowEnergy(sharp)).toBeGreaterThan(2 * lowEnergy(wide))
 })
 
+test('flat batteries widen the one-shot with the clock it is counted off', () => {
+  const width = (chipBattery: number) => {
+    let pulse = 0
+    renderBender(
+      { chipLevel: 0, drumLevel: 1, drumPulse: 2, chipBattery },
+      1.5,
+      undefined,
+      undefined,
+      b => {
+        pulse = b.toyDrum['pulseS']
+      },
+    )
+    return pulse
+  }
+  expect(width(0)).toBeCloseTo(0.002, 6)
+  expect(width(0.8)).toBeGreaterThan(0.0022)
+})
+
 // The click itself, which has to be measured where it lives or not at all. It
 // is three milliseconds long and it sits in the band the coupling cap passes,
 // so the whole of a take is the wrong window: measured over six hundred
