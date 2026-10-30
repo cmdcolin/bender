@@ -341,7 +341,7 @@ function gestures(board: Controls): ToWorklet[] {
 const SECONDS = process.env.BENDER_FULL ? 6 : 2
 const GARBAGE_WARM_SECONDS = 6
 const GARBAGE_SECONDS = 6
-const GARBAGE_BUDGET_MB = 250
+const GARBAGE_BUDGET_MB = 200
 const GESTURE_EVERY = 12
 
 type Make = Awaited<ReturnType<typeof processorClass>>
@@ -509,9 +509,9 @@ test('nor with the other four bends in the slots', () => {
 
 // Nearly all of it is doubles boxed where TurboFan ran out of inlining budget
 // and called a helper instead, so it moves with the JIT rather than with any
-// one allocation the counter above could catch. Both boards measured 135-155
-// MB a second in Node 24; the budget is there to catch a stage falling off a
-// cliff, not a few calls more.
+// one allocation the counter above could catch. Both boards measured 108-122
+// MB a second in Node 24 once the amp kept its state in slots; the budget is
+// there to catch a stage falling off a cliff, not a few calls more.
 test.runIf(process.env.BENDER_FULL)(
   'a warm board makes no more than its budget of garbage a second',
   () => {

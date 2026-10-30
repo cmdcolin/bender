@@ -1,6 +1,5 @@
 import { IDX } from '../../engine/params.ts'
 import {
-  BiquadState,
   bandpass,
   highpass,
   lowpass,
@@ -10,9 +9,9 @@ import {
 } from '../util/biquad.ts'
 import { Burst } from '../util/burst.ts'
 import { DelayLine } from '../util/delayline.ts'
-import { Follower, coef } from '../util/follower.ts'
+import { coef } from '../util/follower.ts'
 import { Halfband, LATENCY, Upsampler } from '../util/halfband.ts'
-import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { lpCoef } from '../util/onepole.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 
@@ -126,26 +125,6 @@ export function stackDigital(
     out[i] = (n1 * P1[i]! + n2 * P2[i]! + n3 * P3[i]!) / a0
     if (i > 0)
       out[3 + i] = (P0[i]! + d1 * P1[i]! + d2 * P2[i]! + d3 * P3[i]!) / a0
-  }
-}
-
-class Stack {
-  private s1 = 0
-  private s2 = 0
-  private s3 = 0
-
-  process(x: number, k: Float64Array): number {
-    const y = k[0]! * x + this.s1
-    this.s1 = flushDenormal(k[1]! * x - k[4]! * y + this.s2)
-    this.s2 = flushDenormal(k[2]! * x - k[5]! * y + this.s3)
-    this.s3 = flushDenormal(k[3]! * x - k[6]! * y)
-    return y
-  }
-
-  reset() {
-    this.s1 = 0
-    this.s2 = 0
-    this.s3 = 0
   }
 }
 
@@ -325,36 +304,6 @@ function wire(v: Voicing, sr: number): Wiring {
   }
 }
 
-class Triode {
-  private block = 0
-  private readonly bypass = new OnePoleLP()
-  private readonly miss = new OnePoleLP()
-
-  process(x: number, k: Knobs, stage: number, spec: Spec): number {
-    const hi = x - this.bypass.process(x, k.bypass[stage]!)
-    const degen = k.degen[stage]!
-    const u = k.drive[stage]! * (degen * x + (1 - degen) * hi)
-    const over = u - spec.knee
-    const grid = over > 0 ? spec.knee + 0.3 * softclip(over / 0.3) : u
-    const charge = over > 0 ? Math.min(over, 3) : 0
-    this.block = flushDenormal(
-      this.block +
-        (charge > this.block ? k.blockAtk : k.blockRel) * (charge - this.block),
-    )
-    const v = grid - BLOCK_DEPTH * this.block
-    const sink = spec.sink * k.railPre
-    const cut = spec.cutoff * k.railPre
-    const plate = v >= 0 ? sink * softclip(v / sink) : cut * softclip(v / cut)
-    return this.miss.process(-plate, k.wire.missCoefs[stage]!)
-  }
-
-  reset() {
-    this.block = 0
-    this.bypass.reset()
-    this.miss.reset()
-  }
-}
-
 const SMOOTH = 0.015
 
 function conduct(v: number): number {
@@ -362,97 +311,199 @@ function conduct(v: number): number {
   return r * Math.sqrt(r)
 }
 
-/** Two tubes back to back, each conducting its own half of the wave with a 3/2
-    power law above cutoff. A cold bias leaves both nearly off around zero and
-    the crossover shows. With both tubes healthy the gain at zero is one
-    whatever the bias; `weakGm` is the second tube's strength against the first. */
-function pushPull(x: number, k: Knobs): number {
-  const { bias, weakGm } = k
-  return (
-    (conduct(bias + x) - weakGm * conduct(bias * (0.6 + 0.4 * weakGm) - x)) /
-    k.biasNorm
-  )
-}
-
-// Moving this to Rust→wasm was tried and declined on 2026-10-30 (spike in
-// a28812ba): bit-exact and 1.45× faster in Chrome, but the same loop in flat
-// TypeScript was 1.35× with no garbage. The DSP changes too often for a second
-// language, and garbage costs under 1% of Chrome's audio thread.
+// A channel's state, a slot a value. Every double the sample loop hands on goes
+// through a slot rather than an argument or a return: a call V8 declines to
+// inline boxes each double that crosses it, and the amp, written as an object
+// per filter, made 42 MB of garbage a second that way, where this makes none
+// and runs about a tenth faster. The three triodes take three slots each at
+// 3 × stage.
+//
+// Moving the amp to Rust and wasm was tried and declined on 2026-10-30 (spike
+// in a28812ba): bit-exact and 1.45× faster in Chrome, but the DSP changes too
+// often for a second language, and with the garbage gone that is about 1% of
+// a core on the heaviest board.
+const BLOCKED = 0
+const BYPASS = 1
+const MISS = 2
+const STACK = 9
+const COUPLING = 12
+const PRESENCE = 13
+const CORE = 14
+const LEAK = 15
+const RINGING = 19
+const DC_X = 23
+const DC_Y = 24
+const FED = 25
+const DRAWN = 26
+/** the sample in flight between the stages of one run */
+const SIG = 27
+const OUT = 28
+const SLOTS = 29
 
 /** One channel through the amp. Everything between the upsampler and the
     downsampler runs at twice the board's rate. */
 class Channel {
+  readonly s = new Float64Array(SLOTS)
   private readonly up = new Upsampler()
   private readonly down = new Halfband()
-  private readonly one = new Triode()
-  private readonly cascaded = new Triode()
-  private readonly two = new Triode()
-  private readonly stack = new Stack()
-  private readonly coupling = new OnePoleLP()
-  private readonly presenceLp = new OnePoleLP()
-  private readonly core = new OnePoleLP()
-  private readonly leak = new BiquadState()
-  private readonly dc = new DcBlocker()
-  private readonly ring = new BiquadState()
-  /** what the first tube feels of the cabinet's air, one sample late */
-  private fed = 0
-  /** the power pair's last output, which the supply sags under */
-  drawn = 0
-
-  private readonly hash: Rng
+  private readonly seed: Int32Array
   private readonly tuned: Biquad
 
   constructor(detune: number, seed: number, osr: number) {
-    this.hash = mulberry32(seed)
+    this.seed = Int32Array.of(seed)
     this.tuned = bandpass(RING_HZ * detune, RING_Q, osr)
   }
 
-  run(x: number, k: Knobs): number {
-    const v = k.voicing
-    let s = this.one.process(x + k.micro * this.fed, k, 0, v.first)
-    if (v.cascade) s = this.cascaded.process(s, k, 1, v.first)
-    s = this.stack.process(s, k.stack) * v.makeup
-    s = this.two.process(s, k, 2, v.second)
-    s -= this.coupling.process(s, k.couplingCoef)
-    const lifted =
-      s + k.presence * (s - this.presenceLp.process(s, k.wire.presenceCoef))
-    const drive = lifted * k.gPower + k.crackle * (2 * this.hash() - 1)
-    const swing = v.swing * k.railPow
-    const pair = swing * softclip(pushPull(drive, k) / swing)
-    this.drawn = Math.abs(pair)
-    this.fed = k.micro === 0 ? 0 : this.ring.process(pair, this.tuned)
-    const low = this.core.process(pair, k.wire.coreCoef)
-    const saturated = softclip(low * v.coreSat) / v.coreSat
-    return this.leak.process(pair - low + saturated, k.wire.leak)
+  /** What the power pair last put out, which the supply sags under. */
+  get drawn() {
+    return this.s[DRAWN]!
   }
 
-  process(x: number, k: Knobs): number {
-    this.up.process(x)
-    const a = this.run(this.up.pair[0]!, k)
-    const b = this.run(this.up.pair[1]!, k)
-    return this.dc.process(this.down.process(a, b), DC_COEF)
+  get out() {
+    return this.s[OUT]!
+  }
+
+  /** One sample at the board's rate, `x[i]` in and `s[OUT]` out. */
+  process(x: Float32Array, i: number, k: Knobs) {
+    const s = this.s
+    this.up.process(x[i]!)
+    s[SIG] = this.up.pair[0]!
+    this.run(k)
+    const a = s[OUT]!
+    s[SIG] = this.up.pair[1]!
+    this.run(k)
+    const y = this.down.process(a, s[OUT]!)
+    const dc = y - s[DC_X]! + DC_COEF * s[DC_Y]!
+    s[DC_X] = y
+    s[DC_Y] = flushDenormal(dc)
+    s[OUT] = dc
+  }
+
+  private run(k: Knobs) {
+    const s = this.s
+    const v = k.voicing
+    s[SIG] = s[SIG]! + k.micro * s[FED]!
+    this.triode(k, 0, v.first)
+    if (v.cascade) this.triode(k, 1, v.first)
+    this.stack(k.stack, v.makeup)
+    this.triode(k, 2, v.second)
+    this.power(k)
+  }
+
+  private triode(k: Knobs, stage: number, spec: Spec) {
+    const s = this.s
+    const o = 3 * stage
+    const x = s[SIG]!
+    const bypassed = flushDenormal(
+      s[o + BYPASS]! + k.bypass[stage]! * (x - s[o + BYPASS]!),
+    )
+    s[o + BYPASS] = bypassed
+    const hi = x - bypassed
+    const degen = k.degen[stage]!
+    const u = k.drive[stage]! * (degen * x + (1 - degen) * hi)
+    const over = u - spec.knee
+    const grid = over > 0 ? spec.knee + 0.3 * softclip(over / 0.3) : u
+    const charge = over > 0 ? Math.min(over, 3) : 0
+    const was = s[o + BLOCKED]!
+    const blocked = flushDenormal(
+      was + (charge > was ? k.blockAtk : k.blockRel) * (charge - was),
+    )
+    s[o + BLOCKED] = blocked
+    const g = grid - BLOCK_DEPTH * blocked
+    const railPre = k.railPre
+    const sink = spec.sink * railPre
+    const cut = spec.cutoff * railPre
+    const plate = g >= 0 ? sink * softclip(g / sink) : cut * softclip(g / cut)
+    const missed = flushDenormal(
+      s[o + MISS]! + k.wire.missCoefs[stage]! * (-plate - s[o + MISS]!),
+    )
+    s[o + MISS] = missed
+    s[SIG] = missed
+  }
+
+  /** The tone stack, transposed direct form II, and the makeup gain after it. */
+  private stack(c: Float64Array, makeup: number) {
+    const s = this.s
+    const x = s[SIG]!
+    const y = c[0]! * x + s[STACK]!
+    s[STACK] = flushDenormal(c[1]! * x - c[4]! * y + s[STACK + 1]!)
+    s[STACK + 1] = flushDenormal(c[2]! * x - c[5]! * y + s[STACK + 2]!)
+    s[STACK + 2] = flushDenormal(c[3]! * x - c[6]! * y)
+    s[SIG] = y * makeup
+  }
+
+  /** The coupling cap, presence, the push-pull pair and the transformer. */
+  private power(k: Knobs) {
+    const s = this.s
+    const v = k.voicing
+    let x = s[SIG]!
+    const coupled = flushDenormal(
+      s[COUPLING]! + k.couplingCoef * (x - s[COUPLING]!),
+    )
+    s[COUPLING] = coupled
+    x -= coupled
+    const presenced = flushDenormal(
+      s[PRESENCE]! + k.wire.presenceCoef * (x - s[PRESENCE]!),
+    )
+    s[PRESENCE] = presenced
+    const lifted = x + k.presence * (x - presenced)
+    const drive = lifted * k.gPower + k.crackle * (2 * this.hash() - 1)
+    const swing = v.swing * k.railPow
+    // Two tubes back to back, each conducting its own half of the wave with a
+    // 3/2 power law above cutoff. A cold bias leaves both nearly off around
+    // zero and the crossover shows. With both tubes healthy the gain at zero
+    // is one whatever the bias; `weakGm` is the second tube's strength.
+    const bias = k.bias
+    const weakGm = k.weakGm
+    const pushPull =
+      (conduct(bias + drive) -
+        weakGm * conduct(bias * (0.6 + 0.4 * weakGm) - drive)) /
+      k.biasNorm
+    const pair = swing * softclip(pushPull / swing)
+    s[DRAWN] = Math.abs(pair)
+    s[FED] = k.micro === 0 ? 0 : biquadAt(s, RINGING, pair, this.tuned)
+    const low = flushDenormal(s[CORE]! + k.wire.coreCoef * (pair - s[CORE]!))
+    s[CORE] = low
+    const saturated = softclip(low * v.coreSat) / v.coreSat
+    s[OUT] = biquadAt(s, LEAK, pair - low + saturated, k.wire.leak)
+  }
+
+  /** mulberry32, kept in an Int32Array so its word never lands on the heap. */
+  private hash() {
+    const a = (this.seed[0]! + 0x6d2b79f5) | 0
+    this.seed[0] = a
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 
   reset() {
+    this.s.fill(0)
     this.up.reset()
     this.down.reset()
-    this.one.reset()
-    this.cascaded.reset()
-    this.two.reset()
-    this.stack.reset()
-    this.coupling.reset()
-    this.presenceLp.reset()
-    this.core.reset()
-    this.leak.reset()
-    this.dc.reset()
-    this.ring.reset()
-    this.fed = 0
-    this.drawn = 0
   }
+}
+
+/** A biquad whose x1, x2, y1, y2 sit in `s` from `at`. */
+function biquadAt(s: Float64Array, at: number, x: number, c: Biquad) {
+  const y = flushDenormal(
+    c.b0 * x +
+      c.b1 * s[at]! +
+      c.b2 * s[at + 1]! -
+      c.a1 * s[at + 2]! -
+      c.a2 * s[at + 3]!,
+  )
+  s[at + 1] = s[at]!
+  s[at] = x
+  s[at + 3] = s[at + 2]!
+  s[at + 2] = y
+  return y
 }
 
 /** A cabinet as filters: where the bass gives out, the cone's peaks, and a
     fourth-order roll-off above 5 kHz. */
+const CAB_FILTERS = 6
+
 function cabinet(kind: number, sr: number): Biquad[] {
   if (kind === AMP_CAB.open)
     return [
@@ -522,9 +573,11 @@ export class Amp implements Stage {
   private readonly dryR = new DelayLine(LATENCY + 2)
   private readonly cabCoefs: Biquad[][]
   private readonly wiring: Wiring[]
-  private readonly cabL = Array.from({ length: 6 }, () => new BiquadState())
-  private readonly cabR = Array.from({ length: 6 }, () => new BiquadState())
-  private readonly draw = new Follower()
+  // Six biquads a side, each one's x1, x2, y1, y2 four slots on.
+  private readonly cabL = new Float64Array(4 * CAB_FILTERS)
+  private readonly cabR = new Float64Array(4 * CAB_FILTERS)
+  /** the power pairs' draw, followed */
+  private load = 0
   private readonly stackK = new Float64Array(7)
   private readonly rng: Rng = mulberry32(0x7ab3)
   private readonly arc: Burst
@@ -557,14 +610,14 @@ export class Amp implements Stage {
       bias: 0.3,
       biasNorm: 3 * Math.sqrt(0.3),
       presence: 0,
-      railPre: 1,
-      railPow: 1,
       blockAtk: coef(BLOCK_ATK, this.osr),
       blockRel: coef(BLOCK_REL, this.osr),
       couplingCoef: lpCoef(COUPLING_HZ, this.osr),
       wire: this.wiring[0]!,
       stack: this.stackK,
       micro: 0,
+      railPre: 1,
+      railPow: 1,
       weakGm: 1,
       crackle: 0,
     }
@@ -609,12 +662,14 @@ export class Amp implements Stage {
   }
 
   /** The failing tube arcing: it drops out for a few milliseconds, more often
-      for having just done it. */
-  private sputter(weak: number, cluster: number): number {
+      for having just done it. Leaves `flick` at how much of it is conducting. */
+  private sputter(p: Float32Array) {
+    const weak = p[IDX.ampTube]!
+    const cluster = p[IDX.faultCluster]!
     if (weak <= 0) {
       this.flick = 1
       this.arcLeft = 0
-      return 1
+      return
     }
     this.arc.step()
     if (
@@ -627,7 +682,6 @@ export class Amp implements Stage {
       )
     if (this.arcLeft > 0) this.arcLeft--
     this.flick += this.flickCoef * ((this.arcLeft > 0 ? 0 : 1) - this.flick)
-    return this.flick
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -640,33 +694,38 @@ export class Amp implements Stage {
     const cab = this.cabCoefs[Math.round(p[IDX.ampCab]!)] ?? this.cabCoefs[0]!
 
     const weak = p[IDX.ampTube]!
-    const cluster = p[IDX.faultCluster]!
+    const { left, right, cabL, cabR } = this
 
     for (let i = 0; i < io.n; i++) {
       const dl = io.l[i]!
       const dr = io.r[i]!
-      const flick = this.sputter(weak, cluster)
+      this.sputter(p)
+      const flick = this.flick
       k.weakGm = (1 - 0.8 * weak) * flick
       k.crackle = CRACKLE * weak * (1 - flick)
-      const load = this.draw.process(
-        0.5 * (this.left.drawn + this.right.drawn),
-        k.wire.sagAtk,
-        k.wire.sagRel,
+      const drawn = Math.abs(0.5 * (left.drawn + right.drawn))
+      const was = this.load
+      const load = flushDenormal(
+        was + (drawn > was ? k.wire.sagAtk : k.wire.sagRel) * (drawn - was),
       )
+      this.load = load
       const want =
         1 -
         v.sagDepth *
           sag *
           Math.min(Math.max(load / (1 + load), ctx.droop[i]!), 1)
       this.rail = flushDenormal(this.rail + this.railCoef * (want - this.rail))
-      k.railPow = Math.max(this.rail, 0.05)
-      k.railPre = 1 - PREAMP_SAG * (1 - k.railPow)
+      const railPow = Math.max(this.rail, 0.05)
+      k.railPow = railPow
+      k.railPre = 1 - PREAMP_SAG * (1 - railPow)
 
-      let wl = this.left.process(dl, k)
-      let wr = this.right.process(dr, k)
+      left.process(io.l, i, k)
+      right.process(io.r, i, k)
+      let wl = left.out
+      let wr = right.out
       for (let c = 0; c < cab.length; c++) {
-        wl = this.cabL[c]!.process(wl, cab[c]!)
-        wr = this.cabR[c]!.process(wr, cab[c]!)
+        wl = biquadAt(cabL, 4 * c, wl, cab[c]!)
+        wr = biquadAt(cabR, 4 * c, wr, cab[c]!)
       }
       this.dryL.write(dl)
       this.dryR.write(dr)
@@ -678,12 +737,12 @@ export class Amp implements Stage {
   panic() {
     this.left.reset()
     this.right.reset()
-    this.draw.reset()
+    this.load = 0
     this.arc.reset()
     this.arcLeft = 0
     this.flick = 1
-    for (const s of this.cabL) s.reset()
-    for (const s of this.cabR) s.reset()
+    this.cabL.fill(0)
+    this.cabR.fill(0)
     this.dryL.reset()
     this.dryR.reset()
     this.rail = 1
