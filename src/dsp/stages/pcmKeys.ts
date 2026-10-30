@@ -5,6 +5,7 @@ import { DEST, hop } from '../modbus.ts'
 import { GLINT_REGS, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, SEQ_TO_PCM, voiceMask } from '../trigbus.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { mulberry32 } from '../util/rng.ts'
 import {
@@ -59,8 +60,6 @@ const FAULT_SEED = 0x5a1
 const LATCH_KEEPS = 5
 
 const SAMPLE_WORDS = Math.round(SAMPLE_SECS * ROM_HZ)
-
-const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 
 const knob = (base: number, lane: Float32Array | null, i: number) =>
   clamp01(lane ? base + lane[i]! : base)

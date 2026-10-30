@@ -4,6 +4,7 @@ import { MIC } from './micJacks.ts'
 import { DEST } from './modbus.ts'
 import { eventOn } from './stages/stepFaults.ts'
 import { PARTS, ToyRail, type Parts } from './toyRail.ts'
+import { clamp01 } from './util/clamp.ts'
 
 import type { Ctx } from './stage.ts'
 
@@ -33,8 +34,6 @@ const onSecond = (p: Float32Array) => {
     if (Math.round(p[IDX[k]]!) === SUPPLY.second) return true
   return p[IDX.distMix]! > 0 && Math.round(p[IDX.distSupply]!) === SUPPLY.second
 }
-
-const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
 // The board's supplies: the shared cells every machine boots on, a second set
 // of cells, and a bench supply that never moves. The bench is a rail nobody

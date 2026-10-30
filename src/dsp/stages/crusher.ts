@@ -3,6 +3,7 @@ import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
 import { DEAD_V } from '../toyRail.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 
@@ -92,7 +93,6 @@ const compress = (x: number) =>
   x < 0 ? -Math.log1p(-MU * x) / MU_LOG : Math.log1p(MU * x) / MU_LOG
 const expand = (y: number) =>
   y < 0 ? -Math.expm1(-y * MU_LOG) / MU : Math.expm1(y * MU_LOG) / MU
-const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1)
 
 class Adpcm {
   pred = 0

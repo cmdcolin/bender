@@ -18,6 +18,7 @@ import { SupplyTap, poweredUp, type Supplies } from '../supplies.ts'
 import { voiceMask } from '../trigbus.ts'
 import { GroundEdge } from '../util/bounce.ts'
 import { Burst } from '../util/burst.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { CrossingRate } from '../util/crossings.ts'
 import { Drunk } from '../util/drift.ts'
 import { coef, Follower } from '../util/follower.ts'
@@ -310,7 +311,6 @@ const LEAK_FLOOR = 0.3
 // resolution — the same place a real chip runs out of counts. The output cap
 // centres the result, so a narrow tap swings the same peak-to-peak as a square
 // but comes out as a spike carrying less of the energy.
-const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 const ascending = (a: number, b: number) => a - b
 
 /** e^-x. The clock moves every sample, so a cache never hits; at the rates an

@@ -7,6 +7,7 @@ import { DEST, hop } from '../modbus.ts'
 import { GLINT_REGS, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, N_DRUM_VOICES, SEQ_TO_FM, voiceMask } from '../trigbus.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
 import { mulberry32 } from '../util/rng.ts'
 import { softclip } from '../util/softclip.ts'
@@ -250,9 +251,6 @@ const laneOctaves = (x: number) =>
   octaves(
     Math.min(Math.max(x, -CLOCK_LANE_MAX), CLOCK_LANE_MAX) * CLOCK_LANE_OCTAVES,
   )
-
-/** Where a wire off the bay lands on a control that only has 0 to 1 to give. */
-const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 
 // What the kit plays when its trigger lines are clipped to this chip's key
 // input. A drum machine has no notes to send — a trigger line carries a strike
