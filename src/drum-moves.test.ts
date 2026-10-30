@@ -3,7 +3,6 @@ import { expect, test } from 'vitest'
 import {
   doubleTime,
   DRUM_MOVES,
-  euclid,
   fillBar,
   halfTime,
   masksOf,
@@ -31,23 +30,6 @@ const EVEN_LENS = Object.fromEntries(
 
 const steps = (mask: number) =>
   Array.from({ length: STEPS }, (_, s) => s).filter(s => hasStep(mask, s))
-
-const gaps = (mask: number) => {
-  const on = steps(mask)
-  return on.map((s, i) => (i === 0 ? s + STEPS - on.at(-1)! : s - on[i - 1]!))
-}
-
-test('a euclidean rhythm spreads its hits as evenly as whole steps allow', () => {
-  expect(steps(euclid(4))).toEqual([0, 4, 8, 12])
-  for (const hits of [3, 5, 7, 9, 11]) {
-    const spread = euclid(hits)
-    expect(steps(spread).length, `${hits}`).toBe(hits)
-    // Evenly spread means no two gaps differ by more than a step.
-    const wide = Math.max(...gaps(spread))
-    const tight = Math.min(...gaps(spread))
-    expect(wide - tight, `${hits}`).toBeLessThanOrEqual(1)
-  }
-})
 
 test('a rolled pattern is sixteen steps, and the downbeat is in every one', () => {
   for (let seed = 1; seed <= 200; seed++) {

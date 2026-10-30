@@ -2,6 +2,7 @@ import {
   asLen,
   DRUM_VOICES,
   EMPTY_MASKS,
+  euclidMask,
   GRID_ROWS,
   hasStep,
   PATTERN_KEYS,
@@ -54,15 +55,12 @@ const setSteps = (mask: number) => {
   return steps
 }
 
-/** Hits spread as evenly as whole steps allow — four in sixteen is the beat,
-    but five, seven and eleven are the ones with a limp in them, and they are
-    where most of the world's rhythms live and none of this machine's ROMs do. */
-export const euclid = (hits: number, len = STEPS, turn = 0) => {
-  let mask = 0
-  for (let i = 0; i < hits; i++)
-    mask |= stepBit((Math.floor((i * len) / hits) + turn) % len)
-  return mask
-}
+// Hits spread as evenly as whole steps allow, the first on step `turn` — four
+// in sixteen is the beat, but five, seven and eleven are the ones with a limp
+// in them, and they are where most of the world's rhythms live and none of
+// this machine's ROMs do.
+const spread = (hits: number, turn = 0) =>
+  euclidMask(hits, STEPS, stepBit(turn))
 
 // A pattern that reads as a pattern rather than as noise on a grid: pick a feel,
 // and let it say where the kick, the snare and the hat go. Rolling all sixteen
@@ -102,10 +100,10 @@ const FEELS: Feel[] = [
   // Euclidean: nobody's genre, and the rows land against each other somewhere
   // none of the feels above would have put them.
   rand => ({
-    drumKick: euclid(pick([3, 4, 5], rand)),
-    drumSnare: euclid(pick([2, 3], rand), STEPS, 4),
-    drumHat: euclid(pick([7, 9, 11, 13], rand)),
-    drumBell: rand() < 0.5 ? euclid(5, STEPS, 2) : 0,
+    drumKick: spread(pick([3, 4, 5], rand)),
+    drumSnare: spread(pick([2, 3], rand), 4),
+    drumHat: spread(pick([7, 9, 11, 13], rand)),
+    drumBell: rand() < 0.5 ? spread(5, 2) : 0,
   }),
 ]
 

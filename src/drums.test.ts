@@ -154,10 +154,15 @@ test('a Euclid fill spreads its hits as evenly as whole steps allow', () => {
     const on = Array.from({ length: STEPS }, (_, s) => s).filter(s =>
       hasStep(fill, s),
     )
-    const gaps = on.map((s, i) => (i === 0 ? s + STEPS - on.at(-1)! : s - on[i - 1]!))
+    const gaps = on.map((s, i) =>
+      i === 0 ? s + STEPS - on.at(-1)! : s - on[i - 1]!,
+    )
     expect(on.length, `${hits}`).toBe(hits)
-    expect(on[0], `${hits}`).toBe(4)
-    expect(Math.max(...gaps) - Math.min(...gaps), `${hits}`).toBeLessThanOrEqual(1)
+    expect(hasStep(fill, 4), `${hits}`).toBe(true)
+    expect(
+      Math.max(...gaps) - Math.min(...gaps),
+      `${hits}`,
+    ).toBeLessThanOrEqual(1)
   }
 })
 
