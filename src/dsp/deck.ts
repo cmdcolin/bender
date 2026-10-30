@@ -40,9 +40,8 @@ const MIC_SPAN = MIC_RING - BLOCK / CREEP
 // chain the ring cannot hold.
 const MAX_SPEED = 4
 
-// Four-point cubic Hermite, which at a whole position returns that sample
-// exactly — so ×1 is the chain's own output, sample for sample, rather than a
-// resampling of it.
+// Four-point cubic Hermite, for every speed but ×1, which reads the ring
+// straight so that it is the chain's own output, sample for sample.
 function hermite(ring: Float32Array, base: number, pos: number): number {
   const idx = Math.floor(pos)
   const t = pos - idx
@@ -120,11 +119,22 @@ export class Deck {
       MAX_SPEED,
     )
     const speed = this.follow(target, p[IDX.deckInertia]!, n)
+    // Back at ×1 the head finishes this callback on a whole sample, a step a
+    // fraction of a percent off ×1 rather than a jump, and from there on plays
+    // the chain's own samples straight through.
+    const straight = speed === 1 && Number.isInteger(this.readPos)
+    const end =
+      speed === 1 ? Math.round(this.readPos) + n : this.readPos + n * speed
+    const step = (end - this.readPos) / n
 
     if (speed > 0) {
-      // What the interpolator will reach for by the end of the callback, plus
-      // the two samples past it the four-point kernel wants.
-      const need = Math.floor(this.readPos + (n - 1) * speed) + 3
+      // A straight read wants the samples it plays and nothing past them, so
+      // the chain runs no further ahead than the ear. Otherwise it is what the
+      // interpolator reaches for by the end of the callback, plus the two
+      // samples past it the four-point kernel wants.
+      const need = straight
+        ? this.readPos + n
+        : Math.floor(this.readPos + (n - 1) * step) + 3
       // A cheap deck's lid on the way in. Crossfaded rather than switched, and
       // at ×1 the wet share is zero, so the ring holds the chain's own samples
       // and nothing about the path changes as the knob passes the detent.
@@ -139,24 +149,40 @@ export class Deck {
     }
 
     const gain = speed < CREEP ? speed / CREEP : 1
-    let pos = this.readPos
-    for (let i = 0; i < n; i++) {
-      io.l[i] = gain * hermite(this.ringL, 0, pos)
-      io.r[i] = gain * hermite(this.ringR, 0, pos)
-      pos += speed
-    }
-    if (this.chain.capturing) {
-      for (let k = 0; k < MAX_SOURCES; k++) {
-        const from = k * RING
-        const to = k * BLOCK
-        let at = this.readPos
-        for (let i = 0; i < n; i++) {
-          this.stems[to + i] = gain * hermite(this.ringStems, from, at)
-          at += speed
+    if (straight) {
+      const at = this.readPos
+      for (let i = 0; i < n; i++) {
+        io.l[i] = this.ringL[(at + i) & MASK]!
+        io.r[i] = this.ringR[(at + i) & MASK]!
+      }
+      if (this.chain.capturing) {
+        for (let k = 0; k < MAX_SOURCES; k++) {
+          const from = k * RING
+          const to = k * BLOCK
+          for (let i = 0; i < n; i++)
+            this.stems[to + i] = this.ringStems[from + ((at + i) & MASK)]!
+        }
+      }
+    } else {
+      let pos = this.readPos
+      for (let i = 0; i < n; i++) {
+        io.l[i] = gain * hermite(this.ringL, 0, pos)
+        io.r[i] = gain * hermite(this.ringR, 0, pos)
+        pos += step
+      }
+      if (this.chain.capturing) {
+        for (let k = 0; k < MAX_SOURCES; k++) {
+          const from = k * RING
+          const to = k * BLOCK
+          let at = this.readPos
+          for (let i = 0; i < n; i++) {
+            this.stems[to + i] = gain * hermite(this.ringStems, from, at)
+            at += step
+          }
         }
       }
     }
-    this.readPos = pos
+    this.readPos = end
     this.rebase()
   }
 

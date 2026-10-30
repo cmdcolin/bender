@@ -228,3 +228,55 @@ test('a wire onto the lane drags the whole board with it', () => {
     1.5 * pitchHz(still.subarray(SR / 2)),
   )
 })
+
+const HIGH: Partial<Controls> = { ...QUIET, sampleLevel: 1 }
+const loadHigh = (built: BuiltChain) => built.sampler.setBuffer(sine(15000, 1))
+const trip = (secs: number) => ({
+  deckSpeed: secs < 0.1 ? 1.0031 : 1,
+  deckInertia: 0.02,
+})
+
+// A head left between two samples reads every one of them through the kernel,
+// which at the top of the band is a lowpass nobody asked for.
+test('back at ×1 after a trip off it, the top of the band is all there', () => {
+  const level = (each?: Opts['each']) =>
+    rms(runDeck(HIGH, 1, { setup: loadHigh, each }).out.subarray(SR / 2))
+  expect(level(trip) / level()).toBeCloseTo(1, 3)
+})
+
+test('landing back on ×1 is a glide rather than a jump', () => {
+  // A sine bends the same small amount every sample, and a jumped head is a
+  // kink in it however small the jump.
+  const worstKink = (each?: Opts['each']) => {
+    const out = runDeck(TONE, 0.5, { setup: loadTone, each }).out
+    let worst = 0
+    for (let i = SR / 20; i < out.length; i++) {
+      worst = Math.max(worst, Math.abs(out[i]! - 2 * out[i - 1]! + out[i - 2]!))
+    }
+    return worst
+  }
+  expect(worstKink(trip)).toBeLessThan(1.1 * worstKink())
+})
+
+// Every block the chain runs ahead of the ear is a block late for a key, a
+// knob or a wire.
+test('at ×1 the chain runs no further ahead than the ear', () => {
+  let rendered = 0
+  let worst = 0
+  runDeck(TONE, 0.5, {
+    setup: built => {
+      loadTone(built)
+      const process = built.chain.process.bind(built.chain)
+      built.chain.process = (io, p, mic) => {
+        rendered += BLOCK
+        process(io, p, mic)
+      }
+    },
+    each: secs => {
+      worst = Math.max(worst, rendered - Math.round(secs * SR))
+      return undefined
+    },
+  })
+  expect(rendered).toBeGreaterThan(0)
+  expect(worst).toBe(0)
+})
