@@ -5,9 +5,10 @@ import { Menu } from './Menu.tsx'
 import styles from './SavedVoices.module.css'
 import { Tip } from './Tip.tsx'
 import { useFlash } from './useFlash.ts'
+import { libraryErrorText } from './useSavedVoices.ts'
 import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel.ts'
 
-import type { CloudStatus, VoiceFlash } from './useSavedVoices.ts'
+import type { CloudStatus, LibraryError, VoiceFlash } from './useSavedVoices.ts'
 import type { RecentSession, SavedVoice } from './voiceModel.ts'
 
 // The voice library: one button in the panel's chrome, beside the nameplate and
@@ -49,7 +50,7 @@ export function SavedVoices(props: {
   onCopyLink: (voice: SavedVoice) => Promise<boolean>
   flash: VoiceFlash | null
   status: CloudStatus
-  error: string | null
+  error: LibraryError | null
 }) {
   const signedIn = props.status === 'ready'
   const [open, setOpen] = useState(false)
@@ -226,7 +227,7 @@ export function SavedVoices(props: {
               </>
             )}
             {props.error === null ? null : (
-              <p className={styles.err}>{props.error}</p>
+              <p className={styles.err}>{libraryErrorText(props.error)}</p>
             )}
           </div>
         </Menu>

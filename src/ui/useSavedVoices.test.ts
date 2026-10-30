@@ -2,10 +2,17 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 
-import { useSavedVoices } from './useSavedVoices.ts'
+import {
+  libraryErrorText,
+  useSavedVoices,
+  type LibraryError,
+} from './useSavedVoices.ts'
 import { QUERY_MAX } from './voiceModel.ts'
 
 import type { SavedVoice } from './voiceModel.ts'
+
+const said = (error: LibraryError | null) =>
+  error === null ? null : libraryErrorText(error)
 
 const cloud = vi.hoisted(() => {
   const user = { uid: 'u1', name: 'Tester', photo: null }
@@ -126,7 +133,7 @@ test('a board over the length limit is refused with its length', async () => {
     outcome = result.current.saveVoice('huge', `p=${'A'.repeat(QUERY_MAX)}`)
   })
   expect(outcome).toBe('too-long')
-  expect(result.current.error).toContain(String(QUERY_MAX + 2))
+  expect(said(result.current.error)).toContain(String(QUERY_MAX + 2))
   await new Promise(r => setTimeout(r, 20))
   expect(cloud.stored).toEqual([])
 })
@@ -138,7 +145,7 @@ test('a refused write says why', async () => {
     result.current.saveVoice('first', 'p=AAAA')
   })
   await waitFor(() => {
-    expect(result.current.error).toBe(
+    expect(said(result.current.error)).toBe(
       'could not save — sign-in expired, sign out and back in',
     )
   })

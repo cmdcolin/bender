@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import {
   editVoices,
@@ -52,6 +52,11 @@ interface PendingSave {
 const errorCode = (e: unknown): unknown =>
   typeof e === 'object' && e !== null && 'code' in e ? e.code : undefined
 
+// What went wrong, kept as the error itself; the words are made where it shows.
+export type LibraryError =
+  | { during: 'save' | 'load' | 'connect' | 'sign-in'; cause: unknown }
+  | { during: 'too-long'; length: number }
+
 const saveError = (e: unknown): string => {
   switch (errorCode(e)) {
     case 'unavailable':
@@ -69,6 +74,23 @@ const saveError = (e: unknown): string => {
   }
 }
 
+export function libraryErrorText(error: LibraryError) {
+  switch (error.during) {
+    case 'save':
+      return saveError(error.cause)
+    case 'load':
+      return 'could not load your saved voices'
+    case 'connect':
+      return 'could not reach the sign-in service'
+    case 'sign-in':
+      return errorCode(error.cause) === 'auth/popup-blocked'
+        ? 'the browser blocked the sign-in window — allow pop-ups for this site and try again'
+        : 'sign-in failed — try again'
+    default:
+      return `could not save — this board is ${error.length} characters long, and the limit is ${QUERY_MAX}`
+  }
+}
+
 export function useSavedVoices() {
   const [voices, setVoices] = useState<SavedVoice[]>([])
   const [recent, setRecent] = useState<RecentSession[]>([])
@@ -76,7 +98,7 @@ export function useSavedVoices() {
   const [status, setStatus] = useState<CloudStatus>(() =>
     wasSignedIn() ? 'loading' : 'signed-out',
   )
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<LibraryError | null>(null)
   const [lastName, setLastName] = useState<string | null>(null)
   const [flash, setFlash] = useState<VoiceFlash | null>(null)
 
@@ -142,7 +164,7 @@ export function useSavedVoices() {
       .catch((e: unknown) => {
         console.error('saving voices failed', e)
         if (uid.current !== owner) return
-        setError(saveError(e))
+        setError({ during: 'save', cause: e })
         showFlash({ kind: 'failed' })
       })
   }
@@ -180,7 +202,7 @@ export function useSavedVoices() {
         console.error('loading saved voices failed', e)
         if (uid.current !== next.uid) return
         setStatus('error')
-        setError('could not load your saved voices')
+        setError({ during: 'load', cause: e })
       })
   }
 
@@ -203,6 +225,8 @@ export function useSavedVoices() {
     )
   }
 
+  const onAuth = useEffectEvent((next: CloudUser | null) => applyUser(next))
+
   // Firebase resolves the unsubscribe asynchronously, so teardown covers both
   // the window before it exists and the call after.
   useEffect(() => {
@@ -210,7 +234,7 @@ export function useSavedVoices() {
     let cancelled = false
     let stop: (() => void) | undefined
     watchAuth(next => {
-      if (!cancelled) applyUser(next)
+      if (!cancelled) onAuth(next)
     })
       .then(unsub => {
         stop = unsub
@@ -222,14 +246,13 @@ export function useSavedVoices() {
           // A later sign-in press subscribes again.
           setWantAuth(false)
           setStatus('error')
-          setError('could not reach the sign-in service')
+          setError({ during: 'connect', cause: e })
         }
       })
     return () => {
       cancelled = true
       stop?.()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantAuth])
 
   return {
@@ -242,9 +265,7 @@ export function useSavedVoices() {
     flash,
     saveVoice: (name: string, query: string): SaveOutcome => {
       if (query.length > QUERY_MAX) {
-        setError(
-          `could not save — this board is ${query.length} characters long, and the limit is ${QUERY_MAX}`,
-        )
+        setError({ during: 'too-long', length: query.length })
         showFlash({ kind: 'failed' })
         return 'too-long'
       }
@@ -308,11 +329,7 @@ export function useSavedVoices() {
           console.error('sign-in failed', e)
           pending.current = null
           setStatus('error')
-          setError(
-            code === 'auth/popup-blocked'
-              ? 'the browser blocked the sign-in window — allow pop-ups for this site and try again'
-              : 'sign-in failed — try again',
-          )
+          setError({ during: 'sign-in', cause: e })
         }
       })
     },
