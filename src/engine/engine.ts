@@ -668,10 +668,7 @@ export class Engine {
     }
     const masterGain = ctx.createGain()
     node.connect(masterGain).connect(ctx.destination)
-    node.onprocessorerror = () => {
-      this.fault.set('the audio engine stopped: reload the page')
-      this.running.set(false)
-    }
+    node.onprocessorerror = () => this.onProcessorError()
     this.masterGain = masterGain
     ctx.addEventListener('statechange', () => {
       this.running.set(ctx.state === 'running')
@@ -683,6 +680,15 @@ export class Engine {
     this.post({ kind: 'params', pack: this.packLive() })
     this.post({ kind: 'wild', wild: this.wild })
     this.postTransport()
+  }
+
+  // A dead processor never sends the take's last slab, so what it did send is
+  // saved here, and the take's storage let go.
+  private onProcessorError() {
+    this.fault.set('the audio engine stopped: reload the page')
+    this.running.set(false)
+    this.recording.set(false)
+    void this.saveTake()
   }
 
   private resumer: AbortController | undefined

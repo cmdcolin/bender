@@ -742,6 +742,18 @@ test('a master-only take saves one file under the bare stamp', async () => {
   expect(suffixes(files)).toEqual(['.wav'])
 })
 
+test('a take the processor dies in the middle of is saved as far as it got', async () => {
+  const { files, chunk, engine } = recorder(false)
+  const l = new Float32Array(N).fill(0.5)
+  chunk({ l, r: l, n: N, done: false })
+  ;(engine as unknown as { onProcessorError(): void }).onProcessorError()
+  expect(engine.recording.get()).toBe(false)
+  await vi.waitFor(() => expect(files).toHaveLength(1))
+  expect(files[0]!.size).toBe(44 + 2 * N * 2)
+  engine.startRecording()
+  expect(engine.recording.get()).toBe(true)
+})
+
 const roomy = (seconds: number) => {
   const { files, chunk, engine } = recorder(false)
   const rec = (engine as unknown as { rec: Record<string, unknown> }).rec
