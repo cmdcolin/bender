@@ -48,6 +48,7 @@ import {
 } from './toySfx.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
+import type { ToyRail } from '../toyRail.ts'
 import type { Transport } from '../transport.ts'
 
 // One index table per lane: the melody the oscillator plays, then the two
@@ -1252,6 +1253,13 @@ export class ToyChip implements Stage {
       if (this.wasPlaying) this.restart(tune)
     }
 
+    const feed = this.feed
+    feed.maxHz = maxHz
+    feed.duty = duty
+    feed.accomp = accomp
+    feed.spread = spread
+    feed.mixDrive = mixDrive
+    feed.pot = pot
     for (let i = 0; i < io.n; i++) {
       this.counterFault.step()
       const latched = rail.latched
@@ -1491,151 +1499,14 @@ export class ToyChip implements Stage {
         for (let k = 0; k < voices.length; k++) voices[k]!.loaded = NaN
       }
 
-      let out = 0
-      if (!rail.booting && !rail.dead) {
-        const live = this.slotLive
-        const val = this.slotVal
-        if (pinned) live.fill(0)
-        const note = this.transport.tune ? this.note : REST
-        if (isNote(note) && this.env > ENV_FLOOR) {
-          if (note !== this.melodyLoaded) {
-            this.melodyLoaded = note
-            this.melodyRatio = this.divRatio(note)
-          }
-          const hz = Math.min(
-            A3_HZ *
-              this.melodyRatio *
-              clock *
-              rail.pitchFactor *
-              (envDiv > 0 ? octaves(-envDiv * (1 - this.env)) : 1),
-            maxHz,
-          )
-          this.melodyHz = hz
-          const inc = hz / this.sr
-          this.phase = wrap1(this.phase + inc)
-          const env = shaped ? this.level(this.env, pwmOn) : this.env
-          const v =
-            pulse(this.phase, width(duty, dutyEnv, this.env), inc) * env * amp
-          if (pinned) {
-            val[0] = v
-            live[0] = 1
-          } else out += v
-        }
-        let keys = 0
-        if (accomp > 0) {
-          if (this.bassEnv > ENV_FLOOR) {
-            if (this.bassNote !== this.bassLoaded) {
-              this.bassLoaded = this.bassNote
-              this.bassRatio = this.divRatio(this.bassNote)
-            }
-            const hz = Math.min(
-              A3_HZ *
-                this.bassRatio *
-                clock *
-                rail.pitchFactorAt(BASS_TRIM) *
-                (envDiv > 0 ? octaves(-envDiv * (1 - this.bassEnv)) : 1),
-              maxHz,
-            )
-            const inc = hz / this.sr
-            this.bassPhase = wrap1(this.bassPhase + inc)
-            const env = shaped ? this.level(this.bassEnv, pwmOn) : this.bassEnv
-            const v =
-              pulse(this.bassPhase, width(duty, dutyEnv, this.bassEnv), inc) *
-              env *
-              rail.ampFactorAt(BASS_TRIM) *
-              accomp
-            if (pinned) {
-              val[1] = v
-              live[1] = 1
-            } else keys += v
-          }
-          if (this.chordEnv > ENV_FLOOR) {
-            if (this.chord !== this.chordLoaded) {
-              this.chordLoaded = this.chord
-              for (let c = 0; c < 3; c++)
-                this.chordRatio[c] = this.divRatio(this.chord[c]!)
-            }
-            const env = shaped
-              ? this.level(this.chordEnv, pwmOn)
-              : this.chordEnv
-            const fall = envDiv > 0 ? octaves(-envDiv * (1 - this.chordEnv)) : 1
-            for (let c = 0; c < 3; c++) {
-              const trim = CHORD_TRIM[c]!
-              const hz = Math.min(
-                A3_HZ *
-                  this.chordRatio[c]! *
-                  clock *
-                  rail.pitchFactorAt(trim) *
-                  fall,
-                maxHz,
-              )
-              const inc = hz / this.sr
-              this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
-              const v =
-                pulse(
-                  this.chordPhase[c]!,
-                  width(duty, dutyEnv, this.chordEnv),
-                  inc,
-                ) *
-                env *
-                rail.ampFactorAt(trim) *
-                CHORD_GAIN *
-                accomp
-              if (pinned) {
-                val[2 + c] = v
-                live[2 + c] = 1
-              } else keys += v
-            }
-          }
-        }
-        for (let k = 0; k < this.voices.length; k++) {
-          const v = this.voices[k]!
-          if (v.env <= ENV_FLOOR) continue
-          if (v.note !== v.loaded) {
-            v.loaded = v.note
-            v.ratio = this.divRatio(v.note)
-          }
-          const trim = trimAt(k, spread)
-          const hz = Math.min(
-            A3_HZ *
-              v.ratio *
-              clock *
-              rail.pitchFactorAt(trim) *
-              (envDiv > 0 ? octaves(-envDiv * (1 - v.env)) : 1),
-            maxHz,
-          )
-          const inc = hz / this.sr
-          v.phase = wrap1(v.phase + inc)
-          const env = shaped ? this.level(v.env, pwmOn) : v.env
-          const x =
-            pulse(v.phase, width(duty, dutyEnv, v.env), inc) *
-            env *
-            rail.ampFactorAt(trim)
-          if (pinned) {
-            val[5 + k] = x
-            live[5 + k] = 1
-          } else keys += x
-        }
-        if (this.sfx >= 0) {
-          const x = this.sfxSample(
-            latched ? 0 : timing,
-            clock * rail.pitchFactor,
-            maxHz,
-            duty,
-            dutyEnv,
-            shaped,
-            pwmOn,
-          )
-          if (pinned) {
-            val[SFX_SLOT] = x * amp
-            live[SFX_SLOT] = 1
-          } else keys += x * amp
-        }
-        if (scanHz > 0) out = this.scan((scanHz * timing) / this.sr)
-        else if (pinned) out = this.ring(this.short(mixDrive))
-        out = (out + mixVoices(keys, mixDrive)) * this.gateState
-        if (spot === 3) out += pot * 0.4
-      }
+      feed.envDiv = envDiv
+      feed.clock = clock
+      feed.dutyEnv = dutyEnv
+      feed.amp = amp
+      feed.timing = timing
+      feed.scanHz = scanHz
+      this.sound(rail, pinned, shaped, pwmOn, latched, spot)
+      let out = feed.out
 
       const hold = modHold ? clamp01(holdBase + modHold[i]!) : holdBase
       if (hold > 0) {
@@ -1683,6 +1554,205 @@ export class ToyChip implements Stage {
   // One sample of the effect button, at `timing` seconds of program per real
   // second. Past the end of a pass, a held button starts again and a released
   // one falls silent.
+  private readonly feed = {
+    maxHz: 0,
+    duty: 0,
+    accomp: 0,
+    spread: 0,
+    mixDrive: 0,
+    pot: 0,
+    envDiv: 0,
+    clock: 0,
+    dutyEnv: 0,
+    amp: 0,
+    timing: 0,
+    scanHz: 0,
+    keys: 0,
+    out: 0,
+  }
+
+  // The voices, out of process() so that they have an inlining budget of their
+  // own: inside it the four of them ran V8 out, and every helper left as a
+  // call boxed the doubles it took and gave. What they read comes in `feed`,
+  // set once a block or once a sample, and the sum goes back out there.
+  private sound(
+    rail: ToyRail,
+    pinned: boolean,
+    shaped: boolean,
+    pwmOn: boolean,
+    latched: boolean,
+    spot: number,
+  ) {
+    const feed = this.feed
+    const { maxHz, duty, accomp, mixDrive, pot } = feed
+    const { envDiv, clock, dutyEnv, amp, timing, scanHz } = feed
+    let out = 0
+    if (!rail.booting && !rail.dead) {
+      const live = this.slotLive
+      const val = this.slotVal
+      if (pinned) live.fill(0)
+      const note = this.transport.tune ? this.note : REST
+      if (isNote(note) && this.env > ENV_FLOOR) {
+        if (note !== this.melodyLoaded) {
+          this.melodyLoaded = note
+          this.melodyRatio = this.divRatio(note)
+        }
+        const hz = Math.min(
+          A3_HZ *
+            this.melodyRatio *
+            clock *
+            rail.pitchFactor *
+            (envDiv > 0 ? octaves(-envDiv * (1 - this.env)) : 1),
+          maxHz,
+        )
+        this.melodyHz = hz
+        const inc = hz / this.sr
+        this.phase = wrap1(this.phase + inc)
+        const env = shaped ? this.level(this.env, pwmOn) : this.env
+        const v =
+          pulse(this.phase, width(duty, dutyEnv, this.env), inc) * env * amp
+        if (pinned) {
+          val[0] = v
+          live[0] = 1
+        } else out += v
+      }
+      let keys = 0
+      if (accomp > 0) {
+        if (this.bassEnv > ENV_FLOOR) {
+          if (this.bassNote !== this.bassLoaded) {
+            this.bassLoaded = this.bassNote
+            this.bassRatio = this.divRatio(this.bassNote)
+          }
+          const hz = Math.min(
+            A3_HZ *
+              this.bassRatio *
+              clock *
+              rail.pitchFactorAt(BASS_TRIM) *
+              (envDiv > 0 ? octaves(-envDiv * (1 - this.bassEnv)) : 1),
+            maxHz,
+          )
+          const inc = hz / this.sr
+          this.bassPhase = wrap1(this.bassPhase + inc)
+          const env = shaped ? this.level(this.bassEnv, pwmOn) : this.bassEnv
+          const v =
+            pulse(this.bassPhase, width(duty, dutyEnv, this.bassEnv), inc) *
+            env *
+            rail.ampFactorAt(BASS_TRIM) *
+            accomp
+          if (pinned) {
+            val[1] = v
+            live[1] = 1
+          } else keys += v
+        }
+        if (this.chordEnv > ENV_FLOOR) {
+          feed.keys = keys
+          this.chordTones(rail, pinned, shaped, pwmOn)
+          keys = feed.keys
+        }
+      }
+      feed.keys = keys
+      this.keyTones(rail, pinned, shaped, pwmOn)
+      keys = feed.keys
+      if (this.sfx >= 0) {
+        const x = this.sfxSample(
+          latched ? 0 : timing,
+          clock * rail.pitchFactor,
+          maxHz,
+          duty,
+          dutyEnv,
+          shaped,
+          pwmOn,
+        )
+        if (pinned) {
+          val[SFX_SLOT] = x * amp
+          live[SFX_SLOT] = 1
+        } else keys += x * amp
+      }
+      if (scanHz > 0) out = this.scan((scanHz * timing) / this.sr)
+      else if (pinned) out = this.ring(this.short(mixDrive))
+      out = (out + mixVoices(keys, mixDrive)) * this.gateState
+      if (spot === 3) out += pot * 0.4
+    }
+    feed.out = out
+  }
+  private chordTones(
+    rail: ToyRail,
+    pinned: boolean,
+    shaped: boolean,
+    pwmOn: boolean,
+  ) {
+    const feed = this.feed
+    const { maxHz, duty, dutyEnv, envDiv, clock, accomp } = feed
+    const live = this.slotLive
+    const val = this.slotVal
+    if (this.chord !== this.chordLoaded) {
+      this.chordLoaded = this.chord
+      for (let c = 0; c < 3; c++)
+        this.chordRatio[c] = this.divRatio(this.chord[c]!)
+    }
+    const env = shaped ? this.level(this.chordEnv, pwmOn) : this.chordEnv
+    const fall = envDiv > 0 ? octaves(-envDiv * (1 - this.chordEnv)) : 1
+    for (let c = 0; c < 3; c++) {
+      const trim = CHORD_TRIM[c]!
+      const hz = Math.min(
+        A3_HZ * this.chordRatio[c]! * clock * rail.pitchFactorAt(trim) * fall,
+        maxHz,
+      )
+      const inc = hz / this.sr
+      this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
+      const v =
+        pulse(this.chordPhase[c]!, width(duty, dutyEnv, this.chordEnv), inc) *
+        env *
+        rail.ampFactorAt(trim) *
+        CHORD_GAIN *
+        accomp
+      if (pinned) {
+        val[2 + c] = v
+        live[2 + c] = 1
+      } else feed.keys += v
+    }
+  }
+
+  private keyTones(
+    rail: ToyRail,
+    pinned: boolean,
+    shaped: boolean,
+    pwmOn: boolean,
+  ) {
+    const feed = this.feed
+    const { maxHz, duty, dutyEnv, envDiv, clock, spread } = feed
+    const live = this.slotLive
+    const val = this.slotVal
+    for (let k = 0; k < this.voices.length; k++) {
+      const v = this.voices[k]!
+      if (v.env <= ENV_FLOOR) continue
+      if (v.note !== v.loaded) {
+        v.loaded = v.note
+        v.ratio = this.divRatio(v.note)
+      }
+      const trim = trimAt(k, spread)
+      const hz = Math.min(
+        A3_HZ *
+          v.ratio *
+          clock *
+          rail.pitchFactorAt(trim) *
+          (envDiv > 0 ? octaves(-envDiv * (1 - v.env)) : 1),
+        maxHz,
+      )
+      const inc = hz / this.sr
+      v.phase = wrap1(v.phase + inc)
+      const env = shaped ? this.level(v.env, pwmOn) : v.env
+      const x =
+        pulse(v.phase, width(duty, dutyEnv, v.env), inc) *
+        env *
+        rail.ampFactorAt(trim)
+      if (pinned) {
+        val[5 + k] = x
+        live[5 + k] = 1
+      } else feed.keys += x
+    }
+  }
+
   private sfxSample(
     timing: number,
     pitch: number,
