@@ -39,7 +39,7 @@
     "test:full": "BENDER_FULL=1 scripts/heavy-run-slot.sh vitest run",
     "test:changed": "scripts/heavy-run-slot.sh vitest run --changed main --passWithNoTests",
     "check": "pnpm lint && pnpm typecheck && pnpm test:changed",
-    "denormal": "DENORMAL=1 scripts/heavy-run-slot.sh vitest run src/dsp/denormal.test.ts",
+    "denormal": "DENORMAL=1 scripts/heavy-run-slot.sh vitest run src/dsp/denormal.test.ts src/dsp/denormalStages.test.ts",
     "typecheck": "astro sync && scripts/heavy-run-slot.sh tsc -b",
     "sync:check": "node scripts/sync-check.mjs",
     "pat": "node scripts/push.mjs patch",

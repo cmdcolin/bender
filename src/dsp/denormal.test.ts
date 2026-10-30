@@ -9,10 +9,7 @@ import { packParams } from '../engine/params.ts'
 import { buildBender } from './build.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
 import { ENS_MODE } from './stages/ensemble.ts'
-
-// The smallest double the hardware still handles in one piece. Under it,
-// arithmetic falls to microcode and runs about twenty times slower.
-const SMALLEST_NORMAL = 2.2250738585072014e-308
+import { subnormals } from './testSubnormals.ts'
 
 // Nothing on the board may come to rest in denormal range.
 //
@@ -24,30 +21,8 @@ const SMALLEST_NORMAL = 2.2250738585072014e-308
 //
 // A walk over the whole graph rather than a list of the fields that have caught
 // it so far, because the next one will be somewhere nobody thought to look.
-// Values kept in a Float32Array are exempt: that format bottoms out at 1e-45
-// and flushes itself to zero on the way past.
-function denormals(root: object): string[] {
-  const found: string[] = []
-  const seen = new Set<object>()
-  const walk = (node: unknown, path: string) => {
-    if (typeof node === 'number') {
-      if (node !== 0 && Math.abs(node) < SMALLEST_NORMAL) {
-        found.push(`${path} = ${node}`)
-      }
-      return
-    }
-    if (node === null || typeof node !== 'object') return
-    if (ArrayBuffer.isView(node) || seen.has(node)) return
-    seen.add(node)
-    if (Array.isArray(node)) {
-      node.forEach((v, i) => walk(v, `${path}[${i}]`))
-      return
-    }
-    for (const [k, v] of Object.entries(node)) walk(v, `${path}.${k}`)
-  }
-  walk(root, 'chain')
-  return found
-}
+// This takes the board as a whole; denormalStages.test.ts strikes each stage
+// on its own.
 
 // Everything here decays per sample at a rate set by the sample rate, so a slow
 // rate reaches the same place in the same simulated minutes for a sixth of the
@@ -70,7 +45,7 @@ function ring(hot: Partial<Controls>, cold: Partial<Controls>): string[] {
   // Long enough for a double to halve its way down from unity to nothing.
   const after = packParams({ ...DEFAULT_CONTROLS, ...hot, ...cold })
   for (let b = 0; b < (400 * SR) / BLOCK; b++) built.chain.process(io, after)
-  return denormals(built.chain)
+  return subnormals(built.chain, 'chain')
 }
 
 // Everything that rings, struck once and then left alone.
