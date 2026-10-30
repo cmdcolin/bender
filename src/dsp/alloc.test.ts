@@ -13,6 +13,8 @@ import { makeIo, sine } from './testRender.ts'
 
 import type { ToWorklet } from '../engine/messages.ts'
 
+import { GCProfiler, getHeapStatistics } from 'node:v8'
+
 const SR = 48000
 
 interface Allocation {
@@ -337,13 +339,14 @@ function gestures(board: Controls): ToWorklet[] {
 }
 
 const SECONDS = process.env.BENDER_FULL ? 6 : 2
+const GARBAGE_WARM_SECONDS = 6
+const GARBAGE_SECONDS = 6
+const GARBAGE_BUDGET_MB = 250
 const GESTURE_EVERY = 12
 
 type Make = Awaited<ReturnType<typeof processorClass>>
 
-// From the first message on: a stage that sets itself up the first time it is
-// used is setting itself up on the audio thread.
-function playing(make: Make, overrides: Partial<Controls>) {
+function rig(make: Make, overrides: Partial<Controls>) {
   const board: Controls = { ...DEFAULT_CONTROLS, ...EVERYTHING, ...overrides }
   const { processor, port } = make()
   const mic = [new Float32Array(BLOCK), new Float32Array(BLOCK)]
@@ -370,11 +373,47 @@ function playing(make: Make, overrides: Partial<Controls>) {
     if (blocks % GESTURE_EVERY === 0)
       port.send(said[(blocks / GESTURE_EVERY) % said.length]!)
   }
-  const found = allocationsDuring(() => {
+  const render = (seconds: number) => {
+    for (let b = 0; b < (seconds * SR) / BLOCK; b++) block()
+  }
+  const open = () => {
     for (const msg of opening) port.send(msg)
-    for (let b = 0; b < (SECONDS * SR) / BLOCK; b++) block()
+  }
+  return { open, render, out, port }
+}
+
+// From the first message on: a stage that sets itself up the first time it is
+// used is setting itself up on the audio thread.
+function playing(make: Make, overrides: Partial<Controls>) {
+  const { open, render, out, port } = rig(make, overrides)
+  const found = allocationsDuring(() => {
+    open()
+    render(SECONDS)
   })
   return { found, out, port }
+}
+
+// Every byte the heap took on while a warm board rendered, collected or not:
+// what each collection found, less what the one before it left, plus the ends.
+function garbagePerSecond(make: Make, overrides: Partial<Controls>) {
+  const { open, render } = rig(make, overrides)
+  open()
+  render(GARBAGE_WARM_SECONDS)
+  const profiler = new GCProfiler()
+  const startedAt = getHeapStatistics().used_heap_size
+  profiler.start()
+  render(GARBAGE_SECONDS)
+  const endedAt = getHeapStatistics().used_heap_size
+  const profiled = profiler.stop()
+  if (!profiled) throw new Error('the gc profiler never started')
+  let bytes = 0
+  let from = startedAt
+  for (const gc of profiled.statistics) {
+    bytes += gc.beforeGC.heapStatistics.usedHeapSize - from
+    from = gc.afterGC.heapStatistics.usedHeapSize
+  }
+  bytes += endedAt - from
+  return bytes / GARBAGE_SECONDS
 }
 
 const frames = ({ stack }: Allocation) =>
@@ -467,3 +506,18 @@ test('nor with the other four bends in the slots', () => {
   const { found } = playing(make, LAST_BENDS)
   expect(report(found).unexplained).toEqual([])
 })
+
+// Nearly all of it is doubles boxed where TurboFan ran out of inlining budget
+// and called a helper instead, so it moves with the JIT rather than with any
+// one allocation the counter above could catch. Both boards measured 135-155
+// MB a second in Node 24; the budget is there to catch a stage falling off a
+// cliff, not a few calls more.
+test.runIf(process.env.BENDER_FULL)(
+  'a warm board makes no more than its budget of garbage a second',
+  () => {
+    for (const bends of [FIRST_BENDS, LAST_BENDS]) {
+      const mb = garbagePerSecond(make, bends) / 1e6
+      expect(Math.round(mb), 'MB a second').toBeLessThan(GARBAGE_BUDGET_MB)
+    }
+  },
+)
