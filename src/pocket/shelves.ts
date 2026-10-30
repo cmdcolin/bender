@@ -39,6 +39,3 @@ export const SHELVES: Shelf[] = SHELF_ORDER.map(name => ({
   name,
   presets: PRESETS.filter(p => leadOf(p) === name),
 }))
-
-export const shelfOf = (presetName: string): Shelf =>
-  SHELVES.find(s => s.presets.some(p => p.name === presetName)) ?? SHELVES[0]!
