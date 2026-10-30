@@ -549,11 +549,14 @@ export class Engine {
   }
 
   async start() {
-    this.booting ??= this.boot().catch((e: unknown) => {
-      this.booting = undefined
-      this.fault.set(`audio did not start: ${errorText(e)}`)
-      throw e
-    })
+    this.booting ??= this.boot().then(
+      () => this.fault.set(''),
+      (e: unknown) => {
+        this.booting = undefined
+        this.fault.set(`audio did not start: ${errorText(e)}`)
+        throw e
+      },
+    )
     await this.booting
     await this.ctx?.resume()
     this.running.set(this.ctx?.state === 'running')

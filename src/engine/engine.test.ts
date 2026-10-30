@@ -857,6 +857,52 @@ test('a boot that fails closes its context and lets the next start retry', async
   }
 })
 
+test('a boot that works after one that failed clears the fault', async () => {
+  let attempts = 0
+  vi.stubGlobal(
+    'AudioContext',
+    class {
+      state = 'running'
+      destination = {}
+      audioWorklet = {
+        addModule: () =>
+          ++attempts === 1
+            ? Promise.reject(new Error('no worklet'))
+            : Promise.resolve(),
+      }
+      addEventListener = () => {}
+      resume() {
+        return Promise.resolve()
+      }
+      close() {
+        return Promise.resolve()
+      }
+      createGain() {
+        return { connect: (dest: unknown) => dest }
+      }
+    },
+  )
+  vi.stubGlobal(
+    'AudioWorkletNode',
+    class {
+      port = { postMessage: () => {} }
+      connect(dest: unknown) {
+        return dest
+      }
+    },
+  )
+  try {
+    const engine = new Engine()
+    await expect(engine.start()).rejects.toThrow('no worklet')
+    expect(engine.fault.get()).toBe('audio did not start: no worklet')
+    await engine.start()
+    expect(engine.running.get()).toBe(true)
+    expect(engine.fault.get()).toBe('')
+  } finally {
+    vi.unstubAllGlobals()
+  }
+})
+
 test('a double click on the mic opens it once, and a mic unplugged goes off', async () => {
   const track = Object.assign(new EventTarget(), { stop: () => {} })
   const stream = { getTracks: () => [track], getAudioTracks: () => [track] }
