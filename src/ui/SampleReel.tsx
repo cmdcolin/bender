@@ -299,11 +299,7 @@ export function SampleReel({ children }: { children?: ReactNode }) {
             onPointerDown={e => {
               const c = engine.controls.get()
               const where = fractionAcross(e)
-              grab.current = grabbed(
-                where,
-                Math.min(c.loopIn, c.loopOut),
-                Math.max(c.loopIn, c.loopOut),
-              )
+              grab.current = grabbed(where, c.loopIn, c.loopOut)
               e.currentTarget.setPointerCapture(e.pointerId)
               track(where)
             }}
