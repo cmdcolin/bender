@@ -46,11 +46,11 @@ export function useSyncedPrefs(uid: string | null) {
       fetchPrefs(uid)
         .then(raw => {
           if (!live) return
-          const remote = readPrefs(raw)
-          switch (decide(localAt(), remote?.at ?? null)) {
+          const sync = decide(localAt(), readPrefs(raw))
+          switch (sync.kind) {
             case 'adopt':
-              applyPrefs(remote!)
-              stampLocal(remote!.at)
+              applyPrefs(sync.prefs)
+              stampLocal(sync.prefs.at)
               break
             case 'push':
               push()

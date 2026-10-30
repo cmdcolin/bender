@@ -148,6 +148,19 @@ test('a Euclid fill spreads a row’s hits from its first one', () => {
   expect(euclidMask(0, 8, row('xxxxxxxx'))).toBe(0)
 })
 
+test('a Euclid fill spreads its hits as evenly as whole steps allow', () => {
+  for (const hits of [3, 4, 5, 7, 9, 11, 13]) {
+    const fill = euclidMask(hits, STEPS, stepBit(4))
+    const on = Array.from({ length: STEPS }, (_, s) => s).filter(s =>
+      hasStep(fill, s),
+    )
+    const gaps = on.map((s, i) => (i === 0 ? s + STEPS - on.at(-1)! : s - on[i - 1]!))
+    expect(on.length, `${hits}`).toBe(hits)
+    expect(on[0], `${hits}`).toBe(4)
+    expect(Math.max(...gaps) - Math.min(...gaps), `${hits}`).toBeLessThanOrEqual(1)
+  }
+})
+
 test('the tracker rows read one character a column', () => {
   expect(parseCells('ratchet', '.2.8').slice(0, 4)).toEqual([0, 1, 0, 5])
   expect(parseCells('nudge', '..b').slice(0, 3)).toEqual([0, 0, 11])

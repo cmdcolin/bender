@@ -3,6 +3,7 @@ import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { SUPPLY, SupplyTap, type Supplies } from '../supplies.ts'
 import { OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { RATE_MASK } from '../util/lfo.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
@@ -317,8 +318,10 @@ export class Clipper implements Stage {
       const g = modGain
         ? Math.min(gainBase * octaves(modGain[i]! * 4), PIN_GAIN_MAX * 2)
         : gainBase
+      // A wire moves the gain every sample; the corner it sets is retuned every
+      // eighth, which spares a tan and a log2 on the other seven.
       if (
-        g !== this.gainWas ||
+        (g !== this.gainWas && (!modGain || (i & RATE_MASK) === 0)) ||
         open !== this.openWas ||
         Math.abs(this.ampV - this.tunedV) > RETUNE_V
       )

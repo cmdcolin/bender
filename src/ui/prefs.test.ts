@@ -29,12 +29,13 @@ beforeEach(() => {
 })
 
 test('the account wins when newer, this machine when changed since', () => {
-  expect(decide(0, null)).toBe('none')
-  expect(decide(0, 5)).toBe('adopt')
-  expect(decide(4, 5)).toBe('adopt')
-  expect(decide(6, 5)).toBe('push')
-  expect(decide(6, null)).toBe('push')
-  expect(decide(5, 5)).toBe('none')
+  const at = (n: number) => ({ at: n })
+  expect(decide(0, null)).toEqual({ kind: 'none' })
+  expect(decide(0, at(5))).toEqual({ kind: 'adopt', prefs: at(5) })
+  expect(decide(4, at(5))).toEqual({ kind: 'adopt', prefs: at(5) })
+  expect(decide(6, at(5))).toEqual({ kind: 'push' })
+  expect(decide(6, null)).toEqual({ kind: 'push' })
+  expect(decide(5, at(5))).toEqual({ kind: 'none' })
 })
 
 test('a stored setup keeps the fields that are the right shape', () => {

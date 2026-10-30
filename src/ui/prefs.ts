@@ -71,13 +71,15 @@ export function applyPrefs(prefs: Partial<Prefs>) {
   }
 }
 
-export type Sync = 'adopt' | 'push' | 'none'
-
 /** What to do on signing in. The account wins when it is newer. This machine
     wins when it has been changed since the account last heard, and a machine
     never changed says nothing, so a fresh one takes whatever the account has. */
-export function decide(local: number, remote: number | null): Sync {
-  if (remote !== null && remote > local) return 'adopt'
-  if (local > 0 && local > (remote ?? 0)) return 'push'
-  return 'none'
-}
+export const decide = <P extends { at: number }>(
+  local: number,
+  remote: P | null,
+): { kind: 'adopt'; prefs: P } | { kind: 'push' } | { kind: 'none' } =>
+  remote !== null && remote.at > local
+    ? { kind: 'adopt', prefs: remote }
+    : local > 0 && local > (remote === null ? 0 : remote.at)
+      ? { kind: 'push' }
+      : { kind: 'none' }
