@@ -461,6 +461,7 @@ export class ModBus {
     }
     const bars = PHRASE_BARS[Math.round(p[IDX.modPhraseBars]!)] ?? 8
     const phraseSteps = bars * BAR_STEPS
+    const phraseRate = kitHz / this.sr
     const phraseShapeAt = Math.round(p[IDX.modPhraseShape]!)
     if (enveloped) this.runEnv(n, p, src.trig, kitHz)
     for (let i = 0; i < n; i++) {
@@ -486,9 +487,12 @@ export class ModBus {
       )
       this.keyEnv[i] = this.keyHit.process(src.trig.key[i]! > 0 ? 1 : 0, fall)
       const at = strobe[i]!
-      this.phrasePos = at
-        ? (at - 1) % phraseSteps
-        : (this.phrasePos + kitHz / this.sr) % phraseSteps
+      if (at) this.phrasePos = (at - 1) % phraseSteps
+      else {
+        let pos = this.phrasePos + phraseRate
+        while (pos >= phraseSteps) pos -= phraseSteps
+        this.phrasePos = pos
+      }
       if (phrased)
         this.phrase[i] = phraseShape(
           this.phrasePos / phraseSteps,
