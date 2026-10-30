@@ -374,6 +374,11 @@ function pushPull(x: number, k: Knobs): number {
   )
 }
 
+// Moving this to Rust→wasm was tried and declined on 2026-10-30 (spike in
+// a28812ba): bit-exact and 1.45× faster in Chrome, but the same loop in flat
+// TypeScript was 1.35× with no garbage. The DSP changes too often for a second
+// language, and garbage costs under 1% of Chrome's audio thread.
+
 /** One channel through the amp. Everything between the upsampler and the
     downsampler runs at twice the board's rate. */
 class Channel {
