@@ -5,6 +5,8 @@ import { expect, test, vi } from 'vitest'
 import { engine } from '../engine/engine.ts'
 import { SCALE_NAMES } from '../scale.ts'
 import { Keybed } from './Keybed.tsx'
+import { keymap, noteKeys } from './keymap.ts'
+import { letterKeys } from './letters.ts'
 import './testDom.ts'
 
 const bed = () => render(<Keybed dest="fm" label="test bed" />)
@@ -71,6 +73,27 @@ test('Enter and Space on a focused key hold it until they come up', () => {
     fireEvent.keyUp(key('D3'), { key: k })
     expect(engine.fmKeysDown.get().size).toBe(0)
   }
+})
+
+test('a mouse passing over a key a letter holds leaves it down', () => {
+  letterKeys.set('fm')
+  bed()
+  const [letter = ''] = noteKeys(keymap.get())
+  fireEvent.keyDown(window, { key: letter })
+  expect(key('C3').ariaPressed).toBe('true')
+  fireEvent.pointerEnter(key('C3'), { buttons: 0 })
+  fireEvent.pointerLeave(key('C3'), { buttons: 0 })
+  expect(engine.fmKeysDown.get().size).toBe(1)
+  fireEvent.keyUp(window, { key: letter })
+  expect(engine.fmKeysDown.get().size).toBe(0)
+})
+
+test('a key the pointer pressed lets go when the pointer slides off it', () => {
+  bed()
+  fireEvent.pointerDown(key('D3'), { buttons: 1 })
+  expect(engine.fmKeysDown.get().size).toBe(1)
+  fireEvent.pointerLeave(key('D3'), { buttons: 1 })
+  expect(engine.fmKeysDown.get().size).toBe(0)
 })
 
 test('a key held by Enter lets go when an arrow walks off it', () => {

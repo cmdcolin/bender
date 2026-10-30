@@ -555,6 +555,20 @@ test('a song wire held high plays the neighbouring song’s notes', () => {
   for (const n of bent) expect(march.has(n), `${n}`).toBe(true)
 })
 
+test('a song wire that lands a ROM on the memory plays the memory, round at its own length', () => {
+  const heard = new Set(
+    melody({
+      ...memory({ 0: 19, 1: 24, 2: 19, 3: 24, 5: 31 }),
+      tuneLen: 4,
+      chipTune: 2,
+      chipBankLine: 5,
+      chipBankFault: FAULT_TO_V,
+    }),
+  )
+  heard.delete(-999)
+  expect([...heard].toSorted((a, b) => a - b)).toEqual([19, 24])
+})
+
 test('a divider wire held high moves a held note off the keys', () => {
   const held = (overrides: Partial<Controls>) =>
     pitchHz(

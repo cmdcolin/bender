@@ -118,10 +118,17 @@ export function Keybed({
   // What was sent, not which key was pressed: the octave moves under your hand
   // and a note has to be let go at the pitch it went down at.
   const held = useRef(new Set<number>())
+  // The part of that a pointer is holding, which is all a pointer leaving a key
+  // can let go of: a note held by a letter or by Enter stays down under a mouse
+  // passing over it.
+  const pointed = useRef(new Set<number>())
   const [touching, setTouching] = useState<ReadonlySet<number>>(new Set())
   const track = (semitone: number, down: boolean) => {
     if (down) held.current.add(semitone)
-    else held.current.delete(semitone)
+    else {
+      held.current.delete(semitone)
+      pointed.current.delete(semitone)
+    }
     setTouching(new Set(held.current))
   }
   // Notes alt-click has pinned down, one at a time. The hold switch latches
@@ -235,6 +242,7 @@ export function Keybed({
   const releaseAll = () => {
     for (const semitone of held.current) engine.noteOff(semitone, dest)
     held.current.clear()
+    pointed.current.clear()
     latched.current.clear()
     setTouching(new Set())
   }
@@ -321,12 +329,19 @@ export function Keybed({
   // A hand dragged across three octaves plays what it crosses. The capture a
   // touch hands to the key it started on would otherwise keep every event there,
   // so a glissando would come out as one note held down.
+  const point = (note: number, latch = false) => {
+    press(note, latch)
+    if (held.current.has(at(note))) pointed.current.add(at(note))
+  }
   const grab = (note: number) => (e: PointerEvent<HTMLButtonElement>) => {
     e.currentTarget.releasePointerCapture(e.pointerId)
-    press(note, e.altKey)
+    point(note, e.altKey)
   }
   const slideInto = (note: number) => (e: PointerEvent<HTMLButtonElement>) => {
-    if (e.buttons && !hold) press(note)
+    if (e.buttons && !hold) point(note)
+  }
+  const slideOff = (note: number) => {
+    if (pointed.current.delete(at(note))) release(note)
   }
   // A pointer taken away rather than lifted: a window manager claiming alt-drag
   // to move the window, a touch turning into a scroll, the system stepping in.
@@ -395,7 +410,7 @@ export function Keybed({
         }}
         onPointerEnter={slideInto(note)}
         onPointerUp={() => release(note)}
-        onPointerLeave={() => isDown(note) && release(note)}
+        onPointerLeave={() => slideOff(note)}
         onPointerCancel={cancel(note)}
         onKeyDown={e =>
           aim(note, e) || (claimPress(e) && press(note, e.altKey))
