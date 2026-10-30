@@ -180,7 +180,7 @@ export class Crusher implements Stage {
   private holdL = 0
   private holdR = 0
   private countL = 0
-  private countR: number
+  private countR = 0
   private rng: Rng
 
   private left = new Side(0)

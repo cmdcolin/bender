@@ -256,7 +256,7 @@ class TapeHead {
   private ripLow = 0
   private ripBand = 0
   private dropLeft = 0
-  private dropHazard: number
+  private dropHazard = 0
   private dropDepth = 0
   private dropEnv = 0
   private dcX = 0
