@@ -445,6 +445,10 @@ export class FmChip implements Stage {
   private vibPhase = 0
   private amGain = 1
   private vibFactor = 1
+  /** what the die is clocked at this sample, for the LFO and the noise */
+  private dieClock = 1
+  private wavePhase = 0
+  private waveOut = 0
   private dataBus = new Bus(DATA_WIDTH)
   private addrBus = new Bus(ADDR_WIDTH)
   private dataLine = -1
@@ -1081,26 +1085,31 @@ export class FmChip implements Stage {
   // nobody has been at: the word only comes out as a word once something is
   // soldered or cut across the pins carrying it, so an unbent chip reads the
   // table at the width the table is stored at.
-  private wave(phase: number, half: number) {
-    let addr = Math.floor(phase * SINE_STEPS) & (SINE_STEPS - 1)
+  /** The sine table at `wavePhase`, into `waveOut`. Both are fields so that no
+      double crosses the call, which V8 boxes when it does not inline it. */
+  private wave(half: number) {
+    let addr = Math.floor(this.wavePhase * SINE_STEPS) & (SINE_STEPS - 1)
     if (this.waveLine >= 0)
       addr = this.waveBus.read(addr, this.waveLine, this.waveFault, this.busCut)
-    if (half && addr & SIGN) return 0
-    if (this.waveDataLine < 0 && this.blob <= 0) return sineAt(addr)
-    let word = Math.round(sineMag(addr) * WAVE_DATA_FULL)
-    // The blob first and the fault after, because a pin the fault has taken to
-    // a rail is a pin the blob has lost: one is a bodge wire and the other is
-    // a short, and a short wins.
-    if (this.blob > 0) word = this.solder(word)
-    if (this.waveDataLine >= 0)
-      word = this.waveDataBus.read(
-        word,
-        this.waveDataLine,
-        this.waveDataFault,
-        this.busCut,
-      )
-    const s = word / WAVE_DATA_FULL
-    return addr & SIGN ? -s : s
+    if (half && addr & SIGN) this.waveOut = 0
+    else if (this.waveDataLine < 0 && this.blob <= 0)
+      this.waveOut = sineAt(addr)
+    else {
+      let word = Math.round(sineMag(addr) * WAVE_DATA_FULL)
+      // The blob first and the fault after, because a pin the fault has taken
+      // to a rail is a pin the blob has lost: one is a bodge wire and the
+      // other is a short, and a short wins.
+      if (this.blob > 0) word = this.solder(word)
+      if (this.waveDataLine >= 0)
+        word = this.waveDataBus.read(
+          word,
+          this.waveDataLine,
+          this.waveDataFault,
+          this.busCut,
+        )
+      const s = word / WAVE_DATA_FULL
+      this.waveOut = addr & SIGN ? -s : s
+    }
   }
 
   // The blob, on one word. It sits on the pins from the least significant up,
@@ -1150,7 +1159,9 @@ export class FmChip implements Stage {
       this.stepEnv(c.car, raced ? this.raceRates : car)
       c.mod.phase = (c.mod.phase + inc * mod.mult) % 1
       const self = (c.mod.fb1 + c.mod.fb2) * mod.fb
-      const ms = this.wave(c.mod.phase + self, 0)
+      this.wavePhase = c.mod.phase + self
+      this.wave(0)
+      const ms = this.waveOut
       const modEnv = wideOpen ? 1 : c.mod.env
       const m = this.adderMask
         ? this.logMul(ms, modEnv * mod.level)
@@ -1158,7 +1169,9 @@ export class FmChip implements Stage {
       c.mod.fb2 = c.mod.fb1
       c.mod.fb1 = m
       c.car.phase = (c.car.phase + inc * car.mult) % 1
-      const cs = this.wave(c.car.phase + m * 2, 0)
+      this.wavePhase = c.car.phase + m * 2
+      this.wave(0)
+      const cs = this.waveOut
       const carEnv = wideOpen ? 1 : c.car.env
       return this.adderMask ? this.logMul(cs, carEnv * vol) : cs * carEnv * vol
     }
@@ -1193,7 +1206,9 @@ export class FmChip implements Stage {
       // why a real one is pitched rather than pure sand.
       this.stepEnv(c.car, raced ? this.raceRates : this.snareRates)
       c.car.phase = (c.car.phase + inc) % 1
-      const src = this.snareHiss * 0.75 + this.wave(c.car.phase, 0) * 0.25
+      this.wavePhase = c.car.phase
+      this.wave(0)
+      const src = this.snareHiss * 0.75 + this.waveOut * 0.25
       const env = wideOpen ? 1 : c.car.env
       if (this.adderMask) logged += this.logMul(src, env * vol)
       else out += src * env
@@ -1203,7 +1218,9 @@ export class FmChip implements Stage {
       // times up: what makes it metal rather than more sand.
       this.stepEnv(c.mod, raced ? this.raceRates : this.hatRates)
       c.mod.phase = (c.mod.phase + inc * HAT_MULT) % 1
-      const src = this.wave(c.mod.phase, 0) > 0 ? this.hiss : -this.hiss
+      this.wavePhase = c.mod.phase
+      this.wave(0)
+      const src = this.waveOut > 0 ? this.hiss : -this.hiss
       const env = wideOpen ? 1 : c.mod.env
       if (this.adderMask) logged += this.logMul(src, env * 0.7 * vol)
       else out += src * env * 0.7
@@ -1215,7 +1232,8 @@ export class FmChip implements Stage {
   // listening — there is no enable anywhere on the die, only a pair of bits per
   // patch deciding who is soldered to the result — so a note that arrives finds
   // the wobble already somewhere rather than starting it.
-  private stepLfo(clockFactor: number) {
+  private stepLfo() {
+    const clockFactor = this.dieClock
     this.amPhase = (this.amPhase + (AM_HZ * clockFactor) / this.sr) % 1
     this.vibPhase = (this.vibPhase + (VIB_HZ * clockFactor) / this.sr) % 1
     this.amGain = AM_GAIN[(Math.abs(this.amPhase - 0.5) * 126) | 0]!
@@ -1229,7 +1247,8 @@ export class FmChip implements Stage {
   // instead. One register and one clock either way, and the rail drags this one
   // like everything else on the die: starve the board and the sand turns into
   // a rumble.
-  private stepNoise(clockFactor: number) {
+  private stepNoise() {
+    const clockFactor = this.dieClock
     this.blobClock += (NOISE_HZ * clockFactor) / this.sr
     while (this.blobClock >= 1) {
       this.blobClock -= 1
@@ -1478,11 +1497,12 @@ export class FmChip implements Stage {
     for (let i = 0; i < io.n; i++) {
       const xtal = modChipX ? chipX * laneOctaves(modChipX[i]!) : chipX
       const cpu = modCpuX ? cpuX * laneOctaves(modCpuX[i]!) : cpuX
-      this.stepLfo(rail.clockFactor * xtal)
+      this.dieClock = rail.clockFactor * xtal
+      this.stepLfo()
       if (this.toyBits > 0) this.toyOnBus(toy[i]!)
       if (micOnBus) this.micOnBus(ctx.mic[i]!)
       if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
-      if (this.blob > 0 && !kit) this.stepNoise(rail.clockFactor * xtal)
+      if (this.blob > 0 && !kit) this.stepNoise()
 
       // The effect ROM, running. Its rate is the CPU's crystal, which the rail
       // does not reach, so the gesture keeps its own time however far the rail
@@ -1619,7 +1639,9 @@ export class FmChip implements Stage {
         c.mod.phase =
           (c.mod.phase + inc * mod.mult * (mod.vib ? this.vibFactor : 1)) % 1
         const self = (c.mod.fb1 + c.mod.fb2) * mod.fb * fbBoost
-        const ms = this.wave(c.mod.phase + self, mod.half)
+        this.wavePhase = c.mod.phase + self
+        this.wave(mod.half)
+        const ms = this.waveOut
         const m = this.adderMask
           ? this.logMul(ms, modEnv * mod.level)
           : ms * modEnv * mod.level
@@ -1630,7 +1652,9 @@ export class FmChip implements Stage {
           (c.car.phase + inc * car.mult * (car.vib ? this.vibFactor : 1)) % 1
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
-        const cs = this.wave(c.car.phase + m * 2 * indexBoost, car.half)
+        this.wavePhase = c.car.phase + m * 2 * indexBoost
+        this.wave(car.half)
+        const cs = this.waveOut
         const v = this.adderMask
           ? this.logMul(cs, carEnv * this.volume(n))
           : cs * carEnv * this.volume(n)

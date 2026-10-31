@@ -263,6 +263,12 @@ class TapeHead {
   private dcY = 0
   private gauss: Rng
   private rng: Rng
+  /** The sample in, and once `process` has run the head's playback: a field
+      rather than an argument and a return, which V8 boxes on a call it will
+      not inline. `delay` and `gapLog` come in the same way. */
+  y = 0
+  delay = 0
+  gapLog = 0
 
   constructor(sr: number, seed: number) {
     this.line = new DelayLine((LINE_MS / 1000) * sr + 8)
@@ -279,8 +285,9 @@ class TapeHead {
   // because oxide sheds in patches and a patch sits on one track: shared, every
   // dropout was a mono event landing on both channels at once, which is the one
   // thing a hole in the oxide never is.
-  process(x: number, delay: number, gapLog: number, s: Settings): number {
-    const xd = x * s.drive
+  process(s: Settings) {
+    const { delay, gapLog } = this
+    const xd = this.y * s.drive
     this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
     const pre = this.pre
     // The field the gap presents to the oxide, and the curve it meets there.
@@ -443,7 +450,10 @@ class TapeHead {
     y = this.gap2
     const dropGain = 1 - 0.9 * drop
 
-    if (s.bump === 0) return y * dropGain
+    if (s.bump === 0) {
+      this.y = y * dropGain
+      return
+    }
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
     const high = y - this.bumpLow - s.bumpQ * this.bumpBand
     this.bumpBand = flushDenormal(this.bumpBand + s.bumpF * high)
@@ -455,10 +465,9 @@ class TapeHead {
     this.ripLow = flushDenormal(this.ripLow + s.ripF * this.ripBand)
     const ripHigh = y - this.ripLow - s.bumpQ * this.ripBand
     this.ripBand = flushDenormal(this.ripBand + s.ripF * ripHigh)
-    return (
+    this.y =
       (y + s.bumpQ * (s.bump * this.bumpBand - s.ripple * this.ripBand)) *
       dropGain
-    )
   }
 
   private nextHazard() {
@@ -661,7 +670,8 @@ export class Tape implements Stage {
     const skew = p[IDX.tapeAzimuth]!
     const azimuth = (skew * AZIMUTH_MS * this.sr) / 1000
     const gapL = Math.log(1 - lpCoef(gapHz, this.sr))
-    const gapR = gapL * (1 - 0.45 * skew)
+    this.headL.gapLog = gapL
+    this.headR.gapLog = gapL * (1 - 0.45 * skew)
     const wowAmt = p[IDX.tapeWow]! * sp.wobble * fm.wobble
     const flutAmt = p[IDX.tapeFlutter]! * sp.wobble * fm.wobble
     const driftCoef = lpCoef(0.12, this.sr)
@@ -740,8 +750,15 @@ export class Tape implements Stage {
       this.dryR.write(inR)
       const recL = enc ? enc[0].process(inL) : inL
       const recR = enc ? enc[1].process(inR) : inR
-      let wetL = this.headL.process(recL, d, gapL, s)
-      let wetR = this.headR.process(recR, d + azimuth, gapR, s)
+      const { headL, headR } = this
+      headL.y = recL
+      headL.delay = d
+      headL.process(s)
+      headR.y = recR
+      headR.delay = d + azimuth
+      headR.process(s)
+      let wetL = headL.y
+      let wetR = headR.y
       if (lowOn) {
         wetL = this.lowL.process(wetL, lowC)
         wetR = this.lowR.process(wetR, lowC)
