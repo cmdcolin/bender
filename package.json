@@ -29,6 +29,8 @@
     "diagram-shots": "node scripts/diagram-shots.ts",
     "ink": "node scripts/ink.ts",
     "faults": "node scripts/faults.ts",
+    "garbage": "GARBAGE_MAP=1 scripts/heavy-run-slot.sh vitest run src/dsp/alloc.test.ts -t 'where the garbage'",
+    "golden": "node scripts/golden.ts",
     "panel": "node scripts/panel.ts",
     "soak": "node scripts/soak.ts",
     "toy": "node hardware/toy/build.ts",

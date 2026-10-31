@@ -56,3 +56,7 @@ Agents run `pnpm test` and `pnpm typecheck`, never bare `vitest` or `tsc`. Both
 queue on `BENDER_HEAVY_SLOTS` machine-wide slots (default 2,
 `scripts/heavy-run-slot.sh`), so four agents at once do not slow the box to a
 crawl. `BENDER_HEAVY_SLOTS=0` turns the gate off.
+
+For a DSP change meant to leave the sound alone, run `pnpm golden write` before
+it and `pnpm golden check` after: every preset, compared sample for sample.
+`pnpm garbage` shows which DSP functions make the audio thread's garbage.

@@ -12,6 +12,7 @@ import { peaksOf } from './stages/sampler.ts'
 import { makeIo, sine } from './testRender.ts'
 
 import type { ToWorklet } from '../engine/messages.ts'
+import type { HeapProfiler } from 'node:inspector'
 
 import { GCProfiler, getHeapStatistics } from 'node:v8'
 
@@ -521,4 +522,50 @@ test.runIf(process.env.BENDER_FULL)(
       expect(Math.round(mb), 'MB a second').toBeLessThan(GARBAGE_BUDGET_MB)
     }
   },
+)
+
+// `pnpm garbage`: where the budget above goes, by the innermost dsp function on
+// the stack of each sampled allocation, collected or not. A function that shows
+// up here is boxing the doubles that cross a call V8 would not inline.
+test.runIf(process.env.GARBAGE_MAP)(
+  'where the garbage comes from',
+  async () => {
+    const { Session } = await import('node:inspector/promises')
+    for (const [name, bends] of [
+      ['first bends', FIRST_BENDS],
+      ['last bends', LAST_BENDS],
+    ] as const) {
+      const { open, render } = rig(make, bends)
+      open()
+      render(GARBAGE_WARM_SECONDS)
+      const session = new Session()
+      session.connect()
+      await session.post('HeapProfiler.enable')
+      await session.post('HeapProfiler.startSampling', {
+        samplingInterval: 128,
+        includeObjectsCollectedByMajorGC: true,
+        includeObjectsCollectedByMinorGC: true,
+      })
+      render(GARBAGE_SECONDS)
+      const { profile } = await session.post('HeapProfiler.stopSampling')
+      session.disconnect()
+      const by = new Map<string, number>()
+      const walk = (n: HeapProfiler.SamplingHeapProfileNode, owner: string) => {
+        const { url, functionName, lineNumber } = n.callFrame
+        const here = url.includes('/src/dsp/')
+          ? `${url.split('/src/dsp/')[1]} ${functionName} (line ${lineNumber + 1} as served)`
+          : owner
+        if (n.selfSize > 0) by.set(here, (by.get(here) ?? 0) + n.selfSize)
+        for (const c of n.children) walk(c, here)
+      }
+      walk(profile.head, '(outside the dsp)')
+      const rows = [...by].toSorted((a, b) => b[1] - a[1]).slice(0, 20)
+      const total = [...by.values()].reduce((a, b) => a + b, 0)
+      const mb = (bytes: number) => (bytes / GARBAGE_SECONDS / 1e6).toFixed(2)
+      process.stderr.write(`\n${name}: ${mb(total)} MB a second\n`)
+      for (const [where, bytes] of rows)
+        process.stderr.write(`  ${mb(bytes).padStart(6)}  ${where}\n`)
+    }
+  },
+  300_000,
 )
