@@ -205,6 +205,15 @@ class Loop {
   private selfIn = 0
   private offset = 0
   private offsetClip = 0
+  /** The sample each step works on, in and out: the head's read, then the
+      replay; the take, then what the record head lays. Fields rather than
+      arguments and returns, which V8 boxes on a call it will not inline, as
+      are where `lay` writes from and to and how much it keeps. */
+  y = 0
+  from = 0
+  to = 0
+  keep = 0
+  private readonly smooth: number
   readonly enc: Dbx
   readonly dec: Dbx
 
@@ -217,6 +226,7 @@ class Loop {
     this.gauss = gauss
     this.rng = rng
     this.maxFrames = MAX_LOOP_S * sr
+    this.smooth = lpCoef(120, sr)
     this.tape = new Float32Array(this.maxFrames)
     this.wear = new Float32Array(Math.ceil(this.maxFrames / CELL))
     this.enc = new Dbx(sr, false)
@@ -234,36 +244,38 @@ class Loop {
   }
 
   /** The head's reading at the current position, cubic between frames. */
-  read(): number {
+  read() {
     const tape = this.tape
-    if (this.len < 4) return 0
     const n = this.len
     const i = Math.floor(this.pos)
     const t = this.pos - i
     const i1 = i + 1 < n ? i + 1 : i + 1 - n
     const i2 = i1 + 1 < n ? i1 + 1 : i1 + 1 - n
-    return hermite(
-      tape[i > 0 ? i - 1 : n - 1]!,
-      tape[i]!,
-      tape[i1]!,
-      tape[i2]!,
-      t,
-    )
+    this.y =
+      n < 4
+        ? 0
+        : hermite(
+            tape[i > 0 ? i - 1 : n - 1]!,
+            tape[i]!,
+            tape[i1]!,
+            tape[i2]!,
+            t,
+          )
   }
 
   /** How much oxide has come off under the head, 0 to 1, smoothed so a cell
       edge is a slope rather than a step. */
-  oxide(smooth: number): number {
+  oxide() {
     const wear = this.wear
     const want = this.len > 0 ? (wear[(this.pos * PER_CELL) | 0] ?? 0) : 0
-    this.worn = flushDenormal(this.worn + smooth * (want - this.worn))
-    return this.worn
+    this.worn = flushDenormal(this.worn + this.smooth * (want - this.worn))
   }
 
   // What comes off the replay head: hiss laid on the medium, the gap's cliff
   // and the bump at wavelengths set by the speed, the playback amp's low cut,
   // and a gap where the oxide has gone.
-  replay(raw: number, s: Settings): number {
+  replay(s: Settings) {
+    const raw = this.y
     const n = this.gauss()
     this.hissY = flushDenormal(this.hissY + s.hissCoef * (n - this.hissY))
     const hiss = (n + 0.8 * (n - 2 * this.hissY)) * s.hiss
@@ -285,14 +297,14 @@ class Loop {
     y -= this.low1
     this.low2 = flushDenormal(this.low2 + s.lowC * (y - this.low2))
     y -= this.low2
-    return y * (1 - 0.9 * d)
+    this.y = y * (1 - 0.9 * d)
   }
 
   // What the record head lays down: the oxide's curve between a pre-emphasis
   // and its inverse, as the tape machine's head does it, then the top end the
   // medium cannot hold at this speed and this level.
-  record(x: number, s: Settings): number {
-    const xd = x * s.drive
+  record(s: Settings) {
+    const xd = this.y * s.drive
     this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
     const field = this.pre + (1 + EMPH) * (xd - this.pre)
     // The offset rides a 60 Hz envelope, so it and its own clip are held for a
@@ -317,14 +329,16 @@ class Loop {
     this.selfLp = flushDenormal(
       this.selfLp + this.selfC * (played - this.selfLp),
     )
-    return this.selfLp
+    this.y = this.selfLp
   }
 
   // The head has moved from `from` to `to`. Every frame that passed under it
   // gets the take, interpolated across the span so a fast tape is laid down
   // whole and a slow one is not written twice, over whatever the erase head
   // left of what was there. Oxide that has shed takes nothing.
-  lay(from: number, to: number, u: number, keep: number, s: Settings) {
+  lay(s: Settings) {
+    const { from, to, keep } = this
+    const u = this.y
     const tape = this.tape
     const wear = this.wear
     const n = this.len
@@ -544,7 +558,6 @@ export class FourTrack implements Stage {
   private readonly loadC: number
   private readonly driftC: number
   private readonly auxC: number
-  private readonly smooth: number
 
   private readonly sr: number
 
@@ -584,7 +597,6 @@ export class FourTrack implements Stage {
     this.loadC = coef(0.05, sr)
     this.driftC = lpCoef(0.12, sr)
     this.auxC = lpCoef(AUX_HP_HZ, sr)
-    this.smooth = lpCoef(120, sr)
   }
 
   /** Where each loop's head stands, 0 to 1 over the loop, in loop order. */
@@ -758,10 +770,15 @@ export class FourTrack implements Stage {
           continue
         }
         const loop = this.loops[flip ? TRACKS - 1 - k : k]!
-        loop.oxide(this.smooth)
-        let r = loop.replay(loop.read(), s)
-        if (dbx) r = loop.dec.process(r)
-        this.ret[k] = r
+        loop.oxide()
+        loop.read()
+        loop.replay(s)
+        if (dbx) {
+          loop.dec.y = loop.y
+          loop.dec.process()
+          loop.y = loop.dec.y
+        }
+        this.ret[k] = loop.y
       }
 
       let auxSum = 0
@@ -819,10 +836,18 @@ export class FourTrack implements Stage {
         const from = loop.pos
         const recLvl = b.rec[k]!
         if (recLvl > 0) {
-          let u = this.e[k]! * recLvl
-          if (dbx) u = loop.enc.process(u)
+          loop.y = this.e[k]! * recLvl
+          if (dbx) {
+            loop.enc.y = loop.y
+            loop.enc.process()
+            loop.y = loop.enc.y
+          }
+          loop.record(s)
           const behind = from - (vel > 0 ? HEAD_GAP : -HEAD_GAP)
-          loop.lay(behind, behind + vel, loop.record(u, s), b.keep[k]!, s)
+          loop.from = behind
+          loop.to = behind + vel
+          loop.keep = b.keep[k]!
+          loop.lay(s)
         }
         const to = from + vel
         loop.pos = to >= n ? to - n : to < 0 ? to + n : to

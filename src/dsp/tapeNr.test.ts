@@ -1,6 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { NR_DBX, NR_DOLBY_B, compander } from './stages/tapeNr.ts'
+import {
+  NR_DBX,
+  NR_DOLBY_B,
+  compander,
+  type Compander,
+} from './stages/tapeNr.ts'
 import { bin, renderBender, sine } from './testRender.ts'
 
 import type { Controls } from '../controls.ts'
@@ -25,6 +30,12 @@ function programme(seconds: number): Float32Array {
   return x
 }
 
+function through(c: Compander, x: number) {
+  c.y = x
+  c.process()
+  return c.y
+}
+
 test('each decoder undoes its encoder through a flat tape', () => {
   for (const kind of [NR_DOLBY_B, NR_DBX]) {
     const enc = compander(kind, SR, false)!
@@ -33,7 +44,7 @@ test('each decoder undoes its encoder through a flat tape', () => {
     let err = 0
     let sig = 0
     for (let i = 0; i < x.length; i++) {
-      const y = dec.process(enc.process(x[i]!))
+      const y = through(dec, through(enc, x[i]!))
       err += (y - x[i]!) ** 2
       sig += x[i]! ** 2
     }
@@ -46,11 +57,11 @@ test('Dolby B still undoes itself when the tape sits between the two', () => {
   const dec = compander(NR_DOLBY_B, SR, true)!
   const x = programme(4)
   const gap = 7
-  for (let i = 0; i < gap; i++) dec.process(0)
+  for (let i = 0; i < gap; i++) through(dec, 0)
   let err = 0
   let sig = 0
   for (let i = 0; i < x.length; i++) {
-    const y = dec.process(enc.process(x[i]!))
+    const y = through(dec, through(enc, x[i]!))
     err += (y - x[i]!) ** 2
     sig += x[i]! ** 2
   }

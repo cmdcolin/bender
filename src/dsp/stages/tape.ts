@@ -748,8 +748,16 @@ export class Tape implements Stage {
       const inR = io.r[i]!
       this.dryL.write(inL)
       this.dryR.write(inR)
-      const recL = enc ? enc[0].process(inL) : inL
-      const recR = enc ? enc[1].process(inR) : inR
+      let recL = inL
+      let recR = inR
+      if (enc) {
+        enc[0].y = inL
+        enc[0].process()
+        recL = enc[0].y
+        enc[1].y = inR
+        enc[1].process()
+        recR = enc[1].y
+      }
       const { headL, headR } = this
       headL.y = recL
       headL.delay = d
@@ -764,8 +772,12 @@ export class Tape implements Stage {
         wetR = this.lowR.process(wetR, lowC)
       }
       if (dec) {
-        wetL = dec[0].process(wetL)
-        wetR = dec[1].process(wetR)
+        dec[0].y = wetL
+        dec[0].process()
+        wetL = dec[0].y
+        dec[1].y = wetR
+        dec[1].process()
+        wetR = dec[1].y
       }
 
       // The dry side runs down the same nominal delay, so the blend only combs

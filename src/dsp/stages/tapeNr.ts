@@ -62,6 +62,8 @@ const DOLBY_KNEE = 0.02
 const DOLBY_SLACK = 0.002
 
 export class DolbyB {
+  /** The sample in, and once `process` has run the sample out: see Dbx. */
+  y = 0
   private lp = 0
   private env = 0
   private c = 0
@@ -79,7 +81,8 @@ export class DolbyB {
     this.rel = lpCoef(1 / (2 * Math.PI * 0.08), sr)
   }
 
-  process(x: number): number {
+  process() {
+    const x = this.y
     const over = this.env / DOLBY_KNEE
     const g = DOLBY_BOOST / (1 + over)
     if (Math.abs(over - this.overAt) > DOLBY_SLACK * (1 + this.overAt)) {
@@ -96,7 +99,7 @@ export class DolbyB {
     this.env = flushDenormal(
       this.env + (a > this.env ? this.atk : this.rel) * (a - this.env),
     )
-    return this.decode ? out : x + g * band
+    this.y = this.decode ? out : x + g * band
   }
 
   reset() {
@@ -117,6 +120,10 @@ const DBX_FLOOR = 1e-10
 const DBX_MAX = 100
 
 export class Dbx {
+  /** The sample in, and once `process` has run the sample out. A field rather
+      than an argument and a return, because the tape heads call this on every
+      sample and a call V8 declines to inline boxes the doubles across it. */
+  y = 0
   private readonly emph: Shelf
   private ms = DBX_FLOOR
   private hp = 0
@@ -138,7 +145,8 @@ export class Dbx {
   // the uncompressed signal: the encoder its input, the decoder its own
   // output. So on a flat tape the two detectors see the same samples and the
   // decoder divides out exactly the gain the encoder applied.
-  process(x: number): number {
+  process() {
+    const x = this.y
     const g = Math.min(
       Math.max(1 / Math.sqrt(Math.sqrt(this.ms) / DBX_REF), 1 / DBX_MAX),
       DBX_MAX,
@@ -146,11 +154,12 @@ export class Dbx {
     if (this.decode) {
       const pre = x / g
       this.detect(pre)
-      return this.emph.process(pre)
+      this.y = this.emph.process(pre)
+    } else {
+      const pre = this.emph.process(x)
+      this.detect(pre)
+      this.y = pre * g
     }
-    const pre = this.emph.process(x)
-    this.detect(pre)
-    return pre * g
   }
 
   private detect(x: number) {
