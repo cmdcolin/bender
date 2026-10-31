@@ -10,6 +10,7 @@ import { PRESETS, presetPath } from '../ui/presets/index.ts'
 import { randomLook } from '../ui/presets/roll.ts'
 import { Scope } from '../ui/Scope.tsx'
 import { useBoardUrl } from '../ui/useBoardUrl.ts'
+import { versionLabel } from '../version.ts'
 import { BendPads } from './BendPads.tsx'
 import { shareLink } from './deliver.ts'
 import { buzz } from './haptics.ts'
@@ -199,6 +200,7 @@ export function PocketPage() {
         <a className={styles.brand} href={siteRoot} aria-label="bender home">
           <img className={styles.mark} src={`${siteRoot}favicon.svg`} alt="" />
           <span>bender</span>
+          <span className={styles.version}>{versionLabel}</span>
         </a>
         <span className={styles.topRight}>
           <button

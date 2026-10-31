@@ -125,7 +125,7 @@
 
 .nameplate {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-sm);
   margin-right: var(--space-sm);
   padding: 0;
@@ -139,6 +139,14 @@
   color: var(--fg2);
 }
 
+.brandMark {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px #ffffff1a;
+}
+
 .brand {
   font-size: var(--fs-lg);
   font-weight: 700;
@@ -147,6 +155,7 @@
 }
 
 .version {
+  align-self: flex-end;
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--fg3);

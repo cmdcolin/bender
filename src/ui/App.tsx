@@ -11,7 +11,7 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { STEPS } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import { PHRASE_LOCKS } from '../engine/phraseClock.ts'
-import { pocketUrl } from '../site/paths.ts'
+import { pocketUrl, siteRoot } from '../site/paths.ts'
 import { versionLabel } from '../version.ts'
 import { AboutDialog } from './AboutDialog.tsx'
 import { Account } from './Account.tsx'
@@ -637,6 +637,11 @@ export function App(props: { openedFromLink?: boolean }) {
                   className={styles.nameplate}
                   onClick={() => setShowAbout(true)}
                 >
+                  <img
+                    className={styles.brandMark}
+                    src={`${siteRoot}favicon.svg`}
+                    alt=""
+                  />
                   <span className={styles.brand}>bender</span>
                   <span className={styles.version}>{versionLabel}</span>
                 </button>
