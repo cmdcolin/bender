@@ -2,6 +2,124 @@
 
 All notable changes to bender are documented here.
 
+## [1.23.0](https://github.com/cmdcolin/bender/compare/v1.22.0...v1.23.0) - 2026-10-31
+
+### Features
+- *(ui)* [`2eef3e5`](https://github.com/cmdcolin/bender/commit/2eef3e52c697ec9c794738e8b9b56859d6edd271) the scope names a stage that went non-finite and was reset
+- *(ui)* [`16d5e3f`](https://github.com/cmdcolin/bender/commit/16d5e3f7b85ffdd91cd678534333b86a1e46453c) the header carries the logo mark and the version, as videoskillet's does
+
+### Fixes
+- *(dsp)* [`05c8726`](https://github.com/cmdcolin/bender/commit/05c8726a19eec9c2dc9fdcd96c874aaad565d3aa) wrap a reversed PCM voice back into its loop however far it overshoots
+- *(midi)* [`47ccdbd`](https://github.com/cmdcolin/bender/commit/47ccdbd250ce1731a2c44f526100ca6c8647cee5) pick up a log knob in travel, and only wake on the port that changed
+- *(engine)* [`cc7c2d8`](https://github.com/cmdcolin/bender/commit/cc7c2d8304891cfd791e433ea2d9626cccb9c9d5) clear the boot fault once a retry starts the audio
+- *(ui)* [`78cc86c`](https://github.com/cmdcolin/bender/commit/78cc86ccdae67f115d1934b18a8c466a287e8489) grab a crossed loop marker as the control it is
+- *(engine)* [`d0f6f72`](https://github.com/cmdcolin/bender/commit/d0f6f723e8bd11b8eb3ae2b3213db400edf02a65) a hunt calls off any change waiting for the downbeat
+- *(ui)* [`0324c7f`](https://github.com/cmdcolin/bender/commit/0324c7fbade1d26a335ec45354771a839e320098) only a dragged file lights the tape drop
+- *(engine)* [`4479573`](https://github.com/cmdcolin/bender/commit/4479573987314cf4360197e376db7f0cae55f00b) undo or a board set off at once keeps a locked drift going
+- *(ui)* [`ae6fb74`](https://github.com/cmdcolin/bender/commit/ae6fb741a7159dfb6c5e748417121bd7ccd75dbc) a mouse passing over a key only lets go of what it pressed
+- *(dsp)* [`32db2fb`](https://github.com/cmdcolin/bender/commit/32db2fbe0ec6a66caa6220951ba5516824f039dd) a song wire that lands on the memory plays the memory
+- *(dsp)* [`779182d`](https://github.com/cmdcolin/bender/commit/779182dd9ee7affda1a5d00c1dbc24835946e915) play ×1 straight off the deck, with no block of look-ahead
+- *(dsp)* [`0c0cf37`](https://github.com/cmdcolin/bender/commit/0c0cf37982c6ad2c5cb2e0b6661cad2bd08d31a4) a delay head spaced past the end of the reel comes round the loop
+- *(dsp)* [`59a840b`](https://github.com/cmdcolin/bender/commit/59a840b499f58fd3cfc6b660997c15ff1434712d) start every stem take on a blank stem ring
+- *(midi)* [`548e8ae`](https://github.com/cmdcolin/bender/commit/548e8ae943b89cf88f3b793e123f3d638896320c) escape cancels a waiting bind before it closes the card, every time
+- *(ui)* [`38a054b`](https://github.com/cmdcolin/bender/commit/38a054bd1272b184aa8240e31bf184aa6003443f) write the url still waiting when the tab goes
+- *(dsp)* [`fe6d33d`](https://github.com/cmdcolin/bender/commit/fe6d33dd3219e99541914bd42680bdd2e43c204a) flush four decays that parked on denormals
+- *(dsp)* [`b1a7d97`](https://github.com/cmdcolin/bender/commit/b1a7d97b18ea7f3ceef8fcd6cf34c126092b7abd) flat batteries widen the drum one-shot instead of narrowing it
+- *(ui)* [`1ffeeff`](https://github.com/cmdcolin/bender/commit/1ffeeff21583a5ce6e0e4eda3334cfadb7340b40) hold every drag over the app, so a dropped link cannot navigate away
+- *(engine)* [`c3055e0`](https://github.com/cmdcolin/bender/commit/c3055e05a8dec6c53ab6759b6976c2544c1b3e27) a locked drift leg sits out while a board you set off is on its way
+- *(midi)* [`0deeea8`](https://github.com/cmdcolin/bender/commit/0deeea872a141d31688d96d4bd3d6452fffeb193) relight a replugged output, and only an input that threw lets go of the throws
+- *(engine)* [`b3a51e8`](https://github.com/cmdcolin/bender/commit/b3a51e8b11f29b6e47b33385faaf149954b08e70) archive rolls work where AbortSignal.any is missing
+- *(engine)* [`339e503`](https://github.com/cmdcolin/bender/commit/339e503fd0b7047f4e5c5f45707ef3ad92266f0b) a dropped file and an archive roll share one cancel slot
+- *(dsp)* [`e375c12`](https://github.com/cmdcolin/bender/commit/e375c126324055ebc651d7277e8a30112cafdfab) tape dropouts spend a hazard budget, so winding the knob up moves the next one
+- *(engine)* [`fc9ba8e`](https://github.com/cmdcolin/bender/commit/fc9ba8e56902ab5c31ae274705e0bae13875e7ef) a stem take near the wav size cap shows the time it has
+- *(dsp)* [`ef05cc3`](https://github.com/cmdcolin/bender/commit/ef05cc34107c38dec606e391e6797e91abbfe404) tape azimuth skews the heads by a millisecond at any sample rate
+- *(engine)* [`cbcba60`](https://github.com/cmdcolin/bender/commit/cbcba608343f5c9d436420f16ab5eb2ee73697a7) a take the processor dies in is saved as far as it got
+- *(ui)* [`ff9e3b1`](https://github.com/cmdcolin/bender/commit/ff9e3b1c385cd44122b81d11b0758122bcf2bbc3) a stored bench stage named like an Object property stays a name
+- *(ui)* [`40112b5`](https://github.com/cmdcolin/bender/commit/40112b59088def7bfafb2c70e9b72be12b6c55aa) a pocket hold let go by unmount never bends, and a held bend lifts
+- *(dsp)* [`641649c`](https://github.com/cmdcolin/bender/commit/641649c59a9fe2bc7695774f7d23fc08ed3eb9c8) a kit hit's gate closing leaves a key still down on the mono synth sounding
+- *(ui)* [`c9b9540`](https://github.com/cmdcolin/bender/commit/c9b954097ce20c45593dbb873968e53e9ae8e750) a second copy keeps its tick for the whole flash
+- *(dsp)* [`eeb0e24`](https://github.com/cmdcolin/bender/commit/eeb0e24c99d25abab2a85b24f81b0ffda7de8859) a desk strip brought back up starts from a clean line
+- *(midi)* [`97d7161`](https://github.com/cmdcolin/bender/commit/97d7161974295ebacebe8f6050c829e2511935a9) escape lets go of split-learn, and of a slider's ⚟ with the card shut
+- *(ui)* [`824551f`](https://github.com/cmdcolin/bender/commit/824551fc57d590359bde6d9b3271f89ce0fb5414) the address bar catches up when the tab goes to the background
+- *(ui)* [`d8eff19`](https://github.com/cmdcolin/bender/commit/d8eff19f9784e13b0492193467e391fdafabdb5b) a missing post image fails the build naming its url and status
+- *(dsp)* [`5a33102`](https://github.com/cmdcolin/bender/commit/5a331022169581347d8b5ae8fcdbf946be08b76f) the spectrum averages every window that fits in a take
+- *(dsp)* [`4cb7fb3`](https://github.com/cmdcolin/bender/commit/4cb7fb3e608a7295a82a64a29ec19350d79258e0) a floating bus pin's charge leaks to zero rather than parking on a denormal
+- *(dsp)* [`f243a51`](https://github.com/cmdcolin/bender/commit/f243a5132d07302aa22fb8fcc4bd56d39b9dcfc6) a stage that goes non-finite is panicked alone rather than resetting the board
+- *(dsp)* [`751c3a9`](https://github.com/cmdcolin/bender/commit/751c3a9bcffacd5888c508f7587ba5b207fe524e) a non-finite sample on a shared bus is blamed on the stage that wrote it
+- *(dsp)* [`83aa6e6`](https://github.com/cmdcolin/bender/commit/83aa6e61e531dacd18fb1f36fbba2b34c09dc8b7) the deck eases back onto ×1 over a few callbacks
+- *(dsp)* [`32cb6c7`](https://github.com/cmdcolin/bender/commit/32cb6c773cba16dc3c749731ab62646b4ab58667) the deck's mic rides one block behind at ×1 rather than three and a half
+
+### Performance
+- *(dsp)* [`9ab23e5`](https://github.com/cmdcolin/bender/commit/9ab23e54f4d966101098b1086f7feed308d2c183) cut the four-track's tape when the deck is built, not when a track is armed
+- *(dsp)* [`0b13cfd`](https://github.com/cmdcolin/bender/commit/0b13cfd4a5eb5a4d69b8aac9f74daa65d17cddc7) size the looper's undo copy when a file is dropped, not when the head is armed
+- *(dsp)* [`5b24571`](https://github.com/cmdcolin/bender/commit/5b245718bdcc990be1bbf182b9ee4a78676200ab) a blank cassette clears only the tape that was threaded
+- *(dsp)* [`2931cd1`](https://github.com/cmdcolin/bender/commit/2931cd1df28ec0b98992e0366eb07ca4254cb62e) keep the looper's undo a chunk at a time as the head reaches it
+- *(ui)* [`e6d8065`](https://github.com/cmdcolin/bender/commit/e6d80650d2f74d1ede812b8dda6ad2d51420cb67) a four-track reel standing still repaints nothing
+- *(ui)* [`6a2a441`](https://github.com/cmdcolin/bender/commit/6a2a4414d388ed924eda0733208f43eb7182eb74) the bench, desk and instrument selectors read the map once a board write
+- *(ui)* [`7730c2b`](https://github.com/cmdcolin/bender/commit/7730c2bb741be18643a14717aff7d07ffcdb0a8d) hash the current session once it settles, not on every board write
+- *(engine)* [`5e7ee59`](https://github.com/cmdcolin/bender/commit/5e7ee594b2c8bd1fa45cb460c6afd31d4e606542) a morph frame posts its step itself
+- *(dsp)* [`8ce2363`](https://github.com/cmdcolin/bender/commit/8ce2363e1f6c2e785fe75366d2d7b1d2a0c46ba1) the shared supply's parts are one object filled in place each block
+- *(dsp)* [`0105382`](https://github.com/cmdcolin/bender/commit/01053826f0ce77ebb3e876fe4d1a1fbcae69db86) fm percussion reads its block off the octave table
+- *(dsp)* [`0292ff6`](https://github.com/cmdcolin/bender/commit/0292ff6fd4c9e68e04a516c4cc5bb76c188b0296) the amp settles its bias root once a block and builds no array to voice
+- *(dsp)* [`8af1eae`](https://github.com/cmdcolin/bender/commit/8af1eae62667692140fa5ff1d51842791e0a4819) a wire on the screech cutoff resolves every eighth sample and ramps between
+- *(dsp)* [`d7f1b40`](https://github.com/cmdcolin/bender/commit/d7f1b402d0d92c47d97dfde7d3255a70462db86b) the phrase position wraps by subtracting rather than a modulo a sample
+- *(dsp)* [`fe97da4`](https://github.com/cmdcolin/bender/commit/fe97da430d127e82fa8aa9ee3b141936a74a6f9b) take a key out of a held list in place, and keep every key's triads in a table
+- *(dsp)* [`5121156`](https://github.com/cmdcolin/bender/commit/51211563ac71eb2a51399fe5ba8bab7b59938182) flushDenormal compares twice rather than calling Math.abs
+- *(dsp)* [`073cebf`](https://github.com/cmdcolin/bender/commit/073cebfd009f607c11ac6e0efffb16b6368e746e) fm and kit read the rail's amp factor once a block
+- *(dsp)* [`ca398db`](https://github.com/cmdcolin/bender/commit/ca398dbd2d56a5369d1a2c0e009bb607519835ae) toy chip reads its lanes and wiring outside process()
+- *(dsp)* [`b10ef3a`](https://github.com/cmdcolin/bender/commit/b10ef3a9c37483cccff9b392a59704063bbd596d) tape dropouts and crusher hold count in double fields
+- *(dsp)* [`57f6959`](https://github.com/cmdcolin/bender/commit/57f69591d17c122e34bd335c03c6d7224b8e5e86) mono contours step in place and the voice reads their level
+- *(dsp)* [`a45d083`](https://github.com/cmdcolin/bender/commit/a45d0838d42f826e32cbb7a8309bf780a66f52f8) the amp keeps its state in slots and makes no garbage
+- *(dsp)* [`a866b2d`](https://github.com/cmdcolin/bender/commit/a866b2d71221b7a05b5ceb9caa7f685905a1b4b8) the loop amps take and give their sample through a field
+- *(dsp)* [`1a669c7`](https://github.com/cmdcolin/bender/commit/1a669c7217753a5af03a6757c243575099373a57) the toy chip's voices render outside process()
+- *(dsp)* [`608ccf4`](https://github.com/cmdcolin/bender/commit/608ccf47675010af88b6379cdae162ae4f270ff0) the mono voice's oscillators and ladder hand doubles over in fields
+- *(dsp)* [`4e4c1d7`](https://github.com/cmdcolin/bender/commit/4e4c1d709b0b5b26c2daf5beb449abef9e06ceb6) the tape heads and the FM chip's sine take and give doubles in fields
+- *(dsp)* [`075b9a7`](https://github.com/cmdcolin/bender/commit/075b9a74b169c1f4116d40974f2ac12e539356c9) the four-track's loops and the tape companders hand the sample over in fields
+
+### Refactor
+- *(engine)* [`1c11920`](https://github.com/cmdcolin/bender/commit/1c119201012413ef41fbe51c730efe9943421273) one note writer for both memories
+- *(engine)* [`785a32e`](https://github.com/cmdcolin/bender/commit/785a32eeff7208ff125b25f77059cfb58205ca34) the keybeds' down-key stores in one map by bed
+- *(engine)* [`f619074`](https://github.com/cmdcolin/bender/commit/f619074f14e7a41288a63713606d0d6186df60fc) one copy of the hidden-link download
+- *(dsp)* [`3ca5a25`](https://github.com/cmdcolin/bender/commit/3ca5a259aed331856304760e78dc99f5ae97a110) the screech filter takes its coefficients from svfF
+- *(ui)* [`571b976`](https://github.com/cmdcolin/bender/commit/571b976a74367615321b1dd4d898559cc9f74cb1) drop dead exports and read the stored bench through bench.ts
+- *(dsp)* [`828cc5f`](https://github.com/cmdcolin/bender/commit/828cc5fa6b461e7393c93df8a3ceda049e06582f) the take and the last half minute fill their slabs one way
+- *(ui)* [`4600455`](https://github.com/cmdcolin/bender/commit/46004559e0d445c5b3a263662884fa27db28388e) decide hands back the account's setup it adopts
+- *(engine)* [`14df43b`](https://github.com/cmdcolin/bender/commit/14df43b53a6f31cadf60830f5c55d297b28463fd) a rolled euclidean feel spreads its hits the grid's way
+- *(ui)* [`ff82bd0`](https://github.com/cmdcolin/bender/commit/ff82bd0c2996a44fe038b31a4f442d35aae9d697) drop the pocket's unused shelfOf
+- *(ui)* [`d0a8cd6`](https://github.com/cmdcolin/bender/commit/d0a8cd686f0e673bc8afe8d7c12c434872c4f6e9) the voice library keeps its errors as errors and its auth callback as an effect event
+- *(dsp)* [`dd2f068`](https://github.com/cmdcolin/bender/commit/dd2f068303259bf45ae63ec1bb07672baea1f75d) one cubic Hermite kernel for the delay line, the deck and the four-track
+- *(ui)* [`7944511`](https://github.com/cmdcolin/bender/commit/794451144ca479bde6bee3037c23258f80187617) type against ES2025 and take a roll's dropped stages as a set difference
+- *(dsp)* [`4506747`](https://github.com/cmdcolin/bender/commit/45067472b493f11095be4c87d548d6b74d5c4f85) one clamp01 for the dsp, in util
+- *(ui)* [`417c149`](https://github.com/cmdcolin/bender/commit/417c149bc4ca99b925a0e6e3a47e2bb75c6591a6) share the account avatar with videoskillet under a sync marker
+- *(ui)* [`a326f58`](https://github.com/cmdcolin/bender/commit/a326f58523fbf24b52757d0a37074e0d8506b331) mark useFlash as shared with videoskillet
+- *(ui)* [`8fb5b37`](https://github.com/cmdcolin/bender/commit/8fb5b37dd13c157b62a81003591b5a6d435c4e94) useFlash gains clear()
+- *(ui)* [`42b8e25`](https://github.com/cmdcolin/bender/commit/42b8e2541a40617588f2684a0f65bd3ab760eef0) wrap the sign-in button's handlers
+
+### Documentation
+- [`082fcfd`](https://github.com/cmdcolin/bender/commit/082fcfdd374eb5bdad10be8398c0eb5d7f408b66) note the account control's unshared menu in the sync doc
+- [`a6e5f3f`](https://github.com/cmdcolin/bender/commit/a6e5f3ffcd2e6a16d2dcb982577b6e5b036e4ac7) name Safari 16 as the browser floor in CLAUDE.md
+- [`a28812b`](https://github.com/cmdcolin/bender/commit/a28812ba77f267e1917c53068d4cd59aaa71b469) a wasm spike of the amp's channel, bit-exact and garbage-free
+- [`0ef56ba`](https://github.com/cmdcolin/bender/commit/0ef56ba584b3301bbf7833b3f12013963725aa1a) what the audio thread's garbage costs in Chrome, against its CPU
+- [`4c665b8`](https://github.com/cmdcolin/bender/commit/4c665b8bd125d58a0c285f28d809c0626a43f956) decline moving the dsp to Rust and wasm
+- [`ae8c548`](https://github.com/cmdcolin/bender/commit/ae8c548bc20e73eaa2d31faea732f5fe1370d925) pnpm features describes golden and garbage
+
+### Tests
+- *(dsp)* [`00e3bce`](https://github.com/cmdcolin/bender/commit/00e3bcedfd3be7c5f38aac3bc4d324cd06ee2785) nothing on the audio thread allocates a buffer or copies into one
+- *(dsp)* [`9397503`](https://github.com/cmdcolin/bender/commit/9397503347d37022f4550c36135bf0564ef863f3) strike each stage on its own and follow its state down to zero
+- *(dsp)* [`194f64b`](https://github.com/cmdcolin/bender/commit/194f64b8897dfacb21181b665e3434928f885922) a warm board's garbage a second stays under a budget
+- *(dsp)* [`a63d2a3`](https://github.com/cmdcolin/bender/commit/a63d2a30ed84fb05a3c5901a43d7d27cfc50f739) the torture test and every render fail on a contained fault
+- *(dsp)* [`91b5054`](https://github.com/cmdcolin/bender/commit/91b50547abb88151f23d31d3bb48da02b5b4b4ba) strike each stage at 44.1 and 96 kHz too
+- *(dsp)* [`fef8281`](https://github.com/cmdcolin/bender/commit/fef8281e4e0a427300679ce1cd15f9324f2476e9) the heavy boards' garbage budget comes down to 85 MB/s
+
+### Chores
+- [`44be054`](https://github.com/cmdcolin/bender/commit/44be054164023a559eaf3d626557905f21af3c97) wait-for-ci watches every workflow on a commit
+- [`e1a7c06`](https://github.com/cmdcolin/bender/commit/e1a7c0693f5790279b1480e17f4d93bac690a4b5) wait-for-ci takes --job more than once
+- [`f91376f`](https://github.com/cmdcolin/bender/commit/f91376fd3066669ba5af0a132d351230efc8b5b7) run the pre-commit checks without lint-staged's stash
+- *(dsp)* [`99aa6ec`](https://github.com/cmdcolin/bender/commit/99aa6ec26fee09761e62d478e223013dc85a2cd6) pnpm golden checks a refactor is bit for bit, pnpm garbage maps the garbage
+
+### Reverts
+- *(ui)* [`c709bc5`](https://github.com/cmdcolin/bender/commit/c709bc519df496131722252f40a2ae8c44f53a39) keep lib at ES2022 so Safari 16 keeps working
+
 ## [1.22.0](https://github.com/cmdcolin/bender/compare/v1.21.0...v1.22.0) - 2026-10-29
 
 ### Features
