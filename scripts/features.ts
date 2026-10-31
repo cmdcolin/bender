@@ -127,6 +127,9 @@ const SCRIPTS: Record<string, string> = {
   audible:
     'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',
   denormal: 'the DSP sweep for denormals, run on demand and outside the suite',
+  golden:
+    '`write` keeps every preset and board as rendered now, `check` renders them again and compares sample for sample',
+  garbage: 'which DSP functions make the garbage on the audio thread',
   soak: 'whether any stage gets slower the longer it runs',
   panel: 'what the panel costs the browser per frame, in a real Chrome',
   agent:

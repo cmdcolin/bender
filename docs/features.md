@@ -2088,7 +2088,7 @@ back.
 ## Scripts
 
 <details>
-<summary>47 commands</summary>
+<summary>49 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2117,6 +2117,8 @@ back.
 | `pnpm diagram-shots` | shoots every schematic in the panel to a directory, one png each                                                                                                                       |
 | `pnpm ink`           | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                        |
 | `pnpm faults`        | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                |
+| `pnpm garbage`       | which DSP functions make the garbage on the audio thread                                                                                                                               |
+| `pnpm golden`        | `write` keeps every preset and board as rendered now, `check` renders them again and compares sample for sample                                                                        |
 | `pnpm panel`         | what the panel costs the browser per frame, in a real Chrome                                                                                                                           |
 | `pnpm soak`          | whether any stage gets slower the longer it runs                                                                                                                                       |
 | `pnpm toy`           | writes the hardwired toy board: schematic sheets, KiCad netlist, BOM and ROM images                                                                                                    |
