@@ -104,3 +104,29 @@ test('a bypassed bend in a socket hands on what it was given', () => {
   run(0)
   expect(seen[BLOCK - 1]).toBeCloseTo(wet, 6)
 })
+
+test('a bend bypassed while out of the sockets arrives bypassed, with no wet block', () => {
+  const seen = new Float32Array(BLOCK)
+  const probe: Stage = {
+    label: 'probe',
+    process(io) {
+      seen.set(io.l.subarray(0, io.n))
+    },
+    panic: () => {},
+  }
+  const chain = new Chain(SR)
+  chain.sources = [source]
+  chain.bendById = [undefined, halver]
+  chain.post = [probe]
+  const run = (bendSlot0: number, ringMute: number) =>
+    chain.process(
+      makeIo(),
+      packParams({ ...DEFAULT_CONTROLS, bendSlot0, ringMute }),
+    )
+  run(1, 0)
+  const wet = seen[0]!
+  run(0, 1)
+  run(0, 1)
+  run(1, 1)
+  for (let i = 0; i < BLOCK; i++) expect(seen[i]).toBeCloseTo(2 * wet, 6)
+})

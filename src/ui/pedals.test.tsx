@@ -166,3 +166,15 @@ test('the arrow buttons move a pedal for a hand with no keyboard', () => {
     1, 0, 2, 3, 4, 5,
   ])
 })
+
+test('a tape delay fed by the feedback bus is not called dry at mix 0', () => {
+  engine.controls.set({
+    ...DEFAULT_CONTROLS,
+    pedalOrder: 0,
+    dlyMix: 0,
+    fbDest: 3,
+    fbAmt: 0.5,
+  })
+  openBoard()
+  expect(screen.getAllByRole('listitem')[1]!.textContent).not.toContain('dry')
+})

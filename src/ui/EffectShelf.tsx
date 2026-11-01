@@ -273,8 +273,7 @@ export function EffectShelf({
       sizes.disconnect()
       if (el) {
         sizes.observe(el)
-        for (const face of el.querySelectorAll('[data-face]'))
-          sizes.observe(face)
+        for (const child of el.children) sizes.observe(child)
       }
       later()
     }

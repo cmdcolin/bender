@@ -3,6 +3,7 @@ import { isPedal, pedalNamed } from '../pedals.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, putOnBench, takeOffBench } from './bench.ts'
 import { switchOn } from './bendChain.ts'
+import { pedalWet } from './chain-map.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { add } from './fitted.ts'
 import styles from './Pedals.module.css'
@@ -154,9 +155,9 @@ export function PedalFace({
   onOpen: (stage: string) => void
 }) {
   const face = FACE[stage]!
-  const { mute, mix } = pedalNamed(stage)!
+  const { mute } = pedalNamed(stage)!
   const why = useBoardValue(c =>
-    c[mute] > 0.5 ? 'bypassed' : c[mix] === 0 ? 'dry' : 'on',
+    c[mute] > 0.5 ? 'bypassed' : !pedalWet(c, stage) ? 'dry' : 'on',
   )
   return (
     <StompFace

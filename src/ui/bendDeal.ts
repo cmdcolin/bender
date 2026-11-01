@@ -13,6 +13,7 @@ import {
   ANTAGONISTS,
   drivable,
   gateOf,
+  bypassed,
   heard,
   inChain,
 } from './presets/scenarios.ts'
@@ -120,6 +121,8 @@ function edgeMoves(
   const pairs = ANTAGONISTS.filter(
     ([a, b]) =>
       inChain(c, groupFor(a)) &&
+      !bypassed(c, groupFor(a)) &&
+      !bypassed(c, groupFor(b)) &&
       !taken.has(a) &&
       !taken.has(b) &&
       open(sliderFor(a)) &&
@@ -187,7 +190,9 @@ function solderBend(c: Controls, nth: number, rand: () => number): Solder {
   const quiet = BENDS.flatMap((b, i) =>
     (STAGE_DB[b.mix] ?? 0) <= LOUDEST_DB ? [i + 1] : [],
   )
-  const which = quiet[Math.floor(rand() * quiet.length)]!
+  const open = quiet.filter(id => !bypassed(c, bendAt(id)!.group))
+  const from = open.length > 0 ? open : quiet
+  const which = from[Math.floor(rand() * from.length)]!
   const bend = bendAt(which)!
   return {
     name: `+ ${bend.label}`,
@@ -197,7 +202,6 @@ function solderBend(c: Controls, nth: number, rand: () => number): Solder {
         sliderFor(bend.mix),
         fromPos(sliderFor(bend.mix), 0.85),
       ),
-      [bend.mute]: 0,
     },
   }
 }
@@ -274,6 +278,7 @@ export function dealBendKeys(
       (!fader || c[fader] > sliderFor(fader).min) &&
       liveEnds(c, d.key).some(Boolean) &&
       inChain(c, group) &&
+      !bypassed(c, group) &&
       (heard(c, d.key) || !gate || !YOURS.has(gate))
     )
   })

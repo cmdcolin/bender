@@ -182,9 +182,14 @@ test('a desk with every fader down deals no strip control', () => {
   expect(stripKeys({ ...DESK, four2Fader: 0 })).toEqual([])
 })
 
-test('a key that solders a bend into a socket switches off its bypass', () => {
-  const bypassed = Object.fromEntries(BENDS.map(b => [b.mute, 1]))
-  const board = { ...DEFAULT_CONTROLS, ...bypassed }
+test('a key that solders a bend into a socket picks one that is not bypassed', () => {
+  const board = {
+    ...DEFAULT_CONTROLS,
+    ringMute: 1,
+    crushMute: 1,
+    distMute: 1,
+    combMute: 1,
+  }
   const pushes = [1, 2, 3, 4, 5, 6, 7, 8].flatMap(seed =>
     dealBendKeys(board, seeded(seed), 'wreck').map(k => k.push(board)),
   )
@@ -194,7 +199,21 @@ test('a key that solders a bend into a socket switches off its bypass', () => {
   expect(soldered.length).toBeGreaterThan(0)
   for (const patch of soldered) {
     const slot = keysOf(patch).find(key => /^bendSlot\d$/.test(key))!
-    const bend = BENDS[patch[slot]! - 1]!
-    expect(patch[bend.mute]).toBe(0)
+    expect(board[BENDS[patch[slot]! - 1]!.mute]).toBe(0)
   }
+})
+
+test('no key is dealt on a bypassed effect, whose bypass is yours', () => {
+  const board = {
+    ...DEFAULT_CONTROLS,
+    bendSlot0: 4,
+    combMix: 0.7,
+    combMute: 1,
+  }
+  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8])
+    for (const k of dealBendKeys(board, seeded(seed), 'wild'))
+      expect(
+        k.keys.some(key => key.startsWith('comb')),
+        k.says,
+      ).toBe(false)
 })

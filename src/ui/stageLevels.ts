@@ -13,15 +13,22 @@ const LEVEL_OF: Record<string, ControlKey> = {
   Layercake: 'fourLevel',
 }
 
+const BYPASS_OF: Record<string, ControlKey> = Object.fromEntries([
+  ...PEDALS.map(p => [p.group, p.mute]),
+  ...BENDS.map(b => [b.group, b.mute]),
+])
+
 const MUTE_OF: Record<string, ControlKey> = {
   Plinky: 'chipMute',
   Clatter: 'drumMute',
   Glint: 'fmMute',
   Parlor: 'pcmMute',
   Growler: 'monoMute',
-  ...Object.fromEntries(PEDALS.map(p => [p.group, p.mute])),
-  ...Object.fromEntries(BENDS.map(b => [b.group, b.mute])),
+  ...BYPASS_OF,
 }
+
+export const bypassOf = (stage: string): ControlKey | undefined =>
+  BYPASS_OF[stage]
 
 export const levelOf = (stage: string): ControlKey | undefined =>
   LEVEL_OF[stage]

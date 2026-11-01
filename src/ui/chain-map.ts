@@ -313,6 +313,16 @@ export const FIXED: ReadonlySet<string> = new Set(['Mix bus', 'Output'])
 
 /** The stages the board is using: a gated stage with its gate open, any other
     group moved off stock, and both ends of every wire the map draws. */
+export function pedalWet(c: Controls, name: string) {
+  const fed = FB_TARGET[Math.round(c.fbDest)] === name && c.fbAmt > 0
+  const pedal = PEDALS.find(p => p.group === name)
+  return (
+    (pedal !== undefined && c[pedal.mix] > 0) ||
+    (name === 'Wraith' && fed) ||
+    (name === 'Boing' && c.revDry < 1)
+  )
+}
+
 export function onBoard(c: Controls): Set<string> {
   const on = new Set(FIXED)
   for (const g of GROUPS)
@@ -817,21 +827,9 @@ function pickParts(c: Controls, o: Options) {
   }
   if (tapeAt === TAPE_AT_PEDALS) lay(tape())
 
-  // A bypassed pedal crossfades to dry, so it is idle whatever its mix says.
-  const active: Record<string, boolean> = {
-    Gnash: c.stompMix > 0 && !c.stompMute,
-    Wraith:
-      (c.dlyMix > 0 ||
-        (FB_TARGET[Math.round(c.fbDest)] === 'Wraith' && c.fbAmt > 0)) &&
-      !c.dlyMute,
-    Ricochet: c.echoLevel > 0 && !c.echoMute,
-    Boing: (c.revMix > 0 || c.revDry < 1) && !c.revMute,
-    Chorale: c.ensMix > 0 && !c.ensMute,
-    Ember: c.ampMix > 0 && !c.ampMute,
-  }
   for (const i of pedalOrderAt(c.pedalOrder)) {
-    const name = PEDALS[i]!.group
-    lay(stage(name, active[name]!))
+    const { group, mute } = PEDALS[i]!
+    lay(stage(group, pedalWet(c, group) && !c[mute]))
   }
 
   // The stage's own run test: the drop rate alone does nothing with no sag.

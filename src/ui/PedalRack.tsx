@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { PEDALS, pedalOrderAt, pedalOrderOf } from '../pedals.ts'
+import { pedalWet } from './chain-map.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { RackNudge } from './RackNudge.tsx'
 import { move } from './reorder.ts'
@@ -19,14 +20,14 @@ function writeOrder(order: readonly number[]) {
 }
 
 const tagOf = (c: Controls, pedal: number) => {
-  const { mute, mix } = PEDALS[pedal]!
-  return c[mute] > 0.5 ? 'bypassed' : c[mix] === 0 ? 'dry' : ''
+  const { group, mute } = PEDALS[pedal]!
+  return c[mute] > 0.5 ? 'bypassed' : !pedalWet(c, group) ? 'dry' : ''
 }
 
 const TITLE_TAIL: Record<string, string> = {
   bypassed:
     'Its footswitch has it bypassed, so the signal passes straight through.',
-  dry: 'Its mix is at 0, so the signal passes straight through.',
+  dry: 'Its mix is at 0, so it adds nothing to the sound.',
   '': 'Drag it, or move it with the arrow keys.',
 }
 

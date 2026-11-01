@@ -992,11 +992,18 @@ export class Chain {
         dropped |= 1 << k
         continue
       }
-      const to = 1 - p[BEND_BYPASS_IDX[id - 1]!]!
       if (!s.when || s.when(p, this.ctx))
-        this.faded(s, io, p, n, this.bendGain[id - 1]!, to)
-      this.bendGain[id - 1] = to
+        this.faded(
+          s,
+          io,
+          p,
+          n,
+          this.bendGain[id - 1]!,
+          1 - p[BEND_BYPASS_IDX[id - 1]!]!,
+        )
     }
+    for (let i = 0; i < BEND_BYPASS_IDX.length; i++)
+      this.bendGain[i] = 1 - p[BEND_BYPASS_IDX[i]!]!
     this.dropped = dropped
   }
 

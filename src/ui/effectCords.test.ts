@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { PEDAL_ORDERS, PEDALS, pedalOrderAt } from '../pedals.ts'
+import { BEND_SLOT_KEYS } from './controls/index.ts'
 import {
   cordsFor,
   effectChain,
@@ -57,8 +58,7 @@ test('with no faces on the bench the one cord runs from the bus to the output', 
   expect(cordsFor(effectChain(board), [])).toHaveLength(1)
 })
 
-const slotsOf = (c: typeof board) =>
-  [0, 1, 2, 3, 4, 5].map(i => c[`bendSlot${i}` as const])
+const slotsOf = (c: typeof board) => BEND_SLOT_KEYS.map(k => c[k])
 
 const pedalsIn = (c: typeof board) =>
   pedalOrderAt(c.pedalOrder).map(i => PEDALS[i]!.group)

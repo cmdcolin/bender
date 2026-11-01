@@ -10,6 +10,7 @@ import {
   snapToStep,
 } from '../controls/index.ts'
 import { fromPos } from '../slider-scale.ts'
+import { bypassOf } from '../stageLevels.ts'
 import { applyCut, CUTS, type CutDef } from './cuts.ts'
 import {
   coherePatch,
@@ -80,7 +81,14 @@ const bendCount = () => (sliderFor('bendSlot0').choices?.length ?? 1) - 1
 // porridge; this clears the slots down to a single bend and rolls that one
 // hard, so whatever comes back is a sound you can name.
 function oneBend(current: Controls, rand: () => number): Controls {
-  const slot = 1 + Math.floor(rand() * bendCount())
+  const open = Array.from({ length: bendCount() }, (_, i) => i + 1).filter(
+    id => !bypassed(current, bendAt(id)!.group),
+  )
+  const pool =
+    open.length > 0
+      ? open
+      : Array.from({ length: bendCount() }, (_, i) => i + 1)
+  const slot = pool[Math.floor(rand() * pool.length)]!
   const bend = bendAt(slot)!
   const group = GROUPS.find(g => g.name === bend.group)!
   const next = rollGroup(group, current, rand)
@@ -153,10 +161,19 @@ export const inChain = (c: Controls, group: string) =>
   BEND_SLOT_KEYS.some(k => bendAt(c[k])?.group === group)
 
 /** Whether moving this control can be heard on the board as it stands. */
+export const bypassed = (c: Controls, group: string) => {
+  const bypass = bypassOf(group)
+  return bypass !== undefined && c[bypass] > 0.5
+}
+
 export const heard = (c: Controls, key: ControlKey) => {
   const group = groupFor(key)
   const gate = gateOf(group)
-  return inChain(c, group) && (!gate || c[gate] > sliderFor(gate).min)
+  return (
+    inChain(c, group) &&
+    !bypassed(c, group) &&
+    (!gate || c[gate] > sliderFor(gate).min)
+  )
 }
 
 /** Controls with a travel worth driving to an end: everything but what is
