@@ -341,6 +341,8 @@ export const PATCH_GROUPS: Group[] = [
             'codec errors',
             'rack clock',
             'rack decay',
+            'mono out to pitch',
+            'mono out to gate',
           ],
           groups: [
             {
@@ -455,6 +457,8 @@ export const PATCH_GROUPS: Group[] = [
                 'mono cutoff',
                 'mono emphasis',
                 'mono pitch',
+                'mono out to pitch',
+                'mono out to gate',
               ],
             },
             {

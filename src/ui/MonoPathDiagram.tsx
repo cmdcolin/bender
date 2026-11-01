@@ -51,7 +51,7 @@ const BOXES = {
   },
   mixer: {
     part: 'mixer',
-    help: 'The three oscillators, the noise source and the output patched back in.',
+    help: 'The three oscillators, the noise source and the output patched back in, plus cables from the output to the pitch inputs and the gate line.',
   },
   filter: {
     part: 'filter contour',

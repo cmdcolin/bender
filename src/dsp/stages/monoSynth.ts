@@ -22,6 +22,10 @@ const SLIDE_HOLD = 1.5
 // The mic on the mixer's external input, level with a full oscillator.
 const MIC_IN_GAIN = 1.5
 
+function withLane(base: number, lane: Float32Array | null) {
+  return Math.min(Math.max(base + (lane ? lane[0]! : 0), 0), 1)
+}
+
 // The voice card of a three-oscillator monosynth, wired onto the toy's supply
 // and its gate line. Keys from its own bed and a controller arrive with their
 // key-ups; strikes off the gate line and the kit's trigger lines have none, so
@@ -155,6 +159,11 @@ export class MonoSynth implements Stage {
     v.dacBit = Math.round(p[IDX.monoDacBit]!) - 1
     v.sag = p[IDX.monoSag]!
     v.accent = p[IDX.monoAccent]!
+    v.loopPitch = withLane(
+      p[IDX.monoLoopPitch]!,
+      ctx.mod.read(DEST.monoLoopPitch),
+    )
+    v.choke = withLane(p[IDX.monoChoke]!, ctx.mod.read(DEST.monoChoke))
     const micIn = Math.round(p[IDX.micPatch]!) === MIC.growlerIn
     v.ext = micIn ? MIC_IN_GAIN : 0
     this.ext = micIn ? ctx.mic : null

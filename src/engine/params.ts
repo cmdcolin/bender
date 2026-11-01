@@ -520,6 +520,8 @@ export const PARAM_DEFS = [
   ['monoDroop', 'slew'],
   ['monoDacBit', 'step'],
   ['monoSag', 'slew'],
+  ['monoLoopPitch', 'slew'],
+  ['monoChoke', 'slew'],
 
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],

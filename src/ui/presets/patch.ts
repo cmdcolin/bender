@@ -196,6 +196,8 @@ const LANDINGS: Landing[] = [
   at('codec errors', ['codecMix'], { bend: 'codec' }),
   at('rack clock', ['rackMix'], { bend: 'verb' }),
   at('rack decay', ['rackMix'], { bend: 'verb' }),
+  at('mono out to pitch', ['monoLevel']),
+  at('mono out to gate', ['monoLevel']),
   at('kit step tap', ['drumLevel']),
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
   at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),

@@ -203,6 +203,90 @@ describe('MonoVoice', () => {
     expect(Math.abs(Reflect.get(v, 'last'))).toBeLessThan(10)
   })
 
+  it('keeps out to pitch and out to gate finite and under full scale at every extreme', () => {
+    for (const loopPitch of [0.5, 1])
+      for (const choke of [0, 0.5, 1])
+        for (const loop of [0, 1]) {
+          const x = play(
+            {
+              loopPitch,
+              choke,
+              loop,
+              drive: 4,
+              emphasis: 1.1,
+              cutoff: 12000,
+              linFm: 4,
+              sync: SYNC.hard,
+            },
+            57,
+            1,
+          )
+          expect(x.every(v => Number.isFinite(v) && Math.abs(v) <= 1)).toBe(
+            true,
+          )
+        }
+  })
+
+  it('breaks up the period of an open note with out to pitch', () => {
+    const open = { cutoff: 2500, emphasis: 0.9, drive: 2, contour: 1 }
+    const repeat = (x: Float32Array) => {
+      const at = SR
+      const n = 2048
+      let best = 0
+      for (let lag = 48; lag <= 1200; lag++) {
+        let c = 0
+        let e0 = 0
+        let e1 = 0
+        for (let i = 0; i < n; i++) {
+          c += x[at + i]! * x[at + i + lag]!
+          e0 += x[at + i]! ** 2
+          e1 += x[at + i + lag]! ** 2
+        }
+        best = Math.max(best, c / Math.sqrt(e0 * e1))
+      }
+      return best
+    }
+    expect(repeat(play(open, 57, 1.5))).toBeGreaterThan(0.95)
+    expect(repeat(play({ ...open, loopPitch: 1 }, 57, 1.5))).toBeLessThan(0.8)
+  })
+
+  it('stutters a held note with out to gate', () => {
+    const closes = (choke: number) => {
+      const v = new MonoVoice(SR)
+      Object.assign(v.patch, { loop: 1, drive: 4, emphasis: 1.1, choke })
+      v.noteOn(57)
+      const aEnv = Reflect.get(v, 'aEnv') as { stage: number }
+      const x = new Float32Array(128)
+      let count = 0
+      let was = aEnv.stage
+      for (let b = 0; b < SR / 128; b++) {
+        v.render(x, 0, 128)
+        if (aEnv.stage === 3 && was !== 3) count++
+        was = aEnv.stage
+      }
+      return count
+    }
+    expect(closes(0)).toBe(0)
+    expect(closes(0.7)).toBeGreaterThan(5)
+  })
+
+  it('leaves the gate closed for a key struck while out to gate holds it', () => {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, { loop: 1, drive: 4, emphasis: 1.1, choke: 0.7 })
+    v.noteOn(57)
+    const x = new Float32Array(1)
+    let n = 0
+    while (!Reflect.get(v, 'choked') && n < SR) {
+      v.render(x, 0, 1)
+      n++
+    }
+    expect(Reflect.get(v, 'choked')).toBe(true)
+    v.noteOff(57)
+    v.noteOn(60)
+    const aEnv = Reflect.get(v, 'aEnv') as { stage: number }
+    expect(aEnv.stage).toBe(3)
+  })
+
   it('plays again after panic clears a NaN out of its oscillator and sag state', () => {
     const v = new MonoVoice(SR)
     Object.assign(v.patch, OPEN)

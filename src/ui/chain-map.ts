@@ -177,6 +177,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   codecErrors: 'Codec',
   rackClock: 'Rack verb',
   rackDecay: 'Rack verb',
+  monoLoopPitch: 'Growler',
+  monoChoke: 'Growler',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

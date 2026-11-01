@@ -89,6 +89,8 @@ export interface MonoPatch {
   sag: number
   /** How hard an accented note hits the VCA and the cutoff. */
   accent: number
+  loopPitch: number
+  choke: number
 }
 
 export const MONO_DEFAULT: MonoPatch = {
@@ -133,6 +135,8 @@ export const MONO_DEFAULT: MonoPatch = {
   dacBit: -1,
   sag: 0,
   accent: 0,
+  loopPitch: 0,
+  choke: 0,
 }
 
 const OS = 2
@@ -155,6 +159,13 @@ const FLOOR = 1e-4
 // The nonlinear gains in the ladder detune its resonance flat by about this much.
 const TUNE = 1.02
 const LOOP_HP_HZ = 20
+const LOOP_PITCH_OCT = 18
+const KICK_LIMIT = 6
+const CHOKE_TOP = 1.5
+const CHOKE_FLOOR = 0.02
+const CHOKE_OPEN = 0.25
+const CHOKE_ATTACK_S = 0.001
+const CHOKE_RELEASE_S = 0.03
 
 // tanh(x)/x as a rational, for the ladder's per-stage gains.
 function tanhXdX(x: number): number {
@@ -408,6 +419,8 @@ export class MonoVoice {
   private target = 48
   private last = 0
   private loopLow = 0
+  private follow = 0
+  private choked = false
   private sagEnv = 0
   private v1 = 0
   private v2 = 0
@@ -437,8 +450,10 @@ export class MonoVoice {
     this.target = this.keyed(note)
     if (!legato) {
       if (this.patch.glide === 0) this.cv = this.target
-      this.fEnv.gate(true)
-      this.aEnv.gate(true)
+      if (!this.choked) {
+        this.fEnv.gate(true)
+        this.aEnv.gate(true)
+      }
     }
   }
 
@@ -553,6 +568,11 @@ export class MonoVoice {
     const hiss = p.noise * 0.3 + FLOOR
     const loop = p.loop * 2
     const loopHpK = 1 - Math.exp((-2 * Math.PI * LOOP_HP_HZ) / osr)
+    const loopPitch = LOOP_PITCH_OCT * p.loopPitch * p.loopPitch
+    const choke = p.choke
+    const chokeShut = CHOKE_TOP * (1 - choke) + CHOKE_FLOOR
+    const chokeUp = 1 - Math.exp(-1 / (CHOKE_ATTACK_S * sr))
+    const chokeDown = 1 - Math.exp(-1 / (CHOKE_RELEASE_S * sr))
     const extGain = p.ext
     const modAmt = p.modAmt
     const modMix = p.modMix
@@ -574,6 +594,30 @@ export class MonoVoice {
       if (droopK > 0) {
         this.cv -= this.cv * droopK
         this.target -= this.target * droopK
+      }
+      if (choke > 0) {
+        const level = Math.abs(this.last)
+        this.follow = flushDenormal(
+          this.follow +
+            (level > this.follow ? chokeUp : chokeDown) * (level - this.follow),
+        )
+        if (!this.choked && this.follow > chokeShut) {
+          this.choked = true
+          fEnv.gate(false)
+          aEnv.gate(false)
+        } else if (this.choked && this.follow < chokeShut * CHOKE_OPEN) {
+          this.choked = false
+          if (this.held.length > 0) {
+            fEnv.gate(true)
+            aEnv.gate(true)
+          }
+        }
+      } else if (this.choked) {
+        this.choked = false
+        if (this.held.length > 0) {
+          fEnv.gate(true)
+          aEnv.gate(true)
+        }
       }
       fEnv.step()
       aEnv.step()
@@ -624,10 +668,19 @@ export class MonoVoice {
 
       let pair0 = 0
       for (let k = 0; k < OS; k++) {
-        const fm0 = linFm === 0 ? dt0 : dt0 * (1 + linFm * this.v1)
+        const kick =
+          loopPitch === 0
+            ? 1
+            : octaves(
+                Math.min(
+                  Math.max(loopPitch * (this.last - this.loopLow), -KICK_LIMIT),
+                  KICK_LIMIT,
+                ),
+              )
+        const fm0 = (linFm === 0 ? dt0 : dt0 * (1 + linFm * this.v1)) * kick
         osc0.dt = Math.min(Math.max(fm0, -0.45), 0.45)
         osc0.advance()
-        osc1.dt = dt1
+        osc1.dt = Math.min(dt1 * kick, 0.45)
         osc1.advance()
         osc2.dt = dt2
         osc2.advance()
@@ -678,6 +731,8 @@ export class MonoVoice {
     this.dc.reset()
     this.last = 0
     this.loopLow = 0
+    this.follow = 0
+    this.choked = false
     this.pinkish = 0
     this.sagEnv = 0
     this.v1 = 0

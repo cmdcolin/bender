@@ -542,6 +542,8 @@ export const DEFAULT_CONTROLS = {
   monoDroop: 0,
   monoDacBit: 0,
   monoSag: 0,
+  monoLoopPitch: 0,
+  monoChoke: 0,
 
   oscLevel: 0,
   oscAHz: 220,

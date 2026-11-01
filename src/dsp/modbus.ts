@@ -200,8 +200,10 @@ export const DEST = {
   codecErrors: 142,
   rackClock: 143,
   rackDecay: 144,
+  monoLoopPitch: 145,
+  monoChoke: 146,
 } as const
-export const N_DEST = 145
+export const N_DEST = 147
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

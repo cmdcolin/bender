@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-611 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+613 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 145 destinations, among
+- **A patch bay that modulates itself.** Four wires, 147 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -530,7 +530,7 @@ oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck
 bit on the key DAC and a weak regulator.
 
 <details>
-<summary>53 controls</summary>
+<summary>55 controls</summary>
 
 | control                         | range                                                             | what it does                                                                                                                                |
 | ------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -564,6 +564,8 @@ bit on the key DAC and a weak regulator.
 | Osc 3                           | off to full                                                       | Oscillator 3 into the filter                                                                                                                |
 | Noise                           | off to full                                                       | White noise into the filter                                                                                                                 |
 | Feedback                        | off to full                                                       | The output patched back into the mixer, the way players ran a cable from the headphone jack into the external input                         |
+| Out to pitch                    | off to full                                                       | The output patched into the pitch inputs of osc 1 and osc 2                                                                                 |
+| Out to gate                     | off to full                                                       | The rectified output wired across the gate line                                                                                             |
 | Attack                          | 0.001 to 10 s                                                     | How long the filter contour takes to open to its peak                                                                                       |
 | Decay                           | 0.001 to 10 s                                                     | How long the filter contour takes to fall from the peak to the sustain level                                                                |
 | Sustain                         | off to full                                                       | Where the filter contour sits while a key is down                                                                                           |
@@ -1325,7 +1327,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 145 of them, filt cut through rack decay                                                                               | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 147 of them, filt cut through mono out to gate                                                                         | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

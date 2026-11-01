@@ -582,6 +582,20 @@ Seven voice-card parts fail the way analog synth parts do. The drawing under the
   each hit, and both recover as the note fades. **Starve** and a brownout also
   drag the pitch, since the card shares the toy's rail.
 
+Two more cables run from the output jack, under the **mixer** box beside
+**Feedback**.
+
+- **Out to pitch:** the output goes into the pitch inputs of osc 1 and osc 2
+  through the jack's coupling cap. The oscillators chase their own filtered
+  output, so a note with the cutoff open tears into noise as it swells and
+  settles as it fades. With the cutoff low it roughens the note.
+- **Out to gate:** the rectified output sits across the gate line. When the
+  output passes a level the gate closes, the note releases, and the gate opens
+  again when the output falls to a quarter of that level. A held key stutters at
+  a rate set by the contours, the emphasis and **Feedback**. Higher settings
+  close the gate at a lower level. A key struck while the gate is closed waits
+  for it to open.
+
 ## The drum machine's pattern bus
 
 The bus runs between the step counter and the pattern memory. The four wire

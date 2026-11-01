@@ -2486,6 +2486,8 @@ export const SOURCE_GROUPS: Group[] = [
       'monoDroop',
       'monoDacBit',
       'monoSag',
+      'monoLoopPitch',
+      'monoChoke',
     ],
     sliders: [
       {
@@ -2794,6 +2796,28 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'The output patched back into the mixer, the way players ran a cable from the headphone jack into the external input. A little fattens the bass and adds grit; a lot overdrives the ladder into a growl, and with emphasis up it howls.',
+      },
+      {
+        key: 'monoLoopPitch',
+        lane: 'mono out to pitch',
+        part: 'mixer',
+        label: 'Out to pitch',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The output patched into the pitch inputs of osc 1 and osc 2. Loud output pushes the pitch up and the swing back pulls it down, so with the cutoff open a note tears into noise as it swells. With the cutoff low it roughens the note.',
+      },
+      {
+        key: 'monoChoke',
+        lane: 'mono out to gate',
+        part: 'mixer',
+        label: 'Out to gate',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The rectified output wired across the gate line. Once the output passes a level the gate closes and the note releases, and when it falls quiet the gate opens again, so a held key stutters. Higher settings close the gate at a lower level. Feedback and long contours change the rhythm.',
       },
       {
         key: 'monoFA',
