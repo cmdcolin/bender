@@ -121,3 +121,35 @@
   color: var(--fg4);
   font-size: var(--fs-xs);
 }
+
+.nudge {
+  display: flex;
+  gap: var(--space-2xs);
+  margin-left: auto;
+}
+
+.tag + .nudge {
+  margin-left: 0;
+}
+
+.arrow {
+  min-width: var(--ctl-h);
+  min-height: var(--ctl-h);
+  padding: 0;
+  font-size: var(--fs-xs);
+  line-height: 1;
+  color: var(--fg3);
+  background: transparent;
+  border: 1px solid var(--border-quiet);
+  border-radius: var(--ctl-radius);
+  cursor: pointer;
+}
+
+.arrow:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+.arrow:disabled {
+  visibility: hidden;
+}

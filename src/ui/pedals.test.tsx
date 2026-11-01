@@ -143,3 +143,26 @@ test('a pedal at either end stays where it is', () => {
   fireEvent.keyDown(rows[5]!, { key: 'ArrowDown' })
   expect(engine.controls.get().pedalOrder).toBe(0)
 })
+
+test('a bypassed pedal and a dry one say so on their rows', () => {
+  engine.controls.set({
+    ...DEFAULT_CONTROLS,
+    pedalOrder: 0,
+    stompMix: 0.5,
+    stompMute: 1,
+    dlyMix: 0,
+  })
+  openBoard()
+  const rows = screen.getAllByRole('listitem')
+  expect(rows[0]!.textContent).toContain('bypassed')
+  expect(rows[1]!.textContent).toContain('dry')
+})
+
+test('the arrow buttons move a pedal for a hand with no keyboard', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS, pedalOrder: 0 })
+  openBoard()
+  fireEvent.click(screen.getByRole('button', { name: 'move Gnash down' }))
+  expect([...pedalOrderAt(engine.controls.get().pedalOrder)]).toEqual([
+    1, 0, 2, 3, 4, 5,
+  ])
+})

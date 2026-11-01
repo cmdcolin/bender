@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls/index.ts'
 import { useBoardValue, useMeterValue } from './ControlsContext.ts'
+import { RackNudge } from './RackNudge.tsx'
 import { move } from './reorder.ts'
 import styles from './SlotRack.module.css'
+import { useLanding } from './useLanding.ts'
 
 import type { Controls } from '../controls.ts'
 
@@ -36,19 +38,7 @@ export function SlotRack() {
   // a drag that never finishes has to leave the chain exactly as it was.
   const [held, setHeld] = useState<number | null>(null)
   const [over, setOver] = useState<number | null>(null)
-  // Where the keyboard left the bend it just moved. A row is focused and then
-  // rewritten out from under itself — the board comes back as six fresh rows —
-  // so the rack has to put the focus back on the box you were carrying rather
-  // than on the position it used to be in.
-  const list = useRef<HTMLOListElement>(null)
-  const [land, setLand] = useState<number | null>(null)
-  useEffect(() => {
-    if (land === null) return
-    // oxlint-disable-next-line react/set-state-in-effect -- clears the landing once the focus is placed; the second render is a no-op
-    setLand(null)
-    const row = list.current?.children[land]
-    if (row instanceof HTMLElement) row.focus()
-  }, [land])
+  const { list, setLand } = useLanding()
 
   // What the chain is running, as against what it is set to. Solder rewrites the
   // path from inside the audio thread — the relay swaps two positions, a dry
@@ -231,6 +221,14 @@ export function SlotRack() {
                 {off ? 'empty' : row.bend!.group}
               </span>
               {tag && <span className={styles.tag}>{tag}</span>}
+              {!off && (
+                <RackNudge
+                  name={row.bend!.group}
+                  at={row.i}
+                  count={rows.length}
+                  onMove={to => nudge(row.i, to)}
+                />
+              )}
             </li>
           )
         })}
