@@ -242,6 +242,30 @@ Bends:
   step is a different tone.
 - **Duty on envelope:** a note strikes as a 4% spike and opens to the tone
   selector's width as it fades.
+- **Charge pump:** the output pin drives the timing cap through a diode, with a
+  bleed resistor across the cap.
+  - Each swing of the output adds charge and speeds the clock, and a faster
+    clock swings the output more often. The tune speeds up and climbs until it
+    is a hiss.
+  - Then the chip latches up: the cap empties, the toy is silent for 50 to 350
+    ms, and the tune starts again from a random step.
+  - The cap keeps a random amount of charge after each trip, so cycles differ:
+    at 0.4 they run 1.7 to 4.3 s, at 0.2 about 6 to 15 s, at the top under a
+    second with the toy silent about a third of the time.
+  - Below about 0.12 the bleed drains the charge as fast as it arrives, and the
+    clock settles a little fast.
+  - Its row is in the **clock** box.
+- **Crash:** static hits knock the program counter into the wrong part of the
+  ROM, up to three times a second at the top of the knob.
+  - The crashed chip runs its firmware and the tune data as code, writes over
+    its copy of the tune, and puts its accumulator on a 4-bit output, so the toy
+    plays blocky glitch tones.
+  - The tempo timer still interrupts it each step and sends it to a new place,
+    so the glitch changes in time with the tune.
+  - After 0.4 to 3 s the watchdog resets the chip and the tune starts again from
+    a random step. At 0.3 the toy spends about 40% of the time crashed.
+  - Clock bends speed up or slow down the crashed program.
+  - Its row is in the **tune ROM** box.
 - **Effect buttons:** six programs for a sweep counter that loads the melody's
   divider, plus a noise register for bomb and gun.
   - Clock, a flat battery and a pot on the timing pin lower and stretch each
@@ -425,8 +449,8 @@ tempo, swing, chance, tune, decay and mute.
   - 8 starts a kick several octaves up and falls like a Syndrum zap.
   - Below 0 the kick starts low and rises, down to three octaves under resting
     pitch.
-- **Motorboat:** the feedback transistor around the kick, tom and snare runs
-  off a small local supply behind a resistor.
+- **Motorboat:** the feedback transistor around the kick, tom and snare runs off
+  a small local supply behind a resistor.
   - A ringing network pulls the supply down. Below a point the feedback stops
     and the networks go quiet; once the supply charges back up, the step in
     voltage strikes all four networks again.
@@ -650,9 +674,9 @@ with.
     louder, and the pattern runs up toward a buzz, past 100 steps a second at
     full. A resettable fuse in the kit supply then trips: the kit plays at an
     eighth of its level and half tempo while the fuse cools, then starts again
-    near the set tempo. The fuse trips at a slightly different point each
-    time, so each run up is a different length. At full the fuse is open about
-    a third of the time.
+    near the set tempo. The fuse trips at a slightly different point each time,
+    so each run up is a different length. At full the fuse is open about a third
+    of the time.
   - Below zero, loud hits slow the clock, so the pattern stumbles after every
     loud step.
 - **Counter reset:** a voice's trigger line soldered to the counter's
@@ -759,7 +783,7 @@ The patch bay is four free wires.
   divider**, **PWM tap**, **FM on clock** and **hold** move every sample. The
   output's address and data lines step once a block, and **FM toy on bus** steps
   through the bit counts. An LFO onto envelope relax sweeps every note between a
-  stutter and a buzz.
+  stutter and a buzz. **Charge pump** and **crash** also move every sample.
 
 - **Kit lanes:** **tempo**, **swing**, **chance**, **decay** and **ring**. Drum
   hit onto chance lets fills feed themselves.

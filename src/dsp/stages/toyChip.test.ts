@@ -20,7 +20,7 @@ import {
   SR,
   tail,
 } from '../testRender.ts'
-import { YOURS } from './roms.ts'
+import { romIndex, YOURS } from './roms.ts'
 import { ToyChip } from './toyChip.ts'
 import { SFX_NAMES, SFX_PICKS, SFX_WIRES, sfxLength } from './toySfx.ts'
 
@@ -953,4 +953,91 @@ test('no wire on the key matrix is the toy it always was', () => {
   expect(render({ ...CHIP_ONLY, chipOutKeys: 0, chipKeyScan: 400 }, 1)).toEqual(
     render(CHIP_ONLY, 1),
   )
+})
+
+const PUMP_BOARD: Partial<Controls> = {
+  ...CHIP_ONLY,
+  chipTune: romIndex('sakura'),
+  chipAccomp: 1,
+}
+
+const silentStarts = (x: Float32Array, win: number) => {
+  const starts: number[] = []
+  let was = false
+  for (let at = 0; at + win <= x.length; at += win) {
+    const silent = rms(x.subarray(at, at + win)) < 1e-4
+    if (silent && !was) starts.push(at)
+    was = silent
+  }
+  return starts
+}
+
+test('the charge pump changes the tune', () => {
+  const stock = render(PUMP_BOARD, 3)
+  expect(
+    deviation(render({ ...PUMP_BOARD, chipPump: 0.4 }, 3), stock),
+  ).toBeGreaterThan(0.5)
+})
+
+test('the charge pump runs the clock up until the chip trips, then the tune starts again low', () => {
+  const x = render({ ...PUMP_BOARD, chipPump: 0.4 }, 12)
+  const win = 0.05 * SR
+  const trips = silentStarts(x, win)
+  expect(trips.length).toBeGreaterThanOrEqual(2)
+  for (const at of trips) {
+    const before = pitchHz(x.subarray(at - SR / 2, at))
+    let end = at
+    while (end < x.length && rms(x.subarray(end, end + win)) < 1e-4) end += win
+    const after = pitchHz(x.subarray(end, end + SR / 2))
+    expect(before).toBeGreaterThan(after * 2.5)
+  }
+})
+
+test('a crash leaves the tune for over a second and the watchdog brings it back', () => {
+  const out = new Int16Array(ToyChip.MAX_SOUNDING)
+  const quiet: number[] = []
+  let blocks = 0
+  let chip: BuiltChain['toyChip'] | undefined
+  renderBender(
+    { ...PUMP_BOARD, chipCrash: 0.3 },
+    20,
+    b => {
+      b.transport.tune = true
+      chip = b.toyChip
+    },
+    undefined,
+    () => {
+      if (chip?.soundingNotes(out)) {
+        if (blocks) quiet.push((blocks * BLOCK) / SR)
+        blocks = 0
+      } else blocks++
+    },
+  )
+  const crashes = quiet.filter(s => s > 1)
+  expect(crashes.length).toBeGreaterThanOrEqual(2)
+  expect(Math.max(...crashes)).toBeLessThan(3.5)
+})
+
+test('the crash sounds and differs from the tune', () => {
+  const stock = render(PUMP_BOARD, 4)
+  const crashed = render({ ...PUMP_BOARD, chipCrash: 1 }, 4)
+  expect(rms(crashed)).toBeGreaterThan(0.05)
+  expect(deviation(crashed, stock)).toBeGreaterThan(0.5)
+})
+
+test('the charge pump and the crash at full stay bounded with the clock pot up', () => {
+  const x = render(
+    {
+      ...PUMP_BOARD,
+      chipLevel: 1,
+      chipPump: 1,
+      chipCrash: 1,
+      chipBendSpot: 1,
+      chipBendPot: 1,
+    },
+    6,
+  )
+  const peak = x.reduce((a, v) => Math.max(a, Math.abs(v)), 0)
+  expect(peak).toBeLessThan(1.5)
+  expect(rms(x)).toBeGreaterThan(0.02)
 })

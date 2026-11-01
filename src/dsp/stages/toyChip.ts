@@ -248,6 +248,24 @@ const DUTY_STRIKE = 0.04
 const SFX_GAIN = 0.8
 const LFSR_SEED = 1
 
+const PUMP_RATE_LOW = 0.25
+const PUMP_RATE_OCTAVES = 4.5
+const PUMP_EDGE_REF = 2000
+const PUMP_TRIP = 6
+const PUMP_BLEED_S = 3
+const PUMP_RESIDUAL = 2
+const PUMP_DEAD_MIN = 0.05
+const PUMP_DEAD_SPAN = 0.3
+
+const VM_HZ = 100000
+const VM_BYTES = 256
+const VM_SONG = 0x80
+const VM_MAX_TICKS = 64
+const VM_GAIN = 1.2
+const CRASH_RATE = 3
+const WATCHDOG_MIN = 0.4
+const WATCHDOG_SPAN = 2.6
+
 export const LOOP_TARGETS = [
   ...Array.from({ length: ROM_ADDR_LINES }, (_, i) => `A${i}`),
   'reset',
@@ -352,6 +370,8 @@ interface ChipLanes {
   modPwm: Float32Array | null
   modShort: Float32Array | null
   modClock: Float32Array | null
+  modPump: Float32Array | null
+  modCrash: Float32Array | null
 }
 
 export class ToyChip implements Stage {
@@ -373,6 +393,8 @@ export class ToyChip implements Stage {
     modPwm: null,
     modShort: null,
     modClock: null,
+    modPump: null,
+    modCrash: null,
   }
   private phase = 0
   private pos = 0
@@ -553,6 +575,24 @@ export class ToyChip implements Stage {
   private sfxWire = 0
   private sfxPick = 0
   private sfxNext = -1
+  private pumpV = 0
+  private pumpPin = false
+  private pumpTrip = PUMP_TRIP
+  private pumpDead = 0
+  private readonly pumpBleed: number
+  private crashed = false
+  private vm = new Uint8Array(VM_BYTES)
+  private firmware = new Uint8Array(VM_BYTES)
+  private pc = 0
+  private acc = 0
+  private vmWait = 0
+  private vmClock = 0
+  private vmDac = 0
+  private vmTimer = 0
+  private vmTimerPeriod = 0
+  private vmTimerHigh = false
+  private irqClock = 0
+  private watchdog = 0
 
   private readonly sr: number
   private readonly supplies: Supplies
@@ -580,6 +620,10 @@ export class ToyChip implements Stage {
     this.micRelease = coef(0.08, sr)
     this.bankBus = new Bus(BANK_LINES, seed ^ 0xba4c)
     this.divBus = new Bus(DIV_LINES, seed ^ 0xd1f)
+    this.pumpBleed = Math.exp(-1 / (PUMP_BLEED_S * sr))
+    const fill = mulberry32(seed ^ 0xf1a5)
+    for (let i = 0; i < VM_BYTES; i++)
+      this.firmware[i] = Math.floor(fill() * 256)
   }
 
   // The pitch ratio a note loads into its divider. With no fault on the
@@ -747,7 +791,7 @@ export class ToyChip implements Stage {
   soundingNotes(out: Int16Array): number {
     let n = 0
     const rail = this.power.rail
-    if (rail.booting || rail.dead) return n
+    if (rail.booting || rail.dead || this.halted) return n
     if (this.transport.tune && isNote(this.note) && this.env > ENV_FLOOR)
       out[n++] = this.note
     if (this.accompLevel > 0) {
@@ -993,6 +1037,8 @@ export class ToyChip implements Stage {
     lanes.modPwm = bay.read(DEST.chipPwm)
     lanes.modShort = bay.read(DEST.chipShort)
     lanes.modClock = bay.read(DEST.chipClock)
+    lanes.modPump = bay.read(DEST.chipPump)
+    lanes.modCrash = bay.read(DEST.chipCrash)
   }
 
   private readWiring(p: Float32Array, bay: ModBus) {
@@ -1100,6 +1146,8 @@ export class ToyChip implements Stage {
     const xorBase = p[IDX.chipXor]!
     const bitsBase = p[IDX.chipEnvBits]!
     const dutyEnvBase = p[IDX.chipDutyEnv]!
+    const pumpBase = p[IDX.chipPump]!
+    const crashBase = p[IDX.chipCrash]!
     this.readLanes(bay)
     const {
       modSync,
@@ -1117,6 +1165,8 @@ export class ToyChip implements Stage {
       modPwm,
       modShort,
       modClock,
+      modPump,
+      modCrash,
     } = this.lanes
     const keyScan = p[IDX.chipKeyScan]!
     const outKeys =
@@ -1245,6 +1295,7 @@ export class ToyChip implements Stage {
     const sfxMask = voiceMask(sfxWire < WIRE_TOY ? sfxWire : 0)
 
     if (this.power.rebooted()) {
+      this.crashed = false
       this.restart(tune, true)
       if (sfxWire === WIRE_REBOOT) this.wirePress()
     }
@@ -1317,6 +1368,13 @@ export class ToyChip implements Stage {
         clock *= 1 + this.drift.step(0.08, this.sr, this.rng) * 0.3 * drift
       }
       if (modClock) clock *= octaves(modClock[i]! * 3)
+      const pump = modPump ? clamp01(pumpBase + modPump[i]!) : pumpBase
+      if (pump > 0) clock *= octaves(this.pumpStep(pump, tune))
+      else this.pumpV = 0
+      const crash = modCrash ? clamp01(crashBase + modCrash[i]!) : crashBase
+      if (crash <= 0 || rail.booting || rail.dead) this.crashed = false
+      else if (this.rng() < (crash * crash * CRASH_RATE) / this.sr)
+        this.loadCrash(tune)
       if (cross > 0) {
         this.crossLp = flushDenormal(
           this.lastOut + this.crossLpA * (this.crossLp - this.lastOut),
@@ -1358,7 +1416,7 @@ export class ToyChip implements Stage {
 
       // sequencer — the run/stop line freezes it where it stands, and so does a
       // latched die: the counter stops clocking and the note it was on stays on
-      if (this.transport.tune && !latched) {
+      if (this.transport.tune && !latched && !this.halted) {
         this.stepClock += this.stepHzNow / this.sr
         if (this.gndEdge.rise(ctx.gnd[i]!)) this.stepClock += 1
       }
@@ -1505,8 +1563,14 @@ export class ToyChip implements Stage {
       feed.amp = amp
       feed.timing = timing
       feed.scanHz = scanHz
-      this.sound(rail, pinned, shaped, pwmOn, latched, spot)
-      let out = feed.out
+      let out = 0
+      if (this.pumpDead > 0) this.pumpDead--
+      else if (this.crashed)
+        out = this.runCrashed(tune, stepHz, latched ? 0 : timing) * amp
+      else {
+        this.sound(rail, pinned, shaped, pwmOn, latched, spot)
+        out = feed.out
+      }
 
       const hold = modHold ? clamp01(holdBase + modHold[i]!) : holdBase
       if (hold > 0) {
@@ -1928,7 +1992,127 @@ export class ToyChip implements Stage {
     return mix * (1 + (flip - 1) * this.xorAmt)
   }
 
+  private get halted() {
+    return this.crashed || this.pumpDead > 0
+  }
+
+  private pumpStep(pump: number, tune: number[]) {
+    const high = this.lastOut > 0
+    if (high !== this.pumpPin) {
+      this.pumpPin = high
+      this.pumpV +=
+        (PUMP_RATE_LOW * octaves(PUMP_RATE_OCTAVES * pump)) / PUMP_EDGE_REF
+    }
+    this.pumpV = flushDenormal(this.pumpV * this.pumpBleed)
+    if (this.pumpV > this.pumpTrip) {
+      this.pumpV = this.rng() * PUMP_RESIDUAL
+      this.pumpTrip = PUMP_TRIP * (0.6 + 0.8 * this.rng())
+      this.pumpDead = Math.floor(
+        (PUMP_DEAD_MIN + PUMP_DEAD_SPAN * this.rng()) * this.sr,
+      )
+      this.restart(tune, true)
+    }
+    return this.pumpV
+  }
+
+  private loadCrash(tune: number[]) {
+    const len = this.len
+    for (let i = 0; i < VM_BYTES; i++)
+      this.vm[i] =
+        i & VM_SONG
+          ? (encodeStep(tune[i % len]!) * 7 + (i >> 4)) & 0xff
+          : this.firmware[i]!
+    this.pc = Math.floor(this.rng() * VM_BYTES)
+    if (!this.crashed) {
+      this.crashed = true
+      this.watchdog = Math.floor(
+        (WATCHDOG_MIN + this.rng() * WATCHDOG_SPAN) * this.sr,
+      )
+    }
+  }
+
+  private exec() {
+    const vm = this.vm
+    const b = vm[this.pc]!
+    this.pc = (this.pc + 1) & 0xff
+    const arg = b & 31
+    const a = this.acc
+    switch (b >> 5) {
+      case 0:
+        this.vmDac = (((a >> (arg & 3)) & 15) - 7.5) / 7.5
+        this.vmWait = arg >> 3
+        break
+      case 1:
+        this.acc = (a + arg + 1) & 0xff
+        break
+      case 2:
+        this.acc = ((a << 1) | (a >> 7)) & 0xff
+        if ((a >> (arg & 7)) & 1) this.pc = (this.pc - (arg >> 3) - 2) & 0xff
+        break
+      case 3:
+        this.pc = (a ^ (arg << 3)) & 0xff
+        this.acc = (a + 1) & 0xff
+        break
+      case 4: {
+        const at = VM_SONG | ((arg * 4) & 0x7f)
+        this.acc = a ^ vm[at]!
+        vm[at] = ((a << 1) | (a >> 7)) & 0xff
+        break
+      }
+      case 5:
+        this.vmTimerPeriod = arg > 0 ? ((a & 31) + arg) * 2 : 0
+        break
+      case 6:
+        this.vmWait = a & 63
+        break
+      default:
+        vm[VM_SONG | ((a + arg) & 0x7f)] = a
+        this.acc = (a + arg) & 0xff
+    }
+  }
+
+  private runCrashed(tune: number[], stepHz: number, timing: number) {
+    this.irqClock += (stepHz * timing) / this.sr
+    if (this.irqClock >= 1) {
+      this.irqClock -= Math.floor(this.irqClock)
+      this.pos = (this.pos + 1) % this.len
+      this.acc = (this.acc ^ (this.pos * 37)) & 0xff
+      this.pc = (this.pc + this.vm[(this.pc ^ 0x55) & 0xff]!) & 0xff
+    }
+    const ticks = Math.min((VM_HZ * timing) / this.sr, VM_MAX_TICKS)
+    this.vmClock += ticks
+    while (this.vmClock >= 1) {
+      this.vmClock -= 1
+      if (this.vmWait > 0) this.vmWait--
+      else this.exec()
+    }
+    if (this.vmTimerPeriod > 0) {
+      this.vmTimer += ticks
+      if (this.vmTimer >= this.vmTimerPeriod) {
+        this.vmTimer %= this.vmTimerPeriod
+        this.vmTimerHigh = !this.vmTimerHigh
+      }
+    }
+    if (--this.watchdog <= 0) {
+      this.crashed = false
+      this.restart(tune, true)
+    }
+    return (0.7 * this.vmDac + (this.vmTimerHigh ? 0.3 : -0.3)) * VM_GAIN
+  }
+
   panic() {
+    this.crashed = false
+    this.pumpV = 0
+    this.pumpPin = false
+    this.pumpDead = 0
+    this.acc = 0
+    this.vmWait = 0
+    this.vmClock = 0
+    this.vmDac = 0
+    this.vmTimer = 0
+    this.vmTimerPeriod = 0
+    this.vmTimerHigh = false
+    this.irqClock = 0
     this.micRate.reset()
     this.micEnv.reset()
     this.micAddr = 0

@@ -18,6 +18,7 @@ export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
     'chipOutData',
     'chipKitAddr',
     'chipStepTap',
+    'chipCrash',
     ...POT,
   ],
   clock: [
@@ -26,6 +27,7 @@ export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
     'chipCrosstalk',
     'chipFmClock',
     'chipHardSync',
+    'chipPump',
     ...POT,
   ],
   voices: ['chipShort', 'chipPwmTap', 'chipXor', 'chipDutyEnv'],
