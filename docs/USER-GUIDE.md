@@ -256,8 +256,11 @@ voltage you set, or jams one.
   dark while a pedal is bypassed or its mix is at 0, and pressing it then brings
   the pedal back, raising the mix or slotting it into a socket as needed
 - Grey cords join the pedals on the bench in the order the signal meets them. A
-  jack names where its cord comes from or goes, and pressing it opens **Signal
-  order**, where the ↑ and ↓ on each row move a pedal
+  jack names where its cord comes from or goes. Dragging a jack onto another
+  pedal's IN jack moves it just before that pedal, and onto an OUT jack just
+  after. Socketed pedals move among the sockets, the other six among themselves.
+  Pressing a jack opens **Signal order**, where the ↑ and ↓ on each row move a
+  pedal
 
 ![The patch bay: three of four wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](../public/guide/guide-patchbay.jpg)
 

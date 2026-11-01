@@ -1,17 +1,29 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react'
 
+import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { bench } from './bench.ts'
 import { BendFace } from './BendFaces.tsx'
+import { follow, pressIsClick } from './cableDrag.ts'
 import { Socket } from './CableParts.tsx'
 import { laid, type Point } from './cablePaths.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import {
+  canLand,
   cordsFor,
   effectChain,
   inSays,
+  landed,
+  landingOf,
   outSays,
   type Cord,
+  type Landing,
 } from './effectCords.ts'
 import styles from './EffectShelf.module.css'
 import cables from './GateCables.module.css'
@@ -71,45 +83,88 @@ function route(a: Box, b: Box): Point[] {
       ]
 }
 
+type Side = Landing['side']
+
+interface Held {
+  stage: string
+  side: Side
+  at: Point
+}
+
+type Grab = (e: ReactPointerEvent, stage: string, side: Side) => void
+
+const jackAt = (box: Box, side: Side) => ({
+  x: box.x,
+  y: side === 'in' ? box.top : box.bottom,
+})
+
 function CordJack({
   side,
   cord,
   at,
+  held,
+  onGrab,
   onOpen,
 }: {
-  side: 'in' | 'out'
+  side: Side
   cord: Cord
   at: Point
+  held: Held | null
+  onGrab: Grab
   onOpen: (stage: string) => void
 }) {
   const stage = side === 'in' ? cord.to : cord.from
   const says = side === 'in' ? inSays(cord) : outSays(cord)
   return (
-    <Tip text={`${says} Press to open the signal order.`}>
+    <Tip
+      text={`${says} Drag it onto an IN jack to move ${stage} just before that pedal, or onto an OUT jack for just after. Press to open the signal order.`}
+    >
       <button
         type="button"
         className={styles.jack}
         style={{ left: at.x, top: at.y }}
         data-cord={`${side}:${stage}`}
         aria-label={`${stage} ${side}. ${says}`}
-        onClick={() => onOpen(ORDER_PANEL)}
+        onPointerDown={e => onGrab(e, stage, side)}
+        onClick={() => {
+          if (pressIsClick()) onOpen(ORDER_PANEL)
+        }}
       >
-        <Socket colour={CORD_COLOUR} target={false} />
+        <Socket
+          colour={CORD_COLOUR}
+          target={held !== null && canLand(held.stage, stage)}
+        />
       </button>
     </Tip>
+  )
+}
+
+function HeldCord({ from, to }: { from: Point; to: Point }) {
+  const d = `M${from.x} ${from.y} L${to.x} ${to.y}`
+  return (
+    <g className={cables.cable} style={{ ['--cable' as string]: CORD_COLOUR }}>
+      <path className={cables.sheath} d={d} />
+      <path className={cables.core} d={d} />
+      <circle className={styles.plug} cx={to.x} cy={to.y} r="5.6" />
+    </g>
   )
 }
 
 function Cords({
   boxes,
   cords,
+  held,
+  onGrab,
   onOpen,
 }: {
   boxes: readonly Box[]
   cords: readonly Cord[]
+  held: Held | null
+  onGrab: Grab
   onOpen: (stage: string) => void
 }) {
   const boxOf = new Map(boxes.map(b => [b.stage, b]))
+  const heldBox = held && boxOf.get(held.stage)
   return (
     <div className={styles.overlay}>
       {cords.flatMap(cord => {
@@ -122,7 +177,9 @@ function Cords({
                   key={`out:${cord.from}`}
                   side="out"
                   cord={cord}
-                  at={{ x: outOf.x, y: outOf.bottom }}
+                  at={jackAt(outOf, 'out')}
+                  held={held}
+                  onGrab={onGrab}
                   onOpen={onOpen}
                 />,
               ]
@@ -133,7 +190,9 @@ function Cords({
                   key={`in:${cord.to}`}
                   side="in"
                   cord={cord}
-                  at={{ x: into.x, y: into.top }}
+                  at={jackAt(into, 'in')}
+                  held={held}
+                  onGrab={onGrab}
                   onOpen={onOpen}
                 />,
               ]
@@ -172,6 +231,9 @@ function Cords({
           }
           return null
         })}
+        {held && heldBox && (
+          <HeldCord from={jackAt(heldBox, held.side)} to={held.at} />
+        )}
       </svg>
     </div>
   )
@@ -227,6 +289,22 @@ export function EffectShelf({
     }
   }, [])
 
+  const [held, setHeld] = useState<Held | null>(null)
+  const grab: Grab = (e, stage, side) =>
+    follow(
+      e,
+      at => setHeld(at ? { stage, side, at } : null),
+      over => {
+        const onto = landingOf(over?.dataset.cord)
+        const next = onto && landed(engine.controls.get(), stage, onto)
+        if (next) {
+          engine.armStep()
+          engine.writeBoard(next)
+        }
+      },
+      { frame: '[data-cabled]', target: '[data-cord]' },
+    )
+
   const face = (stage: string) =>
     isPedal(stage) ? (
       <PedalFace key={stage} stage={stage} seconds={seconds} onOpen={onOpen} />
@@ -246,6 +324,8 @@ export function EffectShelf({
       <Cords
         boxes={boxes.filter(b => placed.includes(b.stage))}
         cords={cords}
+        held={held}
+        onGrab={grab}
         onOpen={onOpen}
       />
     </div>

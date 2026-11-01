@@ -19,11 +19,10 @@ export function follow(
   e: ReactPointerEvent,
   hold: (at: Point | null) => void,
   drop: (over: HTMLElement | null) => void,
+  { frame = '[data-gate-bench]', target = '[data-jack]' } = {},
 ) {
   if (e.button !== 0) return
-  const origin = e.currentTarget
-    .closest('[data-gate-bench]')
-    ?.getBoundingClientRect()
+  const origin = e.currentTarget.closest(frame)?.getBoundingClientRect()
   if (!origin) return
   const id = e.pointerId
   const x0 = e.clientX
@@ -67,7 +66,7 @@ export function follow(
     drop(
       document
         .elementFromPoint(m.clientX, m.clientY)
-        ?.closest<HTMLElement>('[data-jack]') ?? null,
+        ?.closest<HTMLElement>(target) ?? null,
     )
   }
   window.addEventListener('pointermove', move)
