@@ -114,8 +114,9 @@
 
 .more {
   min-height: var(--ctl-h);
-  padding: 0 var(--space-md);
-  font-size: var(--fs-md);
+  padding: 0 var(--space-sm);
+  font-size: var(--fs-xs);
+  font-weight: 700;
   line-height: 1;
   color: var(--ink);
   background: transparent;

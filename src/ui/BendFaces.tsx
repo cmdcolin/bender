@@ -1,4 +1,4 @@
-import { bench, setBench } from './bench.ts'
+import { takeOffBench } from './bench.ts'
 import { positionOf, sounds, stepOf, switchOff, switchOn } from './bendChain.ts'
 import { useBendStages } from './bendStages.ts'
 import { BEND_SLOT_KEYS } from './controls/index.ts'
@@ -120,12 +120,7 @@ function BendFace({
       face={face}
       seconds={seconds}
       onOpen={onOpen}
-      onClose={() =>
-        setBench({
-          ...bench.get(),
-          bends: bench.get().bends.filter(b => b !== stage),
-        })
-      }
+      onClose={() => takeOffBench('bends', stage)}
       badge={<Position stage={stage} />}
       footswitch={
         <Footswitch
@@ -133,7 +128,7 @@ function BendFace({
           bypassed={!on}
           tip={
             on
-              ? `Press to take ${stage} out of the sound. Its knobs stay where they are.`
+              ? `Press to take ${stage} out of the sound. Its mix drops to 0, and the next press brings it back to where it was.`
               : off
                 ? `${stage} is in no chain position. Press to slot it in.`
                 : `${stage} is silent with its mix at 0. Press to bring it back at the mix you left.`

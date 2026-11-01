@@ -814,7 +814,10 @@ function pickParts(c: Controls, o: Options) {
   // A bypassed pedal crossfades to dry, so it is idle whatever its mix says.
   const active: Record<string, boolean> = {
     Gnash: c.stompMix > 0 && !c.stompMute,
-    Wraith: c.dlyMix > 0 && !c.dlyMute,
+    Wraith:
+      (c.dlyMix > 0 ||
+        (FB_TARGET[Math.round(c.fbDest)] === 'Wraith' && c.fbAmt > 0)) &&
+      !c.dlyMute,
     Ricochet: c.echoLevel > 0 && !c.echoMute,
     Boing: (c.revMix > 0 || c.revDry < 1) && !c.revMute,
     Chorale: c.ensMix > 0 && !c.ensMute,

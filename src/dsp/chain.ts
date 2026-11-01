@@ -6,7 +6,7 @@ import {
   TAP_BUS,
   TAP_MIC,
 } from '../engine/params.ts'
-import { pedalOrderAt } from '../pedals.ts'
+import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { MIC } from './micJacks.ts'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
 import {
@@ -68,15 +68,7 @@ const MUTE_IDX = [
   IDX.monoMute,
 ]
 
-/** The bypass switches of the pedals, in the order the board numbers them. */
-const BYPASS_IDX = [
-  IDX.stompMute,
-  IDX.dlyMute,
-  IDX.echoMute,
-  IDX.revMute,
-  IDX.ensMute,
-  IDX.ampMute,
-]
+const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])
 
 // Where the brightness bus sits at zero: a programme-like split of high against
 // total energy. Above it the loop is running brighter than the thing it started

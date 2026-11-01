@@ -89,3 +89,15 @@ export function stageKit(on: boolean) {
     }),
   })
 }
+
+export type FaceList = 'pedals' | 'bends'
+
+export function putOnBench(list: FaceList, stage: string) {
+  const b = bench.get()
+  if (!b[list].includes(stage)) setBench({ ...b, [list]: [...b[list], stage] })
+}
+
+export function takeOffBench(list: FaceList, stage: string) {
+  const b = bench.get()
+  setBench({ ...b, [list]: b[list].filter(s => s !== stage) })
+}

@@ -230,6 +230,15 @@ test('no pedal sits on the bench until it is added from the menu', () => {
   expect(group('ember')).toBeNull()
 })
 
+test('adding a bypassed pedal from the menu switches it back on', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS, echoMute: 1, echoLevel: 0.4 })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
+  fireEvent.click(screen.getByRole('menuitem', { name: /^Ricochet/ }))
+  expect(engine.controls.get().echoMute).toBe(0)
+  expect(engine.controls.get().echoLevel).toBeCloseTo(0.4)
+})
+
 test('Add pedal groups every pedal by sound, names it with what it is, benches the pick and brings its mix up', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))

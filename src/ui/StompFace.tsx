@@ -118,7 +118,7 @@ export function StompFace({
               aria-label="all controls"
               onClick={() => onOpen(stage)}
             >
-              ⋯
+              open
             </button>
           </Tip>
         </div>
