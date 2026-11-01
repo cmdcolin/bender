@@ -3,7 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type ControlKey } from '../controls.ts'
 import { dealBendKeys, HEATS } from './bendDeal.ts'
 import { BEND_ENDS, STAGE_DB } from './bendEnds.ts'
-import { sliderFor } from './controls/index.ts'
+import { BENDS, sliderFor } from './controls/index.ts'
 import { LETTERS } from './keyboard.ts'
 import { heard } from './presets/scenarios.ts'
 import { CLOCK_KEYS, PART_KEYS, YOURS } from './presets/yours.ts'
@@ -180,4 +180,21 @@ test('a desk with one fader up deals that channel’s strip and no other', () =>
 
 test('a desk with every fader down deals no strip control', () => {
   expect(stripKeys({ ...DESK, four2Fader: 0 })).toEqual([])
+})
+
+test('a key that solders a bend into a socket switches off its bypass', () => {
+  const bypassed = Object.fromEntries(BENDS.map(b => [b.mute, 1]))
+  const board = { ...DEFAULT_CONTROLS, ...bypassed }
+  const pushes = [1, 2, 3, 4, 5, 6, 7, 8].flatMap(seed =>
+    dealBendKeys(board, seeded(seed), 'wreck').map(k => k.push(board)),
+  )
+  const soldered = pushes.filter(p =>
+    keysOf(p).some(key => /^bendSlot\d$/.test(key)),
+  )
+  expect(soldered.length).toBeGreaterThan(0)
+  for (const patch of soldered) {
+    const slot = keysOf(patch).find(key => /^bendSlot\d$/.test(key))!
+    const bend = BENDS[patch[slot]! - 1]!
+    expect(patch[bend.mute]).toBe(0)
+  }
 })

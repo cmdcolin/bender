@@ -197,6 +197,7 @@ function solderBend(c: Controls, nth: number, rand: () => number): Solder {
         sliderFor(bend.mix),
         fromPos(sliderFor(bend.mix), 0.85),
       ),
+      [bend.mute]: 0,
     },
   }
 }

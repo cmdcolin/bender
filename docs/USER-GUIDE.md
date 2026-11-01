@@ -245,15 +245,19 @@ voltage you set, or jams one.
   bars, drops when you let go), **pluck** or **wobble** (pulses on the eighths)
 - **Fault on the bus** cuts, grounds or bridges a wire inside a chip
 - **add pedal** lists every pedal by sound: dirt, echo and space, pitch and tone
-- **Sockets:** eight of the pedals (ring mod, crusher, octave and the rest)
+- **Sockets:** ten of the pedals (ring mod, crusher, octave and the rest)
   compete for six sockets. Adding one fills the first empty socket, or trades
   out the last when all six are full
   - **Dry joints** can drop a socketed pedal and **Re-solder** can move it; the
     other six pedals sit after the sockets, out of their reach
   - The badge shows the socket, **off** when no socket holds it, **now 5** while
     Re-solder has moved it, and **drop** while a dry joint holds it out
-  - The footswitch sets the mix to 0 and back to where you left it, and slots
-    the pedal in again if it has no socket
+- Every pedal's footswitch bypasses it and leaves its knobs alone. The lamp is
+  dark while a pedal is bypassed or its mix is at 0, and pressing it then brings
+  the pedal back, raising the mix or slotting it into a socket as needed
+- Grey cords join the pedals on the bench in the order the signal meets them. A
+  jack names where its cord comes from or goes, and pressing it opens **Signal
+  order**, where the ↑ and ↓ on each row move a pedal
 
 ![The patch bay: three of four wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](../public/guide/guide-patchbay.jpg)
 
