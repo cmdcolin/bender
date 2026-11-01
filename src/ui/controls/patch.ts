@@ -343,6 +343,8 @@ export const PATCH_GROUPS: Group[] = [
             'rack decay',
             'mono out to pitch',
             'mono out to gate',
+            'kit motorboat',
+            'kit clock rush',
           ],
           groups: [
             {
@@ -404,6 +406,8 @@ export const PATCH_GROUPS: Group[] = [
                 'kit addr fault',
                 'kit DAC ref',
                 'kit step tap',
+                'kit motorboat',
+                'kit clock rush',
               ],
             },
             {

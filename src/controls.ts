@@ -289,6 +289,8 @@ export const DEFAULT_CONTROLS = {
   drumLoop: 0,
   drumPulseShare: 0,
   drumTrigLoad: 0,
+  drumMotor: 0,
+  drumRush: 0,
   drumReset: 0,
   drumRingTrig: 0,
   drumCross: 0,

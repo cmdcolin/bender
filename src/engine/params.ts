@@ -283,6 +283,8 @@ export const PARAM_DEFS = [
   ['drumLoop', 'step'],
   ['drumPulseShare', 'slew'],
   ['drumTrigLoad', 'slew'],
+  ['drumMotor', 'slew'],
+  ['drumRush', 'slew'],
   ['drumReset', 'step'],
   ['drumRingTrig', 'step'],
   ['drumCross', 'step'],

@@ -198,6 +198,8 @@ const LANDINGS: Landing[] = [
   at('rack decay', ['rackMix'], { bend: 'verb' }),
   at('mono out to pitch', ['monoLevel']),
   at('mono out to gate', ['monoLevel']),
+  at('kit motorboat', ['drumLevel']),
+  at('kit clock rush', ['drumLevel']),
   at('kit step tap', ['drumLevel']),
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
   at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),

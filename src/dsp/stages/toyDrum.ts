@@ -263,6 +263,27 @@ const BANK_STARVE_OCT = 3
 const TAP_STAGES = 6
 const MIN_STEP_HZ = 0.01
 
+const MOTOR_BOOST = 1.3
+const MOTOR_TAU = 0.06
+const MOTOR_DRAW = 0.6
+const MOTOR_DIVE = 0.6
+const MOTOR_DROP = 0.45
+const MOTOR_BACK = 0.85
+const MOTOR_KICK = 0.6
+const MOTOR_CHOKE = 12
+
+const RUSH_OCT = 6
+const RUSH_TAU = 2.5
+const RUSH_REF = 0.2
+const FUSE_TAU = 2.5
+const FUSE_TRIP = 0.1
+const FUSE_COOL = 0.4
+const RUSH_DROP = 0.1
+const FUSE_SPREAD = 0.5
+const FUSE_RESET = 0.3
+const FUSE_OPEN = 0.12
+const FUSE_LIMP = 0.5
+
 function stepRate(
   i: number,
   stepHz: number,
@@ -785,6 +806,14 @@ export class ToyDrum implements Stage {
   private scanGain = new Float32Array(N_VOICES)
   private scanThrow = 0
   private scanSamples = 0
+  private motorV = 1
+  private motorOff = false
+  private tankBase = new Float32Array(N_TANKS)
+  private rushHeat = 0
+  private fuseHeat = 0
+  private fuseOpen = false
+  private fuseTrip = FUSE_TRIP
+  private fuseRng: Rng
 
   private readonly sr: number
   private readonly power: SupplyTap
@@ -821,6 +850,7 @@ export class ToyDrum implements Stage {
     // draws nothing and the counter arrives where it always arrived.
     this.slipRng = mulberry32(seed ^ 0x5107)
     this.wander = new Wander(mulberry32(seed ^ 0x3a4d))
+    this.fuseRng = mulberry32(seed ^ 0xf05e)
     // Off its own stream: the resistors were soldered on before the kit made a
     // sound, and drawing them out of the noise source would move every hit.
     const parts = mulberry32(seed ^ 0x1adde4)
@@ -1436,12 +1466,38 @@ export class ToyDrum implements Stage {
     for (let t = 0; t < N_TANKS; t++) {
       const spec = TANKS[t]!
       this.tankF[t] = (TAU * spec.hz) / this.sr
+      this.tankBase[t] = (spec.count * clock) / (this.sr * decay)
       this.tankRate[t] = (ringScale * spec.count * clock) / (this.sr * decay)
       this.tankGain[t] = spec.voice === SNARE ? spec.gain * tone : spec.gain
     }
 
     const trigLoad = Math.min(Math.max(p[IDX.drumTrigLoad]!, 0), 1)
     const trigRecover = Math.exp(-1 / (TRIG_RECOVER * this.sr))
+    const modMotor = ctx.mod.read(DEST.drumMotor)
+    const motor = Math.min(
+      Math.max(p[IDX.drumMotor]! + (modMotor ? modMotor[0]! : 0), 0),
+      1,
+    )
+    const motorPull = 1 / (MOTOR_TAU * this.sr)
+    const motorDraw = (motor * MOTOR_DRAW) / (MOTOR_TAU * this.sr)
+    if (motor === 0) {
+      this.motorV = 1
+      this.motorOff = false
+    }
+    const modRush = ctx.mod.read(DEST.drumRush)
+    const rush = Math.min(
+      Math.max(p[IDX.drumRush]! + (modRush ? modRush[0]! : 0), -1),
+      1,
+    )
+    const rushCoef = 1 / (RUSH_TAU * this.sr)
+    const rushDrop = 1 / (RUSH_DROP * this.sr)
+    const fuseCoef = 1 / (FUSE_TAU * this.sr)
+    const fuseCool = 1 / (FUSE_COOL * this.sr)
+    if (rush === 0) {
+      this.rushHeat = 0
+      this.fuseHeat = 0
+      this.fuseOpen = false
+    }
     let loadSum = 0
     let spikeSum = 0
     for (let i = 0; i < io.n; i++) {
@@ -1466,7 +1522,12 @@ export class ToyDrum implements Stage {
           0.9,
         )
         const span = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
-        const rate = stepRate(i, stepHz, modTempo, tapBase, modTap, melody)
+        const rate =
+          stepRate(i, stepHz, modTempo, tapBase, modTap, melody) *
+          (rush === 0
+            ? 1
+            : octaves(RUSH_OCT * rush * Math.min(this.rushHeat / RUSH_REF, 1)) *
+              (this.fuseOpen ? FUSE_LIMP : 1))
         this.stepClock += rate / this.sr
         if (this.gndEdge.rise(ctx.gnd[i]!)) this.stepClock += span
         if (this.stepClock >= span) {
@@ -1633,29 +1694,55 @@ export class ToyDrum implements Stage {
           const bankFm = fmDepth > 0 ? 1 + fmDepth * this.metal.clash : 1
           let synced = 0
           let kickRing = 0
+          let tankDraw = 0
+          let motorKick = 0
+          if (motor > 0) {
+            if (!this.motorOff && this.motorV < MOTOR_DROP) this.motorOff = true
+            else if (this.motorOff && this.motorV > MOTOR_BACK) {
+              this.motorOff = false
+              motorKick = MOTOR_KICK * motor
+            }
+          }
+          const motorRing =
+            motor > 0 ? (ring + MOTOR_BOOST * motor) * this.motorV : 0
+          const motorLoss = this.motorOff
+            ? MOTOR_CHOKE
+            : 1 - motorRing / RING_LATCH
+          const motorF = motor > 0 ? 1 - MOTOR_DIVE * (1 - this.motorV) : 1
           for (let t = 0; t < N_TANKS; t++) {
             const v = TANKS[t]!.voice
             // The kick's ring wired into the tom's drive.
             const drive =
-              couple > 0 && v === TOM
+              (couple > 0 && v === TOM
                 ? shock[v]! + couple * kickRing
-                : shock[v]!
+                : shock[v]!) + motorKick
             const tank = this.tanks[t]!
             if (drive === 0 && tank.level <= AUDIBLE) continue
             const ringing = tank.process(
               drive,
-              this.tankF[t]! * pf * bankFm,
-              this.tankRate[t]!,
+              this.tankF[t]! * pf * bankFm * motorF,
+              motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!,
               TANKS[t]!.sweep * sweep,
               TANKS[t]!.push * drive * clickHeight,
             )
             if (v === KICK) kickRing = ringing
+            tankDraw += Math.abs(ringing)
             const y = ringing * this.tankGain[t]!
             if (t === syncTank) synced = y
             out += y
             if (v === this.ringSrc) heard += y
             if (th & (1 << v)) send += y
           }
+          if (motor > 0)
+            this.motorV = Math.min(
+              Math.max(
+                this.motorV +
+                  motorPull * (1 - this.motorV) -
+                  motorDraw * tankDraw,
+                0,
+              ),
+              1,
+            )
           if (syncTank >= 0) {
             if (this.syncPrev <= 0 && synced > 0) this.metal.sync()
             this.syncPrev = synced
@@ -1937,6 +2024,29 @@ export class ToyDrum implements Stage {
         }
       }
 
+      if (rush !== 0) {
+        const a = Math.abs(out)
+        this.fuseHeat = flushDenormal(
+          this.fuseOpen
+            ? this.fuseHeat * (1 - fuseCool)
+            : this.fuseHeat + fuseCoef * (a * a - this.fuseHeat),
+        )
+        if (this.fuseOpen && this.fuseHeat < FUSE_RESET * this.fuseTrip) {
+          this.fuseOpen = false
+          this.fuseTrip =
+            FUSE_TRIP * (1 + FUSE_SPREAD * (2 * this.fuseRng() - 1))
+        } else if (!this.fuseOpen && this.fuseHeat > this.fuseTrip)
+          this.fuseOpen = true
+        if (this.fuseOpen) {
+          out *= FUSE_OPEN
+          send *= FUSE_OPEN
+        }
+        this.rushHeat = flushDenormal(
+          this.fuseOpen
+            ? this.rushHeat * (1 - rushDrop)
+            : this.rushHeat + rushCoef * (Math.abs(out) - this.rushHeat),
+        )
+      }
       out *= level * KIT_GAIN
       if (send !== 0) ctx.send[i]! += send * level * KIT_GAIN
       loadSum += Math.abs(out)
@@ -2039,6 +2149,11 @@ export class ToyDrum implements Stage {
     this.ringArmed = true
     this.syncPrev = 0
     this.trigSag = 0
+    this.motorV = 1
+    this.motorOff = false
+    this.rushHeat = 0
+    this.fuseHeat = 0
+    this.fuseOpen = false
     this.env.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)

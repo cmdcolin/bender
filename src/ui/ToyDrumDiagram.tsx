@@ -64,7 +64,7 @@ const HELP: Record<BoxId, string> = {
   'one-shots':
     'Each voice has a one-shot that turns its trigger into a pulse. The rows set the pulse width, what a one-shot loses to the others fired with it, and what the spike costs the supply.',
   tanks:
-    'The bridged-T networks the kick, tom and snare ring. Shocked by a trigger, they swoop down as they run down.',
+    'The bridged-T networks the kick, tom and snare ring, and the local supply their feedback runs off. Shocked by a trigger, they swoop down as they run down.',
   'metal bank':
     'Six oscillators behind one resistor chain and a squarer. The hats, the cowbell and the cymbal ring off it.',
   noise:

@@ -42,7 +42,13 @@ export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
 
 export const VOICE_BOXES = {
   'one-shots': ['drumPulse', 'drumPulseShare', 'drumTrigLoad'],
-  tanks: ['drumRing', 'drumSweep', 'drumTankCouple', 'drumBankSync'],
+  tanks: [
+    'drumRing',
+    'drumMotor',
+    'drumSweep',
+    'drumTankCouple',
+    'drumBankSync',
+  ],
   'metal bank': [
     'drumCymTone',
     'drumSpread',

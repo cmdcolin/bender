@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-613 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+615 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 147 destinations, among
+- **A patch bay that modulates itself.** Four wires, 149 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 62 controls are shy, mostly the ones that act on the
+names it still sets it. 64 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -231,7 +231,7 @@ puts the fault on, and the rows under it show the controls it set:
   sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>61 controls</summary>
+<summary>63 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -245,6 +245,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Tune            | 0.125× to 8×                                                                                                       | The pitch trimmer inside the kit: every struck voice moves together                                                                                     |
 | Decay           | 0.25× to 16×                                                                                                       | Stretches or chokes every envelope at once                                                                                                              |
 | Ring            | off to full                                                                                                        | How much of each swing the transistor around the kick, tom and snare feeds back                                                                         |
+| Motorboat †     | off to full                                                                                                        | Runs the feedback transistor around the kick, tom and snare off a small local supply behind a resistor                                                  |
 | Sweep           | −1× to +8×                                                                                                         | The bias trimmer behind the swoop: how far above their resting pitch the kick, tom and snare networks start on a hard hit                               |
 | Bank FM         | off to full                                                                                                        | A wire from the metal bank’s squarer into the bias of the kick, tom and snare networks                                                                  |
 | Bank sync       | off, to the kick, to the tom                                                                                       | Resets all six metal oscillators each time the kick or tom network swings up through zero                                                               |
@@ -289,6 +290,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Cross bleed     | off to full                                                                                                        | How much of the other voice’s envelope each amplifier follows                                                                                           |
 | Clock slip †    | off to full                                                                                                        | The wire clocking the step counter, and how often an edge comes out too slow to get over the threshold                                                  |
 | Step tap †      | off to full                                                                                                        | Clocks the step counter off a stage of Plinky’s melody divider in place of the tempo knob                                                               |
+| Clock rush †    | −1 to +1                                                                                                           | Leaks the kit output onto the timing node of the step clock                                                                                             |
 | Pattern loop †  | off, return inverted, return a step late, each row into the next, return through an XOR                            | Puts a fault in the shift register the bar circulates through, so every step re-enters the loop changed and the pattern rewrites itself a lap at a time |
 | Counter reset † | off, on the kick, on the snare, on the hat, on the clap, on the tom, on the bell, on the open hat, on the cymbal   | Which voice’s trigger line is soldered to the step counter’s clear pin                                                                                  |
 | Address line †  | off, A0, A1, A2, A3                                                                                                | Which of the four wires carrying a step number to the pattern memory the fault is on                                                                    |
@@ -1327,7 +1329,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 147 of them, filt cut through mono out to gate                                                                         | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 149 of them, filt cut through kit clock rush                                                                           | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

@@ -425,6 +425,16 @@ tempo, swing, chance, tune, decay and mute.
   - 8 starts a kick several octaves up and falls like a Syndrum zap.
   - Below 0 the kick starts low and rises, down to three octaves under resting
     pitch.
+- **Motorboat:** the feedback transistor around the kick, tom and snare runs
+  off a small local supply behind a resistor.
+  - A ringing network pulls the supply down. Below a point the feedback stops
+    and the networks go quiet; once the supply charges back up, the step in
+    voltage strikes all four networks again.
+  - The kit putters in bursts a few times a second, and each burst drops in
+    pitch as the supply sags.
+  - With **Ring** at half and Motorboat at full, a kit that latches into one
+    held note at Ring 0.95 plays bursts with gaps: the level swings 15 dB inside
+    a bar, and consecutive bars differ by 24 dB against 1 dB for the held note.
 - **Bank FM:** the metal bank's squarer shakes the kick, tom and snare tuning.
   - A little makes a kick metallic.
   - Past about a third of the travel the kick becomes a quieter, brighter clang,
@@ -635,6 +645,16 @@ with.
     counter steps at the note's pitch, so the pattern plays as a tone, and each
     row you write changes its timbre.
   - The kit stops while Plinky is down.
+- **Clock rush:** the kit output leaks onto the timing node of the step clock.
+  - Above zero, loud playing speeds the clock, the extra steps make the kit
+    louder, and the pattern runs up toward a buzz, past 100 steps a second at
+    full. A resettable fuse in the kit supply then trips: the kit plays at an
+    eighth of its level and half tempo while the fuse cools, then starts again
+    near the set tempo. The fuse trips at a slightly different point each
+    time, so each run up is a different length. At full the fuse is open about
+    a third of the time.
+  - Below zero, loud hits slow the clock, so the pattern stumbles after every
+    loud step.
 - **Counter reset:** a voice's trigger line soldered to the counter's
   synchronous clear. After that voice strikes, the next clock edge loads step
   one.

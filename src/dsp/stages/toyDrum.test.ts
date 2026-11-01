@@ -1817,3 +1817,105 @@ test('panic calls off a stray bar and the step conditions it was holding', () =>
   })
   expect(strayed).toBe(true)
 })
+
+const kitOnly: Partial<Controls> = { chipLevel: 0, drumLevel: 1 }
+
+const quietShare = (x: Float32Array) => {
+  const e = envelope(x.subarray(2 * SR))
+  const peak = loudest(e)
+  return e.filter(v => v < 0.1 * peak).length / e.length
+}
+
+test('motorboat and clock rush at zero leave the kit unchanged', () => {
+  expect(render({ ...kitOnly, drumMotor: 0, drumRush: 0 }, 1)).toEqual(
+    render(kitOnly, 1),
+  )
+})
+
+test('motorboat breaks a latched ring into bursts with gaps between them', () => {
+  const latched = render({ ...kitOnly, drumRing: 0.95 }, 8)
+  const bursts = render({ ...kitOnly, drumRing: 0.5, drumMotor: 1 }, 8)
+  expect(quietShare(latched)).toBeLessThan(0.05)
+  expect(quietShare(bursts)).toBeGreaterThan(0.15)
+  expect(loudest(bursts)).toBeLessThanOrEqual(1)
+})
+
+test('motorboat stays bounded with every network latched', () => {
+  const x = render(
+    {
+      ...kitOnly,
+      drumRing: 1,
+      drumMotor: 1,
+      drumTankCouple: 1,
+      drumBankFm: 1,
+    },
+    6,
+  )
+  expect(rms(x)).toBeGreaterThan(0.01)
+  expect(loudest(x)).toBeLessThanOrEqual(1)
+})
+
+test('a wire on motorboat breaks up a latched ring with the knob at zero', () => {
+  const latched = render({ ...kitOnly, drumRing: 0.95 }, 8)
+  const wired = render(
+    { ...kitOnly, drumRing: 0.5, ...held(DEST.drumMotor) },
+    8,
+  )
+  expect(quietShare(wired)).toBeGreaterThan(quietShare(latched) + 0.1)
+})
+
+const stepsEachHalfSecond = (over: Partial<Controls>, seconds: number) => {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  built.transport.tune = true
+  const p = packParams({ ...DEFAULT_CONTROLS, ...ROCK, ...kitOnly, ...over })
+  const io = makeIo()
+  const half = SR / 2 / BLOCK
+  const counts: number[] = []
+  let was = built.toyDrum.tick
+  let steps = 0
+  for (let b = 1; b <= (seconds * SR) / BLOCK; b++) {
+    built.chain.process(io, p)
+    steps += (built.toyDrum.tick - was + CYCLE) % CYCLE
+    was = built.toyDrum.tick
+    if (b % half === 0) {
+      counts.push(steps)
+      steps = 0
+    }
+  }
+  return counts
+}
+
+const climbs = (counts: number[], base: number) => {
+  let n = 0
+  let fast = false
+  for (const c of counts) {
+    if (!fast && c > 3 * base) {
+      n++
+      fast = true
+    } else if (fast && c <= 1.6 * base) fast = false
+  }
+  return n
+}
+
+const stockRate = () => Math.max(...stepsEachHalfSecond({}, 4).slice(1))
+
+test('clock rush above zero runs the kit up until the fuse trips, then starts again', () => {
+  const base = stockRate()
+  const rush = stepsEachHalfSecond({ drumRush: 1 }, 30)
+  expect(Math.max(...rush)).toBeGreaterThan(5 * base)
+  expect(climbs(rush, base)).toBeGreaterThanOrEqual(4)
+})
+
+test('clock rush below zero slows the kit after loud steps', () => {
+  const sum = (xs: number[]) => xs.reduce((a, n) => a + n, 0)
+  expect(sum(stepsEachHalfSecond({ drumRush: -1 }, 10))).toBeLessThan(
+    0.6 * sum(stepsEachHalfSecond({}, 10)),
+  )
+})
+
+test('a wire on clock rush runs the kit up with the knob at zero', () => {
+  const base = stockRate()
+  const wired = stepsEachHalfSecond(held(DEST.drumRush), 20)
+  expect(climbs(wired, base)).toBeGreaterThanOrEqual(2)
+})
