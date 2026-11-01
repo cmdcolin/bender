@@ -5,6 +5,7 @@ import { packParams } from '../../engine/params.ts'
 import { buildBender, type BuiltChain } from '../build.ts'
 import { FAULT } from '../bus.ts'
 import { DEST } from '../modbus.ts'
+import { spectrum } from '../spectrum.ts'
 import { BLOCK } from '../stage.ts'
 import { bin, makeIo, rms, sine, SR, tail } from '../testRender.ts'
 import {
@@ -310,6 +311,8 @@ test('nothing on the keyboard can be made to put out something that is not a num
     'pcmWrite',
     'pcmSignDir',
     'pcmLatch',
+    'pcmRunaway',
+    'pcmCpuBus',
   ]
   for (const key of knobs) {
     for (const at of [0, 0.5, 1]) {
@@ -452,4 +455,57 @@ test('a wire that turns Glint up reads the registers with the knob at zero', () 
     mod0Depth: 0.9,
   })
   expect(differs(knob, wired)).toBeLessThan(0.05)
+})
+
+const chordFor = (o: Partial<Controls>, seconds: number) =>
+  play({ ...ALONE, pcmChord: 6, pcmEnv: ORGAN, ...o }, seconds, b =>
+    b.pcmKeys.noteOn(0),
+  ).out
+
+const peakOf = (x: Float32Array) =>
+  x.reduce((m, v) => Math.max(m, Math.abs(v)), 0)
+
+test.each([
+  ['pcmRunaway', 14],
+  ['pcmCpuBus', 2],
+] as const)(
+  '%s at full stays bounded and changes a held chord over %d s',
+  (key, seconds) => {
+    const clean = chordFor({}, seconds)
+    const bent = chordFor({ [key]: 1 }, seconds)
+    expect(bent.every(Number.isFinite)).toBe(true)
+    expect(peakOf(bent)).toBeLessThanOrEqual(peakOf(clean) * 1.5)
+    expect(differs(clean, bent)).toBeGreaterThan(0.3)
+  },
+)
+
+test('the processor on the bus turns a held chord into broadband noise', () => {
+  const clean = spectrum(chordFor({}, 2), SR).flatness
+  const cpu = spectrum(chordFor({ pcmCpuBus: 0.6 }, 2), SR).flatness
+  expect(cpu).toBeGreaterThan(0.08)
+  expect(cpu).toBeGreaterThan(clean * 20)
+})
+
+test('thermal runaway cuts the chip out and it plays again', () => {
+  const x = chordFor({ pcmRunaway: 1 }, 40)
+  const win = 0.01 * SR
+  const gaps: number[] = []
+  let run = 0
+  for (let at = 0; at + win <= x.length; at += win) {
+    if (rms(x.subarray(at, at + win)) < 1e-3) run++
+    else {
+      if (run > 0) gaps.push((run * win) / SR)
+      run = 0
+    }
+  }
+  const cutouts = gaps.filter(g => g >= 0.02)
+  expect(cutouts.length).toBeGreaterThanOrEqual(2)
+  expect(Math.max(...cutouts)).toBeLessThan(0.6)
+  expect(rms(x.subarray(x.length - 5 * SR))).toBeGreaterThan(0.02)
+})
+
+test('thermal runaway stays clean until the die warms', () => {
+  const clean = chordFor({}, 4)
+  const warming = chordFor({ pcmRunaway: 1 }, 4)
+  expect(differs(clean, warming)).toBeLessThan(1e-6)
 })

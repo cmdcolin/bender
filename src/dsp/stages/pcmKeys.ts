@@ -59,6 +59,13 @@ const FAULT_SEED = 0x5a1
 
 const LATCH_KEEPS = 5
 
+const CODE_SEED = 0xc0de
+const CODE_WORDS = 2048
+const SCAN_HZ = 240
+const CARRY_LOW = 3
+const HEAT_FLOOR = 0.25
+const HEAT_SPAN = 0.6
+
 const SAMPLE_WORDS = Math.round(SAMPLE_SECS * ROM_HZ)
 
 const knob = (base: number, lane: Float32Array | null, i: number) =>
@@ -160,6 +167,16 @@ export class PcmKeys implements Stage {
   private latched = 0
   private keepMask = -1
 
+  private code = new Uint8Array(CODE_WORDS)
+  private pc = 0
+  private scanPhase = 0
+  private busy = 0
+  private busWord = DAC_STEPS
+  private heat = 0
+  private trip = 1
+  private dark = 0
+  private faults = 0
+
   private vibPhase = 0
   private vibFactor = 1
   private toneA = new OnePoleLP()
@@ -184,6 +201,18 @@ export class PcmKeys implements Stage {
     this.flat = flat
     this.romBase = base
     this.romRam = new Int8Array(flat.length)
+    const cpu = mulberry32(CODE_SEED)
+    for (let i = 0; i < CODE_WORDS; i++) {
+      const r = cpu()
+      this.code[i] =
+        r < 0.3
+          ? (cpu() * 16) | 0
+          : r < 0.5
+            ? 0xc0 | ((cpu() * 64) | 0)
+            : r < 0.6
+              ? 0xff
+              : (cpu() * 256) | 0
+    }
   }
 
   when(p: Float32Array) {
@@ -294,19 +323,22 @@ export class PcmKeys implements Stage {
     let at = this.base + a
     if (at >= this.memLen) at -= this.memLen
     v.at = at
-    let word = cross(this.word(at), this.dataCross)
+    let word = cross(
+      this.busy > 0 ? this.code[this.pc]! : this.word(at),
+      this.dataCross,
+    )
     if (this.glintMask)
       word =
         (word & ~this.glintMask) |
         ((this.regs![a & (GLINT_REGS - 1)]! ^ 0x80) & this.glintMask)
-    if (this.dataLine < 0) return (word - DAC_STEPS) / DAC_STEPS
-    const d = this.dataBus.read(
-      word,
-      this.dataLine,
-      this.dataFault,
-      this.busCut,
-    )
-    return ((d & 0xff) - DAC_STEPS) / DAC_STEPS
+    if (this.dataLine < 0) {
+      this.busWord = word
+      return (word - DAC_STEPS) / DAC_STEPS
+    }
+    const d =
+      this.dataBus.read(word, this.dataLine, this.dataFault, this.busCut) & 0xff
+    this.busWord = d
+    return (d - DAC_STEPS) / DAC_STEPS
   }
 
   private stepEnv(v: Voice) {
@@ -432,6 +464,15 @@ export class PcmKeys implements Stage {
     const modWrite = bay.read(DEST.pcmWrite)
     const modSign = bay.read(DEST.pcmSignDir)
     const modLatch = bay.read(DEST.pcmLatch)
+    const cpuBase = p[IDX.pcmCpuBus]!
+    const modCpu = bay.read(DEST.pcmCpuBus)
+    const runaway = knob(p[IDX.pcmRunaway]!, bay.read(DEST.pcmRunaway), 0)
+    if (runaway === 0) this.heat = 0
+    const hot = clamp01((this.heat - HEAT_FLOOR) / HEAT_SPAN) ** 2
+    const carry = (0.9 * hot) ** 2
+    const leak = hot ** 2
+    const leaky = 0.8 * hot
+    this.faults = 0
     const writing = writeBase > 0 || modWrite !== null
     if (!writing) this.ramFor = null
 
@@ -462,6 +503,8 @@ export class PcmKeys implements Stage {
     const span = this.loopEnd - this.loopStart
     const voices = this.voices
     let load = 0
+    let sounding = 0
+    for (const v of voices) if (v.stage !== IDLE) sounding++
 
     for (let i = 0; i < io.n; i++) {
       this.vibPhase += vibStep
@@ -486,6 +529,30 @@ export class PcmKeys implements Stage {
       }
 
       if (!loaded) continue
+      if (this.dark > 0) {
+        this.dark--
+        continue
+      }
+
+      const cpu = Math.max(knob(cpuBase, modCpu, i), leaky)
+      if (cpu > 0) {
+        this.scanPhase += SCAN_HZ / this.sr
+        if (this.scanPhase >= 1) {
+          this.scanPhase -= 1
+          this.busy = cpu * (this.sr / SCAN_HZ) * (0.4 + this.rng())
+          this.pc = (this.rng() * CODE_WORDS) | 0
+        }
+      } else this.busy = 0
+      if (this.busy > 0) {
+        this.busy--
+        const op = this.code[this.pc]!
+        this.pc =
+          op >= 0xf0
+            ? (this.code[(this.pc + 1) & (CODE_WORDS - 1)]! << 3) &
+              (CODE_WORDS - 1)
+            : (this.pc + 1) & (CODE_WORDS - 1)
+        this.faults++
+      }
 
       const runOn = knob(runOnBase, modRunOn, i) ** 2
       const flip = knob(signBase, modSign, i) ** 2
@@ -511,7 +578,20 @@ export class PcmKeys implements Stage {
         const depth =
           vibrato === 2 ? Math.min(v.age / vibDelay, 1) : vibrato > 0 ? 1 : 0
         if (flip === 0) v.dir = 1
+        const before = v.pos | 0
         v.pos += v.inc * clock * (1 + (this.vibFactor - 1) * depth) * v.dir
+        if (carry > 0 && v.dir > 0) {
+          const after = v.pos | 0
+          const flipped = before ^ after
+          if (flipped >> CARRY_LOW !== 0 && this.rng() < carry) {
+            const below = (1 << (31 - Math.clz32(flipped))) - 1
+            v.pos =
+              this.rng() < 0.75
+                ? ((after & below) | (before & ~below)) + (v.pos - after)
+                : v.pos + below + 1
+            this.faults++
+          }
+        }
         if (v.pos < this.loopStart && v.dir < 0)
           v.pos = this.loopEnd - ((this.loopStart - v.pos) % span)
         if (v.pos >= this.loopEnd && !v.runOn) {
@@ -521,6 +601,13 @@ export class PcmKeys implements Stage {
         if (v.runOn && v.pos >= this.memLen) {
           v.pos -= this.memLen
           v.runOn = false
+        }
+        if (leak > 0 && this.rng() < leak) {
+          const high =
+            this.rng() < leak ? (this.busWord & 0x0f) << 8 : v.reg & 0xf00
+          v.reg = Math.max(high | this.busWord, 1)
+          v.inc = (ROM_PER_CYCLE * regHz(v.reg)) / this.sr
+          this.faults++
         }
         const s = this.read(v)
         if (flip > 0) {
@@ -553,6 +640,32 @@ export class PcmKeys implements Stage {
       io.r[i]! += out
     }
     rail.drawing += load / io.n
+    if (runaway > 0) this.warm(io.n, runaway, sounding)
+  }
+
+  private warm(n: number, runaway: number, sounding: number) {
+    const dt = n / this.sr
+    const rate = Math.min(this.faults / dt / 3000, 1)
+    this.heat +=
+      dt * (runaway * (0.012 * sounding + 0.25 * rate) - 0.01 * this.heat)
+    if (this.heat >= this.trip) this.cutOut()
+  }
+
+  private cutOut() {
+    this.heat = 0.3 * this.rng()
+    this.trip = 0.75 + 0.4 * this.rng()
+    this.dark = Math.round((0.03 + 0.5 * this.rng() ** 2) * this.sr)
+    for (const v of this.voices) {
+      if (v.stage === IDLE) continue
+      v.reg = rateReg(noteHz(v.note))
+      v.inc = (ROM_PER_CYCLE * regHz(v.reg)) / this.sr
+      v.runOn = false
+      v.dir = 1
+      v.pos = 0
+      v.env = 0
+      v.stage = ATTACK
+    }
+    this.ramFor = null
   }
 
   panic() {
@@ -575,5 +688,12 @@ export class PcmKeys implements Stage {
     this.rng = mulberry32(FAULT_SEED)
     this.latched = 0
     this.ramFor = null
+    this.heat = 0
+    this.trip = 1
+    this.dark = 0
+    this.busy = 0
+    this.scanPhase = 0
+    this.pc = 0
+    this.busWord = DAC_STEPS
   }
 }

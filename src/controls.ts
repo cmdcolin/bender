@@ -498,6 +498,8 @@ export const DEFAULT_CONTROLS = {
   pcmSignDir: 0,
   pcmLatch: 0,
   pcmGlint: 0,
+  pcmRunaway: 0,
+  pcmCpuBus: 0,
 
   // The mono synth, on the same gate line as the FM chip and the home
   // keyboard, so its fader boots at the floor too.

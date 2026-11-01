@@ -986,6 +986,8 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'fmRot',
   'fmHeat',
   'fmRing',
+  'pcmRunaway',
+  'pcmCpuBus',
 ]
 
 // Retired controls that old links still carry, each read into the control that

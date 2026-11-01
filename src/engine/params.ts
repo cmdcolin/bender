@@ -478,6 +478,8 @@ export const PARAM_DEFS = [
   ['pcmSignDir', 'slew'],
   ['pcmLatch', 'slew'],
   ['pcmGlint', 'step'],
+  ['pcmRunaway', 'slew'],
+  ['pcmCpuBus', 'slew'],
 
   ['monoLevel', 'slew'],
   ['monoMute', 'ramp'],

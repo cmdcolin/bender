@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-620 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+622 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 154 destinations, among
+- **A patch bay that modulates itself.** Four wires, 156 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 69 controls are shy, mostly the ones that act on the
+names it still sets it. 71 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -490,7 +490,7 @@ puts the fault on, and the rows under it show the controls it set:
   still
 
 <details>
-<summary>25 controls</summary>
+<summary>27 controls</summary>
 
 | control                            | range                                                                                                     | what it does                                                                                                                                                                |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -519,6 +519,8 @@ puts the fault on, and the rows under it show the controls it set:
 | Write strobe                       | off to full                                                                                               | Bridges the memory’s write strobe to the DAC clock, so the mix word ahead of the envelopes lands back in memory at the address a voice just read                            |
 | Sign on up/down                    | off to full                                                                                               | Wires the sign bit of each word through a marginal flip-flop to the counter’s up/down pin                                                                                   |
 | Shared latch                       | off to full                                                                                               | Slows the address latch the four voices share, so the top bits of each voice’s address come from the voice before it                                                        |
+| Thermal runaway †                  | off to full                                                                                               | Sets how fast the die warms                                                                                                                                                 |
+| CPU on bus †                       | off to full                                                                                               | The keyboard’s processor scans the keys 240 times a second over the data bus the voices read from                                                                           |
 
 </details>
 
@@ -1334,7 +1336,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 154 of them, filt cut through FM operator ring                                                                         | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 156 of them, filt cut through keys CPU on bus                                                                          | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

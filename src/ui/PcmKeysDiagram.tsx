@@ -43,6 +43,8 @@ const KEYS = [
   'pcmSignDir',
   'pcmLatch',
   'pcmGlint',
+  'pcmRunaway',
+  'pcmCpuBus',
 ] as const
 
 type Key = (typeof KEYS)[number]
@@ -82,7 +84,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     [
       'counter',
       OPENS.counter,
-      'The address counter. It walks the ROM at the rate the note asks for, so its clock sets the pitch and the aliasing together. Its up/down pin and the latch the four voices share sit here too.',
+      'The address counter. It walks the ROM at the rate the note asks for, so its clock sets the pitch and the aliasing together. Its up/down pin, the latch the four voices share and the die temperature that slows its carry chain sit here too.',
     ],
     [
       'ROM',
@@ -154,7 +156,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       midOf(rom, envelope),
       BUS_LEAN,
       OPENS['data bus'],
-      'The eight wires the ROM answers on. A fault on one keeps the pitch and changes the shape of every word.',
+      'The eight wires the ROM answers on. A fault on one keeps the pitch and changes the shape of every word. The keyboard’s processor reads the keys over the same wires.',
     ),
   ]
   useOpensOnAim(pick, boxes)

@@ -179,6 +179,8 @@ const LANDINGS: Landing[] = [
   at('keys write strobe', ['pcmLevel']),
   at('keys sign on up/down', ['pcmLevel']),
   at('keys shared latch', ['pcmLevel']),
+  at('keys thermal runaway', ['pcmLevel']),
+  at('keys CPU on bus', ['pcmLevel']),
   at('crush data line', ['crushMix'], { bend: 'crush' }),
   at('crush data fault', ['crushMix', 'crushDataLine'], { bend: 'crush' }),
   at('crush cut depth', ['crushMix', 'crushDataLine'], {

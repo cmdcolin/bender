@@ -30,7 +30,7 @@ export const CLIPPER_WIRED: Wiring = {
 
 export const PARLOR_OPENS = {
   keys: ['pcmStruck', 'pcmKeyGate', 'pcmChord'],
-  counter: ['pcmClockX', 'pcmSignDir', 'pcmLatch'],
+  counter: ['pcmClockX', 'pcmSignDir', 'pcmLatch', 'pcmRunaway'],
   ROM: ['pcmVoice', 'pcmRunOn', 'pcmWrite'],
   envelope: ['pcmEnv', 'pcmRelease', 'pcmLength'],
   tone: ['pcmTone'],
@@ -43,6 +43,7 @@ export const PARLOR_OPENS = {
     'pcmBusCut',
     'pcmDataCross',
     'pcmGlint',
+    'pcmCpuBus',
   ],
 } as const satisfies Opens
 

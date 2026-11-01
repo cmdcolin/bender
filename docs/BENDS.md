@@ -598,11 +598,20 @@ reaches the counter and the data.
   - The table sounds about six semitones over the key.
   - Glint's knives, Toy on bus and cold boot reach Parlor through the wires.
   - While Glint is down, Parlor reads the registers as Glint left them.
+- **CPU on bus:** the keyboard's processor scans the keys 240 times a second
+  over the same data bus, and this fault lets its cycles through to the voices.
+  - During each scan every voice reads processor code in place of its sample.
+    The knob sets how long each scan holds the bus, from a click at the bottom
+    to most of each 4 ms scan at the top.
+  - The code branches, so the bytes come in short loops and jumps. The result is
+    a hiss over a 240 Hz buzz: at 0.6 on a held chord, flatness 0.24 and a
+    centroid of 2.3 kHz, against 0.00 and 650 Hz for the clean chord.
+  - With **Thermal runaway** up, the rate registers latch code bytes.
 - _Tone:_ the two-pole filter against the images over every voice, since the ROM
   was cut at 9.9 kHz with no interpolation.
 - _ROM clock:_ drags the counter, so pitch and aliasing move together.
 
-Four bends sit inside the die, between the counter and the memory.
+Five bends sit inside the die, between the counter and the memory.
 
 - **Loop overrun:** the loop comparator may miss at each loop end. The counter
   then runs on through every voice after it in the ROM, round the memory and
@@ -626,6 +635,26 @@ Four bends sit inside the die, between the counter and the memory.
   hands each voice the top address bits of the voice serviced before it. With a
   chord down, each voice reads from its neighbour's place at its own pitch. A
   lone note plays unchanged.
+- **Thermal runaway:** sets how fast the die warms. Each sounding voice warms
+  it, and it cools slowly.
+  - Past a quarter of the way to the cutout, three faults start and grow with
+    the temperature. The counter drops carries, so a voice stutters back over a
+    short stretch or skips ahead. Each voice's rate register latches the word on
+    the data bus, so pitches jump. The processor's cycles reach the bus, as with
+    **CPU on bus**.
+  - Each fault warms the die further, so the faults come faster and faster. At
+    the cutout temperature the chip switches off for 30 to 530 ms, then the
+    voices start again from the attack at the pitch of their keys.
+  - Over a cycle the chord plays clean, then hisses and stutters more and more,
+    then stops. With a three-note chord held, flatness climbs from 0.00 to about
+    0.27 and the centroid from 650 Hz to 2.6 kHz before each cutout.
+  - The first cutout comes after about 11 s at the top of the knob, 30 s at 0.4
+    and three minutes at 0.1. Later ones come every 4 to 30 s, since the cutout
+    point and the temperature after each restart are drawn at random. A lone
+    note warms the die a third as fast.
+  - At 0 the die is cold, and a held note keeps a jumped pitch until it is
+    struck again.
+  - Its row is in the **counter** box, and its lane is read once a block.
 
 ## Growler's voice card
 

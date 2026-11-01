@@ -350,6 +350,8 @@ export const PATCH_GROUPS: Group[] = [
             'FM register rot',
             'FM heat',
             'FM operator ring',
+            'keys thermal runaway',
+            'keys CPU on bus',
           ],
           groups: [
             {
@@ -462,6 +464,8 @@ export const PATCH_GROUPS: Group[] = [
                 'keys sign on up/down',
                 'keys shared latch',
                 'keys Glint on bus',
+                'keys thermal runaway',
+                'keys CPU on bus',
               ],
             },
             {
