@@ -77,3 +77,30 @@ test('switching a pedal back on fades up to the sound it had', () => {
   run(0)
   expect(seen[BLOCK - 1]).toBeCloseTo(wet, 6)
 })
+
+test('a bypassed bend in a socket hands on what it was given', () => {
+  const seen = new Float32Array(BLOCK)
+  const probe: Stage = {
+    label: 'probe',
+    process(io) {
+      seen.set(io.l.subarray(0, io.n))
+    },
+    panic: () => {},
+  }
+  const chain = new Chain(SR)
+  chain.sources = [source]
+  chain.bendById = [undefined, halver]
+  chain.post = [probe]
+  const run = (ringMute: number) =>
+    chain.process(
+      makeIo(),
+      packParams({ ...DEFAULT_CONTROLS, bendSlot0: 1, ringMute }),
+    )
+  run(0)
+  const wet = seen[BLOCK - 1]!
+  run(1)
+  run(1)
+  expect(seen[BLOCK - 1]).toBeCloseTo(2 * wet, 6)
+  run(0)
+  expect(seen[BLOCK - 1]).toBeCloseTo(wet, 6)
+})

@@ -70,6 +70,19 @@ const MUTE_IDX = [
 
 const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])
 
+const BEND_BYPASS_IDX = [
+  IDX.ringMute,
+  IDX.crushMute,
+  IDX.distMute,
+  IDX.combMute,
+  IDX.glitchMute,
+  IDX.filtMute,
+  IDX.shiftMute,
+  IDX.octMute,
+  IDX.codecMute,
+  IDX.rackMute,
+]
+
 // Where the brightness bus sits at zero: a programme-like split of high against
 // total energy. Above it the loop is running brighter than the thing it started
 // as, which is what a squeal climbing its own feedback does.
@@ -363,6 +376,7 @@ export class Chain {
   /** The same for each pedal's wet share, plus the block the pedal was handed,
       which a bypassed pedal's output fades against. */
   private readonly bypassGain = new Float32Array(BYPASS_IDX.length).fill(1)
+  private readonly bendGain = new Float32Array(BEND_BYPASS_IDX.length).fill(1)
   private readonly dryL = new Float32Array(BLOCK)
   private readonly dryR = new Float32Array(BLOCK)
 
@@ -736,31 +750,12 @@ export class Chain {
 
     for (const i of pedalOrderAt(p[IDX.pedalOrder]!)) {
       const s = this.pedals[i]
-      if (!s) continue
-      const to = 1 - p[BYPASS_IDX[i]!]!
-      const from = this.bypassGain[i]!
-      if (s.when && !s.when(p, ctx)) {
+      if (s) {
+        const to = 1 - p[BYPASS_IDX[i]!]!
+        if (!s.when || s.when(p, ctx))
+          this.faded(s, io, p, n, this.bypassGain[i]!, to)
         this.bypassGain[i] = to
-        continue
       }
-      if (to === 1 && from === 1) {
-        s.process(io, p, ctx)
-        this.contain(s, io, n)
-        continue
-      }
-      for (let k = 0; k < n; k++) {
-        this.dryL[k] = io.l[k]!
-        this.dryR[k] = io.r[k]!
-      }
-      s.process(io, p, ctx)
-      this.contain(s, io, n)
-      const step = (to - from) / n
-      for (let k = 0; k < n; k++) {
-        const g = from + step * (k + 1)
-        io.l[k] = this.dryL[k]! + (io.l[k]! - this.dryL[k]!) * g
-        io.r[k] = this.dryR[k]! + (io.r[k]! - this.dryR[k]!) * g
-      }
-      this.bypassGain[i] = to
     }
     for (const s of this.post) {
       if (s === this.tape && tapeAt !== TAPE_AT_END) continue
@@ -784,6 +779,33 @@ export class Chain {
       this.panic()
       io.l.fill(0, 0, n)
       io.r.fill(0, 0, n)
+    }
+  }
+
+  private faded(
+    s: Stage,
+    io: StereoBlock,
+    p: Float32Array,
+    n: number,
+    from: number,
+    to: number,
+  ) {
+    if (to === 1 && from === 1) {
+      s.process(io, p, this.ctx)
+      this.contain(s, io, n)
+    } else {
+      for (let k = 0; k < n; k++) {
+        this.dryL[k] = io.l[k]!
+        this.dryR[k] = io.r[k]!
+      }
+      s.process(io, p, this.ctx)
+      this.contain(s, io, n)
+      const step = (to - from) / n
+      for (let k = 0; k < n; k++) {
+        const g = from + step * (k + 1)
+        io.l[k] = this.dryL[k]! + (io.l[k]! - this.dryL[k]!) * g
+        io.r[k] = this.dryR[k]! + (io.r[k]! - this.dryR[k]!) * g
+      }
     }
   }
 
@@ -970,10 +992,10 @@ export class Chain {
         dropped |= 1 << k
         continue
       }
-      if (!s.when || s.when(p, this.ctx)) {
-        s.process(io, p, this.ctx)
-        this.contain(s, io, n)
-      }
+      const to = 1 - p[BEND_BYPASS_IDX[id - 1]!]!
+      if (!s.when || s.when(p, this.ctx))
+        this.faded(s, io, p, n, this.bendGain[id - 1]!, to)
+      this.bendGain[id - 1] = to
     }
     this.dropped = dropped
   }

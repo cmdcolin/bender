@@ -2,6 +2,7 @@ import { useCallback, useState, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
+import { isBend } from './bendChain.ts'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
@@ -75,7 +76,7 @@ function Mute({
   if (levelAt > AUDIBLE_LEVEL && levelAt !== lastUp) setLastUp(levelAt)
   const atZero = levelAt <= 0
   const muted = switched || atZero
-  const pedal = isPedal(stage)
+  const pedal = isPedal(stage) || isBend(stage)
   const lit = pedal ? !muted : muted
   const where = useHeardThrough(stage)
   const heard = !pedal && where.length > 0

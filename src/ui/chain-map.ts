@@ -806,8 +806,8 @@ function pickParts(c: Controls, o: Options) {
   if (tapeAt === TAPE_AT_BENDS) lay(tape())
   if (bends.length || loose.length) path.push(rack)
   for (const name of bends) {
-    const mixKey = BEND_MIX[name]
-    path.push(stage(name, mixKey ? c[mixKey] > 0 : true))
+    const bend = BEND_BY_NAME.get(name)
+    path.push(stage(name, bend ? c[bend.mix] > 0 && !c[bend.mute] : true))
   }
   if (tapeAt === TAPE_AT_PEDALS) lay(tape())
 
@@ -1989,8 +1989,8 @@ function bendOrder(c: Controls): string[] {
   return names
 }
 
-const BEND_MIX: Record<string, keyof Controls> = Object.fromEntries(
-  BENDS.map(b => [b.group, b.mix]),
+const BEND_BY_NAME = new Map<string, (typeof BENDS)[number]>(
+  BENDS.map(b => [b.group, b]),
 )
 
 // ---- the drawing ----------------------------------------------------------

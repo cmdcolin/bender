@@ -967,6 +967,16 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'rackFreeze',
   'rackMix',
   'pcmLength',
+  'ringMute',
+  'crushMute',
+  'distMute',
+  'combMute',
+  'glitchMute',
+  'filtMute',
+  'shiftMute',
+  'octMute',
+  'codecMute',
+  'rackMute',
 ]
 
 // Retired controls that old links still carry, each read into the control that

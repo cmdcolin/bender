@@ -1,4 +1,5 @@
 import { PEDALS } from '../pedals.ts'
+import { BENDS } from './controls/bends.ts'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -19,6 +20,7 @@ const MUTE_OF: Record<string, ControlKey> = {
   Parlor: 'pcmMute',
   Growler: 'monoMute',
   ...Object.fromEntries(PEDALS.map(p => [p.group, p.mute])),
+  ...Object.fromEntries(BENDS.map(b => [b.group, b.mute])),
 }
 
 export const levelOf = (stage: string): ControlKey | undefined =>

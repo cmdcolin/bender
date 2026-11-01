@@ -629,11 +629,13 @@ export const PARAM_DEFS = [
   ['ringTrack', 'step'],
   ['ringFrom', 'step'],
   ['ringMix', 'slew'],
+  ['ringMute', 'ramp'],
 
   ['bits', 'step'],
   ['srHz', 'step'],
   ['srJitter', 'step'],
   ['crushMix', 'slew'],
+  ['crushMute', 'ramp'],
   ['crushAdc', 'step'],
   ['crushClock', 'step'],
   ['crushLadder', 'slew'],
@@ -651,6 +653,7 @@ export const PARAM_DEFS = [
   ['distToneHz', 'slew'],
   ['subLevel', 'slew'],
   ['distMix', 'slew'],
+  ['distMute', 'ramp'],
   ['distSupply', 'step'],
   ['distDraw', 'slew'],
   ['distPinGain', 'ramp'],
@@ -667,11 +670,13 @@ export const PARAM_DEFS = [
   ['filtArc', 'slew'],
   ['filtWiper', 'slew'],
   ['filtMix', 'slew'],
+  ['filtMute', 'ramp'],
 
   ['combHz', 'slew'],
   ['combFb', 'ramp'],
   ['combDampHz', 'slew'],
   ['combMix', 'slew'],
+  ['combMute', 'ramp'],
 
   ['glitchProb', 'step'],
   ['glitchSliceMs', 'step'],
@@ -680,11 +685,13 @@ export const PARAM_DEFS = [
   ['glitchPitch', 'step'],
   ['glitchFreeze', 'step'],
   ['glitchMix', 'slew'],
+  ['glitchMute', 'ramp'],
 
   ['shiftHz', 'slew'],
   ['shiftDir', 'step'],
   ['shiftFb', 'ramp'],
   ['shiftMix', 'slew'],
+  ['shiftMute', 'ramp'],
 
   ['octGain', 'ramp'],
   ['octTone', 'slew'],
@@ -699,6 +706,7 @@ export const PARAM_DEFS = [
   ['octRate', 'slew'],
   ['octFreeze', 'step'],
   ['octMix', 'slew'],
+  ['octMute', 'ramp'],
 
   ['codecRate', 'slew'],
   ['codecFrame', 'step'],
@@ -711,6 +719,7 @@ export const PARAM_DEFS = [
   ['codecAlias', 'slew'],
   ['codecScramble', 'slew'],
   ['codecMix', 'slew'],
+  ['codecMute', 'ramp'],
 
   ['rackDecay', 'slew'],
   ['rackSize', 'slew'],
@@ -728,6 +737,7 @@ export const PARAM_DEFS = [
   ['rackBusCut', 'slew'],
   ['rackFreeze', 'step'],
   ['rackMix', 'slew'],
+  ['rackMute', 'ramp'],
 
   ['stompCircuit', 'step'],
   ['stompDrive', 'ramp'],

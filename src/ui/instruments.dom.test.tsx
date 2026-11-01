@@ -339,7 +339,7 @@ test('every socketed pedal has a face', () => {
     expect(group(name)).not.toBeNull()
 })
 
-test('a bend face switches its bend out and back at the mix it left, opens its panel and puts itself away', () => {
+test('a bend face bypasses its bend and back with the mix left where it was, opens its panel and puts itself away', () => {
   const opened: string[] = []
   chainOf(0, 0, 4)
   engine.set('combMix', 0.7)
@@ -349,10 +349,12 @@ test('a bend face switches its bend out and back at the mix it left, opens its p
   expect(bypass.getAttribute('aria-pressed')).toBe('false')
   expect(screen.getByRole('img', { name: 'position 3' })).toBeTruthy()
   fireEvent.click(bypass)
-  expect(engine.controls.get().combMix).toBe(0)
+  expect(engine.controls.get().combMute).toBe(1)
+  expect(engine.controls.get().combMix).toBe(0.7)
   expect(engine.controls.get().bendSlot2).toBe(4)
   expect(bypass.getAttribute('aria-pressed')).toBe('true')
   fireEvent.click(bypass)
+  expect(engine.controls.get().combMute).toBe(0)
   expect(engine.controls.get().combMix).toBe(0.7)
   fireEvent.click(screen.getByRole('button', { name: 'all controls' }))
   expect(opened).toEqual(['Comb'])

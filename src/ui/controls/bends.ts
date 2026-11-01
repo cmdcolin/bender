@@ -28,20 +28,26 @@ import type { Group } from './types.ts'
 // n−1, so the order here is the order the slots count in. The map reads it to
 // lay the path out; a roll reads it to put one bend on the board on its own.
 export const BENDS = [
-  { group: 'Ring mod', label: 'ring', mix: 'ringMix' },
-  { group: 'Crusher', label: 'crush', mix: 'crushMix' },
-  { group: 'Clipper', label: 'dist', mix: 'distMix' },
-  { group: 'Comb', label: 'comb', mix: 'combMix' },
-  { group: 'Glitch buffer', label: 'glitch', mix: 'glitchMix' },
-  { group: 'Screech filter', label: 'filt', mix: 'filtMix' },
-  { group: 'Freq shifter', label: 'shift', mix: 'shiftMix' },
-  { group: 'Octave', label: 'oct', mix: 'octMix' },
-  { group: 'Codec', label: 'codec', mix: 'codecMix' },
-  { group: 'Rack verb', label: 'verb', mix: 'rackMix' },
+  { group: 'Ring mod', label: 'ring', mix: 'ringMix', mute: 'ringMute' },
+  { group: 'Crusher', label: 'crush', mix: 'crushMix', mute: 'crushMute' },
+  { group: 'Clipper', label: 'dist', mix: 'distMix', mute: 'distMute' },
+  { group: 'Comb', label: 'comb', mix: 'combMix', mute: 'combMute' },
+  {
+    group: 'Glitch buffer',
+    label: 'glitch',
+    mix: 'glitchMix',
+    mute: 'glitchMute',
+  },
+  { group: 'Screech filter', label: 'filt', mix: 'filtMix', mute: 'filtMute' },
+  { group: 'Freq shifter', label: 'shift', mix: 'shiftMix', mute: 'shiftMute' },
+  { group: 'Octave', label: 'oct', mix: 'octMix', mute: 'octMute' },
+  { group: 'Codec', label: 'codec', mix: 'codecMix', mute: 'codecMute' },
+  { group: 'Rack verb', label: 'verb', mix: 'rackMix', mute: 'rackMute' },
 ] as const satisfies readonly {
   group: string
   label: string
   mix: ControlKey
+  mute: ControlKey
 }[]
 
 /** The bend a slot value names — nothing, for the empty slot at zero. */
@@ -98,6 +104,16 @@ export const BEND_GROUPS: Group[] = [
         help: 'Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect. The kit is a gate — the programme only sounds through the hits, and Mix hands the dry back underneath; the chaos oscillator never comes round again, so nothing about the next second is in the last; Glint and the toy are pitched, so what comes out is intermodulation on a grid rather than a clang. Whichever you pick has to be up in the mix to make a carrier at all, so it is in the programme it is multiplying too. The two late ones are the toy against itself a step or a beat ago: two notes multiplied, so their difference tone comes out as a bass line under the tune.',
       },
       {
+        key: 'ringMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Ring mod out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
+      },
+      {
         key: 'ringMix',
         lane: 'ring mix',
         label: 'Mix',
@@ -143,6 +159,16 @@ export const BEND_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'Re-rolls each hold length. Jittered decimation smears the aliases into inharmonic hash.',
+      },
+      {
+        key: 'crushMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Crusher out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
       },
       {
         key: 'crushMix',
@@ -327,6 +353,16 @@ export const BEND_GROUPS: Group[] = [
         help: 'A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did. Needs Mix up to hear it.',
       },
       {
+        key: 'distMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Clipper out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
+      },
+      {
         key: 'distMix',
         label: 'Mix',
         role: 'mix',
@@ -448,6 +484,16 @@ export const BEND_GROUPS: Group[] = [
         help: 'In-loop low-pass. Low values pluck like a dead string; high values ring metallic.',
       },
       {
+        key: 'combMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Comb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
+      },
+      {
         key: 'combMix',
         label: 'Mix',
         role: 'mix',
@@ -504,6 +550,16 @@ export const BEND_GROUPS: Group[] = [
         step: 0.5,
         unit: 'dB',
         help: 'Gain into the filter — overdriving the input fights the resonance.',
+      },
+      {
+        key: 'filtMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Screech filter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
       },
       {
         key: 'filtMix',
@@ -611,6 +667,16 @@ export const BEND_GROUPS: Group[] = [
         help: 'Holds the current slice forever — the CD stuck on a note.',
       },
       {
+        key: 'glitchMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Glitch buffer out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
+      },
+      {
         key: 'glitchMix',
         label: 'Mix',
         role: 'mix',
@@ -656,6 +722,16 @@ export const BEND_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'Each lap shifts again, so partials climb (or fall) forever — the barber pole. Park it in a slot inside the global loop and the squeal can never settle on a pitch.',
+      },
+      {
+        key: 'shiftMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Freq shifter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
       },
       {
         key: 'shiftMix',
@@ -792,6 +868,16 @@ export const BEND_GROUPS: Group[] = [
         help: 'Stops the divider where it is, or on the hold voice, stops sampling and lets the cap leak.',
       },
       {
+        key: 'octMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Octave out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
+      },
+      {
         key: 'octMix',
         label: 'Mix',
         role: 'mix',
@@ -904,6 +990,16 @@ export const BEND_GROUPS: Group[] = [
         unit: '',
         choices: ['off', 'hold'],
         help: 'Holds the last decoded spectrum and scrambles its signs every frame, a drone made from whatever was playing.',
+      },
+      {
+        key: 'codecMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Codec out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
       },
       {
         key: 'codecMix',
@@ -1079,6 +1175,16 @@ export const BEND_GROUPS: Group[] = [
         unit: '',
         choices: ['off', 'hold'],
         help: 'Shuts the input and holds the tank at full decay with no damping, so the room keeps whatever it held. Refresh fail, the word length and the knives keep working on it.',
+      },
+      {
+        key: 'rackMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Rack verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
       },
       {
         key: 'rackMix',

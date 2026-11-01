@@ -33,6 +33,9 @@ export function SlotRack() {
   const slots = raw.split(',').map(Number)
   const mixRaw = useBoardValue(c => BENDS.map(b => c[b.mix]).join(','))
   const mixOf = mixRaw.split(',').map(Number)
+  const bypassRaw = useBoardValue(c =>
+    BENDS.map(b => (c[b.mute] > 0.5 ? 1 : 0)).join(''),
+  )
   // Which box is under the hand and which row it is over, so the rack shows
   // where a drop would land while the hand is still moving. Not on the board:
   // a drag that never finishes has to leave the chain exactly as it was.
@@ -79,6 +82,7 @@ export function SlotRack() {
       open: (dropped & (1 << step)) !== 0,
       step,
       mix: bend ? mixOf[id - 1]! : 0,
+      bypassed: bend !== undefined && bypassRaw[id - 1] === '1',
     }
   })
   const loose = BENDS.map((b, i) => ({ bend: b, id: i + 1 })).filter(
@@ -147,18 +151,21 @@ export function SlotRack() {
           // Where the board has this position right now, which is its own
           // place until the relay moves it.
           const moved = !off && row.step !== row.i
-          const quiet = off || row.open || row.dupe || row.mix === 0
+          const quiet =
+            off || row.open || row.dupe || row.bypassed || row.mix === 0
           const title = off
             ? `Position ${row.i + 1} is empty — nothing runs here.`
             : row.open
               ? `${row.bend!.group} — the joint under it is open, so it is out of the path altogether until the solder comes back.`
               : row.dupe
                 ? `${row.bend!.group} already sits earlier in the chain, so this position does nothing — a bend only runs at its first one.`
-                : row.mix === 0
-                  ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
-                  : moved
-                    ? `${row.bend!.group} is set to position ${row.i + 1}, and the board has re-soldered it to ${row.step + 1}. Re-solder is what moves it; the settings are still yours.`
-                    : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it, or take it with the arrow keys.`
+                : row.bypassed
+                  ? `${row.bend!.group} is bypassed, so the signal passes straight through it.`
+                  : row.mix === 0
+                    ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
+                    : moved
+                      ? `${row.bend!.group} is set to position ${row.i + 1}, and the board has re-soldered it to ${row.step + 1}. Re-solder is what moves it; the settings are still yours.`
+                      : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it, or take it with the arrow keys.`
           // What the row of dry/wet faders under the rack used to be for, and
           // what no control on the board can say. A stage can be in the path
           // and inaudible, or somewhere other than where you put it, and both
@@ -170,11 +177,13 @@ export function SlotRack() {
               ? 'dropped'
               : row.dupe
                 ? 'already above'
-                : row.mix === 0
-                  ? 'silent'
-                  : moved
-                    ? `now ${row.step + 1}`
-                    : ''
+                : row.bypassed
+                  ? 'bypassed'
+                  : row.mix === 0
+                    ? 'silent'
+                    : moved
+                      ? `now ${row.step + 1}`
+                      : ''
           return (
             <li
               key={row.i}

@@ -1,5 +1,12 @@
 import { takeOffBench } from './bench.ts'
-import { positionOf, sounds, stepOf, switchOff, switchOn } from './bendChain.ts'
+import {
+  bypassed,
+  positionOf,
+  sounds,
+  stepOf,
+  switchOff,
+  switchOn,
+} from './bendChain.ts'
 import { useBendStages } from './bendStages.ts'
 import { BEND_SLOT_KEYS } from './controls/index.ts'
 import { useBoardValue, useMeterValue } from './ControlsContext.ts'
@@ -113,7 +120,13 @@ function BendFace({
 }) {
   const face = FACE[stage]!
   const on = useBoardValue(c => sounds(c, stage))
-  const off = useBoardValue(c => positionOf(c, stage) === 0)
+  const why = useBoardValue(c =>
+    positionOf(c, stage) === 0
+      ? 'unslotted'
+      : bypassed(c, stage)
+        ? 'bypassed'
+        : 'dry',
+  )
   return (
     <StompFace
       stage={stage}
@@ -128,10 +141,12 @@ function BendFace({
           bypassed={!on}
           tip={
             on
-              ? `Press to take ${stage} out of the sound. Its mix drops to 0, and the next press brings it back to where it was.`
-              : off
+              ? `Press to take ${stage} out of the path. Its knobs stay where they are.`
+              : why === 'unslotted'
                 ? `${stage} is in no chain position. Press to slot it in.`
-                : `${stage} is silent with its mix at 0. Press to bring it back at the mix you left.`
+                : why === 'bypassed'
+                  ? `${stage} is bypassed. Press to switch it back on at the sound you left.`
+                  : `${stage} is silent with its mix at 0. Press to bring the mix up.`
           }
           onPress={() => (on ? switchOff(stage) : switchOn(stage))}
         />

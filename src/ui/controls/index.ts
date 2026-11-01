@@ -3,7 +3,8 @@ import {
   type ControlKey,
   type Controls,
 } from '../../controls.ts'
-import { BEND_GROUPS } from './bends.ts'
+import { PEDALS } from '../../pedals.ts'
+import { BEND_GROUPS, BENDS } from './bends.ts'
 import { FEEDBACK_GROUPS } from './feedback.ts'
 import { MASTER_GROUPS } from './master.ts'
 import { MIX_GROUPS } from './mix.ts'
@@ -113,12 +114,8 @@ export const HOLD_KEYS = new Set<ControlKey>([
   'fmMute',
   'pcmMute',
   'monoMute',
-  'stompMute',
-  'dlyMute',
-  'echoMute',
-  'revMute',
-  'ensMute',
-  'ampMute',
+  ...PEDALS.map(p => p.mute),
+  ...BENDS.map(b => b.mute),
   'bodyX',
   'bodyY',
 ])

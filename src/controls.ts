@@ -655,11 +655,13 @@ export const DEFAULT_CONTROLS = {
   ringTrack: 0,
   ringFrom: 0,
   ringMix: 0,
+  ringMute: 0,
 
   bits: 16,
   srHz: 48000,
   srJitter: 0,
   crushMix: 0,
+  crushMute: 0,
   crushAdc: 0,
   crushClock: 0,
   crushLadder: 0,
@@ -677,6 +679,7 @@ export const DEFAULT_CONTROLS = {
   distToneHz: 8000,
   subLevel: 0,
   distMix: 0,
+  distMute: 0,
   distSupply: 2,
   distDraw: 0,
   distPinGain: 20,
@@ -693,11 +696,13 @@ export const DEFAULT_CONTROLS = {
   filtArc: 0,
   filtWiper: 0,
   filtMix: 0,
+  filtMute: 0,
 
   combHz: 110,
   combFb: 0.7,
   combDampHz: 6000,
   combMix: 0,
+  combMute: 0,
 
   glitchProb: 0.3,
   glitchSliceMs: 120,
@@ -706,11 +711,13 @@ export const DEFAULT_CONTROLS = {
   glitchPitch: 0,
   glitchFreeze: 0,
   glitchMix: 0,
+  glitchMute: 0,
 
   shiftHz: 200,
   shiftDir: 0,
   shiftFb: 0,
   shiftMix: 0,
+  shiftMute: 0,
 
   octGain: 4,
   octTone: 1061,
@@ -725,6 +732,7 @@ export const DEFAULT_CONTROLS = {
   octRate: 3,
   octFreeze: 0,
   octMix: 0,
+  octMute: 0,
 
   codecRate: 32,
   codecFrame: 2,
@@ -737,6 +745,7 @@ export const DEFAULT_CONTROLS = {
   codecAlias: 0,
   codecScramble: 0,
   codecMix: 0,
+  codecMute: 0,
 
   rackDecay: 0.7,
   rackSize: 1,
@@ -754,6 +763,7 @@ export const DEFAULT_CONTROLS = {
   rackBusCut: 1,
   rackFreeze: 0,
   rackMix: 0,
+  rackMute: 0,
 
   stompCircuit: 0,
   stompDrive: 18,

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-601 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+611 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -819,7 +819,7 @@ Amplitude modulation by a carrier: sine, square, diode bridge or inharmonic
 bell.
 
 <details>
-<summary>5 controls</summary>
+<summary>6 controls</summary>
 
 | control       | range                                                                                                    | what it does                                                                                                                           |
 | ------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -827,6 +827,7 @@ bell.
 | Carrier shape | sine, square, diode, bell                                                                                | A square carrier chops the signal, which adds harsh AM-radio ghosts                                                                    |
 | Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64            | Solders the carrier to the note the toy is sounding                                                                                    |
 | Carrier from  | knob, toy, kit, glint, chaos osc, noise, sampler, keys, growler, toy step late, toy beat late, layercake | Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect |
+| Bypass        | on or bypassed                                                                                           | Takes Ring mod out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                  |
 | Mix           | off to full                                                                                              | Dry/wet, which on a ring modulator sets the depth of the modulation                                                                    |
 
 </details>
@@ -853,24 +854,25 @@ puts the fault on, and the rows under it show the controls it set:
   slams back
 
 <details>
-<summary>14 controls</summary>
+<summary>15 controls</summary>
 
-| control         | range                                                                        | what it does                                                                                                       |
-| --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Bits            | 1 to 16 bits                                                                 | Word length of the virtual DAC                                                                                     |
-| Rate            | 100 Hz to 48 kHz                                                             | Sample-and-hold rate                                                                                               |
-| Jitter          | off to full                                                                  | Re-rolls each hold length                                                                                          |
-| Mix             | off to full                                                                  | Dry/wet                                                                                                            |
-| Converter       | stock, SAR, μ-law, ADPCM, delta                                              | What turns the input into a code word                                                                              |
-| Sample clock    | crystal or toy RC                                                            | Its own crystal, or the toy’s RC oscillator, which runs off the toy’s rail                                         |
-| Logic gate      | off, XOR, AND, OR                                                            | A gate chip between the converter and the bus that combines each code word with another machine’s word, bit by bit |
-| Gate with       | the toy, the kit, glint, chaos osc, noise, sampler, keys, growler, layercake | The machine whose words go into the gate’s other input                                                             |
-| Ladder mismatch | off to full                                                                  | How far out the R-2R ladder’s resistors are                                                                        |
-| DAC reference   | fixed, the rail, the toy chip, the mic, the bus                              | What the DAC’s reference pin is wired to                                                                           |
-| Reference depth | off to full                                                                  | How much of the reference pin is that signal and how much the fixed voltage                                        |
-| Data line †     | 17 of them, off through D15                                                  | Which of the sixteen wires from the converter to the DAC the fault is on, D15 the top                              |
-| Data fault      | cut, to ground, to +V, bridged                                               | What happened to the wire                                                                                          |
-| Cut depth       | off to full                                                                  | How far through the trace the cut went                                                                             |
+| control         | range                                                                        | what it does                                                                                                         |
+| --------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Bits            | 1 to 16 bits                                                                 | Word length of the virtual DAC                                                                                       |
+| Rate            | 100 Hz to 48 kHz                                                             | Sample-and-hold rate                                                                                                 |
+| Jitter          | off to full                                                                  | Re-rolls each hold length                                                                                            |
+| Bypass          | on or bypassed                                                               | Takes Crusher out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix             | off to full                                                                  | Dry/wet                                                                                                              |
+| Converter       | stock, SAR, μ-law, ADPCM, delta                                              | What turns the input into a code word                                                                                |
+| Sample clock    | crystal or toy RC                                                            | Its own crystal, or the toy’s RC oscillator, which runs off the toy’s rail                                           |
+| Logic gate      | off, XOR, AND, OR                                                            | A gate chip between the converter and the bus that combines each code word with another machine’s word, bit by bit   |
+| Gate with       | the toy, the kit, glint, chaos osc, noise, sampler, keys, growler, layercake | The machine whose words go into the gate’s other input                                                               |
+| Ladder mismatch | off to full                                                                  | How far out the R-2R ladder’s resistors are                                                                          |
+| DAC reference   | fixed, the rail, the toy chip, the mic, the bus                              | What the DAC’s reference pin is wired to                                                                             |
+| Reference depth | off to full                                                                  | How much of the reference pin is that signal and how much the fixed voltage                                          |
+| Data line †     | 17 of them, off through D15                                                  | Which of the sixteen wires from the converter to the DAC the fault is on, D15 the top                                |
+| Data fault      | cut, to ground, to +V, bridged                                               | What happened to the wire                                                                                            |
+| Cut depth       | off to full                                                                  | How far through the trace the cut went                                                                               |
 
 </details>
 
@@ -899,7 +901,7 @@ fault on, and the rows under it show the controls it set:
   the tune comes out as clicks and rattle
 
 <details>
-<summary>13 controls</summary>
+<summary>14 controls</summary>
 
 | control        | range                                    | what it does                                                                                                                    |
 | -------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -908,6 +910,7 @@ fault on, and the rows under it show the controls it set:
 | Bias           | −1 to +1                                 | DC offset into the clipper                                                                                                      |
 | Tone           | 200 Hz to 20 kHz                         | Low-pass after the shaping — the tone knob on the pedal                                                                         |
 | Sub octave     | off to full                              | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
+| Bypass         | on or bypassed                           | Takes Clipper out of the path and leaves its knobs where you set them, so switching it back on brings the same sound            |
 | Mix            | off to full                              | Dry/wet                                                                                                                         |
 | Supply         | shared cells, second cells, bench supply | Which supply the toy’s LM386 runs off                                                                                           |
 | Draw           | off to full                              | How much current the amp pulls into its speaker, more when it clips                                                             |
@@ -924,14 +927,15 @@ fault on, and the rows under it show the controls it set:
 A tuned delay with feedback past unity — a pitch you can drive into oscillation.
 
 <details>
-<summary>4 controls</summary>
+<summary>5 controls</summary>
 
-| control  | range                 | what it does                                                      |
-| -------- | --------------------- | ----------------------------------------------------------------- |
-| Pitch    | 20 Hz to 4 kHz        | The comb’s resonant pitch — it plays like a string                |
-| Feedback | 0 to 2, normal 0 to 1 | Past 1.0 it self-oscillates, and the saturation limits the scream |
-| Damping  | 500 Hz to 15 kHz      | In-loop low-pass                                                  |
-| Mix      | off to full           | Dry/wet                                                           |
+| control  | range                 | what it does                                                                                                      |
+| -------- | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Pitch    | 20 Hz to 4 kHz        | The comb’s resonant pitch — it plays like a string                                                                |
+| Feedback | 0 to 2, normal 0 to 1 | Past 1.0 it self-oscillates, and the saturation limits the scream                                                 |
+| Damping  | 500 Hz to 15 kHz      | In-loop low-pass                                                                                                  |
+| Bypass   | on or bypassed        | Takes Comb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix      | off to full           | Dry/wet                                                                                                           |
 
 </details>
 
@@ -949,18 +953,19 @@ result:
 - **sputter**: Self-oscillating into a cap that keeps shorting
 
 <details>
-<summary>8 controls</summary>
+<summary>9 controls</summary>
 
-| control    | range                 | what it does                                                                           |
-| ---------- | --------------------- | -------------------------------------------------------------------------------------- |
-| Cutoff     | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1           |
-| Resonance  | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, and saturation limits the amplitude |
-| Mode       | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle              |
-| Drive      | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance                      |
-| Mix        | off to full           | Dry/wet                                                                                |
-| Popcorn †  | off to full           | A bad junction inside the filter                                                       |
-| Arcing cap | off to full           | The cap shorts when its swing gets too big                                             |
-| Dirty pot  | off to full           | The cutoff pot loses contact while it moves                                            |
+| control    | range                 | what it does                                                                                                                |
+| ---------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Cutoff     | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1                                                |
+| Resonance  | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, and saturation limits the amplitude                                      |
+| Mode       | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle                                                   |
+| Drive      | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance                                                           |
+| Bypass     | on or bypassed        | Takes Screech filter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix        | off to full           | Dry/wet                                                                                                                     |
+| Popcorn †  | off to full           | A bad junction inside the filter                                                                                            |
+| Arcing cap | off to full           | The cap shorts when its swing gets too big                                                                                  |
+| Dirty pot  | off to full           | The cutoff pot loses contact while it moves                                                                                 |
 
 </details>
 
@@ -970,17 +975,18 @@ Catches slices and repeats them, sometimes reversed, sometimes transposed,
 sometimes held.
 
 <details>
-<summary>7 controls</summary>
+<summary>8 controls</summary>
 
-| control | range                | what it does                                                              |
-| ------- | -------------------- | ------------------------------------------------------------------------- |
-| Chance  | off to full          | Probability that each slice boundary fires a glitch event                 |
-| Slice   | 10 ms to 1 s         | Slice length                                                              |
-| Repeats | 1× to 8×             | Maximum stutter count per event; each event picks a random count up to it |
-| Reverse | off to full          | Chance a stutter plays backwards                                          |
-| Pitch   | norm, down, up, rand | Replay stutters at pitch, an octave away, or a random pick each event     |
-| Freeze  | off or hold          | Holds the current slice forever — the CD stuck on a note                  |
-| Mix     | off to full          | Dry/wet                                                                   |
+| control | range                | what it does                                                                                                               |
+| ------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Chance  | off to full          | Probability that each slice boundary fires a glitch event                                                                  |
+| Slice   | 10 ms to 1 s         | Slice length                                                                                                               |
+| Repeats | 1× to 8×             | Maximum stutter count per event; each event picks a random count up to it                                                  |
+| Reverse | off to full          | Chance a stutter plays backwards                                                                                           |
+| Pitch   | norm, down, up, rand | Replay stutters at pitch, an octave away, or a random pick each event                                                      |
+| Freeze  | off or hold          | Holds the current slice forever — the CD stuck on a note                                                                   |
+| Bypass  | on or bypassed       | Takes Glitch buffer out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix     | off to full          | Dry/wet                                                                                                                    |
 
 </details>
 
@@ -991,14 +997,15 @@ ratio, so harmonic input comes out inharmonic. With feedback each lap shifts
 again and partials climb forever.
 
 <details>
-<summary>4 controls</summary>
+<summary>5 controls</summary>
 
-| control   | range                 | what it does                                                                                                   |
-| --------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Shift     | 0.1 Hz to 2 kHz       | Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic |
-| Direction | up or down            | Which sideband survives                                                                                        |
-| Feedback  | 0 to 2, normal 0 to 1 | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                   |
-| Mix       | off to full           | Dry/wet                                                                                                        |
+| control   | range                 | what it does                                                                                                              |
+| --------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Shift     | 0.1 Hz to 2 kHz       | Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic            |
+| Direction | up or down            | Which sideband survives                                                                                                   |
+| Feedback  | 0 to 2, normal 0 to 1 | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                              |
+| Bypass    | on or bypassed        | Takes Freq shifter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix       | off to full           | Dry/wet                                                                                                                   |
 
 </details>
 
@@ -1012,7 +1019,7 @@ recovery after each edge makes it fire on extra edges and drop others. Bounce
 swaps the octave and the sub on a clock, up to audio rate.
 
 <details>
-<summary>13 controls</summary>
+<summary>14 controls</summary>
 
 | control       | range             | what it does                                                                                                                                                                                           |
 | ------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -1028,6 +1035,7 @@ swaps the octave and the sub on a clock, up to audio rate.
 | Bounce clock  | free, note, step  | Free swaps at Rate, note on every new attack, and step on every sequencer step                                                                                                                         |
 | Rate          | 0.2 Hz to 1 kHz   | Changes per second on the free clock                                                                                                                                                                   |
 | Freeze        | off or on         | Stops the divider where it is, or on the hold voice, stops sampling and lets the cap leak                                                                                                              |
+| Bypass        | on or bypassed    | Takes Octave out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                                                                    |
 | Mix           | off to full       | Dry/wet                                                                                                                                                                                                |
 
 </details>
@@ -1042,7 +1050,7 @@ stutters when the supply sags, and fed back into itself the codec re-encodes its
 own artefacts until they ring.
 
 <details>
-<summary>11 controls</summary>
+<summary>12 controls</summary>
 
 | control      | range                            | what it does                                                                                                                                                  |
 | ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1056,6 +1064,7 @@ own artefacts until they ring.
 | Alias        | off to full                      | Leaves the time aliasing uncancelled, so every frame plays with a reversed copy of itself on top                                                              |
 | Scramble     | off to full                      | Chance per frame that the decoder files each band under another band, so the tune jumps between registers and the bass turns up in the treble                 |
 | Freeze       | off or hold                      | Holds the last decoded spectrum and scrambles its signs every frame, a drone made from whatever was playing                                                   |
+| Bypass       | on or bypassed                   | Takes Codec out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                            |
 | Mix          | off to full                      | Dry/wet                                                                                                                                                       |
 
 </details>
@@ -1070,7 +1079,7 @@ turns each tail into hash, and a fault on the address bus pulls audio from
 seconds ago into the room. Freeze holds the tank indefinitely.
 
 <details>
-<summary>16 controls</summary>
+<summary>17 controls</summary>
 
 | control        | range                          | what it does                                                                                                             |
 | -------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
@@ -1089,6 +1098,7 @@ seconds ago into the room. Freeze holds the tank indefinitely.
 | Data fault     | cut, to ground, to +V, bridged | What happened to the data wire                                                                                           |
 | Cut depth      | off to full                    | How far through the trace the cut went, on either wire                                                                   |
 | Freeze         | off or hold                    | Shuts the input and holds the tank at full decay with no damping, so the room keeps whatever it held                     |
+| Bypass         | on or bypassed                 | Takes Rack verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound   |
 | Mix            | off to full                    | Dry/wet                                                                                                                  |
 
 </details>
@@ -1113,7 +1123,7 @@ rectifies into a ringing transformer; _gate_ is misbiased to the edge of cutoff.
 | Battery | off to full                                  | How dead the 9V is                                                                                                 |
 | Level   | −24 to +12 dB                                | Makeup gain out of the pedal                                                                                       |
 | Bypass  | on or bypassed                               | Takes Gnash out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| Mix     | off to full                                  | Dry/wet — at zero the pedal is off the board                                                                       |
+| Mix     | off to full                                  | Dry/wet                                                                                                            |
 
 </details>
 
@@ -1230,7 +1240,7 @@ feedback around it.
 | Rate     | 0.05 to 12 Hz                                | How fast the clock sweeps                                                                                            |
 | Depth    | off to full                                  | How far the sweep pushes the clock either side of where Delay leaves it                                              |
 | Bypass   | on or bypassed                               | Takes Chorale out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| Mix      | off to full                                  | Dry/wet — at zero the pedal is off the board                                                                         |
+| Mix      | off to full                                  | Dry/wet                                                                                                              |
 | Delay    | 0.3 to 25 ms                                 | How long the line runs, which on a bucket brigade also sets how much top end survives it                             |
 | Feedback | 0 to 0.95                                    | How much of the line goes back into it, which turns a short delay into a flanger                                     |
 | Tone     | 800 Hz to 16 kHz                             | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken                      |
@@ -1278,7 +1288,7 @@ result:
 | Treble            | off to full                    | The treble pot, whose wiper is the output of the stack                                                               |
 | Master            | off to full                    | How hard the power stage is driven                                                                                   |
 | Bypass            | on or bypassed                 | Takes the amp out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| Mix               | off to full                    | Dry/wet — at zero the pedal is off the board                                                                         |
+| Mix               | off to full                    | Dry/wet                                                                                                              |
 | Presence          | off to full                    | Boosts the highs going into the power stage                                                                          |
 | Sag               | off to full                    | How far the supply falls under load                                                                                  |
 | Bias              | off to full                    | Where the output tubes idle                                                                                          |
