@@ -6,7 +6,6 @@ import { AddMenu } from './AddMenu.tsx'
 import { bench, INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
-import { useBendStages } from './bendStages.ts'
 import { onBoard } from './chain-map.ts'
 import {
   useBoardValue,
@@ -26,7 +25,6 @@ import { MicMenu } from './MicJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal } from './Pedals.tsx'
-import { usePedalStages } from './pedalStages.ts'
 import { levelOf } from './stageLevels.ts'
 import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
@@ -127,12 +125,10 @@ export function Instruments({
       ))
 
   const keyboards = faces(KEYBOARDS)
-  const staged = useStoreValue(bench).grid
+  const { grid: staged, pedals, bends } = useStoreValue(bench)
   const kit = staged ? [] : faces(KIT)
   const stagedKit = staged ? faces(KIT) : []
   const tapes = faces(TAPES)
-  const pedals = usePedalStages()
-  const bends = useBendStages()
 
   const bringUp = (stage: string) => {
     bring(stage)
