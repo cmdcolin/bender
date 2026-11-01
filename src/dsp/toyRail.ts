@@ -348,7 +348,10 @@ export class ToyRail {
       return
     }
     const trip = Math.max(this.parts.watchdog, DEAD_V)
-    if (this.stress > 0 && this.v < trip + 0.05 * this.heat + walk) {
+    if (
+      (this.stress > 0 || this.v < DEAD_V) &&
+      this.v < trip + 0.05 * this.heat + walk
+    ) {
       // Sometimes it doesn't reboot cleanly. CMOS on a collapsing rail can
       // latch instead: the die jams, holds whatever it was doing and keeps
       // drawing current, so one note screams down into the floor and the

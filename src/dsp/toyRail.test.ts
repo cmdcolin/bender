@@ -316,3 +316,19 @@ test('a wound-up watchdog resets the toy before the dive gets going', () => {
   expect(trips(DEAD_V, 0.3)).toBe(0)
   expect(trips(0.45, 0.3)).toBeGreaterThan(20)
 })
+
+test('a rail drained to zero by the kit trigger spikes reboots with no other fault on', () => {
+  const rail = new ToyRail(SR)
+  rail.setBoard(0)
+  let lowest = 1
+  for (let b = 0; b < SR / 128; b++) {
+    rail.spiking = rail.booting ? 0 : 0.05
+    rail.nextBlock()
+    for (let i = 0; i < 128; i++) {
+      rail.tick(0, 0, 0)
+      lowest = Math.min(lowest, rail.v)
+    }
+  }
+  expect(lowest).toBeLessThan(DEAD_V)
+  expect(rail.rebootCount).toBeGreaterThan(0)
+})
