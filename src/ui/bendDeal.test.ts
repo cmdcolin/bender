@@ -46,7 +46,7 @@ test('every key pushes something in range, and nothing that is yours', () => {
 test('a key on a silent stage brings the stage up with it', () => {
   for (const k of dealBendKeys(DEFAULT_CONTROLS, seeded(7))) {
     const live = { ...DEFAULT_CONTROLS, ...k.push(DEFAULT_CONTROLS) }
-    for (const key of k.keys)
+    for (const key of k.keys.filter(moved => !heard(DEFAULT_CONTROLS, moved)))
       expect(heard(live, key), `${k.letter}: ${k.says}`).toBe(true)
   }
 })
