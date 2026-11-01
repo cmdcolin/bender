@@ -3,10 +3,9 @@ import { isPedal, pedalNamed } from '../pedals.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, putOnBench, takeOffBench } from './bench.ts'
 import { switchOn } from './bendChain.ts'
-import { useControlValue, useStoreValue } from './ControlsContext.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { add } from './fitted.ts'
 import styles from './Pedals.module.css'
-import { usePedalStages } from './pedalStages.ts'
 import { Footswitch, StompFace, type Face } from './StompFace.tsx'
 import { Tip } from './Tip.tsx'
 
@@ -102,8 +101,7 @@ const BY_SOUND: { section: string; kinds: Record<string, string> }[] = [
   },
 ]
 
-function bringUpPedal(stage: string) {
-  putOnBench('pedals', stage)
+function switchPedalOn(stage: string) {
   const { mix, mute } = pedalNamed(stage)!
   const board = engine.controls.get()
   if (board[mix] === 0 || board[mute] > 0.5) {
@@ -114,6 +112,11 @@ function bringUpPedal(stage: string) {
       [mute]: 0,
     })
   }
+}
+
+function bringUpPedal(stage: string) {
+  putOnBench('pedals', stage)
+  switchPedalOn(stage)
 }
 
 function bringUpSocketed(stage: string) {
@@ -141,64 +144,46 @@ export function AddPedal() {
   )
 }
 
-function PedalFace({
+export function PedalFace({
   stage,
   seconds,
   onOpen,
-  onClose,
 }: {
   stage: string
   seconds: number
   onOpen: (stage: string) => void
-  onClose: () => void
 }) {
   const face = FACE[stage]!
-  const { mute } = pedalNamed(stage)!
-  const bypassed = useControlValue(mute) > 0.5
+  const { mute, mix } = pedalNamed(stage)!
+  const why = useBoardValue(c =>
+    c[mute] > 0.5 ? 'bypassed' : c[mix] === 0 ? 'dry' : 'on',
+  )
   return (
     <StompFace
       stage={stage}
       face={face}
       seconds={seconds}
       onOpen={onOpen}
-      onClose={onClose}
+      onClose={() => takeOffBench('pedals', stage)}
       footswitch={
         <Footswitch
           stage={stage}
-          bypassed={bypassed}
+          bypassed={why !== 'on'}
           tip={
-            bypassed
+            why === 'bypassed'
               ? `${stage} is bypassed. Press to switch it back on at the sound you left.`
-              : `Press to take ${stage} out of the path. Its knobs stay where they are.`
+              : why === 'dry'
+                ? `${stage} is silent with its mix at 0. Press to bring the mix up.`
+                : `Press to take ${stage} out of the path. Its knobs stay where they are.`
           }
           onPress={() => {
-            engine.armStep()
-            engine.set(mute, bypassed ? 0 : 1)
+            if (why === 'on') {
+              engine.armStep()
+              engine.set(mute, 1)
+            } else switchPedalOn(stage)
           }}
         />
       }
     />
-  )
-}
-
-export function PedalShelf({
-  seconds,
-  onOpen,
-}: {
-  seconds: number
-  onOpen: (stage: string) => void
-}) {
-  return (
-    <>
-      {usePedalStages().map(stage => (
-        <PedalFace
-          key={stage}
-          stage={stage}
-          seconds={seconds}
-          onOpen={onOpen}
-          onClose={() => takeOffBench('pedals', stage)}
-        />
-      ))}
-    </>
   )
 }

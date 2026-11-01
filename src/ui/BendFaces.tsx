@@ -7,7 +7,6 @@ import {
   switchOff,
   switchOn,
 } from './bendChain.ts'
-import { useBendStages } from './bendStages.ts'
 import { BEND_SLOT_KEYS } from './controls/index.ts'
 import { useBoardValue, useMeterValue } from './ControlsContext.ts'
 import styles from './Pedals.module.css'
@@ -109,7 +108,7 @@ function Position({ stage }: { stage: string }) {
   )
 }
 
-function BendFace({
+export function BendFace({
   stage,
   seconds,
   onOpen,
@@ -152,21 +151,5 @@ function BendFace({
         />
       }
     />
-  )
-}
-
-export function BendShelf({
-  seconds,
-  onOpen,
-}: {
-  seconds: number
-  onOpen: (stage: string) => void
-}) {
-  return (
-    <>
-      {useBendStages().map(stage => (
-        <BendFace key={stage} stage={stage} seconds={seconds} onOpen={onOpen} />
-      ))}
-    </>
   )
 }

@@ -5,7 +5,6 @@ import { engine } from '../engine/engine.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
-import { BendShelf } from './BendFaces.tsx'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
 import { useBendStages } from './bendStages.ts'
 import { onBoard } from './chain-map.ts'
@@ -15,6 +14,7 @@ import {
   useStoreValue,
 } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
+import { EffectShelf } from './EffectShelf.tsx'
 import { Faceplate } from './Faceplate.tsx'
 import { add } from './fitted.ts'
 import { FmKeys } from './FmKeys.tsx'
@@ -25,7 +25,7 @@ import { Keys } from './Keys.tsx'
 import { MicMenu } from './MicJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
-import { AddPedal, PedalShelf } from './Pedals.tsx'
+import { AddPedal } from './Pedals.tsx'
 import { usePedalStages } from './pedalStages.ts'
 import { levelOf } from './stageLevels.ts'
 import { dragging } from './tapeDrop.ts'
@@ -178,11 +178,12 @@ export function Instruments({
               </div>
             )}
             {(kit.length > 0 || pedals.length > 0 || bends.length > 0) && (
-              <div className={styles.rack}>
-                {kit}
-                <BendShelf seconds={seconds} onOpen={onOpen} />
-                <PedalShelf seconds={seconds} onOpen={onOpen} />
-              </div>
+              <EffectShelf
+                className={styles.rack}
+                before={kit}
+                seconds={seconds}
+                onOpen={onOpen}
+              />
             )}
           </div>
         )}

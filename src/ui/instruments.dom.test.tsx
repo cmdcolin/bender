@@ -411,7 +411,7 @@ test('bend faces sit in chain order', () => {
   expect(names).toEqual(['octave', 'comb'])
 })
 
-test('a pedal face bypasses its pedal, opens its panel and puts itself away', () => {
+test('a pedal face brings a dry pedal up, bypasses it, opens its panel and puts itself away', () => {
   const opened: string[] = []
   bench.set({
     instruments: [],
@@ -421,9 +421,14 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
     roll: false,
     grid: false,
   })
+  engine.set('revMix', 0)
   render(<Instruments seconds={0} onOpen={s => opened.push(s)} />)
   expect(screen.getAllByRole('slider').length).toBeGreaterThan(2)
   const bypass = screen.getByRole('button', { name: 'bypass Boing' })
+  expect(bypass.getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(bypass)
+  expect(engine.controls.get().revMix).toBe(0.5)
+  expect(bypass.getAttribute('aria-pressed')).toBe('false')
   fireEvent.click(bypass)
   expect(engine.controls.get().revMute).toBe(1)
   expect(bypass.getAttribute('aria-pressed')).toBe('true')
@@ -605,4 +610,29 @@ test('the kit’s miniature pattern shows the grid it opens', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(screen.getByRole('button', { name: 'edit the drum pattern' }))
   expect(bench.get().grid).toBe(true)
+})
+
+test('the effect faces sit in signal order with a jack at each end, and loose bends come after', () => {
+  chainOf(0, 4, 0, 2)
+  engine.set('pedalOrder', 0)
+  bench.set({
+    ...bench.get(),
+    bends: ['Ring mod', 'Crusher', 'Comb'],
+    pedals: ['Ember', 'Gnash'],
+  })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  expect(
+    [...document.querySelectorAll('[data-face]')].map(e =>
+      e.getAttribute('data-face'),
+    ),
+  ).toEqual(['Comb', 'Crusher', 'Gnash', 'Ember', 'Ring mod'])
+  expect(
+    screen.getByRole('button', { name: /^Gnash in\. In from Crusher\.$/ }),
+  ).toBeTruthy()
+  expect(
+    screen.getByRole('button', {
+      name: /^Gnash out\. Out to Ember, through Wraith, Ricochet, Boing, Chorale\.$/,
+    }),
+  ).toBeTruthy()
+  expect(screen.queryByRole('button', { name: /^Ring mod in/ })).toBeNull()
 })

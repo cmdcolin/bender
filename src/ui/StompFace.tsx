@@ -102,6 +102,7 @@ export function StompFace({
       className={`${styles.pedal} ${ring}`}
       style={cssVars({ '--pedal': face.colour })}
       role="group"
+      data-face={stage}
       aria-label={stage.toLowerCase()}
     >
       <div className={styles.head}>

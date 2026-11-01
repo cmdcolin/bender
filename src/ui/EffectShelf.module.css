@@ -1,0 +1,55 @@
+.cabled {
+  position: relative;
+}
+
+.cabled[data-cabled='true'] {
+  padding-top: 16px;
+}
+
+.cabled[data-cabled='true'] > [data-face] {
+  margin-bottom: 30px;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  z-index: 2;
+}
+
+.cords {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.plug {
+  fill: #2a2c31;
+  stroke: #0e0f11;
+  stroke-width: 0.8;
+}
+
+.jack {
+  position: absolute;
+  display: flex;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.jack:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
