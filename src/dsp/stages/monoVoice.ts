@@ -154,11 +154,13 @@ const SLIDE_S = 0.06
 const FLOOR = 1e-4
 // The nonlinear gains in the ladder detune its resonance flat by about this much.
 const TUNE = 1.02
+const LOOP_HP_HZ = 20
 
 // tanh(x)/x as a rational, for the ladder's per-stage gains.
 function tanhXdX(x: number): number {
   const a = x * x
-  return ((a + 105) * a + 945) / ((15 * a + 420) * a + 945)
+  const t = ((a + 105) * a + 945) / ((15 * a + 420) * a + 945)
+  return t * t * a > 1 ? 1 / Math.sqrt(a) : t
 }
 
 // Padé [5/4], within a ten-thousandth of tan up to 0.45 of the rate.
@@ -405,6 +407,7 @@ export class MonoVoice {
   private cv = 48
   private target = 48
   private last = 0
+  private loopLow = 0
   private sagEnv = 0
   private v1 = 0
   private v2 = 0
@@ -549,6 +552,7 @@ export class MonoVoice {
     const linFm = p.linFm
     const hiss = p.noise * 0.3 + FLOOR
     const loop = p.loop * 2
+    const loopHpK = 1 - Math.exp((-2 * Math.PI * LOOP_HP_HZ) / osr)
     const extGain = p.ext
     const modAmt = p.modAmt
     const modMix = p.modMix
@@ -639,12 +643,15 @@ export class MonoVoice {
           lvl1 * v1 +
           lvl2 * v2 +
           hiss * this.noise() +
-          loop * this.last +
+          loop * (this.last - this.loopLow) +
           e
         ladder.y = mix * inGain
         ladder.f = f
         ladder.process()
         const v = ladder.y * amp
+        this.loopLow = flushDenormal(
+          this.loopLow + loopHpK * (this.last - this.loopLow),
+        )
         this.last = v
         this.sagEnv = flushDenormal(
           this.sagEnv + sagK * (Math.abs(v) - this.sagEnv),
@@ -670,6 +677,7 @@ export class MonoVoice {
     this.down.reset()
     this.dc.reset()
     this.last = 0
+    this.loopLow = 0
     this.pinkish = 0
     this.sagEnv = 0
     this.v1 = 0

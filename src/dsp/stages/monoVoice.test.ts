@@ -187,6 +187,22 @@ describe('MonoVoice', () => {
     }
   })
 
+  it('swings about zero with feedback at 1 and drive at 4', () => {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, { loop: 1, drive: 4, emphasis: 1.1, cutoff: 800 })
+    v.noteOn(57)
+    const x = new Float32Array(3 * SR)
+    v.render(x, 0, x.length)
+    const tail = x.subarray(2 * SR)
+    const mean = tail.reduce((s, y) => s + y, 0) / tail.length
+    let crossings = 0
+    for (let i = 1; i < tail.length; i++)
+      if (tail[i - 1]! < 0 !== tail[i]! < 0) crossings++
+    expect(Math.abs(mean)).toBeLessThan(0.1)
+    expect(crossings).toBeGreaterThan(20)
+    expect(Math.abs(Reflect.get(v, 'last'))).toBeLessThan(10)
+  })
+
   it('plays again after panic clears a NaN out of its oscillator and sag state', () => {
     const v = new MonoVoice(SR)
     Object.assign(v.patch, OPEN)
