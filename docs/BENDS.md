@@ -611,8 +611,10 @@ Four bends sit inside the die, between the counter and the memory.
 - **Write strobe:** the memory's write strobe fires on the DAC clock, so the mix
   word lands back at the address each voice just read.
   - The strobe writes a lone voice back unchanged.
-  - With a chord down, it writes each voice into the others' waves, and the sum
-    clips, so the loops thicken toward squares lap by lap.
+  - With a chord down, it writes the sum of the voices into each wave. The
+    memory takes the low eight bits of the sum, so a loud sum wraps round past
+    zero and the chord turns into noise lap by lap: over about twenty seconds at
+    0.05, two seconds at 0.2, and at once at the top.
   - A data line fault burns into memory and compounds each lap.
   - The chip reads clean memory again when the knob returns to zero or the rail
     reboots.

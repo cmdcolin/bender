@@ -2495,7 +2495,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Bridges the memory’s write strobe to the DAC clock, so the mix word ahead of the envelopes lands back in memory at the address a voice just read. Each lap of the loop plays what the last lap wrote. The strobe writes a lone voice back unchanged. With a chord down it writes each voice into the others’ waves and the sum clips, so the loops thicken toward squares, and a data line fault burns into every word it passes. The voice is shadowed into RAM while the knob is up, and the chip reads clean memory again when it comes down to zero or the rail reboots.',
+        help: 'Bridges the memory’s write strobe to the DAC clock, so the mix word ahead of the envelopes lands back in memory at the address a voice just read. Each lap of the loop plays what the last lap wrote. The strobe writes a lone voice back unchanged. With a chord down it writes the sum of the voices into each wave. The memory takes the low eight bits of the sum, so a loud sum wraps round past zero and the chord turns into noise: over about twenty seconds at 0.05, two seconds at 0.2, and at once at the top. A data line fault burns into every word it passes. The voice is shadowed into RAM while the knob is up, and the chip reads clean memory again when it comes down to zero or the rail reboots.',
       },
       {
         key: 'pcmSignDir',

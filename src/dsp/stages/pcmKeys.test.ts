@@ -361,6 +361,25 @@ test('the write strobe rewrites a chord, and clean memory comes back at zero', (
   ).toBeLessThan(0.01)
 })
 
+test('the write strobe at full keeps a held chord sounding', () => {
+  const { out } = play(
+    { ...ALONE, pcmChord: 1, pcmEnv: ORGAN, pcmWrite: 1 },
+    8,
+    b => b.pcmKeys.noteOn(12),
+  )
+  const win = 0.05 * SR
+  let quiet = 0
+  for (let at = 2 * SR; at + win <= out.length; at += win)
+    if (rms(out.subarray(at, at + win)) < 0.01) quiet++
+  expect(quiet).toBe(0)
+})
+
+test('the write strobe writes a lone voice back unchanged', () => {
+  const plain = tail(held({}, 12, 1.5), 0.6)
+  const written = tail(held({ pcmWrite: 1 }, 12, 1.5), 0.6)
+  expect(differs(plain, written)).toBeLessThan(0.01)
+})
+
 test('the sign bit on the up/down pin rocks a voice back and forth', () => {
   const plain = tail(held({}, 12, 0.6), 0.3)
   const rocked = tail(held({ pcmSignDir: 1 }, 12, 0.6), 0.3)
