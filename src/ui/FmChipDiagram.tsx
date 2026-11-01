@@ -43,6 +43,9 @@ const DIE = [
   'fmAlloc',
   'fmColdBoot',
   'fmAdder',
+  'fmRot',
+  'fmHeat',
+  'fmRing',
 ] as const
 
 const KEYS = [
@@ -160,7 +163,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       TOP + ROW * 2,
       span,
       DIE,
-      'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot and the log adder.',
+      'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot, the log adder, register rot, heat and the operator ring.',
     ),
   ]
   useOpensOnAim(pick, boxes)

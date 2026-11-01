@@ -30,12 +30,15 @@ const KEYS = [
   'fmAlloc',
   'fmColdBoot',
   'fmAdder',
+  'fmRot',
+  'fmHeat',
+  'fmRing',
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
   allocator: ['fmAlloc'],
-  registers: ['fmColdBoot'],
-  voices: ['fmAdder'],
+  registers: ['fmColdBoot', 'fmRot', 'fmHeat'],
+  voices: ['fmAdder', 'fmRing'],
   DAC: ['fmDacSlot', 'fmDacSlip'],
 }
 
@@ -73,6 +76,8 @@ export function FmDieDiagram() {
   const slip = r.value('fmDacSlip')
   const boot = read('fmColdBoot')
   const adder = read('fmAdder')
+  const rotting = r.value('fmRot') > 0 || r.value('fmHeat') > 0
+  const ringing = r.value('fmRing') > 0
 
   const frameW = boxWidth('voice 4') + 16
   const widths = [
@@ -107,21 +112,22 @@ export function FmDieDiagram() {
             <PickPart opens="voices" pick={pick}>
               <title>
                 voices — Four channels of two operators each. The log adder sets
-                the arithmetic every operator uses.
+                the arithmetic every operator uses. The operator ring feeds each
+                carrier into the next modulator.
               </title>
               <Plate
                 x={frameX}
                 y={TOP}
                 w={frameW}
                 h={HEAD + STACK + FOOT}
-                touched={adder > 0}
+                touched={adder > 0 || ringing}
                 selected={pick.selected === 'voices'}
               />
               <text
                 x={frameX + frameW / 2}
                 y={TOP + 11}
                 textAnchor="middle"
-                className={adder ? diagram.nameOn : diagram.name}
+                className={adder || ringing ? diagram.nameOn : diagram.name}
               >
                 voices
               </text>
@@ -192,8 +198,8 @@ export function FmDieDiagram() {
             />
             <Chip
               box={regsBox}
-              lit={boot > 0}
-              help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
+              lit={boot > 0 || rotting}
+              help="The register file the driver writes. At power-on it holds clean zeros, or random bytes. Rot and heat flip its bits."
               pick={pick}
               keys={OPENS.registers}
             />

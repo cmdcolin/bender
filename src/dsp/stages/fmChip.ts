@@ -286,6 +286,24 @@ const BOOT_SEED = 0x3b
 /** Which strobe pulses come out too narrow, which is a race and not a pattern. */
 const STROBE_SEED = 0xa3
 
+const FAULT_SEED = 0x7a
+const LIVE_REGS = Uint8Array.from([
+  0, 1, 2, 3, 4, 5, 6, 7, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x20, 0x21, 0x22,
+  0x23, 0x30, 0x31, 0x32, 0x33,
+])
+const ROT_FLIPS_PER_SEC = 1000
+const ROT_HOLD_SECS = 1.5
+const RING_CYCLES = 0.5
+const HEAT_PER_SEC = 0.12
+const HEAT_IDLE = 0.5
+const HEAT_ROT = 0.3
+const COOL_SECS = 0.5
+const COLD = 1e-4
+const TRIP_LOW = 0.85
+const TRIP_SPAN = 0.3
+const RESTART_LOW = 0.05
+const RESTART_SPAN = 0.25
+
 const IDLE = 0
 const ATTACK = 1
 const DECAY = 2
@@ -546,6 +564,15 @@ export class FmChip implements Stage {
   private toyHeld = 0
   private micHeld = 0
 
+  private now = 0
+  private writtenAt = new Float64Array(N_REGS)
+  private faultRng = mulberry32(FAULT_SEED)
+  private ringLatch = 0
+  private temp = 0
+  private tripped = false
+  private tripAt = TRIP_LOW + TRIP_SPAN / 2
+  private restartAt = RESTART_LOW
+
   private readonly sr: number
   private readonly power: SupplyTap
 
@@ -610,7 +637,11 @@ export class FmChip implements Stage {
     const reg = this.addrLatch.latch(a, this.strobe) % N_REGS
     const before = this.regs[reg]!
     this.regs[reg] = d & 0xff
+    this.writtenAt[reg] = this.now
+    this.landed(reg, before)
+  }
 
+  private landed(reg: number, before: number) {
     // The chip watches its own key bits, and an edge on one is the only thing
     // that ever starts or ends a note. Which is the whole bend in one line: a
     // wire that cannot change is a wire the chip never sees change. The
@@ -622,13 +653,13 @@ export class FmChip implements Stage {
     // that cannot fall is a drum that never lifts, exactly as it is a note that
     // never ends one register up.
     if (reg === REG.rhythm) {
-      this.kitKeys(before, this.regs[reg])
+      this.kitKeys(before, this.regs[reg]!)
       return
     }
     const ch = reg - REG.keyBlock
     if (ch < 0 || ch >= N_CH) return
     const was = (before & KEY_ON) !== 0
-    const now = (this.regs[reg] & KEY_ON) !== 0
+    const now = (this.regs[reg]! & KEY_ON) !== 0
     if (now && !was) this.attack(ch)
     else if (was && !now) this.release(ch)
   }
@@ -1256,6 +1287,40 @@ export class FmChip implements Stage {
     }
   }
 
+  private rotStep(rate: number) {
+    const r = LIVE_REGS[(this.faultRng() * LIVE_REGS.length) | 0]!
+    const age = (this.now - this.writtenAt[r]!) / this.sr
+    const chance =
+      ((rate * ROT_FLIPS_PER_SEC * LIVE_REGS.length) / this.sr) *
+      (1 - Math.exp(-age / ROT_HOLD_SECS))
+    if (this.faultRng() < chance) {
+      const before = this.regs[r]!
+      this.regs[r] = before ^ (1 << ((this.faultRng() * 8) | 0))
+      this.landed(r, before)
+    }
+  }
+
+  private stepHeat(heat: number) {
+    if (this.tripped) {
+      this.temp -= this.temp / (COOL_SECS * this.sr)
+      if (this.temp < this.restartAt) {
+        this.tripped = false
+        this.powerUp()
+      }
+    } else if (heat <= 0) {
+      this.temp -= this.temp / (COOL_SECS * this.sr)
+      if (this.temp < COLD) this.temp = 0
+    } else {
+      this.temp +=
+        (heat * HEAT_PER_SEC * (HEAT_IDLE + Math.abs(this.held))) / this.sr
+      if (this.temp > this.tripAt) {
+        this.tripped = true
+        this.tripAt = TRIP_LOW + this.faultRng() * TRIP_SPAN
+        this.restartAt = RESTART_LOW + this.faultRng() * RESTART_SPAN
+      }
+    }
+  }
+
   private stepEnv(op: Op, r: Rates) {
     switch (op.stage) {
       case ATTACK:
@@ -1370,6 +1435,12 @@ export class FmChip implements Stage {
     const toy = ctx.toy
     const micOnBus = Math.round(p[IDX.micPatch]!) === MIC.glintBus
     const modSlip = bay.read(DEST.fmDacSlip)
+    const baseRot = p[IDX.fmRot]!
+    const modRot = bay.read(DEST.fmRot)
+    const baseHeat = p[IDX.fmHeat]!
+    const modHeat = bay.read(DEST.fmHeat)
+    const baseRing = p[IDX.fmRing]!
+    const modRing = bay.read(DEST.fmRing)
     this.blob = baseBlob
     const rail = this.power.pick(p[IDX.fmSupply]!)
     const railAmp = rail.ampFactor
@@ -1587,6 +1658,17 @@ export class FmChip implements Stage {
       const wideOpen = (test & TEST.envMax) !== 0
       const raced = (test & TEST.envRace) !== 0
 
+      this.now++
+      const rot = modRot ? clamp01(baseRot + modRot[i]!) : baseRot
+      const heat = modHeat ? clamp01(baseHeat + modHeat[i]!) : baseHeat
+      const ring = modRing ? clamp01(baseRing + modRing[i]!) : baseRing
+      if (heat > 0 || this.temp > 0) this.stepHeat(heat)
+      const warm = this.temp * this.temp
+      const hot = warm * warm
+      const rotRate = rot * rot * rot * rot + hot * hot * HEAT_ROT
+      if (rotRate > 0) this.rotStep(rotRate)
+      const ringIn = ring * RING_CYCLES
+
       let sum = 0
       const pitch = rail.pitchFactor * xtal
       const slip = modSlip ? clamp01(baseSlip + modSlip[i]!) : baseSlip
@@ -1639,7 +1721,7 @@ export class FmChip implements Stage {
         c.mod.phase =
           (c.mod.phase + inc * mod.mult * (mod.vib ? this.vibFactor : 1)) % 1
         const self = (c.mod.fb1 + c.mod.fb2) * mod.fb * fbBoost
-        this.wavePhase = c.mod.phase + self
+        this.wavePhase = c.mod.phase + self + ringIn * this.ringLatch
         this.wave(mod.half)
         const ms = this.waveOut
         const m = this.adderMask
@@ -1658,6 +1740,7 @@ export class FmChip implements Stage {
         const v = this.adderMask
           ? this.logMul(cs, carEnv * this.volume(n))
           : cs * carEnv * this.volume(n)
+        if (ringIn > 0) this.ringLatch = cs * carEnv
         sum += v
         if (slotted) this.slotOut[n] = v
       }
@@ -1672,7 +1755,7 @@ export class FmChip implements Stage {
         const word = (softclip(sum * drive) / drive) * makeup
         this.held = test & TEST.dacSign ? Math.abs(word) : word
       }
-      const out = this.held * railAmp * level * 0.3
+      const out = this.tripped ? 0 : this.held * railAmp * level * 0.3
       load += Math.abs(out)
       io.l[i]! += out
       io.r[i]! += out
@@ -1736,6 +1819,10 @@ export class FmChip implements Stage {
     return this.regs[REG.test]!
   }
 
+  thermalTrip() {
+    return this.tripped
+  }
+
   panic() {
     this.queued.length = 0
     this.heldEffect = -1
@@ -1785,6 +1872,8 @@ export class FmChip implements Stage {
     this.sentVoice = -1
     this.sent.bright = -1
     this.laneBright = -1
+    this.writtenAt.fill(this.now)
+    this.ringLatch = 0
     if (!this.cold) return
     for (let r = 0; r < N_REGS; r++)
       this.regs[r] = Math.floor(this.bootRng() * 256)

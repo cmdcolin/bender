@@ -1141,3 +1141,110 @@ test('the toy on the data bus rewrites the chip as the toy plays', () => {
     spectrum(clean, SR).flatness * 3,
   )
 })
+
+const sakuraStem = (o: Partial<Controls>, seconds: number) =>
+  renderStems({ ...FM_ONLY, chipTune: romIndex('sakura'), ...o }, seconds)
+    .stems[FM_TAP]!
+
+const peak = (x: Float32Array) =>
+  x.reduce((m, v) => Math.max(m, Math.abs(v)), 0)
+
+test.each([
+  ['fmRot', 4],
+  ['fmHeat', 12],
+  ['fmRing', 4],
+] as const)(
+  '%s at full stays bounded and changes the sound over %d s',
+  (key, seconds) => {
+    const clean = sakuraStem({}, seconds)
+    const bent = sakuraStem({ [key]: 1 }, seconds)
+    expect(peak(bent)).toBeLessThanOrEqual(peak(clean) * 1.5)
+    expect(deviation(bent, clean)).toBeGreaterThan(0.5)
+  },
+)
+
+test('register rot spreads the centroid from second to second', () => {
+  const spread = (x: Float32Array) => {
+    const c = Array.from({ length: 6 }, (_, s) =>
+      Math.log2(spectrum(x.subarray(s * SR, (s + 1) * SR), SR, 2048).centroid),
+    )
+    return Math.max(...c) - Math.min(...c)
+  }
+  expect(spread(sakuraStem({ fmRot: 0.5 }, 6))).toBeGreaterThan(
+    3 * spread(sakuraStem({}, 6)),
+  )
+})
+
+test('a patch write clears the rot in the patch registers', () => {
+  const regsAt = (fmRot: number) => {
+    const taken: Uint8Array[] = []
+    let chip: BuiltChain['fmChip'] | undefined
+    renderBender(
+      { ...FM_ONLY, fmRot },
+      3.1,
+      b => {
+        chip = b.fmChip
+      },
+      undefined,
+      (_, secs, p) => {
+        if (secs >= 3 && taken.length < 2 && chip) {
+          taken.push(chip.patchRegs())
+          p[IDX.fmVoice] = 2
+        }
+      },
+    )
+    return { before: taken[0], after: taken[1] }
+  }
+  const clean = regsAt(0)
+  const rotted = regsAt(1)
+  expect(rotted.before).not.toEqual(clean.before)
+  expect(rotted.after).toEqual(clean.after)
+})
+
+test('heat trips the chip into silence and it starts again', () => {
+  const x = sakuraStem({ fmHeat: 1 }, 30)
+  const win = 0.05 * SR
+  const gaps: number[] = []
+  let run = 0
+  for (let at = 0; at + win <= x.length; at += win) {
+    if (rms(x.subarray(at, at + win)) < 1e-6) run++
+    else {
+      if (run > 0) gaps.push((run * win) / SR)
+      run = 0
+    }
+  }
+  const trips = gaps.filter(g => g > 0.3)
+  expect(trips.length).toBeGreaterThanOrEqual(2)
+  expect(Math.max(...trips)).toBeLessThan(2)
+  expect(rms(x.subarray(x.length - 5 * SR))).toBeGreaterThan(0.01)
+})
+
+test('heat at 0.2 trips later than heat at the top', () => {
+  const firstTrip = (fmHeat: number, seconds: number) => {
+    let chip: BuiltChain['fmChip'] | undefined
+    let at = -1
+    renderBender(
+      { ...FM_ONLY, fmHeat },
+      seconds,
+      b => {
+        chip = b.fmChip
+      },
+      undefined,
+      (_, secs) => {
+        if (at < 0 && chip?.thermalTrip()) at = secs
+      },
+    )
+    return at
+  }
+  const top = firstTrip(1, 20)
+  const low = firstTrip(0.2, 120)
+  expect(top).toBeGreaterThan(0)
+  expect(low).toBeGreaterThan(3 * top)
+})
+
+test('the operator ring turns the tune into broadband noise', () => {
+  const stem = (fmRing: number) =>
+    renderStems({ ...FM_ONLY, fmRing }, 3).stems[FM_TAP]!
+  expect(spectrum(stem(1), SR).flatness).toBeGreaterThan(0.5)
+  expect(spectrum(stem(0), SR).flatness).toBeLessThan(0.05)
+})

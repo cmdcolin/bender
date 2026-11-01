@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-617 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+620 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 151 destinations, among
+- **A patch bay that modulates itself.** Four wires, 154 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 66 controls are shy, mostly the ones that act on the
+names it still sets it. 69 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -397,7 +397,7 @@ puts the fault on, and the rows under it show the controls it set:
   digital buzz at the pitch it always had
 
 <details>
-<summary>42 controls</summary>
+<summary>45 controls</summary>
 
 | control                        | range                                                                                    | what it does                                                                                                         |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -442,6 +442,9 @@ puts the fault on, and the rows under it show the controls it set:
 | Allocator                      | free, stuck on 1, stuck on 2, stuck on 3, stuck on 4                                     | The driver’s note allocator, stuck handing every note to one channel                                                 |
 | Cold boot †                    | clean or garbage                                                                         | What the register file holds at power-on                                                                             |
 | Log adder †                    | linear, 11 bits, 10 bits, 9 bits, 8 bits, 7 bits                                         | Linear multiplies, which the board does as built                                                                     |
+| Register rot †                 | off to full                                                                              | The register file’s cells leak                                                                                       |
+| Heat †                         | off to full                                                                              | Lifts the heat sink off the die                                                                                      |
+| Operator ring †                | off to full                                                                              | The latch between operator slots stops clearing                                                                      |
 | Toy on bus                     | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders Plinky’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire                    |
 
 </details>
@@ -1331,7 +1334,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 151 of them, filt cut through toy crash                                                                                | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 154 of them, filt cut through FM operator ring                                                                         | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

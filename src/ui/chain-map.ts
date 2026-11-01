@@ -183,6 +183,9 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   drumRush: 'Clatter',
   chipPump: 'Plinky',
   chipCrash: 'Plinky',
+  fmRot: 'Glint',
+  fmHeat: 'Glint',
+  fmRing: 'Glint',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

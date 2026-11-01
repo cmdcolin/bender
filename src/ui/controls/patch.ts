@@ -347,6 +347,9 @@ export const PATCH_GROUPS: Group[] = [
             'kit clock rush',
             'toy charge pump',
             'toy crash',
+            'FM register rot',
+            'FM heat',
+            'FM operator ring',
           ],
           groups: [
             {
@@ -441,6 +444,9 @@ export const PATCH_GROUPS: Group[] = [
                 'FM cold boot',
                 'FM log adder',
                 'FM toy on bus',
+                'FM register rot',
+                'FM heat',
+                'FM operator ring',
               ],
             },
             {

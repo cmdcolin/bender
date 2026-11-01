@@ -450,6 +450,9 @@ export const PARAM_DEFS = [
   ['fmColdBoot', 'step'],
   ['fmAdder', 'step'],
   ['fmToyBus', 'step'],
+  ['fmRot', 'slew'],
+  ['fmHeat', 'slew'],
+  ['fmRing', 'slew'],
 
   ['pcmLevel', 'slew'],
   ['pcmMute', 'ramp'],

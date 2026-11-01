@@ -432,6 +432,39 @@ write touches that register again.
     rate, four throw the note between octaves and five key it on and off.
   - At eight bits the register follows the toy's waveform and Glint comes out
     close to noise.
+- **Register rot:** the register file's cells leak, and bits flip at random.
+  - A register flips more often the longer it goes without a write. The
+    processor rewrites the patch bytes only when a voice or tone knob moves, so
+    damage builds up there. A note rewrites its own channel's pitch, key and
+    volume.
+  - Key, rhythm and test bits flip too, so notes and drums start and stop at
+    random and the test register's faults come and go.
+  - At 0.1 about two bits flip a second. At 0.4 about five hundred do, and the
+    chip plays bursts and gaps. Measured in 43 ms frames, the centroid's
+    standard deviation is 1.5 octaves, against 0.2 for the stock tune.
+  - Its row is in the **registers** box, and its lane moves every sample.
+- **Heat:** lifts the heat sink off the die.
+  - The die warms as it plays, faster when it plays loud. Its register bits flip
+    faster as it warms, as with **Register rot**, starting about halfway to the
+    trip point.
+  - At the trip point a thermal cutout silences the chip for 0.6 to 1.4 s while
+    it cools. The chip then starts again with clean registers and the processor
+    sends the patch again.
+  - Each cycle runs clean, then broken, then silent: about 8 s at the top of the
+    knob, 30 s at 0.3 and two minutes at 0.1. The trip and restart temperatures
+    change each time, so cycles differ in length.
+  - At 0 the die cools and the bits stop flipping within a second.
+  - Its row is in the **registers** box, and its lane moves every sample.
+- **Operator ring:** the latch between operator slots stops clearing.
+  - Each modulator also takes the output of the carrier one slot before it, and
+    the last carrier feeds the first modulator on the next sample, so every
+    sounding operator sits in one feedback loop.
+  - From 0.2 up some notes stay clean and others break into noise as the tune
+    moves. More notes sounding at once put more operators in the loop. On a busy
+    tune the top of the knob reaches flatness 0.94, close to the feedback
+    booster. Measured in 43 ms frames, the centroid's standard deviation is a
+    third of an octave, against 0.04 for the booster.
+  - Its row is in the **voices** box, and its lane moves every sample.
 
 ## Inside the drum voices
 
