@@ -20,6 +20,11 @@ const WARBLE_SPREAD = [1, 1.37, 0.71, 1.19]
 const CRASH_S = 0.05
 const CRASH_AMP = 2.5
 
+const CHIRP_STAGES = 32
+const LAP_STAGES = 4
+const CHIRP_HZ = 2500
+const DIFFUSE = 0.6
+
 class Tank {
   private readonly buf: Float32Array
   private readonly off = new Int32Array(N_AP + N_COMB)
@@ -30,12 +35,20 @@ class Tank {
   private readonly damp = new Float64Array(N_COMB)
   private readonly swing = Array.from({ length: N_COMB }, () => new SineOsc())
   private readonly swingK = new Float64Array(N_COMB)
+  private readonly chain: Float64Array
+  private readonly mid = new Float64Array(BLOCK)
+  private readonly stretch: number
+  private cursor = 0
   readonly delaySec: Float64Array
 
   private readonly rateX: number
 
   constructor(delays: number[], sr: number, rateX: number) {
     this.rateX = rateX
+    this.stretch = Math.max(Math.round(sr / (2 * CHIRP_HZ)), 1)
+    this.chain = new Float64Array(
+      (CHIRP_STAGES + N_COMB * LAP_STAGES) * this.stretch,
+    )
     let acc = 0
     const warble = (WARBLE_MS / 1000) * sr
     for (let k = 0; k < delays.length; k++) {
@@ -60,8 +73,13 @@ class Tank {
     dampCoef: number,
     swingDepth: number,
     swingK: number,
+    chirp: number,
   ) {
     const buf = this.buf
+    const chain = this.chain
+    const mid = this.mid
+    const stretch = this.stretch
+    let cursor = this.cursor
     const off = this.off
     const mask = this.mask
     const pos = this.pos
@@ -86,7 +104,25 @@ class Tank {
         pos[k] = (pos[k]! + 1) & m
         x = d - boing * w
       }
+      mid[i] = x
+    }
 
+    for (let s = 0; s < CHIRP_STAGES; s++) {
+      const ring = s * stretch
+      for (let phase = 0; phase < stretch; phase++) {
+        const slot = ring + ((cursor + phase) % stretch)
+        let held = chain[slot]!
+        for (let i = phase; i < n; i += stretch) {
+          const w = mid[i]! + chirp * held
+          mid[i] = held - chirp * w
+          held = w
+        }
+        chain[slot] = held
+      }
+    }
+
+    for (let i = 0; i < n; i++) {
+      const x = mid[i]!
       let sum = 0
       for (let j = 0; j < N_COMB; j++) {
         const k = N_AP + j
@@ -106,18 +142,31 @@ class Tank {
         }
         const y = damp[j]! + dampCoef * (d - damp[j]!)
         damp[j] = Math.abs(y) < 1e-15 ? 0 : y
-        buf[o + pos[k]!] = rail(x + fb[j]! * y)
+        let v = rail(x + fb[j]! * y)
+        const first = (CHIRP_STAGES + j * LAP_STAGES) * stretch + cursor
+        for (let s = 0; s < LAP_STAGES; s++) {
+          const slot = first + s * stretch
+          const held = chain[slot]!
+          const w = v + chirp * held
+          chain[slot] = w
+          v = held - chirp * w
+        }
+        buf[o + pos[k]!] = v
         pos[k] = (pos[k]! + 1) & m
         sum += d
       }
       wet[i] = sum
+      cursor = cursor + 1 === stretch ? 0 : cursor + 1
     }
+    this.cursor = cursor
   }
 
   reset() {
     this.buf.fill(0)
     this.pos.fill(0)
     this.damp.fill(0)
+    this.chain.fill(0)
+    this.cursor = 0
     for (const s of this.swing) s.reset()
   }
 }
@@ -175,7 +224,7 @@ export class SpringVerb implements Stage {
     )
     const swingDepth = warble * (WARBLE_MS / 1000) * this.sr
     const swingK = SineOsc.rate(WARBLE_HZ[0]! + WARBLE_HZ[1]! * warble, this.sr)
-    const boing = 0.35 + 0.5 * p[IDX.revBoing]!
+    const chirp = 0.75 * p[IDX.revBoing]!
     const dampCoef = lpCoef(p[IDX.revToneHz]!, this.sr)
     const fbL = this.fbL
     const fbR = this.fbR
@@ -214,8 +263,28 @@ export class SpringVerb implements Stage {
       inL[i] = xl
       inR[i] = xr
     }
-    this.tankL.run(inL, this.wetL, n, boing, fbL, dampCoef, swingDepth, swingK)
-    this.tankR.run(inR, this.wetR, n, boing, fbR, dampCoef, swingDepth, swingK)
+    this.tankL.run(
+      inL,
+      this.wetL,
+      n,
+      DIFFUSE,
+      fbL,
+      dampCoef,
+      swingDepth,
+      swingK,
+      chirp,
+    )
+    this.tankR.run(
+      inR,
+      this.wetR,
+      n,
+      DIFFUSE,
+      fbR,
+      dampCoef,
+      swingDepth,
+      swingK,
+      chirp,
+    )
     for (let i = 0; i < n; i++) {
       l[i] = l[i]! * dry + this.wetL[i]! * wetGain
       r[i] = r[i]! * dry + this.wetR[i]! * wetGain

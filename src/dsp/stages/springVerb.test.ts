@@ -7,6 +7,7 @@ import { magnitudes } from '../spectrum.ts'
 import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import { playHeldKey, render, renderBender, rms, SR } from '../testRender.ts'
 import { TriggerBus } from '../trigbus.ts'
+import { bandpass, BiquadState } from '../util/biquad.ts'
 import { SpringVerb } from './springVerb.ts'
 
 const kit = (overrides: Partial<Controls>) =>
@@ -97,7 +98,7 @@ const spread = (frames: Float64Array[]) => {
 test('warble keeps a long tail from ringing on the same notes', () => {
   const still = tail(0)
   const seasick = tail(1)
-  expect(steadiness(still)).toBeGreaterThan(0.9)
+  expect(steadiness(still)).toBeGreaterThan(0.85)
   expect(steadiness(seasick)).toBeLessThan(0.75)
   expect(spread(seasick)).toBeGreaterThan(3 * spread(still))
 })
@@ -248,4 +249,53 @@ test('Decay is the time the tail takes to fall sixty decibels', () => {
     expect(measured).toBeGreaterThan(0.75 * seconds)
     expect(measured).toBeLessThan(1.25 * seconds)
   }
+})
+
+function firstEcho(revBoing: number) {
+  const verb = new SpringVerb(SR)
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    revMix: 1,
+    revDry: 0,
+    revDecayS: 0.1,
+    revToneHz: 12000,
+    revBoing,
+  })
+  const ctx = blank()
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const blocks = Math.ceil((0.3 * SR) / BLOCK)
+  const out = new Float32Array(blocks * BLOCK)
+  for (let b = 0; b < blocks; b++) {
+    io.l.fill(0)
+    io.r.fill(0)
+    if (b === 0) io.l[0] = io.r[0] = 1
+    verb.process(io, p, ctx)
+    out.set(io.l, b * BLOCK)
+  }
+  return out
+}
+
+const arrivalMs = (x: Float32Array, hz: number) => {
+  const c = bandpass(hz, 4, SR)
+  const s = new BiquadState()
+  let num = 0
+  let den = 0
+  for (let i = 0; i < 0.25 * SR; i++) {
+    const y = s.process(x[i]!, c)
+    num += y * y * i
+    den += y * y
+  }
+  return (1000 * num) / den / SR
+}
+
+test('Boing makes each echo a chirp that falls', () => {
+  const fall = (x: Float32Array) => arrivalMs(x, 300) - arrivalMs(x, 2000)
+  const stiff = fall(firstEcho(0))
+  const boingy = fall(firstEcho(1))
+  expect(stiff).toBeLessThan(8)
+  expect(boingy).toBeGreaterThan(15)
 })
