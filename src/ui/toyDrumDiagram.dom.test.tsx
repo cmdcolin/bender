@@ -60,13 +60,16 @@ test('pressing pattern shows the bus rows, and pressing triggers shows only its 
   expect(screen.queryByText('Retrigger')).toBeNull()
 })
 
-test('the FM, sync and ROM wires open the box whose knob they stand for', () => {
+test('the bend wires open the box whose knob they stand for', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<ToyDrumDiagram />)
   for (const [wire, row] of [
     ['FM', 'Bank FM'],
     ['sync', 'Bank sync'],
     ['ROM', 'Kit'],
+    ['motorboat', 'Motorboat'],
+    ['clock rush', 'Clock rush'],
+    ['out to address', 'Out to address'],
   ] as const) {
     fireEvent.click(box(wire))
     expect(screen.getByText(row), wire).not.toBeNull()
@@ -82,6 +85,26 @@ test('a box goes accent when a knob inside it is off stock', () => {
     box('metal bank').querySelector('rect')!.getAttribute('class'),
   ).toMatch(/boxOn/)
   expect(box('tanks').querySelector('rect')!.getAttribute('class')).not.toMatch(
+    /boxOn/,
+  )
+})
+
+test('the motorboat, clock rush and out to address wires light off stock', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, drumRush: -0.4, drumOutAddr: 0.3 })
+  render(<ToyDrumDiagram />)
+  const wire = (name: string) =>
+    box(name)
+      .querySelector('path:not([class*="wireHit"])')!
+      .getAttribute('class')
+  expect(wire('clock rush')).toMatch(/wireOn/)
+  expect(wire('out to address')).toMatch(/wireOn/)
+  expect(wire('motorboat')).toMatch(/wireDash/)
+})
+
+test('pattern rot lights the pattern box', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, drumRot: 0.5 })
+  render(<ToyDrumDiagram />)
+  expect(box('pattern').querySelector('rect')!.getAttribute('class')).toMatch(
     /boxOn/,
   )
 })

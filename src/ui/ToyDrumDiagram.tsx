@@ -20,6 +20,7 @@ import {
   Bend,
   BoxRows,
   BoxView,
+  Dot,
   GlyphBox,
   Label,
   OpenBox,
@@ -98,6 +99,11 @@ const GAP = 28
 const TAIL = 28
 const HEAD_GAP = 6
 const FIRST = ['tanks', 'metal bank', 'noise'] as const
+const LOOP_RISE = 14
+const BACKS = [
+  { key: 'drumRush', name: 'clock rush', tap: 14, at: 0.3, labelDy: -4 },
+  { key: 'drumOutAddr', name: 'out to address', tap: 7, at: 0.7, labelDy: 11 },
+] as const
 
 const plain = (
   name: string,
@@ -110,7 +116,6 @@ const plain = (
 
 const bent = (on: boolean): WireLook => (on ? 'on' : 'dash')
 
-// The pads the player hits, drawn as four of them.
 function padsGlyph(x: number, mid: number) {
   const y = mid - GLYPH / 2
   return (
@@ -128,8 +133,6 @@ function padsGlyph(x: number, mid: number) {
   )
 }
 
-// Pads and the pattern fire the triggers. One-shots and amps each span the three
-// voices, so every voice gets its own wire in and out; the sum happens in the DAC.
 export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox(PADS)
@@ -202,6 +205,22 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
   const fmWire = `M${fmX} ${rowY(1)} V${rowY(0) + BOX_H}`
   const syncWire = `M${syncX} ${rowY(0) + BOX_H} V${rowY(1)}`
   const romWire = `M${rom.x + rom.w / 2} ${rom.y} V${dac.y + BOX_H}`
+  const tanks = sources[0]!
+  const loopY = tanks.y - LOOP_RISE
+  const motorWire = `M${tanks.x + tanks.w * 0.25} ${tanks.y} V${loopY} H${tanks.x + tanks.w * 0.75} V${tanks.y}`
+  const patternRight = pattern.x + pattern.w
+  const outX = dac.x + dac.w
+  const backs = BACKS.map(b => {
+    const x = outX + b.tap
+    const y = Math.round(pattern.y + BOX_H * b.at)
+    return {
+      ...b,
+      x,
+      y,
+      d: `M${x} ${mid(1)} V${y} H${patternRight}`,
+      on: r.touched(b.key),
+    }
+  })
 
   return (
     <>
@@ -276,6 +295,41 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
                 look={bent(r.value('drumRom') > 0)}
               />
             </Bend>
+            <Bend name="motorboat" opens="tanks" pick={pick} hit={motorWire}>
+              <Wire
+                arrow={arrow}
+                d={motorWire}
+                look={bent(r.touched('drumMotor'))}
+              />
+              <Label
+                x={tanks.x + tanks.w / 2}
+                y={loopY - 4}
+                anchor="middle"
+                on={r.touched('drumMotor')}
+              >
+                motorboat
+              </Label>
+            </Bend>
+            {backs.map(b => (
+              <Bend
+                key={b.key}
+                name={b.name}
+                opens="pattern"
+                pick={pick}
+                hit={b.d}
+              >
+                <Wire arrow={arrow} d={b.d} look={bent(b.on)} />
+                <Dot x={b.x} y={mid(1)} />
+                <Label
+                  x={(patternRight + outX) / 2}
+                  y={b.y + b.labelDy}
+                  anchor="middle"
+                  on={b.on}
+                >
+                  {b.name}
+                </Label>
+              </Bend>
+            ))}
             <Wire
               arrow={arrow}
               d={`M${shots.x + shots.w / 2} ${triggers.y + BOX_H} V${shots.y}`}
