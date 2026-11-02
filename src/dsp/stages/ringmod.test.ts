@@ -501,3 +501,38 @@ test('a tracked carrier follows the pitch of a machine that stamps no key', () =
   expect(upper(600, 1800)).toBeGreaterThan(0.05)
   expect(upper(600, 1200)).toBeLessThan(0.02)
 })
+
+const chopShape = RING_SHAPES.indexOf('chop')
+
+const gaps = (x: Float32Array) => {
+  const floor = 0.05 * Math.max(...x.map(Math.abs))
+  const quiet = x.map(v => (Math.abs(v) < floor ? 1 : 0))
+  let runs = 0
+  for (let i = 1; i < quiet.length; i++) {
+    if (quiet[i] === 1 && quiet[i - 1] === 0) runs++
+  }
+  return { runs, shut: quiet.reduce((a, v) => a + v, 0) / quiet.length }
+}
+
+test('chop shuts the volume for the share of each period the width leaves', () => {
+  const narrow = gaps(
+    held(play({ ringShape: chopShape, ringHz: 20, ringDuty: 0.2 }).l),
+  )
+  const wide = gaps(
+    held(play({ ringShape: chopShape, ringHz: 20, ringDuty: 0.8 }).l),
+  )
+  expect(narrow.shut).toBeGreaterThan(0.7)
+  expect(wide.shut).toBeLessThan(0.3)
+})
+
+test('chop wobble takes the beat out of the clock', () => {
+  const steady = gaps(
+    held(play({ ringShape: chopShape, ringHz: 40, ringWobble: 0 }).l),
+  )
+  const wild = gaps(
+    held(play({ ringShape: chopShape, ringHz: 40, ringWobble: 1 }).l),
+  )
+  expect(steady.runs).toBeGreaterThanOrEqual(15)
+  expect(steady.runs).toBeLessThanOrEqual(25)
+  expect(Math.abs(wild.runs - steady.runs)).toBeGreaterThan(3)
+})

@@ -979,6 +979,9 @@ export const DEFAULT_CONTROLS = {
   arcBars: 2,
   arcMoves: 0,
   arcSeed: 0,
+
+  ringDuty: 0.5,
+  ringWobble: 0,
 }
 
 export type Controls = typeof DEFAULT_CONTROLS

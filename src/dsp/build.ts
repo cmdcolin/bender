@@ -107,7 +107,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   // The codec seeds off the build's seed rather than drawing one.
   chain.bendById = [
     undefined,
-    new RingMod(sr),
+    new RingMod(sr, seed ^ 0xc409),
     new Crusher(sr, next()),
     new Clipper(sr, supplies),
     new Comb(sr),
