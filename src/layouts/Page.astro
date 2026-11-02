@@ -7,6 +7,7 @@
 // `/app/` does not use this. The instrument carries no bar and no footer, and
 // its head says things no other page says.
 import Analytics from '../components/Analytics.astro'
+import VideoOverlay from '../components/VideoOverlay.astro'
 import Footer from 'skillet-shared/components/Footer.astro'
 import SiteBar from 'skillet-shared/components/SiteBar.astro'
 import { siteRoot } from '../site/paths.ts'
@@ -27,6 +28,7 @@ import 'skillet-shared/site.css'
 import 'skillet-shared/footer.css'
 import '../site/home.css'
 import '../site/guide.css'
+import '../site/video.css'
 
 interface Props {
   title: string
@@ -76,5 +78,6 @@ const {
     <SiteBar site={SITE} account={account} current={current} />
     <slot />
     <Footer site={SITE} />
+    <VideoOverlay />
   </body>
 </html>

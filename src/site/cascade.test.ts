@@ -36,6 +36,7 @@ test('the layout imports every stylesheet, shared ones first', () => {
     'skillet-shared/footer.css',
     '../site/home.css',
     '../site/guide.css',
+    '../site/video.css',
   ])
 })
 
