@@ -982,6 +982,8 @@ export const DEFAULT_CONTROLS = {
 
   ringDuty: 0.5,
   ringWobble: 0,
+  ringDepth: 1,
+  ringEdge: 0,
 }
 
 export type Controls = typeof DEFAULT_CONTROLS
