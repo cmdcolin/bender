@@ -533,6 +533,7 @@ export const PARAM_DEFS = [
   ['monoSag', 'slew'],
   ['monoLoopPitch', 'slew'],
   ['monoChoke', 'slew'],
+  ['monoRegTrip', 'slew'],
 
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],

@@ -287,6 +287,90 @@ describe('MonoVoice', () => {
     expect(aEnv.stage).toBe(3)
   })
 
+  it('keeps regulator trip finite and under full scale through its cycles', () => {
+    const x = play(
+      {
+        regTrip: 1,
+        loop: 1,
+        drive: 4,
+        emphasis: 1.1,
+        cutoff: 12000,
+        loopPitch: 1,
+        choke: 0.5,
+      },
+      57,
+      30,
+    )
+    expect(x.every(v => Number.isFinite(v) && Math.abs(v) <= 1)).toBe(true)
+  })
+
+  function regulatorRun(regTrip: number, secs: number) {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, { regTrip })
+    v.noteOn(57)
+    const reg = Reflect.get(v, 'regulator') as {
+      tripped: boolean
+      build: number
+      rail: number
+    }
+    const x = new Float32Array(128)
+    const trips: number[] = []
+    const recoveries: number[] = []
+    const peakBuild: number[] = []
+    let lowestRail = 1
+    let build = 0
+    let was = false
+    for (let b = 0; b < (secs * SR) / 128; b++) {
+      v.render(x, 0, 128)
+      if (reg.tripped && !was) {
+        trips.push((b * 128) / SR)
+        peakBuild.push(build)
+      }
+      if (!reg.tripped && was) recoveries.push((b * 128) / SR)
+      if (reg.tripped) lowestRail = Math.min(lowestRail, reg.rail)
+      else build = reg.build
+      was = reg.tripped
+    }
+    return { trips, recoveries, peakBuild, lowestRail }
+  }
+
+  it('warms, trips, sputters and runs clean again with regulator trip at full', () => {
+    const run = regulatorRun(1, 40)
+    expect(run.trips.length).toBeGreaterThanOrEqual(2)
+    expect(run.trips[0]).toBeGreaterThan(4)
+    expect(run.recoveries.length).toBeGreaterThanOrEqual(2)
+    expect(Math.min(...run.peakBuild)).toBeGreaterThan(0.3)
+    expect(run.lowestRail).toBeLessThan(0.1)
+    for (let i = 0; i < run.recoveries.length; i++)
+      expect(run.recoveries[i]! - run.trips[i]!).toBeGreaterThan(2)
+  })
+
+  it('starts each regulator cycle clean after it recovers', () => {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, { regTrip: 1 })
+    v.noteOn(57)
+    const reg = Reflect.get(v, 'regulator') as {
+      tripped: boolean
+      build: number
+    }
+    const x = new Float32Array(128)
+    let was = false
+    let after = -1
+    for (let b = 0; b < (30 * SR) / 128 && after < 0; b++) {
+      v.render(x, 0, 128)
+      if (!reg.tripped && was) after = reg.build
+      was = reg.tripped
+    }
+    expect(after).toBe(0)
+  })
+
+  it('cycles the regulator faster at full than near the bottom, and trips at both', () => {
+    const low = regulatorRun(0.15, 90).trips.length
+    const full = regulatorRun(1, 90).trips.length
+    expect(low).toBeGreaterThanOrEqual(1)
+    expect(full).toBeGreaterThan(2 * low)
+  })
+
   it('plays again after panic clears a NaN out of its oscillator and sag state', () => {
     const v = new MonoVoice(SR)
     Object.assign(v.patch, OPEN)

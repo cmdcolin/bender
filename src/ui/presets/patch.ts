@@ -205,6 +205,7 @@ const LANDINGS: Landing[] = [
   at('rack decay', ['rackMix'], { bend: 'verb' }),
   at('mono out to pitch', ['monoLevel']),
   at('mono out to gate', ['monoLevel']),
+  at('mono regulator trip', ['monoLevel']),
   at('kit motorboat', ['drumLevel']),
   at('kit clock rush', ['drumLevel']),
   at('kit pattern rot', ['drumLevel']),

@@ -23,10 +23,11 @@ const KEYS = [
   'monoDroop',
   'monoDacBit',
   'monoSag',
+  'monoRegTrip',
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
-  regulator: ['monoSag'],
+  regulator: ['monoSag', 'monoRegTrip'],
   'key DAC': ['monoDacBit'],
   hold: ['monoDroop'],
   'exp conv': ['monoHeat'],
@@ -136,8 +137,8 @@ export function MonoCardDiagram() {
             ))}
             <Chip
               box={{ name: 'regulator', x: regX, y: TOP, w: regW, h: BAR_H }}
-              lit={on('monoSag')}
-              help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
+              lit={on('monoSag') || on('monoRegTrip')}
+              help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter. A hot regulator shuts off and on in bursts at its thermal limit."
               pick={pick}
               keys={OPENS.regulator}
             />

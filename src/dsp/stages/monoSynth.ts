@@ -164,6 +164,7 @@ export class MonoSynth implements Stage {
       ctx.mod.read(DEST.monoLoopPitch),
     )
     v.choke = withLane(p[IDX.monoChoke]!, ctx.mod.read(DEST.monoChoke))
+    v.regTrip = withLane(p[IDX.monoRegTrip]!, ctx.mod.read(DEST.monoRegTrip))
     const micIn = Math.round(p[IDX.micPatch]!) === MIC.growlerIn
     v.ext = micIn ? MIC_IN_GAIN : 0
     this.ext = micIn ? ctx.mic : null

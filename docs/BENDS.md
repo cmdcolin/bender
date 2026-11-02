@@ -658,8 +658,8 @@ Five bends sit inside the die, between the counter and the memory.
 
 ## Growler's voice card
 
-Seven voice-card parts fail the way analog synth parts do. The drawing under the
-**voice card** box shows each fault as a red reading on its part.
+The voice card has eight faults modelled on analog synth parts. The drawing
+under the **voice card** box shows each fault as a red reading on its part.
 
 - **Hot converter:** the exponential converter's transistor pair with no heater.
   The three oscillators drift apart and octave widths stretch. Low notes stay
@@ -679,6 +679,19 @@ Seven voice-card parts fail the way analog synth parts do. The drawing under the
 - **Sag:** a weak regulator. Loud notes dip the pitch and close the filter on
   each hit, and both recover as the note fades. **Starve** and a brownout also
   drag the pitch, since the card shares the toy's rail.
+- **Regulator trip:** the card's regulator sits on a poor heatsink and runs
+  through a thermal cycle while the card is on.
+  - Cold, the voice plays clean.
+  - Past about two thirds of the way to its limit, the oscillators drift apart
+    by up to six semitones, the emphasis climbs into self-oscillation, the
+    ladder drive rises and the cutoff opens.
+  - At the limit the regulator shuts off and on in bursts for three to five
+    seconds. Each time the supply falls, the note drops up to two octaves.
+  - Cool again, the voice plays clean and the cycle restarts.
+  - The trip and restart temperatures and the warming rate change each cycle, so
+    no two cycles match. The knob sets the warming rate: a cycle takes 25 to 45
+    seconds near the bottom and 9 to 14 seconds at full. Loud playing warms it a
+    little faster.
 
 Two more cables run from the output jack, under the **mixer** box beside
 **Feedback**.
@@ -764,10 +777,10 @@ with.
   - Each time the counter reads a step, a stored hit may fade out, and a voice
     that fires may flip the same step in the rows on either side of it, now and
     then one step over. The top and bottom rows count as neighbours.
-  - Below full, a refresh writes the grid back into some cells on each pass.
-    At 0.5 the rock beat picks up a stray hit on an empty row now and then. At
-    full nothing is refreshed and over a few dozen bars the bar spreads across
-    all eight voices: the centroid rises from 160 Hz to about 2 kHz.
+  - Below full, a refresh writes the grid back into some cells on each pass. At
+    0.5 the rock beat picks up a stray hit on an empty row now and then. At full
+    nothing is refreshed and over a few dozen bars the bar spreads across all
+    eight voices: the centroid rises from 160 Hz to about 2 kHz.
   - Turning it down from full pulls the pattern back toward the grid over a few
     bars. Writing a row on the grid loads it back in. While **Pattern loop** is
     on, the loop's cells play and rot waits.
@@ -775,9 +788,9 @@ with.
   address lines of the pattern memory through a loose contact.
   - At each step the contact may close, and the output at that moment picks
     which step the memory plays. The knob sets how often it closes.
-  - Only the voices written on the grid play, in a different order each bar.
-    On the rock beat consecutive bars differ by 2 dB stock, 5 dB at 0.05 and
-    about 19 dB at full.
+  - Only the voices written on the grid play, in a different order each bar. On
+    the rock beat consecutive bars differ by 2 dB stock, 5 dB at 0.05 and about
+    19 dB at full.
 - **Scan:** time the chip takes to move from one voice to the next. Slowed, a
   multi-voice step becomes a flam in row order.
 

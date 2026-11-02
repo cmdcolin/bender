@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-624 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+625 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 158 destinations, among
+- **A patch bay that modulates itself.** Four wires, 159 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -541,7 +541,7 @@ oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck
 bit on the key DAC and a weak regulator.
 
 <details>
-<summary>55 controls</summary>
+<summary>56 controls</summary>
 
 | control                         | range                                                             | what it does                                                                                                                                |
 | ------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -600,6 +600,7 @@ bit on the key DAC and a weak regulator.
 | Pitch droop                     | 0 to 2 per second                                                 | The sample-and-hold capacitor on the pitch voltage leaking toward 0 V                                                                       |
 | Key DAC bit                     | ok, b0 +1, b1 +2, b2 +4, b3 +8, b4 +16, b5 +32, b6 +64            | One bit of the key-to-voltage converter stuck high                                                                                          |
 | Sag                             | off to full                                                       | A weak regulator on the voice card                                                                                                          |
+| Regulator trip                  | off to full                                                       | The voice card regulator with a poor heatsink                                                                                               |
 
 </details>
 
@@ -1338,7 +1339,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 158 of them, filt cut through kit out to address                                                                       | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 159 of them, filt cut through mono regulator trip                                                                      | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

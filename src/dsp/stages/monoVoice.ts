@@ -91,6 +91,7 @@ export interface MonoPatch {
   accent: number
   loopPitch: number
   choke: number
+  regTrip: number
 }
 
 export const MONO_DEFAULT: MonoPatch = {
@@ -137,6 +138,7 @@ export const MONO_DEFAULT: MonoPatch = {
   accent: 0,
   loopPitch: 0,
   choke: 0,
+  regTrip: 0,
 }
 
 const OS = 2
@@ -378,6 +380,73 @@ class Ladder {
   }
 }
 
+const REG_SLOW_S = 60
+const REG_FAST_S = 10
+const REG_LOUD = 0.5
+const REG_COOL_S = 3
+const REG_CLEAN = 0.6
+const REG_RAIL_S = 0.004
+const REG_ON_S = 0.015
+const REG_OFF_S = 0.04
+const REG_OFF_HOT_S = 0.25
+const REG_DETUNE = 6
+const REG_EMPH = 3
+const REG_DRIVE = 2.5
+const REG_OPEN = 2
+const REG_DIVE = 2
+
+class Regulator {
+  temp = 0
+  tripped = false
+  rail = 1
+  build = 0
+  private railOn = true
+  private trip = 1
+  private untrip = 0.3
+  private pace = 1
+
+  step(knob: number, load: number, sr: number, rng: Rng) {
+    if (knob <= 0) {
+      this.reset()
+      return
+    }
+    if (this.tripped) {
+      this.temp -= this.temp / (REG_COOL_S * sr)
+      const hot = (this.temp - this.untrip) / (this.trip - this.untrip)
+      const leave = this.railOn
+        ? 1 / (REG_ON_S * sr)
+        : 1 / ((REG_OFF_S + REG_OFF_HOT_S * hot) * sr)
+      if (rng() < leave) this.railOn = !this.railOn
+      if (this.temp < this.untrip) {
+        this.tripped = false
+        this.railOn = true
+        this.trip = 0.85 + 0.3 * rng()
+        this.untrip = 0.2 + 0.15 * rng()
+        this.pace = 0.75 + 0.55 * rng()
+      }
+    } else {
+      const seconds = REG_SLOW_S * (REG_FAST_S / REG_SLOW_S) ** knob
+      this.temp +=
+        (this.pace * (1 + REG_LOUD * Math.min(load, 2))) / (seconds * sr)
+      if (this.temp > this.trip) this.tripped = true
+    }
+    this.rail += ((this.railOn ? 1 : 0) - this.rail) / (REG_RAIL_S * sr)
+    const warm = Math.max(this.temp - REG_CLEAN, 0) / (1 - REG_CLEAN)
+    this.build = this.tripped ? 1 : Math.min(warm * warm, 1)
+  }
+
+  reset() {
+    this.temp = 0
+    this.tripped = false
+    this.rail = 1
+    this.build = 0
+    this.railOn = true
+    this.trip = 1
+    this.untrip = 0.3
+    this.pace = 1
+  }
+}
+
 // A three-oscillator monosynth after the Model D: oscillators and ladder run at
 // twice the board's rate and come down through a half-band.
 export class MonoVoice {
@@ -399,6 +468,7 @@ export class MonoVoice {
   private readonly fEnv = new Contour()
   private readonly aEnv = new Contour()
   private readonly ladder = new Ladder()
+  private readonly regulator = new Regulator()
   private readonly down = new Halfband()
   private readonly dc = new DcBlocker()
   private readonly rng: Rng
@@ -495,7 +565,12 @@ export class MonoVoice {
             this.heatWalk[j]!.step(0.03 * CONTROL, sr, this.rng)
           : 0
       const stretch = p.heat * 0.04 * this.heatScale[j]! * (this.cv - 36)
-      const tune = 12 * p.range[j]! + p.fine[j]! + wander + hot
+      const tune =
+        12 * p.range[j]! +
+        p.fine[j]! +
+        wander +
+        hot +
+        REG_DETUNE * this.regulator.build * this.heatScale[j]!
       this.ratio[j] =
         j === 2 && p.osc3Free
           ? p.osc3Lo
@@ -543,7 +618,9 @@ export class MonoVoice {
     const accentOct = ACCENT_OCTAVES * p.accent
     const boostK = 1 - Math.exp(-1 / (0.002 * sr))
     const droopK = p.droop > 0 ? 1 - Math.exp(-p.droop / sr) : 0
-    const r = 4.2 * p.emphasis
+    const reg = this.regulator
+    const regTrip = p.regTrip
+    const r = 4.2 * p.emphasis + REG_EMPH * reg.build
     const comp = 1 + p.bassComp * r * 0.75
     const skew = 1 + 2 * p.mismatch
     const leak = p.vcaLeak * 0.35
@@ -551,7 +628,7 @@ export class MonoVoice {
     const fTop = 0.45 * osr
     const pinkK = 1 - Math.exp((-2 * Math.PI * 1200) / sr)
     const free = p.osc3Free
-    const inGain = p.drive * comp * 0.5
+    const inGain = p.drive * comp * 0.5 * (1 + REG_DRIVE * reg.build)
     const piOverSr = (Math.PI * TUNE) / osr
     const contour = p.contour * (0.7 + 0.3 * this.velocity)
     const lvl0 = p.level[0]
@@ -628,7 +705,9 @@ export class MonoVoice {
         this.accentCap + (this.accentEnv - this.accentCap) * accentCapK,
       )
       this.boost += (this.boostTarget - this.boost) * boostK
-      const amp = (leak + (1 - leak) * ae) * this.boost
+      if (regTrip > 0 || reg.temp > 0)
+        reg.step(regTrip, this.sagEnv, sr, this.rng)
+      const amp = (leak + (1 - leak) * ae) * this.boost * reg.rail
       const mod =
         modMix > 0
           ? modAmt *
@@ -641,7 +720,8 @@ export class MonoVoice {
       const keyHz =
         keyBase *
         octaves(
-          (this.cv - 69 + this.bend + modPitch * mod - sagged * 3) / 12 +
+          (this.cv - 69 + this.bend + modPitch * mod - sagged * 3) / 12 -
+            REG_DIVE * (1 - reg.rail) +
             (pitchLane ? pitchLane[n]! : 0),
         )
       const dt0 = keyHz * ratio[0]!
@@ -658,7 +738,8 @@ export class MonoVoice {
               track * (this.cv - 48) +
               modFilter * mod +
               this.open +
-              (cutoffLane ? cutoffLane[n]! : 0) -
+              (cutoffLane ? cutoffLane[n]! : 0) +
+              REG_OPEN * reg.build -
               sagged * 0.5,
           ),
         fTop,
@@ -734,6 +815,7 @@ export class MonoVoice {
     this.follow = 0
     this.choked = false
     this.pinkish = 0
+    this.regulator.reset()
     this.sagEnv = 0
     this.v1 = 0
     this.v2 = 0

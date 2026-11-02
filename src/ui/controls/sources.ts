@@ -2626,6 +2626,7 @@ export const SOURCE_GROUPS: Group[] = [
       'monoSag',
       'monoLoopPitch',
       'monoChoke',
+      'monoRegTrip',
     ],
     sliders: [
       {
@@ -3206,6 +3207,17 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'A weak regulator on the voice card. Loud notes pull its supply down, so the pitch dips and the filter closes on every hit and recovers as the note fades.',
+      },
+      {
+        key: 'monoRegTrip',
+        lane: 'mono regulator trip',
+        part: 'voice card faults',
+        label: 'Regulator trip',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The voice card regulator with a poor heatsink. It warms while the card runs, and the oscillators drift apart, the emphasis climbs and the ladder drives harder as it does. At its thermal limit it shuts off and on in bursts, and the pitch drops each time the supply falls. Once it cools it runs clean and warms again. Higher settings warm it faster, from about a minute per cycle to about ten seconds.',
       },
     ],
   },

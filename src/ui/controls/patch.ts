@@ -354,6 +354,7 @@ export const PATCH_GROUPS: Group[] = [
             'keys CPU on bus',
             'kit pattern rot',
             'kit out to address',
+            'mono regulator trip',
           ],
           groups: [
             {
@@ -481,6 +482,7 @@ export const PATCH_GROUPS: Group[] = [
                 'mono pitch',
                 'mono out to pitch',
                 'mono out to gate',
+                'mono regulator trip',
               ],
             },
             {
