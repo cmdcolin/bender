@@ -1,4 +1,5 @@
 import { PATCH_BYTES, REG, AM, VIB } from '../dsp/stages/fmVoices.ts'
+import { BendLead } from './BendLead.tsx'
 import bus from './BusDiagram.module.css'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import styles from './Diagram.module.css'
@@ -9,7 +10,14 @@ import {
   useReadings,
   type BoxPick,
 } from './diagram.ts'
-import { Bend, Plate, PickPart, Wire, type WireLook } from './DiagramParts.tsx'
+import {
+  Bend,
+  Dot,
+  Plate,
+  PickPart,
+  Wire,
+  type WireLook,
+} from './DiagramParts.tsx'
 import { GAP, LEAD, OP_W, SPAN_W, WIDTH, X0 } from './fmVoiceSpan.ts'
 
 const KEYS = [
@@ -21,14 +29,16 @@ const KEYS = [
   'fmLfo',
   'fmEffect',
   'fmVoice',
+  'fmRing',
 ] as const
 
 type Key = (typeof KEYS)[number]
 
 const FEEDBACK_MAX = 7
 const INDEX_BOOST = 4
-const LOOP_Y = 14
-const CHIP_Y = 28
+const RING_Y = 14
+const LOOP_Y = 28
+const CHIP_Y = 42
 const CHIP_H = ONE_LINE_H
 const MID = CHIP_Y + CHIP_H / 2
 const LFO_Y = CHIP_Y + CHIP_H + 18
@@ -67,9 +77,6 @@ function OperatorChip({ op, pick }: { op: Operator; pick: BoxPick }) {
   )
 }
 
-// The two operators, the feedback round the first, the brightness between them
-// and the LFO under both, drawn as the chip wires them and nothing more. Each
-// part opens its own knobs; the knobs' values stay in the rows.
 export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
   const r = useReadings(KEYS)
   const read = (key: Key) => Math.round(r.value(key))
@@ -82,6 +89,7 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
   const lfo = read('fmLfo') | (flags & VIB ? 1 : 0) | (flags & AM ? 2 : 0)
   const indexBoost = boosted && +(INDEX_BOOST ** (bright - 1)).toFixed(1) > 1
   const feedbackBoost = boosted && feedback > FEEDBACK_MAX
+  const ringing = r.value('fmRing') > 0
 
   const mod: Operator = {
     name: 'modulator',
@@ -107,6 +115,9 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
   const span = car.x + car.w - mod.x
   const brightWire = `M${mod.x + mod.w} ${MID} H${car.x}`
   const loopWire = `M${mod.x + mod.w - 12} ${CHIP_Y} V${LOOP_Y} H${mod.x + 12} V${CHIP_Y}`
+  const ringTap = car.x + car.w + 14
+  const ringIn = mod.x - 10
+  const ringWire = `M${ringTap} ${MID} V${RING_Y} H${ringIn} V${MID}`
   const lfoDrops = [mod, car].map(
     op => `M${op.x + op.w / 2} ${LFO_Y} V${CHIP_Y + CHIP_H}`,
   )
@@ -177,6 +188,30 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
               }
             >
               feedback
+            </text>
+          </Bend>
+          <Bend
+            name="operator ring"
+            opens="operator ring"
+            pick={pick}
+            hit={ringWire}
+          >
+            <BendLead
+              arrow={arrow}
+              d={ringWire}
+              x={ringIn}
+              y={MID}
+              down
+              on={ringing}
+            />
+            <Dot x={ringTap} y={MID} look={ringing ? 'alarm' : 'plain'} />
+            <text
+              x={(ringTap + ringIn) / 2}
+              y={RING_Y - 3}
+              textAnchor="middle"
+              className={ringing ? styles.noteOn : styles.note}
+            >
+              operator ring
             </text>
           </Bend>
           <Bend

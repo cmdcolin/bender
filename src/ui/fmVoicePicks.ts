@@ -5,6 +5,7 @@ export const VOICE_PICKS: { id: string; keys: readonly ControlKey[] }[] = [
   { id: 'brightness', keys: ['fmBright'] },
   { id: 'feedback', keys: ['fmFeedback'] },
   { id: 'lfo', keys: ['fmLfo'] },
+  { id: 'operator ring', keys: ['fmRing'] },
 ]
 
 export const VOICE_IDS = ['modulator', 'carrier', ...VOICE_PICKS.map(p => p.id)]

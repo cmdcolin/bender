@@ -86,7 +86,10 @@ const alarmRow = () => {
   return Number(/V(\d+(?:\.\d+)?)/.exec(d ?? '')?.[1])
 }
 
-const dashes = () => die().querySelectorAll('path[class*="wireDash"]').length
+const dashes = () =>
+  [...die().querySelectorAll('path[class*="wireDash"]')].filter(
+    p => !p.closest('g[role="button"]'),
+  ).length
 
 test('a stuck allocator draws its channel in red and the other three dashed', () => {
   open()
@@ -128,4 +131,42 @@ test('pressing a voice row opens the voices box', () => {
     [...die().querySelectorAll('text')].find(t => t.textContent === 'voice 2')!,
   )
   expect(screen.getByText('Log adder')).not.toBeNull()
+})
+
+const jumpers = () => die().querySelectorAll('path[class*="jumper"]').length
+
+test('rot and heat draw red leads into the registers and light them', () => {
+  open()
+  expect(jumpers()).toBe(0)
+  expect(lit('rot')).toBe(false)
+  set({ fmRot: 0.3 })
+  expect(lit('registers')).toBe(true)
+  expect(lit('rot')).toBe(true)
+  expect(lit('heat')).toBe(false)
+  expect(jumpers()).toBe(1)
+  set({ fmRot: 0, fmHeat: 0.3 })
+  expect(lit('registers')).toBe(true)
+  expect(lit('heat')).toBe(true)
+  expect(jumpers()).toBe(1)
+})
+
+const rowLabels = () =>
+  [
+    ...screen
+      .getByRole('region', { name: 'die' })
+      .querySelectorAll('[data-control]'),
+  ].map(r => r.getAttribute('data-control'))
+
+test('the registers list cold boot, rot and heat in the drawing’s order', () => {
+  open()
+  fireEvent.click(screen.getByRole('button', { name: 'registers controls' }))
+  expect(rowLabels()).toEqual(['fmColdBoot', 'fmRot', 'fmHeat'])
+})
+
+test('each lead opens its own knob', () => {
+  open()
+  fireEvent.click(screen.getByRole('button', { name: 'register rot controls' }))
+  expect(rowLabels()).toEqual(['fmRot'])
+  fireEvent.click(screen.getByRole('button', { name: 'heat controls' }))
+  expect(rowLabels()).toEqual(['fmHeat'])
 })

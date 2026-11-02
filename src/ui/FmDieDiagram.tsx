@@ -1,3 +1,4 @@
+import { BendLead } from './BendLead.tsx'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import { ChipDrawing } from './ChipDrawing.tsx'
@@ -14,6 +15,7 @@ import {
   useOpensOnAim,
 } from './diagram.ts'
 import {
+  Bend,
   BoxRows,
   Label,
   PickPart,
@@ -40,6 +42,8 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   registers: ['fmColdBoot', 'fmRot', 'fmHeat'],
   voices: ['fmAdder', 'fmRing'],
   DAC: ['fmDacSlot', 'fmDacSlip'],
+  'register rot': ['fmRot'],
+  heat: ['fmHeat'],
 }
 
 const VOICES = 4
@@ -76,7 +80,8 @@ export function FmDieDiagram() {
   const slip = r.value('fmDacSlip')
   const boot = read('fmColdBoot')
   const adder = read('fmAdder')
-  const rotting = r.value('fmRot') > 0 || r.value('fmHeat') > 0
+  const rot = r.value('fmRot') > 0
+  const heat = r.value('fmHeat') > 0
   const ringing = r.value('fmRing') > 0
 
   const frameW = boxWidth('voice 4') + 16
@@ -103,6 +108,27 @@ export function FmDieDiagram() {
   const voiceX = frameX + (frameW - voiceW) / 2
   const fanX = regsBox.x + regsBox.w + gap / 2
   const mergeX = frameRight + gap / 2
+  const regsMid = regsBox.x + regsBox.w / 2
+  const stubs = [
+    {
+      name: 'register rot',
+      word: 'rot',
+      on: rot,
+      d: `M${regsMid} ${TOP + 12} V${regsBox.y}`,
+      tipY: regsBox.y,
+      down: true,
+      wordY: TOP + 8,
+    },
+    {
+      name: 'heat',
+      word: 'heat',
+      on: heat,
+      d: `M${regsMid} ${HEIGHT - 16} V${regsBox.y + regsBox.h}`,
+      tipY: regsBox.y + regsBox.h,
+      down: false,
+      wordY: HEIGHT - 6,
+    },
+  ]
 
   return (
     <>
@@ -189,6 +215,27 @@ export function FmDieDiagram() {
             <Label x={WIDTH - 2} y={MID + 12} anchor="end">
               out
             </Label>
+            {stubs.map(stub => (
+              <Bend
+                key={stub.name}
+                name={stub.name}
+                opens={stub.name}
+                pick={pick}
+                hit={stub.d}
+              >
+                <BendLead
+                  arrow={arrow}
+                  d={stub.d}
+                  x={regsMid}
+                  y={stub.tipY}
+                  down={stub.down}
+                  on={stub.on}
+                />
+                <Label x={regsMid} y={stub.wordY} anchor="middle" on={stub.on}>
+                  {stub.word}
+                </Label>
+              </Bend>
+            ))}
             <Chip
               box={allocBox}
               lit={alloc > 0}
@@ -198,7 +245,7 @@ export function FmDieDiagram() {
             />
             <Chip
               box={regsBox}
-              lit={boot > 0 || rotting}
+              lit={boot > 0 || rot || heat}
               help="The register file the driver writes. At power-on it holds clean zeros, or random bytes. Rot and heat flip its bits."
               pick={pick}
               keys={OPENS.registers}
@@ -217,6 +264,7 @@ export function FmDieDiagram() {
         card={card(pick)}
         hint="Press a box for its settings."
         keys={pick.selected ? OPENS[pick.selected] : undefined}
+        inOrder
       />
     </>
   )

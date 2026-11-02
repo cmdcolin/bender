@@ -31,7 +31,7 @@ const words = () =>
 const alarms = () =>
   drawing()!.querySelectorAll('path[class*="wireAlarm"]').length
 
-const ROWS = ['Brightness', 'Feedback', 'Car ratio', 'Vibrato']
+const ROWS = ['Brightness', 'Feedback', 'Car ratio', 'Vibrato', 'Operator ring']
 
 const rows = () => ROWS.filter(label => screen.queryByText(label))
 
@@ -126,7 +126,24 @@ test('each part of the close-up opens its own knobs', () => {
   expect(rows()).toEqual(['Brightness'])
   press('LFO')
   expect(rows()).toEqual(['Vibrato'])
+  press('operator ring')
+  expect(rows()).toEqual(['Operator ring'])
+  press('LFO')
   expect(drawing()).not.toBeNull()
   press('LFO')
   expect(rows()).toEqual([])
+})
+
+const jumpers = () =>
+  drawing()!.querySelectorAll('path[class*="jumper"]').length
+
+test('the operator ring draws a red loop from the carrier back to the modulator', () => {
+  open()
+  expect(words()).toContain('operator ring')
+  expect(lit('operator ring')).toBe(false)
+  expect(jumpers()).toBe(0)
+  set({ fmRing: 0.5 })
+  expect(lit('operator ring')).toBe(true)
+  expect(jumpers()).toBe(1)
+  expect(alarms()).toBe(0)
 })
