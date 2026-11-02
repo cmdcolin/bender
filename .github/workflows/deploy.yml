@@ -19,33 +19,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.20.0
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm test:full
       - run: pnpm denormal
 
+  # Runs alongside `check`. Uploading the Pages artifact publishes nothing;
+  # `deploy` does, and it waits on both.
   build:
-    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.20.0
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       # scripts/demoreel.ts encodes the landing page's demo clips with ffmpeg.
       - run: |
           sudo apt-get update
@@ -56,7 +43,7 @@ jobs:
           path: dist
 
   deploy:
-    needs: build
+    needs: [check, build]
     runs-on: ubuntu-latest
     environment:
       name: github-pages
