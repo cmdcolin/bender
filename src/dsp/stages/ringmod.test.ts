@@ -559,7 +559,15 @@ test('a fill plays something in the gaps that silence leaves empty', () => {
   const chop = { ringShape: chopShape, ringHz: 20, ringDuty: 0.3 }
   const silence = gaps(held(play({ ...chop, ringFill: 0 }).l))
   expect(silence.shut).toBeGreaterThan(0.5)
-  for (const name of ['repeat', 'reverse', 'pitch', 'crush', 'skip', 'any']) {
+  for (const name of [
+    'repeat',
+    'reverse',
+    'pitch',
+    'crush',
+    'skip',
+    'burst',
+    'any',
+  ]) {
     const wet = gaps(
       held(play({ ...chop, ringFill: CHOP_FILLS.indexOf(name) }).l),
     )

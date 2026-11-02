@@ -101,7 +101,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: CHOP_FILLS,
-        help: 'With the carrier on chop: what plays while the gate is shut. Silence leaves a gap. Repeat loops the stretch that just played; reverse plays it backwards; pitch loops it at a speed picked each period, up to two octaves either way; crush holds the input at a random rate and cuts it to one to four bits; skip loops the last one to twenty-five milliseconds. Any picks one of those each time the gate shuts. Chop depth is how loud the fill is.',
+        help: 'With the carrier on chop: what plays while the gate is shut. Silence leaves a gap. Repeat loops the stretch that just played; reverse plays it backwards; pitch loops it at a speed picked each period, up to two octaves either way; crush holds the input at a random rate and cuts it to one to four bits; skip loops the last one to twenty-five milliseconds; burst cuts the stretch that just played into two to sixteen slices and retriggers the last one, a ratchet with a new count each time. Any picks one of those each time the gate shuts. Chop depth is how loud the fill is.',
       },
       {
         key: 'ringDepth',
