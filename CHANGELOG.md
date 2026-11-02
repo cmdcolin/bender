@@ -2,6 +2,45 @@
 
 All notable changes to bender are documented here.
 
+## [1.24.0](https://github.com/cmdcolin/bender/compare/v1.23.1...v1.24.0) - 2026-11-02
+
+### Features
+- *(home)* [`a2df1df`](https://github.com/cmdcolin/bender/commit/a2df1df675289e03cedf48c2371cade144a451ef) play the jams of the day as the landing page's demos
+- *(dsp)* [`7a61dfb`](https://github.com/cmdcolin/bender/commit/7a61dfbb5be144bd0cbb24fb4f8a6d51c68ca130) Plinky starts on the arp, not the lullaby
+- *(dsp)* [`18b5747`](https://github.com/cmdcolin/bender/commit/18b5747f14a6f0fc5ac4a07e88e6df238a638f28) Plinky locks to the kit's tempo by default
+- *(dsp)* [`680f802`](https://github.com/cmdcolin/bender/commit/680f802c9a09085881b37b27bf1518adf5652134) chop shape on the ring mod, a pulse-width gate on a clock that picks a new length every period
+- *(dsp)* [`f10b6d8`](https://github.com/cmdcolin/bender/commit/f10b6d834e6adae93ad87245635a951ebfce7b59) chop depth and chop edge on the ring mod
+- *(dsp)* [`c8e2bee`](https://github.com/cmdcolin/bender/commit/c8e2bee2db383c32aee7187169b745272612ef47) chop depth and edge in the ring mod stage, params and sliders
+- *(dsp)* [`084156c`](https://github.com/cmdcolin/bender/commit/084156cd61311a5c56b3a3a58837fb4af786e461) the spring's echoes chirp, and Boing sets how far
+- *(dsp)* [`e97c8a9`](https://github.com/cmdcolin/bender/commit/e97c8a9cee90eb6f7056169b8f4a7ef13aca58df) chop fill, the gaps play a glitch made of what just played
+- *(dsp)* [`da52cee`](https://github.com/cmdcolin/bender/commit/da52ceef3dfbe43ad93ff9818daef37e45f1c9d1) chop clocked from another machine, each channel on its own clock
+- *(dsp)* [`4952edc`](https://github.com/cmdcolin/bender/commit/4952edc41d7474b995a525e399b7db7b725a4b9a) burst fill, a ratchet that retriggers a slice of what just played
+- *(dsp)* [`e0f93be`](https://github.com/cmdcolin/bender/commit/e0f93be3b697018e79f1dbb9931348772b12b46a) burst repeats speed up or slow down
+- *(dsp)* [`cb91e70`](https://github.com/cmdcolin/bender/commit/cb91e701007e5eedeeceab1ddce57e1a00a498c6) patch bay lanes on chop wobble, depth and width
+
+### Fixes
+- *(home)* [`847f020`](https://github.com/cmdcolin/bender/commit/847f020556c74bbc72a88da6f8063566b92e6971) drop the demos that play Twinkle
+- *(dsp)* [`a207119`](https://github.com/cmdcolin/bender/commit/a20711955fb7c00bfaefa92177099be8c72771da) block DC at the spring tank's input
+- *(dsp)* [`e202c0e`](https://github.com/cmdcolin/bender/commit/e202c0e40c81dc80b78dc0ddc97e8678c463df96) the spring's slam detector runs with Kick off
+
+### Performance
+- *(dsp)* [`0972167`](https://github.com/cmdcolin/bender/commit/09721675b782f4a705147d7b5ec93f2ff0b2e9b1) rack verb masks stuck and bridged bus lines inline
+
+### Documentation
+- [`5fc1e65`](https://github.com/cmdcolin/bender/commit/5fc1e65a4a51dc5f30d8ed814a95bf5ae18f9e5d) cut the user guide to pictures with a line each
+- [`efd3251`](https://github.com/cmdcolin/bender/commit/efd325178814c1545f5e984341c61278bb14d121) link the guide's pictures to the app on their boards
+- [`86ee479`](https://github.com/cmdcolin/bender/commit/86ee4796721c22b74f824029a8882a90c18eb376) add a post on driving bender with an AI agent, and the recorder for its clip
+- [`ea57c58`](https://github.com/cmdcolin/bender/commit/ea57c5898d85bcdbdca5238cb9aeaa04b5c4aca3) regenerate features.md
+
+### Style
+- *(dsp)* [`0b966a5`](https://github.com/cmdcolin/bender/commit/0b966a5ca843f2ed1945bb3c9120ee753372819f) strip the spring tank's comments
+
+### Tests
+- *(dsp)* [`b3f470d`](https://github.com/cmdcolin/bender/commit/b3f470d762012d810575603d5d1268a4d2a4ef29) a rack data line to ground or +V
+- *(dsp)* [`81ccee3`](https://github.com/cmdcolin/bender/commit/81ccee3a16acdedab34745ba0f3edb6ecfe385d7) step carrier tests pin the kit sync off
+- *(dsp)* [`7b0e01f`](https://github.com/cmdcolin/bender/commit/7b0e01f48ceebb3dcbf7da78315aee1e69859c0b) starve, fault and FM crystal tests pin the old tune and clock
+- [`ce09329`](https://github.com/cmdcolin/bender/commit/ce09329993c1b064b13e188e088e4c4d66ece347) share workers between node-environment test files
+
 ## [1.23.1](https://github.com/cmdcolin/bender/compare/v1.23.0...v1.23.1) - 2026-11-02
 
 ### Features
