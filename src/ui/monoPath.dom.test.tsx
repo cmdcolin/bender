@@ -84,12 +84,29 @@ test('the sync and FM words open their own knob over the oscillators', () => {
   }
 })
 
-test('the noise and feedback words open the mixer', () => {
+test('the noise, feedback and output cable words open the mixer', () => {
   open()
-  press('noise')
-  expect(screen.getByText('Feedback')).not.toBeNull()
-  press('feedback')
-  expect(screen.queryByText('Feedback')).toBeNull()
+  for (const word of ['noise', 'feedback', 'out to pitch', 'out to gate']) {
+    press(word)
+    expect(screen.getByText('Out to gate'), word).not.toBeNull()
+    press(word)
+    expect(screen.queryByText('Out to gate'), word).toBeNull()
+  }
+})
+
+test('the output cables light once their knobs leave 0', () => {
+  const { container } = open()
+  const word = (text: string) =>
+    [...container.querySelectorAll('text')].find(t => t.textContent === text)!
+  for (const [text, key] of [
+    ['out to pitch', 'monoLoopPitch'],
+    ['out to gate', 'monoChoke'],
+  ] as const) {
+    expect(word(text).getAttribute('class'), text).not.toMatch(/noteOn/)
+    act(() => engine.set(key, 0.5))
+    expect(word(text).getAttribute('class'), text).toMatch(/noteOn/)
+    act(() => engine.set(key, 0))
+  }
 })
 
 test('the modulation wires open the modulation rows', () => {

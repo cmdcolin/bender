@@ -11,7 +11,7 @@ import {
   chainPaths,
   useOpensOnAim,
 } from './diagram.ts'
-import { BoxRows, Label, Wire } from './DiagramParts.tsx'
+import { Bend, BoxRows, Label, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -98,6 +98,7 @@ export function MonoCardDiagram() {
   const regW = ladder.x + ladder.w - regX
   const lowX = ladder.x
   const lowW = vca.x + vca.w - lowX
+  const supplyBent = on('monoSag') || on('monoRegTrip')
 
   return (
     <>
@@ -119,14 +120,20 @@ export function MonoCardDiagram() {
             <Label x={WIDTH - 2} y={MID + 12} anchor="end">
               out
             </Label>
-            {[conv, ladder].map(b => (
-              <Wire
-                key={`sag${b.name}`}
-                arrow={arrow}
-                d={`M${centre(b)} ${TOP + BAR_H} V${CHIP_Y}`}
-                look="dash"
-              />
-            ))}
+            {[conv, ladder].map(b => {
+              const d = `M${centre(b)} ${TOP + BAR_H} V${CHIP_Y}`
+              return (
+                <Bend
+                  key={`sag${b.name}`}
+                  name={`supply to ${b.name}`}
+                  opens="regulator"
+                  pick={pick}
+                  hit={d}
+                >
+                  <Wire arrow={arrow} d={d} look={supplyBent ? 'on' : 'dash'} />
+                </Bend>
+              )
+            })}
             {[ladder, vca].map(b => (
               <Wire
                 key={`cap${b.name}`}
@@ -137,7 +144,7 @@ export function MonoCardDiagram() {
             ))}
             <Chip
               box={{ name: 'regulator', x: regX, y: TOP, w: regW, h: BAR_H }}
-              lit={on('monoSag') || on('monoRegTrip')}
+              lit={supplyBent}
               help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter. A hot regulator shuts off and on in bursts at its thermal limit."
               pick={pick}
               keys={OPENS.regulator}

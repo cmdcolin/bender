@@ -118,3 +118,17 @@ test('each part of the card opens its own knob', () => {
   expect(screen.queryByText('Sag')).toBeNull()
   expect(screen.getByText('Leaky VCA')).not.toBeNull()
 })
+
+test('the supply drops open the regulator and light with either supply fault', () => {
+  open()
+  const drop = () =>
+    screen.getByRole('button', { name: 'supply to ladder controls' })
+  const litDrops = () => card().querySelectorAll('path[class*="wireOn"]').length
+  expect(litDrops()).toBe(0)
+  set({ monoRegTrip: 0.5 })
+  expect(litDrops()).toBe(2)
+  expect(lit('regulator')).toBe(true)
+  set({ monoRegTrip: 0 })
+  fireEvent.click(drop())
+  expect(screen.getByText('Regulator trip')).not.toBeNull()
+})

@@ -106,8 +106,8 @@ const KEYS = [
 const wire = (on: boolean): WireLook => (on ? 'on' : 'dash')
 
 const WIDTH = 420
-const TAIL = 30
-const MID = 76
+const TAIL = 44
+const MID = 88
 const OSC_W = 60
 const OSC_H = 20
 const SYNC_GAP = 22
@@ -213,13 +213,20 @@ export function MonoPathDiagram({
   const pitchY = FRAME_BOTTOM + 8
   const back = loud.x + loud.w + 10
   const over = MID - 30
+  const pitchX = back + 7
+  const gateX = back + 14
+  const pitchLane = FRAME_TOP + 12
+  const gateLane = FRAME_TOP - 6
   const noiseX = mixer.x + mixer.w / 2 - 8
   const loopX = mixer.x + mixer.w / 2 + 8
+  const laneWords = (loopX + back) / 2
   const frameFrame = oscs.id === pick.selected
   const pitchWire = `M${mod.x + 12} ${ROW2} V${pitchY} H${frameX + FRAME_W / 2} V${FRAME_BOTTOM}`
   const filterWire = `M${mod.x + mod.w} ${modMid} H${filter.x + filter.w / 2} V${top + BOX_H}`
   const loopWire = `M${back} ${MID} V${over} H${loopX} V${top}`
   const noiseWire = `M${noiseX} ${over - 12} V${top}`
+  const outPitchWire = `M${pitchX} ${MID} V${pitchLane} H${frameX + FRAME_W}`
+  const outGateWire = `M${gateX} ${MID} V${gateLane} H${keys.x + keys.w / 2} V${top}`
   const tapWire = `M${tap} ${oscMid(2)} V${modMid} H${mod.x}`
   const cardWire = `M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`
   const outWire = `M${loud.x + loud.w} ${MID} H${WIDTH - 2}`
@@ -261,7 +268,7 @@ export function MonoPathDiagram({
             <Bend name="feedback" opens="mixer" pick={pick} hit={loopWire}>
               <Wire arrow={arrow} d={loopWire} look={wire(up('monoLoop'))} />
               <Label
-                x={(loopX + back) / 2}
+                x={laneWords}
                 y={over - 3}
                 anchor="middle"
                 on={up('monoLoop')}
@@ -270,6 +277,48 @@ export function MonoPathDiagram({
               </Label>
             </Bend>
             <Dot x={back} y={MID} />
+            <Bend
+              name="out to pitch"
+              opens="mixer"
+              pick={pick}
+              hit={outPitchWire}
+            >
+              <Wire
+                arrow={arrow}
+                d={outPitchWire}
+                look={wire(up('monoLoopPitch'))}
+              />
+              <Label
+                x={laneWords}
+                y={pitchLane - 3}
+                anchor="middle"
+                on={up('monoLoopPitch')}
+              >
+                out to pitch
+              </Label>
+            </Bend>
+            <Dot x={pitchX} y={MID} />
+            <Bend
+              name="out to gate"
+              opens="mixer"
+              pick={pick}
+              hit={outGateWire}
+            >
+              <Wire
+                arrow={arrow}
+                d={outGateWire}
+                look={wire(up('monoChoke'))}
+              />
+              <Label
+                x={laneWords}
+                y={gateLane - 3}
+                anchor="middle"
+                on={up('monoChoke')}
+              >
+                out to gate
+              </Label>
+            </Bend>
+            <Dot x={gateX} y={MID} />
             <Bend name="noise" opens="mixer" pick={pick} hit={noiseWire}>
               <Wire arrow={arrow} d={noiseWire} look={wire(up('monoNoise'))} />
               <Label
