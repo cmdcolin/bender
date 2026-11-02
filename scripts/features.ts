@@ -29,11 +29,11 @@ const BLURBS: Record<string, string> = {
   'Power supply':
     'Plinky, drums, Glint, Parlor and Growler all run off this battery rail, so a sag here bends all five at once. *Starve* pulls the rail down, *Batteries* keeps it below full, *Lead resistance* makes every note sag it on the attack, and *Reservoir* sets how long the rail takes to get there. *Watchdog* is the voltage at which the reset chip reboots the chips, and *Latch-up* is how often a brownout jams one instead. The *Clip* knobs set the paperclip: how often it touches, how hard it bites, how long it stays, and the charge and release rates. A release faster than the charge makes the touch a dive.',
   Clatter:
-    'A step grid with a length per row, so a five-step hat runs against a sixteen-step kick until they line back up. *Retrigger* repeats the current step at audio rate. *Cross-patch* connects one voice’s amplifier to another’s envelope, so a hit you can hear opens a voice nothing struck. *Address line* and *Data line* cut the wires between the step counter and the pattern memory: the counter keeps counting, the memory returns the wrong steps, and the machine plays a pattern nobody wrote.',
+    'A step grid with a length per row, so a five-step hat runs against a sixteen-step kick until they line back up. *Retrigger* repeats the current step at audio rate. *Cross-patch* connects one voice’s amplifier to another’s envelope, so a hit on one voice opens the amplifier of a voice that was not struck. *Address line* and *Data line* cut the wires between the step counter and the pattern memory: the counter keeps counting, the memory returns the wrong steps, and the machine plays a pattern that differs from the one in the grid.',
   Glint:
-    'The board’s FM synthesiser: two operators a voice, four voices, on the same rail. It has no sequencer: its key input is soldered onto the toy’s gate line, so out of the box it plays whatever strikes a note there. *Struck by* also clips the kit’s trigger lines on, and *Follows toy* cuts the gate jumper (it then reads *own keys only*), so Glint plays only from the keybed on its board. Once the chip is up in the mix, the panel draws that keybed under the toy’s, with a hold and octave for each, and the *keys* switch on either deck sets which of the two the computer’s letter keys play. A processor configures Glint a byte at a time over a bus, and *Data line* and *Address line* cut that bus: a byte that lands wrong stays wrong until the processor writes that register again, and if the wire carrying the key back up cannot go low, the note never ends. *Wave line* cuts the other bus, which the processor never touches. The sine is a table and a table is an address, so a fault there reshapes the wave as you play and leaves nothing behind. *Effect* plays a bird, surf, wind, a siren or crickets from the ROM. Each is a program of register writes, the busiest traffic the bus ever carries. The effect buttons over the keys run any of them while held.',
+    'The board’s FM synthesiser: two operators a voice, four voices, on the same rail. It has no sequencer: its key input is soldered onto the toy’s gate line, so out of the box it plays whatever strikes a note there. *Struck by* also clips the kit’s trigger lines on, and *Follows toy* cuts the gate jumper (it then reads *own keys only*), so Glint plays only from the keybed on its board. Once the chip is up in the mix, the panel draws that keybed under the toy’s, with a hold and octave for each, and the *keys* switch on either deck sets which of the two the computer’s letter keys play. A processor configures Glint a byte at a time over a bus, and *Data line* and *Address line* cut that bus: a byte that lands wrong stays wrong until the processor writes that register again, and if the wire carrying the key back up cannot go low, the note never ends. *Wave line* cuts the other bus, which the processor never touches. Glint looks its sine up in a table by address, so a fault on that bus reshapes the wave as you play, and the wave is whole again as soon as the fault clears. *Effect* plays a bird, surf, wind, a siren or crickets from the ROM. Each effect is a program of register writes, and these programs write to the bus more often than anything else does. The effect buttons over the keys run any of them while held.',
   Parlor:
-    'An eight-bit sampling home keyboard, and the only machine on this board that makes pads, strings, choirs and bells. It has no oscillator: a ROM holds one short recording of each voice, an attack and then a loop, and a counter steps through that ROM at the rate the note asks for. The ROM was cut at 9.9 kHz and nothing interpolates on the way out, so every voice has its images over it, and *Tone*, a two-pole reconstruction filter, sets how much of that you hear. The rate is a twelve-bit divider, so the top octave comes out a few cents sharp and the bottom is in tune. *Address line* cuts the counter’s wires, so each word is real but read from the wrong place and a voice folds onto its first half or reads every sample twice. *Data line* cuts the wires out of the ROM; held high, the top wire folds the bottom half of every wave up onto the top of it. *Chord memory* puts a voicing under one key and fills all four voices with it. *sampled* plays whatever you dropped on the sampler across the keyboard, from a second and a half of memory, with the reel’s loop markers as its loop.',
+    'An eight-bit sampling home keyboard, and the only machine on this board that makes pads, strings, choirs and bells. It has no oscillator: a ROM holds one short recording of each voice, an attack and then a loop, and a counter steps through that ROM at a rate set by the note. The ROM was cut at 9.9 kHz and the output is not interpolated, so every voice has its images over it, and *Tone*, a two-pole reconstruction filter, sets how much of that you hear. The rate is a twelve-bit divider, so the top octave comes out a few cents sharp and the bottom is in tune. *Address line* cuts the counter’s wires, so each word is real but read from the wrong place and a voice folds onto its first half or reads every sample twice. *Data line* cuts the wires out of the ROM; held high, the top wire folds the bottom half of every wave up onto the top of it. *Chord memory* puts a voicing under one key and fills all four voices with it. *sampled* plays whatever you dropped on the sampler across the keyboard, from a second and a half of memory, with the reel’s loop markers as its loop.',
   Growler:
     'A three-oscillator monosynth voice card after the Model D, soldered onto the toy’s supply and gate line. It has three band-limited oscillators with hard sync and a sweep for osc 2, a mixer with noise and the output looped back in, and a four-pole transistor ladder filter that saturates and self-oscillates. It also has two contour generators, glide, and osc 3 as a modulator at audio rate or below. Out of the box the toy’s tune plays it two octaves down; *Gate* sets how long each struck note stays down, and at 1 the tune plays legato and slides. *Struck by* clips the kit’s trigger lines on, so a kick can restart the bass. The voice card has these faults: a converter with no heater, a VCA that leaks, oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck bit on the key DAC and a weak regulator.',
   'Chaos osc':
@@ -46,7 +46,7 @@ const BLURBS: Record<string, string> = {
     'A cassette four-track: a desk of four channel strips, each with knobs and a fader, in front of four tape loops, each cut to a separate length and all on one capstan. A channel takes its input from its loop, the board, the mic or the desk’s aux return, passes it through a trim preamp and three bands of EQ into a fader and an aux send, and records onto its loop over whatever the erase head left. With input on the board and a loop recording, the signal loops round the whole board, so each lap comes back through every bend again. With input on the aux and its send up, the desk is a mixer with nothing plugged in: the sweepable mid tunes the squeal and the op-amp rails clip it. *Wear* sheds oxide at the same places every lap, and *Batteries* lowers the motor and the rails together.',
   Mic: 'A live microphone, the one source that need not reach the mix. *Mic patch* picks the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus, the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s carrier, a trigger line, Spool’s capstan motor, Growler’s external input or Glint’s data bus. *mic into* on the bench bar and the mic cap on each machine list the jacks with what a voice does at each.',
   'Mix bus':
-    'The seven sources meet at this desk, and every fader appears here as well as on its machine’s panel, under the machine’s name, with a meter beside it that reads what that channel puts on the bus, and the bus’s own meter under the lot. A fader’s position does not show whether sound is coming out. Glint shows the difference: it boots at zero, and turned up with nothing striking it (no hand on its keys, no tune next door) it sits at three quarters and plays silence. *Bus drive* is the summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.',
+    'The seven sources meet at this desk, and every fader appears here as well as on its machine’s panel, under the machine’s name, with a meter beside it that reads what that channel puts on the bus, and the bus’s own meter under the lot. A fader’s position does not show whether sound is coming out. Glint’s fader boots at zero, and a Glint turned up with nothing striking it (no hand on its keys, no tune next door) sits at three quarters and plays silence. *Bus drive* is the summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.',
   'Ring mod':
     'Amplitude modulation by a carrier: sine, square, diode bridge or inharmonic bell.',
   Crusher:
@@ -84,11 +84,12 @@ const BLURBS: Record<string, string> = {
     'The bay holds wires, each from a source to a destination at a signed depth. A wire can connect to the toy’s supply rail, the tape loop’s capstan and loop markers, or another wire’s depth, so the bay can modulate itself.',
   'Trigger patch':
     'The Trigger patch panel sets which machine plays which. The kit can play Plinky and the keyboard can play the kit, and Glint, Parlor and Growler each take the kit’s hits through *Kit voice that plays this…* and Plinky’s notes through a jumper that is soldered out of the box.',
-  'Body contact': 'Two axes that put a hand on the circuit.',
+  'Body contact':
+    'The pad has two axes, and a hand on it is a resistor in the circuit.',
   'Feedback bus':
     'The output feeds back in, with a loop time short enough for kHz mixer squeal. *Patched into* sets where the return connects.',
   'Tape machine':
-    'Prints the whole instrument to tape, after everything else. Speed moves gap loss, head bump, hiss, wow rate and print-through together, because on a real machine they all depend on tape speed.',
+    'The tape machine prints the whole instrument to tape, after every other stage. Speed moves gap loss, head bump, hiss, wow rate and print-through together, because on a real machine they all depend on tape speed.',
   Brownout: 'The mains supply failing: sag, dropouts, crackle and hum.',
   Output: 'Gain, ahead of a dc block, soft clip and limiter that always run.',
   'Board parts':
@@ -406,10 +407,10 @@ grey out. \`pnpm diagram\` renders it with the same layout the app uses.
   onto the reel at the play head. With nothing loaded, *rec* starts a first take on a
   blank reel, and a second press closes the loop at the length you played and
   starts it looping. Each later press overdubs, and *undo* removes the last
-  overdub off again. The audio on the next lap has already been through the mix
+  overdub. The audio on the next lap has already been through the mix
   bus, the bends, the pedals and the tape machine, and goes through all of them
-  again. The loop is re-recorded on every lap, so generation loss is real, and a
-  bend in the path makes the loop diverge instead of fading. The reel under the
+  again. The loop is re-recorded on every lap, so each lap loses a generation, and a
+  bend in the path changes the loop further on each lap. The reel under the
   keys shows the tape as the head reads it: drag its two markers to trim the
   loop, drag the tape itself to move the head. *Wear* and *Hiss* add the head's
   loss to each lap. The top end falls a little more every pass, and a layer of
@@ -422,10 +423,11 @@ grey out. \`pnpm diagram\` renders it with the same layout the app uses.
   same idea with your finger as the resistor.
 - **Whole boards.** ${PRESETS.length} presets, and a roll button on every heading as
   well as on the whole board; **morph** moves between two boards over up to
-  thirty seconds; **hunt** plays six candidates and keeps the one that spends
-  the most time arriving at the limiter and backing off; **drift** shifts the
-  board on a timer. Presets, rolls, morphs and hunts enter a walk that ctrl+z
-  steps back through; drift does not.
+  thirty seconds; **hunt** plays six candidates and keeps the one whose limiter
+  gain reduction varies most, which is a board that keeps reaching the limiter
+  and backing off; **drift** shifts the
+  board on a timer. Presets, rolls, morphs and hunts add a step to the undo
+  history, which ctrl+z steps back through; drift does not.
 - **A link is a patch.** The URL holds the board in a form short enough to
   survive a chat window, and a long \`#set=\` form names the controls if you
   would rather type one. Play it over MIDI, record it to wav.
@@ -446,7 +448,7 @@ names it still sets it. ${
     out.push(`## ${place}\n`)
     if (place === 'Pedals') {
       out.push(
-        `${cap(num(BENDS.length))} pedals compete for ${num(slots)} ordered sockets, so ${num(BENDS.length - slots)} always sit out. Each has a mix, and a mix at zero takes the stage out of the path. The other ${num(groups.length - BENDS.length)} follow the sockets: all of them are always on the board, their order is one control, and a pedal at zero mix leaves the path.\n`,
+        `${cap(num(BENDS.length))} pedals compete for ${num(slots)} ordered sockets. Each has a mix, and a mix at zero takes the stage out of the path. The other ${num(groups.length - BENDS.length)} follow the sockets: all of them are always on the board, their order is one control, and a pedal at zero mix leaves the path.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))
@@ -463,11 +465,11 @@ names it still sets it. ${
   bus without re-rolling the toy's clock and bend pot.
 - **Morph** moves between two boards over time, and pressing
   it mid-flight keeps the half-way board as an ordinary board. **Hunt** plays
-  candidates and keeps the one that spends the most time arriving at the limiter
-  and backing off. **Drift** moves the board to somewhere near where it stands
-  every fifteen seconds, indefinitely. Drift adds no step to the walk, so one undo
+  candidates and keeps the one whose limiter gain reduction varies most, which is
+  a board that keeps reaching the limiter and backing off. **Drift** moves the board to a board close to the current one
+  every fifteen seconds, indefinitely. Drift adds no step to the undo history, so one undo
   restores the board you set drifting.
-- **The walk**: every gesture that sets a board, such as a preset, a roll, a
+- **Undo history**: every gesture that sets a board, such as a preset, a roll, a
   stage reset or a sweep of one knob, is a step, and ctrl+z and ctrl+shift+z go
   back and forward through the steps.
 - **The board is stored in the URL**, so a link is a patch: \`#p=\` packs it into

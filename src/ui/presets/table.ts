@@ -184,7 +184,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'dying toy',
-    blurb: 'Starved rail, sagging pitch, watchdog reboots mid-tune',
+    blurb:
+      'The rail starves, the pitch sags and the watchdog reboots the chips mid-tune',
     patch: {
       chipLevel: 0.85,
       chipStarve: 0.85,
@@ -548,7 +549,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'tape scream',
-    blurb: 'Runaway delay feedback, warped transport',
+    blurb: 'The delay feedback runs away and the transport warps',
     patch: {
       chipLevel: 0.5,
       dlyMix: 0.7,
@@ -604,7 +605,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'dogfight',
-    blurb: 'Cross-modulated oscillators starving themselves',
+    blurb: 'Cross-modulated oscillators starve themselves',
     patch: {
       chipLevel: 0,
       oscLevel: 0.85,

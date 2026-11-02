@@ -54,15 +54,15 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   onto the reel at the play head. With nothing loaded, _rec_ starts a first take
   on a blank reel, and a second press closes the loop at the length you played
   and starts it looping. Each later press overdubs, and _undo_ removes the last
-  overdub off again. The audio on the next lap has already been through the mix
-  bus, the bends, the pedals and the tape machine, and goes through all of them
-  again. The loop is re-recorded on every lap, so generation loss is real, and a
-  bend in the path makes the loop diverge instead of fading. The reel under the
-  keys shows the tape as the head reads it: drag its two markers to trim the
-  loop, drag the tape itself to move the head. _Wear_ and _Hiss_ add the head's
-  loss to each lap. The top end falls a little more every pass, and a layer of
-  noise goes down under the last. _Hold_ raises the write level by what a lap
-  lost, so a loop stays at its level.
+  overdub. The audio on the next lap has already been through the mix bus, the
+  bends, the pedals and the tape machine, and goes through all of them again.
+  The loop is re-recorded on every lap, so each lap loses a generation, and a
+  bend in the path changes the loop further on each lap. The reel under the keys
+  shows the tape as the head reads it: drag its two markers to trim the loop,
+  drag the tape itself to move the head. _Wear_ and _Hiss_ add the head's loss
+  to each lap. The top end falls a little more every pass, and a layer of noise
+  goes down under the last. _Hold_ raises the write level by what a lap lost, so
+  a loop stays at its level.
 - **A microphone into the middle of the board.** _mic into_ on the bench bar
   solders the mic to one of 16 jacks: the toy's clock pin, so your pitch sets
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
@@ -70,10 +70,11 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   your finger as the resistor.
 - **Whole boards.** 158 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
-  seconds; **hunt** plays six candidates and keeps the one that spends the most
-  time arriving at the limiter and backing off; **drift** shifts the board on a
-  timer. Presets, rolls, morphs and hunts enter a walk that ctrl+z steps back
-  through; drift does not.
+  seconds; **hunt** plays six candidates and keeps the one whose limiter gain
+  reduction varies most, which is a board that keeps reaching the limiter and
+  backing off; **drift** shifts the board on a timer. Presets, rolls, morphs and
+  hunts add a step to the undo history, which ctrl+z steps back through; drift
+  does not.
 - **A link is a patch.** The URL holds the board in a form short enough to
   survive a chat window, and a long `#set=` form names the controls if you would
   rather type one. Play it over MIDI, record it to wav.
@@ -100,20 +101,20 @@ Plinky shares with four other machines.
 Named cuts, one press each under _fault on the bus_, as in the panel. A press
 puts the fault on, and the rows under it show the controls it set:
 
-- **rests fill in**: A note wire held high — the song keeps its rhythm and its
-  silences become notes
-- **melody in clumps**: Two note wires soldered to each other, so the tune’s
+- **rests fill in**: A note wire is held high, so the song keeps its rhythm and
+  its silences become notes
+- **melody in clumps**: Two note wires are soldered to each other, so the tune’s
   pitches fall on a lattice instead of on its intervals
-- **the tune in the bass**: The two wires carrying the big intervals soldered to
-  each other — a note that needs one of them gets neither, and the melody keeps
-  its shape an octave or two lower
-- **half a tune**: The top address wire on the floor — the song folds into its
+- **the tune in the bass**: The two wires carrying the big intervals are
+  soldered to each other. A note that needs one of them gets neither, and the
+  melody keeps its shape an octave or two lower
+- **half a tune**: The top address wire is grounded, so the song folds into its
   first half and stays there
-- **every step twice**: The bottom address wire low — the counter counts as it
-  always did and the ROM hands back each step twice
-- **two songs at once**: A trace half cut — most steps arrive, and the rest come
-  back off the wire next door, so the melody flickers between two versions of
-  itself
+- **every step twice**: The bottom address wire is held low, so the counter
+  counts as it always did and the ROM hands back each step twice
+- **two songs at once**: A trace is half cut. Most steps arrive and the rest
+  come back off the wire next door, so the melody flickers between two versions
+  of itself
 
 <details>
 <summary>56 controls</summary>
@@ -184,10 +185,10 @@ puts the fault on, and the rows under it show the controls it set:
 A step grid with a length per row, so a five-step hat runs against a
 sixteen-step kick until they line back up. _Retrigger_ repeats the current step
 at audio rate. _Cross-patch_ connects one voice’s amplifier to another’s
-envelope, so a hit you can hear opens a voice nothing struck. _Address line_ and
-_Data line_ cut the wires between the step counter and the pattern memory: the
-counter keeps counting, the memory returns the wrong steps, and the machine
-plays a pattern nobody wrote.
+envelope, so a hit on one voice opens the amplifier of a voice that was not
+struck. _Address line_ and _Data line_ cut the wires between the step counter
+and the pattern memory: the counter keeps counting, the memory returns the wrong
+steps, and the machine plays a pattern that differs from the one in the grid.
 
 The pattern grid is a widget, so the table below leaves it out. It has ten rows
 (the eight voices, an accent and an echo row), each with 16 steps and a length,
@@ -197,41 +198,41 @@ is 104 more controls, and a link stores them like the rest.
 Named cuts, one press each under _fault on the bus_, as in the panel. A press
 puts the fault on, and the rows under it show the controls it set:
 
-- **machine-gun**: The hat’s trigger wire held high — it fires on every step the
-  machine fetches, and everything soldered to the trigger bus receives the
-  trigger
-- **kick on every step**: The kick’s trigger wire held high — the kick fires on
-  every step the machine fetches, and the bar goes under everything else
-- **what both rows agree on**: Kick and snare soldered together — a busy pattern
-  thins to the steps the pair have in common
-- **accent on everything**: The wire above the voices held high — the accent bus
-  fires on every step, so with Accent sag up each step’s weight depends on how
-  many voices it strikes
-- **every step twice**: The bottom address wire low — the playhead runs the bar
-  you wrote and the memory answers with half of it, twice over
-- **back half of the bar**: The top address wire high — you get the second half
-  of the pattern and never the first
-- **coming apart**: A trace half cut — most fetches land, the occasional one
-  does not, and the pattern comes apart a step at a time
-- **the bar walks**: The counter’s clock, missing an edge here and there — every
-  step still fires, but one in six of them fires twice and the bar never comes
-  back to where it started
-- **five-step bar**: The snare’s trigger line on the counter’s clear pin. The
-  first snare sends the counter back to step one, so the rock beat comes round
-  every five steps
-- **writes its own pattern**: An XOR in the loop the bar circulates through —
-  every lap mixes each step with the next, so the beat grows into patterns
-  nobody drew and comes back within 255 bars
-- **inside out every other bar**: The circulating bar’s return inverted — each
-  lap plays the last one’s gaps, so a sparse bar and a bar of every voice on
-  nearly every step take turns
-- **the kick plays the kit**: The end stop on the slab counter cut, so the
+- **machine-gun**: The hat’s trigger wire is held high, so the hat fires on
+  every step the machine fetches, and everything soldered to the trigger bus
+  receives the trigger
+- **kick on every step**: The kick’s trigger wire is held high, so the kick
+  fires on every step the machine fetches and the bar goes under everything else
+- **what both rows agree on**: Kick and snare are soldered together, so a busy
+  pattern thins to the steps the pair have in common
+- **accent on everything**: The wire above the voices is held high, so the
+  accent bus fires on every step. With Accent sag up, each step’s weight depends
+  on how many voices it strikes
+- **every step twice**: The bottom address wire is held low, so the playhead
+  runs the bar you wrote and the memory answers with half of it, twice over
+- **back half of the bar**: The top address wire is held high, so the machine
+  plays only the second half of the pattern
+- **coming apart**: A trace is half cut. Most fetches arrive and the occasional
+  one fails, so the pattern comes apart a step at a time
+- **the bar walks**: The counter’s clock misses an edge now and then. Every step
+  still fires, but one in six of them fires twice and the bar never comes back
+  to where it started
+- **five-step bar**: The snare’s trigger line is wired to the counter’s clear
+  pin. The first snare sends the counter back to step one, so the rock beat
+  comes round every five steps
+- **writes its own pattern**: An XOR sits in the loop the bar circulates
+  through. Every lap mixes each step with the next, so the beat grows into
+  patterns that are not on the grid and comes back within 255 bars
+- **inside out every other bar**: The circulating bar’s return is inverted, so
+  each lap plays the last one’s gaps, and a sparse bar and a bar of every voice
+  on nearly every step take turns
+- **the kick plays the kit**: The end stop on the slab counter is cut, so the
   counter continues through every slab after the voice’s slab and one kick hit
   plays four seconds of the kit
-- **every hit backwards**: The up/down pin on the slab counter wired, so each
+- **every hit backwards**: The up/down pin on the slab counter is wired, so each
   slab plays from its tail to its attack
-- **folded blat**: The top data wire on the sample ROM held high, so every word
-  sits in the top half and each hit folds into a square-edged blat
+- **folded blat**: The top data wire on the sample ROM is held high, so every
+  word sits in the top half and each hit folds into a square-edged blat
 
 <details>
 <summary>65 controls</summary>
@@ -319,11 +320,12 @@ two the computer’s letter keys play. A processor configures Glint a byte at a
 time over a bus, and _Data line_ and _Address line_ cut that bus: a byte that
 lands wrong stays wrong until the processor writes that register again, and if
 the wire carrying the key back up cannot go low, the note never ends. _Wave
-line_ cuts the other bus, which the processor never touches. The sine is a table
-and a table is an address, so a fault there reshapes the wave as you play and
-leaves nothing behind. _Effect_ plays a bird, surf, wind, a siren or crickets
-from the ROM. Each is a program of register writes, the busiest traffic the bus
-ever carries. The effect buttons over the keys run any of them while held.
+line_ cuts the other bus, which the processor never touches. Glint looks its
+sine up in a table by address, so a fault on that bus reshapes the wave as you
+play, and the wave is whole again as soon as the fault clears. _Effect_ plays a
+bird, surf, wind, a siren or crickets from the ROM. Each effect is a program of
+register writes, and these programs write to the bus more often than anything
+else does. The effect buttons over the keys run any of them while held.
 
 Named settings, one press each at the head of the panel. A press resets the
 stage to stock and writes the setting over it, and the rows underneath show the
@@ -341,63 +343,64 @@ puts the fault on, and the rows under it show the controls it set:
 
 - **the note never ends**: The data bit that sets the key cannot go low, so the
   processor’s key-off write leaves the key on and no note ever stops
-- **sub, not bells**: The top two octave bits soldered together, so the
-  processor can write a high octave only by writing the very top one — every
+- **sub, not bells**: The top two octave bits are soldered together, so the
+  processor can write a high octave only by writing the very top one. Every
   voice lands in the bottom of its range and the sub comes up with it
-- **the bottom of every octave**: The bottom bit of every byte on the floor: the
-  frequency loses its top bit, the operators lose the bottom of their
-  multipliers, and a chip that was ringing sits down
-- **an instrument with no button**: The top wire high, so the number naming
-  which instrument a channel plays stops being zero — the channels leave the
+- **the bottom of every octave**: The bottom bit of every byte is grounded, so
+  the frequency loses its top bit, the operators lose the bottom of their
+  multipliers, and a chip that was ringing goes quiet
+- **an instrument with no button**: The top wire is held high, so the number
+  that selects a channel’s instrument is no longer zero. The channels leave the
   patch the panel sent and read the ROM on the die, where seven of the fifteen
   sounds have no button on the case
-- **a patch nearly right**: A byte wire half cut — most writes land and the odd
-  one arrives off the wire next door, so patches come out wrong and stay wrong
-- **wrong register**: Every odd register filed on top of the even one below it —
-  the four voices no longer have separate frequencies
-- **octave up, with a cliff**: The wire that mirrors the quarter wave held, so
-  the quarter runs twice — the note is right and the wave has a step in it
-- **sine into noise**: The sign wire of the sine table parted most of the way. A
-  floating pin has no driver, and this bus is read eight times a sample by a
-  different operator each turn, so it never settles anywhere — the one fault on
-  this chip that comes out louder than no fault at all
-- **no fundamental**: The sign bit of the sine table held to ground — a
-  rectified wave, all octave and nothing underneath it
-- **nothing is ever quiet**: The top wire out of the sine table held high, so no
-  sample the chip reads is worth less than half of full scale — the quiet parts
-  of every wave fill in and the note comes out square-edged and buzzing, at the
+- **a patch nearly right**: A byte wire is half cut. Most writes arrive and the
+  odd one comes off the wire next door, so patches come out wrong and stay wrong
+- **wrong register**: Every odd register is filed on top of the even one below
+  it, so the four voices no longer have separate frequencies
+- **octave up, with a cliff**: The wire that mirrors the quarter wave is held,
+  so the quarter runs twice. The note is right and the wave has a step in it
+- **sine into noise**: The sign wire of the sine table is parted most of the
+  way. A floating pin has no driver, and this bus is read eight times a sample
+  by a different operator each turn, so the pin never settles. It is the one
+  fault on this chip that comes out louder than the chip with no fault
+- **no fundamental**: The sign bit of the sine table is held to ground, so the
+  chip plays a rectified wave, all octave and no fundamental
+- **nothing is ever quiet**: The top wire out of the sine table is held high, so
+  every sample the chip reads is at least half of full scale. The quiet parts of
+  every wave fill in and the note comes out square-edged and buzzing, at the
   same pitch it always was
-- **the table goes stale**: The top wire out of the sine table parted instead.
-  Eight operators a sample take turns on this one datapath, so the pin holds
-  whichever of them drove it last — the amplitude arrives from a different
-  operator every turn and the chip turns to gravel
-- **a patch that will not hold still**: The patch table’s P2 parted most of the
-  way. That wire selects a patch’s tone bytes or its envelope bytes, and it
+- **the table goes stale**: The top wire out of the sine table is parted. Eight
+  operators a sample take turns on this one datapath, so the pin holds whichever
+  of them drove it last. The amplitude arrives from a different operator every
+  turn and the chip turns to gravel
+- **a patch that will not hold still**: The patch table’s P2 is parted most of
+  the way. That wire selects a patch’s tone bytes or its envelope bytes, and it
   carries a signal only some of the time, so every few milliseconds the
   operators read a different mix of the two and the note smears into static
-- **nine times the note**: B3 out of the patch table held high: the top bit of
-  both multipliers, so both operators run at nine times the note and the song
-  comes out three octaves up as a whistle, on half a sine, every decay cut short
-  off the same wire
+- **nine times the note**: B3 out of the patch table is held high. B3 is the top
+  bit of both multipliers, so both operators run at nine times the note and the
+  song comes out three octaves up as a whistle. The same wire also puts the song
+  on half a sine and cuts every decay short
 - **one write late**: The latch misses often enough that every byte commits to
   the register the write before it named
-- **one voice, four times over**: The converter’s slot counter stuck on the
-  first channel — that voice goes out in all four slots, four times as loud into
-  the output stage, and every note that landed elsewhere is gone
-- **the song upside down**: The slot counter running at half speed, so every
-  other sample contains two channels twice and two not at all — the song comes
+- **one voice, four times over**: The converter’s slot counter is stuck on the
+  first channel, so that voice goes out in all four slots, four times as loud
+  into the output stage, and every note that landed elsewhere is gone
+- **the song upside down**: The slot counter runs at half speed, so every other
+  sample contains two channels twice and omits the other two. The song comes
   back mirrored about 12 kHz, low notes high and high notes low
-- **one finger**: The driver’s allocator stuck on the first channel: a
-  four-voice chip plays one note at a time, every note chopping the last one’s
-  tail off
+- **one finger**: The driver’s allocator is stuck on the first channel, so a
+  four-voice chip plays one note at a time and every note cuts off the last
+  one’s tail
 - **garbage at power-on**: The chip power-cycles into a register file of random
-  bytes — channels that came up keyed drone at random pitches on instruments
-  nobody chose, until a note is played on them
-- **fades that explode**: The part’s log arithmetic on a 10-bit adder that wraps
-  — every note that decays 24 dB comes back at full scale and decays again
-- **sines folded to grit**: The log adder cut to 7 bits, so anything 3 dB down
-  wraps back to the top — the quiet middle of every wave folds up into a harsh
-  digital buzz at the pitch it always had
+  bytes. Channels that came up keyed drone at random pitches on random
+  instruments until a note is played on them
+- **fades that explode**: The part’s log arithmetic runs on a 10-bit adder that
+  wraps, so every note that decays 24 dB comes back at full scale and decays
+  again
+- **sines folded to grit**: The log adder is cut to 7 bits, so anything 3 dB
+  down wraps back to the top. The quiet middle of every wave folds up into a
+  harsh digital buzz at the pitch it always had
 
 <details>
 <summary>45 controls</summary>
@@ -457,40 +460,40 @@ puts the fault on, and the rows under it show the controls it set:
 An eight-bit sampling home keyboard, and the only machine on this board that
 makes pads, strings, choirs and bells. It has no oscillator: a ROM holds one
 short recording of each voice, an attack and then a loop, and a counter steps
-through that ROM at the rate the note asks for. The ROM was cut at 9.9 kHz and
-nothing interpolates on the way out, so every voice has its images over it, and
-_Tone_, a two-pole reconstruction filter, sets how much of that you hear. The
-rate is a twelve-bit divider, so the top octave comes out a few cents sharp and
-the bottom is in tune. _Address line_ cuts the counter’s wires, so each word is
-real but read from the wrong place and a voice folds onto its first half or
-reads every sample twice. _Data line_ cuts the wires out of the ROM; held high,
-the top wire folds the bottom half of every wave up onto the top of it. _Chord
-memory_ puts a voicing under one key and fills all four voices with it.
-_sampled_ plays whatever you dropped on the sampler across the keyboard, from a
-second and a half of memory, with the reel’s loop markers as its loop.
+through that ROM at a rate set by the note. The ROM was cut at 9.9 kHz and the
+output is not interpolated, so every voice has its images over it, and _Tone_, a
+two-pole reconstruction filter, sets how much of that you hear. The rate is a
+twelve-bit divider, so the top octave comes out a few cents sharp and the bottom
+is in tune. _Address line_ cuts the counter’s wires, so each word is real but
+read from the wrong place and a voice folds onto its first half or reads every
+sample twice. _Data line_ cuts the wires out of the ROM; held high, the top wire
+folds the bottom half of every wave up onto the top of it. _Chord memory_ puts a
+voicing under one key and fills all four voices with it. _sampled_ plays
+whatever you dropped on the sampler across the keyboard, from a second and a
+half of memory, with the reel’s loop markers as its loop.
 
 Named cuts, one press each under _fault on the bus_, as in the panel. A press
 puts the fault on, and the rows under it show the controls it set:
 
-- **the top bit sticks**: The top wire out of the sample ROM held high — the
-  bottom half of every wave folds up onto the top of it, and the pad comes back
-  as a rectified buzz at the pitch it always was
-- **gravel**: A notch punched through every word the ROM hands back. The address
-  is right and the sample is not, on every voice, so the note keeps its pitch
-  and loses its surface
-- **the voice in clumps**: Two of the top wires the ROM answers on soldered to
-  each other — the words snap to a lattice and a voice that was a curve comes
-  out in steps
-- **half the wave**: The top address wire on the floor. The counter walks the
+- **the top bit sticks**: The top wire out of the sample ROM is held high, so
+  the bottom half of every wave folds up onto the top of it, and the pad comes
+  back as a rectified buzz at the pitch it always was
+- **gravel**: A notch is punched through every word the ROM hands back. The
+  address is right and the sample is not, on every voice, so the note keeps its
+  pitch and loses its surface
+- **the voice in clumps**: Two of the ROM’s top data wires are soldered to each
+  other, so the words snap to a lattice and a voice that was a curve comes out
+  in steps
+- **half the wave**: The top address wire is grounded. The counter walks the
   whole recording and the ROM keeps handing back its first half, so every voice
   loops inside the attack
-- **a word in four**: Two address wires soldered to each other, so the counter
-  can only name one word in four — it walks the recording at the rate it always
-  did and gets a staircase back
-- **the loop goes stale**: An address trace parted most of the way. The pin has
-  no driver, so it holds whatever the last address left on it and then starts
-  drifting after its neighbour — the one fault on this chip that never stands
-  still
+- **a word in four**: Two address wires are soldered to each other, so the
+  counter can address only one word in four. It walks the recording at the rate
+  it always did and gets a staircase back
+- **the loop goes stale**: An address trace is parted most of the way. The pin
+  has no driver, so it holds whatever the last address left on it and then
+  starts drifting after its neighbour. It is the one fault on this chip whose
+  sound keeps changing
 
 <details>
 <summary>27 controls</summary>
@@ -802,11 +805,10 @@ A release faster than the charge makes the touch a dive.
 The seven sources meet at this desk, and every fader appears here as well as on
 its machine’s panel, under the machine’s name, with a meter beside it that reads
 what that channel puts on the bus, and the bus’s own meter under the lot. A
-fader’s position does not show whether sound is coming out. Glint shows the
-difference: it boots at zero, and turned up with nothing striking it (no hand on
-its keys, no tune next door) it sits at three quarters and plays silence. _Bus
-drive_ is the summing amp, at unity gain at 0 dB and the one saturation ahead of
-the bends.
+fader’s position does not show whether sound is coming out. Glint’s fader boots
+at zero, and a Glint turned up with nothing striking it (no hand on its keys, no
+tune next door) sits at three quarters and plays silence. _Bus drive_ is the
+summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.
 
 The desk is a widget, and its ten faders are counted under the machines they
 belong to: each is the first knob on that machine's panel and one strip of this
@@ -823,10 +825,10 @@ one.
 
 ## Pedals
 
-Ten pedals compete for six ordered sockets, so four always sit out. Each has a
-mix, and a mix at zero takes the stage out of the path. The other six follow the
-sockets: all of them are always on the board, their order is one control, and a
-pedal at zero mix leaves the path.
+Ten pedals compete for six ordered sockets. Each has a mix, and a mix at zero
+takes the stage out of the path. The other six follow the sockets: all of them
+are always on the board, their order is one control, and a pedal at zero mix
+leaves the path.
 
 ### Ring mod
 
@@ -855,18 +857,18 @@ jitter on the rate.
 Named cuts, one press each under _fault on the bus_, as in the panel. A press
 puts the fault on, and the rows under it show the controls it set:
 
-- **the sign bit wanders**: The top wire into the DAC parted. Nothing drives the
-  pin, so it holds a word and then drags after D14, and each half of the wave
+- **the sign bit wanders**: The top wire into the DAC is parted. The pin has no
+  driver, so it holds a word and then drags after D14, and each half of the wave
   lands in the wrong half a few words at a time
-- **every wave folded up**: The top wire held at +V, so every word reads as the
-  top half: the bottom of each wave jumps up a whole half scale and lands on top
-  of the rest
-- **two bits that agree**: D14 soldered to D15. A word keeps both only where
+- **every wave folded up**: The top wire is held at +V, so every word reads as
+  the top half: the bottom of each wave jumps up a whole half scale and lands on
+  top of the rest
+- **two bits that agree**: D14 is soldered to D15. A word keeps both only where
   both are set, so the four quarters of the wave collapse onto two and the pitch
   climbs
-- **a bit that comes and goes**: D13 parted most of the way: the bit floats
-  after its neighbour, and every time the trace still conducts the real bit
-  slams back
+- **a bit that comes and goes**: D13 is parted most of the way, so the bit
+  floats after its neighbour, and every time the trace still conducts the real
+  bit slams back
 
 <details>
 <summary>15 controls</summary>
@@ -898,22 +900,22 @@ A rack of clipping circuits, with bias, a tone control and a sub octave.
 Named cuts, one press each under _the amp_, as in the panel. A press puts the
 fault on, and the rows under it show the controls it set:
 
-- **motorboat**: The amp on the toy’s own cells, pulling hard: each loud stretch
-  sags the rail, the toy dives about five semitones, the amp mutes, the rail
-  recovers and it pops back in, twelve times a second
-- **growl on the rail**: Pin 7 open and the amp loading the toy’s cells, so its
-  own supply ripple comes back in as a 60 Hz motorboat growl under the tune
-- **the amp sings**: A big cap across pins 1 and 8 for 600 times the gain: the
-  amp runs out of phase margin and holds a 1.1 kHz note over everything
-- **pin 7 screams**: The bypass cap off pin 7: the amp oscillates at 3 kHz on a
-  full supply and swallows the tune
-- **chokes on every hit**: Two hundred times the gain into a coupling cap that
-  charges on each clipped peak, so the amp shuts after every loud note and
-  sputters back
-- **phone speaker**: A cone the size of a coin: no bass, a honk near 340 Hz and
-  a buzz on every bass note
-- **blown cone**: The smallest cone, slamming into its stops on every note, so
-  the tune comes out as clicks and rattle
+- **motorboat**: The amp runs on the toy’s own cells and pulls hard. Each loud
+  stretch sags the rail, the toy dives about five semitones, the amp mutes, the
+  rail recovers and the amp pops back in, twelve times a second
+- **growl on the rail**: Pin 7 is open and the amp loads the toy’s cells, so the
+  amp’s supply ripple comes back in as a 60 Hz motorboat growl under the tune
+- **the amp sings**: A big cap across pins 1 and 8 gives 600 times the gain, so
+  the amp runs out of phase margin and holds a 1.1 kHz note over everything
+- **pin 7 screams**: With the bypass cap off pin 7, the amp oscillates at 3 kHz
+  on a full supply and drowns out the tune
+- **chokes on every hit**: The amp runs at two hundred times the gain into a
+  coupling cap that charges on each clipped peak, so the amp shuts after every
+  loud note and sputters back
+- **phone speaker**: The speaker is a cone the size of a coin, so it has no
+  bass, a honk near 340 Hz and a buzz on every bass note
+- **blown cone**: The smallest cone slams into its stops on every note, so the
+  tune comes out as clicks and rattle
 
 <details>
 <summary>14 controls</summary>
@@ -1365,7 +1367,7 @@ jumper that is soldered out of the box.
 
 ### Body contact
 
-Two axes that put a hand on the circuit.
+The pad has two axes, and a hand on it is a resistor in the circuit.
 
 <details>
 <summary>2 controls</summary>
@@ -1439,9 +1441,9 @@ result:
 
 ### Tape machine
 
-Prints the whole instrument to tape, after everything else. Speed moves gap
-loss, head bump, hiss, wow rate and print-through together, because on a real
-machine they all depend on tape speed.
+The tape machine prints the whole instrument to tape, after every other stage.
+Speed moves gap loss, head bump, hiss, wow rate and print-through together,
+because on a real machine they all depend on tape speed.
 
 <details>
 <summary>17 controls</summary>
@@ -1624,11 +1626,11 @@ result:
   toy's clock and bend pot.
 - **Morph** moves between two boards over time, and pressing it mid-flight keeps
   the half-way board as an ordinary board. **Hunt** plays candidates and keeps
-  the one that spends the most time arriving at the limiter and backing off.
-  **Drift** moves the board to somewhere near where it stands every fifteen
-  seconds, indefinitely. Drift adds no step to the walk, so one undo restores
-  the board you set drifting.
-- **The walk**: every gesture that sets a board, such as a preset, a roll, a
+  the one whose limiter gain reduction varies most, which is a board that keeps
+  reaching the limiter and backing off. **Drift** moves the board to a board
+  close to the current one every fifteen seconds, indefinitely. Drift adds no
+  step to the undo history, so one undo restores the board you set drifting.
+- **Undo history**: every gesture that sets a board, such as a preset, a roll, a
   stage reset or a sweep of one knob, is a step, and ctrl+z and ctrl+shift+z go
   back and forward through the steps.
 - **The board is stored in the URL**, so a link is a patch: `#p=` packs it into
@@ -1665,7 +1667,7 @@ the board waits until you press play.
   a data line on the rail and the address bus bridged — the tape loop’s fader
   down, so the only copy you hear is the keyed one
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
-  — Starved rail, sagging pitch, watchdog reboots mid-tune
+  — The rail starves, the pitch sags and the watchdog reboots the chips mid-tune
 - [**techno**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep1:0,monoSeqStep2:0,monoSeqStep3:0,monoSeqStep5:0,monoSeqStep6:0,monoSeqStep7:12,monoSeqStep9:0,monoSeqStep10:0,monoSeqStep11:0,monoSeqStep13:0,monoSeqStep14:12,monoSeqStep15:-2,monoSeqAccentLo:8738,drumLevel:0.9,drumBpm:130,drumKick:34952,drumHat:56797,drumClap:2056,drumOpen:8738,drumAccent:8738,monoLevel:1.2,monoKeyGate:1,monoGate:0.45,monoWave2:2,monoMix1:1,monoMix2:0.5,monoMix3:0,monoCutoff:380,monoEmph:0.45,monoContour:2.4,monoTrack:0.5,monoDrive:1.8,monoFD:0.12,monoFS:0,monoFR:0.06,monoAD:0.18,monoAS:0.3,monoAR:0.03)
   — Four on the floor at 130, clap on two and four, closed hats choked by an
   open one on every offbeat, and Growler rolling three sixteenths of bass after
@@ -1729,7 +1731,7 @@ the board waits until you press play.
 - [**crushed chip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:2,bits:3,srHz:2600,srJitter:0.6,crushMix:0.9)
   — Overclocked tune through a dying DAC
 - [**tape scream**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.5,delayMs:120,dlyFb:1.4,wowDepthMs:4,wowHz:2,flutter:0.5,dlyToneHz:3000,dlyMix:0.7)
-  — Runaway delay feedback, warped transport
+  — The delay feedback runs away and the transport warps
 - [**no-input squeal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,driveDb:26,distMode:1,distMix:0.4,fbAmt:1.35,fbDelayMs:0.6,fbTone:0.4)
   — The mixer patched into itself, nothing at the input
 - [**haunted spring**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.45,chipClockX:0.5,noiseLevel:0.08,noiseColor:-0.5,ringHz:3.5,ringMix:0.35,revDecayS:6,revBoing:0.9,revMix:0.75,revDry:0.25)
@@ -1737,7 +1739,7 @@ the board waits until you press play.
 - [**contact crackle**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.9,crackleRate:55,combHz:220,combFb:1.15,combMix:0.8,revMix:0.4)
   — Dirty pot sparks ringing a screaming comb
 - [**dogfight**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,oscLevel:0.85,oscBHz:2.2,oscXmod:900,oscStarve:0.5,ringHz:40,ringMix:0.3)
-  — Cross-modulated oscillators starving themselves
+  — Cross-modulated oscillators starve themselves
 - [**nobody at the keys**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,oscLevel:0.8,oscStarve:0.45,delayMs:240,dlyFb:0.45,dlyMix:0.35,modLfoHz:4,modLfoShape:3,mod0Src:1,mod0Dest:26)
   — The bay plays the oscillator: pitch off a sample-and-hold, time off the
   oscillator’s starving rail
