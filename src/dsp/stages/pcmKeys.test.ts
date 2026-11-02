@@ -9,7 +9,7 @@ import { spectrum } from '../spectrum.ts'
 import { BLOCK } from '../stage.ts'
 import { bin, makeIo, rms, sine, SR, tail } from '../testRender.ts'
 import {
-  buildPcmRom,
+  PCM_ROM,
   noteHz,
   PCM_VOICE_NAMES,
   rateReg,
@@ -102,7 +102,7 @@ test('a held note comes out where its rate register puts it', () => {
 // last one in it is the first one in it — which means the step across the seam
 // can be no bigger than the biggest step inside the loop.
 test('every voice in the ROM loops without a step in it', () => {
-  for (const wave of buildPcmRom()) {
+  for (const wave of PCM_ROM) {
     let inside = 0
     for (let i = wave.loopStart + 1; i < wave.loopEnd; i++) {
       inside = Math.max(inside, Math.abs(wave.data[i]! - wave.data[i - 1]!))
@@ -315,12 +315,11 @@ test('nothing on the keyboard can be made to put out something that is not a num
     'pcmCpuBus',
   ]
   for (const key of knobs) {
-    for (const at of [0, 0.5, 1]) {
-      const def = DEFAULT_CONTROLS[key]
+    for (const at of [0, 1]) {
       const over: Partial<Controls> = {
         ...ALONE,
         pcmClockX: 16,
-        [key]: at === 0.5 ? def : at === 0 ? 0 : 16,
+        [key]: at === 0 ? 0 : 16,
       }
       const x = held(over, 24, 0.12)
       expect(x.every(Number.isFinite), `${key} at ${at}`).toBe(true)

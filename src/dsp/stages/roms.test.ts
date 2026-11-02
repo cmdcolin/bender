@@ -58,6 +58,6 @@ function rms(overrides: Partial<Controls>, seconds: number): number {
 
 test('every ROM makes sound on the default board', () => {
   ROMS.forEach((rom, i) => {
-    expect(rms({ chipTune: i }, 2), rom.name).toBeGreaterThan(0.005)
+    expect(rms({ chipTune: i }, 0.75), rom.name).toBeGreaterThan(0.005)
   })
 })

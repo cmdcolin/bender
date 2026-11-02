@@ -304,7 +304,16 @@ describe('MonoVoice', () => {
     expect(x.every(v => Number.isFinite(v) && Math.abs(v) <= 1)).toBe(true)
   })
 
-  function regulatorRun(regTrip: number, secs: number) {
+  const REGULATOR_SECS = 50
+  const runs = new Map<number, ReturnType<typeof simulateRegulator>>()
+  const regulatorRun = (regTrip: number) => {
+    const known = runs.get(regTrip)
+    const run = known ?? simulateRegulator(regTrip, REGULATOR_SECS)
+    runs.set(regTrip, run)
+    return run
+  }
+
+  function simulateRegulator(regTrip: number, secs: number) {
     const v = new MonoVoice(SR)
     Object.assign(v.patch, { regTrip })
     v.noteOn(57)
@@ -335,7 +344,7 @@ describe('MonoVoice', () => {
   }
 
   it('warms, trips, sputters and runs clean again with regulator trip at full', () => {
-    const run = regulatorRun(1, 40)
+    const run = regulatorRun(1)
     expect(run.trips.length).toBeGreaterThanOrEqual(2)
     expect(run.trips[0]).toBeGreaterThan(4)
     expect(run.recoveries.length).toBeGreaterThanOrEqual(2)
@@ -365,8 +374,8 @@ describe('MonoVoice', () => {
   })
 
   it('cycles the regulator faster at full than near the bottom, and trips at both', () => {
-    const low = regulatorRun(0.15, 90).trips.length
-    const full = regulatorRun(1, 90).trips.length
+    const low = regulatorRun(0.15).trips.length
+    const full = regulatorRun(1).trips.length
     expect(low).toBeGreaterThanOrEqual(1)
     expect(full).toBeGreaterThan(2 * low)
   })

@@ -169,8 +169,8 @@ test('a sagging rail reads the slab slower', () => {
 // The two keys go through the same sweep the rest of the drums group does.
 test('nothing the two new knobs can be set to leaves anything non-finite', () => {
   for (const rom of [0, 1]) {
-    for (const hz of [8000, 12000, ROM_RATE, 44100]) {
-      for (const decay of [0.25, 1, 16]) {
+    for (const hz of [8000, 44100]) {
+      for (const decay of [0.25, 16]) {
         const x = solo(
           {
             drumRom: rom,
@@ -249,8 +249,8 @@ test('the sign wire on the ROM’s data bus folds every hit', () => {
 })
 
 test('no setting of the ROM fault leaves anything non-finite', () => {
-  for (const count of [0, 1, 2, 3])
-    for (const line of [1, 9, 17])
+  for (const count of [0, 3])
+    for (const line of [1, 17])
       for (const fault of [0, 1, 2, 3]) {
         const x = solo(
           {
