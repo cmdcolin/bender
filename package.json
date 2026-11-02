@@ -10,6 +10,7 @@
     "ab": "node scripts/ab.ts",
     "agent": "node scripts/agent.ts",
     "agent:eval": "node scripts/agent-eval.ts",
+    "agentreel": "node scripts/agentreel.ts",
     "arrive": "node scripts/arrive.ts",
     "audible": "node scripts/audible.ts",
     "bench": "node scripts/bench.ts",

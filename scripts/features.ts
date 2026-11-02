@@ -135,6 +135,8 @@ const SCRIPTS: Record<string, string> = {
   panel: 'what the panel costs the browser per frame, in a real Chrome',
   agent:
     'drives window.bender in headless Chrome and checks what bender.listen reports',
+  agentreel:
+    "records a real Claude Code session driving the app in Chrome, with the app's sound, to clips/agent-drive.mp4",
   arrive:
     'opens a link in headless Chrome and checks that the board loads, the overlay shows where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url',
   'agent:eval':
@@ -146,7 +148,7 @@ const SCRIPTS: Record<string, string> = {
   features: 'rewrites docs/features.md — this file',
   og: "renders the landing page's pile of instruments to public/og.jpg, the image a shared link unfurls with",
   jam: 'trims, encodes and uploads jams of the day, then records their waveform peaks in src/jam/jams.json',
-  'guide-shots': 're-shoots the six pictures in docs/USER-GUIDE.md',
+  'guide-shots': 're-shoots the pictures in docs/USER-GUIDE.md',
   'diagram-shots':
     'shoots every schematic in the panel to a directory, one png each',
   dash: "re-shoots the why-sign-in card's screenshot of the signed-in home page",

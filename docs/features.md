@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-626 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+630 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -836,12 +836,16 @@ Amplitude modulation by a carrier: sine, square, diode bridge or inharmonic
 bell.
 
 <details>
-<summary>6 controls</summary>
+<summary>10 controls</summary>
 
 | control       | range                                                                                                    | what it does                                                                                                                           |
 | ------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Carrier       | 0.1 Hz to 8 kHz                                                                                          | Carrier frequency                                                                                                                      |
-| Carrier shape | sine, square, diode, bell                                                                                | A square carrier chops the signal, which adds harsh AM-radio ghosts                                                                    |
+| Carrier shape | sine, square, diode, bell, chop                                                                          | A square carrier chops the signal, which adds harsh AM-radio ghosts                                                                    |
+| Chop width    | 0.02 to 0.98                                                                                             | With the carrier on chop: how much of each period the volume stays open                                                                |
+| Chop depth    | off to full                                                                                              | With the carrier on chop: how far the gate shuts                                                                                       |
+| Chop edge     | off to full                                                                                              | With the carrier on chop: how long the gate takes to open and shut, up to five milliseconds                                            |
+| Chop wobble   | off to full                                                                                              | With the carrier on chop: every period picks its own length, up to four octaves either way, and its own width                          |
 | Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64            | Solders the carrier to the note the toy is sounding                                                                                    |
 | Carrier from  | knob, toy, kit, glint, chaos osc, noise, sampler, keys, growler, toy step late, toy beat late, layercake | Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect |
 | Bypass        | on or bypassed                                                                                           | Takes Ring mod out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                  |
@@ -2133,7 +2137,7 @@ back.
 ## Scripts
 
 <details>
-<summary>47 commands</summary>
+<summary>48 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2143,6 +2147,7 @@ back.
 | `pnpm ab`            | this tree against a git ref, as a paired comparison                                                                                                                                    |
 | `pnpm agent`         | drives window.bender in headless Chrome and checks what bender.listen reports                                                                                                          |
 | `pnpm agent:eval`    | runs claude -p --chrome sessions against the app, one per task, and grades the board each one leaves                                                                                   |
+| `pnpm agentreel`     | records a real Claude Code session driving the app in Chrome, with the app's sound, to clips/agent-drive.mp4                                                                           |
 | `pnpm arrive`        | opens a link in headless Chrome and checks that the board loads, the overlay shows where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url |
 | `pnpm audible`       | takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible                                       |
 | `pnpm bench`         | what the chain costs per block, stage by stage                                                                                                                                         |
@@ -2156,7 +2161,7 @@ back.
 | `pnpm jam`           | trims, encodes and uploads jams of the day, then records their waveform peaks in src/jam/jams.json                                                                                     |
 | `pnpm diagram`       | re-renders the README's signal path                                                                                                                                                    |
 | `pnpm features`      | rewrites docs/features.md — this file                                                                                                                                                  |
-| `pnpm guide-shots`   | re-shoots the six pictures in docs/USER-GUIDE.md                                                                                                                                       |
+| `pnpm guide-shots`   | re-shoots the pictures in docs/USER-GUIDE.md                                                                                                                                           |
 | `pnpm diagram-shots` | shoots every schematic in the panel to a directory, one png each                                                                                                                       |
 | `pnpm ink`           | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                        |
 | `pnpm faults`        | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                |
