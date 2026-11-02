@@ -34,7 +34,7 @@ composes them.
 [AI usage](AI-USAGE.md#claude-in-chrome) covers the same steps with the Claude
 in Chrome extension.
 
-## 1. Lay down the groove
+## Lay down the groove
 
 ```text
 Open https://cmdcolin.github.io/bender/app/ in the browser. It is bender, a
@@ -71,7 +71,7 @@ bender.play()
 The `techno` and `acid techno` presets load the same kind of groove in one call,
 `bender.load('techno')`.
 
-## 2. Starve the batteries
+## Starve the batteries
 
 ```text
 Now bend it. Starve the batteries so the whole groove sags and the bass drags
@@ -93,7 +93,7 @@ for (const v of [0.4, 0.6, 0.75]) {
 Claude stopped with the rail at 0.37 of a fresh 4.5 V and no reboots. The kit
 and Growler share that rail, so the tempo slows and the bass goes flat together.
 
-## 3. Bend the drum machine
+## Bend the drum machine
 
 ```text
 Bend the drum machine's insides: make its clock slip so the bar limps, and put
@@ -109,7 +109,7 @@ bender.set({ drumSlip: 0.3, drumDataLine: 'D2', drumDataFault: 'to +V' })
 - **`drumDataLine`:** D2 is the hat's wire on the pattern bus. Tied to +V, the
   hat fires on every step the counter fetches.
 
-## 4. Roll dice on the pattern
+## Roll dice on the pattern
 
 ```text
 Make the drum pattern rewrite itself every bar, so it never quite repeats.
@@ -131,7 +131,7 @@ bender also has a bend made for this request: `drumLoop` ties the pattern
 memory's output back to its input, so the pattern rewrites itself a lap at a
 time. Ask for it by name, such as "set drumLoop to return a step late".
 
-## 5. Break the bass synth
+## Break the bass synth
 
 ```text
 Break the bass synth's voice card: let it drift out of tune, sag and droop like
@@ -159,7 +159,7 @@ The voice card has three more faults to ask for by name: `monoHeat` lets the
 oscillators drift apart, `monoDroop` sinks a held note, and `monoDacBit` sends
 some keys up by a stuck bit's weight.
 
-## 6. Collapse the fourth bar
+## Collapse the fourth bar
 
 ```text
 Make the fourth bar of every four collapse: drop the kick and brake the whole
@@ -177,7 +177,7 @@ bender.drums({
 `!4:4` plays the kick on every bar but the fourth. The `b` steps brake the board
 like a tape stop, and `event every` fires them on the fourth bar alone.
 
-## 7. Send it to a friend
+## Send it to a friend
 
 ```text
 Give me a link to this so I can send it to a friend.

@@ -20,6 +20,9 @@ The drawing shows the two blocks each bus joins and its width; the source is
   Parlor's, one wire is one bit of the sample word.
 - **Toy and FM data lines:** the toy line holds a note code and the FM line
   holds whichever byte the processor sent, so find useful wires by trying them.
+- **Knives:** a knife is a fault on one bus wire, set by a line control and a
+  fault control under _fault on the bus_, such as **Address line** and
+  **Address fault**.
 - **Named cuts:** each cut under _fault on the bus_ saves one wire and fault
   worth keeping.
 - **Panel drawing:** each chip's bus box (**pattern** on the drum machine) draws
