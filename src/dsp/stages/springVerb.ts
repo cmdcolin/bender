@@ -5,7 +5,7 @@ import { rail } from '../util/bridged.ts'
 import { ringSize } from '../util/delayline.ts'
 import { Transient } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
-import { lpCoef } from '../util/onepole.ts'
+import { DcBlocker, lpCoef } from '../util/onepole.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 
 // Six allpasses rather than three: the chirp is how far the low end lags the
@@ -161,6 +161,9 @@ export class SpringVerb implements Stage {
   private readonly wetL = new Float64Array(BLOCK)
   private readonly wetR = new Float64Array(BLOCK)
   private readonly slam: Transient
+  private readonly dcL = new DcBlocker()
+  private readonly dcR = new DcBlocker()
+  private readonly dcCoef: number
   private readonly noise: Rng
   private crashEnv = 0
   private readonly crashFall: number
@@ -170,6 +173,7 @@ export class SpringVerb implements Stage {
   constructor(sr: number) {
     this.sr = sr
     this.slam = new Transient(sr)
+    this.dcCoef = 1 - (2 * Math.PI * 10) / sr
     this.noise = mulberry32(0x5c4a)
     this.crashFall = Math.exp(-1 / (CRASH_S * sr))
     const ms = (x: number) => (x / 1000) * sr
@@ -228,9 +232,10 @@ export class SpringVerb implements Stage {
     const n = io.n
     const inL = this.inL
     const inR = this.inR
+    const dcCoef = this.dcCoef
     for (let i = 0; i < n; i++) {
-      let xl = l[i]!
-      let xr = r[i]!
+      let xl = this.dcL.process(l[i]!, dcCoef)
+      let xr = this.dcR.process(r[i]!, dcCoef)
       if (kick > 0) {
         const slammed = this.slam.process(0.5 * (xl + xr), slamAt)
         const hit = trig.drumBits[i]! !== 0 && trig.drumGain[i]! >= hitAt
@@ -258,6 +263,8 @@ export class SpringVerb implements Stage {
     this.tankL.reset()
     this.tankR.reset()
     this.slam.reset()
+    this.dcL.reset()
+    this.dcR.reset()
     this.crashEnv = 0
   }
 }

@@ -1,10 +1,13 @@
 import { expect, test } from 'vitest'
 
-import { DEST } from '../modbus.ts'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { DEST, ModBus } from '../modbus.ts'
 import { magnitudes } from '../spectrum.ts'
+import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import { playHeldKey, render, renderBender, rms, SR } from '../testRender.ts'
-
-import type { Controls } from '../../controls.ts'
+import { TriggerBus } from '../trigbus.ts'
+import { SpringVerb } from './springVerb.ts'
 
 const kit = (overrides: Partial<Controls>) =>
   rms(
@@ -112,4 +115,59 @@ test('a held wire on the warble is the knob turned there', () => {
   )
   expect(wired).toEqual(render({ ...tank, revWarble: 0.6 }, 1))
   expect(wired).not.toEqual(render(tank, 1))
+})
+
+const blank = (): Ctx => ({
+  sr: SR,
+  mic: new Float32Array(BLOCK),
+  fb: new Float32Array(BLOCK),
+  railV: new Float32Array(BLOCK).fill(1),
+  sag: new Float32Array(BLOCK),
+  droop: new Float32Array(BLOCK),
+  env: new Float32Array(BLOCK),
+  out: new Float32Array(BLOCK),
+  step: new Float32Array(BLOCK),
+  carrier: new Float32Array(BLOCK),
+  logic: new Float32Array(BLOCK),
+  toy: new Float32Array(BLOCK),
+  fm: new Float32Array(BLOCK),
+  send: new Float32Array(BLOCK),
+  bright: new Float32Array(BLOCK),
+  gnd: new Float32Array(BLOCK),
+  regs: new Uint8Array(GLINT_REGS),
+  heat: 0,
+  fbDest: 0,
+  mod: new ModBus(SR, 1),
+  trig: new TriggerBus(),
+})
+
+// A mic with an offset on it into a tank that rings for half a minute: the
+// combs feed an offset round a hundred times over, so without a block at the
+// input a few millivolts parks the springs on the rail.
+test('an offset at the input does not lift the tank', () => {
+  const verb = new SpringVerb(SR)
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    revMix: 1,
+    revDry: 0,
+    revDecayS: 30,
+  })
+  const ctx = blank()
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const seconds = 6
+  const blocks = (seconds * SR) / BLOCK
+  let sum = 0
+  for (let b = 0; b < blocks; b++) {
+    for (let i = 0; i < BLOCK; i++)
+      io.l[i] = io.r[i] =
+        0.02 + 0.2 * Math.sin((2 * Math.PI * 440 * (b * BLOCK + i)) / SR)
+    verb.process(io, p, ctx)
+    if (b * BLOCK >= (seconds - 1) * SR)
+      for (let i = 0; i < BLOCK; i++) sum += io.l[i]!
+  }
+  expect(Math.abs(sum / SR)).toBeLessThan(0.01)
 })
