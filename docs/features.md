@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-630 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+631 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 160 destinations, among
+- **A patch bay that modulates itself.** Four wires, 163 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -836,16 +836,17 @@ Amplitude modulation by a carrier: sine, square, diode bridge or inharmonic
 bell.
 
 <details>
-<summary>10 controls</summary>
+<summary>11 controls</summary>
 
 | control       | range                                                                                                    | what it does                                                                                                                           |
 | ------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Carrier       | 0.1 Hz to 8 kHz                                                                                          | Carrier frequency                                                                                                                      |
 | Carrier shape | sine, square, diode, bell, chop                                                                          | A square carrier chops the signal, which adds harsh AM-radio ghosts                                                                    |
 | Chop width    | 0.02 to 0.98                                                                                             | With the carrier on chop: how much of each period the volume stays open                                                                |
+| Chop fill     | silence, repeat, reverse, pitch, crush, skip, burst, any                                                 | With the carrier on chop: what plays while the gate is shut                                                                            |
 | Chop depth    | off to full                                                                                              | With the carrier on chop: how far the gate shuts                                                                                       |
 | Chop edge     | off to full                                                                                              | With the carrier on chop: how long the gate takes to open and shut, up to five milliseconds                                            |
-| Chop wobble   | off to full                                                                                              | With the carrier on chop: every period picks its own length, up to four octaves either way, and its own width                          |
+| Chop wobble   | off to full                                                                                              | With the carrier on chop                                                                                                               |
 | Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64            | Solders the carrier to the note the toy is sounding                                                                                    |
 | Carrier from  | knob, toy, kit, glint, chaos osc, noise, sampler, keys, growler, toy step late, toy beat late, layercake | Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect |
 | Bypass        | on or bypassed                                                                                           | Takes Ring mod out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                  |
@@ -1346,7 +1347,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 160 of them, filt cut through toy noise divider                                                                        | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 163 of them, filt cut through chop width                                                                               | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
