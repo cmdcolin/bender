@@ -429,7 +429,7 @@ test('the carrier comes back to its knob after a wire comes off it', () => {
     ringHz: 430,
     mod0Src: 1,
     mod0Dest: DEST.ringHz,
-    mod0Depth: 1,
+    mod0Depth: 2,
     modLfoHz: 4,
   }
   expect(play(patch).l).not.toEqual(play({ ringHz: 430 }).l)
@@ -617,4 +617,27 @@ test('chop clocked from the kit shuts between its hits', () => {
   const gated = gaps(take.l.subarray(SR / 2))
   expect(gated.shut).toBeGreaterThan(0.1)
   expect(gated.shut).toBeLessThan(0.95)
+})
+
+test('a wire on chop depth shuts a gate that was set to pass everything', () => {
+  const chop = {
+    ringShape: chopShape,
+    ringHz: 20,
+    ringDuty: 0.3,
+    ringDepth: 0,
+  }
+  const plain = gaps(held(play(chop).l))
+  const wired = gaps(
+    held(
+      play({
+        ...chop,
+        mod0Src: 1,
+        mod0Dest: DEST.chopDepth,
+        mod0Depth: 2,
+        modLfoHz: 4,
+      }).l,
+    ),
+  )
+  expect(plain.shut).toBeLessThan(0.1)
+  expect(wired.shut).toBeGreaterThan(plain.shut + 0.01)
 })

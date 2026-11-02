@@ -356,6 +356,9 @@ export const PATCH_GROUPS: Group[] = [
             'kit out to address',
             'mono regulator trip',
             'toy noise divider',
+            'chop wobble',
+            'chop depth',
+            'chop width',
           ],
           groups: [
             {
@@ -517,6 +520,9 @@ export const PATCH_GROUPS: Group[] = [
                 'filt res',
                 'ring car',
                 'ring mix',
+                'chop wobble',
+                'chop depth',
+                'chop width',
                 'comb pitch',
                 'crush rate',
                 'bit depth',

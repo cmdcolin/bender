@@ -86,6 +86,7 @@ export const BEND_GROUPS: Group[] = [
       },
       {
         key: 'ringDuty',
+        lane: 'chop width',
         label: 'Chop width',
         min: 0.02,
         max: 0.98,
@@ -105,6 +106,7 @@ export const BEND_GROUPS: Group[] = [
       },
       {
         key: 'ringDepth',
+        lane: 'chop depth',
         label: 'Chop depth',
         min: 0,
         max: 1,
@@ -123,6 +125,7 @@ export const BEND_GROUPS: Group[] = [
       },
       {
         key: 'ringWobble',
+        lane: 'chop wobble',
         label: 'Chop wobble',
         min: 0,
         max: 1,

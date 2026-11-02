@@ -205,10 +205,15 @@ export class RingMod implements Stage {
     const late = busCarrier ? (LATE[from] ?? NOW) : NOW
     const beatLen = (60 / Math.max(p[IDX.drumBpm]!, 1)) * this.sr
     const carrier = this.carrier
+    const last = io.n - 1
+    const pushed = (key: number, start: number) => {
+      const wire = ctx.mod.read(key)
+      return wire ? Math.min(Math.max(start + wire[last]!, 0), 1) : start
+    }
     this.gate.configure(
-      p[IDX.ringDuty]!,
-      p[IDX.ringWobble]!,
-      p[IDX.ringDepth]!,
+      Math.min(Math.max(pushed(DEST.chopWidth, p[IDX.ringDuty]!), 0.02), 0.98),
+      pushed(DEST.chopWobble, p[IDX.ringWobble]!),
+      pushed(DEST.chopDepth, p[IDX.ringDepth]!),
       p[IDX.ringEdge]!,
       p[IDX.ringFill]!,
     )
