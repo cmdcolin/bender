@@ -23,6 +23,9 @@ const ANY = 7
 const ANY_PICKS = [SKIP, PITCH, CRUSH, REVERSE, REPEAT, BURST]
 const BURST_SPLITS = [2, 3, 4, 6, 8, 16]
 const BURST_FADE = 48
+const BURST_STEADY = 0.35
+const BURST_RAMP_MIN = 0.7
+const BURST_RAMP_SPAN = 0.7
 
 const BUFFER_S = 1.5
 const WOBBLE_OCTAVES = 4
@@ -69,6 +72,9 @@ class Lane {
   holdLeft = 0
   holdEvery = 1
   bits = 1
+  burstAt = 0
+  burstLen = MIN_LOOP
+  burstRatio = 1
   mode = SILENCE
   peak = 0.01
   gain = 1
@@ -102,13 +108,23 @@ class Lane {
       case REPEAT:
         return this.at(this.loopEnd - this.loopLen + (k % this.loopLen))
       case BURST: {
-        const at = k % this.loopLen
         const fade = Math.min(
           1,
-          at / BURST_FADE,
-          (this.loopLen - at) / BURST_FADE,
+          this.burstAt / BURST_FADE,
+          (this.burstLen - this.burstAt) / BURST_FADE,
         )
-        return fade * this.at(this.loopEnd - this.loopLen + at)
+        const y = fade * this.at(this.loopEnd - this.burstLen + this.burstAt)
+        this.burstAt++
+        if (this.burstAt >= this.burstLen) {
+          this.burstAt = 0
+          this.burstLen = Math.round(
+            Math.min(
+              Math.max(this.burstLen * this.burstRatio, MIN_LOOP),
+              this.loopLen,
+            ),
+          )
+        }
+        return y
       }
       case REVERSE:
         return this.at(this.loopEnd - 1 - (k % this.loopLen))
@@ -230,6 +246,10 @@ export class ChopGate {
     if (lane.mode === BURST) {
       const splits = BURST_SPLITS[Math.floor(rng() * BURST_SPLITS.length)]!
       lane.loopLen = Math.max(Math.floor(lane.clock.openLen / splits), MIN_LOOP)
+      lane.burstLen = lane.loopLen
+      lane.burstAt = 0
+      lane.burstRatio =
+        rng() < BURST_STEADY ? 1 : BURST_RAMP_MIN + rng() * BURST_RAMP_SPAN
     }
     lane.speed = octaves(Math.round((rng() * 2 - 1) * PITCH_SEMITONES) / 12)
     lane.holdEvery = Math.round(this.sr / (HOLD_MIN_HZ + rng() * HOLD_SPAN_HZ))
