@@ -175,6 +175,7 @@ const LANDINGS: Landing[] = [
   at('toy duty on envelope', ['chipLevel']),
   at('toy charge pump', ['chipLevel']),
   at('toy crash', ['chipLevel']),
+  at('toy noise divider', ['chipLevel']),
   at('keys loop overrun', ['pcmLevel']),
   at('keys write strobe', ['pcmLevel']),
   at('keys sign on up/down', ['pcmLevel']),

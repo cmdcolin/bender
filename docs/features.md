@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-625 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+626 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 159 destinations, among
+- **A patch bay that modulates itself.** Four wires, 160 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 73 controls are shy, mostly the ones that act on the
+names it still sets it. 74 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -116,7 +116,7 @@ puts the fault on, and the rows under it show the controls it set:
   itself
 
 <details>
-<summary>55 controls</summary>
+<summary>56 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -162,6 +162,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Duty on envelope    | off to full                                                                                                                    | Ties the pulse width to the envelope                                                                                                                                                          |
 | Charge pump †       | off to full                                                                                                                    | Wires the output pin through a diode onto the timing cap, with a bleed resistor across it                                                                                                     |
 | Crash †             | off to full                                                                                                                    | Static hits knock the program counter into the wrong part of the ROM, up to three times a second at the top of the knob                                                                       |
+| Noise divider †     | off to full                                                                                                                    | Bridges two stages of each pitch divider back into its input through an XOR, so the counter runs as a shift register and each voice plays noise clocked by its note                           |
 | Effect wire †       | 13 of them, off through stuck                                                                                                  | Solders a wire onto the effect buttons                                                                                                                                                        |
 | Button it presses   | laser, siren, ufo, bomb, gun, bird, random, next                                                                               | Which effect button the wire presses                                                                                                                                                          |
 | Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the fault is on                                                                                                                                    |
@@ -1339,7 +1340,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 159 of them, filt cut through mono regulator trip                                                                      | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 160 of them, filt cut through toy noise divider                                                                        | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

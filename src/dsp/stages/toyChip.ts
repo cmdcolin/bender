@@ -248,6 +248,11 @@ const DUTY_STRIKE = 0.04
 const SFX_GAIN = 0.8
 const LFSR_SEED = 1
 
+const NOISE_WIDTH_LOW = 2
+const NOISE_WIDTH_SPAN = 13
+const NOISE_STAGE_LOW = 1
+const NOISE_STAGE_SPAN = 4
+
 const PUMP_RATE_LOW = 0.25
 const PUMP_RATE_OCTAVES = 4.5
 const PUMP_EDGE_REF = 2000
@@ -372,6 +377,7 @@ interface ChipLanes {
   modClock: Float32Array | null
   modPump: Float32Array | null
   modCrash: Float32Array | null
+  modNoise: Float32Array | null
 }
 
 export class ToyChip implements Stage {
@@ -395,6 +401,7 @@ export class ToyChip implements Stage {
     modClock: null,
     modPump: null,
     modCrash: null,
+    modNoise: null,
   }
   private phase = 0
   private pos = 0
@@ -575,6 +582,10 @@ export class ToyChip implements Stage {
   private sfxWire = 0
   private sfxPick = 0
   private sfxNext = -1
+  private noiseWidth = 0
+  private noiseRate = 1
+  private noiseReg = new Int32Array(SLOTS).fill(1)
+  private noisePhase = new Float64Array(SLOTS)
   private pumpV = 0
   private pumpPin = false
   private pumpTrip = PUMP_TRIP
@@ -1039,6 +1050,7 @@ export class ToyChip implements Stage {
     lanes.modClock = bay.read(DEST.chipClock)
     lanes.modPump = bay.read(DEST.chipPump)
     lanes.modCrash = bay.read(DEST.chipCrash)
+    lanes.modNoise = bay.read(DEST.chipLfsr)
   }
 
   private readWiring(p: Float32Array, bay: ModBus) {
@@ -1148,6 +1160,7 @@ export class ToyChip implements Stage {
     const dutyEnvBase = p[IDX.chipDutyEnv]!
     const pumpBase = p[IDX.chipPump]!
     const crashBase = p[IDX.chipCrash]!
+    const noiseBase = p[IDX.chipLfsr]!
     this.readLanes(bay)
     const {
       modSync,
@@ -1167,6 +1180,7 @@ export class ToyChip implements Stage {
       modClock,
       modPump,
       modCrash,
+      modNoise,
     } = this.lanes
     const keyScan = p[IDX.chipKeyScan]!
     const outKeys =
@@ -1368,6 +1382,7 @@ export class ToyChip implements Stage {
         clock *= 1 + this.drift.step(0.08, this.sr, this.rng) * 0.3 * drift
       }
       if (modClock) clock *= octaves(modClock[i]! * 3)
+      this.noise(modNoise ? clamp01(noiseBase + modNoise[i]!) : noiseBase)
       const pump = modPump ? clamp01(pumpBase + modPump[i]!) : pumpBase
       if (pump > 0) clock *= octaves(this.pumpStep(pump, tune))
       else this.pumpV = 0
@@ -1674,7 +1689,9 @@ export class ToyChip implements Stage {
         this.phase = wrap1(this.phase + inc)
         const env = shaped ? this.level(this.env, pwmOn) : this.env
         const v =
-          pulse(this.phase, width(duty, dutyEnv, this.env), inc) * env * amp
+          this.tone(0, this.phase, width(duty, dutyEnv, this.env), inc) *
+          env *
+          amp
         if (pinned) {
           val[0] = v
           live[0] = 1
@@ -1699,7 +1716,12 @@ export class ToyChip implements Stage {
           this.bassPhase = wrap1(this.bassPhase + inc)
           const env = shaped ? this.level(this.bassEnv, pwmOn) : this.bassEnv
           const v =
-            pulse(this.bassPhase, width(duty, dutyEnv, this.bassEnv), inc) *
+            this.tone(
+              1,
+              this.bassPhase,
+              width(duty, dutyEnv, this.bassEnv),
+              inc,
+            ) *
             env *
             rail.ampFactorAt(BASS_TRIM) *
             accomp
@@ -1765,7 +1787,12 @@ export class ToyChip implements Stage {
       const inc = hz / this.sr
       this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
       const v =
-        pulse(this.chordPhase[c]!, width(duty, dutyEnv, this.chordEnv), inc) *
+        this.tone(
+          2 + c,
+          this.chordPhase[c]!,
+          width(duty, dutyEnv, this.chordEnv),
+          inc,
+        ) *
         env *
         rail.ampFactorAt(trim) *
         CHORD_GAIN *
@@ -1807,7 +1834,7 @@ export class ToyChip implements Stage {
       v.phase = wrap1(v.phase + inc)
       const env = shaped ? this.level(v.env, pwmOn) : v.env
       const x =
-        pulse(v.phase, width(duty, dutyEnv, v.env), inc) *
+        this.tone(5 + k, v.phase, width(duty, dutyEnv, v.env), inc) *
         env *
         rail.ampFactorAt(trim)
       if (pinned) {
@@ -1860,7 +1887,9 @@ export class ToyChip implements Stage {
       const inc = hz / this.sr
       this.sfxPhase = wrap1(this.sfxPhase + inc)
       const env = shaped ? this.level(f.tone, pwmOn) : f.tone
-      x += pulse(this.sfxPhase, width(duty, dutyEnv, f.tone), inc) * env
+      x +=
+        this.tone(SFX_SLOT, this.sfxPhase, width(duty, dutyEnv, f.tone), inc) *
+        env
     }
     if (f.noise > 0) {
       this.noiseClock += (A3_HZ * octaves(f.noiseOct) * pitch) / this.sr
@@ -1992,6 +2021,35 @@ export class ToyChip implements Stage {
     return mix * (1 + (flip - 1) * this.xorAmt)
   }
 
+  private noise(amount: number) {
+    const w =
+      amount > 0 ? NOISE_WIDTH_LOW + Math.round(amount * NOISE_WIDTH_SPAN) : 0
+    if (w > 0)
+      this.noiseRate = octaves(NOISE_STAGE_LOW + NOISE_STAGE_SPAN * amount)
+    if (w !== this.noiseWidth) {
+      this.noiseWidth = w
+      const mask = (1 << w) - 1
+      for (let s = 0; s < SLOTS; s++) {
+        const kept = this.noiseReg[s]! & mask
+        this.noiseReg[s] = kept === 0 ? 1 : kept
+      }
+    }
+  }
+
+  private tone(slot: number, phase: number, duty: number, inc: number) {
+    const w = this.noiseWidth
+    if (w === 0) return pulse(phase, duty, inc)
+    let at = this.noisePhase[slot]! + inc * this.noiseRate
+    let r = this.noiseReg[slot]!
+    while (at >= 1) {
+      at -= 1
+      r = (r >> 1) | (((r ^ (r >> 1)) & 1) << (w - 1))
+    }
+    this.noisePhase[slot] = at
+    this.noiseReg[slot] = r
+    return r & 1 ? 1 : -1
+  }
+
   private get halted() {
     return this.crashed || this.pumpDead > 0
   }
@@ -2101,6 +2159,8 @@ export class ToyChip implements Stage {
   }
 
   panic() {
+    this.noiseReg.fill(1)
+    this.noisePhase.fill(0)
     this.crashed = false
     this.pumpV = 0
     this.pumpPin = false

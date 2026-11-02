@@ -355,6 +355,7 @@ export const PATCH_GROUPS: Group[] = [
             'kit pattern rot',
             'kit out to address',
             'mono regulator trip',
+            'toy noise divider',
           ],
           groups: [
             {
@@ -395,6 +396,7 @@ export const PATCH_GROUPS: Group[] = [
                 'toy duty on envelope',
                 'toy charge pump',
                 'toy crash',
+                'toy noise divider',
                 'toy kit on addr',
                 'toy out on keys',
               ],

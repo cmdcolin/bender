@@ -30,7 +30,7 @@ export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
     'chipPump',
     ...POT,
   ],
-  voices: ['chipShort', 'chipPwmTap', 'chipXor', 'chipDutyEnv'],
+  voices: ['chipShort', 'chipPwmTap', 'chipXor', 'chipDutyEnv', 'chipLfsr'],
   envelope: [
     'chipEnvCap',
     'chipEnvRelax',

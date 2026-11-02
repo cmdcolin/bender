@@ -266,6 +266,22 @@ Bends:
     a random step. At 0.3 the toy spends about 40% of the time crashed.
   - Clock bends speed up or slow down the crashed program.
   - Its row is in the **tune ROM** box.
+- **Noise divider:** two stages of each pitch divider are wired back into its
+  input through an XOR, so the counter runs as a shift register, as on the
+  SN76489's noise channel. Each voice plays noise clocked by its own note.
+  - The tune plays as a run of noise colours, high notes brighter than low.
+  - At the bottom of the knob the register is two bits long and clocks at twice
+    the note, so a note becomes a metallic buzz under its pitch (A4 buzzes at
+    about 300 Hz).
+  - Turning the knob up lengthens the register to fifteen bits and moves the
+    clock to 32 times the note. On the Sakura board with backing, flatness rises
+    from 0.04 at the bottom to 0.25 at 0.6 and 0.65 at the top, and the level
+    stays within half a dB of the stock tune.
+  - Each note keeps one noise colour while it sounds. Wiring the output pin into
+    the register input as well was tried and dropped: a lone note locks into a
+    high whistle and loses half its level.
+  - The effect voice, bass and chords run through the same registers.
+  - Its row is in the **voices** box.
 - **Effect buttons:** six programs for a sweep counter that loads the melody's
   divider, plus a noise register for bomb and gun.
   - Clock, a flat battery and a pot on the timing pin lower and stretch each
@@ -879,7 +895,8 @@ The patch bay is four free wires.
   divider**, **PWM tap**, **FM on clock** and **hold** move every sample. The
   output's address and data lines step once a block, and **FM toy on bus** steps
   through the bit counts. An LFO onto envelope relax sweeps every note between a
-  stutter and a buzz. **Charge pump** and **crash** also move every sample.
+  stutter and a buzz. **Charge pump**, **crash** and **noise divider** also move
+  every sample.
 
 - **Kit lanes:** **tempo**, **swing**, **chance**, **decay** and **ring**. Drum
   hit onto chance lets fills feed themselves.

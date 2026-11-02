@@ -1041,3 +1041,40 @@ test('the charge pump and the crash at full stay bounded with the clock pot up',
   expect(peak).toBeLessThan(1.5)
   expect(rms(x)).toBeGreaterThan(0.02)
 })
+
+test('the noise divider gets flatter as the knob goes up', () => {
+  const flat = (chipLfsr: number) =>
+    spectrum(render({ ...PUMP_BOARD, chipLfsr }, 2), SR).flatness
+  const steps = [0, 0.3, 0.6, 1].map(flat)
+  for (let i = 1; i < steps.length; i++)
+    expect(steps[i]!).toBeGreaterThan(steps[i - 1]!)
+  expect(steps[3]!).toBeGreaterThan(0.4)
+})
+
+test('the noise divider keeps the level at every setting', () => {
+  const stock = rms(render(PUMP_BOARD, 2))
+  for (const chipLfsr of [0.05, 0.2, 0.45, 1]) {
+    const level = rms(render({ ...PUMP_BOARD, chipLfsr }, 2))
+    expect(level, `${chipLfsr}`).toBeGreaterThan(stock * 0.85)
+    expect(level, `${chipLfsr}`).toBeLessThan(stock * 1.2)
+  }
+})
+
+test('the noise divider at the top turns a held key into hiss at the same level', () => {
+  const held = (chipLfsr: number) =>
+    renderBender({ ...CHIP_ONLY, chipLfsr }, 2, b => b.toyChip.noteOn(12))
+  const clean = held(0)
+  const hiss = held(1)
+  const peak = hiss.reduce((a, v) => Math.max(a, Math.abs(v)), 0)
+  expect(peak).toBeLessThan(1.5)
+  expect(spectrum(clean, SR).flatness).toBeLessThan(0.05)
+  expect(spectrum(hiss, SR).flatness).toBeGreaterThan(0.5)
+  expect(rms(hiss)).toBeGreaterThan(rms(clean) * 0.85)
+})
+
+test('the noise divider at the bottom buzzes under the note', () => {
+  const held = (chipLfsr: number) =>
+    renderBender({ ...CHIP_ONLY, chipLfsr }, 1, b => b.toyChip.noteOn(12))
+  expect(pitchHz(held(0))).toBeGreaterThan(420)
+  expect(pitchHz(held(0.01))).toBeLessThan(350)
+})

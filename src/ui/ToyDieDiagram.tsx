@@ -53,6 +53,7 @@ const KEYS = [
   'chipKeyScan',
   'chipPump',
   'chipCrash',
+  'chipLfsr',
 ] as const
 
 const GROUP = GROUPS.find(g => g.name === 'Plinky')!
@@ -136,6 +137,7 @@ const BEND_BOX: Partial<Record<(typeof KEYS)[number], string>> = {
   chipShort: 'voices',
   chipXor: 'voices',
   chipDutyEnv: 'voices',
+  chipLfsr: 'voices',
   chipGhost: 'key matrix',
   chipOutKeys: 'key matrix',
   chipKeyScan: 'key matrix',

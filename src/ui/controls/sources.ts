@@ -671,6 +671,18 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Static hits knock the program counter into the wrong part of the ROM, up to three times a second at the top of the knob. The crashed chip runs its firmware and the tune data as code, writes over its copy of the tune, and puts its accumulator on the output, so the toy plays blocky glitch tones. The tempo timer still interrupts it each step and sends it somewhere new. After 0.4 to 3 seconds the watchdog resets the chip and the tune starts again from a random step. Clock bends speed up or slow down the crashed program too.',
       },
       {
+        key: 'chipLfsr',
+        lane: 'toy noise divider',
+        label: 'Noise divider',
+        part: 'inside the die',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'Bridges two stages of each pitch divider back into its input through an XOR, so the counter runs as a shift register and each voice plays noise clocked by its note. The tune plays as a run of noise colours, with high notes brighter. Low on the knob the register is two to five bits long and clocks at two to four times the note, so each note becomes a metallic buzz at or under its pitch. Turning the knob up lengthens the register to fifteen bits and moves the clock to 32 times the note, so the buzz turns into hiss. Each note keeps one noise colour for as long as it sounds.',
+      },
+      {
         key: 'sfxWire',
         label: 'Effect wire',
         part: 'inside the die',
