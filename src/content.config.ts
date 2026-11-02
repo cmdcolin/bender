@@ -31,7 +31,7 @@ const docs = defineCollection({
           const { width, height } = jpegSize(
             readFileSync(new URL(`../public/guide/${file}`, import.meta.url)),
           )
-          return `<img src="${base}guide/${file}" width="${width / 2}" height="${height / 2}" alt="${alt.replaceAll('"', '&quot;')}">`
+          return `<img src="${base}guide/${file}" width="${Math.round(width / 2)}" height="${Math.round(height / 2)}" alt="${alt.replaceAll('"', '&quot;')}">`
         },
       )
       const rendered = await context.renderMarkdown(body)

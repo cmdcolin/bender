@@ -1,3 +1,4 @@
+import config from '../astro.config.ts'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
 import { boardHash } from '../src/ui/share.ts'
 import {
@@ -12,15 +13,16 @@ import {
 import { serveDev } from './serve.ts'
 
 import { execFileSync, spawn } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // The pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
-// public/guide/guide-*.jpg from the app as it is now. Each shot is a board, a thing to click once the page
-// is up, and the element (or elements) to crop to — read off the page rather
-// than hand-picked pixels, so a layout change breaks the shot instead of
-// quietly outdating it.
+// public/guide/guide-*.jpg from the app as it is now, and links each picture
+// taken on a board of its own to the app on that board. Each shot is a board, a thing
+// to click once the page is up, and the element (or elements) to crop to —
+// read off the page rather than hand-picked pixels, so a layout change breaks
+// the shot instead of quietly outdating it.
 //
 // Same headless-Chrome-over-devtools-protocol approach as
 // panel.ts, sharing chrome.ts and serve.ts. Wants a Chrome and ImageMagick's
@@ -387,8 +389,35 @@ const POCKET_READY = `!!document.querySelector('[aria-label="how to play"]')`
 
 const magick = (args: string[]) => execFileSync('magick', args)
 
+const GUIDE = 'docs/USER-GUIDE.md'
+const SITE = `https://cmdcolin.github.io${config.base ?? ''}/`
+
+function shotLink(shot: Shot) {
+  const query = boardHash('', { ...DEFAULT_CONTROLS, ...shot.board })
+  return shot.phone
+    ? `${SITE}pocket/`
+    : query
+      ? `${SITE}app/#${query}`
+      : undefined
+}
+
+function linkGuide() {
+  const links = new Map(SHOTS.map(shot => [shot.file, shotLink(shot)]))
+  const guide = readFileSync(GUIDE, 'utf-8').replace(
+    /\[?(!\[[^\]]*\]\(\.\.\/public\/guide\/([\w.-]+)\))(?:\]\([^)]*\))?/g,
+    (_whole, image: string, file: string) => {
+      const link = links.get(file)
+      return link === undefined
+        ? image
+        : `[${image}](${link} 'open this in the app')`
+    },
+  )
+  writeFileSync(GUIDE, guide)
+}
+
 async function main() {
   if (!which('magick')) throw new Error('no imagemagick on PATH')
+  linkGuide()
 
   const { url, stop } = await serveDev(PORT)
   const work = mkdtempSync(join(tmpdir(), 'bender-guide-out-'))
