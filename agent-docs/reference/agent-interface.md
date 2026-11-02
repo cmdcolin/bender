@@ -84,14 +84,11 @@ underneath at rate.
 The plan below was written before `agentApi.ts`. Steps 1 and 3 are built, and
 the Status section above lists what remains.
 
-**The engine had no imperative surface.** `patch()`, `travel()` and the meter
-lived inside the module graph, where nothing outside could reach them.
-`window.bender` is that surface now. The hash is not
-a substitute: `useBoardUrl` reads a hash as a _whole board_ — everything the
-link omits snaps to stock, deliberately, because a link names a board rather
-than an edit — and the writer that mirrors the board back is debounced at 250ms
-and owns the bar. A program driving the hash is therefore loading patches, not
-turning knobs, and is fighting a mirror while it does.
+**The hash cannot stand in for `window.bender`.** `useBoardUrl` reads a hash as
+a _whole board_: everything the link omits resets to stock, because a link names
+a board. The writer that mirrors the board back to the URL is debounced at 250ms
+and overwrites the address bar. A program driving the hash therefore loads whole
+patches, and its writes race the mirror.
 
 **Events cannot land on a musical clock.** The memory is 32 steps and one loop.
 A fill at bar 8, a chorus that differs from a verse, a bend punched in on the
@@ -100,28 +97,22 @@ critical. Max schedules against a global transport with `timepoint`; bender has
 `armStep`/`armed` and two `Transport` flags and no way to say "at the top of the
 next loop."
 
-**Semitone integers are a poor notation for a model.** Writing `tuneStep7: -14`
-with two sentinel values produces bad melodies. `notes.ts` had `semitoneName()`
-going one way, and `parseLane` in `tune.ts` now parses the other.
-
 ## Plan
 
-1. **A note codec.** `"C4 . E4 ~ G4 . . B3"` to the 32 ints and back, and
-   `"x..x..x."` per drum voice to a mask. Forty lines, unit-testable with no
-   browser, and worth more to the quality of what a program writes than any
-   transport decision. `notes.ts` has half of it.
+1. **A note codec**, built. Writing `tuneStep7: -14` with two sentinel values
+   produces bad melodies, so `bender.tune` takes `"C4 . E4 ~ G4 . . B3"` through
+   `parseLane` in `tune.ts`, and `bender.drums` takes `"x..x..x."` per voice.
 
 2. **`queue(board, { atLoop })`.** Land a board at a musical moment rather than
    on arrival, resolved against the counter the worklet already runs. Pattern
    chaining is what every groovebox does, so this earns its keep for people at
    the panel whether or not anything automates the app.
 
-3. **An imperative facade**: `get`, `patch`, `glide`, `queue`, `meter`. It
-   shipped with no flag, for the reason the Status section gives. Puppeteer reaches
-   it through `page.evaluate` today with no flags and no origin trial, and it is
-   the same object any later adapter wraps. Note that `set()` calls `stopHunt()`
-   and `commitStep()` — a sweep wants `patch` for motion and `writeBoard` for
-   landmarks, or it shreds the undo stack.
+3. **An imperative facade**, built as `window.bender`. Puppeteer reaches it
+   through `page.evaluate`, and any later adapter wraps the same object. `set()`
+   calls `stopHunt()` and `commitStep()`, so a sweep should use `patch` for
+   motion and `writeBoard` for landmarks, or every step of the sweep becomes an
+   undo entry.
 
 4. **A generated param manifest** — key, range, unit, default, one-line meaning
    — emitted from the tables `scripts/features.ts` already walks for

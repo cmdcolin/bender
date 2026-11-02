@@ -37,10 +37,10 @@ so bender needs no setup beyond the extension. Example requests:
 
 Claude takes one of two routes:
 
-- **API route:** in the second eval run described under [Testing](#testing), the
-  prompt told Claude to evaluate `bender.help`. Every session read the help and
-  a guide topic with JavaScript, then made its changes with calls such as
-  `bender.load`, `bender.tune` and `bender.set`.
+- **API route:** in the [eval runs](#testing), the prompt told Claude to
+  evaluate `bender.help`. Every session read the help and a guide topic with
+  JavaScript, then made its changes with calls such as `bender.load`,
+  `bender.tune` and `bender.set`.
 - **Clicking route:** in the side-panel session in the screenshot, the request
   only mentioned `window.bender`. Claude loaded the preset by clicking its chip
   and entered the notes by clicking cells in the piano roll.
@@ -120,8 +120,5 @@ results, cost and time per task. The extension has to be signed in to the same
 claude.ai account as `claude`, or `list_connected_browsers` returns an empty
 list.
 
-The first eval run passed 1 of 4 tasks. The extension blocked the original
-3104-character `bender.help`, so every agent read it in slices, one agent raised
-the wrong control, and the grader read the wrong tab in two tasks. After those
-fixes the second run passed 4 of 4, with 44 JavaScript calls against 71, in 315
-s against 533 s. `agent-docs/reference/agent-interface.md` has the details.
+`agent-docs/reference/agent-interface.md` records the eval runs and what each
+fixed.

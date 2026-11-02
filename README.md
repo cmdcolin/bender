@@ -11,13 +11,6 @@ A shared link holds the board in the URL hash. When a link with a hash opens the
 home page, the page's script redirects to the app with the hash intact, so an
 old link still opens the same board.
 
-## The signal path
-
-You interact with the audio through the signal path diagram, and clicking a
-button there opens a settings panel.
-
-Full explanation in [How it works](docs/HOW-IT-WORKS.md).
-
 ## Features
 
 - Circuit bend a toy keyboard, drum machine, and basic FM synth
@@ -54,8 +47,10 @@ See full feature list - [docs/features.md](docs/features.md)
 
 ## User interface
 
-It's all kind of compact and wrapped into that signal diagram. It is a little tricky but it is better than just having 100
-sliders all visible at once.
+It's all kind of compact and wrapped into the signal path diagram: clicking a
+box there opens its settings panel ([How it works](docs/HOW-IT-WORKS.md)). It is
+a little tricky but it is better than just having 100 sliders all visible at
+once.
 
 For super tactile control, get a MIDI controller — I got one just because I made
 this! Any will do; mine's an Akai Professional MPK Mini (drum pad, 8 dials,

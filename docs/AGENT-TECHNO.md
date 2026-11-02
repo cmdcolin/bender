@@ -31,8 +31,8 @@ composes them.
 3. If audio stays off, click the page. Browsers keep audio off until a page gets
    a click, and `bender.start()` tells Claude when that is the holdup.
 
-[AI usage](AI-USAGE.md) covers the same steps with the Claude in Chrome
-extension.
+[AI usage](AI-USAGE.md#claude-in-chrome) covers the same steps with the Claude
+in Chrome extension.
 
 ## 1. Lay down the groove
 
@@ -189,8 +189,7 @@ the kit and the bassline and leaves the toy's demo song off.
 
 ## What Claude can't check
 
-`bender.listen` reports the peak, the supply rail, reboots, the sources with
-signal, the notes each audible machine played and the drum voices hit.
+[AI usage](AI-USAGE.md#the-api) lists what `bender.listen` reports.
 
 - **Timbre:** no reading covers a squelch, a slip or a drift, so Claude checks
   the controls it set and leaves the sound to your ears.

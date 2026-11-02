@@ -20,15 +20,8 @@ re-measured for this file, the number is marked as a commit's claim.
 
 ## Measure first, and know what the measurement can tell you
 
-The obvious way to measure here is wrong, and every later result depends on the
-measurement.
-
-`pnpm bench` reports per-stage cost over a long render. `pnpm blocks` reports
-the distribution — p50 through p99.9, and how many blocks went over budget —
-because glitches come from the slowest blocks. `pnpm cold` reports the first
-seconds, before anything has tiered up. `pnpm ab <ref>` compares the working
-tree against a git ref. `pnpm cpu` runs the built app in Chrome and reports CPU
-time per thread and the underruns Chrome counted.
+[DEVELOPMENT.md](DEVELOPMENT.md#performance) lists the measuring scripts. Every
+later result depends on reading them correctly.
 
 **The minimum across processes varies by chance.** `bench.ts` takes the best of
 several passes, on the reasonable argument that anything else sharing the
@@ -201,10 +194,12 @@ half the DSP time and 60% of the allocation on the stock board, all inside one
 ## Block rate against sample rate
 
 A knob holds still for the length of a block, so anything derived only from
-knobs should be computed at the top of the loop. The spring verb worked out
-eight `pow` calls a sample for a decay that had not moved; `Transient` called
-`coef` four times a sample for four fixed time constants; the toy rail
-recomputed a `pow` for a reservoir factor 48,000 times a second.
+knobs should be computed at the top of the loop: filter coefficients, a decay
+turned into a feedback gain, a delay time split into whole and fractional
+samples. The spring verb worked out eight `pow` calls a sample for a decay that
+had not moved; `Transient` called `coef` four times a sample for four fixed time
+constants; the toy rail recomputed a `pow` for a reservoir factor 48,000 times a
+second.
 
 Hoisting the _constant_ coefficients — the ones that depend only on the sample
 rate — measured about 0.1%. Moving a computation to block rate pays when the
@@ -218,13 +213,13 @@ the outside. Placing fifteen boxes is arithmetic, so `chain-map.ts` computes the
 layout directly, and the live map and the README's drawing both use that layout,
 so they cannot differ.
 
-With the layout computed in `chain-map.ts`, the 150 ms redraw throttle went
-away. The throttle came back later for a different reason: two of the strings on
-the map are numbers printed on wires, a morph moves them every frame, and React
-still gets a fresh tree of 179 SVG elements to diff — about half a millisecond
-to build and as much again to reconcile, so roughly 32 ms of every second a
-board is travelling. The map reads the board immediately when the board has been
-still, and on the trailing edge of the throttle while it is moving.
+The map still redraws on a 120 ms throttle (`REDRAW_MS` in `ChainMap.tsx`). Two
+of the strings on the map are numbers printed on wires, a morph moves them every
+frame, and each redraw gives React a fresh tree of 179 SVG elements to diff,
+about half a millisecond to build and as much again to reconcile. Unthrottled,
+that is roughly 32 ms of every second a board is travelling. The map reads the
+board immediately when the board has been still, and on the trailing edge of the
+throttle while it is moving.
 
 ### Every thread, and on battery
 
@@ -321,15 +316,10 @@ the browser has done that layout anyway and a smooth scroll starting one frame
 later is invisible. The whole call disappears from the profile; commit goes to
 36 ms and React's total to 187, paired and alternated.
 
-Like the rail lamp, this cost came from touching the DOM at the wrong time. The
-lamp wrote it when nothing had changed; here the code read it at the one moment
-it is guaranteed to be dirty. A frame callback is the cheap place to do either.
-
 What is left is first-mount cost spread across many functions: the render phase
 is unchanged at 135 ms for nineteen opens, and nothing under it exceeds 7 ms —
 `Tip` on nearly every row, `createElement`, `setInitialProperties`,
-`appendChild`, the map's rebuild. No hotspot is left, and the only saving is
-mounting fewer elements, which the panel's density rules out.
+`appendChild`, the map's rebuild.
 
 In the first three scenes the panel still costs 6% of one core sitting still and
 14% with a board travelling, and almost none of that is React. Sitting still,
@@ -348,8 +338,7 @@ renderer:
   from 0.13% to nothing.
 - **`packParams` allocated a fresh 361-float buffer per flush**, which during a
   morph is one a frame. It takes an `out` buffer now, the way `peaksOf` does,
-  and the engine keeps one: `postMessage` serializes on the calling thread, so
-  the buffer is free again the moment the post returns.
+  and the engine keeps one.
 
 ### A property read inside a sample loop
 
@@ -360,13 +349,8 @@ made 8.6 million reads through the binding. Reading it once into a local, with
 the same division and bit-identical output, took the loop from 135 ms to 25 ms
 and the freeze to about half.
 
-The block-rate rule from the audio thread applies here in general form: any
-value the loop does not compute is a constant, and a host object's attribute is
-an expensive one.
-
 ## What did not pay
 
-- **Hoisting constant coefficients.** Looks obvious, measured ~0.1%.
 - **A polynomial sine.** `Math.sin` is 8.8 ns; a 5th-order minimax on the
   half-wave is 15.6 ns, so libm is faster.
 - **A polynomial exp2.** 32 ns against `Math.exp`'s 16 — and the polynomial
@@ -428,11 +412,9 @@ an expensive one.
   the delay is fixed for the block.
 - **The tape's print-through** takes a second 4-point Hermite read whose output
   goes straight into a 2500 Hz lowpass at 0.05 gain, where linear would do.
-- **Opening a stage** is still a 14–20 ms React render, the largest in the app,
-  and still around the length of a frame after the forced layout came out of it.
-  The cost is a rack of controls being mounted with no hotspot in it, so the
-  remaining saving is rendering fewer elements, which changes the panel and not
-  React.
+- **Opening a stage** is still a 14–20 ms React render, the largest in the app.
+  The profile has no hotspot left, so the remaining saving is mounting fewer
+  elements, which the panel's density rules out.
 - **Paint and layerize, while the map is moving.** `pnpm panel morph` reports
   them at 0.49 and 0.29 ms a frame, which are the two largest columns and more
   than all the javascript. The cost comes from the signal-path drawing: 179 SVG
@@ -455,7 +437,7 @@ Each technique below is unmeasured here and marks a place to look next.
 
 - **FTZ/DAZ is unreachable from JavaScript.** Native audio code sets the CPU
   flags that make denormals flush to zero with no extra code. JS cannot set
-  them, so the explicit compare above is needed, and it is worth 38×.
+  them, so `flushDenormal` flushes explicitly.
 - **Never lock, never allocate, never wait on the audio thread.** The standard
   main-to-audio channel is a `SharedArrayBuffer` ring with atomics, not
   `postMessage`, once the traffic is more than occasional.

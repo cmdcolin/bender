@@ -40,15 +40,14 @@ silent one; see `src/ui/testDom.ts`.
 
 ## Performance
 
-The worklet gets 2.7 ms to fill 2.7 ms of audio, 375 times a second. Miss the
-deadline once and a buffer goes out unfilled, which is an audible click.
+[optimizations.md](optimizations.md) gives the worklet's deadline, what each of
+these numbers means and which to trust.
 
 - `pnpm bench` renders offline and reports what the chain costs per block, stage
   by stage. A board with everything patched sits near 9% of one core; the board
   as it boots sits near 1%. `pnpm bench stock` renders just that second case.
-- `pnpm blocks` reports the distribution of block costs, because glitches come
-  from the slowest blocks: a board averaging a tenth of its budget can still
-  click if its worst blocks run ten times its median.
+- `pnpm blocks` reports the distribution of block costs, p50 through p99.9, and
+  how many blocks went over budget.
 - `pnpm cold` reports the first few seconds, before anything has JIT-tiered up —
   the window that `pnpm bench` and `pnpm blocks` render past before they start
   timing.
@@ -59,9 +58,7 @@ deadline once and a buffer goes out unfilled, which is an audible click.
   `pnpm denormal` sweeps the whole graph for exactly that; it takes minutes, so
   `pnpm test` skips it.
 - `pnpm ab <ref>` compares the working tree against a git ref as a paired run on
-  the same machine, since two renders of identical code on a shared machine can
-  otherwise report a double-digit percentage difference from nothing but
-  scheduling noise.
+  the same machine. `pnpm ab HEAD` measures the noise floor.
 
 `pnpm bench`, `blocks`, `cold`, `soak` and `ab` render the chain offline in
 node, with no panel. The panel has a separate deadline of sixty frames a second,
@@ -79,15 +76,13 @@ and eight widgets write to the DOM from the meter without a React render:
 
   The report shows how much time and where in the frame, and cannot attribute it
   to code. Set `BENDER_DUMP` to a path and the script writes the sampled profile
-  there; open it in devtools' performance panel, which is how the forced layout
-  inside the stage-open commit was found.
+  there and open it in devtools' performance panel.
 
   Read the `layout` column. No control on the panel changes the size of
   anything, so layout should sit near zero. Layout that stays high means
   something writes the DOM every frame whether or not it has anything new to
-  write. That is how the per-frame write described in
-  [optimizations.md](optimizations.md#the-panel-is-not-what-costs-one-write-a-frame-was)
-  was found, and it was worth half the main thread.
+  write, as in
+  [optimizations.md](optimizations.md#the-panel-is-not-what-costs-one-write-a-frame-was).
 
 - `pnpm cpu` runs the built app in Chrome and reports the CPU time of the audio
   worklet thread, the renderer's main thread and compositor, and the GPU
@@ -102,9 +97,8 @@ and eight widgets write to the DOM from the meter without a React render:
   column reads 0 when Chrome is not drawing the page, which happens with the
   display off, and the drawing columns mean nothing in that run.
 
-[optimizations.md](optimizations.md) explains what those numbers mean and which
-to trust. [dataflow.md](dataflow.md) shows how a block gets rendered across the
-main and audio threads.
+[dataflow.md](dataflow.md) shows how a block gets rendered across the main and
+audio threads.
 
 ## Generated docs and audit sweeps
 
@@ -129,11 +123,13 @@ main and audio threads.
   offline and through the worklet's board. The build runs it too, so the clips
   stay out of git; it needs `ffmpeg` on PATH.
 
-- The bus drawing in [BENDS.md](BENDS.md#where-the-buses-run) is
-  `docs/img/buses.dot`, re-rendered in the same commit as any edit:
-  `dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg`. No check compares the
-  SVG with the DOT file, for the reasons [dataflow.md](dataflow.md) gives for
-  its diagram.
+- The drawings in [BENDS.md](BENDS.md#where-the-buses-run) and
+  [dataflow.md](dataflow.md) come from `docs/img/buses.dot` and
+  `docs/img/dataflow.dot`. GitHub does not render DOT, so the SVGs are
+  committed; re-render one in the same commit as any edit, as in
+  `dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg`. No check compares an SVG
+  with its DOT file, because Graphviz is not a dependency and different versions
+  emit different bytes.
 - `pnpm features` regenerates [features.md](features.md) from the app's control
   tables and tooltips. A test fails the build if the committed file falls
   behind, so run it after changing a control, a preset, or a ROM.
@@ -163,8 +159,7 @@ main and audio threads.
   moves the take's rms by 0.7% and its peak by 8.8%, because a click is three
   milliseconds long and a render is a second. Measured over a whole take, a
   branch that supplies the attack and a branch that is not soldered in look the
-  same by `rms`, and that is how the kick's coupling path stayed dead for a long
-  time without any test noticing.
+  same by `rms`.
 
   The script reports anything under a thousandth on both columns as a path
   nothing hears, and anything under a fiftieth as one barely there. The second

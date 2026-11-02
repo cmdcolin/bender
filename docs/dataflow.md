@@ -2,23 +2,14 @@
 
 <img src="img/dataflow.svg" alt="bender data flow across the main and audio threads" width="700">
 
-[dataflow.dot](img/dataflow.dot) is the source. GitHub does not render DOT, so
-the SVG is committed; re-render it in the same commit as any edit:
+[dataflow.dot](img/dataflow.dot) is the source;
+[DEVELOPMENT.md](DEVELOPMENT.md#generated-docs-and-audit-sweeps) gives the
+command that re-renders it.
 
-```sh
-dot -Tsvg docs/img/dataflow.dot -o docs/img/dataflow.svg
-```
-
-The repo has no check that the SVG matches the DOT source. Graphviz is not a
-dependency and different versions emit different bytes, so a check would fail on
-toolchain drift.
-
-The drawing at the top of the [README](../README.md#the-signal-path) is the
-signal path. The panel's own layout code generates it, and it shows which stage
+The [signal path map](HOW-IT-WORKS.md#the-signal-path-map) shows which stage
 feeds which. This diagram shows which thread each step runs on, where the
 threads exchange messages, and which steps run per sample rather than per block.
-The signal path cannot show those facts, and
-[optimizations.md](optimizations.md) refers to them throughout.
+[optimizations.md](optimizations.md) refers to those facts throughout.
 
 The panel owns a `Controls` object. `packParams` flattens it to a `Float32Array`
 and posts it across; the worklet keeps the newest one as a target and glides
@@ -73,12 +64,9 @@ as individual messages. Going out, the meter message contains the peak, a
 the reboot count, every sixth block, because everything downstream draws off a
 frame callback and posting faster gains nothing.
 
-The main thread and the worklet each post buffers they own and reuse. Reuse is
-safe because `postMessage` serializes synchronously on the thread that calls it:
-by the time it returns, the receiver's copy exists and the buffer can be written
-over. The same synchronous serialization means the copy costs the audio thread
-time; see
-[optimizations.md](optimizations.md#allocation-on-the-audio-thread).
+The main thread and the worklet each post buffers they own and reuse.
+[optimizations.md](optimizations.md#allocation-on-the-audio-thread) explains why
+reuse is safe and what the copy costs the posting thread.
 
 Recording uses the same port: the worklet fills a slab of about 0.7 s and posts
 it; the main thread converts the slab to 16-bit and appends it to a wav file in
@@ -91,12 +79,11 @@ Everything orange runs per sample, and the time budget goes there, so
 [optimizations.md](optimizations.md) covers arithmetic and memory layout.
 
 Most of the speedups in this repo came from moving work from the per-sample side
-to the block side. A knob holds still for the length of a block, so anything
-derived only from knobs should be computed at the top of the loop — filter
-coefficients, a decay turned into a feedback gain, a delay time split into whole
-and fractional samples. Per-sample work is the signal itself: every stage's
-inner loop, the mod lanes that move within a block, and the safety tail's dc
-block, soft clip and limiter, which run on every sample the instrument emits.
+to the block side, as
+[optimizations.md](optimizations.md#block-rate-against-sample-rate) describes.
+Per-sample work is the signal itself: every stage's inner loop, the mod lanes
+that move within a block, and the safety tail's dc block, soft clip and limiter,
+which run on every sample the instrument emits.
 
 The feedback comb taps post-clip, delays by up to half a second and returns to
 the top of the next block, so the tail feeds back into the chain. Mixer squeal

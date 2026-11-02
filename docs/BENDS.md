@@ -254,7 +254,6 @@ Bends:
     second with the toy silent about a third of the time.
   - Below about 0.12 the bleed drains the charge as fast as it arrives, and the
     clock settles a little fast.
-  - Its row is in the **clock** box.
 - **Crash:** static hits knock the program counter into the wrong part of the
   ROM, up to three times a second at the top of the knob.
   - The crashed chip runs its firmware and the tune data as code, writes over
@@ -265,7 +264,6 @@ Bends:
   - After 0.4 to 3 s the watchdog resets the chip and the tune starts again from
     a random step. At 0.3 the toy spends about 40% of the time crashed.
   - Clock bends speed up or slow down the crashed program.
-  - Its row is in the **tune ROM** box.
 - **Noise divider:** two stages of each pitch divider are wired back into its
   input through an XOR, so the counter runs as a shift register, as on the
   SN76489's noise channel. Each voice plays noise clocked by its own note.
@@ -277,11 +275,8 @@ Bends:
     clock to 32 times the note. On the Sakura board with backing, flatness rises
     from 0.04 at the bottom to 0.25 at 0.6 and 0.65 at the top, and the level
     stays within half a dB of the stock tune.
-  - Each note keeps one noise colour while it sounds. Wiring the output pin into
-    the register input as well was tried and dropped: a lone note locks into a
-    high whistle and loses half its level.
+  - Each note keeps one noise colour while it sounds.
   - The effect voice, bass and chords run through the same registers.
-  - Its row is in the **voices** box.
 - **Effect buttons:** six programs for a sweep counter that loads the melody's
   divider, plus a noise register for bomb and gun.
   - Clock, a flat battery and a pot on the timing pin lower and stretch each
@@ -458,7 +453,7 @@ write touches that register again.
   - At 0.1 about two bits flip a second. At 0.4 about five hundred do, and the
     chip plays bursts and gaps. Measured in 43 ms frames, the centroid's
     standard deviation is 1.5 octaves, against 0.2 for the stock tune.
-  - Its row is in the **registers** box, and its lane moves every sample.
+  - Its patch-bay lane moves every sample.
 - **Heat:** lifts the heat sink off the die.
   - The die warms as it plays, faster when it plays loud. Its register bits flip
     faster as it warms, as with **Register rot**, starting about halfway to the
@@ -470,7 +465,7 @@ write touches that register again.
     knob, 30 s at 0.3 and two minutes at 0.1. The trip and restart temperatures
     change each time, so cycles differ in length.
   - At 0 the die cools and the bits stop flipping within a second.
-  - Its row is in the **registers** box, and its lane moves every sample.
+  - Its patch-bay lane moves every sample.
 - **Operator ring:** the latch between operator slots stops clearing.
   - Each modulator also takes the output of the carrier one slot before it, and
     the last carrier feeds the first modulator on the next sample, so every
@@ -480,7 +475,7 @@ write touches that register again.
     tune the top of the knob reaches flatness 0.94, close to the feedback
     booster. Measured in 43 ms frames, the centroid's standard deviation is a
     third of an octave, against 0.04 for the booster.
-  - Its row is in the **voices** box, and its lane moves every sample.
+  - Its patch-bay lane moves every sample.
 
 ## Inside the drum voices
 
@@ -670,7 +665,7 @@ Five bends sit inside the die, between the counter and the memory.
     note warms the die a third as fast.
   - At 0 the die is cold, and a held note keeps a jumped pitch until it is
     struck again.
-  - Its row is in the **counter** box, and its lane is read once a block.
+  - Its patch-bay lane is read once a block.
 
 ## Growler's voice card
 

@@ -10,11 +10,9 @@ opens that box's controls.
   <img alt="Sources — Plinky, the drum machine, Glint, the chaos oscillator, noise and the mic — sum into the mix bus, which runs into the slot rack, then through the bends themselves, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, with the feedback bus wired from output back to the mix" src="../img/chain-light.svg" width="420">
 </picture>
 
-`pnpm diagram` regenerates that image with the layout code the panel draws with
-(`src/ui/chain-map.ts`). The code places the boxes and routes the wires with no
-graph library. The live version redraws as you play: bend slots appear in the
-order you patched them, dead stages grey out, and patch-bay wires are drawn over
-the top as dotted lines from source to destination.
+The panel draws the same layout live as you play: bend slots appear in the order
+you patched them, dead stages grey out, and patch-bay wires are drawn over the
+top as dotted lines from source to destination.
 
 Click a node to open its controls. Click a wire for the patch bay, or a wire's
 label for whatever it's clipped onto.
@@ -59,9 +57,10 @@ Sources are boxes at the head of the path. Five of them share one power supply:
 Plinky, the drum machine, Glint, Parlor and Growler are dies on one rail. The
 map draws them inside a dashed frame with the dotted supply rail running past
 every box. A battery box on the rail opens **Power supply**, and so does the
-voltage lamp on each machine's deck. The **Starve** knob in that panel drags the
-rail down, so the chips' pitch dives and the kit's tempo slows. A machine whose
-**Supply** picks the second cells or the bench drops no tap onto the rail.
+voltage lamp on each machine's deck. A machine whose **Supply** picks the second
+cells or the bench drops no tap onto the rail.
+[Bends](BENDS.md#the-shared-power-rail) covers what the rail does to the
+machines.
 
 - **The key line:** the toy's gate line runs along the top row from the toy
   keyboard to Glint and Parlor, then drops onto Growler. All three play whatever
@@ -72,8 +71,8 @@ rail down, so the chips' pitch dives and the kit's tempo slows. A machine whose
 - **Jumpers:** each of the three has a **Plays Plinky’s notes** jumper. With it
   cut, the chip plays from its keybed and from any trigger bridge you patch
   across from the drums. Each bridge on the map reads `kick → Glint`: the kit
-  voice, then the machine it strikes. See [the trigger patch](USER-GUIDE.md) in
-  the user guide.
+  voice, then the machine it strikes. See
+  [the trigger patch](USER-GUIDE.md#the-trigger-patch) in the user guide.
 - **In the panel:** the map puts the five on two rows, with the drums under the
   Plinky. The image above uses the same layout.
 
@@ -96,10 +95,6 @@ and shows:
 - the bus meter underneath, read where the faders meet, ahead of the final
   output, so it shows which channel is eating the headroom
 
-The meters show Glint silent at three-quarters fader because nothing on the toy
-has struck a note for it to play, and the same reading leaves its box on the map
-unlit.
-
 **Bus drive** is the knob on the summing amp where all six sources meet. The amp
 is unity gain and the first saturation stage ahead of any bend. The feedback
 return enters the same bus, so a runaway feedback loop saturates in the same amp
@@ -113,14 +108,8 @@ by design, which holds runaway at the rails. A fixed safety tail (DC block, soft
 clip, a limiter at −1 dBFS, and a NaN watchdog) means no combination of settings
 can blow up the output.
 
-Three pages go further:
-
-- [dataflow.md](dataflow.md): how a block gets rendered across the main and
-  audio threads, where the buses sit, and what runs per sample and what per
-  block
-- [optimizations.md](optimizations.md): what the engine costs, and what was
-  tried and thrown away to keep it inside budget
-- [Bends](BENDS.md): what each fault does to the circuit
+[dataflow.md](dataflow.md) shows how a block gets rendered across the main and
+audio threads, and [optimizations.md](optimizations.md) what the engine costs.
 
 ## What is stored where
 

@@ -46,13 +46,11 @@ The rows under the grid work like a tracker's effect columns:
   repeats out or swells them in
 - **nudge** lands a step late, in twelfths of the step. A nudged ratchet fits
   its repeats into what is left
-- **event** puts a fault on the whole board for one step: **c** cuts the output,
-  **d** drops the cells' contact so the shared rail sags, **b** brakes the mix
-  to a stop, **f** repeats the step's first half and **r** pulls the power. A
-  reboot on the shared cells restarts the kit's bar too. A run of one letter
-  plays as one fault: four **b** in a row brake over the whole beat, and four
-  **f** roll faster and faster. The button at the end of the row sets how often
-  the row fires: **4:4** fires on the fourth bar of every four
+- **event** puts one of the five faults in the table below on the whole board
+  for one step. A reboot on the shared cells restarts the kit's bar too. A run
+  of one letter plays as one fault: four **b** in a row brake over the whole
+  beat, and four **f** roll faster and faster. The button at the end of the row
+  sets how often the row fires: **4:4** fires on the fourth bar of every four
 - **cond:** each column plays only on the bars its condition names, whatever
   voices sit on it. **p** plays only when the last column with a bar condition
   played, **!p** only when it rested, and **F** plays only while you hold the
@@ -71,17 +69,16 @@ grid, then goes back to the grid as you wrote it:
 - Wire the patch bay's phrase source to **kit wander**, and Wander rises and
   falls over as many as 32 bars
 
-The event row's five faults also play live from the keyboard while the kit runs.
-Hold a key and the fault starts on the kit's next step and lasts until you let
-go:
+The same five faults also play live from the keyboard while the kit runs. Hold a
+key and the fault starts on the kit's next step and lasts until you let go:
 
-| key | throw   | fault                                       |
-| --- | ------- | ------------------------------------------- |
-| `.` | cut     | the whole board cut                         |
-| `;` | unplug  | the cells off the board; held long, reboots |
-| `/` | stop    | the whole mix braked to a stop over a beat  |
-| `i` | stutter | the whole mix rolled faster and faster      |
-| `r` | reboot  | the power pulled on every step              |
+| event | key | throw   | fault                                                    |
+| ----- | --- | ------- | -------------------------------------------------------- |
+| **c** | `.` | cut     | the whole board cut                                      |
+| **d** | `;` | unplug  | the cells off the board, so the rail sags; held, reboots |
+| **b** | `/` | stop    | the whole mix braked to a stop; held, over a beat        |
+| **f** | `i` | stutter | the step's first half repeated, faster and faster        |
+| **r** | `r` | reboot  | the power pulled; held, on every step                    |
 
 **land** beside the morph picker holds whole-board changes for the kit's
 downbeat. Set it to **4 bars**, for example, and while the kit runs:
@@ -244,7 +241,10 @@ voltage you set, or jams one.
   sets how a held key moves: **snap**, **swell**, **riser** (climbs over four
   bars, drops when you let go), **pluck** or **wobble** (pulses on the eighths)
 - **Fault on the bus** cuts, grounds or bridges a wire inside a chip
-- **add pedal** lists every pedal by sound: dirt, echo and space, pitch and tone
+- **add pedal** lists every pedal by sound: dirt, echo and space, pitch and
+  tone. The
+  [feature list](https://github.com/cmdcolin/bender/blob/main/docs/features.md#pedals)
+  describes each one
 - **Sockets:** ten of the pedals (ring mod, crusher, octave and the rest)
   compete for six sockets. Adding one fills the first empty socket, or trades
   out the last when all six are full
@@ -333,28 +333,8 @@ Output:
   the board stands. The arc runs on the audio thread, so it keeps going in a
   hidden tab
 
-## Pedals and tape
-
-- **Gnash:** six dirt-box circuits: screamer, rat, muff, germanium, octave, gate
-- **Wraith:** a tape echo. A motor-driven capstan pulls a five-second loop past
-  three play heads. **Time sync** sets the echo from the kit's tempo
-- **Ricochet:** a delay pedal with a clean mode, a bucket-brigade mode, reverse
-  and hold
-- **Boing:** a spring reverb tank that crashes when you kick it
-- **Chorale:** a bucket-brigade chorus, string ensemble, dimension and vibrato
-- **Ember:** a tube amp with Fender and Marshall tone stacks, a push-pull power
-  stage that sags, and a speaker
-- **Feedback bus:** the output fed back in, as a mixer with nothing plugged in
-  squeals
-- **Tape machine:** the whole board printed to open reel, cassette or
-  microcassette, with Dolby B or dbx, wow, flutter and shed oxide
-- **Brownout:** the mains failing, with sag, dropouts, crackle and hum
-- **Varispeed:** slows the whole board, tempo and pitch together, as the motor
-  of a deck winds down
-
 ## Keep it
 
 - **Wav export** with stems
-- **Share** copies a link to the board
 - **Sign in** to save named voices
 - **On a phone,** the simple version swipes and tilts to bend
