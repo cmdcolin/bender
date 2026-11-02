@@ -1,6 +1,7 @@
 import { getViteConfig } from 'astro/config'
 import { defaultExclude } from 'vitest/config'
 
+import { globSync, readFileSync } from 'node:fs'
 import { availableParallelism } from 'node:os'
 
 // Worktrees carry their own copy of the suite; running them here would report
@@ -36,11 +37,45 @@ const SLOW = [
 const full =
   !!process.env.BENDER_FULL ||
   process.argv.some(arg => SLOW.some(file => arg.endsWith(file)))
+const SLOW_SKIPPED = full ? [] : SLOW
+
+// A worker that runs one file and exits costs about 800 ms to start. Files in
+// the node environment that leave no global behind can share a worker, which is
+// most of the dsp suite; jsdom files and files that stub globals or timers each
+// keep a fresh one.
+const LEAVES_STATE =
+  /vitest-environment jsdom|stubGlobal|vi\.mock|useFakeTimers|stubEnv|process\.env\.\w+ =/
+
+const shared = globSync(
+  ['src/**/*.test.{ts,tsx}', 'hardware/**/*.test.ts', 'scripts/**/*.test.ts'],
+  { exclude: name => name.includes('node_modules') },
+).filter(
+  file =>
+    !SLOW_SKIPPED.includes(file) &&
+    !LEAVES_STATE.test(readFileSync(file, 'utf8')),
+)
+
+const base = {
+  exclude: [...defaultExclude, '.claude/**', ...SLOW_SKIPPED],
+  testTimeout: 40000,
+  maxWorkers: Math.max(2, availableParallelism() >> 1),
+}
 
 export default getViteConfig({
   test: {
-    exclude: [...defaultExclude, '.claude/**', ...(full ? [] : SLOW)],
-    testTimeout: 40000,
-    maxWorkers: Math.max(2, availableParallelism() >> 1),
+    projects: [
+      {
+        extends: true,
+        test: { ...base, name: 'shared', include: shared, isolate: false },
+      },
+      {
+        extends: true,
+        test: {
+          ...base,
+          name: 'isolated',
+          exclude: [...base.exclude, ...shared],
+        },
+      },
+    ],
   },
 })
