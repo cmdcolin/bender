@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params.ts'
-import { Bus } from '../bus.ts'
+import { Bus, FAULT } from '../bus.ts'
 import { DEST } from '../modbus.ts'
 import { BiquadState, lowpass, type Biquad } from '../util/biquad.ts'
 import { SineOsc } from '../util/lfo.ts'
@@ -66,6 +66,36 @@ const TAPS = TAP_AT.length / 2
 
 const dac = (x: number) => Math.min(Math.max(x, -1), 1)
 
+class FaultMask {
+  line = -1
+  cut = false
+  private and = 0xffff
+  private or = 0
+  private pair = 0
+
+  set(line: number, fault: number) {
+    const on = line >= 0 && line < RACK_LINES
+    const bit = on ? 1 << line : 0
+    this.line = line
+    this.cut = on && fault === FAULT.cut
+    this.and = on && fault === FAULT.ground ? 0xffff & ~bit : 0xffff
+    this.or = on && fault === FAULT.supply ? bit : 0
+    this.pair =
+      on && fault === FAULT.bridge
+        ? bit | (line + 1 < RACK_LINES ? bit << 1 : bit >> 1)
+        : 0
+  }
+
+  apply(word: number) {
+    const pair = this.pair
+    return pair
+      ? (word & pair) === pair
+        ? word | pair
+        : word & ~pair
+      : (word & this.and) | this.or
+  }
+}
+
 export const RACK_MAX_SIZE =
   (RACK_WORDS - 2 * SPARE - 2 * EXCURSION) / TANK_WORDS
 
@@ -92,10 +122,8 @@ export class RackVerb implements Stage {
   private tailR = 0
   private dampL = 0
   private dampR = 0
-  private aLine = -1
-  private aFault = 0
-  private dLine = -1
-  private dFault = 0
+  private readonly aWires = new FaultMask()
+  private readonly dWires = new FaultMask()
   private cut = 0
   private keep = 0xffff
   private readonly seed: number
@@ -123,10 +151,14 @@ export class RackVerb implements Stage {
     const leak = LEAK_RATE * p[IDX.rackRefresh]! ** 3
     const bits = Math.min(Math.max(Math.round(p[IDX.rackBits]!), 1), 16)
     this.keep = (0xffff << (16 - bits)) & 0xffff
-    this.aLine = Math.round(p[IDX.rackAddrLine]!) - 1
-    this.aFault = Math.round(p[IDX.rackAddrFault]!)
-    this.dLine = Math.round(p[IDX.rackDataLine]!) - 1
-    this.dFault = Math.round(p[IDX.rackDataFault]!)
+    this.aWires.set(
+      Math.round(p[IDX.rackAddrLine]!) - 1,
+      Math.round(p[IDX.rackAddrFault]!),
+    )
+    this.dWires.set(
+      Math.round(p[IDX.rackDataLine]!) - 1,
+      Math.round(p[IDX.rackDataFault]!),
+    )
     this.cut = p[IDX.rackBusCut]!
     const excursion = this.layout(
       p[IDX.rackSize]!,
@@ -256,15 +288,16 @@ export class RackVerb implements Stage {
 
   private at(line: number, t: number) {
     const a = (this.ptr + this.start[line]! + t) & MASK
-    return this.aLine < 0
-      ? a
-      : this.addr.read(a, this.aLine, this.aFault, this.cut)
+    const w = this.aWires
+    return w.cut ? this.addr.read(a, w.line, FAULT.cut, this.cut) : w.apply(a)
   }
 
   private read(line: number, t: number) {
-    let word = this.mem[this.at(line, t)]!
-    if (this.dLine >= 0)
-      word = this.data.read(word, this.dLine, this.dFault, this.cut)
+    const w = this.dWires
+    const raw = this.mem[this.at(line, t)]!
+    const word = w.cut
+      ? this.data.read(raw, w.line, FAULT.cut, this.cut)
+      : w.apply(raw)
     return (word - MID) / MID
   }
 
