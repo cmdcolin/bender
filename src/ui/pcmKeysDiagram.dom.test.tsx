@@ -74,3 +74,23 @@ test('the path lights from the ROM on, and only while the keyboard sounds', () =
   expect(wires(container).filter(lit)).toHaveLength(3)
   act(() => engine.sounding.set(0))
 })
+
+test('the heat and CPU wires open the counter and the data bus', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<PcmKeysDiagram verbs={() => null} />)
+  fireEvent.click(box('heat wire'))
+  expect(screen.getByText('Thermal runaway')).not.toBeNull()
+  fireEvent.click(box('CPU wire'))
+  expect(screen.getByText('CPU on bus')).not.toBeNull()
+  expect(screen.queryByText('Thermal runaway')).toBeNull()
+})
+
+const red = (name: string) =>
+  box(name).querySelector('path[marker-end*="alarm"]') !== null
+
+test('a heat or CPU wire turns red when its knob is off stock', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, pcmCpuBus: 0.6 })
+  render(<PcmKeysDiagram verbs={() => null} />)
+  expect(red('CPU wire')).toBe(true)
+  expect(red('heat wire')).toBe(false)
+})

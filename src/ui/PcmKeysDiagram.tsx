@@ -1,3 +1,4 @@
+import styles from './BusDiagram.module.css'
 import { PARLOR_OPENS as OPENS, PARLOR_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import {
@@ -58,19 +59,14 @@ const TOP = 4
 const ROW = 30
 const GAP = 18
 const BOX_H = ONE_LINE_H
-
-// How far each bus box leans away from the other, so the two do not touch.
 const BUS_LEAN = 14
+const HEAT_IN = 8
+const TAG_GAP = 4
+const CPU_RUN = 16
 
 const midOf = (from: BoxSpec, to: BoxSpec) =>
   Math.round((from.x + from.w + to.x) / 2)
 
-// The keyboard as the board wires it: a key strikes up to four voices, a
-// counter walks the sample ROM at the rate the note asks for, the ROM answers
-// with a word, and an envelope, a filter and the mix take it from there. The
-// counter and the ROM talk over two buses a fault can reach, which hang under
-// the wires they sit on, and the die's one vibrato LFO feeds the counter from
-// above. Each box opens the knobs of the part it stands for.
 export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('ROM')
@@ -133,6 +129,20 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     const w = boxWidth(id)
     return box(id, mid + lean - Math.round(w / 2), busY, w, keys, help)
   }
+  const addrBus = bus(
+    'addr bus',
+    midOf(counter, rom),
+    -BUS_LEAN,
+    OPENS['addr bus'],
+    'The wires the counter names a word on. A fault on one makes the ROM hand back a real word from the wrong place.',
+  )
+  const dataBus = bus(
+    'data bus',
+    midOf(rom, envelope),
+    BUS_LEAN,
+    OPENS['data bus'],
+    'The eight wires the ROM answers on. A fault on one keeps the pitch and changes the shape of every word. The keyboard’s processor reads the keys over the same wires.',
+  )
   const boxes = [
     ...row,
     mix,
@@ -144,20 +154,8 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       OPENS.vibrato,
       'The die’s one LFO. It has no rate or depth register and no way to stop it; the button picks whether a voice listens to it, and whether it waits first.',
     ),
-    bus(
-      'addr bus',
-      midOf(counter, rom),
-      -BUS_LEAN,
-      OPENS['addr bus'],
-      'The wires the counter names a word on. A fault on one makes the ROM hand back a real word from the wrong place.',
-    ),
-    bus(
-      'data bus',
-      midOf(rom, envelope),
-      BUS_LEAN,
-      OPENS['data bus'],
-      'The eight wires the ROM answers on. A fault on one keeps the pitch and changes the shape of every word. The keyboard’s processor reads the keys over the same wires.',
-    ),
+    addrBus,
+    dataBus,
   ]
   useOpensOnAim(pick, boxes)
   const open = boxes.find(b => b.id === pick.selected)
@@ -171,6 +169,27 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     ['addr bus', `M${midOf(counter, rom)} ${busY} V${mid}`],
     ['data bus', `M${midOf(rom, envelope)} ${busY} V${mid}`],
   ]
+  const busMid = busY + BOX_H / 2
+  const heatX = counter.x + HEAT_IN
+  const cpuX = dataBus.x + dataBus.w + CPU_RUN
+  const bends = [
+    {
+      tag: 'heat',
+      knob: 'pcmRunaway',
+      opens: 'counter',
+      d: `M${heatX} ${busMid} V${mid + BOX_H / 2}`,
+      x: heatX - TAG_GAP,
+      anchor: 'end',
+    },
+    {
+      tag: 'CPU',
+      knob: 'pcmCpuBus',
+      opens: 'data bus',
+      d: `M${cpuX} ${busMid} H${dataBus.x + dataBus.w}`,
+      x: cpuX + TAG_GAP,
+      anchor: 'start',
+    },
+  ] as const
   return (
     <>
       <ChipDrawing
@@ -195,6 +214,37 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
                 <Wire d={d} look="dash" />
               </Bend>
             ))}
+            {bends.map(({ tag, knob, opens, d, x, anchor }) => {
+              const lit = r.touched(knob)
+              return (
+                <Bend
+                  key={tag}
+                  name={`${tag} wire`}
+                  opens={opens}
+                  pick={pick}
+                  hit={d}
+                >
+                  {lit ? (
+                    <path
+                      d={d}
+                      className={styles.jumper}
+                      strokeDasharray="3 2"
+                      markerEnd={`url(#${arrow}-alarm)`}
+                    />
+                  ) : (
+                    <Wire arrow={arrow} d={d} look="dash" />
+                  )}
+                  <text
+                    x={x}
+                    y={busMid + 3}
+                    textAnchor={anchor}
+                    className={lit ? styles.tagOpen : styles.tag}
+                  >
+                    {tag}
+                  </text>
+                </Bend>
+              )
+            })}
             {boxes.map(b => (
               <BoxView
                 key={b.id}
