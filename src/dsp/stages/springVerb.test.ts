@@ -141,9 +141,6 @@ const blank = (): Ctx => ({
   trig: new TriggerBus(),
 })
 
-// A mic with an offset on it into a tank that rings for half a minute: the
-// combs feed an offset round a hundred times over, so without a block at the
-// input a few millivolts parks the springs on the rail.
 test('an offset at the input does not lift the tank', () => {
   const verb = new SpringVerb(SR)
   const p = packParams({
@@ -170,4 +167,85 @@ test('an offset at the input does not lift the tank', () => {
       for (let i = 0; i < BLOCK; i++) sum += io.l[i]!
   }
   expect(Math.abs(sum / SR)).toBeLessThan(0.01)
+})
+
+const square = (t: number) =>
+  0.2 * (Math.sin((2 * Math.PI * 110 * t) / SR) > 0 ? 1 : -1)
+
+function energy(
+  verb: SpringVerb,
+  p: Float32Array,
+  ctx: Ctx,
+  from: number,
+  blocks: number,
+) {
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  let sq = 0
+  for (let b = 0; b < blocks; b++) {
+    for (let i = 0; i < BLOCK; i++)
+      io.l[i] = io.r[i] = square(from + b * BLOCK + i)
+    verb.process(io, p, ctx)
+    for (let i = 0; i < BLOCK; i++) sq += io.l[i]! ** 2
+  }
+  return sq
+}
+
+test('turning Kick up from off does not crash the tank by itself', () => {
+  const verb = new SpringVerb(SR)
+  const tank = { ...DEFAULT_CONTROLS, revMix: 1, revDry: 0 }
+  const off = packParams({ ...tank, revKick: 0 })
+  const on = packParams({ ...tank, revKick: 1 })
+  const ctx = blank()
+  const settle = Math.floor(SR / BLOCK)
+  energy(verb, off, ctx, 0, settle)
+  const before = energy(verb, off, ctx, settle * BLOCK, 40)
+  const after = energy(verb, on, ctx, (settle + 40) * BLOCK, 40)
+  expect(after).toBeLessThan(1.2 * before)
+})
+
+const noiseBurst = (seed: number) => {
+  let s = seed
+  return (t: number) => {
+    s = (Math.imul(s ^ (s >>> 15), 0x2c1b3c6d) + 0x165667b1) | 0
+    return t < 0.5 * SR ? ((s >>> 0) / 4294967296 - 0.5) * 0.6 : 0
+  }
+}
+
+function rt60(revDecayS: number) {
+  const verb = new SpringVerb(SR)
+  const p = packParams({ ...DEFAULT_CONTROLS, revMix: 1, revDry: 0, revDecayS })
+  const ctx = blank()
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const burst = noiseBurst(7)
+  const blocks = Math.ceil(((2 * revDecayS + 2) * SR) / BLOCK)
+  const out = new Float32Array(blocks * BLOCK)
+  for (let b = 0; b < blocks; b++) {
+    for (let i = 0; i < BLOCK; i++) io.l[i] = io.r[i] = burst(b * BLOCK + i)
+    verb.process(io, p, ctx)
+    out.set(io.l, b * BLOCK)
+  }
+  const win = Math.floor(0.05 * SR)
+  const env: number[] = []
+  for (let at = Math.floor(0.55 * SR); at + win <= out.length; at += win)
+    env.push(20 * Math.log10(rms(out.subarray(at, at + win)) + 1e-12))
+  const top = env[0]!
+  const a = env.findIndex(v => v < top - 10)
+  const b = env.findIndex(v => v < top - 30)
+  return ((b - a) * 0.05 * 60) / 20
+}
+
+test('Decay is the time the tail takes to fall sixty decibels', () => {
+  for (const seconds of [0.5, 2, 8]) {
+    const measured = rt60(seconds)
+    expect(measured).toBeGreaterThan(0.75 * seconds)
+    expect(measured).toBeLessThan(1.25 * seconds)
+  }
 })

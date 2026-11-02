@@ -200,8 +200,8 @@ export class SpringVerb implements Stage {
     for (let i = 0; i < n; i++) {
       let xl = this.dcL.process(l[i]!, dcCoef)
       let xr = this.dcR.process(r[i]!, dcCoef)
+      const slammed = this.slam.process(0.5 * (xl + xr), slamAt)
       if (kick > 0) {
-        const slammed = this.slam.process(0.5 * (xl + xr), slamAt)
         const hit = trig.drumBits[i]! !== 0 && trig.drumGain[i]! >= hitAt
         if (slammed || hit) this.crashEnv = 1
       }
