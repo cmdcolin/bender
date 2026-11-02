@@ -125,7 +125,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'mall strings',
     blurb:
-      'Parlor on strings with the toy’s gate still soldered on, so the demo song plays a pad through a long spring and a tape that wanders',
+      'Parlor is on strings with the toy’s gate still soldered on, so the demo song plays a pad through a long spring and a tape that wanders',
     patch: {
       pcmLevel: 0.9,
       pcmVoice: keys('strings'),
@@ -145,7 +145,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'plaza chimes',
     blurb:
-      'Tube bells off the eight-bit ROM, locked to a pentatonic and hung in the delay pedal',
+      'Tube bells play off the eight-bit ROM, locked to a pentatonic and hung in the delay pedal',
     patch: {
       pcmLevel: 0.85,
       pcmVoice: keys('chime'),
@@ -165,7 +165,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bent sampler',
     blurb:
-      'Whatever you dropped, played across the keyboard off the sample memory with a data line on the rail and the address bus bridged — the tape loop’s fader down, so the only copy you hear is the keyed one',
+      'Whatever you dropped plays across the keyboard off the sample memory, with a data line on the rail and the address bus bridged. The tape loop’s fader is down, so the only copy you hear is the keyed one',
     patch: {
       pcmLevel: 0.9,
       pcmVoice: keys('sampled'),
@@ -199,7 +199,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'techno',
     blurb:
-      'Four on the floor at 130, clap on two and four, closed hats choked by an open one on every offbeat, and Growler rolling three sixteenths of bass after each kick',
+      'The kit plays four on the floor at 130 with a clap on two and four and closed hats choked by an open one on every offbeat, and Growler rolls three sixteenths of bass after each kick',
     patch: {
       ...romMasks('techno'),
       ...ROLLING,
@@ -217,7 +217,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'acid techno',
     blurb:
-      'The techno kit at 132 under a 303-style line on Growler: one saw into the ladder near oscillation, accents opening it and slides tying notes together',
+      'A techno kit at 132 plays under a 303-style line on Growler: one saw into the ladder near oscillation, with accents opening it and slides tying notes together',
     patch: {
       ...romMasks('techno'),
       ...ACID,
@@ -240,7 +240,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'paperclip',
     blurb:
-      'Bare metal on the timing pin — every touch dives an octave and snaps back',
+      'Bare metal is on the timing pin, and every touch dives an octave and snaps back',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.85,
@@ -258,7 +258,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'flat batteries',
     blurb:
-      'Cells too far gone to hold the rail — the whole toy runs low and late',
+      'The cells are too far gone to hold the rail, so the whole toy runs low and late',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.85,
@@ -273,7 +273,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'paperclip on the kit',
     blurb:
-      'Clatter alone on the second cells with a paperclip chattering across them, so the beat dives and reboots while Plinky plays its tune clean off the bench supply',
+      'Clatter runs alone on the second cells with a paperclip chattering across them, so the beat dives and reboots while Plinky plays its tune clean off the bench supply',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.7,
@@ -289,7 +289,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'two dying batteries',
     blurb:
-      'Plinky on second cells starved into latch-ups and reboots, Clatter on flat shared cells behind a lead resistor, so each browns out on its own schedule',
+      'Plinky runs on second cells starved into latch-ups and reboots, and Clatter runs on flat shared cells behind a lead resistor, so each browns out on its own schedule',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.85,
@@ -304,7 +304,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'melody scrambler',
-    blurb: 'Pot soldered on the program counter',
+    blurb: 'A pot is soldered on the program counter',
     patch: {
       chipLevel: 0.9,
       chipClockX: 2.5,
@@ -318,7 +318,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'wrong song',
     blurb:
-      'A data line held high — the tune keeps its rhythm and its rests fill in',
+      'A data line is held high, so the tune keeps its rhythm and its rests fill in',
     patch: {
       chipLevel: 0.9,
       chipAccomp: 0.7,
@@ -329,7 +329,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'half a tune',
-    blurb: 'An address line on the floor: the song folds into its first half',
+    blurb: 'An address line is grounded, so the song folds into its first half',
     patch: {
       chipLevel: 0.9,
       chipAccomp: 0.5,
@@ -359,7 +359,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'drum machine on the die',
     blurb:
-      'The chip’s own percussion bank, run through a half-parted wave line',
+      'The chip’s own percussion bank runs through a half-parted wave line',
     patch: {
       chipLevel: 0,
       drumLevel: 0.35,
@@ -377,7 +377,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'dawn chorus',
-    blurb: 'Bird calls off the effect ROM, every write of them corrupted',
+    blurb:
+      'Bird calls play off the effect ROM, and every write of them is corrupted',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -390,7 +391,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'weather station',
-    blurb: 'Wind, with the address latch missing one pulse in seven',
+    blurb:
+      'The wind effect plays while the address latch misses one pulse in seven',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -401,7 +403,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'air raid',
-    blurb: 'A siren written to the wrong registers as it climbs',
+    blurb: 'A siren is written to the wrong registers as it climbs',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -440,7 +442,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'reboot loop',
     blurb:
-      'A square wave on Glint’s cold boot: it power-cycles six times a second, each time into a different chord of garbage',
+      'A square wave is on Glint’s cold boot, so Glint power-cycles six times a second, each time into a different chord of garbage',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -456,7 +458,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'tune on the bass drum',
     blurb:
-      'The FM driver’s allocator stuck on the channel the rhythm bank took, so every note of the song retunes and strikes the die’s bass drum',
+      'The FM driver’s allocator is stuck on the channel the rhythm bank took, so every note of the song retunes and strikes the die’s bass drum',
     patch: {
       chipLevel: 0,
       drumLevel: 0.35,
@@ -471,7 +473,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bird fight',
     blurb:
-      'The allocator stuck on the effect’s channel: the song and a bird call write the same registers and overwrite each other',
+      'The allocator is stuck on the effect’s channel, so the song and a bird call write the same registers and overwrite each other',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -483,7 +485,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'standing ovation',
     blurb:
-      'Applause off the effect ROM through a 9-bit log adder that wraps, until the room is a wall of white noise',
+      'Applause plays off the effect ROM through a 9-bit log adder that wraps, until the room is a wall of white noise',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -494,7 +496,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'gravel dac',
-    blurb: 'The kit’s converter built from resistors off an unmeasured reel',
+    blurb: 'The kit’s converter is built from resistors off an unmeasured reel',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0,
@@ -506,7 +508,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'machine gun',
-    blurb: 'Drum machine retriggered into rolls',
+    blurb: 'The drum machine is retriggered into rolls',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0,
@@ -522,7 +524,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'drum scream',
-    blurb: 'Retrigger past audio rate — the kit becomes a pitch',
+    blurb: 'The retrigger runs past audio rate, so the kit becomes a pitch',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0,
@@ -537,7 +539,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'crushed chip',
-    blurb: 'Overclocked tune through a dying DAC',
+    blurb: 'An overclocked tune plays through a dying DAC',
     patch: {
       chipLevel: 0.85,
       chipClockX: 2,
@@ -563,7 +565,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'no-input squeal',
-    blurb: 'The mixer patched into itself, nothing at the input',
+    blurb: 'The mixer is patched into itself with nothing at the input',
     patch: {
       chipLevel: 0,
       fbAmt: 1.35,
@@ -576,7 +578,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'haunted spring',
-    blurb: 'Slow chip through a huge dispersive tank',
+    blurb: 'A slow chip plays through a huge dispersive tank',
     patch: {
       chipLevel: 0.45,
       chipClockX: 0.5,
@@ -592,7 +594,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'contact crackle',
-    blurb: 'Dirty pot sparks ringing a screaming comb',
+    blurb: 'Sparks from a dirty pot ring a screaming comb',
     patch: {
       chipLevel: 0,
       crackleAmp: 0.9,
@@ -619,7 +621,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'nobody at the keys',
     blurb:
-      'The bay plays the oscillator: pitch off a sample-and-hold, time off the oscillator’s starving rail',
+      'The bay plays the oscillator, taking pitch off a sample-and-hold and time off the oscillator’s starving rail',
     patch: {
       chipLevel: 0,
       oscLevel: 0.8,
@@ -637,7 +639,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'ground loop',
-    blurb: 'Bad power: hum, sag and a straining supply',
+    blurb: 'Bad power brings hum, sag and a straining supply',
     patch: {
       chipLevel: 0.55,
       chipStarve: 0.5,
@@ -650,7 +652,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'fm howl',
-    blurb: 'The feedback bus soldered onto the FM input',
+    blurb: 'The feedback bus is soldered onto the FM input',
     patch: {
       chipLevel: 0,
       oscLevel: 0.7,
@@ -666,7 +668,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'the loop eats itself',
     blurb:
-      'Blank tape under the toy, coming round worse every lap — press play and watch the reel',
+      'Blank tape runs under the toy and comes round worse every lap. Press play and watch the reel',
     patch: {
       chipLevel: 0.7,
       // Named, so it arrives on one press. A fader is yours and a preset keeps
@@ -690,7 +692,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'four loops, no common length',
     blurb:
-      'The board onto four tape loops between 4 and 11 seconds long, each a little quieter and darker every lap, drifting against each other',
+      'The board goes onto four tape loops between 4 and 11 seconds long, each a little quieter and darker every lap, and the loops drift against each other',
     patch: {
       chipLevel: 0.5,
       chipClockX: 0.8,
@@ -719,7 +721,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'the loops wear through',
     blurb:
-      'Four loops that never erase, piling the bent board onto oxide that is coming away in patches, the same patches every lap',
+      'Four loops never erase and pile the bent board onto oxide that is coming away in patches, the same patches every lap',
     patch: {
       chipLevel: 0.45,
       crushMix: 0.35,
@@ -749,7 +751,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'nothing plugged in',
     blurb:
-      'Two channels of the four-track on the desk’s aux return, each boosted at a different mid: a no-input desk squealing on its op-amp rails',
+      'Two channels of the four-track are on the desk’s aux return, each boosted at a different mid, and the no-input desk squeals on its op-amp rails',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -773,7 +775,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'a four-track on its last cells',
     blurb:
-      'A loop of the board on a four-track whose cells are going: it drags flat whenever the desk works, the servo hunts, and the op-amps clip and choke',
+      'A loop of the board plays on a four-track whose cells are going. The tape drags flat whenever the desk works, the servo hunts, and the op-amps clip and choke',
     patch: {
       chipLevel: 0.55,
       fourLevel: 0.9,
@@ -788,7 +790,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'a dictaphone into the bends',
     blurb:
-      'The board played off a microcassette into everything after it: 250 Hz to 4 kHz, hiss and wobble, crushed and then reverberated',
+      'The board plays off a microcassette into everything after it, at 250 Hz to 4 kHz with hiss and wobble, crushed and then reverberated',
     patch: {
       chipLevel: 0.6,
       tapeAt: 2,
@@ -807,7 +809,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'dbx on the wrong deck',
     blurb:
-      'A cassette recorded through dbx and played back on a deck without it: squeezed 2:1, the top end shouting and the hiss riding every note',
+      'A cassette recorded through dbx plays back on a deck without it, so it comes out squeezed 2:1, with the top end shouting and the hiss riding every note',
     patch: {
       chipLevel: 0.6,
       tapeMix: 1,
@@ -821,7 +823,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'the desk lets go',
     blurb:
-      'Three cross-fed loops through amps that block — the output builds up and collapses with no notes played',
+      'Three cross-fed loops run through amps that block, so the output builds up and collapses with no notes played',
     patch: {
       chipLevel: 0,
       crackleAmp: 0.2,
@@ -845,7 +847,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'divider fuzz',
-    blurb: 'A flip-flop octave under the tune, clipped along with it',
+    blurb:
+      'A flip-flop octave plays under the tune and is clipped along with it',
     patch: {
       chipLevel: 0.75,
       distMix: 0.8,
@@ -857,7 +860,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'wall of muff',
-    blurb: 'Two clipping stages that never let the note decay',
+    blurb: 'Two clipping stages never let the note decay',
     patch: {
       chipLevel: 0.7,
       stompCircuit: 2,
@@ -871,7 +874,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'flat germanium',
-    blurb: 'The lopsided circuit on a dead cell, spluttering as each note goes',
+    blurb:
+      'The lopsided germanium circuit runs on a dead cell and splutters as each note goes',
     patch: {
       chipLevel: 0.8,
       stompCircuit: 3,
@@ -888,7 +892,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'octave up',
     blurb:
-      'Rectified into a ringing transformer — an octave on one note, gargle on two',
+      'The signal is rectified into a ringing transformer, giving an octave on one note and gargle on two',
     patch: {
       chipLevel: 0.75,
       stompCircuit: 4,
@@ -902,7 +906,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'velcro',
     blurb:
-      'Starved to the edge of cutoff: it gates, sputters and howls between notes',
+      'The pedal is starved to the edge of cutoff, so it gates, sputters and howls between notes',
     patch: {
       chipLevel: 0.7,
       stompCircuit: 5,
@@ -917,7 +921,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'squeezed screamer',
     blurb:
-      'The bay envelope wired onto the drive, so it digs in as it gets loud',
+      'The bay envelope is wired onto the drive, so it digs in as it gets loud',
     patch: {
       chipLevel: 0.8,
       stompCircuit: 0,
@@ -934,7 +938,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'plexi',
     blurb:
-      'The toy through two cascaded gain stages and a closed 4×12, with the supply sagging under it',
+      'The toy plays through two cascaded gain stages and a closed 4×12, with the supply sagging under it',
     patch: {
       chipLevel: 0.7,
       ampVoice: AMP_VOICE.marshall,
@@ -953,7 +957,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'blackface',
     blurb:
-      'The FM electric piano through a clean Fender, with the spring tank in front of the power stage',
+      'The FM electric piano plays through a clean Fender, with the spring tank in front of the power stage',
     patch: {
       chipLevel: 0,
       fmLevel: 0.7,
@@ -976,7 +980,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'fuzz into the stack',
     blurb:
-      'A germanium fuzz into a marshall that is just short of breaking up, so the pedal does the breaking',
+      'A germanium fuzz feeds a marshall that is just short of breaking up, so the pedal does the breaking',
     patch: {
       chipLevel: 0.75,
       stompCircuit: 3,
@@ -995,7 +999,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'crossover',
     blurb:
-      'The FM bass through a Fender with the output tubes biased cold, so every quiet note is gritty',
+      'The FM bass plays through a Fender with the output tubes biased cold, so every quiet note is gritty',
     patch: {
       chipLevel: 0,
       fmLevel: 0.8,
@@ -1012,7 +1016,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'cold room',
-    blurb: 'A soldered DAC bias into a ringing comb, slowed right down',
+    blurb: 'A soldered DAC bias feeds a ringing comb, slowed right down',
     patch: {
       chipLevel: 0.7,
       chipClockX: 0.7,
@@ -1032,7 +1036,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'dying walkman',
-    blurb: 'A chewed tape running into a failing DAC',
+    blurb: 'A chewed tape runs into a failing DAC',
     patch: {
       chipLevel: 0.75,
       chipClockX: 0.8,
@@ -1051,7 +1055,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'wrong voices',
-    blurb: 'Envelope pins bridged — the kit fires the wrong drums',
+    blurb: 'The envelope pins are bridged, so the kit fires the wrong drums',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1067,7 +1071,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'yell into it',
     blurb:
-      'Mic soldered into the delay feedback path — bring your mic level up',
+      'The mic is soldered into the delay feedback path. Bring your mic level up',
     patch: {
       chipLevel: 0,
       micPatch: 3,
@@ -1080,7 +1084,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'motor sag',
-    blurb: 'Tape motor wired to the same failing supply as the toy',
+    blurb: 'The tape motor is wired to the same failing supply as the toy',
     patch: {
       chipLevel: 0.7,
       dlyMix: 0.6,
@@ -1107,7 +1111,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'bell metal',
-    blurb: 'Shifted far enough that the harmonics stop being harmonics',
+    blurb:
+      'The pitch is shifted far enough that the harmonics become inharmonic',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 7,
@@ -1120,7 +1125,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'sputter',
-    blurb: 'An octave pedal on the edge of tracking, bouncing octave and sub',
+    blurb:
+      'An octave pedal on the edge of tracking bounces between octave and sub',
     patch: {
       chipLevel: 0.7,
       bendSlot0: 8,
@@ -1133,7 +1139,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'basement',
-    blurb: 'Divided three octaves down, gated by how hard the toy plays',
+    blurb:
+      'The tune is divided three octaves down and gated by how hard the toy plays',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 8,
@@ -1145,7 +1152,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'swap tone',
-    blurb: 'Octave and sub swapped at audio rate, so the swap is a pitch too',
+    blurb: 'Octave and sub swap at audio rate, so the swap is a pitch too',
     patch: {
       chipLevel: 0.7,
       bendSlot0: 8,
@@ -1157,7 +1164,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'stair hold',
-    blurb: 'The sampled voice: steps and aliasing on every divider rise',
+    blurb: 'The sampled voice gets steps and aliasing on every divider rise',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 8,
@@ -1171,7 +1178,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'dial-up rip',
     blurb:
-      'The board as an 8 kbps download: a 3 kHz ceiling, bands flickering in and out, the stereo folded to the middle',
+      'The board streams as an 8 kbps download, with a 3 kHz ceiling, bands flickering in and out and the stereo folded to the middle',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 9,
@@ -1183,7 +1190,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'corrupt file',
     blurb:
-      'Bit errors through the stream: bands jump 24 dB for a frame, single bins chirp, and lost sync turns the top of a frame to noise',
+      'Bit errors run through the stream, so bands jump 24 dB for a frame, single bins chirp, and lost sync turns the top of a frame to noise',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 9,
@@ -1195,7 +1202,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bad stream',
     blurb:
-      'Packets lost in bursts and repeated, so the tune buzzes at the frame rate whenever the line drops',
+      'Packets are lost in bursts and repeated, so the tune buzzes at the frame rate whenever the line drops',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 9,
@@ -1208,7 +1215,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'late frames',
     blurb:
-      'A decoder at its deadline on a sagging supply: as the toy browns out, the frames come late and the codec stutters with it',
+      'A decoder runs at its deadline on a sagging supply. As the toy browns out, the frames come late and the codec stutters with it',
     patch: {
       chipLevel: 0.8,
       chipStarve: 0.4,
@@ -1222,7 +1229,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'generation loss',
     blurb:
-      'The codec re-encoding its own output until the artefacts ring on their own at the frame rate',
+      'The codec re-encodes its own output until the artefacts ring on their own at the frame rate',
     patch: {
       chipLevel: 0.4,
       bendSlot0: 9,
@@ -1234,7 +1241,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'backwards frames',
     blurb:
-      'Giant frames with the aliasing left in: every note plays forwards and backwards at once, 43 ms at a time',
+      'Giant frames keep the aliasing in, so every note plays forwards and backwards at once, 43 ms at a time',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 9,
@@ -1247,7 +1254,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'register shuffle',
     blurb:
-      'Bands filed under the wrong bands, so the tune hops octaves and the bass sparkles in the treble',
+      'Bands are filed under the wrong bands, so the tune hops octaves and the bass sparkles in the treble',
     patch: {
       chipLevel: 0.8,
       bendSlot0: 9,
@@ -1259,7 +1266,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'cheap cathedral',
     blurb:
-      'The toy through a 1980s rack reverb at its largest program and nearly full decay, onto a tape that wanders',
+      'The toy plays through a 1980s rack reverb at its largest program and nearly full decay, onto a tape that wanders',
     patch: {
       chipLevel: 0.6,
       bendSlot0: 10,
@@ -1275,7 +1282,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'slow clock',
     blurb:
-      'The reverb’s sample clock dragged down to a quarter, so every delay runs four times as long and the images of the slow clock fold into a gritty tail',
+      'The reverb’s sample clock is dragged down to a quarter, so every delay runs four times as long and the images of the slow clock fold into a gritty tail',
     patch: {
       chipLevel: 0.6,
       bendSlot0: 10,
@@ -1288,7 +1295,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'leaky memory',
     blurb:
-      'The reverb’s memory missing its refresh, so bits leak out of the tail and the room fizzes and sparkles as it fades',
+      'The reverb’s memory misses its refresh, so bits leak out of the tail and the room fizzes and sparkles as it fades',
     patch: {
       chipLevel: 0.6,
       bendSlot0: 10,
@@ -1301,7 +1308,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'room from last week',
     blurb:
-      'The reverb’s top address wire cut most of the way through, so the tank reads from the wrong half of the memory and audio from seconds ago comes back into the room',
+      'The reverb’s top address wire is cut most of the way through, so the tank reads from the wrong half of the memory and audio from seconds ago comes back into the room',
     patch: {
       chipLevel: 0.6,
       bendSlot0: 10,
@@ -1316,7 +1323,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'brownout hall',
     blurb:
-      'The reverb clocked off the toy’s dying supply, so each sag slows the clock and drags the tail’s pitch down',
+      'The reverb is clocked off the toy’s dying supply, so each sag slows the clock and drags the tail’s pitch down',
     patch: {
       chipLevel: 0.7,
       chipStarve: 0.45,
@@ -1349,7 +1356,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'clock wobble',
-    blurb: 'The bay LFO dragging the chip crystal around',
+    blurb: 'The bay LFO drags the chip crystal around',
     patch: {
       chipLevel: 0.85,
       modLfoHz: 0.5,
@@ -1363,7 +1370,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'clap at it',
     blurb:
-      'Mic on the drum trigger line: clap and it fires your pattern — bring your mic level up',
+      'The mic is on the drum trigger line, so a clap fires your pattern. Bring your mic level up',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0,
@@ -1376,7 +1383,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'backbeat',
-    blurb: 'Claps on two and four, shuffled hard, through four bits of DAC',
+    blurb:
+      'Claps play on two and four, shuffled hard, through four bits of DAC',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1391,7 +1399,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'boom bap',
-    blurb: 'The kit sampled by itself, twelve bits and shuffled',
+    blurb: 'The kit is sampled by itself at twelve bits and shuffled',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1413,7 +1421,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'dusty kit',
     blurb:
-      'The ROM clock down at 12 k and every hit truncated — a sampler running out of seconds',
+      'The ROM clock is down at 12 k and every hit is truncated, like a sampler running out of seconds',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1434,7 +1442,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'pitched down',
     blurb:
-      'Every slab read at half speed — the long ones smear into each other and the kit sounds an octave under',
+      'Every slab is read at half speed, so the long ones smear into each other and the kit sounds an octave under',
     patch: {
       chipLevel: 0,
       drumLevel: 0.85,
@@ -1451,7 +1459,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'needle metal',
     blurb:
-      'The squarer biased to its trip point — the hats and the cymbal turn to a comparator spitting needles',
+      'The squarer is biased to its trip point, so the hats and the cymbal turn to a comparator spitting needles',
     patch: {
       chipLevel: 0,
       drumLevel: 0.85,
@@ -1470,7 +1478,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'popcorn',
     blurb:
-      'The noise transistor back at its knee: snare, hats and clap all missing the same gaps',
+      'The noise transistor is back at its knee, so snare, hats and clap all miss the same gaps',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1487,7 +1495,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'inside out',
     blurb:
-      'The accent wire held high — the bus carries an accent request on every step, and the crowded steps fold over the top of the converter',
+      'The accent wire is held high, so the bus has an accent request on every step and the crowded steps fold over the top of the converter',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1506,7 +1514,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'never comes round',
     blurb:
-      'A counter missing an edge here and there, under rows of five and seven — nothing falls where it did last bar',
+      'A counter misses an edge here and there under rows of five and seven, so nothing falls where it did last bar',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1524,7 +1532,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'coarse and late',
     blurb:
-      'The clock slipping and the converter working a voice at a time — the doubled steps are the crowded ones, so they come out grittier than the steps either side',
+      'The clock slips and the converter works a voice at a time. The doubled steps are the crowded ones, so they come out grittier than the steps either side',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1540,7 +1548,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'stuck on one',
     blurb:
-      'No edge ever gets over the threshold: the machine stands on one step and the retrigger turns it into a note',
+      'No edge ever gets over the threshold, so the machine stays on one step and the retrigger turns it into a note',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1555,7 +1563,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'two clocks',
     blurb:
-      'The toy locked to the kit’s tempo while the kit’s counter slips out from under it, so the downbeat drifts',
+      'The toy is locked to the kit’s tempo while the kit’s counter slips out from under it, so the downbeat drifts',
     patch: {
       chipLevel: 0.7,
       drumLevel: 0.9,
@@ -1570,7 +1578,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'rusted bell',
     blurb:
-      'The metal bank’s supply starved through a resistor, three octaves down — the cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays where it was',
+      'The metal bank’s supply is starved through a resistor and the bank drops three octaves. The cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays where it was',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1586,7 +1594,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'metal under the kick',
     blurb:
-      'The metal bank’s supply soldered to the kick’s trigger line — sixteenth hats and a cymbal that only sound while a kick rings, and freeze in the gaps between',
+      'The metal bank’s supply is soldered to the kick’s trigger line, so sixteenth hats and a cymbal sound only while a kick rings and freeze in the gaps between',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1603,7 +1611,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'buzzing hands',
     blurb:
-      'The clap’s burst oscillator run up to 500 Hz for sixty bursts — every clap a buzzing tone made of noise, which the metal bank cannot make',
+      'The clap’s burst oscillator runs up to 500 Hz for sixty bursts, so every clap is a buzzing tone made of noise, which the metal bank cannot make',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1618,7 +1626,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'two drums arguing',
     blurb:
-      'The kick’s network wired into the tom’s, both latched past the ring — two oscillators forcing each other into a low smear the pattern keeps retuning',
+      'The kick’s network is wired into the tom’s, both latched past the ring, so two oscillators force each other into a low smear that the pattern keeps retuning',
     patch: {
       chipLevel: 0,
       drumLevel: 0.8,
@@ -1632,7 +1640,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'sticky dice',
     blurb:
-      'Maybe steps on every row and a dice wired to a noise transistor at its knee — the hats spit, and the pattern locks for bars at a time before it lurches',
+      'Every row has maybe steps and the dice is wired to a noise transistor at its knee. The hats spit, and the pattern locks for bars at a time before it lurches',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1652,7 +1660,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'drums made of the tune',
     blurb:
-      'The kit’s converter running off the toy’s output instead of a fixed reference — every hit is the melody ring-modulated into a burst, and the kit goes quiet when the toy does',
+      'The kit’s converter runs off the toy’s output instead of a fixed reference, so every hit is the melody ring-modulated into a burst, and the kit goes quiet when the toy does',
     patch: {
       chipLevel: 0.5,
       drumLevel: 1.2,
@@ -1665,7 +1673,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'lone kicks zap',
     blurb:
-      'The one-shots on one timing rail with the sweep trimmer wound up — a kick alone zaps down from the top, and a kick under hats and a clap sounds short, thin and flat',
+      'The one-shots share one timing rail with the sweep trimmer wound up. A kick alone zaps down from the top, and a kick under hats and a clap sounds short, thin and flat',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -1686,7 +1694,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'every hit dives',
     blurb:
-      'The one-shots’ charge pulled straight off the supply — a ringing cymbal and cowbell dive an octave on every kick, and the toy’s tune sags flat under the busy steps',
+      'The one-shots’ charge is pulled straight off the supply, so a ringing cymbal and cowbell dive an octave on every kick, and the toy’s tune sags flat under the busy steps',
     patch: {
       chipLevel: 0.6,
       drumLevel: 0.9,
@@ -1702,7 +1710,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'found tape',
     blurb:
-      'The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken',
+      'The toy is printed clean to 7½ ips, with hiss, a little wow and nothing broken',
     patch: {
       chipLevel: 0.7,
       tapeMix: 1,
@@ -1718,7 +1726,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'shed oxide',
     blurb:
-      'Slow tape gone soft: dropouts, print-through, a squeal that comes and goes',
+      'Slow tape has gone soft and gives dropouts, print-through and a squeal that comes and goes',
     patch: {
       chipLevel: 0.7,
       tapeMix: 1,
@@ -1737,7 +1745,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'pinned',
-    blurb: 'Underbiased and slammed — the machine as the distortion',
+    blurb:
+      'The tape is underbiased and slammed, so the machine is the distortion',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.8,
@@ -1757,7 +1766,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'kit on keys',
     blurb:
-      'Kick soldered onto the keyboard’s gate: one hit, one step of the ROM',
+      'The kick is soldered onto the keyboard’s gate, so each hit plays one step of the ROM',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.8,
@@ -1789,7 +1798,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'hit gate',
     blurb:
-      'A wire off the kit’s trigger line onto the cutoff — shut between hits',
+      'A wire runs off the kit’s trigger line onto the cutoff, so the filter shuts between hits',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.7,
@@ -1804,7 +1813,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'slapback',
-    blurb: 'The plain box, set the plain way — one repeat, close behind',
+    blurb: 'The plain box is set the plain way, with one repeat close behind',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.8,
@@ -1847,7 +1856,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'three heads',
     blurb:
-      'One repeat, three play heads along the tape — a rhythm off a single tap',
+      'Three play heads are spaced along the tape, so one repeat makes a rhythm off a single tap',
     patch: {
       chipLevel: 0.75,
       chipAccomp: 0.3,
@@ -1861,7 +1870,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'clock whine',
     blurb:
-      'A bucket brigade clocked too slow to hide it — grit, fold and whistle',
+      'A bucket brigade is clocked too slow to hide its clock, giving grit, fold and whistle',
     patch: {
       chipLevel: 0.8,
       echoMode: 1,
@@ -1874,7 +1883,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'spliced reel',
     blurb:
-      'A loop joined badly and an erase head that failed — the last lap bleeds through',
+      'The loop is joined badly and the erase head has failed, so the last lap bleeds through',
     patch: {
       chipLevel: 0.7,
       chipAccomp: 0.4,
@@ -1902,7 +1911,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'played backwards',
-    blurb: 'Half a second at a time, each played back reversed',
+    blurb: 'Each half second is played back reversed',
     patch: {
       chipLevel: 0.8,
       echoMode: 2,
@@ -1919,7 +1928,7 @@ export const PRESETS: PresetDef[] = [
     // it plays back is somewhere the board has been rather than where it is.
     name: 'wandering loop',
     blurb:
-      'A blank reel, a short loop walking over what the toy put on it — press play',
+      'A short loop on a blank reel walks over what the toy put on it. Press play',
     patch: {
       chipLevel: 0.7,
       chipAccomp: 0.45,
@@ -1939,7 +1948,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'seasick',
     blurb:
-      'A wire off the bay onto the pedal’s time — the repeats never settle',
+      'A wire runs off the bay onto the pedal’s time, so the repeats never settle',
     patch: {
       chipLevel: 0.75,
       echoLevel: 0.6,
@@ -1954,7 +1963,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'clockwork',
     blurb:
-      'The counter stepping through the notes you hold — hold a chord, or latch it with hold',
+      'The counter steps through the notes you hold. Hold a chord, or latch it with hold',
     patch: {
       chipLevel: 0.8,
       chipArp: arp('up-down'),
@@ -1996,7 +2005,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'tank at sea',
     blurb:
-      'Twenty seconds of spring with every comb swinging, so the tail rolls in pitch like a boat',
+      'The spring rings for twenty seconds with every comb swinging, so the tail rolls in pitch like a boat',
     patch: {
       chipLevel: 0.6,
       revDecayS: 20,
@@ -2009,7 +2018,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'escalator',
     blurb:
-      'Every repeat an octave over the last, round and round until it climbs off the top of the band and folds back down as grit',
+      'Every repeat is an octave over the last, round and round until it climbs off the top of the band and folds back down as grit',
     patch: {
       chipLevel: 0.7,
       echoMode: ECHO_MODE.shift,
@@ -2022,7 +2031,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'two hands',
-    blurb: 'Gate jumper cut — the toy on one keybed, Glint on the other',
+    blurb:
+      'The gate jumper is cut, so the toy plays on one keybed and Glint on the other',
     patch: {
       chipLevel: 0.75,
       fmLevel: 0.7,
@@ -2037,7 +2047,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'string machine',
     blurb:
-      'The toy on its organ tone, arpeggiated, through three bucket brigades 120° apart',
+      'The toy plays its organ tone, arpeggiated, through three bucket brigades 120° apart',
     patch: {
       chipLevel: 0.7,
       chipTone: 0,
@@ -2057,7 +2067,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'dimension',
     blurb:
-      'Two lines swung against each other — width in stereo, and nothing at all in mono',
+      'Two lines swing against each other, giving width in stereo and nothing at all in mono',
     patch: {
       chipLevel: 0,
       fmLevel: 0.7,
@@ -2078,7 +2088,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'jet',
     blurb:
-      'The kit through a bucket brigade a millisecond long, fed back on itself',
+      'The kit runs through a bucket brigade a millisecond long, fed back on itself',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -2095,7 +2105,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'doubled',
-    blurb: 'The gate jumper left on: one key, a square and an FM string on it',
+    blurb:
+      'The gate jumper is left on, so one key plays a square and an FM string',
     patch: {
       chipLevel: 0.6,
       fmLevel: 0.6,
@@ -2109,7 +2120,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'slowed + reverb',
     blurb:
-      'The whole instrument printed to a deck running under speed, drowned in spring',
+      'The whole instrument is printed to a deck running under speed and drowned in spring',
     patch: {
       ...romMasks('rock'),
       deckSpeed: 0.78,
@@ -2134,7 +2145,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'tape stop',
     blurb:
-      'A heavy platter under a running board — Varispeed at 0 stops the tape',
+      'A heavy platter turns under a running board. Varispeed at 0 stops the tape',
     patch: {
       deckSpeed: 1,
       deckInertia: 1.5,
@@ -2150,7 +2161,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'dropped in the post',
     blurb:
-      'A dub kit through a crackling filter, the last clap thrown into a dark echo',
+      'A dub kit plays through a crackling filter, and the last clap is thrown into a dark echo',
     patch: {
       chipLevel: 0,
       drumLevel: 0.85,
@@ -2185,7 +2196,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'breathing echo',
-    blurb: 'Feedback past 1 through a lamp that dims as it heats',
+    blurb: 'Feedback past 1 runs through a lamp that dims as it heats',
     patch: {
       chipLevel: 0.7,
       chipAccomp: 0.3,
@@ -2246,7 +2257,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'string under the hats',
     blurb:
-      'The comb at 44 Hz just under self-oscillation, struck by every hat, with a sample-and-hold wire moving its pitch every two beats',
+      'The comb is tuned to 44 Hz just under self-oscillation and struck by every hat, with a sample-and-hold wire moving its pitch every two beats',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -2267,7 +2278,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'pinged filter',
     blurb:
-      'The filter self-oscillating at 45 Hz with the kit’s hits wired onto the cutoff, so each hit comes out as a low sine, with popcorn and an arcing cap crackling through it',
+      'The filter self-oscillates at 45 Hz with the kit’s hits wired onto the cutoff, so each hit comes out as a low sine, with popcorn and an arcing cap crackling through it',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0,
@@ -2287,7 +2298,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'sub siren',
     blurb:
-      'The tape delay’s loop filter resonating at 70 Hz, so the repeats whistle at a sub pitch, with an LFO sweeping the cutoff once every fourteen seconds',
+      'The tape delay’s loop filter resonates at 70 Hz, so the repeats whistle at a sub pitch, with an LFO sweeping the cutoff once every fourteen seconds',
     patch: {
       chipLevel: 0,
       drumLevel: 0.8,
@@ -2313,7 +2324,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'retrigger bass',
     blurb:
-      'The kit retriggered 45 times a second, which turns the kick into a buzzing 45 Hz note, through the muff and onto slow tape for the head bump',
+      'The kit is retriggered 45 times a second, which turns the kick into a buzzing 45 Hz note, and goes through the muff and onto slow tape for the head bump',
     patch: {
       chipLevel: 0,
       drumLevel: 0.8,
@@ -2342,7 +2353,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bass on a sagging rail',
     blurb:
-      'The toy two octaves down on auto bass-chord, with the feedback return soldered onto its supply rail, so loud notes pull the rail down and the pitch falls with it',
+      'The toy plays two octaves down on auto bass-chord, with the feedback return soldered onto its supply rail, so loud notes pull the rail down and the pitch falls with it',
     patch: {
       chipLevel: 0.9,
       chipClockX: 0.25,
@@ -2357,7 +2368,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'basement organ',
     blurb:
-      'Parlor’s pipe organ with the ROM clock at 0.12×, three octaves down, playing the toy’s song in power chords',
+      'Parlor’s pipe organ plays the toy’s song in power chords, three octaves down with the ROM clock at 0.12×',
     patch: {
       ...romMasks('rock'),
       chipLevel: 0,
@@ -2373,7 +2384,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'mono bass',
     blurb:
-      'Growler on the toy’s gate line: two saws and a square two octaves under the tune, with a short filter contour and a little glide',
+      'Growler is on the toy’s gate line and plays two saws and a square two octaves under the tune, with a short filter contour and a little glide',
     patch: {
       ...romMasks('rock'),
       monoLevel: 1,
@@ -2386,7 +2397,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'acid line',
     blurb:
-      'One saw an octave up into the ladder with the emphasis near oscillation and no sustain on the filter contour, and the bay’s LFO sweeping the cutoff every twelve seconds',
+      'One saw an octave up goes into the ladder with the emphasis near oscillation and no sustain on the filter contour, and the bay’s LFO sweeps the cutoff every twelve seconds',
     patch: {
       ...romMasks('rock'),
       ...ACID,
@@ -2398,7 +2409,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'kick bass',
     blurb:
-      'Growler’s gate jumper cut and the kick’s trigger line clipped on, so every kick restarts the bass on the last key you played',
+      'Growler’s gate jumper is cut and the kick’s trigger line is clipped on, so every kick restarts the bass on the last key you played',
     patch: {
       ...romMasks('rock'),
       monoLevel: 1,
@@ -2417,7 +2428,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'leaky drone',
     blurb:
-      'A VCA that never shuts on two saws a tenth of a semitone apart, run back into the mixer, with osc 3 at a quarter of a hertz opening the ladder and closing it again. No key needed',
+      'A VCA that never shuts passes two saws a tenth of a semitone apart back into the mixer, with osc 3 at a quarter of a hertz opening the ladder and closing it again. No key is needed',
     patch: {
       monoLevel: 2,
       chipLevel: 0,
@@ -2447,7 +2458,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'under the floor',
     blurb:
-      'The leaky drone two octaves down, through a slow ensemble, a dark wobbling tape echo and a fourteen-second room, with an LFO that takes half a minute to open the ladder',
+      'A leaky drone plays two octaves down through a slow ensemble, a dark wobbling tape echo and a fourteen-second room, with an LFO that takes half a minute to open the ladder',
     patch: {
       monoLevel: 2,
       chipLevel: 0,
@@ -2491,7 +2502,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'sinking bass',
     blurb:
-      'The mono bass on a bad voice card: the pitch hold leaks so each note sinks, the converter runs hot, a ladder pair is mismatched and loud notes sag the regulator',
+      'A mono bass runs on a bad voice card. The pitch hold leaks so each note sinks, the converter runs hot, a ladder pair is mismatched and loud notes sag the regulator',
     patch: {
       ...romMasks('rock'),
       monoLevel: 1,
@@ -2509,7 +2520,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'filter kick',
     blurb:
-      'Every oscillator down and the ladder past self-oscillation, struck by the kick, so the filter contour drops a sine two octaves on each hit',
+      'Every oscillator is down and the ladder runs past self-oscillation, struck by the kick, so the filter contour drops a sine two octaves on each hit',
     patch: {
       ...romMasks('rock'),
       monoLevel: 2.5,
@@ -2536,7 +2547,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'tearing sync',
     blurb:
-      'Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so each note of the tune sweeps down through the harmonics',
+      'Osc 2 is hard-synced to osc 1 and swept two octaves by the filter contour, so each note of the tune sweeps down through the harmonics',
     patch: {
       ...romMasks('rock'),
       monoLevel: 1,
@@ -2561,7 +2572,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bits lost to the brownout',
     blurb:
-      'A SAR converter on a starved toy: the comparator slows with the rail, the low bits never finish and keep the last word, and the crush coarsens and clears as the toy dies and reboots',
+      'A SAR converter runs on a starved toy. The comparator slows with the rail, the low bits never finish and keep the last word, and the crush coarsens and clears as the toy dies and reboots',
     patch: {
       chipLevel: 0.8,
       chipStarve: 0.35,
@@ -2572,7 +2583,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'crusher on the toy’s clock',
     blurb:
-      'The crusher clocked off the toy’s RC oscillator on a starved rail: the sample rate dives with the supply and stops dead while the toy reboots',
+      'The crusher is clocked off the toy’s RC oscillator on a starved rail, so the sample rate dives with the supply and stops dead while the toy reboots',
     patch: {
       chipLevel: 0.8,
       chipStarve: 0.4,
@@ -2584,7 +2595,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'drift until the header',
     blurb:
-      'ADPCM with its lowest code wire held high: every word tells the decoder a little too much, the error compounds, and each block header snaps it back, 32 times a second',
+      'ADPCM runs with its lowest code wire held high. Every word tells the decoder a little too much, the error compounds, and each block header snaps it back, 32 times a second',
     patch: {
       srHz: 16000,
       crushAdc: CRUSH_ADC.indexOf('ADPCM'),
@@ -2596,7 +2607,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'delta with a floating bit',
     blurb:
-      'A one-bit delta converter whose only wire is parted, so the decoder hears the bitstream a few words late through the neighbouring trace and the whole board slumps into its bass',
+      'A one-bit delta converter has its only wire parted, so the decoder hears the bitstream a few words late through the neighbouring trace and the whole board slumps into its bass',
     patch: {
       bits: 12,
       crushAdc: CRUSH_ADC.indexOf('delta'),
@@ -2608,7 +2619,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'telephone with a cut wire',
     blurb:
-      'A μ-law converter with its top magnitude wire grounded: loud words lose an octave of level, quiet ones fall into hiss',
+      'A μ-law converter has its top magnitude wire grounded, so loud words lose an octave of level and quiet ones fall into hiss',
     patch: {
       bits: 8,
       crushAdc: CRUSH_ADC.indexOf('μ-law'),
@@ -2620,13 +2631,13 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bad top rung',
     blurb:
-      'The crusher’s R-2R ladder with its top resistor far out: every zero crossing lurches backwards, and a square wave at the pitch of everything rides under the board',
+      'The top resistor in the crusher’s R-2R ladder is far out, so every zero crossing lurches backwards, and a square wave at the pitch of everything rides under the board',
     patch: { bits: 8, srHz: 24000, crushLadder: 1, crushMix: 1 },
   },
   {
     name: 'crushed times itself',
     blurb:
-      'The DAC’s reference pin on its own input, so the board comes out multiplied by a 3 kHz crushed copy of itself: the bass gone, the aliases ringing',
+      'The DAC’s reference pin is on its own input, so the board comes out multiplied by a 3 kHz crushed copy of itself, with the bass gone and the aliases ringing',
     patch: {
       srHz: 3000,
       crushRef: CRUSH_REF.indexOf('the bus'),
@@ -2636,7 +2647,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'XOR with the kit',
     blurb:
-      'Every code word XORed with the kit’s, bit by bit, before it reaches the DAC: the tune comes out scrambled into noise that pulses with the drums',
+      'Every code word is XORed with the kit’s, bit by bit, before it reaches the DAC, so the tune comes out scrambled into noise that pulses with the drums',
     patch: {
       drumLevel: 0.8,
       crushLogic: CRUSH_LOGIC.indexOf('XOR'),
@@ -2647,7 +2658,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'motorboat lullaby',
     blurb:
-      'The toy’s amp pulling on the toy’s own cells through a small cone: the tune putt-putts twelve times a second, diving five semitones on each stroke',
+      'The toy’s amp pulls on the toy’s own cells through a small cone, so the tune putt-putts twelve times a second, diving five semitones on each stroke',
     patch: {
       chipLevel: 0.8,
       distSupply: SUPPLY.shared,
@@ -2659,7 +2670,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'the amp sings along',
     blurb:
-      'Six hundred times the gain into a phone speaker: the amp holds its own 1.1 kHz note and the tune pushes it around',
+      'Six hundred times the gain goes into a phone speaker, so the amp holds its own 1.1 kHz note and the tune pushes it around',
     patch: {
       chipLevel: 0.8,
       distPinGain: 600,
@@ -2670,7 +2681,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'squeal on a whooping rail',
     blurb:
-      'Pin 7 open on an amp sharing the toy’s cells behind a lead resistor, so the squeal’s pitch dips with every note the toy plays',
+      'Pin 7 is open on an amp sharing the toy’s cells behind a lead resistor, so the squeal’s pitch dips with every note the toy plays',
     patch: {
       chipLevel: 0.8,
       chipLeadR: 0.7,
@@ -2682,7 +2693,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'sputtering on dying cells',
     blurb:
-      'A starved toy and an amp on the same cells: it clips at a third of its headroom, chokes after each peak and drops out whenever the toy pulls',
+      'A starved toy and an amp share the same cells, so the amp clips at a third of its headroom, chokes after each peak and drops out whenever the toy pulls',
     patch: {
       chipLevel: 0.8,
       chipStarve: 0.35,
@@ -2695,7 +2706,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'blown speaker on its own cells',
     blurb:
-      'The amp on half-flat second cells, motorboating on its own while the toy plays steady, through a cone that slams its stops',
+      'The amp runs on half-flat second cells and motorboats on its own while the toy plays steady, through a cone that slams its stops',
     patch: {
       chipLevel: 0.8,
       distSupply: SUPPLY.second,
