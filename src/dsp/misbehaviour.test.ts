@@ -12,6 +12,7 @@ import { packParams } from '../engine/params.ts'
 import { buildBender, buildChain } from './build.ts'
 import { DEST } from './modbus.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
+import { romIndex } from './stages/roms.ts'
 import { Thermal } from './thermal.ts'
 import { ToyRail } from './toyRail.ts'
 import { Burst } from './util/burst.ts'
@@ -282,6 +283,8 @@ test('a hot board is not the board that booted', () => {
 
 test('clustered faults change when things happen, not whether', () => {
   const look: Partial<Controls> = {
+    chipSync: 0,
+    chipTune: romIndex('lullaby'),
     chipLevel: 0.7,
     brownAmt: 0.5,
     brownRate: 8,

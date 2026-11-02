@@ -51,6 +51,8 @@ test('starve reboots restart the tune', () => {
   const p = packParams({
     ...DEFAULT_CONTROLS,
     ...CHIP_ONLY,
+    chipSync: 0,
+    chipTune: romIndex('lullaby'),
     chipLevel: 1,
     chipStarve: 1,
   })

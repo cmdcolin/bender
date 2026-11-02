@@ -959,7 +959,10 @@ test('a starving rail stretches the envelopes with the pitch', () => {
 // nothing holds it.
 const FIRST_NOTE = 0.3
 const tuneAt = (o: Partial<Controls>) =>
-  render({ ...FM_ONLY, fmVoice: voice('organ'), fmLength: 0.05, ...o }, 0.6)
+  render(
+    { ...FM_ONLY, chipSync: 0, fmVoice: voice('organ'), fmLength: 0.05, ...o },
+    0.6,
+  )
 const afterTheKeyUp = (x: Float32Array) =>
   rms(
     x.subarray(
