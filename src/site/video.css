@@ -1,6 +1,7 @@
+/* CROSS_REPO_SYNC_FILE(video-overlay-css) */
 .video-frame {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: var(--video-aspect, 16 / 9);
   margin: 0 0 1.2rem;
   background: #000;
   border-radius: 4px;
