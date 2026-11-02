@@ -124,6 +124,24 @@ test('a knife on a high address line changes the room', () => {
   expect(finite(cut)).toBe(true)
 })
 
+const mean = (x: Float32Array) => x.reduce((a, v) => a + v, 0) / x.length
+
+test('a data line to ground changes the room and stays finite', () => {
+  const stock = span(run({}, 2).l, 0.3, 1.5)
+  const cut = span(run({ rackDataLine: 16, rackDataFault: 1 }, 2).l, 0.3, 1.5)
+  let diff = 0
+  for (let i = 0; i < stock.length; i++) diff += (stock[i]! - cut[i]!) ** 2
+  expect(Math.sqrt(diff / stock.length)).toBeGreaterThan(rms(stock) / 4)
+  expect(finite(cut)).toBe(true)
+})
+
+test('a data line to +V puts an offset on every word the tank reads', () => {
+  const stock = span(run({}, 2).l, 1, 2)
+  const high = span(run({ rackDataLine: 15, rackDataFault: 2 }, 2).l, 1, 2)
+  expect(finite(high)).toBe(true)
+  expect(Math.abs(mean(high) - mean(stock))).toBeGreaterThan(0.01)
+})
+
 test('refresh fail leaks noise into a silent memory', () => {
   const clean = run({ rackRefresh: 0 }, 2).l
   const leaky = run({ rackRefresh: 1 }, 2).l
