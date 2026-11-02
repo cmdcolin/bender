@@ -8,36 +8,18 @@ import { SineOsc } from '../util/lfo.ts'
 import { DcBlocker, lpCoef } from '../util/onepole.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 
-// Six allpasses rather than three: the chirp is how far the low end lags the
-// top through the chain, and three stages was a drip where a spring is a boing.
 const AP_MS = [1.7, 2.9, 4.7, 6.3, 8.3, 11.9]
 const COMB_MS = [31, 37, 41, 43]
 const N_AP = AP_MS.length
 const N_COMB = COMB_MS.length
 
-// Warble swings each comb's length on its own sine, at rates that never line
-// up, so the tail's resonances stop standing still. The bottom of the travel is
-// a slow drift that breaks up the ring; the top swings the combs a third of
-// their length at up to 2.2 Hz, ±17% in pitch, and every lap round the tank
-// bends it again, which is seasick.
 const WARBLE_MS = 12
 const WARBLE_HZ = [0.2, 1.3]
 const WARBLE_SPREAD = [1, 1.37, 0.71, 1.19]
 
-// A crash: the springs thrown against the housing. What comes off them is a
-// clatter that lasts about this long and falls about this fast, and it goes in
-// at the top of the chain so it disperses like anything else that hits a spring.
 const CRASH_S = 0.05
 const CRASH_AMP = 2.5
 
-// One channel's tank, as flat memory rather than a graph of objects.
-//
-// Seven lines and four damping filters ran as seven DelayLine objects inside
-// seven wrapper objects, and a sample cost fourteen method calls, each one
-// loading a buffer, a mask and a cursor from a different place on the heap. The
-// arithmetic was never the cost — the pointer chasing was. Same taps, same
-// order, same numbers, laid out so the whole tank is three typed arrays and the
-// loop stays in registers: 2.3x, measured.
 class Tank {
   private readonly buf: Float32Array
   private readonly off = new Int32Array(N_AP + N_COMB)
@@ -48,7 +30,6 @@ class Tank {
   private readonly damp = new Float64Array(N_COMB)
   private readonly swing = Array.from({ length: N_COMB }, () => new SineOsc())
   private readonly swingK = new Float64Array(N_COMB)
-  /** each comb's delay in seconds, which is what sets its feedback from decay */
   readonly delaySec: Float64Array
 
   private readonly rateX: number
@@ -70,8 +51,6 @@ class Tank {
     this.delaySec = Float64Array.from(delays, d => d / sr)
   }
 
-  /** Allpass cascade into the comb cluster, a block at a time: `wet` gets the
-      summed wet sample for each sample of `input`. */
   run(
     input: Float64Array,
     wet: Float64Array,
@@ -125,13 +104,8 @@ class Tank {
           const a = buf[o + (p & m)]!
           d = a + frac[k]! * (buf[o + ((p - 1) & m)]! - a)
         }
-        // the damping filter's state is a double that decays toward zero, so
-        // this is one of the places the denormal guard actually earns its compare
         const y = damp[j]! + dampCoef * (d - damp[j]!)
         damp[j] = Math.abs(y) < 1e-15 ? 0 : y
-        // A spring can only swing so far before it meets the box it is in, and
-        // rail is transparent under that: how long the tank rings stays the
-        // damping's business, and only a crash reaches the wall.
         buf[o + pos[k]!] = rail(x + fb[j]! * y)
         pos[k] = (pos[k]! + 1) & m
         sum += d
@@ -148,8 +122,6 @@ class Tank {
   }
 }
 
-// Cheap and deliberately springy: dispersive allpass cascade into a cluster of
-// short parallel combs — metallic, boingy, lo-fi.
 export class SpringVerb implements Stage {
   label = 'springVerb'
   private tankL: Tank
@@ -190,9 +162,6 @@ export class SpringVerb implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    // A tank is springs and a coil: how long it rings is a block-rate thing, so
-    // a wire on the decay is read once at the top of the block rather than eight
-    // pow calls a sample down inside it.
     const mod = ctx.mod.read(DEST.revDecay)
     const decay = Math.min(
       Math.max(p[IDX.revDecayS]! * (mod ? Math.pow(2, 2 * mod[0]!) : 1), 0.05),
@@ -208,8 +177,6 @@ export class SpringVerb implements Stage {
     const swingK = SineOsc.rate(WARBLE_HZ[0]! + WARBLE_HZ[1]! * warble, this.sr)
     const boing = 0.35 + 0.5 * p[IDX.revBoing]!
     const dampCoef = lpCoef(p[IDX.revToneHz]!, this.sr)
-    // A tank's feedback follows the decay knob, and the knob holds still for the
-    // block: eight pow calls a sample is eight for nothing.
     const fbL = this.fbL
     const fbR = this.fbR
     const perSec = -3 / decay
@@ -223,9 +190,6 @@ export class SpringVerb implements Stage {
     const wetGain = 0.3 * mix
     const dry = p[IDX.revDry]!
     const kick = p[IDX.revKick]!
-    // What it takes to throw the springs: a slam at the input past this, or a
-    // hit on the kit's trigger line that lands this hard, scaled by the knob.
-    // The trigger line is a wire, so the kit kicks the amp however quiet it is.
     const slamAt = 0.03 + 1.5 * (1 - kick) * (1 - kick)
     const hitAt = 1.7 - 1.5 * kick
     const trig = ctx.trig
@@ -250,7 +214,6 @@ export class SpringVerb implements Stage {
       inL[i] = xl
       inR[i] = xr
     }
-    // The two tanks share nothing, so each runs its whole block in one call.
     this.tankL.run(inL, this.wetL, n, boing, fbL, dampCoef, swingDepth, swingK)
     this.tankR.run(inR, this.wetR, n, boing, fbR, dampCoef, swingDepth, swingK)
     for (let i = 0; i < n; i++) {
