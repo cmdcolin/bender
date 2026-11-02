@@ -14,7 +14,7 @@ export const DEFAULT_CONTROLS = {
   keyScale: 0,
   keyRoot: 0,
   chipClockX: 1,
-  chipSync: 0,
+  chipSync: 4,
   chipStarve: 0,
   gndBounce: 0,
   chipBattery: 0,

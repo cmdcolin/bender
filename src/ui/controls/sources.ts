@@ -348,7 +348,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: SYNC_MODES,
-        help: 'A wire from the drum machine’s step clock to the toy’s timing chain, so the tune counts off the kit’s tempo. Pick how much of a beat one step of the tune is worth. It replaces the rate the song was written at and nothing else: Clock, a pot on the timing pin, crystal drift and a rail going flat all still drag the tune, so a locked toy on dying batteries still goes low, late and long — it is a wire on the timing pin, not a phase detector. Off leaves the crystal setting the tempo, as on every board made before the wire went in. The kit’s tempo is a control like any other, so a MIDI clock coming in writes it and the tune follows the room through the same wire.',
+        help: 'A wire from the drum machine’s step clock to the toy’s timing chain, so the tune counts off the kit’s tempo. Pick how much of a beat one step of the tune is worth, or nearest, which halves or doubles the beat until it sits closest to the rate the song was written at, so a slow song stays slow and a quick one stays quick. It replaces the rate the song was written at and nothing else: Clock, a pot on the timing pin, crystal drift and a rail going flat all still drag the tune, so a locked toy on dying batteries still goes low, late and long — it is a wire on the timing pin, not a phase detector. Off leaves the crystal setting the tempo, as on every board made before the wire went in. The kit’s tempo is a control like any other, so a MIDI clock coming in writes it and the tune follows the room through the same wire.',
       },
       {
         key: 'chipClockX',

@@ -57,7 +57,7 @@ const PACKED = 'p'
 const LEGACY_HASH_KEY = 'b'
 
 // boardHash marks a short link with `v=3`. A short link marked `v=2` or older
-// left the lullaby out as stock, and one with no mark left the 'rock' pattern
+// left the lullaby and an unlocked toy clock out as stock, and one with no mark left the 'rock' pattern
 // out too, so boardFromUrl gives those back. It reads the long form as typed.
 const VERSION = 'v'
 const BLANK_KIT = '2'
@@ -67,7 +67,10 @@ const OLD_STOCK_KIT: Partial<Controls> = {
   drumSnare: ROCK.drumSnare,
   drumHat: ROCK.drumHat,
 }
-const OLD_STOCK_TUNE: Partial<Controls> = { chipTune: romIndex('lullaby') }
+const OLD_STOCK_TUNE: Partial<Controls> = {
+  chipTune: romIndex('lullaby'),
+  chipSync: 0,
+}
 
 // Your finger is not part of the board.
 const PRIVATE = new Set<ControlKey>(['bodyX', 'bodyY'])

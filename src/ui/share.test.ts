@@ -153,7 +153,7 @@ const OLD_KIT = {
   drumHat: ROCK.drumHat,
 }
 
-const OLD_TUNE = { chipTune: romIndex('lullaby') }
+const OLD_TUNE = { chipTune: romIndex('lullaby'), chipSync: 0 }
 
 test('a link opens the board it names, from the hash or an older url', () => {
   expect(boardFromUrl('', '#set=filtRes:1.2')).toEqual({ filtRes: 1.2 })

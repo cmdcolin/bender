@@ -99,8 +99,15 @@ const ARP = { up: 1, down: 2, upDown: 3, random: 4, asPlayed: 5 }
 // timing chain, dividing. What the selector picks is how much of a beat one toy
 // step is worth — the kit counts sixteen steps to the bar, so the first of these
 // is one step of the tune per step of the pattern.
-export const SYNC_MODES = ['off', 'sixteenths', 'eighths', 'quarters']
+export const SYNC_MODES = [
+  'off',
+  'sixteenths',
+  'eighths',
+  'quarters',
+  'nearest',
+]
 const SYNC_PER_BEAT = [0, 4, 2, 1]
+const NEAREST = SYNC_MODES.indexOf('nearest')
 
 // The rate a locked chip counts at, taken from the tempo as the panel has it
 // written rather than as the kit is currently keeping it. Both machines hang off
@@ -112,6 +119,9 @@ const SYNC_PER_BEAT = [0, 4, 2, 1]
 const kitBeatHz = (bpm: number) => Math.max(bpm, 0.6) / 60
 const kitStepHz = (bpm: number, mode: number) =>
   kitBeatHz(bpm) * (SYNC_PER_BEAT[mode] ?? 4)
+
+const nearestKitStepHz = (bpm: number, nominalHz: number) =>
+  kitBeatHz(bpm) * 2 ** Math.round(Math.log2(nominalHz / kitBeatHz(bpm)))
 
 // The same wire onto the arpeggiator's count, with divisions past the tune's:
 // an arpeggio lives in the triplets and thirty-seconds a melody never reaches.
@@ -1133,7 +1143,12 @@ export class ToyChip implements Stage {
     // dying battery would be half the instrument gone.
     const nominalHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
     const sync = Math.round(p[IDX.chipSync]!)
-    const stepHz = sync > 0 ? kitStepHz(p[IDX.drumBpm]!, sync) : nominalHz
+    const stepHz =
+      sync === NEAREST
+        ? nearestKitStepHz(p[IDX.drumBpm]!, nominalHz)
+        : sync > 0
+          ? kitStepHz(p[IDX.drumBpm]!, sync)
+          : nominalHz
     this.mineLen = asTuneLen(p[IDX.tuneLen]!)
     this.len = this.yours ? this.mineLen : rom.steps.length
     this.poly = this.yours && Math.round(p[IDX.tunePoly]!) === 1

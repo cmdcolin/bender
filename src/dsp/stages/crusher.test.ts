@@ -215,7 +215,7 @@ test('the chain hands the gate the machine it names', () => {
 })
 
 test('a SAR on a starved toy comes out coarser than the stock crusher', () => {
-  const starved = { ...WET, chipStarve: 0.35 }
+  const starved = { ...WET, chipSync: 0, chipStarve: 0.35 }
   const stock = render(starved, 2)
   const sar = render({ ...starved, crushAdc: adc('SAR') }, 2)
   expect(spectrum(sar, SR).flatness).toBeGreaterThan(

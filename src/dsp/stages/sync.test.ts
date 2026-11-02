@@ -23,6 +23,7 @@ const TOY: Partial<Controls> = {
   chipLevel: 0.9,
   drumLevel: 0,
   chipTune: YOURS,
+  chipSync: 0,
   tunePoly: 0,
   tuneRate: 3.2,
 }
@@ -34,6 +35,7 @@ const stepHz = (overrides: Partial<Controls>, seconds = 4) =>
 const SIXTEENTHS = 1
 const EIGHTHS = 2
 const QUARTERS = 3
+const NEAREST = 4
 
 // A toy nobody has thrown the switch on is the toy that shipped, down to the
 // sample. Sixteen windows of the take, measured before the wire went in — the
@@ -85,6 +87,16 @@ test('the rate the song was written at is what the lock replaces', () => {
     4,
     5,
   )
+})
+
+test('nearest halves or doubles the beat to the rate the song was written at', () => {
+  const at = (tuneRate: number) =>
+    stepHz({ chipSync: NEAREST, drumBpm: 120, tuneRate })
+  expect(at(9)).toBeCloseTo(8, 5)
+  expect(at(3.2)).toBeCloseTo(4, 5)
+  expect(at(2.2)).toBeCloseTo(2, 5)
+  expect(at(20)).toBeCloseTo(16, 5)
+  expect(at(0.6)).toBeCloseTo(0.5, 5)
 })
 
 // The point of locking the nominal rate and not the timebase: the wire is on

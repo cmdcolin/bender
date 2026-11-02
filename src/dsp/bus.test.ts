@@ -104,7 +104,12 @@ test('a fully cut line follows its neighbour rather than a rail', () => {
 // The claim the whole bend rests on: a chip reading a cut bus is not
 // malfunctioning. It plays a different song, and it plays that song again.
 const LAP = 16 / (3.2 * 4)
-const scale = { chipTune: romIndex('scale'), chipClockX: 4, drumLevel: 0 }
+const scale = {
+  chipTune: romIndex('scale'),
+  chipSync: 0,
+  chipClockX: 4,
+  drumLevel: 0,
+}
 
 // The middle of each step, after the strike and before the tail runs out, as a
 // note rather than a frequency: what the ear is asked about here is which note
@@ -139,7 +144,11 @@ test('a stuck data line plays a different song, and the same one every lap', () 
 // A rest is only a code, so a wire forced high hands the divider a pitch where
 // the song had a gap and the tune fills in.
 test('a data line held high fills in the rests', () => {
-  const lullaby = { chipTune: romIndex('lullaby'), drumLevel: 0 }
+  const lullaby = {
+    chipTune: romIndex('lullaby'),
+    chipSync: 0,
+    drumLevel: 0,
+  }
   const step = Math.round((SR * 16) / 3.2 / 16)
   const silent = (x: Float32Array) =>
     Array.from({ length: 16 }, (_, s) =>

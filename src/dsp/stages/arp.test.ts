@@ -22,6 +22,7 @@ const BASE: Partial<Controls> = {
   chipLevel: 0.8,
   drumLevel: 0,
   chipTune: YOURS,
+  chipSync: 0,
   tuneRate: 20,
   chipArpHz: 8,
 }

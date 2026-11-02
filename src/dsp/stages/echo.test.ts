@@ -218,6 +218,7 @@ test('the analog mode renders what it rendered before the chip was shared', () =
         {
           chipLevel: 0.7,
           chipTune: romIndex('lullaby'),
+          chipSync: 0,
           drumLevel: 0,
           echoMode: ECHO_MODE.analog,
           echoLevel: 1,
