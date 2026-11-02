@@ -88,21 +88,5 @@ footsteps of https://github.com/cmdcolin/ntsc.js
 
 ## Demos
 
-<!-- generated:demos -->
-
-- Dubby drums
-  https://cmdcolin.github.io/bender/app/#p=ACwAJAHIAQYEAAYCwAEAAgCgAQC0AQASDBgBEgEMAQgABAEAAAUABwALAA8CBgCuAQKuAgCMAQAYAJoBAD4CogEBAAECAnoAoIAEAIICAICiBAKAgAQAgoIEBRYBEAFyAAIDQAECAAgCBhCQAwB2AjQBZCcCCaYFAQgC7gkCmAEBoB8AZgDyAgFEBfAkARAAGgAaAAYAFgAdAA4ACgBlABIADgCFAQr2FwYJAAYACBYI
-
-- Dubby
-  https://cmdcolin.github.io/bender/app/#p=AAAAJAFSAA4HAgACAQIAqAEAyAEFCAcEAAQACgAMAAQADgAGAAoABwAFAAMACgABAAAAAgEWAMgBAMQCALQBAJgCAMoIBH4AVgHIAQiAZgDwnQEAgAQA8B8HyAEABgCsAQAMABoAFAAWANwCAAQABgICAAIAHAN6AORDAMACAIB9AAIAWADIAQACNQIAbgAOAHcD4iwAgAEBAgFkBNAQA4IBABQBIgBOAbQBAAoBAgDEAQAOABwAqAEADgAsADkADgASABkGzhMAIgEGALQHACwAaACUAgAIAIwBAccBAH4AMgsuCHAAyAEAwAEAlgEBBAAEAAYABgAIAAoADAAOABIAFAAKAAgABAAEAAQABAcUABIAEgASABIAEgASABIAEgASABQAFAAWHBQ
-
-- Glitch voice
-  https://cmdcolin.github.io/bender/app/#p=AIwBACQBWgEYEQAlBAICD8gBAWwADAQCAAoFZAPcJApQAAoBAgCMAQA8Awgd_gEKVgIOAqYFCYQFAaINBMgBAGoB8CQBEAAiALkBAAQAEACvAQAWAZMBASQAqAECCgKMAQG8AQAEALABA6Y7CAADeAIKBAoEegBuAoIB
-
-- Acid line with a clap roll
-  https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:132,drumKick:34952,drumClap:2056,drumHat:56797,drumOpen:8738,drumAccent:8738,drumRatchet13:2,drumRatchet7:1,drumRatchetRamp:-0.6,monoLevel:1,monoKeyGate:1,monoSeqOn:1,monoSeqTo:0,monoSeqSync:1,monoSeqLen:16,monoSeqStep0:12,monoSeqStep1:12,monoSeqStep2:24,monoSeqStep3:-128,monoSeqStep4:12,monoSeqStep5:15,monoSeqStep6:12,monoSeqStep7:24,monoSeqStep8:19,monoSeqStep9:12,monoSeqStep10:-128,monoSeqStep11:22,monoSeqStep12:12,monoSeqStep13:27,monoSeqStep14:24,monoSeqStep15:12,monoSeqAccentLo:41348,monoSeqSlideLo:17442,monoMix2:0,monoMix3:0,monoWave1:1,monoCutoff:260,monoEmph:0.95,monoContour:3.5,monoFD:0.2,monoFS:0,monoAccent:0.85,monoGlide:0.05,monoGate:0.55,monoDrive:2.4,mod0Src:12,mod0Dest:76,mod0Depth:0.5,modLaneA0:0,modLaneA1:2,modLaneA2:5,modLaneA3:9,modLaneA4:12,modLaneA5:-4,modLaneA6:3,modLaneALen:7,dlyMix:0.28,dlySync:4,dlyFb:0.45,drumEvent12:4,drumEvent13:4,drumEvent14:4,drumEvent15:4,drumEventEvery:2,brownKick:0.45
-
-- Knife through the strings
-  https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:128,drumKick:34952,drumClap:2056,drumHat:56797,drumOpen:8738,drumAccent:8738,pcmLevel:0.8,pcmVoice:0,pcmEnv:1,pcmChord:3,dlyMix:0.22,dlySync:3,dlyFb:0.35,drumEvent1:1,drumEvent3:1,drumEvent5:1,drumEvent7:1,drumEvent9:1,drumEvent11:1,drumEvent15:2
-
-<!-- /generated:demos -->
+The [jam of the day](https://cmdcolin.github.io/bender/jam/) page plays
+recordings made in bender.

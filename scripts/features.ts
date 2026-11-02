@@ -142,8 +142,6 @@ const SCRIPTS: Record<string, string> = {
   controls:
     'lists every button and select on the panel by rendered height, with `--touch` for a finger',
   ink: 'walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read',
-  demos: "writes demos.json into the README's Demos block",
-  reel: "renders the showcase demos to mp3 for the landing page's Demos section",
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
   og: "renders the landing page's pile of instruments to public/og.jpg, the image a shared link unfurls with",

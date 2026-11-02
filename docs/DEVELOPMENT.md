@@ -117,12 +117,6 @@ audio threads.
   page's pile, using the same Chrome and `magick`; run it after changing
   `src/site/pile.ts`.
 
-- `demos.json` lists the demos. `pnpm demos` writes them into the README, and
-  the build fails if that block is stale. `pnpm reel` renders the ones marked
-  `showcase` into `public/demos/*.mp3` for the landing page's Demos section,
-  offline and through the worklet's board. The build runs it too, so the clips
-  stay out of git; it needs `ffmpeg` on PATH.
-
 - The drawings in [BENDS.md](BENDS.md#where-the-buses-run) and
   [dataflow.md](dataflow.md) come from `docs/img/buses.dot` and
   `docs/img/dataflow.dot`. GitHub does not render DOT, so the SVGs are

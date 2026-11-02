@@ -2133,7 +2133,7 @@ back.
 ## Scripts
 
 <details>
-<summary>49 commands</summary>
+<summary>47 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2154,8 +2154,6 @@ back.
 | `pnpm dash`          | re-shoots the why-sign-in card's screenshot of the signed-in home page                                                                                                                 |
 | `pnpm og`            | renders the landing page's pile of instruments to public/og.jpg, the image a shared link unfurls with                                                                                  |
 | `pnpm jam`           | trims, encodes and uploads jams of the day, then records their waveform peaks in src/jam/jams.json                                                                                     |
-| `pnpm demos`         | writes demos.json into the README's Demos block                                                                                                                                        |
-| `pnpm reel`          | renders the showcase demos to mp3 for the landing page's Demos section                                                                                                                 |
 | `pnpm diagram`       | re-renders the README's signal path                                                                                                                                                    |
 | `pnpm features`      | rewrites docs/features.md — this file                                                                                                                                                  |
 | `pnpm guide-shots`   | re-shoots the six pictures in docs/USER-GUIDE.md                                                                                                                                       |

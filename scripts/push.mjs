@@ -91,7 +91,6 @@ for (const check of [
   'pnpm format:check',
   'pnpm typecheck',
   'pnpm sync:check --strict',
-  'node scripts/demogen.mjs --check',
   'pnpm test:full',
 ]) {
   run(check)

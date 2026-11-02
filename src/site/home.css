@@ -76,8 +76,6 @@
   gap: 0.6rem;
   margin: 0 0 1rem;
 }
-/* The demos: a play button, the demo's name and blurb over a progress bar, and
-   a link into the app. */
 .tracks {
   display: grid;
   gap: 0.5rem;
@@ -140,13 +138,6 @@
   background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
-}
-.track .open {
-  text-decoration: none;
-}
-.track .open:hover,
-.track .open:focus-visible {
-  color: var(--accent);
 }
 
 /* The demo cards: a mark drawn from the board, then its name and blurb. */

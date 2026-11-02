@@ -2,13 +2,13 @@
 import { experimental_AstroContainer } from 'astro/container'
 import { beforeAll, expect, test } from 'vitest'
 
+import { jams } from '../jam/jams.ts'
 import About from '../pages/about.astro'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
-import { aboutUrl, blogUrl, privacyUrl } from '../site/paths.ts'
+import { aboutUrl, blogUrl, jamUrl, privacyUrl } from '../site/paths.ts'
 import { SHARE_SHOT } from '../site/shareShot.ts'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn.ts'
-import { showcase, slug } from './demos.ts'
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 
@@ -58,16 +58,12 @@ test('no page loads Google Analytics', () => {
 })
 // CROSS_REPO_SYNC_END(landing-page-test)
 
-test('the landing page shows the demos from demos.json and no presets', () => {
-  for (const demo of showcase) expect(landing).toContain(demo.name)
-  expect(landing.match(/class="track"/g)?.length).toBe(showcase.length)
-})
-
-test('the showcase links each of its clips and nothing else', () => {
-  expect(showcase.length).toBeGreaterThan(0)
-  expect(landing.match(/class="play"/g)?.length).toBe(showcase.length)
-  for (const demo of showcase)
-    expect(landing).toContain(`demos/${slug(demo.name)}.mp3`)
+test('the landing page plays every jam of the day and links the jam page', () => {
+  expect(jams.length).toBeGreaterThan(0)
+  expect(landing.match(/class="track"/g)?.length).toBe(jams.length)
+  expect(landing.match(/class="play"/g)?.length).toBe(jams.length)
+  for (const jam of jams) expect(landing).toContain(`href="${jam.src}"`)
+  expect(landing).toContain(`href="${jamUrl}"`)
 })
 
 test('the demos come after the call-to-action buttons', () => {

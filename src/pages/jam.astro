@@ -1,28 +1,10 @@
 ---
 import Page from '../layouts/Page.astro'
-import jams from '../jam/jams.json'
+import { jams } from '../jam/jams.ts'
 import { jamUrl } from '../site/paths.ts'
 import { ORIGIN } from '../site/site.ts'
 
-const AUDIO = 'https://myloveydove.com/jam-of-the-day/'
 const EMAIL = 'colin.diesh@gmail.com'
-
-const dateOf = (name: string) =>
-  name
-    .match(/(\d{4})(\d{2})(\d{2})/)
-    ?.slice(1)
-    .join('-')
-
-const rows = jams
-  .map(({ name, peaks }) => ({
-    src: `${AUDIO}${name}.mp3`,
-    title: dateOf(name) ?? name,
-    order: dateOf(name) ?? '',
-    peaks,
-  }))
-  .toSorted(
-    (a, b) => b.order.localeCompare(a.order) || a.title.localeCompare(b.title),
-  )
 ---
 
 <Page
@@ -39,7 +21,7 @@ const rows = jams
       <a href={`mailto:${EMAIL}?subject=Jam%20of%20the%20day`}>{EMAIL}</a>.
     </p>
     <ul class="jamList">
-      {rows.map(row => (
+      {jams.map(row => (
         <li class="jam" data-src={row.src}>
           <button
             class="jamPlay"

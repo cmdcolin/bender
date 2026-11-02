@@ -14,7 +14,7 @@ const NAME = 'bender'
 const POSTS = 'src/posts'
 const IMAGES = 'public/blog'
 const LOOKS =
-  'The site is served under /bender, so every link in the body starts with it. Link a board as `/bender/app/#p=<code>`, taking the code from a demo in demos.json that shows the change, and leave a change with no such demo unlinked.'
+  'The site is served under /bender, so every link in the body starts with it.'
 
 // CROSS_REPO_SYNC(blog-draft)
 const flag = name =>
