@@ -35,6 +35,8 @@ const HOLD_SPAN_HZ = 2500
 const MAX_BITS = 4
 const PEAK_DECAY = 0.99995
 const SNAP = 1e-6
+const OPEN_AT = 0.3
+const SHUT_AT = 0.05
 
 class Clock {
   phase = 0
@@ -66,6 +68,7 @@ class Lane {
   mode = SILENCE
   peak = 0.01
   gain = 1
+  readonly clock = new Clock()
 
   constructor(size: number) {
     this.buf = new Float32Array(size)
@@ -80,6 +83,7 @@ class Lane {
     this.peak = 0.01
     this.gain = 1
     this.mode = SILENCE
+    this.clock.reset()
   }
 
   at(i: number) {
@@ -122,7 +126,6 @@ class Lane {
 export class ChopGate {
   outL = 0
   outR = 0
-  private readonly clock = new Clock()
   private readonly lanes: Lane[]
   private readonly rng: Rng
   private readonly sr: number
@@ -153,10 +156,34 @@ export class ChopGate {
     this.fill = Math.min(Math.max(fill, SILENCE), ANY)
   }
 
-  step(hz: number, l: number, r: number) {
-    const clock = this.clock
+  step(hz: number, l: number, r: number, level: number, follow: boolean) {
+    this.outL = this.run(this.lanes[0]!, hz, l, level, follow)
+    this.outR = this.run(this.lanes[1]!, hz, r, level, follow)
+  }
+
+  private run(
+    lane: Lane,
+    hz: number,
+    x: number,
+    level: number,
+    follow: boolean,
+  ) {
+    const clock = lane.clock
+    const open = follow ? this.schmitt(clock, level) : this.tick(clock, hz)
+    if (open && !clock.open) clock.openLen = 0
+    const closing = !open && clock.open
+    clock.open = open
+    if (open) clock.openLen++
+    if (closing) this.close(lane)
+    return this.lane(lane, x, open)
+  }
+
+  private schmitt(clock: Clock, level: number) {
+    return Math.abs(level) > (clock.open ? SHUT_AT : OPEN_AT)
+  }
+
+  private tick(clock: Clock, hz: number) {
     clock.phase += (hz * clock.jump) / this.sr
-    let closed = false
     if (clock.phase >= 1) {
       clock.phase %= 1
       clock.jump = octaves((this.rng() * 2 - 1) * this.wobble * WOBBLE_OCTAVES)
@@ -166,16 +193,7 @@ export class ChopGate {
       Math.max(this.duty + clock.jitter, DUTY_MIN),
       DUTY_MAX,
     )
-    const open = clock.phase < width
-    if (open && !clock.open) clock.openLen = 0
-    if (!open && clock.open) closed = true
-    clock.open = open
-    if (open) clock.openLen++
-    if (closed) {
-      for (const lane of this.lanes) this.close(lane)
-    }
-    this.outL = this.lane(this.lanes[0]!, l, open)
-    this.outR = this.lane(this.lanes[1]!, r, open)
+    return clock.phase < width
   }
 
   private close(lane: Lane) {
@@ -186,7 +204,7 @@ export class ChopGate {
         : this.fill
     lane.loopEnd = lane.w
     lane.loopLen = Math.min(
-      Math.max(this.clock.openLen, MIN_LOOP),
+      Math.max(lane.clock.openLen, MIN_LOOP),
       lane.buf.length - 2,
     )
     lane.k = 0
@@ -217,7 +235,6 @@ export class ChopGate {
   }
 
   reset() {
-    this.clock.reset()
     for (const lane of this.lanes) lane.reset()
   }
 }

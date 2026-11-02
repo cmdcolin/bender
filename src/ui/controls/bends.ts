@@ -82,7 +82,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_SHAPES,
-        help: 'A square carrier chops the signal, which adds harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only shape whose output depends on how hard you play: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply. Chop makes no carrier: a pulse clock at the Carrier rate opens and shuts the signal and fills the gaps, with width, wobble, depth, edge and fill on their own knobs; Track and Carrier from do not apply. Bell adds partials at ×2.76, ×5.4 and ×8.93 to the carrier, so a held note grows sidebands on no harmonic grid.',
+        help: 'A square carrier chops the signal, which adds harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only shape whose output depends on how hard you play: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply. Chop makes no carrier: a pulse clock at the Carrier rate opens and shuts the signal and fills the gaps, with width, wobble, depth, edge and fill on their own knobs. Track does not apply; Carrier from clocks the gate off another machine instead, open while that machine is sounding. Bell adds partials at ×2.76, ×5.4 and ×8.93 to the carrier, so a held note grows sidebands on no harmonic grid.',
       },
       {
         key: 'ringDuty',
@@ -128,7 +128,7 @@ export const BEND_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'With the carrier on chop: every period picks its own length, up to four octaves either way, and its own width. At zero the gate is a steady pulse-width clock; up high the clock has no beat, and the signal stutters and drops in bursts like harsh noise.',
+        help: 'With the carrier on chop: every period picks its own length, up to four octaves either way, and its own width, each channel on its own clock so the glitches pan around. At zero the gate is a steady pulse-width clock; up high the clock has no beat, and the signal stutters and drops in bursts like harsh noise.',
       },
       {
         key: 'ringTrack',

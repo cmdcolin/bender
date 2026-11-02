@@ -251,6 +251,8 @@ export class RingMod implements Stage {
           ),
           io.l[i]!,
           io.r[i]!,
+          busCarrier ? ctx.carrier[i]! * CARRIER_GAIN : 0,
+          busCarrier,
         )
         carL = carR = 1
       } else if (late !== NOW) {

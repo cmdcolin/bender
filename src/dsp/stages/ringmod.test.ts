@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { ROCK } from '../../drums.ts'
 import { IDX, packParams, SOURCE_TAPS } from '../../engine/params.ts'
 import { REST, TUNE_STEP_KEYS } from '../../tune.ts'
 import { buildBender, type BuiltChain } from '../build.ts'
@@ -580,4 +581,32 @@ test('a fill stays finite and in range on a violent clock', () => {
   )
   expect(take.l.every(Number.isFinite)).toBe(true)
   expect(Math.max(...take.l.map(Math.abs))).toBeLessThan(8)
+})
+
+test('chop wobble gives each channel its own clock', () => {
+  const chop = { ringShape: chopShape, ringHz: 30, ringDuty: 0.5 }
+  const steady = play({ ...chop, ringWobble: 0 })
+  const wild = play({ ...chop, ringWobble: 1 })
+  expect(corr(held(steady.l), held(steady.r))).toBeGreaterThan(0.9)
+  expect(corr(held(wild.l), held(wild.r))).toBeLessThan(0.7)
+})
+
+test('chop clocked from the kit shuts between its hits', () => {
+  const take = play(
+    {
+      ringShape: chopShape,
+      ...ROCK,
+      ringFrom: RING_FROM.indexOf('kit'),
+      drumLevel: 1,
+      ringHz: 30,
+    },
+    2,
+    A3,
+    built => {
+      built.transport.drums = true
+    },
+  )
+  const gated = gaps(take.l.subarray(SR / 2))
+  expect(gated.shut).toBeGreaterThan(0.1)
+  expect(gated.shut).toBeLessThan(0.95)
 })
