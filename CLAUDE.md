@@ -7,9 +7,9 @@ A circuit bender in the browser, built on Web Audio. videoskillet
 
 ## Cross-repo sync
 
-videoskillet and bender share a design system, a site shape and most of their
-account code. Regions marked `CROSS_REPO_SYNC` must stay identical across the
-two repos; [`docs/CROSS_REPO_SYNC.md`](docs/CROSS_REPO_SYNC.md) covers the
+videoskillet and bender share a design system, a site structure and most of
+their account code. Regions marked `CROSS_REPO_SYNC` must stay identical across
+the two repos; [`docs/CROSS_REPO_SYNC.md`](docs/CROSS_REPO_SYNC.md) covers the
 markers and the workflow.
 
 - Before editing a marked region, port the same change to the sibling repo
@@ -54,8 +54,8 @@ Current Chrome, Firefox and Safari, down to Safari 16. `tsconfig.json` keeps
 
 Agents run `pnpm test` and `pnpm typecheck`, never bare `vitest` or `tsc`. Both
 queue on `BENDER_HEAVY_SLOTS` machine-wide slots (default 2,
-`scripts/heavy-run-slot.sh`), so four agents at once do not slow the box to a
-crawl. `BENDER_HEAVY_SLOTS=0` turns the gate off.
+`scripts/heavy-run-slot.sh`), so four agents at once cannot overload the
+machine. `BENDER_HEAVY_SLOTS=0` turns the gate off.
 
 For a DSP change meant to leave the sound alone, run `pnpm golden write` before
 it and `pnpm golden check` after: every preset, compared sample for sample.
