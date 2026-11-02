@@ -255,7 +255,7 @@ test('play leaves a demo song stopped unless asked for by name', () => {
   expect(bender.play().song).toMatch(/^playing yours/)
   bender.stop()
   bender.reset()
-  expect(bender.play('song').song).toMatch(/^playing lullaby/)
+  expect(bender.play('song').song).toMatch(/^playing arp/)
   bender.stop()
 })
 

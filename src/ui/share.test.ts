@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { ROCK } from '../drums.ts'
+import { romIndex } from '../dsp/stages/roms.ts'
 import { sliderFor } from './controls/index.ts'
 import {
   boardFrom,
@@ -152,14 +153,18 @@ const OLD_KIT = {
   drumHat: ROCK.drumHat,
 }
 
+const OLD_TUNE = { chipTune: romIndex('lullaby') }
+
 test('a link opens the board it names, from the hash or an older url', () => {
   expect(boardFromUrl('', '#set=filtRes:1.2')).toEqual({ filtRes: 1.2 })
   expect(boardFromUrl('', '#b=filtRes:1.2')).toEqual({
     ...OLD_KIT,
+    ...OLD_TUNE,
     filtRes: 1.2,
   })
   expect(boardFromUrl('?set=filtRes:1.2', '')).toEqual({
     ...OLD_KIT,
+    ...OLD_TUNE,
     filtRes: 1.2,
   })
   expect(boardFromUrl('?set=dlyFb:1.4', '#set=filtRes:1.2')).toEqual({
@@ -170,12 +175,19 @@ test('a link opens the board it names, from the hash or an older url', () => {
   })
 })
 
-test('boardFromUrl gives an unmarked short link the old beat', () => {
+test('boardFromUrl gives an older short link the lullaby, and an unmarked one the old beat too', () => {
   const h = boardHash('', { ...DEFAULT_CONTROLS, filtRes: 1.2 })
-  expect(new URLSearchParams(h).get('v')).toBe('2')
+  expect(new URLSearchParams(h).get('v')).toBe('3')
   expect(boardFromUrl('', `#${h}`)).toEqual({ filtRes: 1.2 })
-  const old = h.replace('&v=2', '')
-  expect(boardFromUrl('', `#${old}`)).toEqual({ ...OLD_KIT, filtRes: 1.2 })
+  expect(boardFromUrl('', `#${h.replace('&v=3', '&v=2')}`)).toEqual({
+    ...OLD_TUNE,
+    filtRes: 1.2,
+  })
+  expect(boardFromUrl('', `#${h.replace('&v=3', '')}`)).toEqual({
+    ...OLD_KIT,
+    ...OLD_TUNE,
+    filtRes: 1.2,
+  })
   const cleared = boardHash('', { ...DEFAULT_CONTROLS, ...OLD_KIT, drumHat: 0 })
   expect(boardFromUrl('', `#${cleared}`)).toEqual({
     drumKick: ROCK.drumKick,

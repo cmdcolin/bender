@@ -6,6 +6,7 @@ import {
   type Controls,
 } from '../controls.ts'
 import { asKitSetting, asLen, asMask, LEN_KEYS, ROCK } from '../drums.ts'
+import { romIndex } from '../dsp/stages/roms.ts'
 import {
   asLaneLen,
   asLaneValue,
@@ -55,17 +56,18 @@ const PACKED = 'p'
 // written, so links from those days still open the board they meant.
 const LEGACY_HASH_KEY = 'b'
 
-// boardHash marks a short link with `v=2` since the kit started blank.
-// boardFromUrl gives the old 'rock' pattern back to a short link without the
-// mark and to a link in a retired form, because those left the pattern out as
-// stock. It reads the long form as typed.
+// boardHash marks a short link with `v=3`. A short link marked `v=2` or older
+// left the lullaby out as stock, and one with no mark left the 'rock' pattern
+// out too, so boardFromUrl gives those back. It reads the long form as typed.
 const VERSION = 'v'
 const BLANK_KIT = '2'
+const ARP_TUNE = '3'
 const OLD_STOCK_KIT: Partial<Controls> = {
   drumKick: ROCK.drumKick,
   drumSnare: ROCK.drumSnare,
   drumHat: ROCK.drumHat,
 }
+const OLD_STOCK_TUNE: Partial<Controls> = { chipTune: romIndex('lullaby') }
 
 // Your finger is not part of the board.
 const PRIVATE = new Set<ControlKey>(['bodyX', 'bodyY'])
@@ -152,7 +154,7 @@ export function boardHash(hash: string, c: Controls): string {
   const set = long ? encodeControls(c) : packControls(c, isPrivate)
   if (set === '' && !long) q.delete(key)
   else q.set(key, set)
-  if (set !== '' && !long) q.set(VERSION, BLANK_KIT)
+  if (set !== '' && !long) q.set(VERSION, ARP_TUNE)
   // A fragment may carry ':' and ',' as themselves, and this one is read off
   // the address bar by people, so the separators go back to being one
   // character each. The reader takes them either way.
@@ -181,8 +183,13 @@ export function boardFromUrl(
       ? unpackControls(packed ?? '', isPrivate)
       : decodeControls(named)
   if (Object.keys(patch).length === 0) return null
-  const current = typed !== null || h.get(VERSION) === BLANK_KIT
-  return current ? patch : { ...OLD_STOCK_KIT, ...patch }
+  const version = typed === null ? h.get(VERSION) : ARP_TUNE
+  const blankKit = version === BLANK_KIT || version === ARP_TUNE
+  return {
+    ...(blankKit ? {} : OLD_STOCK_KIT),
+    ...(version === ARP_TUNE ? {} : OLD_STOCK_TUNE),
+    ...patch,
+  }
 }
 
 // The whole board a link names, not just the controls it lists. Everything it

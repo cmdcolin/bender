@@ -12,6 +12,7 @@ import {
   tail,
 } from '../testRender.ts'
 import { ECHO_MODE } from './echo.ts'
+import { romIndex } from './roms.ts'
 
 import type { Controls } from '../../controls.ts'
 import type { BuiltChain } from '../build.ts'
@@ -216,6 +217,7 @@ test('the analog mode renders what it rendered before the chip was shared', () =
       render(
         {
           chipLevel: 0.7,
+          chipTune: romIndex('lullaby'),
           drumLevel: 0,
           echoMode: ECHO_MODE.analog,
           echoLevel: 1,
