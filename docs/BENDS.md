@@ -759,6 +759,25 @@ with.
     round to the kick after eight bars.
   - _Return through an XOR_ mixes each step with its neighbour. A sixteen-step
     row returns within 255 bars.
+- **Pattern rot:** the pattern memory leaks, as a dynamic RAM does when its
+  refresh fails.
+  - Each time the counter reads a step, a stored hit may fade out, and a voice
+    that fires may flip the same step in the rows on either side of it, now and
+    then one step over. The top and bottom rows count as neighbours.
+  - Below full, a refresh writes the grid back into some cells on each pass.
+    At 0.5 the rock beat picks up a stray hit on an empty row now and then. At
+    full nothing is refreshed and over a few dozen bars the bar spreads across
+    all eight voices: the centroid rises from 160 Hz to about 2 kHz.
+  - Turning it down from full pulls the pattern back toward the grid over a few
+    bars. Writing a row on the grid loads it back in. While **Pattern loop** is
+    on, the loop's cells play and rot waits.
+- **Out to address:** low bits of the kit's summed output bridged onto the four
+  address lines of the pattern memory through a loose contact.
+  - At each step the contact may close, and the output at that moment picks
+    which step the memory plays. The knob sets how often it closes.
+  - Only the voices written on the grid play, in a different order each bar.
+    On the rock beat consecutive bars differ by 2 dB stock, 5 dB at 0.05 and
+    about 19 dB at full.
 - **Scan:** time the chip takes to move from one voice to the next. Slowed, a
   multi-voice step becomes a flam in row order.
 

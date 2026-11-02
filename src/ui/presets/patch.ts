@@ -207,6 +207,8 @@ const LANDINGS: Landing[] = [
   at('mono out to gate', ['monoLevel']),
   at('kit motorboat', ['drumLevel']),
   at('kit clock rush', ['drumLevel']),
+  at('kit pattern rot', ['drumLevel']),
+  at('kit out to address', ['drumLevel']),
   at('kit step tap', ['drumLevel']),
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
   at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),

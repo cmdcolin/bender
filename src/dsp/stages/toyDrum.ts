@@ -263,6 +263,15 @@ const BANK_STARVE_OCT = 3
 const TAP_STAGES = 6
 const MIN_STEP_HZ = 0.01
 
+const ROT_LEAK = 0.12
+const ROT_HAMMER = 0.3
+const ROT_SPILL = 0.08
+const ROT_REFRESH = 0.8
+
+const OUT_ADDR_LINES = 4
+const OUT_ADDR_SHIFT = 4
+const SUM_SCALE = 1 << 15
+
 const MOTOR_BOOST = 1.3
 const MOTOR_TAU = 0.06
 const MOTOR_DRAW = 0.6
@@ -806,6 +815,14 @@ export class ToyDrum implements Stage {
   private scanGain = new Float32Array(N_VOICES)
   private scanThrow = 0
   private scanSamples = 0
+  private rot = 0
+  private rotCells = new Uint16Array(N_VOICES)
+  private rotSeen = new Int32Array(N_VOICES).fill(-1)
+  private rotRng: Rng
+  private outAddrAmt = 0
+  private outAddr = 0
+  private outAddrRng: Rng
+  private sumHeld = 0
   private motorV = 1
   private motorOff = false
   private tankBase = new Float32Array(N_TANKS)
@@ -851,6 +868,8 @@ export class ToyDrum implements Stage {
     this.slipRng = mulberry32(seed ^ 0x5107)
     this.wander = new Wander(mulberry32(seed ^ 0x3a4d))
     this.fuseRng = mulberry32(seed ^ 0xf05e)
+    this.rotRng = mulberry32(seed ^ 0x7077)
+    this.outAddrRng = mulberry32(seed ^ 0x0add)
     // Off its own stream: the resistors were soldered on before the kit made a
     // sound, and drawing them out of the noise source would move every hit.
     const parts = mulberry32(seed ^ 0x1adde4)
@@ -933,7 +952,7 @@ export class ToyDrum implements Stage {
   // an address that has been leaned on reaches cells a five-step row would
   // never have played, and the memory has sixteen of them whatever the row says.
   private stepAt(tick: number, row: number): number {
-    const step = tick % this.lens[row]!
+    const step = (tick % this.lens[row]!) ^ this.outAddr
     return (
       this.addrBus.read(step, this.addrLine, this.addrFault, this.busCut) %
       STEPS
@@ -972,9 +991,11 @@ export class ToyDrum implements Stage {
         const cells =
           this.loop > 0
             ? this.loopCells[v]!
-            : strayed
-              ? this.wander.rows[v]!
-              : Math.round(p[VOICE_PARAM[v]!]!)
+            : this.rot > 0
+              ? this.rotCells[v]!
+              : strayed
+                ? this.wander.rows[v]!
+                : Math.round(p[VOICE_PARAM[v]!]!)
         const maybe = strayed
           ? this.wander.maybes[v]!
           : Math.round(p[MAYBE_PARAM[v]!]!)
@@ -994,6 +1015,7 @@ export class ToyDrum implements Stage {
         this.loopAt[v] = at
       }
       if (this.loop > 0) this.circulate(bits)
+      else if (this.rot > 0) this.decay(p, bits)
     }
     const accentStep = this.stepAt(tick, ACCENT_ROW)
     const accent = this.wander.straying
@@ -1046,6 +1068,45 @@ export class ToyDrum implements Stage {
       }
       this.loopCells[v] = (cells & ~(1 << at)) | (back << at)
     }
+  }
+
+  private decay(p: Float32Array, played: number) {
+    const rot = this.rot
+    const rand = this.rotRng
+    const refresh = ROT_REFRESH * (1 - rot)
+    const hammer = rot * rot
+    for (let v = 0; v < N_VOICES; v++) {
+      const bit = 1 << this.loopAt[v]!
+      let cells = this.rotCells[v]!
+      if (cells & bit && rand() < rot * ROT_LEAK) cells &= ~bit
+      if (rand() < refresh)
+        cells = (cells & ~bit) | (Math.round(p[VOICE_PARAM[v]!]!) & bit)
+      this.rotCells[v] = cells
+    }
+    for (let v = 0; v < N_VOICES; v++) {
+      if (!((played >> v) & 1)) continue
+      const at = this.loopAt[v]!
+      for (let side = 1; side < N_VOICES; side += N_VOICES - 2) {
+        const n = (v + side) % N_VOICES
+        if (rand() < hammer * ROT_HAMMER) this.rotCells[n]! ^= 1 << at
+        if (rand() < hammer * ROT_SPILL)
+          this.rotCells[n]! ^=
+            1 << ((at + (rand() < 0.5 ? 1 : STEPS - 1)) % STEPS)
+      }
+    }
+  }
+
+  private wireRot(p: Float32Array, lane: Float32Array | null) {
+    this.rot = Math.min(Math.max(p[IDX.drumRot]! + (lane ? lane[0]! : 0), 0), 1)
+    if (this.rot === 0) this.rotSeen.fill(-1)
+    else
+      for (let v = 0; v < N_VOICES; v++) {
+        const row = Math.round(p[VOICE_PARAM[v]!]!)
+        if (row !== this.rotSeen[v]) {
+          this.rotSeen[v] = row
+          this.rotCells[v] = row
+        }
+      }
   }
 
   // Loads the register from the panel the first time it is wired, and again
@@ -1182,6 +1243,11 @@ export class ToyDrum implements Stage {
   }
 
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
+    this.outAddr =
+      this.outAddrAmt > 0 && this.outAddrRng() < this.outAddrAmt
+        ? (Math.round(this.sumHeld * SUM_SCALE) >> OUT_ADDR_SHIFT) &
+          ((1 << OUT_ADDR_LINES) - 1)
+        : 0
     const word = this.wordAt(p, this.tick)
     const at = STEPS - 1 - (this.tick % this.throwLen)
     this.throwing = ((Math.round(p[IDX.drumThrow]!) >> at) & 1) === 1
@@ -1370,6 +1436,12 @@ export class ToyDrum implements Stage {
     }
     this.throwLen = asLen(p[IDX.drumThrowLen]!)
     this.wireLoop(p)
+    this.wireRot(p, ctx.mod.read(DEST.drumRot))
+    const modOutAddr = ctx.mod.read(DEST.drumOutAddr)
+    this.outAddrAmt = Math.min(
+      Math.max(p[IDX.drumOutAddr]! + (modOutAddr ? modOutAddr[0]! : 0), 0),
+      1,
+    )
     this.scanSamples = Math.round(
       (Math.max(p[IDX.drumScan]!, 0) / 1000 / clock) * this.sr,
     )
@@ -1990,6 +2062,7 @@ export class ToyDrum implements Stage {
             slotS > 0
               ? Math.max(Math.round(slotS * this.live * this.sr), 1) - 1
               : 0
+          this.sumHeld = out
           let code = Math.round(out * q)
           if (wrap) code = ((((code + q) % (2 * q)) + 2 * q) % (2 * q)) - q
           // Sixteen rungs walked to add nothing is the shape of the stock
@@ -2149,6 +2222,9 @@ export class ToyDrum implements Stage {
     this.ringArmed = true
     this.syncPrev = 0
     this.trigSag = 0
+    this.rotSeen.fill(-1)
+    this.sumHeld = 0
+    this.outAddr = 0
     this.motorV = 1
     this.motorOff = false
     this.rushHeat = 0

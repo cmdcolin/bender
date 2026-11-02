@@ -315,6 +315,8 @@ export const BEND_ENDS: Partial<
   fmRing: [0, 0],
   pcmRunaway: [null, null],
   pcmCpuBus: [0, 2],
+  drumRot: [null, null],
+  drumOutAddr: [null, 1],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

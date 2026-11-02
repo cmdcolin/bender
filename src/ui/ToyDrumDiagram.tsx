@@ -73,7 +73,7 @@ const HELP: Record<BoxId, string> = {
   triggers:
     'What the trigger lines do before a one-shot hears them: retriggers, the floor a voice must drain to, the scan, the accent bus, the choke and the cross-patches.',
   pattern:
-    'The step counter and the pattern memory. You write the pattern on the grid, and the rows put a fault on the wires that clock the counter, address the memory and carry the word back.',
+    'The step counter and the pattern memory. You write the pattern on the grid, and the rows put a fault on the memory cells and on the wires that clock the counter, address the memory and carry the word back.',
   'sample ROM':
     'The kit sampled by itself. Switched on, the voices read their slabs from a ROM, and the address and data wires to it can take a fault.',
 }

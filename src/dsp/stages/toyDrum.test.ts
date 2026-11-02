@@ -1919,3 +1919,102 @@ test('a wire on clock rush runs the kit up with the knob at zero', () => {
   const wired = stepsEachHalfSecond(held(DEST.drumRush), 20)
   expect(climbs(wired, base)).toBeGreaterThanOrEqual(2)
 })
+
+const WRITTEN = 0b111
+
+const strayHits = (rots: readonly number[], over: Partial<Controls> = {}) => {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  const p = packParams({ ...DEFAULT_CONTROLS, ...ROCK, ...kitOnly, ...over })
+  const io = makeIo()
+  const blocks = (8 * SR) / BLOCK
+  return rots.map(rot => {
+    p[IDX.drumRot] = rot
+    let strays = 0
+    for (let b = 0; b < blocks; b++) {
+      built.chain.process(io, p)
+      if (built.toyDrum.takeFired() & ~WRITTEN) strays++
+    }
+    return strays
+  })
+}
+
+const barChangeDb = (x: Float32Array) => {
+  const e = envelope(x, 0.01)
+  const per = 200
+  const whole = Math.floor(e.length / per)
+  let sum = 0
+  for (let b = 2; b < whole; b++) {
+    let d = 0
+    for (let i = 0; i < per; i++) {
+      const now = Math.log10(e[b * per + i]! + 1e-4)
+      const before = Math.log10(e[(b - 1) * per + i]! + 1e-4)
+      d += (now - before) ** 2
+    }
+    sum += 20 * Math.sqrt(d / per)
+  }
+  return sum / (whole - 2)
+}
+
+const BAR_TWO_SECONDS: Partial<Controls> = { ...kitOnly, drumBpm: 120 }
+
+test('pattern rot and out to address at zero leave the kit unchanged', () => {
+  expect(render({ ...kitOnly, drumRot: 0, drumOutAddr: 0 }, 1)).toEqual(
+    render(kitOnly, 1),
+  )
+})
+
+test('pattern rot plays hits on rows the grid leaves empty, more at full', () => {
+  const [none] = strayHits([0])
+  const [some] = strayHits([0.5, 0.5]).slice(1)
+  const [full] = strayHits([1, 1]).slice(1)
+  expect(none).toBe(0)
+  expect(some).toBeGreaterThan(0)
+  expect(full).toBeGreaterThan(2 * some!)
+})
+
+test('refresh below full pulls a rotted pattern back toward the grid', () => {
+  const [, rotted, , , back] = strayHits([1, 1, 0.5, 0.5, 0.5])
+  const [, steady] = strayHits([0.5, 0.5])
+  expect(back).toBeLessThan(0.6 * rotted!)
+  expect(back).toBeLessThan(2 * steady! + 10)
+})
+
+test('pattern rot changes the bar from one bar to the next', () => {
+  const stock = barChangeDb(render(BAR_TWO_SECONDS, 16))
+  const rotted = render({ ...BAR_TWO_SECONDS, drumRot: 1 }, 16)
+  expect(barChangeDb(rotted)).toBeGreaterThan(stock + 3)
+  expect(loudest(rotted)).toBeLessThanOrEqual(1)
+})
+
+test('out to address changes the bar more the further it is turned', () => {
+  const change = (amt: number) =>
+    barChangeDb(render({ ...BAR_TWO_SECONDS, drumOutAddr: amt }, 16))
+  const stock = change(0)
+  const low = change(0.05)
+  const full = change(1)
+  expect(low).toBeGreaterThan(stock + 3)
+  expect(full).toBeGreaterThan(low)
+})
+
+test('out to address plays only the voices written on the grid', () => {
+  const [strays] = strayHits([0], { drumOutAddr: 1 })
+  expect(strays).toBe(0)
+})
+
+test('out to address varies the bar at every word length', () => {
+  for (const drumBits of [4, 8, 16]) {
+    const x = render({ ...BAR_TWO_SECONDS, drumBits, drumOutAddr: 1 }, 16)
+    const stock = render({ ...BAR_TWO_SECONDS, drumBits }, 16)
+    expect(barChangeDb(x)).toBeGreaterThan(barChangeDb(stock) + 3)
+    expect(loudest(x)).toBeLessThanOrEqual(1)
+  }
+})
+
+test('wires on pattern rot and out to address work with the knobs at zero', () => {
+  const stock = barChangeDb(render(BAR_TWO_SECONDS, 16))
+  for (const dest of [DEST.drumRot, DEST.drumOutAddr]) {
+    const x = render({ ...BAR_TWO_SECONDS, ...held(dest) }, 16)
+    expect(barChangeDb(x)).toBeGreaterThan(stock + 3)
+  }
+})

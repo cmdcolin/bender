@@ -352,6 +352,8 @@ export const PATCH_GROUPS: Group[] = [
             'FM operator ring',
             'keys thermal runaway',
             'keys CPU on bus',
+            'kit pattern rot',
+            'kit out to address',
           ],
           groups: [
             {
@@ -417,6 +419,8 @@ export const PATCH_GROUPS: Group[] = [
                 'kit step tap',
                 'kit motorboat',
                 'kit clock rush',
+                'kit pattern rot',
+                'kit out to address',
               ],
             },
             {

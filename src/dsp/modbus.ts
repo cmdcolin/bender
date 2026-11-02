@@ -211,8 +211,10 @@ export const DEST = {
   fmRing: 153,
   pcmRunaway: 154,
   pcmCpuBus: 155,
+  drumRot: 156,
+  drumOutAddr: 157,
 } as const
-export const N_DEST = 156
+export const N_DEST = 158
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
