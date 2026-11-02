@@ -12,6 +12,7 @@ imageAlt:
 
 <div class="video-frame">
 <video
+  aria-label="Chrome with bender on the left and Claude Code in a terminal on the right, partway through building a techno groove."
   controls playsinline preload="none"
   poster="/bender/blog/agent-drive-poster.webp"
   src="https://myloveydove.com/bender/agent-drive.mp4"></video>
