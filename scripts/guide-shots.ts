@@ -38,9 +38,67 @@ interface Shot {
   act?: (page: Page) => Promise<void>
   select: string[]
   pad?: number
+  phone?: boolean
+  width?: number
 }
 
+const PHONE = { width: 390, height: 844 }
+
 const SHOTS: Shot[] = [
+  {
+    file: 'guide-app.jpg',
+    select: [
+      'main [class*="_bench_"]',
+      'header[class*="_bar_"]',
+      'aside [class*="_map_"]',
+    ],
+    pad: 0,
+  },
+  {
+    file: 'guide-header.jpg',
+    select: ['header[class*="_bar_"]'],
+    pad: 4,
+  },
+  {
+    file: 'guide-map.jpg',
+    board: { fmLevel: 0.6, monoLevel: 0.6, crushMix: 0.5 },
+    select: ['aside [class*="_map_"]'],
+    pad: 6,
+  },
+  {
+    file: 'guide-bend-keys.jpg',
+    act: async page => {
+      await clickText(page, 'bend keys')
+    },
+    select: ['main div[class*="_board_"]:has(> [class*="_bar_"])'],
+    pad: 6,
+  },
+  {
+    file: 'guide-pedals.jpg',
+    select: ['[aria-label="ricochet"]', '[aria-label="boing"]'],
+    pad: 6,
+  },
+  {
+    file: 'guide-arc.jpg',
+    board: { arcDepth: 0.7 },
+    act: page => click(page, '[data-door="Output"]'),
+    select: ['aside [class*="section"]'],
+    pad: 8,
+  },
+  {
+    file: 'guide-pocket.jpg',
+    phone: true,
+    width: 640,
+    act: async page => {
+      await ask(
+        page,
+        `document.querySelector('[aria-label="play"]')?.click(); [...document.querySelectorAll('[role="tab"]')].find(t => t.textContent.trim() === 'bends')?.click()`,
+      )
+      await sleep(2500)
+    },
+    select: ['body'],
+    pad: 0,
+  },
   {
     file: 'guide-keyboard.jpg',
     select: ['[aria-label="plinky"]'],
@@ -72,7 +130,14 @@ const SHOTS: Shot[] = [
   {
     file: 'guide-spool.jpg',
     board: { sampleLevel: 1, loopIn: 0.25, loopOut: 0.7 },
-    act: page => dropTape(page, 'bursts.wav'),
+    act: async page => {
+      await dropTape(page, 'bursts.wav')
+      await until(
+        page,
+        `!document.querySelector('[aria-label="spool"]')?.textContent?.includes('nothing on the tape')`,
+        20_000,
+      )
+    },
     select: ['[aria-label="spool"]'],
   },
   ...[
@@ -100,7 +165,12 @@ const SHOTS: Shot[] = [
   ].map(([file, door, drawing, board]): Shot => ({
     file: file as string,
     board: board as Partial<Controls>,
-    act: page => click(page, `[data-door="${door}"]`),
+    act: page =>
+      until(
+        page,
+        `!!document.querySelector('aside svg[aria-label="${drawing}" i]')`,
+        2000,
+      ).catch(() => click(page, `[data-door="${door}"]`)),
     select: [`aside svg[aria-label="${drawing}" i]`],
     pad: 10,
   })),
@@ -242,7 +312,15 @@ async function settledRect(
     try {
       return await unionRect(page, selectors)
     } catch (e) {
-      if (i === tries - 1) throw e
+      if (i === tries - 1) {
+        console.error(
+          await ask(
+            page,
+            `JSON.stringify({ svgs: [...document.querySelectorAll('svg[aria-label]')].map(s => s.getAttribute('aria-label')), hash: location.hash, dialogs: [...document.querySelectorAll('dialog[open]')].map(d => d.textContent.slice(0, 80)) })`,
+          ),
+        )
+        throw e
+      }
       await sleep(250)
     }
   }
@@ -250,6 +328,7 @@ async function settledRect(
 }
 
 async function shoot(url: string, shot: Shot, into: string) {
+  const view = shot.phone ? PHONE : VIEW
   const dir = mkdtempSync(join(tmpdir(), 'bender-guide-'))
   const chrome = spawn(
     chromePath(),
@@ -258,7 +337,7 @@ async function shoot(url: string, shot: Shot, into: string) {
       '--enable-automation',
       '--disable-gpu',
       '--hide-scrollbars',
-      `--window-size=${VIEW.width},${VIEW.height}`,
+      `--window-size=${view.width},${view.height}`,
       `--force-device-scale-factor=${DPR}`,
       `--remote-debugging-port=${DEBUG_PORT}`,
       `--user-data-dir=${dir}`,
@@ -270,15 +349,20 @@ async function shoot(url: string, shot: Shot, into: string) {
     const page = await attach(DEBUG_PORT)
     await page.send('Page.enable')
     await page.send('Emulation.setDeviceMetricsOverride', {
-      width: VIEW.width,
-      height: VIEW.height,
+      width: view.width,
+      height: view.height,
       deviceScaleFactor: DPR,
-      mobile: false,
+      mobile: shot.phone ?? false,
     })
-    await until(page, APP_READY)
-    await drawingsOn(page)
-    await dismissStart(page)
-    await sleep(300)
+    if (shot.phone) {
+      await until(page, POCKET_READY)
+      await sleep(800)
+    } else {
+      await until(page, APP_READY)
+      await drawingsOn(page)
+      await dismissStart(page)
+      await sleep(300)
+    }
     if (shot.act) {
       await shot.act(page)
       await sleep(800)
@@ -299,6 +383,8 @@ async function shoot(url: string, shot: Shot, into: string) {
   }
 }
 
+const POCKET_READY = `!!document.querySelector('[aria-label="how to play"]')`
+
 const magick = (args: string[]) => execFileSync('magick', args)
 
 async function main() {
@@ -314,7 +400,8 @@ async function main() {
     )) {
       const board: Controls = { ...DEFAULT_CONTROLS, ...shot.board }
       const query = boardHash('', board)
-      const full = query ? `${url}#${query}` : url
+      const base = shot.phone ? url.replace(/app\/$/, 'pocket/') : url
+      const full = query ? `${base}#${query}` : base
       const raw = join(work, `${shot.file}.png`)
       const rect = await shoot(full, shot, raw)
 
@@ -332,7 +419,7 @@ async function main() {
         `${box.w}x${box.h}+${box.x}+${box.y}`,
         '+repage',
         '-resize',
-        '1100x>',
+        `${shot.width ?? 1400}x>`,
         '-quality',
         '88',
         out,

@@ -828,7 +828,7 @@ appears once the kit is sampled.
 
 ## The trigger patch's other faults
 
-See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for wiring.
+See [the trigger patch](features.md#trigger-patch) for wiring.
 
 - **Retrigger:** pulses the trigger line. Past roughly 40 Hz the retrigger
   period becomes pitch.

@@ -1,340 +1,106 @@
 # User guide
 
-Open the app and press keys. Everything else is something to try.
+Open the app and press keys. Type the letters printed on them, or click.
 
-- **Play:** click the keys, or type. Letters are printed on them
-- **Click a preset**, or hit **random**
-- **Click a box on the map** to open its knobs
-- **Turn Starve up** under Power supply while a chord rings
-- **Hit share.** The link is the whole board
-- **Press space** to run the drums, Growler's bassline and a melody you
-  recorded. The toy's demo songs play only from Plinky's own ▶
+![The whole app: five keyboards and a drum box on the bench, two pedals, the header and the signal path map.](../public/guide/guide-app.jpg)
 
-Each machine's panel opens on a drawing of its circuit. Press a box in a drawing
-to open that part's controls.
+![The header: random, mutate, drift, arc, reset, save, presets, share.](../public/guide/guide-header.jpg)
+
+**random** rolls a board, **presets** lists the named ones, **share** copies a
+link holding the whole board. **Space** runs the drums.
+
+![The signal path map: power supply, the five machines, mix bus, a pedal and output.](../public/guide/guide-map.jpg)
+
+Click a box on the map to open its knobs. **+ add a stage** puts more on the
+board.
 
 ## Plinky
 
-![Plinky's deck: the front of a toy keyboard chip on a battery.](../public/guide/guide-keyboard.jpg)
+![Plinky: a toy keyboard with six effect buttons over its keys.](../public/guide/guide-keyboard.jpg)
 
-A toy keyboard chip on a battery that sags. One RC oscillator clocks a divider,
-a ROM of tunes and the envelopes. Record a melody, hold a chord, turn on the
-arpeggiator. The six effect buttons over the keys (laser, siren, ufo, bomb, gun,
-bird) play one pass per press and repeat while held.
+![The toy chip's die: keyboard, key matrix, voices, tune ROM, bus, envelope, output pin and clock.](../public/guide/guide-die.jpg)
 
-![The toy chip's blocks: keyboard, key matrix, voices, tune ROM, bus, envelope, output pin and clock.](../public/guide/guide-die.jpg)
+A toy keyboard chip on a battery. Press a box on the die to open that part.
 
 ## Clatter
 
-![Clatter's deck: the front of a toy drum box, with eight pads and a sixteen-step pattern strip.](../public/guide/guide-drums.jpg)
+![Clatter: a toy drum box with eight pads and a pattern strip.](../public/guide/guide-drums.jpg)
 
-A toy drum box. A step counter reads a pattern memory and fires analog voices.
-Tap pads, tap the tempo, or draw steps in the strip.
+![The drum box's voices: triggers, one-shots, tanks, metal, noise, amps and a sample ROM.](../public/guide/guide-drum-voices.jpg)
 
-The button over the last column steps through three views of each row:
-
-- **len:** how many steps the row plays before it comes round
-- **bars:** which bars it plays, after a groovebox's trig conditions. **3:4**
-  plays the third bar of every four, **!4:4** every bar but the fourth. The
-  button lights while any row has one
-- **hits:** a count the row spreads as evenly as it goes over its length,
-  starting from its first hit. 3 over 8 is the tresillo
-
-The rows under the grid work like a tracker's effect columns:
-
-- **ratchet** fires a step ×2 to ×8 inside itself. **Ratchet ramp** fades the
-  repeats out or swells them in
-- **nudge** lands a step late, in twelfths of the step. A nudged ratchet fits
-  its repeats into what is left
-- **event** puts one of the five faults in the table below on the whole board
-  for one step. A reboot on the shared cells restarts the kit's bar too. A run
-  of one letter plays as one fault: four **b** in a row brake over the whole
-  beat, and four **f** roll faster and faster. The button at the end of the row
-  sets how often the row fires: **4:4** fires on the fourth bar of every four
-- **cond:** each column plays only on the bars its condition names, whatever
-  voices sit on it. **p** plays only when the last column with a bar condition
-  played, **!p** only when it rested, and **F** plays only while you hold the
-  **F** at the end of the row
-
-**Wander** varies the beat by itself. Now and then the kit plays one bar off the
-grid, then goes back to the grid as you wrote it:
-
-- **Low:** ghost hits, a nudged hit, a bar without the kick, a roll or a
-  turnaround
-- **Higher:** rows shift, halve, double or trade voices, the kit brakes or
-  freezes the mix over the end of the bar, or a voice's wire shorts for the bar
-- **Near the top:** two strays stack, and ratchets blast
-- The last bar of every four strays most often, and the moves row names what the
-  bar is doing
-- Wire the patch bay's phrase source to **kit wander**, and Wander rises and
-  falls over as many as 32 bars
-
-The same five faults also play live from the keyboard while the kit runs. Hold a
-key and the fault starts on the kit's next step and lasts until you let go:
-
-| event | key | throw   | fault                                                    |
-| ----- | --- | ------- | -------------------------------------------------------- |
-| **c** | `.` | cut     | the whole board cut                                      |
-| **d** | `;` | unplug  | the cells off the board, so the rail sags; held, reboots |
-| **b** | `/` | stop    | the whole mix braked to a stop; held, over a beat        |
-| **f** | `i` | stutter | the step's first half repeated, faster and faster        |
-| **r** | `r` | reboot  | the power pulled; held, on every step                    |
-
-**land** beside the morph picker holds whole-board changes for the kit's
-downbeat. Set it to **4 bars**, for example, and while the kit runs:
-
-- Presets, random, mutate, reset, the named cuts, the beats buttons, the moves
-  and the memory slots land on the downbeat that starts the next four bars. A
-  morph sets off early so it arrives there
-- Drift moves one stage a leg and lands each leg on a downbeat
-- The button counts down the bars; press it to call the change off
-
-![The drum box's blocks: triggers into one-shots, tanks, a metal bank and noise, then amps and a DAC fed by a sample ROM.](../public/guide/guide-drum-voices.jpg)
+Tap pads, draw steps, press ▶. **Wander** lets the beat stray by itself.
 
 ## More machines
 
-Add them from the **add instrument** menu.
+From **add instrument**.
 
-### Glint
+### Glint, a two-operator FM chip
 
-![Glint's keybed on the green board of a two-operator FM chip.](../public/guide/guide-fm.jpg)
+![Glint's keybed and effect buttons.](../public/guide/guide-fm.jpg)
 
-A two-operator, four-voice FM chip. A processor sets it up a byte at a time over
-a bus, so a wrong byte stays wrong until the processor writes that register
-again. The row of buttons over its keys runs the effect ROM's scripts (bird,
-surf, wind and seven more) while held.
+![The FM chip's blocks: key, processor, bus, modulator, carrier and output.](../public/guide/guide-glint-path.jpg)
 
-![The FM chip's blocks: key, processor, bus, modulator, carrier and output, with clocks and the die.](../public/guide/guide-glint-path.jpg)
+### Parlor, an eight-bit sampling keyboard
 
-### Parlor
+![Parlor's keybed.](../public/guide/guide-parlor.jpg)
 
-![Parlor's keybed: the front of an eight-bit sampling home keyboard.](../public/guide/guide-parlor.jpg)
+![The sampler's blocks: keys, counter, ROM, envelope, tone and mix.](../public/guide/guide-parlor-path.jpg)
 
-An eight-bit sampling home keyboard. A ROM holds one short recording per voice,
-and a counter walks it at the rate each note asks for.
+### Growler, a Model D-style monosynth
 
-![The sampler's blocks: keys, counter, ROM, envelope, tone and mix, with vibrato and the address and data buses.](../public/guide/guide-parlor-path.jpg)
+![Growler's keybed.](../public/guide/guide-growler.jpg)
 
-### Growler
-
-![Growler's keybed: the front of a Model D-style monosynth card.](../public/guide/guide-growler.jpg)
-
-A Model D-style monosynth card. Three oscillators with hard sync feed a
-four-pole transistor ladder filter that self-oscillates.
-
-**Kit sync** on its melody memory steps the bass line on Clatter's counter, so
-swing, a slipping clock or a cleared counter moves the bass with the drums.
-
-The **acc** and **slide** rows under its piano roll make it an acid line. An
-accented step hits louder and kicks the cutoff, and accents close together
-climb, higher with more **Emphasis**. A slide holds the gate into the next note
-and glides there with no new attack.
-
-![The monosynth's blocks: three oscillators, mixer, ladder filter, loudness stage, modulation and voice card.](../public/guide/guide-growler-card.jpg)
+![The monosynth's voice card: three oscillators, mixer, ladder filter and loudness stage.](../public/guide/guide-growler-card.jpg)
 
 ### Four-track
 
 ![The cassette four-track's desk: four channel strips above four tape lanes.](../public/guide/guide-fourtrack.jpg)
 
-A cassette four-track. Four tape loops of different lengths run behind a desk
-with EQ and an aux send, and the desk squeals with nothing plugged in.
+### Spool, a tape loop
 
-### Spool
+![Spool's deck: load, rec, undo, the speed key and the reel with two loop markers.](../public/guide/guide-spool.jpg)
 
-![Spool's deck: load and mic keys, the tape transport, rec and undo, the speed key, and the reel with its two loop markers.](../public/guide/guide-spool.jpg)
-
-A tape loop that records onto itself. Whatever is on the reel plays through the
-whole board, and the record head lays the board's output back down at the play
-head, so each lap goes through every bend, pedal and tape machine again.
-
-Put a tape on:
-
-- **Drop an audio file** anywhere on the page
-- **load** pulls a random tape off an archive.org shelf: 78s, numbers stations,
-  old-time radio, NASA audio or spoken word. The drawer also searches
-  archive.org
-- **rec** with nothing loaded threads a blank reel. Press it again to close the
-  loop at the length you played
-
-Play it:
-
-- **rev**, **play** and **stop** run the transport
-- **The speed key** steps through ¼, ½, ¾, 1 and 2×. The arrow beside it opens a
-  knob from 4× reverse through a stop to 4× forward
-- **Drag the two markers** on the reel to loop one bar of a long recording.
-  Pinch them together and the loop sounds as a pitch. **whole reel** puts them
-  back at the ends
-- **Drag the tape** to move the head. The counter beside the reel reads whole
-  seconds into it
-- **Restarts the file on** and **Ending: one-shot** in the panel turn the file
-  into a seventh drum voice, struck by a kit voice, a key or a shout in the mic
-
-Record over it:
-
-- **rec** overdubs the board's output onto the reel. **undo** takes the last
-  overdub back off, and nothing restores anything older
-- **The arrow beside rec** opens the record head's knobs
-- **Erase** all the way up replaces each lap with the next, a delay the length
-  of the reel. All the way down, the laps pile up
-- **Wear** takes a little more top end off every lap, and **Hiss** lays a new
-  layer of noise down each time round
-- **Hold** turns the write level up by what each lap lost, so the loop stays at
-  its level
-- **A bend in the path** changes the loop a little more on every pass
-
-Wire it in:
-
-- **mic into → tape motor:** the tape runs as fast as you are loud and stops in
-  silence
-- **The patch bay** reaches the capstan and both loop markers, to bend the
-  reel's pitch or slide the loop window along the recording
-- **Parlor's sampled voice** plays the reel across its keys, with the loop
-  markers as its loop
-
-### Mic
-
-Your microphone, soldered into the board. **mic into** on the bench bar, or the
-mic cap on a machine, picks the jack.
-
-## The trigger patch
-
-![The trigger patch: cables between Clatter, Plinky, Glint, Parlor and Growler.](../public/guide/guide-trigger.jpg)
-
-Cables between machines carry two signals:
-
-- **Notes** (amber): every key Plinky strikes, from your keys, its tune or its
-  arpeggio
-- **Hits** (purple): one of Clatter's voices, or any hit
-
-Drum hits play the keys, keys fire the drums, and Glint, Parlor and Growler
-listen to both. The trigger patch and the map name each cable the same way,
-`kick → Glint` or `Plinky → Growler`.
-
-The bench draws the same cables down a gutter beside the keyboards. Every
-keyboard has a **GATE** jack on top and a **TRIG** jack under it:
-
-- Plinky's GATE jack is its notes out, and any number of cables stack on it
-- Every other GATE jack, the kit's included, takes Plinky's notes
-- Each voice on the plate on top of Clatter has a jack, and a cable from one
-  into a keyboard's TRIG jack lets that voice strike it. The TRIG jack prints
-  the voice it holds
-- Press a jack to plug its cable in or pull it out, or drag a cable's end onto
-  another jack to move it there
-
-## Power supply
-
-![The battery rail: cells, reset chip and clip feeding the machines, and second cells feeding Clatter and Glint.](../public/guide/guide-power.jpg)
-
-One battery rail runs Plinky, Clatter, Glint, Parlor and Growler, so a sag drops
-the pitch of all five and slows the kit. A reset chip reboots the chips at a
-voltage you set, or jams one.
-
-- **Supply** on each machine's panel moves it off the shared cells
-- **Second cells:** a separate set with its own knobs and watchdog
-- **Bench supply:** a stiff rail that never sags or reboots
+Drop an audio file on the page, or press **load** for a tape off archive.org.
+**rec** records the board back onto the reel.
 
 ## Bend it
 
-- **Starve** drags the shared battery rail down
-- **Clip chatter** drags a paperclip across the pads
-- **Letter keys** switch on sixteen dealt bends. The envelope picker beside them
-  sets how a held key moves: **snap**, **swell**, **riser** (climbs over four
-  bars, drops when you let go), **pluck** or **wobble** (pulses on the eighths)
-- **Fault on the bus** cuts, grounds or bridges a wire inside a chip
-- **add pedal** lists every pedal by sound: dirt, echo and space, pitch and
-  tone. The
-  [feature list](https://github.com/cmdcolin/bender/blob/main/docs/features.md#pedals)
-  describes each one
-- **Sockets:** ten of the pedals (ring mod, crusher, octave and the rest)
-  compete for six sockets. Adding one fills the first empty socket, or trades
-  out the last when all six are full
-  - **Dry joints** can drop a socketed pedal and **Re-solder** can move it; the
-    other six pedals sit after the sockets, out of their reach
-  - The badge shows the socket, **off** when no socket holds it, **now 5** while
-    Re-solder has moved it, and **drop** while a dry joint holds it out
-- Every pedal's footswitch bypasses it and leaves its knobs alone. The lamp is
-  dark while a pedal is bypassed or its mix is at 0, and pressing it then brings
-  the pedal back, raising the mix or slotting it into a socket as needed
-- Grey cords join the pedals on the bench in the order the signal meets them. A
-  jack names where its cord comes from or goes. Dragging a jack onto another
-  pedal's IN jack moves it just before that pedal, and onto an OUT jack just
-  after. Socketed pedals move among the sockets, the other six among themselves.
-  Pressing a jack opens **Signal order**, where the ↑ and ↓ on each row move a
-  pedal
+![Bend keys: three rows of letter keys, each switching on a bend.](../public/guide/guide-bend-keys.jpg)
 
-![The patch bay: three of four wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](../public/guide/guide-patchbay.jpg)
+**bend keys** puts a bend on each letter. Hold one down.
 
-**+ mod** wires an LFO to any control. The patch bay holds four wires from a
-source to a knob. **LFO sync** runs the LFO in bars or note values of the kit's
-tempo and restarts each cycle on the beat it belongs to.
+![Two pedals, Ricochet and Boing, joined by a cord.](../public/guide/guide-pedals.jpg)
 
-The patch bay's four wires also show on the bench as blue cables:
+**add pedal** adds effects. Drag a cord's jack to reorder them.
 
-- The **MOD** plate over the keyboards has a jack for the LFO, the ADSR, the
-  phrase and both lanes, and for any other source a wire picks up
-- Every machine has a **CV** jack, the kit's on its plate. Plugging a cable in
-  uses a spare wire, which lands on Plinky's or Glint's clock, Parlor's level,
-  Growler's pitch or the kit's tune
-- A patched CV jack prints where its last cable lands, such as **pitch** or
-  **level**. Pressing that word lists everything the bay reaches on the machine
-- The patch bay sets how hard a wire pushes. A wire onto any part of a machine
-  on the bench draws into that machine's CV jack
-- The ADSR's **gate** jack sits beside its output. With no cable in, a held key
-  opens the ADSR; a cable from a voice on the kit's plate opens it on that hit
+![The power supply: cells, reset chip and clip feeding the machines.](../public/guide/guide-power.jpg)
 
-**Step lanes** under the bay are two rows of sixteen values, **lane A** and
-**lane B**, each with its own length. A wire off a lane sends the value on the
-step the kit stands on, so one step can starve the rail, the next can open the
-crusher, and the one after can leave both alone.
+Turn **Starve** up while a chord rings.
 
-**Phrase** is a source that moves over 1 to 32 bars of the kit:
+## Patch it
 
-- **Rise** climbs and drops back on the downbeat; **build** saves its climb for
-  the last bars
-- **Fall**, **swell**, **stairs** (a notch a bar) and a slow **wave** cover the
-  other moves
-- Wire the phrase onto another wire's depth, and a fast LFO on that wire grows
-  over the phrase
+![The trigger patch: cables between Clatter, Plinky, Glint, Parlor and Growler.](../public/guide/guide-trigger.jpg)
 
-**ADSR** is an envelope a held key or a kit hit opens. **Attack** is how long it
-takes to climb, **decay** how long it takes to fall to the **sustain** level,
-and **release** how long it takes to die once the gate shuts:
+Amber cables carry notes, purple cables carry drum hits.
 
-- Off the kick with sustain at zero and a short decay, it pumps whatever the
-  wire lands on
-- Off any hit with a long attack and **Hold** at 16 steps, it swells over
-  seconds while the beat runs underneath
-- Off the keys, it opens while you hold a chord and dies when you let go
+![The patch bay: three wires, each from a source to a knob with a depth slider.](../public/guide/guide-patchbay.jpg)
+
+**+ mod** beside any knob wires an LFO to it.
 
 ## The arc
 
-**arc** in the header swings the board between the board you set and a wild twin
-of it. The first press turns **Crazy** up and opens the arc's controls under
-Output:
+![The arc's controls: Crazy, the arc's shape, its length in bars, glide or jump, and a wild roll.](../public/guide/guide-arc.jpg)
 
-- **Crazy:** how far the arc reaches into the wild twin. In the twin, about half
-  the knobs on the stages you can hear sit near an end of their travel, a fifth
-  of the switches sit on another choice and the kit's Wander is up. The arc
-  starts each knob moving at a different point, so a few parts change at a time
-- **Arc**, the shape the arc follows over its length:
-  - **hold:** Crazy the whole time
-  - **rise, snap back:** a climb to Crazy, then a cut back to your board
-  - **snap, fall back:** a cut to Crazy, then an easy return
-  - **swell:** out to Crazy and back
-  - **spikes:** your board on most bars, Crazy on a few, easing back within the
-    bar
-  - **weather:** a slow random wander between the two, a new heading every four
-    bars
-- **Arc length:** 4 to 128 bars at the kit's tempo, locked to its downbeat
-- **Moves:** **glide** travels smoothly; **jump** changes the board on the
-  downbeat, calm, halfway or Crazy for the whole bar
-- **Wild roll:** each number rolls a different twin off the same board
-- The panel keeps showing your board, and the button shows how far into the twin
-  the board stands. The arc runs on the audio thread, so it keeps going in a
-  hidden tab
+**arc** swings the board toward a wild twin of itself and back, over 4 to 128
+bars.
 
-## Keep it
+## On a phone
 
-- **Wav export** with stems
-- **Sign in** to save named voices
-- **On a phone,** the simple version swipes and tilts to bend
+![The phone page: a scope to swipe and drag, tabs of presets and bends, and a play button.](../public/guide/guide-pocket.jpg)
+
+Swipe the scope for presets, hold and drag to bend.
+
+## More
+
+Every knob is in the
+[feature list](https://github.com/cmdcolin/bender/blob/main/docs/features.md).

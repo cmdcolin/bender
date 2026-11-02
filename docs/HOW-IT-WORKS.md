@@ -72,7 +72,7 @@ machines.
   cut, the chip plays from its keybed and from any trigger bridge you patch
   across from the drums. Each bridge on the map reads `kick → Glint`: the kit
   voice, then the machine it strikes. See
-  [the trigger patch](USER-GUIDE.md#the-trigger-patch) in the user guide.
+  [the trigger patch](features.md#trigger-patch) in the feature list.
 - **In the panel:** the map puts the five on two rows, with the drums under the
   Plinky. The image above uses the same layout.
 
