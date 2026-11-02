@@ -506,12 +506,12 @@ const chopShape = RING_SHAPES.indexOf('chop')
 
 const gaps = (x: Float32Array) => {
   const floor = 0.05 * Math.max(...x.map(Math.abs))
-  const quiet = x.map(v => (Math.abs(v) < floor ? 1 : 0))
+  const shut = x.map(v => (Math.abs(v) < floor ? 1 : 0))
   let runs = 0
-  for (let i = 1; i < quiet.length; i++) {
-    if (quiet[i] === 1 && quiet[i - 1] === 0) runs++
+  for (let i = 1; i < shut.length; i++) {
+    if (shut[i] === 1 && shut[i - 1] === 0) runs++
   }
-  return { runs, shut: quiet.reduce((a, v) => a + v, 0) / quiet.length }
+  return { runs, shut: shut.reduce((a, v) => a + v, 0) / shut.length }
 }
 
 test('chop shuts the volume for the share of each period the width leaves', () => {
@@ -535,4 +535,20 @@ test('chop wobble takes the beat out of the clock', () => {
   expect(steady.runs).toBeGreaterThanOrEqual(15)
   expect(steady.runs).toBeLessThanOrEqual(25)
   expect(Math.abs(wild.runs - steady.runs)).toBeGreaterThan(3)
+})
+
+test('chop depth leaves the closed part of the gate open by the rest', () => {
+  const full = gaps(
+    held(
+      play({ ringShape: chopShape, ringHz: 20, ringDuty: 0.3, ringDepth: 1 }).l,
+    ),
+  )
+  const half = gaps(
+    held(
+      play({ ringShape: chopShape, ringHz: 20, ringDuty: 0.3, ringDepth: 0.4 })
+        .l,
+    ),
+  )
+  expect(full.shut).toBeGreaterThan(0.5)
+  expect(half.shut).toBeLessThan(0.1)
 })

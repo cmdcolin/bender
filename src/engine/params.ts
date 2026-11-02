@@ -957,6 +957,8 @@ export const PARAM_DEFS = [
 
   ['ringDuty', 'slew'],
   ['ringWobble', 'slew'],
+  ['ringDepth', 'slew'],
+  ['ringEdge', 'slew'],
 ] as const satisfies readonly (readonly [ControlKey, Smooth])[]
 
 export type ParamName = (typeof PARAM_DEFS)[number][0]

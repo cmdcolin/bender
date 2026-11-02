@@ -18,6 +18,7 @@ const CHOP_WOBBLE_OCTAVES = 4
 const CHOP_DUTY_SWING = 0.5
 const CHOP_DUTY_MIN = 0.02
 const CHOP_DUTY_MAX = 0.98
+const CHOP_EDGE_S = 0.005
 
 // A struck plate's partials above the fundamental, and the weight of each one
 // with the fundamental first. The trim brings the sum back to the rms of a
@@ -162,6 +163,7 @@ export class RingMod implements Stage {
   private chopJump = 1
   private chopDutyJitter = 0
   private chopModScale = 1
+  private chopGain = 0
 
   constructor(sr: number, seed = 0xc409) {
     this.sr = sr
@@ -214,6 +216,10 @@ export class RingMod implements Stage {
     const carrier = this.carrier
     const duty = p[IDX.ringDuty]!
     const wobble = p[IDX.ringWobble]!
+    const closed = 1 - p[IDX.ringDepth]!
+    const edge = p[IDX.ringEdge]!
+    const edgeCoef =
+      edge > 0 ? 1 - Math.exp(-1 / (edge * CHOP_EDGE_S * this.sr)) : 1
     // Untracked, the knob is the whole story. Tracked, it is where the carrier
     // waits until a note or a pitch the follower hears arrives.
     if (!ratio || this.hz === 0) this.hz = base
@@ -259,7 +265,9 @@ export class RingMod implements Stage {
           Math.max(duty + this.chopDutyJitter, CHOP_DUTY_MIN),
           CHOP_DUTY_MAX,
         )
-        carL = carR = this.chopPhase < width ? 1 : 0
+        const target = this.chopPhase < width ? 1 : closed
+        this.chopGain += (target - this.chopGain) * edgeCoef
+        carL = carR = this.chopGain
       } else if (late !== NOW) {
         // The toy against itself a step or a beat ago: two successive notes
         // multiplied, so their difference tone lands under both as bass. A
@@ -361,5 +369,6 @@ export class RingMod implements Stage {
     this.chopPhase = 0
     this.chopJump = 1
     this.chopDutyJitter = 0
+    this.chopGain = 0
   }
 }
