@@ -6,19 +6,14 @@ import { DelayLine } from '../util/delayline.ts'
 import { QuadOsc, RATE_MASK } from '../util/lfo.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
 import { PitchFollow } from '../util/pitchfollow.ts'
-import { mulberry32, type Rng } from '../util/rng.ts'
+import { ChopGate } from './chopGate.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 export const RING_SHAPES = ['sine', 'square', 'diode', 'bell', 'chop']
 const BELL = 3
 const CHOP = 4
-
-const CHOP_WOBBLE_OCTAVES = 4
-const CHOP_DUTY_SWING = 0.5
-const CHOP_DUTY_MIN = 0.02
-const CHOP_DUTY_MAX = 0.98
-const CHOP_EDGE_S = 0.005
+const CHOP_MAX_RATE = 0.45
 
 // A struck plate's partials above the fundamental, and the weight of each one
 // with the fundamental first. The trim brings the sum back to the rms of a
@@ -158,16 +153,12 @@ export class RingMod implements Stage {
   private stepLen = 0
 
   private readonly sr: number
-  private readonly rng: Rng
-  private chopPhase = 0
-  private chopJump = 1
-  private chopDutyJitter = 0
+  private readonly gate: ChopGate
   private chopModScale = 1
-  private chopGain = 0
 
   constructor(sr: number, seed = 0xc409) {
     this.sr = sr
-    this.rng = mulberry32(seed)
+    this.gate = new ChopGate(sr, seed)
     this.maxLate = MAX_LATE_S * sr
     this.late = new DelayLine(this.maxLate + 4)
     this.follow = new PitchFollow(sr)
@@ -214,12 +205,13 @@ export class RingMod implements Stage {
     const late = busCarrier ? (LATE[from] ?? NOW) : NOW
     const beatLen = (60 / Math.max(p[IDX.drumBpm]!, 1)) * this.sr
     const carrier = this.carrier
-    const duty = p[IDX.ringDuty]!
-    const wobble = p[IDX.ringWobble]!
-    const closed = 1 - p[IDX.ringDepth]!
-    const edge = p[IDX.ringEdge]!
-    const edgeCoef =
-      edge > 0 ? 1 - Math.exp(-1 / (edge * CHOP_EDGE_S * this.sr)) : 1
+    this.gate.configure(
+      p[IDX.ringDuty]!,
+      p[IDX.ringWobble]!,
+      p[IDX.ringDepth]!,
+      p[IDX.ringEdge]!,
+      p[IDX.ringFill]!,
+    )
     // Untracked, the knob is the whole story. Tracked, it is where the carrier
     // waits until a note or a pitch the follower hears arrives.
     if (!ratio || this.hz === 0) this.hz = base
@@ -252,22 +244,15 @@ export class RingMod implements Stage {
         if (mod && (i & RATE_MASK) === 0) {
           this.chopModScale = octaves(mod[i]! * 4)
         }
-        this.chopPhase +=
-          (this.hz * this.chopJump * (mod ? this.chopModScale : 1)) / this.sr
-        if (this.chopPhase >= 1) {
-          this.chopPhase %= 1
-          this.chopJump = octaves(
-            (this.rng() * 2 - 1) * wobble * CHOP_WOBBLE_OCTAVES,
-          )
-          this.chopDutyJitter = (this.rng() * 2 - 1) * wobble * CHOP_DUTY_SWING
-        }
-        const width = Math.min(
-          Math.max(duty + this.chopDutyJitter, CHOP_DUTY_MIN),
-          CHOP_DUTY_MAX,
+        this.gate.step(
+          Math.min(
+            base * (mod ? this.chopModScale : 1),
+            this.sr * CHOP_MAX_RATE,
+          ),
+          io.l[i]!,
+          io.r[i]!,
         )
-        const target = this.chopPhase < width ? 1 : closed
-        this.chopGain += (target - this.chopGain) * edgeCoef
-        carL = carR = this.chopGain
+        carL = carR = 1
       } else if (late !== NOW) {
         // The toy against itself a step or a beat ago: two successive notes
         // multiplied, so their difference tone lands under both as bass. A
@@ -345,8 +330,17 @@ export class RingMod implements Stage {
       }
       const l = io.l[i]!
       const r = io.r[i]!
-      const wl = shape === 2 ? bridge(l, carL) : l * carL
-      const wr = shape === 2 ? bridge(r, carR) : r * carR
+      const chopping = shape === CHOP && !micCarrier
+      const wl = chopping
+        ? this.gate.outL
+        : shape === 2
+          ? bridge(l, carL)
+          : l * carL
+      const wr = chopping
+        ? this.gate.outR
+        : shape === 2
+          ? bridge(r, carR)
+          : r * carR
       const mix = mixMod
         ? Math.min(Math.max(baseMix + mixMod[i]!, 0), 1)
         : baseMix
@@ -366,9 +360,7 @@ export class RingMod implements Stage {
     this.late.reset()
     this.lastStep = 0
     this.stepLen = 0
-    this.chopPhase = 0
-    this.chopJump = 1
-    this.chopDutyJitter = 0
-    this.chopGain = 0
+    this.gate.reset()
+    this.chopModScale = 1
   }
 }

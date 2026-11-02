@@ -16,6 +16,7 @@ import {
   rms,
   SR,
 } from '../testRender.ts'
+import { CHOP_FILLS } from './chopGate.ts'
 import {
   RING_FROM,
   RING_FROM_LATE,
@@ -551,4 +552,32 @@ test('chop depth leaves the closed part of the gate open by the rest', () => {
   )
   expect(full.shut).toBeGreaterThan(0.5)
   expect(half.shut).toBeLessThan(0.1)
+})
+
+test('a fill plays something in the gaps that silence leaves empty', () => {
+  const chop = { ringShape: chopShape, ringHz: 20, ringDuty: 0.3 }
+  const silence = gaps(held(play({ ...chop, ringFill: 0 }).l))
+  expect(silence.shut).toBeGreaterThan(0.5)
+  for (const name of ['repeat', 'reverse', 'pitch', 'crush', 'skip', 'any']) {
+    const wet = gaps(
+      held(play({ ...chop, ringFill: CHOP_FILLS.indexOf(name) }).l),
+    )
+    expect(wet.shut, name).toBeLessThan(0.2)
+  }
+})
+
+test('a fill stays finite and in range on a violent clock', () => {
+  const take = play(
+    {
+      ringShape: chopShape,
+      ringHz: 4000,
+      ringWobble: 1,
+      ringDuty: 0.1,
+      ringFill: CHOP_FILLS.indexOf('any'),
+      ringEdge: 1,
+    },
+    2,
+  )
+  expect(take.l.every(Number.isFinite)).toBe(true)
+  expect(Math.max(...take.l.map(Math.abs))).toBeLessThan(8)
 })

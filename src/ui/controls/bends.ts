@@ -1,4 +1,5 @@
 import { FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
+import { CHOP_FILLS } from '../../dsp/stages/chopGate.ts'
 import { PIN_GAIN_MAX, STOCK_GAIN } from '../../dsp/stages/clipper.ts'
 import { CODEC_CONCEAL, CODEC_FRAME_NAMES } from '../../dsp/stages/codec.ts'
 import {
@@ -81,7 +82,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_SHAPES,
-        help: 'A square carrier chops the signal, which adds harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only shape whose output depends on how hard you play: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply. Chop is not a ring at all but a volume gate: the carrier becomes a pulse clock that opens and shuts the signal, with width and clock wobble on their own knobs. Bell adds partials at ×2.76, ×5.4 and ×8.93 to the carrier, so a held note grows sidebands on no harmonic grid.',
+        help: 'A square carrier chops the signal, which adds harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only shape whose output depends on how hard you play: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply. Chop makes no carrier: a pulse clock at the Carrier rate opens and shuts the signal and fills the gaps, with width, wobble, depth, edge and fill on their own knobs; Track and Carrier from do not apply. Bell adds partials at ×2.76, ×5.4 and ×8.93 to the carrier, so a held note grows sidebands on no harmonic grid.',
       },
       {
         key: 'ringDuty',
@@ -93,13 +94,23 @@ export const BEND_GROUPS: Group[] = [
         help: 'With the carrier on chop: how much of each period the volume stays open. Low is a ticking gate, high is mostly signal with notches cut out of it.',
       },
       {
+        key: 'ringFill',
+        label: 'Chop fill',
+        min: 0,
+        max: CHOP_FILLS.length - 1,
+        step: 1,
+        unit: '',
+        choices: CHOP_FILLS,
+        help: 'With the carrier on chop: what plays while the gate is shut. Silence leaves a gap. Repeat loops the stretch that just played; reverse plays it backwards; pitch loops it at a speed picked each period, up to two octaves either way; crush holds the input at a random rate and cuts it to one to four bits; skip loops the last one to twenty-five milliseconds. Any picks one of those each time the gate shuts. Chop depth is how loud the fill is.',
+      },
+      {
         key: 'ringDepth',
         label: 'Chop depth',
         min: 0,
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'With the carrier on chop: how far the gate shuts. All the way up it closes to silence; lower and the closed part lets that share of the signal through, so the noise stays continuous and the chop turns into a pulsing texture.',
+        help: 'With the carrier on chop: how far the gate shuts. With the fill on silence, all the way up closes to silence and lower lets that share of the signal through, so the noise stays continuous. With any other fill it sets how loud the fill is.',
       },
       {
         key: 'ringEdge',
