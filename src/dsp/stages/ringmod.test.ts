@@ -250,7 +250,7 @@ test('the step carrier puts its tremolo on the same phase every step', () => {
   const at = (name: string, hz: number) =>
     line(
       envelope(
-        render({ ...RING, ringTrack: track(name), ringHz: 3 }, 4),
+        render({ ...RING, chipSync: 0, ringTrack: track(name), ringHz: 3 }, 4),
         WINDOW,
       ),
       hz,
@@ -267,6 +267,7 @@ test('the step carrier puts its tremolo on the same phase every step', () => {
 test('the step carrier is pitched by the toy’s own clock', () => {
   const board: Partial<Controls> = {
     ...RING,
+    chipSync: 0,
     chipLevel: 0.05,
     oscLevel: 0.8,
     oscAHz: 400,
