@@ -139,7 +139,7 @@ Ring buffers are rounded up to a power of two so wrapping is a mask. `%` on a
 length the compiler cannot see is an integer divide every time, and the spring
 tank alone was running fourteen of them a sample.
 
-## Nothing allocates on the audio thread
+## Allocation on the audio thread
 
 A collection on the audio thread causes a gap in the sound, so the garbage the
 render loop produces matters as much as the time it spends. The target is zero

@@ -20,9 +20,10 @@ allows nothing the DevTools console does not already allow.
 Two sibling projects use the two main approaches. jbrowse-components publishes
 `window.jb`, documented by a `jb.help` string, and Claude in Chrome's JavaScript
 tool calls it in the page; JBrowse Desktop serves the same library over MCP.
-videoskillet has no agent API, and an agent drives its panel through a command
-palette that accepts a control name and a value. bender follows jbrowse, because
-writing a melody or a drum pattern through a palette takes one call per step.
+videoskillet publishes its engine as `window.vf`, and its `docs/AI-USAGE.md`
+documents driving it. bender follows jbrowse and publishes a facade with a
+`help` string, because writing a melody or a drum pattern one control at a time
+takes one call per step.
 
 `bender.set` goes through `morphTo`, so each call adds one undo step, and
 `Engine.flush` posts the controls to the worklet without waiting for an
@@ -78,10 +79,14 @@ walks the board to it at frame rate, chaining correctly off a morph in flight.
 Max spells this `line~`: one control-rate message describing a ramp, performed
 underneath at rate.
 
-## What is missing
+## What was missing
 
-**The engine has no imperative surface.** `patch()`, `travel()` and the meter
-live inside the module graph and nothing outside can reach them. The hash is not
+The plan below was written before `agentApi.ts`. Steps 1 and 3 are built, and
+the Status section above lists what remains.
+
+**The engine had no imperative surface.** `patch()`, `travel()` and the meter
+lived inside the module graph, where nothing outside could reach them.
+`window.bender` is that surface now. The hash is not
 a substitute: `useBoardUrl` reads a hash as a _whole board_ — everything the
 link omits snaps to stock, deliberately, because a link names a board rather
 than an edit — and the writer that mirrors the board back is debounced at 250ms
@@ -96,8 +101,8 @@ critical. Max schedules against a global transport with `timepoint`; bender has
 next loop."
 
 **Semitone integers are a poor notation for a model.** Writing `tuneStep7: -14`
-with two sentinel values produces bad melodies. `notes.ts` already has
-`semitoneName()` going one way; the parse direction does not exist.
+with two sentinel values produces bad melodies. `notes.ts` had `semitoneName()`
+going one way, and `parseLane` in `tune.ts` now parses the other.
 
 ## Plan
 
@@ -111,8 +116,8 @@ with two sentinel values produces bad melodies. `notes.ts` already has
    chaining is what every groovebox does, so this earns its keep for people at
    the panel whether or not anything automates the app.
 
-3. **An imperative facade**, behind a flag so the public page does not carry it
-   unconditionally: `get`, `patch`, `glide`, `queue`, `meter`. Puppeteer reaches
+3. **An imperative facade**: `get`, `patch`, `glide`, `queue`, `meter`. It
+   shipped with no flag, for the reason the Status section gives. Puppeteer reaches
    it through `page.evaluate` today with no flags and no origin trial, and it is
    the same object any later adapter wraps. Note that `set()` calls `stopHunt()`
    and `commitStep()` — a sweep wants `patch` for motion and `writeBoard` for

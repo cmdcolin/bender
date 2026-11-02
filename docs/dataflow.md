@@ -78,7 +78,7 @@ safe because `postMessage` serializes synchronously on the thread that calls it:
 by the time it returns, the receiver's copy exists and the buffer can be written
 over. The same synchronous serialization means the copy costs the audio thread
 time; see
-[optimizations.md](optimizations.md#nothing-allocates-on-the-audio-thread).
+[optimizations.md](optimizations.md#allocation-on-the-audio-thread).
 
 Recording uses the same port: the worklet fills a slab of about 0.7 s and posts
 it; the main thread converts the slab to 16-bit and appends it to a wav file in
@@ -101,4 +101,5 @@ block, soft clip and limiter, which run on every sample the instrument emits.
 The feedback comb taps post-clip, delays by up to half a second and returns to
 the top of the next block, so the tail feeds back into the chain. Mixer squeal
 comes from this loop, and the block-rate global loop alone is too slow for it.
-The dashed edge is the only place a block depends on the one before it.
+The dashed edge and `TriggerBus` are the two places a block depends on the one
+before it.

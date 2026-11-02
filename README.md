@@ -54,8 +54,7 @@ See full feature list - [docs/features.md](docs/features.md)
 
 ## User interface
 
-You can see from the above screenshot it's all kind of compact and wrapped into
-that signal diagram. It is a little tricky but it is better than just having 100
+It's all kind of compact and wrapped into that signal diagram. It is a little tricky but it is better than just having 100
 sliders all visible at once.
 
 For super tactile control, get a MIDI controller — I got one just because I made
