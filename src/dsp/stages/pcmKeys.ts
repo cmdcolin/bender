@@ -9,7 +9,7 @@ import { clamp01 } from '../util/clamp.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { mulberry32 } from '../util/rng.ts'
 import {
-  buildPcmRom,
+  PCM_ROM,
   CHORDS,
   noteHz,
   PCM_ADDR_LINES,
@@ -113,7 +113,7 @@ const newVoice = (): Voice => ({
   at: 0,
 })
 
-function flatten(rom: { data: Int8Array }[]) {
+function flatten(rom: readonly { data: Int8Array }[]) {
   const flat = new Int8Array(rom.reduce((n, w) => n + w.data.length, 0))
   const base: number[] = []
   let at = 0
@@ -129,7 +129,7 @@ export class PcmKeys implements Stage {
   label = 'pcmKeys'
   static readonly MAX_SOUNDING = N_VOICES
 
-  private rom = buildPcmRom()
+  private rom = PCM_ROM
   private voices: Voice[] = Array.from({ length: N_VOICES }, newVoice)
   private clock = 0
   private lastNote = 0

@@ -395,5 +395,5 @@ function cut(r: Recipe): PcmWave {
   return { name: r.name, data, loopStart: attack, loopEnd: total }
 }
 
-/** The whole wave ROM, cut once when the chip is built. */
-export const buildPcmRom = (): PcmWave[] => RECIPES.map(cut)
+/** The whole wave ROM, cut once. */
+export const PCM_ROM: readonly PcmWave[] = RECIPES.map(cut)
