@@ -2,6 +2,53 @@
 
 All notable changes to bender are documented here.
 
+## [1.23.1](https://github.com/cmdcolin/bender/compare/v1.23.0...v1.23.1) - 2026-11-02
+
+### Features
+- *(ui)* [`d55bed5`](https://github.com/cmdcolin/bender/commit/d55bed52f398e4bd5e46862261f2fbb741a1ed6b) order racks get arrow buttons, and the pedal rack shows bypassed and dry pedals
+- *(engine)* [`c470680`](https://github.com/cmdcolin/bender/commit/c4706803bb5b7d44b4f8636535c69b0588987bdb) each onboard effect gets a bypass switch, as the pedals have
+- *(ui)* [`f80e001`](https://github.com/cmdcolin/bender/commit/f80e001b19e496c7c21d5cbdf1955d2d342e51ed) guitar cords join the effect faces on the bench in signal order
+- *(dsp)* [`39ac306`](https://github.com/cmdcolin/bender/commit/39ac3064ec0c08ed9ddc244816b912f64308ea22) out to pitch and out to gate on Growler
+- *(dsp)* [`673372b`](https://github.com/cmdcolin/bender/commit/673372b659959a8283d4e0fd7e0d4fb0382db201) motorboat and clock rush on Clatter
+- *(ui)* [`e32154c`](https://github.com/cmdcolin/bender/commit/e32154c63f3fbaf29c174bc39f5919d44670d832) drag a cord's jack onto another pedal to move it there
+- *(dsp)* [`a55717c`](https://github.com/cmdcolin/bender/commit/a55717c0df5d7ae9d8a521a39aa7dc5d382c0990) charge pump and crash on Plinky
+- *(dsp)* [`23602f1`](https://github.com/cmdcolin/bender/commit/23602f1ac76f5b88ba7f4cc438621adabad9fc48) register rot, heat and operator ring on Glint
+- *(dsp)* [`f4b3614`](https://github.com/cmdcolin/bender/commit/f4b3614850aefa32d61c984385c3d2b3b706b541) thermal runaway and CPU on bus on Parlor
+- *(dsp)* [`af2d526`](https://github.com/cmdcolin/bender/commit/af2d526391f569c583b7c3391af8dbf3867d1d51) pattern rot and out to address on Clatter
+- *(dsp)* [`02b860f`](https://github.com/cmdcolin/bender/commit/02b860f99e9cdaf5a01e81d4dafb3eaf4d5749fa) regulator trip on Growler
+- *(dsp)* [`1ac41a5`](https://github.com/cmdcolin/bender/commit/1ac41a51bfb75b7d3dc3e427e40c2446dca246cd) noise divider on Plinky
+- *(ui)* [`b5c21f7`](https://github.com/cmdcolin/bender/commit/b5c21f7125cff7e39785edcea279a5e4991b61b9) draw Growler's out to pitch, out to gate and regulator trip
+- *(ui)* [`944ea65`](https://github.com/cmdcolin/bender/commit/944ea651b0ebe162a65ee1232aeeadb129afa4a7) draw Parlor's heat and CPU wires
+- *(ui)* [`b6a0337`](https://github.com/cmdcolin/bender/commit/b6a0337340c43ee8b19695b854aefbad97fc56d3) draw register rot, heat and operator ring on Glint
+- *(ui)* [`ec2e998`](https://github.com/cmdcolin/bender/commit/ec2e998c2a54a2cf33408f51f571b51be1887234) draw motorboat, clock rush and out to address on Clatter's voices
+
+### Fixes
+- *(ui)* [`3313e3a`](https://github.com/cmdcolin/bender/commit/3313e3aab66a61d04149848e3e8cfaeee017c79b) adding a pedal switches it on, and the pedal text matches the bypass switch
+- *(dsp)* [`bf1c75b`](https://github.com/cmdcolin/bender/commit/bf1c75b41786c94bde6209ff39b90a04bad29975) Growler's ladder stays bounded with feedback and drive high
+- *(ui)* [`71f0bc7`](https://github.com/cmdcolin/bender/commit/71f0bc7e9eed01dc15c92f69dc011bcb490bf8a5) a bend key that solders an effect in switches off its bypass
+- *(dsp)* [`5bb367e`](https://github.com/cmdcolin/bender/commit/5bb367e825318d195379eb11655efc850d649c12) a rail drained under the dead voltage reboots with no other fault on
+- *(ui)* [`f019209`](https://github.com/cmdcolin/bender/commit/f019209e19da9ee0aad9eeecd888f69141070cb5) bypassed effects count as unheard, and pedal lamps read the map's rule
+- *(dsp)* [`6521cea`](https://github.com/cmdcolin/bender/commit/6521ceae840537eff6024830a208b28070569a1c) Parlor's write strobe wraps a loud chord into noise
+
+### Refactor
+- *(ui)* [`1bc753c`](https://github.com/cmdcolin/bender/commit/1bc753c9dc234955d2f7e7cbe96bf0a417935ed8) the bench reads its effect lists directly, now the shelf orders them
+
+### Documentation
+- [`dc55105`](https://github.com/cmdcolin/bender/commit/dc55105995717bff6744b69bad98209c8da5947d) write agent-docs/CLAUDE.md in sentences, drop its truncated line
+- [`6951df3`](https://github.com/cmdcolin/bender/commit/6951df3e33f8e26a22ce798320601145943eaa70) correct facts a prose audit found out of date or inconsistent
+- *(ui)* [`3d3b9cd`](https://github.com/cmdcolin/bender/commit/3d3b9cd05447f9d64c5d1a908ec5651f85fa7bff) preset blurbs and features prose in sentences
+- [`080440a`](https://github.com/cmdcolin/bender/commit/080440a8408c181e338fe3f0baa4e9314174502c) state each fact once across the user, dev and agent docs
+- [`31d8cf5`](https://github.com/cmdcolin/bender/commit/31d8cf5a7b3dabdcc6ad5bb8f1601f89e0590540) define a knife in BENDS, drop AGENT-TECHNO's heading numbers
+- *(ui)* [`d631b36`](https://github.com/cmdcolin/bender/commit/d631b3682d61950991a8d3370a466b275d900c78) preset table blurbs in sentences
+
+### Tests
+- *(ui)* [`119f76e`](https://github.com/cmdcolin/bender/commit/119f76e8cda308de62a2ebf5a9fd58eaf4eb193a) check only keys on a stage that was silent come up heard
+
+### Chores
+- *(ui)* [`636fbe4`](https://github.com/cmdcolin/bender/commit/636fbe4a49aeab48e766e00ae89d9c1fdd660cda) measure the bend ends of the eleven new bends
+- [`fe5cd3d`](https://github.com/cmdcolin/bender/commit/fe5cd3d046b472a494d8d8912ede69f79b820b22) share the setup action with videoskillet, build alongside check
+- [`5d5acd4`](https://github.com/cmdcolin/bender/commit/5d5acd46dab3ea52011b4b6db800f3b1785dddb9) pnpm 12, job timeouts, pages permissions on deploy only
+
 ## [1.23.0](https://github.com/cmdcolin/bender/compare/v1.22.0...v1.23.0) - 2026-10-31
 
 ### Features
