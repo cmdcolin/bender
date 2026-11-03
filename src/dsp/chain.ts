@@ -8,6 +8,7 @@ import {
 } from '../engine/params.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { MIC } from './micJacks.ts'
+import { MicLine } from './micLine.ts'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
 import {
   BLOCK,
@@ -266,6 +267,7 @@ export class Chain {
   keyGate(semitone: number, down: boolean) {
     this.ctx.trig.keyGate(semitone, down)
   }
+  private readonly micLine: MicLine
   private readonly fbRetL = new Float32Array(BLOCK)
   private readonly fbRetR = new Float32Array(BLOCK)
   private readonly dcL = new DcBlocker()
@@ -417,6 +419,7 @@ export class Chain {
     }
     this.loops = Array.from({ length: N_LOOPS }, () => new DeskLoop(sr))
     this.thermal = new Thermal(sr)
+    this.micLine = new MicLine(sr)
     this.ground = new GroundBounce(sr)
     this.rng = mulberry32(seed ^ 0x9e37)
     this.relayBurst = new Burst(sr, 3)
@@ -469,6 +472,7 @@ export class Chain {
     this.ground.reset()
     this.ctx.heat = 0
     this.thermal.reset()
+    this.micLine.reset()
     this.relayBurst.reset()
     for (const j of this.joints) j.reset()
     this.order = [0, 1, 2, 3, 4, 5]
@@ -500,6 +504,15 @@ export class Chain {
       if (a > micPeak) micPeak = a
     }
     if (micPeak > this.taps[TAP_MIC]!) this.taps[TAP_MIC] = micPeak
+    const kitHz =
+      ctx.trig.kitStepHz > 0 ? ctx.trig.kitStepHz : p[IDX.drumBpm]! / 15
+    this.micLine.process(
+      ctx.mic,
+      n,
+      p[IDX.micDelay]!,
+      p[IDX.micRepeats]!,
+      Math.round(p[IDX.micDelaySync]!) === 1 ? 1 / kitHz : 0,
+    )
 
     // Supply droop and the mod lanes are built from last block's buses, then
     // the supplies are handed back to whoever owns them at their stock values.

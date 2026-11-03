@@ -13,6 +13,7 @@ import {
 } from '../../drums.ts'
 import { crossNames, FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
 import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
+import { MIC_DELAY_MAX_S } from '../../dsp/micLine.ts'
 import { FM_EFFECT_NAMES, FM_SFX_PICKS } from '../../dsp/stages/fmEffects.ts'
 import {
   fallSecs,
@@ -3558,6 +3559,40 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: MIC_JACKS.map(j => j.name),
         help: 'Where the mic wire is soldered. Each jack lists what your voice does there.',
+      },
+      {
+        key: 'micDelay',
+        label: 'Delay',
+        min: 0,
+        max: MIC_DELAY_MAX_S,
+        step: 0.01,
+        unit: 's',
+        knots: [
+          [0, 0],
+          [0.05, 0.2],
+          [MIC_DELAY_MAX_S, 1],
+        ],
+        reads: v => (v === 0 ? 'off' : `${v.toFixed(2)} s`),
+        help: 'A delay line between the mic and its jack. At 0 the jack hears you as you make the sound. Up, it hears you this much later, and only then: clap and the kit fires a beat after, talk and the toy’s notes shift after you have stopped. Turning it while something is in the line pitches what is in there.',
+      },
+      {
+        key: 'micRepeats',
+        label: 'Repeats',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much of the delay’s output goes back into it, so one clap reaches the jack again and again. At the top a sound stays in the line until the next one crowds it out. Only while Delay is up.',
+      },
+      {
+        key: 'micDelaySync',
+        label: 'Delay sync',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['seconds', 'kit steps'],
+        help: 'Whether the delay runs as set in seconds or snaps to Clatter’s steps. Kit steps rounds it to the nearest whole number of Clatter’s steps at the tempo the kit is running at, so a clap comes back on the grid.',
       },
     ],
   },

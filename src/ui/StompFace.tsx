@@ -91,7 +91,7 @@ export function StompFace({
   footswitch: ReactNode
   badge?: ReactNode
   onOpen: (stage: string) => void
-  onClose: () => void
+  onClose?: () => void
 }) {
   const live = useBoardValue(c =>
     face.sliders.filter(key => rowShown(key, c)).join(','),

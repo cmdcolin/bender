@@ -550,6 +550,9 @@ export const PARAM_DEFS = [
 
   ['micLevel', 'slew'],
   ['micPatch', 'step'],
+  ['micDelay', 'slew'],
+  ['micRepeats', 'slew'],
+  ['micDelaySync', 'step'],
   ['sampleLevel', 'slew'],
   ['sampleSpeed', 'slew'],
   ['sampleTrig', 'step'],

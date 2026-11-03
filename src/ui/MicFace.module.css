@@ -1,0 +1,7 @@
+.into {
+  flex: 1 1 100%;
+  order: 1;
+  font-size: var(--fs-xs);
+  color: var(--ink);
+  opacity: 0.8;
+}

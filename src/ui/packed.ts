@@ -997,6 +997,9 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'ringDepth',
   'ringEdge',
   'ringFill',
+  'micDelay',
+  'micRepeats',
+  'micDelaySync',
 ]
 
 // Retired controls that old links still carry, each read into the control that

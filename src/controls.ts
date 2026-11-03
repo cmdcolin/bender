@@ -572,6 +572,9 @@ export const DEFAULT_CONTROLS = {
 
   micLevel: 0,
   micPatch: 0,
+  micDelay: 0,
+  micRepeats: 0,
+  micDelaySync: 0,
   sampleLevel: 0,
   sampleSpeed: 1,
   sampleTrig: 0,

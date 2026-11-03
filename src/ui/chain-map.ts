@@ -1900,7 +1900,8 @@ function collectTaps(
       : n
 
   // The mic, which is a patch point rather than a channel — so it draws as the
-  // wire it is, onto whichever jack it is soldered to. Turned
+  // wire it is, onto whichever jack it is soldered to, and says so when it runs
+  // through the mic delay on the way. Turned
   // right down it is still soldered there, so it stays on the map greyed, the
   // way the feedback bus does at no amount.
   // Every solder point but the mix is a stage, and a stage can be in none of
@@ -1919,12 +1920,12 @@ function collectTaps(
     ctx.doors.add('Mic')
     taps.push({
       id: 'mic',
-      label: 'mic',
+      label: c.micDelay > 0 ? 'delayed mic' : 'mic',
       value: ctx.live && mic.active ? c.micLevel.toFixed(2) : undefined,
       door: 'Mic',
       wireDoor: 'Mic',
       key: 'micLevel',
-      labelKey: 'micLevel',
+      labelKey: c.micDelay > 0 ? 'micDelay' : 'micLevel',
       dash: '1 3',
       ...mic,
     })

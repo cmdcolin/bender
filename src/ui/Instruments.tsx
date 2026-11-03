@@ -15,12 +15,13 @@ import {
 import { DrumKit } from './DrumKit.tsx'
 import { EffectShelf } from './EffectShelf.tsx'
 import { Faceplate } from './Faceplate.tsx'
-import { add } from './fitted.ts'
+import { add, added, shownOn } from './fitted.ts'
 import { FmKeys } from './FmKeys.tsx'
 import { FourTrack } from './FourTrack.tsx'
 import { GateBench, ModPlate } from './GateCables.tsx'
 import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
+import { MicFace } from './MicFace.tsx'
 import { MicMenu } from './MicJacks.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
@@ -125,6 +126,8 @@ export function Instruments({
       ))
 
   const keyboards = faces(KEYBOARDS)
+  useStoreValue(added)
+  const mic = useBoardValue(c => shownOn(c).has('Mic'))
   const { grid: staged, pedals, bends } = useStoreValue(bench)
   const kit = staged ? [] : faces(KIT)
   const stagedKit = staged ? faces(KIT) : []
@@ -163,14 +166,16 @@ export function Instruments({
           <div className={styles.stage}>{stagedKit}</div>
         )}
         {(keyboards.length > 0 ||
+          mic ||
           kit.length > 0 ||
           pedals.length > 0 ||
           bends.length > 0) && (
           <div className={styles.shelf}>
-            {keyboards.length > 0 && (
+            {(keyboards.length > 0 || mic) && (
               <div className={styles.lane}>
-                <ModPlate />
+                {keyboards.length > 0 && <ModPlate />}
                 {keyboards}
+                {mic && <MicFace seconds={seconds} onOpen={onOpen} />}
               </div>
             )}
             {(kit.length > 0 || pedals.length > 0 || bends.length > 0) && (
