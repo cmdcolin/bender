@@ -2138,7 +2138,7 @@ back.
 ## Scripts
 
 <details>
-<summary>48 commands</summary>
+<summary>49 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2148,6 +2148,7 @@ back.
 | `pnpm ab`            | this tree against a git ref, as a paired comparison                                                                                                                                    |
 | `pnpm agent`         | drives window.bender in headless Chrome and checks what bender.listen reports                                                                                                          |
 | `pnpm agent:eval`    | runs claude -p --chrome sessions against the app, one per task, and grades the board each one leaves                                                                                   |
+| `pnpm agenttrim`     | cuts the silent start and the tail off an agentreel take, leaving the groove between uncut                                                                                             |
 | `pnpm agentreel`     | records a real Claude Code session driving the app in Chrome, with the app's sound, to clips/agent-drive.mp4                                                                           |
 | `pnpm arrive`        | opens a link in headless Chrome and checks that the board loads, the overlay shows where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url |
 | `pnpm audible`       | takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible                                       |

@@ -2,8 +2,8 @@
 title: Letting an AI agent drive bender
 date: 2026-11-02
 summary:
-  Claude Code writes a techno groove into bender and bends it until it falls
-  apart.
+  Claude Code writes a techno groove into bender, bends everything riding on it,
+  and pulls the bends back.
 image: /blog/agent-drive-poster.webp
 imageAlt:
   Chrome with bender on the left and Claude Code in a terminal on the right,
@@ -20,7 +20,8 @@ imageAlt:
 </div>
 
 The recording is one Claude Sonnet session with sound on. It was asked for a
-dark techno groove and then to bend it until it fell apart.
+dark techno groove that holds its tempo, then to bend everything on top of it
+harder and harder, and to pull the bends back at the end.
 
 Start with `claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest`
 and ask for a groove. The

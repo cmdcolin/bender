@@ -137,6 +137,8 @@ const SCRIPTS: Record<string, string> = {
     'drives window.bender in headless Chrome and checks what bender.listen reports',
   agentreel:
     "records a real Claude Code session driving the app in Chrome, with the app's sound, to clips/agent-drive.mp4",
+  agenttrim:
+    'cuts the silent start and the tail off an agentreel take, leaving the groove between uncut',
   arrive:
     'opens a link in headless Chrome and checks that the board loads, the overlay shows where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url',
   'agent:eval':
