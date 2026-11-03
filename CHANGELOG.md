@@ -2,6 +2,12 @@
 
 All notable changes to bender are documented here.
 
+## [1.25.0](https://github.com/cmdcolin/bender/compare/v1.24.2...v1.25.0) - 2026-11-03
+
+### Features
+- *(dsp)* [`39ce0e6`](https://github.com/cmdcolin/bender/commit/39ce0e6256c9d2f7d561230b169fea484684cbd3) a delay line between the mic and its jack, with repeats and kit-step sync
+- *(dsp)* [`085b406`](https://github.com/cmdcolin/bender/commit/085b406cf23668eddb021de56c7ca250a38eacba) a second mic wire, the delay on either one, and a freeze that loops it
+
 ## [1.24.2](https://github.com/cmdcolin/bender/compare/v1.24.1...v1.24.2) - 2026-11-03
 
 ### Features
