@@ -2,6 +2,7 @@
 import BoardRedirect from '../components/BoardRedirect.astro'
 import Hero from '../components/Hero.astro'
 import HomeSkeleton from '../components/HomeSkeleton.astro'
+import Scenes from '../components/Scenes.astro'
 import Showcase from '../components/Showcase.astro'
 import SignedInHint from 'skillet-shared/components/SignedInHint.astro'
 import SocialMeta from 'skillet-shared/components/SocialMeta.astro'
@@ -45,6 +46,7 @@ const SHARE_IMAGE = `${ORIGIN}${SHARE_SHOT.file}`
   <main class="wrap wide landing" id="landing">
     <Hero />
     <Showcase />
+    <Scenes />
   </main>
 
   {/* Where main.ts draws the home, for a reader who is signed in. */}

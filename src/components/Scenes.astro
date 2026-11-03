@@ -1,0 +1,23 @@
+---
+import { scenes } from '../site/scenes.ts'
+---
+
+<section id="scenes" aria-labelledby="scenesHead">
+  <h2 class="head" id="scenesHead">
+    Scenes
+  </h2>
+  <p>Each one opens the app with the board already set up.</p>
+  <ul class="grid">
+    {scenes.map(scene => (
+      <li>
+        <a class="card" href={scene.href}>
+          <span class="cardTop">
+            <span class="cardName">{scene.name}</span>
+            <span class="open">open →</span>
+          </span>
+          <span class="says">{scene.says}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

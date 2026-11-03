@@ -7,6 +7,7 @@ import About from '../pages/about.astro'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
 import { aboutUrl, blogUrl, jamUrl, privacyUrl } from '../site/paths.ts'
+import { scenes } from '../site/scenes.ts'
 import { SHARE_SHOT } from '../site/shareShot.ts'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn.ts'
 
@@ -148,4 +149,15 @@ test('every published post points at an image that exists', () => {
     expect(image, file).toMatch(/^\//)
     expect(existsSync(`public${image}`), `${file}: ${image}`).toBe(true)
   }
+})
+
+test('every scene names a preset that exists and links into the app with its board', () => {
+  expect(scenes.length).toBeGreaterThan(0)
+  for (const scene of scenes) {
+    expect(landing).toContain(scene.name)
+    expect(scene.href).toContain('#p=')
+  }
+  expect(
+    scenes.find(s => s.name === 'ballroom at the end of time')?.href,
+  ).toContain('shelf=piano78s')
 })
