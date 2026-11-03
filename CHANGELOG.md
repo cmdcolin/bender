@@ -2,6 +2,22 @@
 
 All notable changes to bender are documented here.
 
+## [1.24.1](https://github.com/cmdcolin/bender/compare/v1.24.0...v1.24.1) - 2026-11-03
+
+### Features
+- *(home)* [`918fb31`](https://github.com/cmdcolin/bender/commit/918fb31bf928c4f7ac2c0617d957fe3fd7cc10c2) play-button overlay on blog videos
+- *(home)* [`e8c19d4`](https://github.com/cmdcolin/bender/commit/e8c19d4157e3bfa54535b95670520764deca234c) mark the video overlay files for sync, take the frame's ratio from a variable
+- *(home)* [`e779145`](https://github.com/cmdcolin/bender/commit/e779145ea11c0ab9c352072f5bbe4e9f446dd7c5) a post that opens with a video drops the hero image
+
+### Performance
+- *(dsp)* [`4d33d7c`](https://github.com/cmdcolin/bender/commit/4d33d7ccd4474d33f1db8d9aba106b88cc803629) cut the pcm wave ROM once instead of for every chip
+
+### Documentation
+- *(home)* [`7bf6eff`](https://github.com/cmdcolin/bender/commit/7bf6effc721fdb043f42ba7ffde68410b61f45e3) label the agent video for screen readers
+
+### Tests
+- [`d3b2d47`](https://github.com/cmdcolin/bender/commit/d3b2d4726c899de33fb254683d94b3a01d41f54c) trim sweeps that repeat what torture and the other tests cover
+
 ## [1.24.0](https://github.com/cmdcolin/bender/compare/v1.23.1...v1.24.0) - 2026-11-02
 
 ### Features
