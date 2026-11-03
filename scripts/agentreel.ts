@@ -57,7 +57,7 @@ const FPS = 30
 
 const TASK = `This browser tab is bender, a circuit-bent synth with a scripting API on window.bender. Work only in that browser tab. Evaluate bender.help in the page first.
 
-Make a dark techno groove with a rolling bassline, start it playing, then bend it with the circuit bends until it starts to fall apart. Tell me what bender.listen hears at the end.
+Make a dark techno groove with a rolling bassline and start it playing. The kick and the bassline hold the tempo for the whole session: put Clatter and Growler on the bench supply (drumSupply and monoSupply), and leave the kit's tempo, the clock bends, ground bounce and the kit's event steps alone. Then bend everything riding on the groove, harder and harder: the chips' circuit bends, the effects, faults on the bus. Finish by pulling the bends back to the clean groove, and tell me what bender.listen hears then.
 
 Keep every reply to a line or two.`
 
@@ -86,6 +86,7 @@ const task =
 const tmp = mkdtempSync(join(tmpdir(), 'agentreel-'))
 mkdirSync(outDir, { recursive: true })
 const mp4 = resolve(outDir, 'agent-drive.mp4')
+const callsJson = resolve(outDir, 'agent-drive.calls.json')
 const poster = resolve(outDir, 'agent-drive-poster.jpg')
 const grab = join(tmp, 'grab.mkv')
 const wav = join(tmp, 'audio.wav')
@@ -161,7 +162,18 @@ spawnKid(
 
 const page = await attach(CDP_PORT)
 await until(page, APP_READY, 60_000)
+await page.send('Page.enable')
+await page.send('Page.addScriptToEvaluateOnNewDocument', {
+  source: `window.__contexts = []; { const Base = window.AudioContext; window.AudioContext = class extends Base { constructor(o) { super(o); window.__contexts.push(this) } } }`,
+})
+await page.send('Runtime.evaluate', { expression: 'window.stale = true' })
+await page.send('Page.reload')
+await until(page, `!window.stale && ${APP_READY}`, 60_000)
 await sleep(3000)
+
+await page.send('Runtime.evaluate', {
+  expression: `window.__agentCalls = []; for (const name of ['set', 'load', 'reset', 'undo', 'redo', 'tune', 'drums', 'line', 'play', 'stop']) { const real = window.bender[name]; window.bender[name] = function (...a) { const glide = name === 'set' && typeof a[0] === 'string' ? a[2] : a[1]; const result = real.apply(this, a); const tempo = window.bender.board().controls.find(r => r.startsWith('drumBpm ='))?.match(/= ([\\d.]+)/)?.[1]; window.__agentCalls.push({ at: performance.now(), name, glide: typeof glide === 'number' ? glide : 0, bpm: tempo === undefined ? 0 : Number(tempo) }); return result } }`,
+})
 
 const mcpConfig = join(tmp, 'mcp.json')
 writeFileSync(
@@ -180,28 +192,49 @@ spawnSync('npx', ['-y', MCP, '--help'], { stdio: 'ignore' })
 
 console.log('agentreel: recording')
 const recStart = Date.now()
+const renderNode = existsSync('/dev/dri')
+  ? readdirSync('/dev/dri')
+      .filter(name => name.startsWith('renderD'))
+      .map(name => `/dev/dri/${name}`)
+      .find(
+        node =>
+          spawnSync('ffmpeg', [
+            ...['-v', 'error', '-vaapi_device', node],
+            ...['-f', 'lavfi', '-i', 'testsrc2=s=320x240:r=30', '-t', '0.2'],
+            ...['-vf', 'format=nv12,hwupload', '-c:v', 'h264_vaapi'],
+            ...['-f', 'null', '-'],
+          ]).status === 0,
+      )
+  : undefined
+const encodeGrab =
+  renderNode === undefined
+    ? [
+        '-c:v',
+        'libx264',
+        '-preset',
+        'ultrafast',
+        '-crf',
+        '18',
+        '-pix_fmt',
+        'yuv420p',
+      ]
+    : [
+        '-vf',
+        'hwupload,scale_vaapi=format=nv12',
+        '-c:v',
+        'h264_vaapi',
+        '-qp',
+        '18',
+      ]
+console.log(
+  `agentreel: grab encodes on ${renderNode === undefined ? 'the CPU' : renderNode}`,
+)
 const rec = spawnKid('ffmpeg', [
-  '-y',
-  '-v',
-  'error',
-  '-f',
-  'x11grab',
-  '-framerate',
-  String(FPS),
-  '-video_size',
-  `${WIDTH}x${HEIGHT}`,
-  '-draw_mouse',
-  '0',
-  '-i',
-  display,
-  '-c:v',
-  'libx264',
-  '-preset',
-  'ultrafast',
-  '-crf',
-  '18',
-  '-pix_fmt',
-  'yuv420p',
+  ...['-y', '-v', 'error'],
+  ...(renderNode === undefined ? [] : ['-vaapi_device', renderNode]),
+  ...['-f', 'x11grab', '-framerate', String(FPS)],
+  ...['-video_size', `${WIDTH}x${HEIGHT}`, '-draw_mouse', '0', '-i', display],
+  ...encodeGrab,
   grab,
 ])
 const audio = spawnKid('pw-record', [
@@ -320,6 +353,12 @@ const probe = async () => {
         returnByValue: true,
       })
     ).result.value ?? []
+  const underruns = (
+    await page.send<{ result: { value?: string } }>('Runtime.evaluate', {
+      expression: `(() => { const s = window.__contexts?.[0]?.playbackStats; return s ? s.underrunEvents + ' underruns ' + Math.round(s.underrunDuration * 1000) + 'ms' : 'no playbackStats' })()`,
+      returnByValue: true,
+    })
+  ).result.value
   const sorted = gaps.toSorted((a, b) => a - b)
   const ticks = procTicks()
   const secs = (Date.now() - probeAt) / 1000
@@ -331,7 +370,7 @@ const probe = async () => {
   ticksBefore = ticks
   probeAt = Date.now()
   console.log(
-    `agentreel debug t=${Math.round((Date.now() - recStart) / 1000)}s raf ${(gaps.length / secs).toFixed(1)}fps p95 ${sorted[Math.floor(sorted.length * 0.95)]?.toFixed(0)}ms max ${sorted.at(-1)?.toFixed(0)}ms | load ${readFileSync('/proc/loadavg', 'utf8').split(' ')[0]} | ${cpu}`,
+    `agentreel debug t=${Math.round((Date.now() - recStart) / 1000)}s raf ${(gaps.length / secs).toFixed(1)}fps p95 ${sorted[Math.floor(sorted.length * 0.95)]?.toFixed(0)}ms max ${sorted.at(-1)?.toFixed(0)}ms | ${underruns} | load ${readFileSync('/proc/loadavg', 'utf8').split(' ')[0]} | ${cpu}`,
   )
 }
 
@@ -359,6 +398,30 @@ console.log(
     : `agentreel: no landing inside ${capSecs}s`,
 )
 await sleep(3000)
+
+const pageCalls = await page
+  .send<{
+    result: {
+      value?: {
+        now: number
+        calls: { at: number; name: string; glide: number; bpm: number }[]
+      }
+    }
+  }>('Runtime.evaluate', {
+    expression: `({ now: performance.now(), calls: window.__agentCalls })`,
+    returnByValue: true,
+  })
+  .then(r => r.result.value)
+  .catch(() => undefined)
+const pageNowInTake = (Date.now() - recStart) / 1000
+const calls = (pageCalls?.calls ?? []).map(c => ({
+  ...c,
+  at: Number(
+    (pageNowInTake - (pageCalls?.now ?? 0) / 1000 + c.at / 1000).toFixed(3),
+  ),
+}))
+writeFileSync(callsJson, JSON.stringify(calls, null, 1))
+console.log(`agentreel: ${calls.length} bender calls in ${callsJson}`)
 
 const grabExit = new Promise(done => rec.once('exit', done))
 rec.kill('SIGINT')
@@ -402,6 +465,29 @@ console.log(
   lostTotal === 0
     ? `agentreel: the grab kept all ${frameTimes.length} frames`
     : `agentreel: the grab lost ${lostTotal} of ${frameTimes.length + lostTotal} frames in ${lostFrames.length} gaps, the longest ${Math.max(...lostFrames)}; a busy machine makes a choppy take`,
+)
+
+const pcm = spawnSync(
+  'ffmpeg',
+  ['-v', 'error', '-i', wav, '-ac', '1', '-f', 's16le', '-'],
+  { maxBuffer: 1 << 30 },
+).stdout
+const dropouts: number[] = []
+let zeroFrom = -1
+let heard = false
+for (let i = 0; i < pcm.length / 2; i++) {
+  const silent = pcm.readInt16LE(i * 2) === 0
+  if (!silent) {
+    if (heard && zeroFrom >= 0 && i - zeroFrom >= 96)
+      dropouts.push(i - zeroFrom)
+    heard = true
+    zeroFrom = -1
+  } else if (zeroFrom < 0) {
+    zeroFrom = i
+  }
+}
+console.log(
+  `agentreel: ${dropouts.length} audio dropouts, ${Math.round(dropouts.reduce((a, b) => a + b, 0) / 48)}ms of silence inside the take`,
 )
 
 console.log('agentreel: encoding')
