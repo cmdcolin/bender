@@ -2,6 +2,18 @@
 
 All notable changes to bender are documented here.
 
+## [1.24.2](https://github.com/cmdcolin/bender/compare/v1.24.1...v1.24.2) - 2026-11-03
+
+### Features
+- *(docs)* [`5968c17`](https://github.com/cmdcolin/bender/commit/5968c17871f5a00bf8b514ccfe2137ef7070aa79) agenttrim cuts an agentreel take's silent start and its tail
+
+### Fixes
+- *(docs)* [`5fbf2d5`](https://github.com/cmdcolin/bender/commit/5fbf2d5ae9c4bdc83822e8e4ada1afa75c7526b7) agentreel grabs at 30 fps in a high CPU weight scope and reports lost frames
+- *(docs)* [`538edb9`](https://github.com/cmdcolin/bender/commit/538edb95cb37bdc6827d44879361c1c5bf8fb110) agentreel keeps the groove on the bench supply and grabs on the GPU
+
+### Documentation
+- *(home)* [`ffdc45e`](https://github.com/cmdcolin/bender/commit/ffdc45e7771f89a243b2e53a1fbee330bab7cf69) the agent post shows a take whose groove holds while the bends ride on it
+
 ## [1.24.1](https://github.com/cmdcolin/bender/compare/v1.24.0...v1.24.1) - 2026-11-03
 
 ### Features
