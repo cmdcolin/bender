@@ -579,6 +579,7 @@ export function createBenderApi() {
           `no preset named '${name}'; bender.presets() lists all ${PRESETS.length}`,
         )
       land(applyPreset(preset, engine.controls.get()), seconds)
+      if (preset.shelf) void engine.fillFromShelf(preset.shelf)
       return { loaded: preset.name, blurb: preset.blurb, ...summary() }
     },
 

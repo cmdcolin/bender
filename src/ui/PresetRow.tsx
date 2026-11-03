@@ -80,6 +80,7 @@ function PresetChip(props: {
     const { from, path } = road()
     const target = path.at(from, 1)
     engine.morphTo(target, props.morphSeconds)
+    if (props.def.shelf) void engine.fillFromShelf(props.def.shelf)
     props.onScrub({ name: props.def.name, from, path, t: 1, produced: target })
   }
 

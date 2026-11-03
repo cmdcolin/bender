@@ -11,7 +11,7 @@ import { STAGE_ORDER } from '../src/ui/controls/types.ts'
 import { MIC_JACKS } from '../src/ui/micWiring.ts'
 import { CUTS } from '../src/ui/presets/cuts.ts'
 import { RIGS } from '../src/ui/presets/rigs.ts'
-import { PRESETS } from '../src/ui/presets/table.ts'
+import { PRESETS, type PresetDef } from '../src/ui/presets/table.ts'
 import { boardHash } from '../src/ui/share.ts'
 
 import type { Group, SliderDef } from '../src/ui/controls/types.ts'
@@ -168,8 +168,8 @@ const SCRIPTS: Record<string, string> = {
 const LIVE = 'https://cmdcolin.github.io/bender/app/'
 
 // The long `#set=` form names the controls a preset moves; the short `#p=` form does not.
-const presetUrl = (patch: Partial<typeof DEFAULT_CONTROLS>) =>
-  `${LIVE}#${boardHash('#set=', { ...DEFAULT_CONTROLS, ...patch })}`
+const presetUrl = (p: PresetDef) =>
+  `${LIVE}#${boardHash('#set=', { ...DEFAULT_CONTROLS, ...p.patch })}${p.shelf ? `&shelf=${p.shelf.id}` : ''}`
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -497,7 +497,7 @@ names it still sets it. ${
 ${PRESETS.length} presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
-${PRESETS.map(p => `- [**${p.name}**](${presetUrl(p.patch)}) — ${p.blurb}`).join('\n')}
+${PRESETS.map(p => `- [**${p.name}**](${presetUrl(p)}) — ${p.blurb}`).join('\n')}
 
 ### Kit voices
 

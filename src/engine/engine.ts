@@ -480,9 +480,11 @@ export class Engine {
   /** What a roll off archive.org is doing, or null when it is not doing one. */
   readonly archiveStep = createStore<string | null>(null)
   /** Where the sample on the tape came from, so the panel can credit it. */
-  readonly archiveSource = createStore<{ id: string; title: string } | null>(
-    null,
-  )
+  readonly archiveSource = createStore<{
+    id: string
+    title: string
+    shelf: string | null
+  } | null>(null)
   // How far a morph has got, 0..1, or null when none is running. A store rather
   // than a value passed down because it moves at the frame rate: subscribed to
   // by the one button that draws it, so a 30s morph costs that button per frame
@@ -592,7 +594,7 @@ export class Engine {
     })
   }
 
-  async start() {
+  private booted() {
     this.booting ??= this.boot().then(
       () => this.fault.set(''),
       (e: unknown) => {
@@ -601,7 +603,11 @@ export class Engine {
         throw e
       },
     )
-    await this.booting
+    return this.booting
+  }
+
+  async start() {
+    await this.booted()
     await this.ctx?.resume()
     this.running.set(this.ctx?.state === 'running')
   }
@@ -1442,7 +1448,12 @@ export class Engine {
       `searching ${pool.label}…`,
       `nothing came back from ${pool.label}`,
       opts => roll({ ...opts, pool, rng: Math.random }),
+      pool.id,
     )
+  }
+
+  async fillFromShelf(pool: Pool) {
+    if (this.archiveSource.get()?.shelf !== pool.id) await this.rollSample(pool)
   }
 
   /** One item the archive search listed, onto the tape. */
@@ -1466,7 +1477,9 @@ export class Engine {
       signal: AbortSignal
       onStep: (m: string) => void
     }) => Promise<Rolled | null>,
+    shelf: string | null = null,
   ) {
+    if (!this.ctx) await this.booted().catch(noop)
     if (!this.ctx) return
     const ctl = this.claimTape()
     this.archiveStep.set(first)
@@ -1484,7 +1497,7 @@ export class Engine {
       }
       await this.decodeOnto(got.data, got.title, ctl.signal)
       if (ctl.signal.aborted) return
-      this.archiveSource.set({ id: got.id, title: got.title })
+      this.archiveSource.set({ id: got.id, title: got.title, shelf })
       this.archiveStep.set(null)
     } catch {
       if (!ctl.signal.aborted) this.archiveStep.set('that one would not decode')

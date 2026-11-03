@@ -24,6 +24,7 @@ import {
 } from '../../dsp/stages/toyDrum.ts'
 import { SUPPLY } from '../../dsp/supplies.ts'
 import { ANY_CHOICE } from '../../dsp/trigbus.ts'
+import { PIANO_78S } from '../../engine/archive.ts'
 import {
   MONO_SEQ_STEP_KEYS,
   parseLane,
@@ -32,11 +33,13 @@ import {
 } from '../../tune.ts'
 
 import type { Controls } from '../../controls.ts'
+import type { Pool } from '../../engine/archive.ts'
 
 export interface PresetDef {
   name: string
   blurb: string
   patch: Partial<Controls>
+  shelf?: Pool
 }
 
 const romMasks = (name: string) => DRUM_ROMS.find(r => r.name === name)!.masks
@@ -746,6 +749,69 @@ export const PRESETS: PresetDef[] = [
       four2Erase: 0,
       four3Erase: 0,
       four4Erase: 0,
+    },
+  },
+  {
+    name: 'ballroom at the end of time',
+    blurb:
+      'A piano 78 off archive.org loops one phrase a little slow, and the reel records it back over itself with the top end going each lap. Four loops that never erase pile it up behind, shedding oxide in the same places every pass',
+    shelf: PIANO_78S,
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      sampleLevel: 1,
+      sampleSpeed: 0.85,
+      loopIn: 0.3,
+      loopOut: 0.39,
+      loopRec: 0.35,
+      loopErase: 0.3,
+      loopWear: 0.55,
+      loopHiss: 0.35,
+      filtMode: 2,
+      filtHz: 120,
+      filtRes: 0.3,
+      filtMix: 1,
+      bendSlot0: 10,
+      rackMix: 0.4,
+      rackDecay: 0.9,
+      rackSize: 2,
+      rackWander: 0.6,
+      rackDamp: 0.6,
+      tapeMix: 0.7,
+      tapeSpeed: -1,
+      tapeHiss: 0.35,
+      tapeWow: 0.5,
+      tapePrint: 0.3,
+      tapeBump: 0,
+      fourLevel: 0.9,
+      fourWear: 0.55,
+      fourHiss: 0.45,
+      fourWow: 0.45,
+      fourFlutter: 0.25,
+      four1In: 1,
+      four2In: 1,
+      four3In: 1,
+      four4In: 1,
+      four1Rec: 0.5,
+      four2Rec: 0.5,
+      four3Rec: 0.5,
+      four4Rec: 0.5,
+      four1Erase: 0,
+      four2Erase: 0,
+      four3Erase: 0,
+      four4Erase: 0,
+      four1Low: -8,
+      four2Low: -8,
+      four3Low: -8,
+      four4Low: -8,
+      four1Len: 7.3,
+      four2Len: 11.9,
+      four3Len: 17.1,
+      four4Len: 23.7,
+      four1Pan: -0.6,
+      four2Pan: -0.2,
+      four3Pan: 0.2,
+      four4Pan: 0.6,
     },
   },
   {

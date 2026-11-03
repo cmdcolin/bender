@@ -126,6 +126,7 @@ export function PocketPage() {
     const from = engine.controls.get()
     const path = presetPath(def, from)
     engine.morphTo(path.at(from, 1), MORPH_S)
+    if (def.shelf) void engine.fillFromShelf(def.shelf)
     setNormal(false)
     setUp({ name, from, path, t: 1 })
   }

@@ -29,9 +29,17 @@
 
 /** A pool is a search, and a roll picks something out of it. */
 export interface Pool {
+  id: string
   label: string
   query: string
   blurb: string
+}
+
+export const PIANO_78S: Pool = {
+  id: 'piano78s',
+  label: 'piano 78s',
+  query: 'collection:78rpm AND subject:piano',
+  blurb: 'piano sides on shellac, crackle and all',
 }
 
 export const POOLS: readonly Pool[] = [
@@ -39,33 +47,41 @@ export const POOLS: readonly Pool[] = [
   // wow already on the recording before the board touches it, which is most of
   // the way to what the tape machine downstream is pretending to be.
   {
+    id: '78s',
     label: '78s',
     query: 'collection:78rpm',
     blurb: 'shellac transfers — crackle and wow already on them',
   },
+  PIANO_78S,
   // The Conet Project: 29 discs of shortwave numbers stations. Recorded off air,
   // so the carrier, the fading and the interference are all in there.
   {
+    id: 'numbers',
     label: 'numbers stations',
     query: 'collection:irdial',
     blurb: 'shortwave numbers stations, recorded off air',
   },
   {
+    id: 'radio',
     label: 'old-time radio',
     query: 'collection:oldtimeradio',
     blurb: 'broadcast voice, band-limited and compressed',
   },
   {
+    id: 'nasa',
     label: 'NASA audio',
     query: 'collection:nasaaudiocollection',
     blurb: 'comms chatter, squelch and countdowns',
   },
   {
+    id: 'spoken',
     label: 'spoken word',
     query: 'collection:audio_bookspoetry',
     blurb: 'readings and poetry',
   },
 ]
+
+export const poolById = (id: string) => POOLS.find(p => p.id === id)
 
 const SEARCH = 'https://archive.org/advancedsearch.php'
 const METADATA = 'https://archive.org/metadata/'

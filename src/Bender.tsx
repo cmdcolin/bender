@@ -3,7 +3,7 @@ import { exposeBenderApi } from './ui/agentApi.ts'
 import { App } from './ui/App.tsx'
 import { loadPhraseLock } from './ui/morph.ts'
 import { keepRunState } from './ui/runState.ts'
-import { boardFromLocation } from './ui/share.ts'
+import { boardFromLocation, shelfFromHash } from './ui/share.ts'
 import { startFresh } from './ui/starterBoard.ts'
 import './theme.css'
 
@@ -13,6 +13,9 @@ import './theme.css'
 // every reload of your own session broke into the demo song.
 const shared = boardFromLocation()
 if (shared) engine.patch(shared)
+
+const linkShelf = shelfFromHash(window.location.hash)
+if (linkShelf) void engine.fillFromShelf(linkShelf)
 
 // What a reload does put back is what this tab was running, which the link
 // never carried either way — see runState.

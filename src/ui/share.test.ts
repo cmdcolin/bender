@@ -3,6 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { ROCK } from '../drums.ts'
 import { romIndex } from '../dsp/stages/roms.ts'
+import { PIANO_78S } from '../engine/archive.ts'
 import { sliderFor } from './controls/index.ts'
 import {
   boardFrom,
@@ -10,6 +11,8 @@ import {
   boardHash,
   decodeControls,
   encodeControls,
+  sceneHash,
+  shelfFromHash,
 } from './share.ts'
 
 test('a board survives the round trip', () => {
@@ -264,4 +267,22 @@ test('a hash carrying both forms reads as the one it will keep writing', () => {
 test('a short link beats a board left in an older query', () => {
   const h = boardHash('', { ...DEFAULT_CONTROLS, filtRes: 1.2 })
   expect(boardFromUrl('?set=dlyFb:1.4', `#${h}`)).toEqual({ filtRes: 1.2 })
+})
+
+test('a scene link names the board and the shelf its tape comes off', () => {
+  const board = { ...DEFAULT_CONTROLS, filtRes: 1.2 }
+  const hash = `#${sceneHash(board, PIANO_78S)}`
+  expect(boardFromUrl('', hash)).toEqual({ filtRes: 1.2 })
+  expect(shelfFromHash(hash)).toBe(PIANO_78S)
+})
+
+test('an unknown shelf is no shelf', () => {
+  expect(shelfFromHash('#shelf=nowhere')).toBeUndefined()
+  expect(shelfFromHash('#p=jAF4')).toBeUndefined()
+})
+
+test('the board written back drops the shelf, so a reload rolls nothing', () => {
+  const board = { ...DEFAULT_CONTROLS, filtRes: 1.2 }
+  const hash = sceneHash(board, PIANO_78S)
+  expect(boardHash(hash, board)).not.toContain('shelf=')
 })

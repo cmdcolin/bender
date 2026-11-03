@@ -7,6 +7,7 @@ import {
 } from '../controls.ts'
 import { asKitSetting, asLen, asMask, LEN_KEYS, ROCK } from '../drums.ts'
 import { romIndex } from '../dsp/stages/roms.ts'
+import { poolById, type Pool } from '../engine/archive.ts'
 import {
   asLaneLen,
   asLaneValue,
@@ -50,6 +51,7 @@ const TUNE_KEYS = new Set<ControlKey>([
 
 const PARAM = 'set'
 const PACKED = 'p'
+const SHELF = 'shelf'
 
 // Where a board rode before the hash: for a while in the query string under the
 // same name, and before that in the hash under a shorter one. Read, never
@@ -151,6 +153,7 @@ export function boardHash(hash: string, c: Controls): string {
   // The board is written under one name, so no other form rides along beside
   // it saying something staler.
   q.delete(LEGACY_HASH_KEY)
+  q.delete(SHELF)
   q.delete(long ? PACKED : PARAM)
   q.delete(VERSION)
   const key = long ? PARAM : PACKED
@@ -222,6 +225,14 @@ export function boardUrl(c: Controls): string {
   const q = query.toString()
   return `${origin}${pathname}${q ? `?${q}` : ''}${hash ? `#${hash}` : ''}`
 }
+
+export const shelfFromHash = (hash: string) => {
+  const id = new URLSearchParams(hash.replace(/^#/, '')).get(SHELF)
+  return id === null ? undefined : poolById(id)
+}
+
+export const sceneHash = (c: Controls, shelf: Pool) =>
+  `${boardHash('', c)}&${SHELF}=${shelf.id}`
 
 export function boardFromLocation(): Partial<Controls> | null {
   return boardFromUrl(window.location.search, window.location.hash)
