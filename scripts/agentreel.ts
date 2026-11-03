@@ -4,6 +4,8 @@ import { serveDev } from './serve.ts'
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process'
 import {
   existsSync,
+  readdirSync,
+  readFileSync,
   mkdirSync,
   mkdtempSync,
   rmSync,
@@ -16,10 +18,11 @@ import { join, resolve } from 'node:path'
 // Records a real Claude session driving the real app in a real Chrome, with
 // the app's sound and both windows in frame.
 //
-// Usage: node scripts/agentreel.ts [--out=DIR] [--model=sonnet] [--task=FILE]
+// Usage: pnpm agentreel [--out=DIR] [--model=sonnet] [--task=FILE]
 //        [--seconds=N] [--display=:99] [--keep]
 //   needs Xvfb, xterm, xdotool, ffmpeg, pw-cli, pw-record, google-chrome and a
-//   logged-in `claude` on PATH.
+//   logged-in `claude` on PATH. pnpm runs it in a systemd scope with a high
+//   CPU weight, since other agents' builds starve Chrome and the grab.
 //
 // Xvfb is its own root window, so the grab holds only the two clients. Chrome
 // plays into a null PipeWire sink of its own, which keeps the rest of the
@@ -50,7 +53,7 @@ const WIDTH = 1920
 const HEIGHT = 1080
 const CHROME_W = 1300
 const TERM_W = WIDTH - CHROME_W
-const FPS = 24
+const FPS = 30
 
 const TASK = `This browser tab is bender, a circuit-bent synth with a scripting API on window.bender. Work only in that browser tab. Evaluate bender.help in the page first.
 
@@ -267,6 +270,71 @@ if (termId === undefined || termId === '') {
   xdo('windowmove', termId, String(CHROME_W), '0')
 }
 
+await page.send('Runtime.evaluate', {
+  expression: `window.__frameGaps = []; { let last = performance.now(); const tick = now => { window.__frameGaps.push(now - last); last = now; requestAnimationFrame(tick) }; requestAnimationFrame(tick) }`,
+})
+const procTicks = () => {
+  const byName = new Map<string, number>()
+  for (const pid of readdirSync('/proc').filter(d => /^\d+$/.test(d))) {
+    try {
+      const cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
+      const name = cmd.startsWith('Xvfb')
+        ? 'Xvfb'
+        : cmd.startsWith('ffmpeg') && cmd.includes(display)
+          ? 'ffmpeg'
+          : cmd.startsWith('xterm')
+            ? 'xterm'
+            : cmd.startsWith('claude') && cmd.includes(mcpConfig)
+              ? 'claude'
+              : cmd.includes(MCP)
+                ? 'mcp'
+                : cmd.includes(tmp)
+                  ? cmd.includes('--type=gpu')
+                    ? 'chrome-gpu'
+                    : cmd.includes('--type=renderer')
+                      ? 'chrome-renderer'
+                      : 'chrome-other'
+                  : ''
+      if (name !== '') {
+        const f = readFileSync(`/proc/${pid}/stat`, 'utf8')
+          .replace(/^.*\) /s, '')
+          .split(' ')
+        byName.set(
+          name,
+          (byName.get(name) ?? 0) + Number(f[11]) + Number(f[12]),
+        )
+      }
+    } catch {
+      // gone
+    }
+  }
+  return byName
+}
+let ticksBefore = procTicks()
+let probeAt = Date.now()
+const probe = async () => {
+  const gaps =
+    (
+      await page.send<{ result: { value?: number[] } }>('Runtime.evaluate', {
+        expression: `window.__frameGaps.splice(0)`,
+        returnByValue: true,
+      })
+    ).result.value ?? []
+  const sorted = gaps.toSorted((a, b) => a - b)
+  const ticks = procTicks()
+  const secs = (Date.now() - probeAt) / 1000
+  const cpu = [...ticks]
+    .map(
+      ([k, v]) => `${k} ${Math.round((v - (ticksBefore.get(k) ?? 0)) / secs)}%`,
+    )
+    .join(', ')
+  ticksBefore = ticks
+  probeAt = Date.now()
+  console.log(
+    `agentreel debug t=${Math.round((Date.now() - recStart) / 1000)}s raf ${(gaps.length / secs).toFixed(1)}fps p95 ${sorted[Math.floor(sorted.length * 0.95)]?.toFixed(0)}ms max ${sorted.at(-1)?.toFixed(0)}ms | load ${readFileSync('/proc/loadavg', 'utf8').split(' ')[0]} | ${cpu}`,
+  )
+}
+
 const sizeOf = () => (existsSync(termLog) ? statSync(termLog).size : 0)
 const deadline = Date.now() + capSecs * 1000
 let last = sizeOf()
@@ -274,6 +342,10 @@ let quietSince = Date.now()
 let landed = false
 while (Date.now() < deadline && !landed) {
   await sleep(2000)
+  if (Date.now() - probeAt > 5000)
+    await probe().catch((e: unknown) =>
+      console.log(`agentreel debug probe failed: ${String(e)}`),
+    )
   const now = sizeOf()
   if (now !== last) {
     last = now
@@ -302,6 +374,35 @@ const loud = spawnSync(
   },
 ).stderr.match(/(mean|max)_volume: (-?[\d.]+) dB/g)
 console.log(`agentreel: audio levels ${loud?.join(', ') ?? 'unreadable'}`)
+
+const frameTimes = spawnSync(
+  'ffprobe',
+  [
+    '-v',
+    'error',
+    '-select_streams',
+    'v',
+    '-show_entries',
+    'frame=pts_time',
+    '-of',
+    'csv=p=0',
+    grab,
+  ],
+  { encoding: 'utf8' },
+)
+  .stdout.split('\n')
+  .filter(line => line !== '')
+  .map(Number)
+const lostFrames = frameTimes
+  .slice(1)
+  .map((t, i) => Math.round((t - (frameTimes[i] ?? t)) * FPS) - 1)
+  .filter(lost => lost > 0)
+const lostTotal = lostFrames.reduce((a, b) => a + b, 0)
+console.log(
+  lostTotal === 0
+    ? `agentreel: the grab kept all ${frameTimes.length} frames`
+    : `agentreel: the grab lost ${lostTotal} of ${frameTimes.length + lostTotal} frames in ${lostFrames.length} gaps, the longest ${Math.max(...lostFrames)}; a busy machine makes a choppy take`,
+)
 
 console.log('agentreel: encoding')
 const encode = spawnSync('ffmpeg', [
