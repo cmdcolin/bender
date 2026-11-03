@@ -1776,10 +1776,10 @@ the board waits until you press play.
 - [**the loops wear through**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.45,fourLevel:0.8,fourWow:0.5,fourWear:0.6,four1In:1,four1Rec:0.25,four1Erase:0,four2In:1,four2Rec:0.25,four2Erase:0,four3In:1,four3Rec:0.25,four3Erase:0,four4In:1,four4Rec:0.25,four4Erase:0,bits:9,srHz:11000,crushMix:0.35,combHz:220,combFb:0.8,combMix:0.25)
   — Four loops never erase and pile the bent board onto oxide that is coming
   away in patches, the same patches every lap
-- [**ballroom at the end of time**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,sampleLevel:1,sampleSpeed:0.85,loopRec:0.35,loopErase:0.3,loopWear:0.55,loopHiss:0.35,loopIn:0.3,loopOut:0.39,fourLevel:0.9,fourHiss:0.45,fourWow:0.45,fourWear:0.55,four1In:1,four1Low:-8,four1Rec:0.5,four1Erase:0,four1Len:7.3,four2In:1,four2Low:-8,four2Rec:0.5,four2Erase:0,four2Len:11.9,four3In:1,four3Low:-8,four3Rec:0.5,four3Erase:0,four3Len:17.1,four4In:1,four4Low:-8,four4Rec:0.5,four4Erase:0,four4Len:23.7,bendSlot0:10,filtHz:120,filtRes:0.3,filtMode:2,filtMix:1,rackDecay:0.9,rackSize:2,rackDamp:0.6,rackWander:0.6,rackMix:0.4,tapeMix:0.7,tapeSpeed:-1,tapeWow:0.5,tapePrint:0.3,tapeBump:0&shelf=piano78s)
-  — A piano 78 off archive.org loops one phrase a little slow, and the reel
-  records it back over itself with the top end going each lap. Four loops that
-  never erase pile it up behind, shedding oxide in the same places every pass
+- [**ballroom at the end of time**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,sampleLevel:1,sampleSpeed:0.85,loopIn:0.3,loopOut:0.39,fourLevel:0.7,fourHiss:0.45,fourWow:0.45,fourWear:0.55,four1In:1,four1Low:-8,four1Rec:0.35,four1Erase:0,four1Len:7.3,four2In:1,four2Low:-8,four2Rec:0.35,four2Erase:0,four2Len:11.9,four3In:1,four3Low:-8,four3Rec:0.35,four3Erase:0,four3Len:17.1,four4In:1,four4Low:-8,four4Rec:0.35,four4Erase:0,four4Len:23.7,bendSlot0:10,filtHz:120,filtRes:0.3,filtMode:2,filtMix:1,rackDecay:0.9,rackSize:2,rackDamp:0.6,rackWander:0.6,rackMix:0.4,modLfoHz:0.02,modLfoShape:5,mod0Src:1,mod0Dest:23,mod0Depth:0.3,tapeMix:0.7,tapeSpeed:-1,tapeWow:0.5,tapePrint:0.3,tapeBump:0&shelf=piano78s)
+  — A piano 78 off archive.org loops one phrase a little slow, and the loop
+  wanders through the side. Four loops that never erase pile it up behind,
+  shedding oxide in the same places every pass
 - [**nothing plugged in**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fourLevel:0.25,fourAux:1.1,four1In:3,four1MidHz:900,four1Mid:12,four1Send:0.9,four1Pan:-0.5,four1Fader:0.8,four2In:3,four2Low:-10,four2MidHz:2600,four2Mid:10,four2Send:0.7,four2Pan:0.5,four2Fader:0.6)
   — Two channels of the four-track are on the desk’s aux return, each boosted at
   a different mid, and the no-input desk squeals on its op-amp rails
