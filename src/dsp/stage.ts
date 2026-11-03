@@ -8,7 +8,8 @@ export interface StereoBlock {
 }
 
 // Shared buses a stage may read beyond its own params. mic is the leveled mono
-// input for this block; micPatch (in params) decides which stage consumes it.
+// input for this block as the first mic wire carries it, mic2 as the second
+// does; micInto says which of them a jack hears.
 // fb is last block's feedback-bus output; fbDest decides where it lands.
 //
 // The supply buses model one wall-wart feeding the whole board: railV and sag
@@ -18,6 +19,7 @@ export interface StereoBlock {
 export interface Ctx {
   sr: number
   mic: Float32Array
+  mic2: Float32Array
   fb: Float32Array
   railV: Float32Array
   sag: Float32Array

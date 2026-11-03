@@ -25,6 +25,7 @@ const adc = (name: string) => CRUSH_ADC.indexOf(name)
 const blank = (): Ctx => ({
   sr: SR,
   mic: new Float32Array(BLOCK),
+  mic2: new Float32Array(BLOCK),
   fb: new Float32Array(BLOCK),
   railV: new Float32Array(BLOCK).fill(1),
   sag: new Float32Array(BLOCK),

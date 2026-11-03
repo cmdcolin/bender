@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { Crossings } from '../util/crossings.ts'
 import { octaves, wrap1 } from '../util/pitch.ts'
@@ -81,9 +81,8 @@ export class ChaosOsc implements Stage {
     const baseStarve = p[IDX.oscStarve]!
     const modStarve = ctx.mod.read(DEST.oscStarve)
     const modHz = ctx.mod.read(DEST.oscHz)
-    const micJack = Math.round(p[IDX.micPatch]!)
-    const micFm = micJack === MIC.oscFm
-    const micSync = micJack === MIC.oscSync
+    const micFm = micInto(p, ctx, MIC.oscFm)
+    const micSync = micInto(p, ctx, MIC.oscSync)
     const fbFm = ctx.fbDest === 1
 
     for (let i = 0; i < io.n; i++) {
@@ -105,11 +104,11 @@ export class ChaosOsc implements Stage {
         // gets and the same kind of thing to be turning.
         const base = modHz ? aHz * octaves(modHz[i]! * 4) : aHz
         let hz = base * pitchF + xmod * b
-        if (micFm) hz += ctx.mic[i]! * 1500
+        if (micFm) hz += micFm[i]! * 1500
         if (fbFm) hz += ctx.fb[i]! * 1800
         hz = Math.min(Math.max(hz, 0), this.sr * 0.45)
         this.phaseA = wrap1(this.phaseA + hz / this.sr)
-        if (micSync && this.micEdges.rise(ctx.mic[i]!)) this.phaseA = 0
+        if (micSync && this.micEdges.rise(micSync[i]!)) this.phaseA = 0
         const amp = Math.min(Math.max((this.rail - 0.12) / 0.6, 0), 1)
         out = shape(this.phaseA, mode) * amp
       }

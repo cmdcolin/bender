@@ -1,6 +1,6 @@
 import { EVENT } from '../drums.ts'
 import { IDX } from '../engine/params.ts'
-import { MIC } from './micJacks.ts'
+import { MIC, micInto } from './micJacks.ts'
 import { DEST } from './modbus.ts'
 import { eventOn } from './stages/stepFaults.ts'
 import { PARTS, ToyRail, type Parts } from './toyRail.ts'
@@ -53,7 +53,7 @@ export class Supplies {
   private ctx: Ctx | null = null
   private starve = 0
   private starveLane: Float32Array | null = null
-  private micToRail = false
+  private micToRail: Float32Array | null = null
   private fbToRail = false
   private couple = 0
   private clipHz = 0
@@ -106,7 +106,7 @@ export class Supplies {
     this.shared.setParts(parts)
     this.starve = p[IDX.chipStarve]!
     this.starveLane = ctx.mod.read(DEST.starve)
-    this.micToRail = Math.round(p[IDX.micPatch]!) === MIC.toyRail
+    this.micToRail = micInto(p, ctx, MIC.toyRail)
     this.fbToRail = ctx.fbDest === 2
     this.couple = p[IDX.couple]!
     this.clipHz = p[IDX.chipClipHz]!
@@ -156,7 +156,7 @@ export class Supplies {
       const lane = this.starveLane
       const starve = lane ? clamp01(this.starve + lane[i]!) : this.starve
       const extra =
-        (this.micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) +
+        (this.micToRail ? Math.abs(this.micToRail[i]!) * 2 : 0) +
         (this.fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0) +
         this.couple * Math.max(ctx.bright[i]!, 0) * 0.5
       rail.tick(load, starve, extra, this.clipHz, this.clipClock)

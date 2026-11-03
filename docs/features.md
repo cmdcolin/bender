@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-634 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
+637 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 158
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -749,21 +749,26 @@ the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus,
 the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s
 carrier, a trigger line, Spool’s capstan motor, Growler’s external input or
 Glint’s data bus. _mic into_ on the bench bar and the mic cap on each machine
-list the jacks with what a voice does at each. _Delay_ puts a delay line between
-the mic and the jack, so the jack hears you late, and _Repeats_ sends it round
-again. With the mic on the board, its face on the bench holds the switch that
-opens it, its level and the delay.
+list the jacks with what a voice does at each. _Second jack_ solders a second
+wire off the mic, so one voice drives two machines. _Delay_ puts a delay line
+between the mic and its jacks, so a jack hears you late, _Repeats_ sends it
+round again, _Delay on_ puts it on one wire only, and _Freeze_ holds what is in
+it and plays it round and round. With the mic on the board, its face on the
+bench holds the switch that opens it, its level, the delay and the freeze.
 
 <details>
-<summary>5 controls</summary>
+<summary>8 controls</summary>
 
-| control    | range                               | what it does                                                                                   |
-| ---------- | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Mic        | 0 to 4, normal 0 to 1               | Microphone gain into the patch point                                                           |
-| Mic patch  | 16 of them, mix through clip bypass | Where the mic wire is soldered                                                                 |
-| Delay      | off to 2.00 s                       | A delay line between the mic and its jack                                                      |
-| Repeats    | off to full                         | How much of the delay’s output goes back into it, so one clap reaches the jack again and again |
-| Delay sync | seconds or kit steps                | Whether the delay runs as set in seconds or snaps to Clatter’s steps                           |
+| control     | range                               | what it does                                                                                                                                 |
+| ----------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mic         | 0 to 4, normal 0 to 1               | Microphone gain into the patch point                                                                                                         |
+| Mic patch   | 16 of them, mix through clip bypass | Where the mic wire is soldered                                                                                                               |
+| Delay       | off to 2.00 s                       | A delay line between the mic and its jack                                                                                                    |
+| Repeats     | off to full                         | How much of the delay’s output goes back into it, so one clap reaches the jack again and again                                               |
+| Delay sync  | seconds or kit steps                | Whether the delay runs as set in seconds or snaps to Clatter’s steps                                                                         |
+| Freeze      | off or on                           | Stops the delay taking in the mic and plays what it holds round and round, so the last clap or word keeps reaching the jack until you let go |
+| Second jack | 17 of them, off through clip bypass | A second wire off the mic, soldered to another jack, so one voice drives two machines                                                        |
+| Delay on    | both wires, first wire, second wire | Which wire the delay sits on                                                                                                                 |
 
 </details>
 

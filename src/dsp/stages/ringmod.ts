@@ -1,5 +1,5 @@
 import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { KEY_BIAS } from '../trigbus.ts'
 import { DelayLine } from '../util/delayline.ts'
@@ -197,7 +197,7 @@ export class RingMod implements Stage {
     const stepK = TRACK_STEP[track] ?? 0
     const baseMix = p[IDX.ringMix]!
     const mixMod = ctx.mod.read(DEST.ringMix)
-    const micCarrier = Math.round(p[IDX.micPatch]!) === MIC.ringCarrier
+    const micCarrier = micInto(p, ctx, MIC.ringCarrier)
     // The mic keeps precedence: a shout patched onto the carrier is a wire
     // somebody put there by hand, and this is a choice off a list.
     const from = Math.round(p[IDX.ringFrom]!)
@@ -244,7 +244,7 @@ export class RingMod implements Stage {
       let carL: number
       let carR: number
       if (micCarrier) {
-        carL = carR = Math.min(Math.max(ctx.mic[i]! * 2, -1), 1)
+        carL = carR = Math.min(Math.max(micCarrier[i]! * 2, -1), 1)
       } else if (shape === CHOP) {
         if (mod && (i & RATE_MASK) === 0) {
           this.chopModScale = octaves(mod[i]! * 4)

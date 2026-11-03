@@ -5,3 +5,9 @@
   color: var(--ink);
   opacity: 0.8;
 }
+
+.freezeOn {
+  composes: more from './Pedals.module.css';
+  color: #1d2027;
+  background: var(--ink);
+}

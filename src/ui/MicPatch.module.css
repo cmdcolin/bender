@@ -1,3 +1,18 @@
+.wires {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xs);
+  margin: var(--space-xs) 0;
+}
+
+.wire {
+  composes: chipQuiet square from './button.module.css';
+}
+
+.wireOn {
+  composes: chipOn square from './button.module.css';
+}
+
 .caption {
   max-width: 274px;
   margin: 0 auto var(--space-md);

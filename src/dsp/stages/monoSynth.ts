@@ -1,6 +1,6 @@
 import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
@@ -165,9 +165,8 @@ export class MonoSynth implements Stage {
     )
     v.choke = withLane(p[IDX.monoChoke]!, ctx.mod.read(DEST.monoChoke))
     v.regTrip = withLane(p[IDX.monoRegTrip]!, ctx.mod.read(DEST.monoRegTrip))
-    const micIn = Math.round(p[IDX.micPatch]!) === MIC.growlerIn
-    v.ext = micIn ? MIC_IN_GAIN : 0
-    this.ext = micIn ? ctx.mic : null
+    this.ext = micInto(p, ctx, MIC.growlerIn)
+    v.ext = this.ext ? MIC_IN_GAIN : 0
   }
 
   private strike(

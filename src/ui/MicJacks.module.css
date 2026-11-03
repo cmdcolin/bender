@@ -37,6 +37,24 @@
   color: var(--fg4);
 }
 
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.also {
+  composes: chipQuiet from './button.module.css';
+  flex: none;
+  margin-right: var(--space-sm);
+}
+
+.alsoOn {
+  composes: chipOn from './button.module.css';
+  flex: none;
+  margin-right: var(--space-sm);
+}
+
 .item {
   display: flex;
   flex-direction: column;

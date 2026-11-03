@@ -7,11 +7,7 @@ import { bench, INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
 import { onBoard } from './chain-map.ts'
-import {
-  useBoardValue,
-  useControlValue,
-  useStoreValue,
-} from './ControlsContext.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
 import { EffectShelf } from './EffectShelf.tsx'
 import { Faceplate } from './Faceplate.tsx'
@@ -23,6 +19,7 @@ import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MicFace } from './MicFace.tsx'
 import { MicMenu } from './MicJacks.tsx'
+import { wireOn } from './micWiring.ts'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal } from './Pedals.tsx'
@@ -106,10 +103,11 @@ export function Instruments({
     if (risen) add(risen.split('|'))
   }, [risen])
   const micOn = useStoreValue(engine.micOn)
-  const micJack = Math.round(useControlValue('micPatch'))
+  const micOnTape = useBoardValue(
+    c => wireOn(c, MIC.mix) > 0 || wireOn(c, MIC.tapeMotor) > 0,
+  )
   const over = useStoreValue(dragging)
-  const tapeHeld =
-    (micOn && (micJack === MIC.mix || micJack === MIC.tapeMotor)) || over
+  const tapeHeld = (micOn && micOnTape) || over
   const face = (stage: string) =>
     shows(stage) || (stage === 'Spool' && tapeHeld)
 

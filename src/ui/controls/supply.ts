@@ -2,6 +2,7 @@ import { asEvent, EVENT, EVENT_KEYS } from '../../drums.ts'
 import { MIC } from '../../dsp/micJacks.ts'
 import { DEST } from '../../dsp/modbus.ts'
 import { SUPPLY, SUPPLY_KEYS, SUPPLY_NAMES } from '../../dsp/supplies.ts'
+import { wireOn } from '../micWiring.ts'
 
 import type { ControlKey, Controls } from '../../controls.ts'
 import type { Group, SliderDef } from './types.ts'
@@ -57,7 +58,7 @@ const RAIL_LOADS: readonly RailLoad[] = [
   {
     name: 'the mic on the rail',
     keys: ['micLevel'],
-    on: c => c.micLevel > 0 && Math.round(c.micPatch) === MIC.toyRail,
+    on: c => c.micLevel > 0 && wireOn(c, MIC.toyRail) > 0,
   },
   {
     name: 'the feedback bus',

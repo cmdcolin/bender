@@ -286,6 +286,7 @@ test('a head that clogs again starts from clean filters', () => {
   const ctx: Ctx = {
     sr: SR,
     mic: zeros(),
+    mic2: zeros(),
     fb: zeros(),
     railV: zeros().fill(1),
     sag: zeros(),

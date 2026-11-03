@@ -1,6 +1,6 @@
 import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
 import { DEAD_V } from '../toyRail.ts'
 import { clamp01 } from '../util/clamp.ts'
@@ -243,7 +243,7 @@ export class Crusher implements Stage {
       p[IDX.crushLogic]! >= 0.5 ||
       p[IDX.crushLadder]! > 0 ||
       bay.read(DEST.crushLadder) !== null ||
-      Math.round(p[IDX.micPatch]!) === MIC.crushClock
+      micInto(p, ctx, MIC.crushClock) !== null
     if (deep) this.circuit(io, p, ctx, line)
     else this.stock(io, p, ctx)
   }
@@ -294,7 +294,7 @@ export class Crusher implements Stage {
     const mix = p[IDX.crushMix]!
     const adc = Math.round(p[IDX.crushAdc]!)
     const rc = Math.round(p[IDX.crushClock]!) === CLOCK_RC
-    const micClock = Math.round(p[IDX.micPatch]!) === MIC.crushClock
+    const micClock = micInto(p, ctx, MIC.crushClock)
     const ref = Math.round(p[IDX.crushRef]!)
     const logic = Math.round(p[IDX.crushLogic]!)
     const fault = hop(
@@ -336,7 +336,7 @@ export class Crusher implements Stage {
       let latchL = false
       let latchR = false
       if (micClock) {
-        const m = ctx.mic[i]!
+        const m = micClock[i]!
         if (!this.micHigh && m > MIC_HYST) {
           this.micHigh = true
           latchL = latchR = true

@@ -7,8 +7,8 @@ import {
   TAP_MIC,
 } from '../engine/params.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
-import { MIC } from './micJacks.ts'
-import { MicLine } from './micLine.ts'
+import { MIC, micInto } from './micJacks.ts'
+import { DELAY_ON_FIRST, DELAY_ON_SECOND, MicLine } from './micLine.ts'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
 import {
   BLOCK,
@@ -268,6 +268,8 @@ export class Chain {
     this.ctx.trig.keyGate(semitone, down)
   }
   private readonly micLine: MicLine
+  private readonly micDry = new Float32Array(BLOCK)
+  private readonly micLate = new Float32Array(BLOCK)
   private readonly fbRetL = new Float32Array(BLOCK)
   private readonly fbRetR = new Float32Array(BLOCK)
   private readonly dcL = new DcBlocker()
@@ -397,6 +399,7 @@ export class Chain {
     this.ctx = {
       sr,
       mic: new Float32Array(BLOCK),
+      mic2: new Float32Array(BLOCK),
       fb: new Float32Array(BLOCK),
       railV: new Float32Array(BLOCK).fill(1),
       sag: new Float32Array(BLOCK),
@@ -496,10 +499,11 @@ export class Chain {
     this.blockFaults = 0
 
     const micLevel = p[IDX.micLevel]!
+    const dry = this.micDry
     let micPeak = 0
     for (let i = 0; i < n; i++) {
       const v = micLevel * (mic?.[i] ?? 0)
-      ctx.mic[i] = v
+      dry[i] = v
       const a = v < 0 ? -v : v
       if (a > micPeak) micPeak = a
     }
@@ -507,12 +511,17 @@ export class Chain {
     const kitHz =
       ctx.trig.kitStepHz > 0 ? ctx.trig.kitStepHz : p[IDX.drumBpm]! / 15
     this.micLine.process(
-      ctx.mic,
+      dry,
+      this.micLate,
       n,
       p[IDX.micDelay]!,
       p[IDX.micRepeats]!,
       Math.round(p[IDX.micDelaySync]!) === 1 ? 1 / kitHz : 0,
+      p[IDX.micFreeze]! >= 0.5,
     )
+    const delayOn = Math.round(p[IDX.micDelayOn]!)
+    ctx.mic.set(delayOn === DELAY_ON_SECOND ? dry : this.micLate)
+    ctx.mic2.set(delayOn === DELAY_ON_FIRST ? dry : this.micLate)
 
     // Supply droop and the mod lanes are built from last block's buses, then
     // the supplies are handed back to whoever owns them at their stock values.
@@ -550,10 +559,11 @@ export class Chain {
         io.r[i] = this.fbRetR[i]!
       }
     }
-    if (Math.round(p[IDX.micPatch]!) === MIC.mix) {
+    const micMix = micInto(p, ctx, MIC.mix)
+    if (micMix) {
       for (let i = 0; i < n; i++) {
-        io.l[i]! += ctx.mic[i]!
-        io.r[i]! += ctx.mic[i]!
+        io.l[i]! += micMix[i]!
+        io.r[i]! += micMix[i]!
       }
     }
 

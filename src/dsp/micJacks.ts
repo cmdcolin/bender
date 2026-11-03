@@ -1,3 +1,7 @@
+import { IDX } from '../engine/params.ts'
+
+import type { Ctx } from './stage.ts'
+
 // Where the mic wire can be soldered, by the micPatch value that picks it.
 // Saved boards store the number, so new jacks go on the end.
 export const MIC = {
@@ -18,3 +22,20 @@ export const MIC = {
   crushClock: 14,
   clipBypass: 15,
 } as const
+
+/** micPatch2 counts from "off", so its jack is one less than its value. */
+export const secondJack = (p: Float32Array) => Math.round(p[IDX.micPatch2]!) - 1
+
+/** The mic as the jack hears it: the first wire's signal, the second's, or
+    null with no wire on the jack. The first wire wins a jack both are on. */
+export function micInto(
+  p: Float32Array,
+  ctx: Pick<Ctx, 'mic' | 'mic2'>,
+  jack: number,
+) {
+  return Math.round(p[IDX.micPatch]!) === jack
+    ? ctx.mic
+    : secondJack(p) === jack
+      ? ctx.mic2
+      : null
+}

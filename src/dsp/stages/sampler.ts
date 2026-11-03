@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
 import { coef, Follower, Transient } from '../util/follower.ts'
@@ -324,7 +324,7 @@ export class Sampler implements Stage {
     const n = buf.length
     const level = p[IDX.sampleLevel]!
     const speed = p[IDX.sampleSpeed]!
-    const motor = Math.round(p[IDX.micPatch]!) === MIC.tapeMotor
+    const motor = micInto(p, ctx, MIC.tapeMotor)
     const trig = Math.round(p[IDX.sampleTrig]!)
     const oneShot = Math.round(p[IDX.sampleMode]!) === 1
     const erase = p[IDX.loopErase]!
@@ -435,7 +435,7 @@ export class Sampler implements Stage {
       let step = modSpeed ? speed * octaves(modSpeed[i]! * 2) : speed
       if (motor)
         step *= Math.min(
-          this.motor.process(ctx.mic[i]!, this.motorAttack, this.motorRelease) *
+          this.motor.process(motor[i]!, this.motorAttack, this.motorRelease) *
             MOTOR_GAIN,
           MOTOR_TOP,
         )

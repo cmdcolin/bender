@@ -5,7 +5,7 @@ import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { Menu } from './Menu.tsx'
 import styles from './MicJacks.module.css'
 import { JACKS_BY_STAGE, jacksOn, MIC_JACKS } from './micWiring.ts'
-import { plugMic } from './plugMic.ts'
+import { plugMic, plugSecond, unplugSecond } from './plugMic.ts'
 import { Tip } from './Tip.tsx'
 
 const MIC_GLYPH = (
@@ -27,11 +27,21 @@ const orList = (words: string[]) =>
     ? words.join('')
     : `${words.slice(0, -1).join(', ')} or ${words.at(-1)!}`
 
-function useLiveJack(): number {
+interface Live {
+  first: number
+  second: number
+}
+
+function useLive(): Live {
   const on = useStoreValue(engine.micOn)
-  const jack = Math.round(useControlValue('micPatch'))
+  const first = Math.round(useControlValue('micPatch'))
+  const second = Math.round(useControlValue('micPatch2')) - 1
   const level = useControlValue('micLevel')
-  return on && level > 0 ? jack : -1
+  const live = on && level > 0
+  return {
+    first: live ? first : -1,
+    second: live && second !== first ? second : -1,
+  }
 }
 
 function Jack({
@@ -40,28 +50,58 @@ function Jack({
   onPick,
 }: {
   jack: number
-  live: number
+  live: Live
   onPick: () => void
 }) {
   const { part, says } = MIC_JACKS[jack]!
-  const on = jack === live
+  const first = jack === live.first
+  const second = jack === live.second
   return (
-    <button
-      role="menuitem"
-      className={on ? styles.itemOn : styles.item}
-      aria-label={`solder the mic to ${where(jack)}`}
-      aria-current={on || undefined}
-      onClick={() => {
-        onPick()
-        plugMic(jack)
-      }}
-    >
-      <span className={styles.part}>
-        {part}
-        {on && <span className={styles.live}>plugged in</span>}
-      </span>
-      <span className={styles.says}>{says}</span>
-    </button>
+    <div className={styles.row}>
+      <button
+        role="menuitem"
+        className={first || second ? styles.itemOn : styles.item}
+        aria-label={`solder the mic to ${where(jack)}`}
+        aria-current={first || second || undefined}
+        onClick={() => {
+          onPick()
+          plugMic(jack)
+        }}
+      >
+        <span className={styles.part}>
+          {part}
+          {first && <span className={styles.live}>plugged in</span>}
+          {second && <span className={styles.live}>second wire</span>}
+        </span>
+        <span className={styles.says}>{says}</span>
+      </button>
+      {live.first >= 0 && !first && (
+        <Tip
+          text={
+            second
+              ? `Takes the second wire off ${where(jack)}.`
+              : `Solders a second wire to ${where(jack)}, so the mic drives it as well as ${where(live.first)}.`
+          }
+        >
+          <button
+            role="menuitem"
+            className={second ? styles.alsoOn : styles.also}
+            aria-label={
+              second
+                ? `unplug the second wire from ${where(jack)}`
+                : `solder the second wire to ${where(jack)}`
+            }
+            onClick={() => {
+              onPick()
+              if (second) unplugSecond()
+              else plugSecond(jack)
+            }}
+          >
+            {second ? '− 2nd' : '+ 2nd'}
+          </button>
+        </Tip>
+      )}
+    </div>
   )
 }
 
@@ -97,18 +137,19 @@ function Foot({ live, onPick }: { live: number; onPick: () => void }) {
     of them, and pressed it lists them with what a voice does at each. */
 export function MicCap({ stage }: { stage: string }) {
   const jacks = jacksOn(stage)
-  const live = useLiveJack()
+  const live = useLive()
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const close = () => setOpen(false)
   if (jacks.length === 0) return null
-  const here = jacks.includes(live)
+  const heard = [live.first, live.second].filter(j => jacks.includes(j))
+  const here = heard.length > 0
   return (
     <>
       <Tip
         text={
           here
-            ? `The mic is in ${where(live)}. Press for the other jacks or to close the mic.`
+            ? `The mic is in ${orList(heard.map(where))}. Press for the other jacks or to close the mic.`
             : `Plug the mic into ${stage}’s ${orList(jacks.map(j => MIC_JACKS[j]!.part))}.`
         }
       >
@@ -133,7 +174,7 @@ export function MicCap({ stage }: { stage: string }) {
           {jacks.map(j => (
             <Jack key={j} jack={j} live={live} onPick={close} />
           ))}
-          <Foot live={here ? live : -1} onPick={close} />
+          <Foot live={here ? live.first : -1} onPick={close} />
         </Menu>
       )}
     </>
@@ -143,7 +184,7 @@ export function MicCap({ stage }: { stage: string }) {
 /** The bench bar's list of every mic jack on the board, under the machine it
     sits on. */
 export function MicMenu({ className }: { className?: string }) {
-  const live = useLiveJack()
+  const live = useLive()
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const close = () => setOpen(false)
@@ -180,7 +221,7 @@ export function MicMenu({ className }: { className?: string }) {
               </div>
             ))}
           </div>
-          <Foot live={live} onPick={close} />
+          <Foot live={live.first} onPick={close} />
         </Menu>
       )}
     </>

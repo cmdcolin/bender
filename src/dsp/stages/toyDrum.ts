@@ -24,7 +24,7 @@ import {
 } from '../../drums.ts'
 import { IDX, packParams } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop, ModBus } from '../modbus.ts'
 import { BLOCK, GLINT_REGS } from '../stage.ts'
 import { Supplies, SupplyTap } from '../supplies.ts'
@@ -1341,7 +1341,7 @@ export class ToyDrum implements Stage {
     const baseRetrig = p[IDX.drumRetrigHz]!
     const ramp = Math.min(Math.max(p[IDX.drumRatchetRamp]!, -1), 1)
     const mod = ctx.mod.read(DEST.retrig)
-    const micTrig = Math.round(p[IDX.micPatch]!) === MIC.drumTrig
+    const micTrig = micInto(p, ctx, MIC.drumTrig)
     const keyTrig = Math.round(p[IDX.trigToDrum]!)
     const cross = Math.round(p[IDX.drumCross]!)
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
@@ -1670,7 +1670,7 @@ export class ToyDrum implements Stage {
         }
       }
       // mic soldered onto the trigger line: clap at it and the kit fires
-      if (micTrig && this.micTrig.process(ctx.mic[i]!, 0.05)) {
+      if (micTrig && this.micTrig.process(micTrig[i]!, 0.05)) {
         this.fire(p, ctx, i, true)
       }
       // The keyboard's gate, reaching across: every note the chip strikes hits
@@ -2307,6 +2307,7 @@ function cutRom(): DrumSlabs {
   const ctx: Ctx = {
     sr,
     mic: new Float32Array(BLOCK),
+    mic2: new Float32Array(BLOCK),
     fb: new Float32Array(BLOCK),
     railV: new Float32Array(BLOCK).fill(1),
     sag: new Float32Array(BLOCK),

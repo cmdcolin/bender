@@ -13,7 +13,7 @@ import {
 } from '../../drums.ts'
 import { crossNames, FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
 import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
-import { MIC_DELAY_MAX_S } from '../../dsp/micLine.ts'
+import { MIC_DELAY_MAX_S, MIC_DELAY_ON } from '../../dsp/micLine.ts'
 import { FM_EFFECT_NAMES, FM_SFX_PICKS } from '../../dsp/stages/fmEffects.ts'
 import {
   fallSecs,
@@ -3593,6 +3593,37 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: ['seconds', 'kit steps'],
         help: 'Whether the delay runs as set in seconds or snaps to Clatter’s steps. Kit steps rounds it to the nearest whole number of Clatter’s steps at the tempo the kit is running at, so a clap comes back on the grid.',
+      },
+      {
+        key: 'micFreeze',
+        label: 'Freeze',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['off', 'on'],
+        help: 'Stops the delay taking in the mic and plays what it holds round and round, so the last clap or word keeps reaching the jack until you let go. Turning Delay while frozen stretches the loop and bends its pitch. Only while Delay is up.',
+      },
+      {
+        key: 'micPatch2',
+        label: 'Second jack',
+        min: 0,
+        max: MIC_JACKS.length,
+        step: 1,
+        unit: '',
+        choices: ['off', ...MIC_JACKS.map(j => j.name)],
+        help: 'A second wire off the mic, soldered to another jack, so one voice drives two machines. On the jack the first wire is on, it adds nothing.',
+      },
+      {
+        key: 'micDelayOn',
+        label: 'Delay on',
+        min: 0,
+        max: MIC_DELAY_ON.length - 1,
+        step: 1,
+        unit: '',
+        choices: MIC_DELAY_ON,
+        needs: c => c.micPatch2 > 0,
+        help: 'Which wire the delay sits on. With it on one wire only, the other jack hears you as you make the sound and this one hears you late, so the two machines answer each other.',
       },
     ],
   },

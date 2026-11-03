@@ -12,13 +12,23 @@ function run(
   repeats: number,
   stepS = 0,
   input = (_at: number) => 0,
+  frozenFrom = Infinity,
 ) {
   const heard: number[] = []
-  const block = new Float32Array(BLOCK)
+  const dry = new Float32Array(BLOCK)
+  const late = new Float32Array(BLOCK)
   for (let b = 0; b < blocks; b++) {
-    for (let i = 0; i < BLOCK; i++) block[i] = input(b * BLOCK + i)
-    line.process(block, BLOCK, seconds, repeats, stepS)
-    heard.push(...block)
+    for (let i = 0; i < BLOCK; i++) dry[i] = input(b * BLOCK + i)
+    line.process(
+      dry,
+      late,
+      BLOCK,
+      seconds,
+      repeats,
+      stepS,
+      b * BLOCK >= frozenFrom,
+    )
+    heard.push(...late)
   }
   return heard
 }
@@ -64,6 +74,16 @@ describe('mic delay line', () => {
     expect(micDelaySeconds(0.01, 0.125)).toBe(0.125)
     expect(micDelaySeconds(0.3, 0)).toBe(0.3)
     expect(micDelaySeconds(5, 0.125)).toBe(2)
+  })
+
+  test('frozen, the line keeps playing what it holds and takes nothing new', () => {
+    const second = CLAP + 0.6 * SR
+    const input = (at: number) => (at === CLAP || at === second ? 1 : 0)
+    const frozenFrom = CLAP + 0.1 * SR
+    const heard = run(new MicLine(SR), 1200, 0.25, 0, 0, input, frozenFrom)
+    for (const lap of [1, 2, 3, 4])
+      expect(Math.abs(heard[CLAP + lap * 0.25 * SR]!)).toBeGreaterThan(0.9)
+    expect(Math.abs(heard[second + 0.25 * SR]!)).toBeLessThan(0.01)
   })
 
   test('full repeats stay bounded', () => {

@@ -41,6 +41,25 @@ export function plugMic(jack: number) {
   listen()
 }
 
+/** Solders the mic's second wire to a jack, opens the mic, and wakes the
+    stage the jack sits on. One undo step. */
+export function plugSecond(jack: number) {
+  const { stage } = MIC_JACKS[jack]!
+  engine.armStep()
+  engine.set('micPatch2', jack + 1)
+  if (stage !== 'mix') {
+    wake(stage)
+    add(['Mic', stage])
+  } else add(['Mic'])
+  listen()
+}
+
+/** Takes the second wire off its jack. */
+export function unplugSecond() {
+  engine.armStep()
+  engine.set('micPatch2', 0)
+}
+
 /** Opens the mic, turning it up from zero, or closes it. */
 export function toggleMic() {
   if (engine.micOn.get()) {

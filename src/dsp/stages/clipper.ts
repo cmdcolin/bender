@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { SUPPLY, SupplyTap, type Supplies } from '../supplies.ts'
 import { RATE_MASK } from '../util/lfo.ts'
@@ -210,7 +210,7 @@ export class Clipper implements Stage {
       p[IDX.distPinFb]! > 0 ||
       bay.read(DEST.distDraw) !== null ||
       bay.read(DEST.distPinGain) !== null ||
-      Math.round(p[IDX.micPatch]!) === MIC.clipBypass
+      micInto(p, ctx, MIC.clipBypass) !== null
     if (amp) this.circuit(io, p, ctx)
     else this.stock(io, p)
   }
@@ -266,7 +266,7 @@ export class Clipper implements Stage {
     const open = p[IDX.distBypass]!
     const bypass = open * RIPPLE_GAIN
     const mute = Math.round(MUTE_S * (1 - open) * sr)
-    const mic = Math.round(p[IDX.micPatch]!) === MIC.clipBypass ? ctx.mic : null
+    const mic = micInto(p, ctx, MIC.clipBypass)
     const block = p[IDX.distBlock]!
     const blockKeep = Math.exp(-1 / ((0.03 + 0.4 * block) * sr))
     const speaker = p[IDX.distSpeaker]!

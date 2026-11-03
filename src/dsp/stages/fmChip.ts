@@ -2,7 +2,7 @@ import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
 import { snap } from '../../scale.ts'
 import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
 import { GLINT_REGS, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
@@ -1433,7 +1433,7 @@ export class FmChip implements Stage {
     this.adderMask = adder > 0 ? (1 << ADDER_BITS[adder]!) - 1 : 0
     this.toyBits = hop(p[IDX.fmToyBus]!, 9, bay.read(DEST.fmToyBus))
     const toy = ctx.toy
-    const micOnBus = Math.round(p[IDX.micPatch]!) === MIC.glintBus
+    const micOnBus = micInto(p, ctx, MIC.glintBus)
     const modSlip = bay.read(DEST.fmDacSlip)
     const baseRot = p[IDX.fmRot]!
     const modRot = bay.read(DEST.fmRot)
@@ -1571,7 +1571,7 @@ export class FmChip implements Stage {
       this.dieClock = rail.clockFactor * xtal
       this.stepLfo()
       if (this.toyBits > 0) this.toyOnBus(toy[i]!)
-      if (micOnBus) this.micOnBus(ctx.mic[i]!)
+      if (micOnBus) this.micOnBus(micOnBus[i]!)
       if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
       if (this.blob > 0 && !kit) this.stepNoise()
 

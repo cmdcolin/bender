@@ -12,7 +12,7 @@ import {
   TUNE_STEPS,
 } from '../../tune.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
-import { MIC } from '../micJacks.ts'
+import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop, type ModBus } from '../modbus.ts'
 import { SupplyTap, poweredUp, type Supplies } from '../supplies.ts'
 import { voiceMask } from '../trigbus.ts'
@@ -571,6 +571,7 @@ export class ToyChip implements Stage {
   private kitCount = 0
   private micRate: CrossingRate
   private micEnv = new Follower()
+  private micEnvData = new Follower()
   private readonly micAttack: number
   private readonly micRelease: number
   private micAddr = 0
@@ -1247,10 +1248,11 @@ export class ToyChip implements Stage {
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
-    const micJack = Math.round(p[IDX.micPatch]!)
-    const micClock = micJack === MIC.toyClock
-    if (micJack !== MIC.toyAddr) this.micAddr = 0
-    if (micJack !== MIC.toyData) this.micData = 0
+    const micClock = micInto(p, ctx, MIC.toyClock)
+    const micAddr = micInto(p, ctx, MIC.toyAddr)
+    const micData = micInto(p, ctx, MIC.toyData)
+    if (!micAddr) this.micAddr = 0
+    if (!micData) this.micData = 0
     const accomp = p[IDX.chipAccomp]!
     this.accompLevel = accomp
     // Whichever of the kit's voices is bridged onto the gate, and what it plays.
@@ -1428,11 +1430,11 @@ export class ToyChip implements Stage {
         )
       }
       if (micClock) {
-        const hz = this.micRate.process(ctx.mic[i]!)
+        const hz = this.micRate.process(micClock[i]!)
         clock *= Math.min(Math.max(hz / A3_HZ, MIC_CLOCK_FLOOR), MIC_CLOCK_TOP)
       }
-      if (micJack === MIC.toyAddr || micJack === MIC.toyData)
-        this.micOnBus(tune, ctx.mic[i]!, micJack)
+      if (micAddr) this.micOnBus(tune, micAddr[i]!, MIC.toyAddr)
+      if (micData) this.micOnBus(tune, micData[i]!, MIC.toyData)
       if (this.kitAddr > 0 && ctx.trig.drumStep[i]! > 0) {
         this.kitCount = ctx.trig.drumStep[i]! - 1
         if (this.transport.tune && !latched) this.kitStrike(tune)
@@ -1961,7 +1963,11 @@ export class ToyChip implements Stage {
 
   private micOnBus(tune: number[], x: number, jack: number) {
     const lines = jack === MIC.toyAddr ? ROM_ADDR_LINES : ROM_DATA_LINES
-    const env = this.micEnv.process(x, this.micAttack, this.micRelease)
+    const env = (jack === MIC.toyAddr ? this.micEnv : this.micEnvData).process(
+      x,
+      this.micAttack,
+      this.micRelease,
+    )
     const top = (1 << lines) - 1
     const word = Math.min(Math.floor(env * MIC_BUS_GAIN * top), top)
     const was = jack === MIC.toyAddr ? this.micAddr : this.micData
@@ -2190,6 +2196,7 @@ export class ToyChip implements Stage {
     this.irqClock = 0
     this.micRate.reset()
     this.micEnv.reset()
+    this.micEnvData.reset()
     this.micAddr = 0
     this.micData = 0
     this.kitCount = 0

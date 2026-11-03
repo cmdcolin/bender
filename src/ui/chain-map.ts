@@ -1,6 +1,7 @@
 import { arrowhead, route, type Point } from 'skillet-shared/wire-route'
 
 import { type ControlKey, type Controls } from '../controls.ts'
+import { MIC } from '../dsp/micJacks.ts'
 import { DEST } from '../dsp/modbus.ts'
 import {
   TAPE_AT_BENDS,
@@ -20,7 +21,7 @@ import {
   touchedCount,
 } from './controls/index.ts'
 import { SUPPLY_OF } from './controls/supply.ts'
-import { MIC_JACKS } from './micWiring.ts'
+import { MIC_JACKS, wireLabel, wireOn, wiredJacks } from './micWiring.ts'
 import { el, textWidth, type El } from './svg.ts'
 
 // The signal path, laid out and drawn: live bend order, the feedback wire, and
@@ -354,7 +355,8 @@ export function onBoard(c: Controls): Set<string> {
   for (const [chip, jumper] of KEYED)
     if (on.has(chip) && c[jumper] < 0.5) on.add(TOY_ROW[0])
   if (on.has('Feedback bus')) on.add(FB_TARGET[Math.round(c.fbDest)] ?? 'mix')
-  if (on.has('Mic')) on.add(MIC_TARGET[Math.round(c.micPatch)] ?? 'mix')
+  if (on.has('Mic'))
+    for (const jack of wiredJacks(c)) on.add(MIC_TARGET[jack] ?? 'mix')
   on.delete('mix')
   return on
 }
@@ -809,7 +811,7 @@ function pickParts(c: Controls, o: Options) {
     // channel on this desk.
     active:
       [...allLines, ...allChips].some(n => n.active) ||
-      (c.micLevel > 0 && Math.round(c.micPatch) === 0),
+      (c.micLevel > 0 && wireOn(c, MIC.mix) > 0),
     open: o.open === 'Mix bus',
     door: 'Mix bus',
   })
@@ -1908,28 +1910,35 @@ function collectTaps(
   // the slots — in which case the wire runs in through the rack's edge and
   // lands on the chip riding in it, greyed: it is soldered exactly where you
   // put it, and there is nothing running through what you put it on.
-  const micPoint = MIC_TARGET[Math.round(c.micPatch)] ?? 'mix'
-  const onPath = ctx.byId.get(nodeId(micPoint))
-  const inRack = ctx.loosePart.get(micPoint)
-  const mic = onPath
-    ? { target: onPath, edge: footEdge(onPath), active: c.micLevel > 0 }
-    : inRack
-      ? { target: inRack, edge: ctx.rack, active: false }
-      : undefined
-  if (mic && ctx.has('Mic')) {
-    ctx.doors.add('Mic')
-    taps.push({
-      id: 'mic',
-      label: c.micDelay > 0 ? 'delayed mic' : 'mic',
-      value: ctx.live && mic.active ? c.micLevel.toFixed(2) : undefined,
-      door: 'Mic',
-      wireDoor: 'Mic',
-      key: 'micLevel',
-      labelKey: c.micDelay > 0 ? 'micDelay' : 'micLevel',
-      dash: '1 3',
-      ...mic,
-    })
-  }
+  // A second wire draws as a second tap, unless it lands on the same box as
+  // the first, where one wire stands for both.
+  const micTaps: string[] = []
+  wiredJacks(c).forEach((jack, at) => {
+    const wire = at === 0 ? 1 : 2
+    const micPoint = MIC_TARGET[jack] ?? 'mix'
+    const onPath = ctx.byId.get(nodeId(micPoint))
+    const inRack = ctx.loosePart.get(micPoint)
+    const mic = onPath
+      ? { target: onPath, edge: footEdge(onPath), active: c.micLevel > 0 }
+      : inRack
+        ? { target: inRack, edge: ctx.rack, active: false }
+        : undefined
+    if (mic && ctx.has('Mic') && !micTaps.includes(mic.target.id)) {
+      micTaps.push(mic.target.id)
+      ctx.doors.add('Mic')
+      taps.push({
+        id: wire === 1 ? 'mic' : 'mic2',
+        label: wireLabel(c, wire),
+        value: ctx.live && mic.active ? c.micLevel.toFixed(2) : undefined,
+        door: 'Mic',
+        wireDoor: 'Mic',
+        key: 'micLevel',
+        labelKey: wireLabel(c, wire) === 'mic' ? 'micLevel' : 'micDelay',
+        dash: '1 3',
+        ...mic,
+      })
+    }
+  })
 
   // Where the sag goes. Brownout is on the path because it gates and hums the
   // mix at a place, but the rail it drags is the board's, and three stages can

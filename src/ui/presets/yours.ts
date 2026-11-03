@@ -52,6 +52,8 @@ export const YOURS = new Set<ControlKey>([
   'fourSide',
   ...FOUR_YOURS,
   ...HOLD_KEYS,
+  'micPatch2',
+  'micFreeze',
   'deckSpeed',
   'deckInertia',
   'arcDepth',
