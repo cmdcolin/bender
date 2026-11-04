@@ -1,3 +1,4 @@
+import { MEMORY_SYNC_MODES } from '../dsp/melodyMemory.ts'
 import { DEST } from '../dsp/modbus.ts'
 import { FM_VOICE_NAMES } from '../dsp/stages/fmVoices.ts'
 import { PCM_VOICE_NAMES } from '../dsp/stages/pcmRom.ts'
@@ -17,6 +18,7 @@ const PHRASE_BARS = [1, 2, 4, 8, 16, 32]
 const PHRASE_SHAPE = { rise: 0, swell: 3, stairs: 4 }
 const GROUND = 1
 const SAW = 1
+const HARD = 1
 const FB_TO_OSC = 1
 const GARBAGE = 1
 
@@ -145,29 +147,38 @@ export const DEMO_SCENES: DemoScene[] = [
   },
   {
     name: 'growler chokes on its own howl',
-    says: 'Growler holds one note with its output patched back into its mixer, its pitch and its gate, so the note howls, the howl pulls its own pitch around, and whenever it gets loud enough it shuts its own gate, falls quiet and opens again, playing a rhythm nobody wrote',
+    says: 'Growler plays four slow notes, each sinking as its pitch capacitor leaks, while its output is patched back into its own mixer, pitch and gate a little more every bar, until the howl drags its own pitch around and keeps shutting its own gate, cutting itself into a rhythm nobody wrote, then starts clean',
     board: {
       ...NO_PULSE,
-      ...line('A2 ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~'),
-      drumBpm: 60,
+      ...line('E3 ~ ~ ~ C3 ~ ~ ~ F3 ~ ~ ~ B2 ~ ~ ~'),
+      monoSeqSync: MEMORY_SYNC_MODES.indexOf('quarters'),
+      drumBpm: 90,
       chipLevel: 0,
       monoWave1: SAW,
+      monoWave2: SAW,
       monoMix1: 0.6,
-      monoMix2: 0,
+      monoMix2: 0.5,
       monoMix3: 0,
-      monoCutoff: 900,
-      monoEmph: 0.95,
+      monoSync: HARD,
+      monoTune2: 7,
+      monoFm: 0.6,
+      monoHeat: 0.5,
+      monoDroop: 0.8,
+      monoCutoff: 1200,
+      monoEmph: 0.9,
       monoGate: 1,
       monoAS: 1,
       monoLevel: 1.2,
-      monoLoop: 1,
-      monoLoopPitch: 0.3,
-      monoChoke: 0.85,
-      mod0Src: SRC.lfo,
-      mod0Dest: DEST.monoChoke,
-      mod0Depth: 0.1,
-      modLfoHz: 0.05,
-      outGain: 11,
+      monoLoop: 0.7,
+      monoChoke: 0.6,
+      mod0Src: SRC.phrase,
+      mod0Dest: DEST.monoLoopPitch,
+      mod0Depth: 0.9,
+      mod1Src: SRC.phrase,
+      mod1Dest: DEST.monoChoke,
+      mod1Depth: 0.3,
+      ...phrase(4, PHRASE_SHAPE.rise),
+      outGain: 8,
       revMix: 0.2,
       revDecayS: 2,
     },
