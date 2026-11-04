@@ -2,6 +2,58 @@
 
 All notable changes to bender are documented here.
 
+## [1.26.0](https://github.com/cmdcolin/bender/compare/v1.25.0...v1.26.0) - 2026-11-04
+
+### Features
+- *(engine)* [`da29e69`](https://github.com/cmdcolin/bender/commit/da29e692541271a5079ad4edc573879d962068d4) a piano 78s shelf, and presets and links that put a tape off one on Spool
+- *(home)* [`602bc4b`](https://github.com/cmdcolin/bender/commit/602bc4b83e0a1ac26ccd94d21ea4a064229a3342) a Scenes row on the landing page, starting with the ballroom
+- *(home)* [`8d92786`](https://github.com/cmdcolin/bender/commit/8d9278608f8cf774cdd2bdb28ecc4dadb79c4ee4) a tidier signed-in home: a slim resume strip, voices first, earlier sessions as a list
+- *(home)* [`fd7302c`](https://github.com/cmdcolin/bender/commit/fd7302c14b35a5dcdc0b6efa265b87f097df78e7) headings that say a voice is saved by you and a session is saved automatically
+- *(home)* [`30f9b27`](https://github.com/cmdcolin/bender/commit/30f9b2749fa1911086b40e49b5cc6fd6e4d3d953) one list of boards, named and autosaved, in place of separate voices and sessions
+- *(home)* [`aa97e67`](https://github.com/cmdcolin/bender/commit/aa97e67642fb59301468ba1adc47aae57444036b) unsaved boards named after their preset, scenes on the signed-in home, a loading outline that matches
+- *(home)* [`faa6a23`](https://github.com/cmdcolin/bender/commit/faa6a23dc1d67705b15539462d8f8bc6c6125360) saved boards in their own list with the same verbs on every row, older autosaves folded under it
+- *(home)* [`35fcb70`](https://github.com/cmdcolin/bender/commit/35fcb7001134fe0f278266048122e99b23388b06) the signed-in home is saved sessions and autosaves only
+- *(home)* [`3b40a08`](https://github.com/cmdcolin/bender/commit/3b40a08a72a4f88d7ce0c10db4658c239fbc21fd) four more scenes, one off each archive shelf
+- *(home)* [`98e10ec`](https://github.com/cmdcolin/bender/commit/98e10ecab60601c326886e67f1e2921313c8e774) scenes that demo each instrument and a few bends ahead of the ambient ones
+- *(ui)* [`aee1213`](https://github.com/cmdcolin/bender/commit/aee12138718a80c8d988bc30d54f9a4bd00d6ca6) every scene link lays out its bench, pedals and bends included
+- *(home)* [`cf2aa4e`](https://github.com/cmdcolin/bender/commit/cf2aa4ee6b401539ff1723970da65d9df829960b) demo scenes with their own songs, each bent a notch further every bar
+- *(home)* [`c380f3d`](https://github.com/cmdcolin/bender/commit/c380f3d193f0a7872e22950a2b42f60b24aee889) demo scenes that reach every bend and pedal, the acid line into a phone speaker and a mixer playing itself
+- *(home)* [`9bd9176`](https://github.com/cmdcolin/bender/commit/9bd91768e96ea2429d7954ca03f4f976bd40f48d) four more demo scenes off the chips' own faults, in place of the band on one battery
+- *(home)* [`ba5fbeb`](https://github.com/cmdcolin/bender/commit/ba5fbeb9acff3f15aaa36025f574569da53000ec) demo scenes built on circuits leaking into each other, not effects on a tune
+- *(home)* [`05b509d`](https://github.com/cmdcolin/bender/commit/05b509decaf32b3f6245ab170357bd0802d8121d) growler chokes on its own howl, in place of the drummer nobody can hear
+- *(home)* [`fe3f22a`](https://github.com/cmdcolin/bender/commit/fe3f22afedc581fdbe585254e3100f1f6ade0170) growler's howl climbs over four sinking notes, from a clean start to tearing itself apart
+- *(home)* [`44a6c91`](https://github.com/cmdcolin/bender/commit/44a6c911e65a993554ae301ff8283bcaab2b5008) drop the growler scene, and the test that made every instrument have one
+- *(home)* [`ee1a5c4`](https://github.com/cmdcolin/bender/commit/ee1a5c4a7ed84fabc02609329fe0650582e776cc) the toy's volume PWM carrier on a chaotic clock, and the toy and Glint bending each other
+- *(home)* [`661116c`](https://github.com/cmdcolin/bender/commit/661116c515d1e274bd1fb94bc959eb8e2f404191) the volume carrier scene gets a kit cut out of the toy's whine and a starved digital reverb
+- *(home)* [`9ce5e75`](https://github.com/cmdcolin/bender/commit/9ce5e75fc8856d950130cbf0112da6585246c0ae) the volume carrier scene jumps its clock three octaves on every step instead of warbling
+- *(home)* [`4fdf24e`](https://github.com/cmdcolin/bender/commit/4fdf24e8fdbe1bd3d087ac9e7877d9969d31734f) the volume carrier scene holds one note while the clock climbs out of a crawl a step a bar
+- *(home)* [`2b04bb6`](https://github.com/cmdcolin/bender/commit/2b04bb628951d74a6cf25783d0b191640dddbfaa) drop the volume carrier scene
+
+### Fixes
+- *(ui)* [`5913e7b`](https://github.com/cmdcolin/bender/commit/5913e7bac665859d567410e05088ea7b5668b432) ballroom keeps its piano, the loop wandering through the side instead of recording over itself
+- *(home)* [`d3caaac`](https://github.com/cmdcolin/bender/commit/d3caaac66c740db80773cc25cb0b6fdada90fd88) call an unnamed board by its preset only when it is one, untitled otherwise
+- *(home)* [`5f61571`](https://github.com/cmdcolin/bender/commit/5f61571188213ddfe18258d0f145b03f30ac4e51) the empty saved list names the save button, not its shortcut
+- *(ui)* [`56939c1`](https://github.com/cmdcolin/bender/commit/56939c11c0a49908252594a775178ba6018c0f8d) a scene opens with only the instruments it plays on the bench
+- *(dsp)* [`d11704c`](https://github.com/cmdcolin/bender/commit/d11704c20267420185a88aab4603e5f6565e2e4a) a wire that brings Parlor's write strobe to zero reads clean memory again, as the knob does
+- *(dsp)* [`b39a1cd`](https://github.com/cmdcolin/bender/commit/b39a1cde023360ff35ac1f40c7b6d3ec675a9175) a wire alone on Glint's toy bus lane puts the toy on the bus, as the knob does
+- *(home)* [`543c203`](https://github.com/cmdcolin/bender/commit/543c203690205650f2a09c1591de8b8aee09be80) growler's howl plays its notes as written, without the sinking pitch
+- *(dsp)* [`c22ce7e`](https://github.com/cmdcolin/bender/commit/c22ce7e03c7bfb5ce206af41bdccded9ee8073ef) a wire alone on the toy's FM-on-clock lane puts Glint on its timing pin, as the knob does
+- *(home)* [`3be759b`](https://github.com/cmdcolin/bender/commit/3be759bef9239731c97ce63952e77db3c4948900) the board on the resume strip is not folded under it again as an older autosave
+- *(engine)* [`4ed1237`](https://github.com/cmdcolin/bender/commit/4ed1237681f309d80efdc304548f040dd0b80f86) asking for the shelf a roll is already on waits for that roll instead of restarting it
+
+### Refactor
+- *(home)* [`091cf3c`](https://github.com/cmdcolin/bender/commit/091cf3ca980b48524a03560a5dec8dd841e2246d) demo scenes name their wire and switch choices, a missing tape scene preset fails the build, one helper writes the shelf into a link
+
+### Tests
+- *(dsp)* [`23fb4f5`](https://github.com/cmdcolin/bender/commit/23fb4f545ca161b374dec91fe1cb0f84218cd7d8) a preset that rolls a tape still plays it after 45 s
+- *(ui)* [`3cd1d59`](https://github.com/cmdcolin/bender/commit/3cd1d59ed074f50dd6c1b37b72fbfa600d72657d) the bench goes back to empty after every fitted test, failed or not
+
+### Reverts
+- *(home)* [`411460b`](https://github.com/cmdcolin/bender/commit/411460bb2e442c555feb86a1dd51c927098cbe4a) the volume carrier scene back to the toy on its own
+
+### Other Changes
+- [`755cffc`](https://github.com/cmdcolin/bender/commit/755cffc69a976e2019d0ab2787be4f0b2e59bac3) Bump deps
+
 ## [1.25.0](https://github.com/cmdcolin/bender/compare/v1.24.2...v1.25.0) - 2026-11-03
 
 ### Features
