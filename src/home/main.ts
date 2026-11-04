@@ -93,8 +93,8 @@ export function showHome(user: CloudUser, doc: HomeDoc, now = Date.now()) {
     user,
     [
       resumeSection(doc, now),
-      earlierSection(doc, now),
       voicesSection(doc, now, edits),
+      earlierSection(doc, now),
     ].filter(box => box !== undefined),
   )
 }

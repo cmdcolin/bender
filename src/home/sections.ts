@@ -1,5 +1,5 @@
 // The sections down the signed-in home, in the order they are stacked: the
-// board you had open last, the ones before it, and everything you have saved.
+// board you had open last, everything you have saved, and the sessions before.
 
 import { sinceWords } from 'skillet-shared/relative-time'
 
@@ -12,78 +12,75 @@ import { markFor } from './mark.ts'
 import type { HomeDoc } from '../ui/cloud.ts'
 import type { RecentSession, SavedVoice } from '../ui/voiceModel.ts'
 
-function section(id: string, heading: string, sub?: string): HTMLElement {
+function section(id: string, heading: string): HTMLElement {
   const box = el('section', 'homeSec')
   box.id = id
   box.append(el('h2', 'head', heading))
-  if (sub !== undefined) box.append(el('p', 'sub', sub))
+  return box
+}
+
+function resumeStrip(current: RecentSession, now: number) {
+  const box = el('section', 'homeSec resume')
+  box.id = 'resume'
+  const text = el('div', 'resumeText')
+  text.append(
+    el('h2', 'resumeHead', 'Your last session'),
+    el('p', 'when', sinceWords(current.at, now)),
+  )
+  const go = el('a', 'btn primary', 'Resume →')
+  go.href = boardUrl(current.query)
+  go.title =
+    'Brings back the bends, pattern, pedals and tape. Sampler recordings and the mic need bringing in again.'
+  go.addEventListener('click', () => {
+    handOffSession(current.id)
+  })
+  const fresh = el('a', 'btn', 'Start fresh')
+  fresh.href = appUrl
+  const row = el('div', 'resumeCta')
+  row.append(go, fresh)
+  box.append(markFor(current.query), text, row)
   return box
 }
 
 export function resumeSection(doc: HomeDoc, now: number) {
   const current = doc.recent[0]
-  if (current === undefined) return undefined
-  const box = section('resume', 'Continue where you left off')
-  const cardBox = el('div', 'resumeCard')
-  cardBox.append(markFor(current.query))
-
-  const body = el('div', 'resumeBody')
-  body.append(
-    el('p', 'when', sinceWords(current.at, now)),
-    el(
-      'p',
-      'resumeSays',
-      'Resuming brings back the whole board — the bends, the pattern, the pedals and the tape. A recording on the sampler and the mic have to be brought in again.',
-    ),
-  )
-  const row = el('p', 'resumeCta')
-  const go = el('a', 'btn primary')
-  go.href = boardUrl(current.query)
-  go.addEventListener('click', () => {
-    handOffSession(current.id)
-  })
-  go.textContent = 'Resume →'
-  const fresh = el('a', 'btn')
-  fresh.href = appUrl
-  fresh.textContent = 'Start fresh'
-  row.append(go, fresh)
-  body.append(row)
-
-  cardBox.append(body)
-  box.append(cardBox)
-  return box
+  return current === undefined ? undefined : resumeStrip(current, now)
 }
 
-// A voice with the session's board names its card.
+// A voice with the session's board names its row.
 const savedAs = (doc: HomeDoc, session: RecentSession) =>
   doc.voices
     .filter(v => v.query === session.query)
     .toSorted((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))[0]
 
+function sessionRow(doc: HomeDoc, session: RecentSession, now: number) {
+  const match = savedAs(doc, session)
+  const link = el('a', 'sessionRow')
+  link.href = boardUrl(session.query)
+  link.addEventListener('click', () => {
+    handOffSession(session.id)
+  })
+  link.append(
+    markFor(session.query),
+    el('span', 'sessionWhen', sinceWords(session.at, now)),
+    ...(match === undefined ? [] : [el('span', 'says', match.name)]),
+  )
+  const item = el('li')
+  item.append(link)
+  return item
+}
+
+function sessionsSection(doc: HomeDoc, sessions: RecentSession[], now: number) {
+  const box = section('recent', 'Earlier sessions')
+  const list = el('ul', 'sessions')
+  list.append(...sessions.map(session => sessionRow(doc, session, now)))
+  box.append(list)
+  return box
+}
+
 export function earlierSection(doc: HomeDoc, now: number) {
   const earlier = doc.recent.slice(1)
-  if (earlier.length === 0) return undefined
-  const box = section(
-    'recent',
-    'Earlier sessions',
-    'The app saves each visit as you play. Opening one carries on from where that visit stopped.',
-  )
-  const grid = el('ul', 'grid')
-  for (const session of earlier) {
-    const match = savedAs(doc, session)
-    grid.append(
-      card(
-        session.query,
-        sinceWords(session.at, now),
-        match === undefined ? 'a session' : `saved as “${match.name}”`,
-        () => {
-          handOffSession(session.id)
-        },
-      ),
-    )
-  }
-  box.append(grid)
-  return box
+  return earlier.length === 0 ? undefined : sessionsSection(doc, earlier, now)
 }
 
 function emptyVoices(): HTMLElement {

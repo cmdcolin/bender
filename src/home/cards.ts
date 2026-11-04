@@ -14,19 +14,15 @@ import { markFor } from './mark.ts'
 
 import type { SavedVoice } from '../ui/voiceModel.ts'
 
-export function card(
-  query: string,
-  name: string,
-  says: string,
-  onOpen?: () => void,
-): HTMLElement {
+export function card(query: string, name: string, says: string): HTMLElement {
   const item = el('li')
   const link = el('a', 'card')
   link.href = boardUrl(query)
-  if (onOpen !== undefined) link.addEventListener('click', onOpen)
-  const top = el('span', 'cardTop')
-  top.append(markFor(query), el('span', 'open', 'open →'))
-  link.append(top, el('span', 'cardName', name), el('span', 'says', says))
+  link.append(
+    markFor(query),
+    el('span', 'cardName', name),
+    el('span', 'says', says),
+  )
   item.append(link)
   return item
 }

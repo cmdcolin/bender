@@ -1,5 +1,5 @@
-/* bender's own site styles: the landing page's hero, the demo cards and a
-   resume card that shows a mark. The components both sites share are in
+/* bender's own site styles: the landing page's hero, the demo cards and the
+   signed-in home. The components both sites share are in
    site.css, and the guide's prose is in guide.css. */
 
 .landing {
@@ -202,30 +202,91 @@
   line-height: 1.45;
 }
 
-/* The resume card shows the board's mark where videoskillet shows a still, so
-   these replace the grid site.css lays that card out on. Written under `.home`
-   — where main.ts draws the card, and the only place it appears — so they win
-   on specificity rather than on site.css being linked first. */
-.home .resumeCard {
+/* The signed-in home: a narrower column than the landing page, a slim resume
+   strip, and earlier sessions as a list rather than more cards. */
+.home .homeMain {
+  max-width: 62rem;
+  gap: 2.25rem;
+}
+.home .resume {
   display: flex;
   align-items: center;
-  gap: 1.35rem;
-  padding-left: 1.35rem;
+  gap: 1.25rem;
+  padding: 0.9rem 1.15rem;
+  background: var(--surface);
+  border: 1px solid var(--border-faint);
+  border-radius: 0.6rem;
 }
-.home .resumeCard .mark {
+.home .resume .mark {
   flex: none;
-  width: 5.5rem;
-  height: 2rem;
+  fill: var(--accent);
 }
-@media (max-width: 44rem) {
-  .home .resumeCard {
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: 1.35rem;
+.resumeText {
+  flex: 1;
+  min-width: 0;
+}
+.resumeHead {
+  margin: 0 0 0.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.home .resume .resumeCta {
+  margin: 0;
+}
+@media (max-width: 40rem) {
+  .home .resume {
+    flex-wrap: wrap;
   }
-  .home .resumeBody {
-    padding: 0 1.35rem 1.35rem 0;
-  }
+}
+
+.home .card .mark {
+  margin-bottom: 0.2rem;
+}
+.home .cardAct {
+  text-decoration: none;
+}
+.home .cardAct:hover,
+.home .cardAct:focus-visible {
+  color: var(--accent);
+}
+
+.sessions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+  gap: 0.15rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sessionRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.4rem;
+  color: var(--fg2);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.sessionRow:hover,
+.sessionRow:focus-visible {
+  background: var(--surface);
+  color: var(--fg);
+}
+.sessionRow .mark {
+  flex: none;
+  width: 3rem;
+  height: 1rem;
+}
+.sessionRow:hover .mark,
+.sessionRow:focus-visible .mark {
+  fill: var(--accent);
+}
+.sessionRow .says {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardBone {
