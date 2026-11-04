@@ -3,7 +3,7 @@
 // those two and the sign-in that decides it; the pieces each state is built
 // from are in sections.ts, cards.ts and account.ts.
 //
-// index.astro builds the landing markup, demo cards included, so a visitor gets
+// index.astro builds the landing markup, demos included, so a visitor gets
 // it with no JavaScript run at all. cloud.ts fetches the SDK on the first call
 // that needs it, so the only loads that reach Google are the ones that already
 // know this browser signed in and the ones where somebody pressed the button.
@@ -23,8 +23,6 @@ import { closeMenu, paintAvatar } from './account.ts'
 import { el } from './dom.ts'
 import {
   acct,
-  demos,
-  scenes,
   home,
   landing,
   signInBtn,
@@ -51,9 +49,7 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   rail.setAttribute('aria-label', 'Home')
   const links: [string, string, boolean][] = [
     [siteRoot, 'Home', true],
-    ['#saved', 'Saved', false],
-    ['#scenes', 'Scenes', false],
-    ['#demos', 'Demos', false],
+    ['#saved', 'Saved sessions', false],
     [guideUrl, 'User guide', false],
   ]
   for (const [href, label, on] of links) {
@@ -64,10 +60,7 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   }
 
   const main = el('div', 'homeMain')
-  // The build already rendered the scenes and demos into the landing page;
-  // signed in, the same sections move over rather than being drawn twice.
-  for (const shared of [scenes, demos]) shared.classList.add('homeSec')
-  main.append(...sections, scenes, demos)
+  main.append(...sections)
 
   const inner = el('div', 'homeIn')
   inner.append(rail, main)
@@ -99,8 +92,6 @@ export function showLanding(): void {
   acct.hidden = true
   signInBtn.hidden = false
   for (const button of whyBtns) button.hidden = false
-  for (const shared of [scenes, demos]) shared.classList.remove('homeSec')
-  landing.append(demos, scenes)
   home.textContent = ''
   home.hidden = true
   landing.hidden = false

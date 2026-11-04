@@ -26,6 +26,6 @@ export const SHOT_W = 982
 export const SHOT_H = 552
 
 export const SHOT_ALT =
-  'The home page signed in: a strip to resume the board you had open last, and a list of six saved boards with when each was saved'
+  'The home page signed in: a strip to resume the board you had open last, and a list of six saved sessions with when each was saved'
 
 export const SHOT_CAPTION = 'Your home page, once you’re signed in.'

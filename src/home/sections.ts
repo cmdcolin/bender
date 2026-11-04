@@ -1,5 +1,5 @@
-// The signed-in home: the board you had open last, then the boards you saved,
-// with the older autosaves folded away under them.
+// The signed-in home: the last autosave, the sessions you saved, and the older
+// autosaves folded away under them.
 
 import { sinceWords } from 'skillet-shared/relative-time'
 
@@ -191,10 +191,10 @@ function nothingSaved(): HTMLElement {
 }
 
 export function failedSection(retry: () => void): HTMLElement {
-  const box = section('saved', 'Saved')
+  const box = section('saved', 'Saved sessions')
   const empty = el('div', 'empty')
   empty.append(
-    el('h3', 'emptyHead', 'Your saved boards did not load'),
+    el('h3', 'emptyHead', 'Your saved sessions did not load'),
     el('p', 'emptySays', 'Check the connection and try again.'),
   )
   const again = el('button', 'btn primary', 'Try again')
@@ -206,7 +206,7 @@ export function failedSection(retry: () => void): HTMLElement {
 }
 
 export function savedSection(doc: HomeDoc, now: number, edits: CardEdits) {
-  const box = section('saved', 'Saved')
+  const box = section('saved', 'Saved sessions')
   const older = olderAutosaves(doc)
   box.append(
     doc.voices.length === 0 ? nothingSaved() : savedList(doc, now, edits),
