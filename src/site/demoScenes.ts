@@ -68,25 +68,6 @@ export const DEMO_SCENES: DemoScene[] = [
     },
   },
   {
-    name: 'the volume carrier comes down',
-    says: 'One held note on the toy, its volume PWM tapped so far down the clock divider that the carrier is a sound of its own, and the master clock dragged to a crawl, then let up a step each bar, so the note ticks, buzzes, growls and screams without ever changing key',
-    board: {
-      ...tune(`A3${' ~'.repeat(31)}`),
-      ...NO_PULSE,
-      drumBpm: 80,
-      chipLevel: 0.9,
-      chipEnvCap: LEAKY,
-      chipPwm: 0.9,
-      chipClockX: 0.1,
-      mod0Src: SRC.phrase,
-      mod0Dest: DEST.chipClock,
-      mod0Depth: 1.3,
-      ...phrase(4, PHRASE_SHAPE.stairs),
-      revMix: 0.15,
-      revDecayS: 1.5,
-    },
-  },
-  {
     name: 'two chips bend each other',
     says: 'Glint’s output is wired onto the toy’s timing pin and the toy’s output onto Glint’s data bus, so each chip bends the other’s clock and registers, more tightly every bar, until the two lock into one sound neither would make alone',
     board: {
