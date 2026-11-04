@@ -156,6 +156,7 @@ test('every scene names a preset that exists and links into the app with its boa
   for (const scene of scenes) {
     expect(landing).toContain(scene.name)
     expect(scene.href).toContain('#p=')
+    expect(scene.href).toContain('scene=1')
   }
   expect(
     scenes.find(s => s.name === 'ballroom at the end of time')?.href,
