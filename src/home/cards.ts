@@ -159,6 +159,7 @@ function saveAction(
   query: string,
   voices: SavedVoice[],
   edits: CardEdits,
+  suggest: () => string,
 ): HTMLElement {
   const row = el('div', 'cardActions')
   const status = el('span', 'cardStatus')
@@ -173,7 +174,7 @@ function saveAction(
 
   const idle = () => {
     const save = act('Save', () => {
-      name(suggestVoiceName(voices, ''))
+      name(suggestVoiceName(voices, suggest()))
     })
     row.replaceChildren(save, status)
     return save

@@ -6,6 +6,7 @@ import { need, needOf } from './dom.ts'
 export const landing = need('landing')
 export const home = need('home')
 export const demos = need('demos')
+export const scenes = need('scenes')
 export const signInBtn = needOf('signIn', HTMLButtonElement)
 export const acct = need('acct')
 export const acctBtn = needOf('acctBtn', HTMLButtonElement)

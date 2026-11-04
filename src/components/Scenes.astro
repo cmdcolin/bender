@@ -11,10 +11,7 @@ import { scenes } from '../site/scenes.ts'
     {scenes.map(scene => (
       <li>
         <a class="card" href={scene.href}>
-          <span class="cardTop">
-            <span class="cardName">{scene.name}</span>
-            <span class="open">open →</span>
-          </span>
+          <span class="cardName">{scene.name}</span>
           <span class="says">{scene.says}</span>
         </a>
       </li>

@@ -24,6 +24,7 @@ import { el } from './dom.ts'
 import {
   acct,
   demos,
+  scenes,
   home,
   landing,
   signInBtn,
@@ -51,6 +52,7 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   const links: [string, string, boolean][] = [
     [siteRoot, 'Home', true],
     ['#boards', 'Your boards', false],
+    ['#scenes', 'Scenes', false],
     ['#demos', 'Demos', false],
     [guideUrl, 'User guide', false],
   ]
@@ -62,10 +64,10 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   }
 
   const main = el('div', 'homeMain')
-  // The build already rendered the demo cards into the landing page; signed
-  // in, the same section moves over rather than being drawn a second time.
-  demos.classList.add('homeSec')
-  main.append(...sections, demos)
+  // The build already rendered the scenes and demos into the landing page;
+  // signed in, the same sections move over rather than being drawn twice.
+  for (const shared of [scenes, demos]) shared.classList.add('homeSec')
+  main.append(...sections, scenes, demos)
 
   const inner = el('div', 'homeIn')
   inner.append(rail, main)
@@ -97,8 +99,8 @@ export function showLanding(): void {
   acct.hidden = true
   signInBtn.hidden = false
   for (const button of whyBtns) button.hidden = false
-  demos.classList.remove('homeSec')
-  landing.append(demos)
+  for (const shared of [scenes, demos]) shared.classList.remove('homeSec')
+  landing.append(demos, scenes)
   home.textContent = ''
   home.hidden = true
   landing.hidden = false

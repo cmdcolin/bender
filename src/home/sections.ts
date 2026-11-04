@@ -22,6 +22,22 @@ function section(id: string, heading: string): HTMLElement {
 const newest = <T>(list: T[], at: (item: T) => number) =>
   list.toSorted((a, b) => at(b) - at(a))[0]
 
+// The label needs the preset table, which the landing page has no use for, so
+// it arrives after the row is drawn.
+function labelLater(query: string, into: HTMLElement) {
+  import('./boardLabel.ts').then(
+    ({ boardLabel }) => {
+      const label = boardLabel(query)
+      into.textContent = label.text
+      into.dataset.preset = label.preset
+    },
+    (e: unknown) => {
+      console.error('could not label a board', e)
+    },
+  )
+  return into
+}
+
 const namedAs = (doc: HomeDoc, query: string) =>
   newest(
     doc.voices.filter(v => v.query === query),
@@ -32,9 +48,11 @@ function resumeStrip(doc: HomeDoc, current: RecentSession, now: number) {
   const box = el('section', 'homeSec resume')
   box.id = 'resume'
   const text = el('div', 'resumeText')
+  const named = namedAs(doc, current.query)
+  const head = el('h2', 'resumeHead', named?.name ?? 'Last session')
   text.append(
-    el('h2', 'resumeHead', namedAs(doc, current.query)?.name ?? 'Last session'),
-    el('p', 'when', sinceWords(current.at, now)),
+    named === undefined ? labelLater(current.query, head) : head,
+    el('p', 'when', `last played ${sinceWords(current.at, now)}`),
   )
   const go = el('a', 'btn primary', 'Resume →')
   go.href = boardUrl(current.query)
@@ -92,18 +110,20 @@ function entryRow(entry: Entry, doc: HomeDoc, now: number, edits: CardEdits) {
     link.addEventListener('click', () => {
       handOffSession(session.id)
     })
+  const name =
+    entry.voice === undefined
+      ? labelLater(query, el('span', 'boardName unnamed', 'unsaved'))
+      : el('span', 'boardName', entry.voice.name)
   link.append(
     markFor(query),
-    entry.voice === undefined
-      ? el('span', 'boardName unnamed', 'unsaved')
-      : el('span', 'boardName', entry.voice.name),
+    name,
     el('span', 'says', entry.at === 0 ? '' : sinceWords(entry.at, now)),
   )
   const item = el('li', 'boardRow')
   item.append(
     link,
     entry.voice === undefined
-      ? saveAction(entry.session.query, doc.voices, edits)
+      ? saveAction(query, doc.voices, edits, () => name.dataset.preset ?? '')
       : cardActions(entry.voice, edits),
   )
   return item
