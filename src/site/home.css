@@ -203,7 +203,7 @@
 }
 
 /* The signed-in home: a narrower column than the landing page, a slim resume
-   strip, and earlier sessions as a list rather than more cards. */
+   strip, and one list of boards, named and unnamed. */
 .home .homeMain {
   max-width: 62rem;
   gap: 2.25rem;
@@ -239,61 +239,87 @@
   }
 }
 
-.home .card .mark {
-  margin-bottom: 0.2rem;
-}
-.home .cardAct {
-  text-decoration: none;
-}
-.home .cardAct:hover,
-.home .cardAct:focus-visible {
-  color: var(--accent);
-}
-
-.headHint {
-  margin-left: 0.6rem;
-  color: var(--fg4);
-  font-size: 0.85rem;
-  font-weight: 400;
-}
-
-.sessions {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
-  gap: 0.15rem 1rem;
+.boards {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--border-faint);
 }
-.sessionRow {
+.boardRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.45rem 0.6rem;
-  border-radius: 0.4rem;
-  color: var(--fg2);
-  font-size: 0.9rem;
+  gap: 0.25rem 1rem;
+  padding-right: 0.6rem;
+  border-bottom: 1px solid var(--border-faint);
+}
+.boardRow:hover,
+.boardRow:focus-within {
+  background: var(--surface);
+}
+.boardLink {
+  display: flex;
+  flex: 1 1 16rem;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+  padding: 0.6rem;
+  color: inherit;
   text-decoration: none;
 }
-.sessionRow:hover,
-.sessionRow:focus-visible {
-  background: var(--surface);
-  color: var(--fg);
-}
-.sessionRow .mark {
+.boardLink .mark {
   flex: none;
   width: 3rem;
   height: 1rem;
 }
-.sessionRow:hover .mark,
-.sessionRow:focus-visible .mark {
+.boardLink:hover .mark,
+.boardLink:focus-visible .mark {
   fill: var(--accent);
 }
-.sessionRow .says {
+.boardName {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
+  color: var(--fg);
+}
+.boardName.unnamed {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--fg4);
+}
+.boardLink .says {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.boardRow .cardActions {
+  flex-wrap: nowrap;
+  padding: 0;
+  border: 0;
+}
+.boardRow .cardAct {
+  text-decoration: none;
+}
+.boardRow .cardAct:hover,
+.boardRow .cardAct:focus-visible {
+  color: var(--accent);
+}
+.boardRow .cardRename {
+  flex: 0 1 12rem;
+}
+.boardRow .cardAsk,
+.boardRow .cardStatus {
+  flex-basis: auto;
+  white-space: nowrap;
+}
+@media (max-width: 40rem) {
+  .boardRow .cardActions {
+    flex-wrap: wrap;
+    padding: 0 0 0.55rem 4.5rem;
+  }
 }
 
 .cardBone {

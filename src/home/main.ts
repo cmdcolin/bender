@@ -33,12 +33,7 @@ import {
   whySignInBtn,
   whyTrouble,
 } from './els.ts'
-import {
-  earlierSection,
-  failedSection,
-  resumeSection,
-  voicesSection,
-} from './sections.ts'
+import { boardsSection, failedSection, resumeSection } from './sections.ts'
 
 import type { CardEdits } from './cards.ts'
 
@@ -55,7 +50,7 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   rail.setAttribute('aria-label', 'Home')
   const links: [string, string, boolean][] = [
     [siteRoot, 'Home', true],
-    ['#voices', 'Voices', false],
+    ['#boards', 'Your boards', false],
     ['#demos', 'Demos', false],
     [guideUrl, 'User guide', false],
   ]
@@ -91,11 +86,9 @@ export function showHome(user: CloudUser, doc: HomeDoc, now = Date.now()) {
   }
   showFrame(
     user,
-    [
-      resumeSection(doc, now),
-      voicesSection(doc, now, edits),
-      earlierSection(doc, now),
-    ].filter(box => box !== undefined),
+    [resumeSection(doc, now), boardsSection(doc, now, edits)].filter(
+      box => box !== undefined,
+    ),
   )
 }
 

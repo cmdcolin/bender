@@ -108,8 +108,8 @@ async function shoot(url: string, into: string) {
       'Runtime.evaluate',
       {
         expression: `JSON.stringify((() => {
-          const el = document.getElementById('voices')
-          if (!el) throw new Error('no voices section on the page')
+          const el = document.getElementById('boards')
+          if (!el) throw new Error('no boards section on the page')
           const r = el.getBoundingClientRect()
           return { x: r.x, y: r.y, width: r.width, height: r.height }
         })())`,

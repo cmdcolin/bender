@@ -1,33 +1,39 @@
-// The sections down the signed-in home, in the order they are stacked: the
-// board you had open last, everything you have saved, and the sessions before.
+// The signed-in home: the board you had open last, then one list of every
+// other board — the ones you named, and the unnamed ones the app autosaved.
 
 import { sinceWords } from 'skillet-shared/relative-time'
 
 import { appUrl, boardUrl } from '../site/paths.ts'
 import { handOffSession } from '../ui/resumeHandoff.ts'
-import { RECENT_MAX } from '../ui/voiceModel.ts'
-import { card, cardActions, type CardEdits } from './cards.ts'
+import { cardActions, saveAction, type CardEdits } from './cards.ts'
 import { el } from './dom.ts'
 import { markFor } from './mark.ts'
 
 import type { HomeDoc } from '../ui/cloud.ts'
 import type { RecentSession, SavedVoice } from '../ui/voiceModel.ts'
 
-function section(id: string, heading: string, hint: string): HTMLElement {
+function section(id: string, heading: string): HTMLElement {
   const box = el('section', 'homeSec')
   box.id = id
-  const head = el('h2', 'head', heading)
-  head.append(el('span', 'headHint', hint))
-  box.append(head)
+  box.append(el('h2', 'head', heading))
   return box
 }
 
-function resumeStrip(current: RecentSession, now: number) {
+const newest = <T>(list: T[], at: (item: T) => number) =>
+  list.toSorted((a, b) => at(b) - at(a))[0]
+
+const namedAs = (doc: HomeDoc, query: string) =>
+  newest(
+    doc.voices.filter(v => v.query === query),
+    v => v.savedAt ?? 0,
+  )
+
+function resumeStrip(doc: HomeDoc, current: RecentSession, now: number) {
   const box = el('section', 'homeSec resume')
   box.id = 'resume'
   const text = el('div', 'resumeText')
   text.append(
-    el('h2', 'resumeHead', 'Last session'),
+    el('h2', 'resumeHead', namedAs(doc, current.query)?.name ?? 'Last session'),
     el('p', 'when', sinceWords(current.at, now)),
   )
   const go = el('a', 'btn primary', 'Resume →')
@@ -47,80 +53,84 @@ function resumeStrip(current: RecentSession, now: number) {
 
 export function resumeSection(doc: HomeDoc, now: number) {
   const current = doc.recent[0]
-  return current === undefined ? undefined : resumeStrip(current, now)
+  return current === undefined ? undefined : resumeStrip(doc, current, now)
 }
 
-// A voice with the session's board names its row.
-const savedAs = (doc: HomeDoc, session: RecentSession) =>
-  doc.voices
-    .filter(v => v.query === session.query)
-    .toSorted((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))[0]
+type Entry =
+  | { voice: SavedVoice; session: RecentSession | undefined; at: number }
+  | { voice: undefined; session: RecentSession; at: number }
 
-function sessionRow(doc: HomeDoc, session: RecentSession, now: number) {
-  const match = savedAs(doc, session)
-  const link = el('a', 'sessionRow')
-  link.href = boardUrl(session.query)
-  link.addEventListener('click', () => {
-    handOffSession(session.id)
+// A named board takes the time it was last played or saved, and carries on the
+// session that played it. An unnamed board shows once, at its latest visit.
+function entries(doc: HomeDoc): Entry[] {
+  const earlier = doc.recent.slice(1)
+  const named: Entry[] = doc.voices.map(voice => {
+    const session = newest(
+      earlier.filter(s => s.query === voice.query),
+      s => s.at,
+    )
+    return {
+      voice,
+      session,
+      at: Math.max(voice.savedAt ?? 0, session?.at ?? 0),
+    }
   })
+  const unnamed: Entry[] = earlier
+    .filter(s => !doc.voices.some(v => v.query === s.query))
+    .filter((s, i, all) => all.findIndex(o => o.query === s.query) === i)
+    .map(session => ({ voice: undefined, session, at: session.at }))
+  return [...named, ...unnamed].toSorted((a, b) => b.at - a.at)
+}
+
+function entryRow(entry: Entry, doc: HomeDoc, now: number, edits: CardEdits) {
+  const query =
+    entry.voice === undefined ? entry.session.query : entry.voice.query
+  const link = el('a', 'boardLink')
+  link.href = boardUrl(query)
+  const session = entry.session
+  if (session !== undefined)
+    link.addEventListener('click', () => {
+      handOffSession(session.id)
+    })
   link.append(
-    markFor(session.query),
-    el('span', 'sessionWhen', sinceWords(session.at, now)),
-    ...(match === undefined ? [] : [el('span', 'says', match.name)]),
+    markFor(query),
+    entry.voice === undefined
+      ? el('span', 'boardName unnamed', 'unsaved')
+      : el('span', 'boardName', entry.voice.name),
+    el('span', 'says', entry.at === 0 ? '' : sinceWords(entry.at, now)),
   )
-  const item = el('li')
-  item.append(link)
+  const item = el('li', 'boardRow')
+  item.append(
+    link,
+    entry.voice === undefined
+      ? saveAction(entry.session.query, doc.voices, edits)
+      : cardActions(entry.voice, edits),
+  )
   return item
 }
 
-function sessionsSection(doc: HomeDoc, sessions: RecentSession[], now: number) {
-  const box = section(
-    'recent',
-    'Recent sessions',
-    `saved automatically, last ${RECENT_MAX}`,
-  )
-  const list = el('ul', 'sessions')
-  list.append(...sessions.map(session => sessionRow(doc, session, now)))
-  box.append(list)
-  return box
-}
-
-export function earlierSection(doc: HomeDoc, now: number) {
-  const earlier = doc.recent.slice(1)
-  return earlier.length === 0 ? undefined : sessionsSection(doc, earlier, now)
-}
-
-function emptyVoices(): HTMLElement {
+function emptyState(): HTMLElement {
   const box = el('div', 'empty')
   box.append(
-    el('h3', 'emptyHead', 'Nothing saved yet'),
+    el('h3', 'emptyHead', 'Nothing here yet'),
     el(
       'p',
       'emptySays',
-      'Open the app, bend something, and press save in the panel — or ctrl+S, which does the same. The board lands here under the name you give it, on every machine you sign in on.',
+      'Play something in the app and it shows up here. Press save (ctrl+S) to give it a name.',
     ),
   )
-  const go = el('a', 'btn primary')
+  const go = el('a', 'btn primary', 'Open the app →')
   go.href = appUrl
-  go.textContent = 'Open the app →'
   box.append(go)
   return box
 }
 
 export function failedSection(retry: () => void): HTMLElement {
-  const box = section(
-    'voices',
-    'Saved voices',
-    'named by you, kept until deleted',
-  )
+  const box = section('boards', 'Your boards')
   const empty = el('div', 'empty')
   empty.append(
-    el('h3', 'emptyHead', 'Your voices did not load'),
-    el(
-      'p',
-      'emptySays',
-      'The account is signed in, but the request for its voices failed. Check the connection and try again.',
-    ),
+    el('h3', 'emptyHead', 'Your boards did not load'),
+    el('p', 'emptySays', 'Check the connection and try again.'),
   )
   const again = el('button', 'btn primary', 'Try again')
   again.type = 'button'
@@ -130,36 +140,30 @@ export function failedSection(retry: () => void): HTMLElement {
   return box
 }
 
-export function voicesSection(
+function listSection(
   doc: HomeDoc,
+  list: Entry[],
   now: number,
   edits: CardEdits,
-): HTMLElement {
-  const box = section(
-    'voices',
-    'Saved voices',
-    'named by you, kept until deleted',
-  )
-  if (doc.voices.length === 0) {
-    box.append(emptyVoices())
-    return box
-  }
-  // Newest save first: the list is stored in insertion order, which is what
-  // keeps a re-save where it was in the app's own popover, and is the wrong
-  // order for a page you come back to.
-  const sorted = doc.voices.toSorted(
-    (a: SavedVoice, b: SavedVoice) => (b.savedAt ?? 0) - (a.savedAt ?? 0),
-  )
-  const grid = el('ul', 'grid')
-  for (const voice of sorted) {
-    const says =
-      voice.savedAt === undefined
-        ? 'saved'
-        : `saved ${sinceWords(voice.savedAt, now)}`
-    const item = card(voice.query, voice.name, says)
-    item.append(cardActions(voice, edits))
-    grid.append(item)
-  }
-  box.append(grid)
+) {
+  const box = section('boards', 'Your boards')
+  const rows = el('ul', 'boards')
+  rows.append(...list.map(entry => entryRow(entry, doc, now, edits)))
+  box.append(rows)
   return box
+}
+
+function emptySection() {
+  const box = section('boards', 'Your boards')
+  box.append(emptyState())
+  return box
+}
+
+export function boardsSection(doc: HomeDoc, now: number, edits: CardEdits) {
+  const list = entries(doc)
+  return list.length > 0
+    ? listSection(doc, list, now, edits)
+    : doc.recent.length === 0
+      ? emptySection()
+      : undefined
 }

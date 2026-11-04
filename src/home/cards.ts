@@ -1,5 +1,5 @@
-// A board on the home, as a card: the mark, the name, and — for a saved voice —
-// the row of verbs under it.
+// The verbs beside a board on the home: copy, rename and delete for a named
+// one, save for one the app autosaved.
 
 import { boardUrl } from '../site/paths.ts'
 import { editVoices, type CloudUser } from '../ui/cloud.ts'
@@ -8,24 +8,12 @@ import {
   cleanVoiceName,
   removeVoice,
   renameVoice,
+  suggestVoiceName,
+  upsertVoice,
 } from '../ui/voiceModel.ts'
 import { el } from './dom.ts'
-import { markFor } from './mark.ts'
 
 import type { SavedVoice } from '../ui/voiceModel.ts'
-
-export function card(query: string, name: string, says: string): HTMLElement {
-  const item = el('li')
-  const link = el('a', 'card')
-  link.href = boardUrl(query)
-  link.append(
-    markFor(query),
-    el('span', 'cardName', name),
-    el('span', 'says', says),
-  )
-  item.append(link)
-  return item
-}
 
 // The link a copied card carries, whole, so it opens from a chat window.
 const shareLink = (query: string) =>
@@ -165,5 +153,82 @@ function cardActions(voice: SavedVoice, edits: CardEdits): HTMLElement {
 }
 // CROSS_REPO_SYNC_END(home-card-actions)
 
-export { cardActions }
+// Naming an autosaved board makes it a voice. A name already taken is refused
+// rather than overwriting the voice that has it.
+function saveAction(
+  query: string,
+  voices: SavedVoice[],
+  edits: CardEdits,
+): HTMLElement {
+  const row = el('div', 'cardActions')
+  const status = el('span', 'cardStatus')
+  status.setAttribute('role', 'status')
+
+  const act = (label: string, run: () => void) => {
+    const button = el('button', 'cardAct', label)
+    button.type = 'button'
+    button.addEventListener('click', run)
+    return button
+  }
+
+  const idle = () => {
+    const save = act('Save', () => {
+      name(suggestVoiceName(voices, ''))
+    })
+    row.replaceChildren(save, status)
+    return save
+  }
+
+  function name(start: string) {
+    const input = el('input', 'cardRename')
+    input.value = start
+    input.maxLength = VOICE_NAME_MAX
+    input.setAttribute('aria-label', 'Name for this board')
+    const commit = () => {
+      const to = cleanVoiceName(input.value)
+      if (to === '') idle().focus()
+      else {
+        for (const node of row.querySelectorAll<
+          HTMLButtonElement | HTMLInputElement
+        >('button, input'))
+          node.disabled = true
+        editVoices(edits.user.uid, list =>
+          list.some(v => v.name === to)
+            ? list
+            : upsertVoice(list, to, query, Date.now()),
+        ).then(
+          next => {
+            if (next.some(v => v.name === to && v.query === query))
+              edits.redraw(next)
+            else {
+              name(to)
+              status.textContent = `Another one is already called “${to}”`
+            }
+          },
+          () => {
+            name(to)
+            status.textContent = 'Could not save. Try again.'
+          },
+        )
+      }
+    }
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') commit()
+      if (event.key === 'Escape') idle().focus()
+    })
+    status.textContent = ''
+    row.replaceChildren(
+      input,
+      act('Save', commit),
+      act('Cancel', () => idle().focus()),
+      status,
+    )
+    input.select()
+  }
+
+  idle()
+  return row
+}
+
+export { cardActions, saveAction }
 export type { CardEdits }
