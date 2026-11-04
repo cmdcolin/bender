@@ -609,7 +609,8 @@ export class Chain {
       ctx.mod.read(DEST.fmToyBus) !== null ||
       (crushing && Math.round(p[IDX.crushRef]!) === CRUSH_REF_TOY)
     if (toyRef) ctx.toy.fill(0, 0, n)
-    const fmTap = p[IDX.chipFmClock]! > 0
+    const fmTap =
+      p[IDX.chipFmClock]! > 0 || ctx.mod.read(DEST.chipFmClock) !== null
     let fmRan = false
     const prev = this.tapPrev
     const cap = this.capturing

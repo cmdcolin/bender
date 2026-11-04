@@ -722,16 +722,33 @@ test('a wire on the step tap lane runs the tune at audio rate', () => {
   expect(moves).toBeGreaterThan(100)
 })
 
+const chipStem = (over: Partial<Controls>) =>
+  renderStems({ ...CHIP_ONLY, ...over }, 3).stems[
+    SOURCE_TAPS.indexOf('toyChip')
+  ]!
+
 test('the FM chip on the timing pin bends the toy only while it sounds', () => {
-  const toy = (over: Partial<Controls>) =>
-    renderStems({ ...CHIP_ONLY, ...over }, 3).stems[
-      SOURCE_TAPS.indexOf('toyChip')
-    ]!
   const fm = { fmLevel: 0.8 }
-  expect(deviation(toy({ ...fm, chipFmClock: 1 }), toy(fm))).toBeGreaterThan(
-    0.3,
+  expect(
+    deviation(chipStem({ ...fm, chipFmClock: 1 }), chipStem(fm)),
+  ).toBeGreaterThan(0.3)
+  expect(deviation(chipStem({ chipFmClock: 1 }), chipStem({}))).toBeLessThan(
+    1e-6,
   )
-  expect(deviation(toy({ chipFmClock: 1 }), toy({}))).toBeLessThan(1e-6)
+})
+
+test('a wire on the clock pin lane puts the FM chip on the pin as the knob does', () => {
+  const fm = { fmLevel: 0.8 }
+  const wired = chipStem({
+    ...fm,
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.chipFmClock,
+    mod0Depth: 1,
+  })
+  expect(deviation(wired, chipStem({ ...fm, chipFmClock: 1 }))).toBeLessThan(
+    0.01,
+  )
 })
 
 test('an output hold turns a held note into a staircase', () => {
