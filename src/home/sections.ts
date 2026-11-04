@@ -181,7 +181,7 @@ function nothingSaved(): HTMLElement {
     el(
       'p',
       'emptySays',
-      'Press save in the app (ctrl+S) to keep a board here under a name.',
+      'Press save in the app to keep a board here under a name.',
     ),
   )
   const go = el('a', 'btn primary', 'Open the app →')
