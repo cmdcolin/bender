@@ -5,6 +5,7 @@ import { sinceWords } from 'skillet-shared/relative-time'
 
 import { appUrl, boardUrl } from '../site/paths.ts'
 import { handOffSession } from '../ui/resumeHandoff.ts'
+import { RECENT_MAX } from '../ui/voiceModel.ts'
 import { card, cardActions, type CardEdits } from './cards.ts'
 import { el } from './dom.ts'
 import { markFor } from './mark.ts'
@@ -12,10 +13,12 @@ import { markFor } from './mark.ts'
 import type { HomeDoc } from '../ui/cloud.ts'
 import type { RecentSession, SavedVoice } from '../ui/voiceModel.ts'
 
-function section(id: string, heading: string): HTMLElement {
+function section(id: string, heading: string, hint: string): HTMLElement {
   const box = el('section', 'homeSec')
   box.id = id
-  box.append(el('h2', 'head', heading))
+  const head = el('h2', 'head', heading)
+  head.append(el('span', 'headHint', hint))
+  box.append(head)
   return box
 }
 
@@ -24,7 +27,7 @@ function resumeStrip(current: RecentSession, now: number) {
   box.id = 'resume'
   const text = el('div', 'resumeText')
   text.append(
-    el('h2', 'resumeHead', 'Your last session'),
+    el('h2', 'resumeHead', 'Last session'),
     el('p', 'when', sinceWords(current.at, now)),
   )
   const go = el('a', 'btn primary', 'Resume →')
@@ -71,7 +74,11 @@ function sessionRow(doc: HomeDoc, session: RecentSession, now: number) {
 }
 
 function sessionsSection(doc: HomeDoc, sessions: RecentSession[], now: number) {
-  const box = section('recent', 'Earlier sessions')
+  const box = section(
+    'recent',
+    'Recent sessions',
+    `saved automatically, last ${RECENT_MAX}`,
+  )
   const list = el('ul', 'sessions')
   list.append(...sessions.map(session => sessionRow(doc, session, now)))
   box.append(list)
@@ -101,7 +108,11 @@ function emptyVoices(): HTMLElement {
 }
 
 export function failedSection(retry: () => void): HTMLElement {
-  const box = section('voices', 'Your voices')
+  const box = section(
+    'voices',
+    'Saved voices',
+    'named by you, kept until deleted',
+  )
   const empty = el('div', 'empty')
   empty.append(
     el('h3', 'emptyHead', 'Your voices did not load'),
@@ -124,7 +135,11 @@ export function voicesSection(
   now: number,
   edits: CardEdits,
 ): HTMLElement {
-  const box = section('voices', 'Your voices')
+  const box = section(
+    'voices',
+    'Saved voices',
+    'named by you, kept until deleted',
+  )
   if (doc.voices.length === 0) {
     box.append(emptyVoices())
     return box
