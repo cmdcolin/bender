@@ -24,7 +24,19 @@ const seeded = (seed: number) => () => {
   return seed / 2147483647
 }
 
-afterEach(clearAdded)
+const EMPTY_BENCH = {
+  instruments: [],
+  closed: [],
+  pedals: [],
+  bends: [],
+  roll: false,
+  grid: false,
+}
+
+afterEach(() => {
+  clearAdded()
+  bench.set(EMPTY_BENCH)
+})
 
 test('a stock board uses the two toys, the mix bus and the output', () => {
   expect([...onBoard(stock())].toSorted()).toEqual([
@@ -183,14 +195,6 @@ test('taking an instrument off puts its face away', () => {
   takeOff(group('Gnash'), stock())
   expect(bench.get().instruments).toEqual([])
   expect(bench.get().pedals).toEqual([])
-  bench.set({
-    instruments: [],
-    closed: [],
-    pedals: [],
-    bends: [],
-    roll: false,
-    grid: false,
-  })
 })
 
 test('a scene lays the bench out with only the stages it uses', () => {
@@ -216,14 +220,6 @@ test('a scene lays the bench out with only the stages it uses', () => {
     closed: ['Glint'],
     pedals: ['Boing'],
     bends: ['Comb'],
-    roll: false,
-    grid: false,
-  })
-  bench.set({
-    instruments: [],
-    closed: [],
-    pedals: [],
-    bends: [],
     roll: false,
     grid: false,
   })
