@@ -1,5 +1,5 @@
-// The signed-in home: the board you had open last, then one list of every
-// other board — the ones you named, and the unnamed ones the app autosaved.
+// The signed-in home: the board you had open last, then the boards you saved,
+// with the older autosaves folded away under them.
 
 import { sinceWords } from 'skillet-shared/relative-time'
 
@@ -77,69 +77,111 @@ export function resumeSection(doc: HomeDoc, now: number) {
   return current === undefined ? undefined : resumeStrip(doc, current, now)
 }
 
-type Entry =
-  | { voice: SavedVoice; session: RecentSession | undefined; at: number }
-  | { voice: undefined; session: RecentSession; at: number }
-
-// A named board takes the time it was last played or saved, and carries on the
-// session that played it. An unnamed board shows once, at its latest visit.
-function entries(doc: HomeDoc): Entry[] {
-  const earlier = doc.recent.slice(1)
-  const named: Entry[] = doc.voices.map(voice => {
-    const session = newest(
-      earlier.filter(s => s.query === voice.query),
-      s => s.at,
-    )
-    return {
-      voice,
-      session,
-      at: Math.max(voice.savedAt ?? 0, session?.at ?? 0),
-    }
-  })
-  const unnamed: Entry[] = earlier
-    .filter(s => !doc.voices.some(v => v.query === s.query))
-    .filter((s, i, all) => all.findIndex(o => o.query === s.query) === i)
-    .map(session => ({ voice: undefined, session, at: session.at }))
-  return [...named, ...unnamed].toSorted((a, b) => b.at - a.at)
-}
-
-function entryRow(entry: Entry, doc: HomeDoc, now: number, edits: CardEdits) {
-  const query =
-    entry.voice === undefined ? entry.session.query : entry.voice.query
+function boardLink(
+  query: string,
+  name: HTMLElement,
+  at: number | undefined,
+  now: number,
+) {
   const link = el('a', 'boardLink')
   link.href = boardUrl(query)
-  const session = entry.session
-  if (session !== undefined)
-    link.addEventListener('click', () => {
-      handOffSession(session.id)
-    })
-  const name =
-    entry.voice === undefined
-      ? presetLater(query, el('span', 'boardName unnamed', 'untitled'))
-      : el('span', 'boardName', entry.voice.name)
   link.append(
     markFor(query),
     name,
-    el('span', 'says', entry.at === 0 ? '' : sinceWords(entry.at, now)),
+    el('span', 'says', at === undefined ? '' : sinceWords(at, now)),
   )
+  return link
+}
+
+function savedRow(voice: SavedVoice, now: number, edits: CardEdits) {
   const item = el('li', 'boardRow')
   item.append(
-    link,
-    entry.voice === undefined
-      ? saveAction(query, doc.voices, edits, () => name.dataset.preset ?? '')
-      : cardActions(entry.voice, edits),
+    boardLink(
+      voice.query,
+      el('span', 'boardName', voice.name),
+      voice.savedAt,
+      now,
+    ),
+    cardActions(voice, edits),
   )
   return item
 }
 
-function emptyState(): HTMLElement {
+function autosaveRow(
+  session: RecentSession,
+  doc: HomeDoc,
+  now: number,
+  edits: CardEdits,
+) {
+  const name = presetLater(
+    session.query,
+    el('span', 'boardName unnamed', 'untitled'),
+  )
+  const link = boardLink(session.query, name, session.at, now)
+  link.addEventListener('click', () => {
+    handOffSession(session.id)
+  })
+  const item = el('li', 'boardRow')
+  item.append(
+    link,
+    saveAction(
+      session.query,
+      doc.voices,
+      edits,
+      () => name.dataset.preset ?? '',
+    ),
+  )
+  return item
+}
+
+// The autosaves behind the one on the resume strip, once per board, leaving out
+// any board already saved under a name.
+const olderAutosaves = (doc: HomeDoc) =>
+  doc.recent
+    .slice(1)
+    .filter(s => !doc.voices.some(v => v.query === s.query))
+    .filter((s, i, all) => all.findIndex(o => o.query === s.query) === i)
+
+function autosavesFold(
+  doc: HomeDoc,
+  older: RecentSession[],
+  now: number,
+  edits: CardEdits,
+) {
+  const fold = el('details', 'autosaves')
+  fold.append(
+    el(
+      'summary',
+      undefined,
+      older.length === 1
+        ? '1 older autosave'
+        : `${older.length} older autosaves`,
+    ),
+  )
+  const rows = el('ul', 'boards')
+  rows.append(...older.map(session => autosaveRow(session, doc, now, edits)))
+  fold.append(rows)
+  return fold
+}
+
+function savedList(doc: HomeDoc, now: number, edits: CardEdits) {
+  const rows = el('ul', 'boards')
+  rows.append(
+    ...doc.voices
+      .toSorted((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
+      .map(voice => savedRow(voice, now, edits)),
+  )
+  return rows
+}
+
+function nothingSaved(): HTMLElement {
   const box = el('div', 'empty')
   box.append(
-    el('h3', 'emptyHead', 'Nothing here yet'),
+    el('h3', 'emptyHead', 'Nothing saved yet'),
     el(
       'p',
       'emptySays',
-      'Play something in the app and it shows up here. Press save (ctrl+S) to give it a name.',
+      'Press save in the app (ctrl+S) to keep a board here under a name.',
     ),
   )
   const go = el('a', 'btn primary', 'Open the app →')
@@ -149,10 +191,10 @@ function emptyState(): HTMLElement {
 }
 
 export function failedSection(retry: () => void): HTMLElement {
-  const box = section('boards', 'Your boards')
+  const box = section('saved', 'Saved')
   const empty = el('div', 'empty')
   empty.append(
-    el('h3', 'emptyHead', 'Your boards did not load'),
+    el('h3', 'emptyHead', 'Your saved boards did not load'),
     el('p', 'emptySays', 'Check the connection and try again.'),
   )
   const again = el('button', 'btn primary', 'Try again')
@@ -163,30 +205,12 @@ export function failedSection(retry: () => void): HTMLElement {
   return box
 }
 
-function listSection(
-  doc: HomeDoc,
-  list: Entry[],
-  now: number,
-  edits: CardEdits,
-) {
-  const box = section('boards', 'Your boards')
-  const rows = el('ul', 'boards')
-  rows.append(...list.map(entry => entryRow(entry, doc, now, edits)))
-  box.append(rows)
+export function savedSection(doc: HomeDoc, now: number, edits: CardEdits) {
+  const box = section('saved', 'Saved')
+  const older = olderAutosaves(doc)
+  box.append(
+    doc.voices.length === 0 ? nothingSaved() : savedList(doc, now, edits),
+    ...(older.length === 0 ? [] : [autosavesFold(doc, older, now, edits)]),
+  )
   return box
-}
-
-function emptySection() {
-  const box = section('boards', 'Your boards')
-  box.append(emptyState())
-  return box
-}
-
-export function boardsSection(doc: HomeDoc, now: number, edits: CardEdits) {
-  const list = entries(doc)
-  return list.length > 0
-    ? listSection(doc, list, now, edits)
-    : doc.recent.length === 0
-      ? emptySection()
-      : undefined
 }
