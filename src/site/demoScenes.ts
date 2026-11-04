@@ -1,6 +1,7 @@
 import { DEST } from '../dsp/modbus.ts'
 import { FM_VOICE_NAMES } from '../dsp/stages/fmVoices.ts'
 import { PCM_VOICE_NAMES } from '../dsp/stages/pcmRom.ts'
+import { ENV_CAPS } from '../dsp/stages/toyChip.ts'
 import { BENDS } from '../ui/controls/bends.ts'
 import { kit, tune } from '../ui/presets/write.ts'
 
@@ -17,6 +18,8 @@ const PHRASE_BARS = [1, 2, 4, 8, 16, 32]
 const PHRASE_SHAPE = { swell: 3, stairs: 4 }
 const GROUND = 1
 const SAW = 1
+const LFO_CHAOS = 4
+const LEAKY = ENV_CAPS.indexOf('leaky')
 const FB_TO_OSC = 1
 const GARBAGE = 1
 
@@ -61,6 +64,51 @@ export const DEMO_SCENES: DemoScene[] = [
       mod0Depth: 0.4,
       ...phrase(8, PHRASE_SHAPE.swell),
       outGain: 11,
+      revMix: 0.25,
+      revDecayS: 3,
+    },
+  },
+  {
+    name: 'the volume carrier comes down',
+    says: 'The toy drones on a leaky envelope cap while its volume PWM is tapped so far down the clock divider that the carrier is a note of its own, and a chaotic wire throws the master clock up and down three octaves, so every fade is a change of tone and the whine never lands twice',
+    board: {
+      ...CLUSTERS,
+      ...NO_PULSE,
+      drumBpm: 70,
+      chipLevel: 0.6,
+      chipEnvCap: LEAKY,
+      chipPwm: 0.85,
+      chipClockX: 0.4,
+      mod0Src: SRC.lfo,
+      mod0Dest: DEST.chipClock,
+      mod0Depth: 0.8,
+      modLfoShape: LFO_CHAOS,
+      modLfoHz: 1.5,
+      mod1Src: SRC.phrase,
+      mod1Dest: DEST.chipPwmTap,
+      mod1Depth: 0.6,
+      ...phrase(8, PHRASE_SHAPE.swell),
+      revMix: 0.2,
+      revDecayS: 2,
+    },
+  },
+  {
+    name: 'two chips bend each other',
+    says: 'Glint’s output is wired onto the toy’s timing pin and the toy’s output onto Glint’s data bus, so each chip bends the other’s clock and registers, more tightly every bar, until the two lock into one sound neither would make alone',
+    board: {
+      ...CLUSTERS,
+      ...NO_PULSE,
+      drumBpm: 66,
+      chipLevel: 0.6,
+      chipEnvCap: LEAKY,
+      chipPwm: 0.4,
+      fmLevel: 0.8,
+      fmVoice: FM_VOICE_NAMES.indexOf('bell'),
+      fmToyBus: 2,
+      mod0Src: SRC.phrase,
+      mod0Dest: DEST.chipFmClock,
+      mod0Depth: 0.7,
+      ...phrase(4, PHRASE_SHAPE.stairs),
       revMix: 0.25,
       revDecayS: 3,
     },
