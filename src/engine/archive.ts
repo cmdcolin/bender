@@ -42,37 +42,45 @@ export const PIANO_78S: Pool = {
   blurb: 'piano sides on shellac, crackle and all',
 }
 
+// 309k sides of shellac, transferred flat. Surface noise, a rolled-off top and
+// wow already on the recording before the board touches it, which is most of
+// the way to what the tape machine downstream is pretending to be.
+export const SHELLAC: Pool = {
+  id: '78s',
+  label: '78s',
+  query: 'collection:78rpm',
+  blurb: 'shellac transfers — crackle and wow already on them',
+}
+
+// The Conet Project: 29 discs of shortwave numbers stations. Recorded off air,
+// so the carrier, the fading and the interference are all in there.
+export const NUMBERS_STATIONS: Pool = {
+  id: 'numbers',
+  label: 'numbers stations',
+  query: 'collection:irdial',
+  blurb: 'shortwave numbers stations, recorded off air',
+}
+
+export const OLD_TIME_RADIO: Pool = {
+  id: 'radio',
+  label: 'old-time radio',
+  query: 'collection:oldtimeradio',
+  blurb: 'broadcast voice, band-limited and compressed',
+}
+
+export const NASA_AUDIO: Pool = {
+  id: 'nasa',
+  label: 'NASA audio',
+  query: 'collection:nasaaudiocollection',
+  blurb: 'comms chatter, squelch and countdowns',
+}
+
 export const POOLS: readonly Pool[] = [
-  // 309k sides of shellac, transferred flat. Surface noise, a rolled-off top and
-  // wow already on the recording before the board touches it, which is most of
-  // the way to what the tape machine downstream is pretending to be.
-  {
-    id: '78s',
-    label: '78s',
-    query: 'collection:78rpm',
-    blurb: 'shellac transfers — crackle and wow already on them',
-  },
+  SHELLAC,
   PIANO_78S,
-  // The Conet Project: 29 discs of shortwave numbers stations. Recorded off air,
-  // so the carrier, the fading and the interference are all in there.
-  {
-    id: 'numbers',
-    label: 'numbers stations',
-    query: 'collection:irdial',
-    blurb: 'shortwave numbers stations, recorded off air',
-  },
-  {
-    id: 'radio',
-    label: 'old-time radio',
-    query: 'collection:oldtimeradio',
-    blurb: 'broadcast voice, band-limited and compressed',
-  },
-  {
-    id: 'nasa',
-    label: 'NASA audio',
-    query: 'collection:nasaaudiocollection',
-    blurb: 'comms chatter, squelch and countdowns',
-  },
+  NUMBERS_STATIONS,
+  OLD_TIME_RADIO,
+  NASA_AUDIO,
   {
     id: 'spoken',
     label: 'spoken word',

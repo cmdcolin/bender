@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-637 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 159
+637 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 163
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 159 presets, and a roll button on every heading as well as
+- **Whole boards.** 163 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -1669,7 +1669,7 @@ result:
 
 ### Presets
 
-159 presets. Each name is a link that opens the app with that board loaded, and
+163 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1780,6 +1780,22 @@ the board waits until you press play.
   — A piano 78 off archive.org loops one phrase a little slow, and the loop
   wanders through the side. Four loops that never erase pile it up behind,
   shedding oxide in the same places every pass
+- [**numbers station on the sea floor**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,sampleLevel:1,sampleSpeed:0.8,bendSlot0:9,bendSlot1:7,bendSlot2:6,filtHz:900,filtRes:0.9,filtMode:1,filtMix:0.6,shiftHz:3,shiftDir:1,shiftFb:0.85,shiftMix:0.6,codecRate:12,codecFrame:3,codecLoss:0.25,codecScramble:0.15,codecMix:1,delayMs:1300,dlyFb:0.85,wowDepthMs:8,wowHz:0.2,dlyRingHz:1.7,dlyRing:0.3,dlyLoopMode:2,dlyLoopHz:1200,dlyLoopRes:1.05,dlyMix:0.5,modLfoHz:0.05,modLfoShape:5,mod0Src:1,mod0Dest:10,mod0Depth:0.4&shelf=numbers)
+  — A numbers station off archive.org drops frames through a starved codec, and
+  a shifter with its feedback up pulls every word down in pitch. A delay whose
+  loop is a whistling band-pass sends the digits back round
+- [**mission control after everyone left**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,sampleLevel:1,sampleSpeed:0.75,loopIn:0.2,loopOut:0.3,bendSlot0:10,bendSlot1:1,ringHz:37,ringMix:0.15,glitchProb:0.25,glitchSliceMs:250,glitchRevProb:0.6,glitchPitch:1,glitchMix:0.5,rackDecay:0.85,rackSize:2.9,rackDamp:0.3,rackClock:0.8,rackRefresh:0.3,rackMix:0.3,echoMode:5,echoMs:600,echoFb:0.88,echoToneHz:7000,echoShift:-5,echoLevel:0.65,modLfoHz:0.15,modLfoShape:3,mod0Src:1,mod0Dest:23&shelf=nasa)
+  — A few seconds of NASA comms off archive.org, slowed, with the loop jumping
+  to a new spot in the tape every few seconds. Each echo comes back a fourth
+  lower than the last, into a huge rack verb whose memory is losing bits
+- [**radio play in a flooded basement**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,sampleLevel:1,sampleSpeed:0.92,filtHz:1800,filtRes:0.5,filtMix:1,delayMs:480,dlyFb:0.6,tapeBrake:0.3,dlyHeadDirt:0.6,dlySplice:0.6,dlyMix:0.25,revDecayS:6,revWarble:0.6,revToneHz:1500,revBoing:0.8,revKick:0.4,revMix:0.45,humLevel:0.25,tapeMix:1,tapeSpeed:-1,tapeFormat:1,tapeDrop:0.4&shelf=radio)
+  — An old-time radio show off archive.org plays dark through a cassette that
+  drops out, into a spring tank that crashes when the voices get loud, a dirty
+  tape echo, and a ground hum
+- [**the choir is one record**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,sampleLevel:1,sampleSpeed:0.75,fourLevel:0.7,fourHiss:0.3,four1In:1,four1Rec:0.4,four1Erase:0.3,four1Len:5.3,four2In:1,four2Rec:0.4,four2Erase:0.3,four2Len:8.9,four3In:1,four3Rec:0.4,four3Erase:0.3,four3Len:13.1,four4In:1,four4Rec:0.4,four4Erase:0.3,four4Len:19.7,bendSlot0:7,bendSlot1:10,shiftHz:11,shiftMix:0.5,rackDecay:0.9,rackSize:2,rackWander:0.7,rackMix:0.4,ensMode:1,ensMix:0.6&shelf=78s)
+  — A 78 off archive.org plays slow onto four tape loops that record the whole
+  board back. Every lap passes through a frequency shifter again, so each copy
+  sits 11 Hz above the last and the one voice piles up into an out-of-tune choir
 - [**nothing plugged in**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fourLevel:0.25,fourAux:1.1,four1In:3,four1MidHz:900,four1Mid:12,four1Send:0.9,four1Pan:-0.5,four1Fader:0.8,four2In:3,four2Low:-10,four2MidHz:2600,four2Mid:10,four2Send:0.7,four2Pan:0.5,four2Fader:0.6)
   — Two channels of the four-track are on the desk’s aux return, each boosted at
   a different mid, and the no-input desk squeals on its op-amp rails
