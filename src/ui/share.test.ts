@@ -11,6 +11,7 @@ import {
   boardHash,
   decodeControls,
   encodeControls,
+  isSceneHash,
   sceneHash,
   shelfFromHash,
 } from './share.ts'
@@ -274,6 +275,15 @@ test('a scene link names the board and the shelf its tape comes off', () => {
   const hash = `#${sceneHash(board, PIANO_78S)}`
   expect(boardFromUrl('', hash)).toEqual({ filtRes: 1.2 })
   expect(shelfFromHash(hash)).toBe(PIANO_78S)
+  expect(isSceneHash(hash)).toBe(true)
+})
+
+test('a scene with no tape is still a scene, and a plain link is not', () => {
+  const board = { ...DEFAULT_CONTROLS, filtRes: 1.2 }
+  const hash = `#${sceneHash(board)}`
+  expect(isSceneHash(hash)).toBe(true)
+  expect(shelfFromHash(hash)).toBeUndefined()
+  expect(isSceneHash(`#${boardHash('', board)}`)).toBe(false)
 })
 
 test('an unknown shelf is no shelf', () => {
@@ -285,4 +295,5 @@ test('the board written back drops the shelf, so a reload rolls nothing', () => 
   const board = { ...DEFAULT_CONTROLS, filtRes: 1.2 }
   const hash = sceneHash(board, PIANO_78S)
   expect(boardHash(hash, board)).not.toContain('shelf=')
+  expect(boardHash(hash, board)).not.toContain('scene=')
 })

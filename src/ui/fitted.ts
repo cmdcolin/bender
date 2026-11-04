@@ -1,6 +1,8 @@
 import { createStore } from '../listeners.ts'
+import { PEDALS } from '../pedals.ts'
 import { bench, INSTRUMENTS, setBench, type Bench } from './bench.ts'
 import { FIXED, GATES, gateOff, onBoard } from './chain-map.ts'
+import { BENDS } from './controls/bends.ts'
 import { GROUPS, OWNER_BY_KEY, type Group } from './controls/index.ts'
 import { readSession, writeSession } from './persist.ts'
 import { coherePatch, cohereVoices } from './presets/patch.ts'
@@ -53,8 +55,8 @@ export function add(names: Iterable<string>) {
 
 export const clearAdded = () => added.set(new Set())
 
-/** A scene lays the bench out for itself: the instruments it plays, brought
-    back if they were put away, and nothing else in front of them. */
+/** A scene lays the bench out for itself: the instruments, pedals and bends
+    it uses, brought back if they were put away, and nothing else. */
 export function benchForScene(c: Controls) {
   const used = onBoard(c)
   const b = bench.get()
@@ -62,8 +64,8 @@ export function benchForScene(c: Controls) {
     ...b,
     instruments: INSTRUMENTS.filter(s => used.has(s)),
     closed: b.closed.filter(s => !used.has(s)),
-    pedals: [],
-    bends: [],
+    pedals: PEDALS.map(p => p.group).filter(s => used.has(s)),
+    bends: BENDS.map(p => p.group).filter(s => used.has(s)),
     grid: false,
   })
 }

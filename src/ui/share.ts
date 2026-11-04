@@ -53,6 +53,8 @@ const PARAM = 'set'
 const PACKED = 'p'
 const SHELF = 'shelf'
 
+const SCENE = 'scene'
+
 // Where a board rode before the hash: for a while in the query string under the
 // same name, and before that in the hash under a shorter one. Read, never
 // written, so links from those days still open the board they meant.
@@ -154,6 +156,7 @@ export function boardHash(hash: string, c: Controls): string {
   // it saying something staler.
   q.delete(LEGACY_HASH_KEY)
   q.delete(SHELF)
+  q.delete(SCENE)
   q.delete(long ? PACKED : PARAM)
   q.delete(VERSION)
   const key = long ? PARAM : PACKED
@@ -231,8 +234,11 @@ export const shelfFromHash = (hash: string) => {
   return id === null ? undefined : poolById(id)
 }
 
-export const sceneHash = (c: Controls, shelf: Pool) =>
-  `${boardHash('', c)}&${SHELF}=${shelf.id}`
+export const isSceneHash = (hash: string) =>
+  new URLSearchParams(hash.replace(/^#/, '')).has(SCENE)
+
+export const sceneHash = (c: Controls, shelf?: Pool) =>
+  `${boardHash('', c)}&${SCENE}=1${shelf ? `&${SHELF}=${shelf.id}` : ''}`
 
 export function boardFromLocation(): Partial<Controls> | null {
   return boardFromUrl(window.location.search, window.location.hash)

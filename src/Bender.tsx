@@ -5,7 +5,7 @@ import { benchForScene } from './ui/fitted.ts'
 import { loadPhraseLock } from './ui/morph.ts'
 import { stampLocal } from './ui/prefs.ts'
 import { keepRunState } from './ui/runState.ts'
-import { boardFromLocation, shelfFromHash } from './ui/share.ts'
+import { boardFromLocation, isSceneHash, shelfFromHash } from './ui/share.ts'
 import { startFresh } from './ui/starterBoard.ts'
 import './theme.css'
 
@@ -16,10 +16,11 @@ import './theme.css'
 const shared = boardFromLocation()
 if (shared) engine.patch(shared)
 
-// A scene's bench is newer than the one on the account, so signing in keeps it.
 const linkShelf = shelfFromHash(window.location.hash)
-if (linkShelf) {
-  void engine.fillFromShelf(linkShelf)
+if (linkShelf) void engine.fillFromShelf(linkShelf)
+
+// A scene's bench is newer than the one on the account, so signing in keeps it.
+if (isSceneHash(window.location.hash)) {
   benchForScene(engine.controls.get())
   stampLocal(Date.now())
 }

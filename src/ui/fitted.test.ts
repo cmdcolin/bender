@@ -193,7 +193,7 @@ test('taking an instrument off puts its face away', () => {
   })
 })
 
-test('a scene lays the bench out with only the instruments it plays', () => {
+test('a scene lays the bench out with only the stages it uses', () => {
   bench.set({
     instruments: ['Plinky', 'Growler'],
     closed: ['Spool', 'Glint'],
@@ -208,12 +208,14 @@ test('a scene lays the bench out with only the instruments it plays', () => {
     drumLevel: 0,
     sampleLevel: 1,
     fourLevel: 0.7,
+    revMix: 0.4,
+    combMix: 0.5,
   })
   expect(bench.get()).toEqual({
     instruments: ['Spool', 'Layercake'],
     closed: ['Glint'],
-    pedals: [],
-    bends: [],
+    pedals: ['Boing'],
+    bends: ['Comb'],
     roll: false,
     grid: false,
   })
