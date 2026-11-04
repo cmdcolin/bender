@@ -22,17 +22,20 @@ function section(id: string, heading: string): HTMLElement {
 const newest = <T>(list: T[], at: (item: T) => number) =>
   list.toSorted((a, b) => at(b) - at(a))[0]
 
-// The label needs the preset table, which the landing page has no use for, so
-// it arrives after the row is drawn.
-function labelLater(query: string, into: HTMLElement) {
+// A board that is a preset is called by its name. Finding out needs the preset
+// table, which the landing page has no use for, so it arrives after the row is
+// drawn.
+function presetLater(query: string, into: HTMLElement) {
   import('./boardLabel.ts').then(
-    ({ boardLabel }) => {
-      const label = boardLabel(query)
-      into.textContent = label.text
-      into.dataset.preset = label.preset
+    ({ presetOf }) => {
+      const preset = presetOf(query)
+      if (preset !== undefined) {
+        into.textContent = preset
+        into.dataset.preset = preset
+      }
     },
     (e: unknown) => {
-      console.error('could not label a board', e)
+      console.error('could not look up a preset', e)
     },
   )
   return into
@@ -51,7 +54,7 @@ function resumeStrip(doc: HomeDoc, current: RecentSession, now: number) {
   const named = namedAs(doc, current.query)
   const head = el('h2', 'resumeHead', named?.name ?? 'Last session')
   text.append(
-    named === undefined ? labelLater(current.query, head) : head,
+    named === undefined ? presetLater(current.query, head) : head,
     el('p', 'when', `last played ${sinceWords(current.at, now)}`),
   )
   const go = el('a', 'btn primary', 'Resume →')
@@ -112,7 +115,7 @@ function entryRow(entry: Entry, doc: HomeDoc, now: number, edits: CardEdits) {
     })
   const name =
     entry.voice === undefined
-      ? labelLater(query, el('span', 'boardName unnamed', 'unsaved'))
+      ? presetLater(query, el('span', 'boardName unnamed', 'untitled'))
       : el('span', 'boardName', entry.voice.name)
   link.append(
     markFor(query),

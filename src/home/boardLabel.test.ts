@@ -4,31 +4,16 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { applyPreset } from '../ui/presets/apply.ts'
 import { PRESETS } from '../ui/presets/table.ts'
 import { boardHash } from '../ui/share.ts'
-import { boardLabel } from './boardLabel.ts'
+import { presetOf } from './boardLabel.ts'
 
-const preset = (name: string) => {
-  const found = PRESETS.find(p => p.name === name)
-  if (found === undefined) throw new Error(`no preset ${name}`)
-  return applyPreset(found, DEFAULT_CONTROLS)
-}
+const dawn = PRESETS.find(p => p.name === 'dawn chorus')
+if (dawn === undefined) throw new Error('no preset dawn chorus')
+const board = applyPreset(dawn, DEFAULT_CONTROLS)
 
 test('a board that is a preset is called by its name', () => {
-  expect(boardLabel(boardHash('', preset('dawn chorus'))).text).toBe(
-    'dawn chorus',
-  )
+  expect(presetOf(boardHash('', board))).toBe('dawn chorus')
 })
 
-test('a bent preset is called after the one it came from', () => {
-  const bent = { ...preset('dawn chorus'), dlyFb: 0.77 }
-  expect(boardLabel(boardHash('', bent))).toEqual({
-    preset: 'dawn chorus',
-    text: 'bent from dawn chorus',
-  })
-})
-
-test('a board near stock says so', () => {
-  expect(boardLabel('').text).toBe('stock')
-  expect(
-    boardLabel(boardHash('', { ...DEFAULT_CONTROLS, dlyFb: 0.77 })).text,
-  ).toBe('bent from stock')
+test('a bent board is not a preset', () => {
+  expect(presetOf(boardHash('', { ...board, dlyFb: 0.77 }))).toBeUndefined()
 })

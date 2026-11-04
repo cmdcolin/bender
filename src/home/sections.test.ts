@@ -32,9 +32,9 @@ test('one list: a named board takes its latest play, repeat unnamed boards show 
     ],
   }
   expect(rows(boardsSection(doc, NOW, edits))).toEqual([
-    ['unsaved', '2 hours ago'],
+    ['untitled', '2 hours ago'],
     ['kept', '3 hours ago'],
-    ['unsaved', '5 hours ago'],
+    ['untitled', '5 hours ago'],
     ['old', '3 days ago'],
   ])
 })
