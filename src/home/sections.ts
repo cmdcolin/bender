@@ -19,8 +19,8 @@ function section(id: string, heading: string): HTMLElement {
   return box
 }
 
-const newest = <T>(list: T[], at: (item: T) => number) =>
-  list.toSorted((a, b) => at(b) - at(a))[0]
+const newestFirst = (voices: SavedVoice[]) =>
+  voices.toSorted((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
 
 // A board that is a preset is called by its name. Finding out needs the preset
 // table, which the landing page has no use for, so it arrives after the row is
@@ -42,10 +42,7 @@ function presetLater(query: string, into: HTMLElement) {
 }
 
 const namedAs = (doc: HomeDoc, query: string) =>
-  newest(
-    doc.voices.filter(v => v.query === query),
-    v => v.savedAt ?? 0,
-  )
+  newestFirst(doc.voices).find(v => v.query === query)
 
 function resumeStrip(doc: HomeDoc, current: RecentSession, now: number) {
   const box = el('section', 'homeSec resume')
@@ -138,9 +135,9 @@ function autosaveRow(
 // any board already saved under a name.
 const olderAutosaves = (doc: HomeDoc) =>
   doc.recent
+    .filter((s, i, all) => all.findIndex(o => o.query === s.query) === i)
     .slice(1)
     .filter(s => !doc.voices.some(v => v.query === s.query))
-    .filter((s, i, all) => all.findIndex(o => o.query === s.query) === i)
 
 function autosavesFold(
   doc: HomeDoc,
@@ -167,9 +164,7 @@ function autosavesFold(
 function savedList(doc: HomeDoc, now: number, edits: CardEdits) {
   const rows = el('ul', 'boards')
   rows.append(
-    ...doc.voices
-      .toSorted((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
-      .map(voice => savedRow(voice, now, edits)),
+    ...newestFirst(doc.voices).map(voice => savedRow(voice, now, edits)),
   )
   return rows
 }

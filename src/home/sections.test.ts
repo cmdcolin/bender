@@ -51,6 +51,18 @@ test('older autosaves fold under them, once per board, leaving out saved ones', 
   ])
 })
 
+test('the board on the resume strip is not folded under it again', () => {
+  const recent = [
+    { id: 'now', query: 'a=1', at: NOW - HOUR },
+    { id: 's1', query: 'b=1', at: NOW - 2 * HOUR },
+    { id: 's2', query: 'a=1', at: NOW - 3 * HOUR },
+  ]
+  const fold = savedSection({ recent, voices: [] }, NOW, edits).querySelector(
+    'details',
+  )
+  expect(rows(fold)).toEqual([['untitled', '2 hours ago', ['Save']]])
+})
+
 test('nothing saved says how to save, and no fold without older autosaves', () => {
   const section = savedSection(
     { recent: [doc.recent[0]!], voices: [] },
