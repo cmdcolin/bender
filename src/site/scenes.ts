@@ -34,11 +34,13 @@ export const scenes = [
     says,
     href: boardUrl(sceneHash({ ...DEFAULT_CONTROLS, ...board })),
   })),
-  ...TAPE_SCENES.flatMap(({ preset, says }) =>
-    PRESETS.filter(p => p.name === preset).map(def => ({
+  ...TAPE_SCENES.map(({ preset, says }) => {
+    const def = PRESETS.find(p => p.name === preset)
+    if (def === undefined) throw new Error(`no preset named '${preset}'`)
+    return {
       name: def.name,
       says,
       href: boardUrl(sceneHash(applyPreset(def, DEFAULT_CONTROLS), def.shelf)),
-    })),
-  ),
+    }
+  }),
 ]

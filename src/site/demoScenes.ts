@@ -2,36 +2,31 @@ import { DEST } from '../dsp/modbus.ts'
 import { FM_VOICE_NAMES } from '../dsp/stages/fmVoices.ts'
 import { PCM_VOICE_NAMES } from '../dsp/stages/pcmRom.ts'
 import { ENV_CAPS } from '../dsp/stages/toyChip.ts'
-import { BENDS } from '../ui/controls/bends.ts'
+import { choiceValue } from '../ui/controls/index.ts'
 import { kit, tune } from '../ui/presets/write.ts'
 
 import type { Controls } from '../controls.ts'
 
 const SRC = {
-  lfo: 1,
-  env: 3,
-  laneA: 12,
-  laneB: 13,
-  phrase: 14,
+  lfo: choiceValue('mod0Src', 'LFO'),
+  env: choiceValue('mod0Src', 'envelope'),
+  laneA: choiceValue('mod0Src', 'lane A'),
+  phrase: choiceValue('mod0Src', 'phrase'),
 }
-const PHRASE_BARS = [1, 2, 4, 8, 16, 32]
-const PHRASE_SHAPE = { swell: 3, stairs: 4 }
-const GROUND = 1
-const SAW = 1
+const GROUND = choiceValue('pcmAddrFault', 'to ground')
+const SAW = choiceValue('oscShape', 'saw')
 const LEAKY = ENV_CAPS.indexOf('leaky')
-const FB_TO_OSC = 1
-const GARBAGE = 1
+const FB_TO_OSC = choiceValue('fbDest', 'osc FM')
+const GARBAGE = choiceValue('fmColdBoot', 'garbage')
+const RACK_VERB = choiceValue('bendSlot0', 'verb')
 
-const phrase = (bars: number, shape: number) => ({
-  modPhraseBars: PHRASE_BARS.indexOf(bars),
-  modPhraseShape: shape,
+const phrase = (bars: number, shape: 'swell' | 'stairs') => ({
+  modPhraseBars: choiceValue('modPhraseBars', String(bars)),
+  modPhraseShape: choiceValue('modPhraseShape', shape),
 })
 
 const lane = (name: 'A' | 'B', steps: number[]) =>
   Object.fromEntries(steps.map((v, i) => [`modLane${name}${i}`, v]))
-
-const bendSlot = (group: (typeof BENDS)[number]['group']) =>
-  BENDS.findIndex(b => b.group === group) + 1
 
 const held = (...notes: string[]) =>
   notes.map(n => `${n}${' ~'.repeat(15)}`).join(' ')
@@ -61,7 +56,7 @@ export const DEMO_SCENES: DemoScene[] = [
       mod0Src: SRC.phrase,
       mod0Dest: DEST.fmToyBus,
       mod0Depth: 0.4,
-      ...phrase(8, PHRASE_SHAPE.swell),
+      ...phrase(8, 'swell'),
       outGain: 11,
       revMix: 0.25,
       revDecayS: 3,
@@ -83,7 +78,7 @@ export const DEMO_SCENES: DemoScene[] = [
       mod0Src: SRC.phrase,
       mod0Dest: DEST.chipFmClock,
       mod0Depth: 0.7,
-      ...phrase(4, PHRASE_SHAPE.stairs),
+      ...phrase(4, 'stairs'),
       revMix: 0.25,
       revDecayS: 3,
     },
@@ -102,7 +97,7 @@ export const DEMO_SCENES: DemoScene[] = [
       mod0Src: SRC.phrase,
       mod0Dest: DEST.fmRot,
       mod0Depth: 0.12,
-      ...phrase(4, PHRASE_SHAPE.stairs),
+      ...phrase(4, 'stairs'),
       mod1Src: SRC.lfo,
       mod1Dest: DEST.fmRing,
       mod1Depth: 0.3,
@@ -125,7 +120,7 @@ export const DEMO_SCENES: DemoScene[] = [
       mod0Src: SRC.phrase,
       mod0Dest: DEST.pcmWrite,
       mod0Depth: 0.2,
-      ...phrase(4, PHRASE_SHAPE.stairs),
+      ...phrase(4, 'stairs'),
       mod1Src: SRC.lfo,
       mod1Dest: DEST.pcmSignDir,
       mod1Depth: 0.4,
@@ -154,12 +149,12 @@ export const DEMO_SCENES: DemoScene[] = [
       mod0Src: SRC.phrase,
       mod0Dest: DEST.pcmAddrLine,
       mod0Depth: 0.8,
-      ...phrase(4, PHRASE_SHAPE.stairs),
+      ...phrase(4, 'stairs'),
       mod1Src: SRC.lfo,
       mod1Dest: DEST.pcmCpuBus,
       mod1Depth: 0.25,
       modLfoHz: 0.05,
-      bendSlot0: bendSlot('Rack verb'),
+      bendSlot0: RACK_VERB,
       rackMix: 0.3,
       rackDecay: 0.92,
       rackSize: 2.2,
@@ -185,7 +180,7 @@ export const DEMO_SCENES: DemoScene[] = [
       mod0Src: SRC.phrase,
       mod0Dest: DEST.drumOutAddr,
       mod0Depth: 0.9,
-      ...phrase(4, PHRASE_SHAPE.stairs),
+      ...phrase(4, 'stairs'),
       echoLevel: 0.3,
       revMix: 0.2,
       revDecayS: 2,
@@ -217,7 +212,7 @@ export const DEMO_SCENES: DemoScene[] = [
       mod2Src: SRC.phrase,
       mod2Dest: DEST.fbMs,
       mod2Depth: 0.5,
-      ...phrase(4, PHRASE_SHAPE.stairs),
+      ...phrase(4, 'stairs'),
       noiseLevel: 0.15,
       echoLevel: 0.4,
       revMix: 0.3,

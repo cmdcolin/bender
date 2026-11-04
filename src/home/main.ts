@@ -3,7 +3,7 @@
 // those two and the sign-in that decides it; the pieces each state is built
 // from are in sections.ts, cards.ts and account.ts.
 //
-// index.astro builds the landing markup, demos included, so a visitor gets
+// index.astro builds the landing markup, scenes included, so a visitor gets
 // it with no JavaScript run at all. cloud.ts fetches the SDK on the first call
 // that needs it, so the only loads that reach Google are the ones that already
 // know this browser signed in and the ones where somebody pressed the button.

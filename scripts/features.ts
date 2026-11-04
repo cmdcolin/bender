@@ -12,7 +12,7 @@ import { MIC_JACKS } from '../src/ui/micWiring.ts'
 import { CUTS } from '../src/ui/presets/cuts.ts'
 import { RIGS } from '../src/ui/presets/rigs.ts'
 import { PRESETS, type PresetDef } from '../src/ui/presets/table.ts'
-import { boardHash } from '../src/ui/share.ts'
+import { boardHash, withShelf } from '../src/ui/share.ts'
 
 import type { Group, SliderDef } from '../src/ui/controls/types.ts'
 
@@ -169,7 +169,7 @@ const LIVE = 'https://cmdcolin.github.io/bender/app/'
 
 // The long `#set=` form names the controls a preset moves; the short `#p=` form does not.
 const presetUrl = (p: PresetDef) =>
-  `${LIVE}#${boardHash('#set=', { ...DEFAULT_CONTROLS, ...p.patch })}${p.shelf ? `&shelf=${p.shelf.id}` : ''}`
+  `${LIVE}#${withShelf(boardHash('#set=', { ...DEFAULT_CONTROLS, ...p.patch }), p.shelf)}`
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 

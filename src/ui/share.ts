@@ -52,7 +52,6 @@ const TUNE_KEYS = new Set<ControlKey>([
 const PARAM = 'set'
 const PACKED = 'p'
 const SHELF = 'shelf'
-
 const SCENE = 'scene'
 
 // Where a board rode before the hash: for a while in the query string under the
@@ -237,8 +236,11 @@ export const shelfFromHash = (hash: string) => {
 export const isSceneHash = (hash: string) =>
   new URLSearchParams(hash.replace(/^#/, '')).has(SCENE)
 
+export const withShelf = (hash: string, shelf?: Pool) =>
+  shelf ? `${hash}&${SHELF}=${shelf.id}` : hash
+
 export const sceneHash = (c: Controls, shelf?: Pool) =>
-  `${boardHash('', c)}&${SCENE}=1${shelf ? `&${SHELF}=${shelf.id}` : ''}`
+  withShelf(`${boardHash('', c)}&${SCENE}=1`, shelf)
 
 export function boardFromLocation(): Partial<Controls> | null {
   return boardFromUrl(window.location.search, window.location.hash)
