@@ -2,45 +2,10 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { applyPreset } from '../ui/presets/apply.ts'
 import { PRESETS } from '../ui/presets/table.ts'
 import { sceneHash } from '../ui/share.ts'
+import { DEMO_SCENES } from './demoScenes.ts'
 import { boardUrl } from './paths.ts'
 
-const SCENES = [
-  {
-    preset: 'melody scrambler',
-    says: 'A pot soldered onto the toy keyboard’s program counter, so the song jumps around its own ROM',
-  },
-  {
-    preset: 'two dying batteries',
-    says: 'The toy keyboard and the drum machine on separate dying batteries, each browning out and rebooting on its own schedule',
-  },
-  {
-    preset: 'bird fight',
-    says: 'The FM chip’s note allocator is stuck, so the song and a bird call overwrite each other’s registers',
-  },
-  {
-    preset: 'basement organ',
-    says: 'The sample keyboard’s pipe organ plays the song in power chords, three octaves down off a slowed ROM clock',
-  },
-  {
-    preset: 'acid techno',
-    says: 'The mono synth plays a squelching line over a techno kit',
-  },
-  {
-    preset: 'drum scream',
-    says: 'The drum machine retriggers faster than audio rate, so every hit becomes a pitch',
-  },
-  {
-    preset: 'fuzz into the stack',
-    says: 'The toy through a germanium fuzz into an amp just short of breaking up',
-  },
-  {
-    preset: 'register shuffle',
-    says: 'A codec files each band under the wrong one, so the tune hops octaves',
-  },
-  {
-    preset: 'the loop eats itself',
-    says: 'The toy records onto a tape loop that comes back worse every lap',
-  },
+const TAPE_SCENES = [
   {
     preset: 'ballroom at the end of time',
     says: 'A piano 78 off archive.org loops one phrase, and the tape wears it down a little more every lap',
@@ -63,13 +28,17 @@ const SCENES = [
   },
 ]
 
-export const scenes = SCENES.flatMap(({ preset, says }) =>
-  PRESETS.filter(p => p.name === preset).map(def => {
-    const board = applyPreset(def, DEFAULT_CONTROLS)
-    return {
+export const scenes = [
+  ...DEMO_SCENES.map(({ name, says, board }) => ({
+    name,
+    says,
+    href: boardUrl(sceneHash({ ...DEFAULT_CONTROLS, ...board })),
+  })),
+  ...TAPE_SCENES.flatMap(({ preset, says }) =>
+    PRESETS.filter(p => p.name === preset).map(def => ({
       name: def.name,
       says,
-      href: boardUrl(sceneHash(board, def.shelf)),
-    }
-  }),
-)
+      href: boardUrl(sceneHash(applyPreset(def, DEFAULT_CONTROLS), def.shelf)),
+    })),
+  ),
+]

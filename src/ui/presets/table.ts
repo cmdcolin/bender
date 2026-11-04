@@ -1,6 +1,5 @@
 import { DATA_LINES, DRUM_ROMS } from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
-import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
 import { DEST } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
 import {
@@ -31,12 +30,7 @@ import {
   PIANO_78S,
   SHELLAC,
 } from '../../engine/archive.ts'
-import {
-  MONO_SEQ_STEP_KEYS,
-  parseLane,
-  parseSeqFlags,
-  REST,
-} from '../../tune.ts'
+import { line } from './write.ts'
 
 import type { Controls } from '../../controls.ts'
 import type { Pool } from '../../engine/archive.ts'
@@ -86,28 +80,6 @@ const ACID: Partial<Controls> = {
   mod0Src: 1,
   mod0Dest: DEST.monoCutoff,
   mod0Depth: 0.3,
-}
-
-/** Growler's memory stepping with the kit's sixteenths, its gate jumper cut so
-    the toy's tune stays off it. */
-function line(notes: string, accent = '', slide = ''): Partial<Controls> {
-  const steps = parseLane(notes)
-  const [monoSeqAccentLo, monoSeqAccentHi] = parseSeqFlags(accent)
-  const [monoSeqSlideLo, monoSeqSlideHi] = parseSeqFlags(slide)
-  return {
-    ...Object.fromEntries(
-      MONO_SEQ_STEP_KEYS.map((k, i) => [k, steps[i] ?? REST]),
-    ),
-    monoSeqOn: 1,
-    monoSeqTo: 0,
-    monoSeqSync: MEMORY_SYNC_MODES.indexOf('sixteenths'),
-    monoSeqLen: steps.length,
-    monoSeqAccentLo,
-    monoSeqAccentHi,
-    monoSeqSlideLo,
-    monoSeqSlideHi,
-    monoKeyGate: 1,
-  }
 }
 
 const ROLLING: Partial<Controls> = {

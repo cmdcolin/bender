@@ -151,7 +151,7 @@ test('every published post points at an image that exists', () => {
   }
 })
 
-test('every scene names a preset that exists and links into the app with its board', () => {
+test('every scene links into the app with its board', () => {
   expect(scenes.length).toBeGreaterThan(0)
   for (const scene of scenes) {
     expect(landing).toContain(scene.name)
