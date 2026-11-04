@@ -18,7 +18,6 @@ const PHRASE_BARS = [1, 2, 4, 8, 16, 32]
 const PHRASE_SHAPE = { swell: 3, stairs: 4 }
 const GROUND = 1
 const SAW = 1
-const LFO_CHAOS = 4
 const LEAKY = ENV_CAPS.indexOf('leaky')
 const FB_TO_OSC = 1
 const GARBAGE = 1
@@ -70,26 +69,27 @@ export const DEMO_SCENES: DemoScene[] = [
   },
   {
     name: 'the volume carrier comes down',
-    says: 'The toy drones on a leaky envelope cap while its volume PWM is tapped so far down the clock divider that the carrier is a note of its own, and a chaotic wire throws the master clock up and down three octaves, so every fade is a change of tone and the whine never lands twice',
+    says: 'The toy’s volume PWM is tapped so far down the clock divider that the carrier is a sound of its own, and a step lane throws the master clock between rates three octaves apart on every step, so each note comes out as a different buzz, hiss or growl and the rhythm is made of the jumps',
     board: {
-      ...CLUSTERS,
+      ...tune(
+        'A3 . A3 A3 . A3 . . A3 A3 . A3 . A3 A3 . A3 . A3 A3 . A3 . . A3 . A3 A3 . A3 A3 A3',
+        'E4 . E4 E4 . E4 . . E4 E4 . E4 . E4 E4 . E4 . E4 E4 . E4 . . E4 . E4 E4 . E4 E4 E4',
+      ),
       ...NO_PULSE,
-      drumBpm: 70,
+      drumBpm: 100,
       chipLevel: 0.6,
-      chipEnvCap: LEAKY,
       chipPwm: 0.85,
-      chipClockX: 0.4,
-      mod0Src: SRC.lfo,
+      chipClockX: 4,
+      ...lane('A', [0, 12, 12, 0, 9, 12, 3, 12, 0, 0, 12, 6, 12, 1, 12, 9]),
+      mod0Src: SRC.laneA,
       mod0Dest: DEST.chipClock,
-      mod0Depth: 0.8,
-      modLfoShape: LFO_CHAOS,
-      modLfoHz: 1.5,
-      mod1Src: SRC.phrase,
+      mod0Depth: -1,
+      ...lane('B', [0, 0, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 6, 6, 6, 6]),
+      mod1Src: SRC.laneB,
       mod1Dest: DEST.chipPwmTap,
-      mod1Depth: 0.6,
-      ...phrase(8, PHRASE_SHAPE.swell),
-      revMix: 0.2,
-      revDecayS: 2,
+      mod1Depth: 0.8,
+      revMix: 0.15,
+      revDecayS: 1.5,
     },
   },
   {
