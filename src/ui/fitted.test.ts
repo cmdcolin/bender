@@ -6,6 +6,7 @@ import { buildMap, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY } from './controls/index.ts'
 import {
   added,
+  benchForScene,
   clearAdded,
   confine,
   confineToOne,
@@ -182,6 +183,40 @@ test('taking an instrument off puts its face away', () => {
   takeOff(group('Gnash'), stock())
   expect(bench.get().instruments).toEqual([])
   expect(bench.get().pedals).toEqual([])
+  bench.set({
+    instruments: [],
+    closed: [],
+    pedals: [],
+    bends: [],
+    roll: false,
+    grid: false,
+  })
+})
+
+test('a scene lays the bench out with only the instruments it plays', () => {
+  bench.set({
+    instruments: ['Plinky', 'Growler'],
+    closed: ['Spool', 'Glint'],
+    pedals: ['Ricochet', 'Boing'],
+    bends: ['Comb'],
+    roll: false,
+    grid: true,
+  })
+  benchForScene({
+    ...stock(),
+    chipLevel: 0,
+    drumLevel: 0,
+    sampleLevel: 1,
+    fourLevel: 0.7,
+  })
+  expect(bench.get()).toEqual({
+    instruments: ['Spool', 'Layercake'],
+    closed: ['Glint'],
+    pedals: [],
+    bends: [],
+    roll: false,
+    grid: false,
+  })
   bench.set({
     instruments: [],
     closed: [],

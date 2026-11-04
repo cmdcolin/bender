@@ -1,7 +1,9 @@
 import { engine } from './engine/engine.ts'
 import { exposeBenderApi } from './ui/agentApi.ts'
 import { App } from './ui/App.tsx'
+import { benchForScene } from './ui/fitted.ts'
 import { loadPhraseLock } from './ui/morph.ts'
+import { stampLocal } from './ui/prefs.ts'
 import { keepRunState } from './ui/runState.ts'
 import { boardFromLocation, shelfFromHash } from './ui/share.ts'
 import { startFresh } from './ui/starterBoard.ts'
@@ -14,8 +16,13 @@ import './theme.css'
 const shared = boardFromLocation()
 if (shared) engine.patch(shared)
 
+// A scene's bench is newer than the one on the account, so signing in keeps it.
 const linkShelf = shelfFromHash(window.location.hash)
-if (linkShelf) void engine.fillFromShelf(linkShelf)
+if (linkShelf) {
+  void engine.fillFromShelf(linkShelf)
+  benchForScene(engine.controls.get())
+  stampLocal(Date.now())
+}
 
 // What a reload does put back is what this tab was running, which the link
 // never carried either way — see runState.

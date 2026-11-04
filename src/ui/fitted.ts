@@ -1,5 +1,5 @@
 import { createStore } from '../listeners.ts'
-import { bench, setBench, type Bench } from './bench.ts'
+import { bench, INSTRUMENTS, setBench, type Bench } from './bench.ts'
 import { FIXED, GATES, gateOff, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY, type Group } from './controls/index.ts'
 import { readSession, writeSession } from './persist.ts'
@@ -52,6 +52,21 @@ export function add(names: Iterable<string>) {
 }
 
 export const clearAdded = () => added.set(new Set())
+
+/** A scene lays the bench out for itself: the instruments it plays, brought
+    back if they were put away, and nothing else in front of them. */
+export function benchForScene(c: Controls) {
+  const used = onBoard(c)
+  const b = bench.get()
+  setBench({
+    ...b,
+    instruments: INSTRUMENTS.filter(s => used.has(s)),
+    closed: b.closed.filter(s => !used.has(s)),
+    pedals: [],
+    bends: [],
+    grid: false,
+  })
+}
 
 export const removable = (name: string) => !FIXED.has(name)
 
