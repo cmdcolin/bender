@@ -19,6 +19,7 @@ const PHRASE_SHAPE = { rise: 0, swell: 3, stairs: 4 }
 const GROUND = 1
 const SAW = 1
 const HARD = 1
+const AS_WRITTEN = 0
 const FB_TO_OSC = 1
 const GARBAGE = 1
 
@@ -147,15 +148,17 @@ export const DEMO_SCENES: DemoScene[] = [
   },
   {
     name: 'growler chokes on its own howl',
-    says: 'Growler plays four slow notes, each sinking as its pitch capacitor leaks, while its output is patched back into its own mixer, pitch and gate a little more every bar, until the howl drags its own pitch around and keeps shutting its own gate, cutting itself into a rhythm nobody wrote, then starts clean',
+    says: 'Growler plays four slow notes while its output is patched back into its own mixer, pitch and gate a little more every bar, until the howl drags its own pitch around and keeps shutting its own gate, cutting itself into a rhythm nobody wrote, then starts clean',
     board: {
       ...NO_PULSE,
-      ...line('E3 ~ ~ ~ C3 ~ ~ ~ F3 ~ ~ ~ B2 ~ ~ ~'),
+      ...line('E4 ~ ~ ~ C4 ~ ~ ~ F4 ~ ~ ~ B3 ~ ~ ~'),
       monoSeqSync: MEMORY_SYNC_MODES.indexOf('quarters'),
       drumBpm: 90,
       chipLevel: 0,
       monoWave1: SAW,
       monoWave2: SAW,
+      monoRange1: AS_WRITTEN,
+      monoRange2: AS_WRITTEN,
       monoMix1: 0.6,
       monoMix2: 0.5,
       monoMix3: 0,
@@ -163,7 +166,6 @@ export const DEMO_SCENES: DemoScene[] = [
       monoTune2: 7,
       monoFm: 0.6,
       monoHeat: 0.5,
-      monoDroop: 0.8,
       monoCutoff: 1200,
       monoEmph: 0.9,
       monoGate: 1,
