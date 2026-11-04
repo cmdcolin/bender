@@ -337,31 +337,45 @@ test('an overrunning loop runs on through the rest of the ROM', () => {
   expect(rms(overrun)).toBeGreaterThan(0.01)
 })
 
-test('the write strobe rewrites a chord, and clean memory comes back at zero', () => {
-  const chord = { pcmChord: 1, pcmEnv: ORGAN }
-  const run = (write: number) =>
-    play({ ...ALONE, ...chord, pcmWrite: write }, 0.6, b =>
-      b.pcmKeys.noteOn(12),
-    )
-  const plain = run(0)
-  const written = run(1)
-  expect(differs(tail(plain.out, 0.3), tail(written.out, 0.3))).toBeGreaterThan(
-    0.05,
-  )
-  const p = packParams({ ...DEFAULT_CONTROLS, ...ALONE, ...chord })
-  const io = makeIo()
-  const after = (b: BuiltChain) => {
-    b.chain.process(io, p)
-    return io.l.slice(0, BLOCK)
-  }
-  for (let b = 0; b < 40; b++) after(written.built)
-  const healed = after(written.built)
-  for (let b = 0; b < 40; b++) after(plain.built)
-  const clean = after(plain.built)
-  expect(
-    Math.max(...healed.map((v, i) => Math.abs(v - clean[i]!))),
-  ).toBeLessThan(0.01)
-})
+const LANE_A = 12
+
+const SILENT_LANE_ON_WRITE = {
+  mod0Src: LANE_A,
+  mod0Dest: DEST.pcmWrite,
+  mod0Depth: 1,
+}
+
+test.each([
+  ['the knob', {}],
+  ['a wire', SILENT_LANE_ON_WRITE],
+])(
+  'the write strobe rewrites a chord, and clean memory comes back when %s brings it to zero',
+  (_, back) => {
+    const chord = { pcmChord: 1, pcmEnv: ORGAN }
+    const run = (write: number) =>
+      play({ ...ALONE, ...chord, pcmWrite: write }, 0.6, b =>
+        b.pcmKeys.noteOn(12),
+      )
+    const plain = run(0)
+    const written = run(1)
+    expect(
+      differs(tail(plain.out, 0.3), tail(written.out, 0.3)),
+    ).toBeGreaterThan(0.05)
+    const p = packParams({ ...DEFAULT_CONTROLS, ...ALONE, ...chord, ...back })
+    const io = makeIo()
+    const after = (b: BuiltChain) => {
+      b.chain.process(io, p)
+      return io.l.slice(0, BLOCK)
+    }
+    for (let b = 0; b < 40; b++) after(written.built)
+    const healed = after(written.built)
+    for (let b = 0; b < 40; b++) after(plain.built)
+    const clean = after(plain.built)
+    expect(
+      Math.max(...healed.map((v, i) => Math.abs(v - clean[i]!))),
+    ).toBeLessThan(0.01)
+  },
+)
 
 test('the write strobe at full keeps a held chord sounding', () => {
   const { out } = play(

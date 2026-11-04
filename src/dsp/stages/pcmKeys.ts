@@ -473,7 +473,7 @@ export class PcmKeys implements Stage {
     const leak = hot ** 2
     const leaky = 0.8 * hot
     this.faults = 0
-    const writing = writeBase > 0 || modWrite !== null
+    const writing = knob(writeBase, modWrite, 0) > 0
     if (!writing) this.ramFor = null
 
     const chord = Math.round(p[IDX.pcmChord]!)
