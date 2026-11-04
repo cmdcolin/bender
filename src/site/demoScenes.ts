@@ -6,7 +6,6 @@ import { FM_VOICE_NAMES } from '../dsp/stages/fmVoices.ts'
 import { OCT_BOUNCE, OCT_CLOCKS } from '../dsp/stages/octave.ts'
 import { PCM_VOICE_NAMES } from '../dsp/stages/pcmRom.ts'
 import { DELAY_SYNC_MODES } from '../dsp/stages/tapeDelay.ts'
-import { SUPPLY } from '../dsp/supplies.ts'
 import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { BENDS } from '../ui/controls/bends.ts'
 import { kit, line, tune } from '../ui/presets/write.ts'
@@ -30,7 +29,6 @@ const LOOP_LP = 1
 const GROUND = 1
 const BRIDGED = 3
 const CLAV = 2
-const REED = 1
 const GERMANIUM = 3
 const SAW = 1
 const FB_TO_OSC = 1
@@ -94,6 +92,63 @@ export const DEMO_SCENES: DemoScene[] = [
       dlyFb: 0.45,
       revMix: 0.25,
       revDecayS: 2.5,
+    },
+  },
+  {
+    name: 'the tune in noise colours',
+    says: 'Every voice in the toy is a shift register clocked by its note, a step lane sets how long the register is so each step lands on a different colour of noise, and a hard-sync oscillator sweeps through the chords',
+    board: {
+      ...MINOR_TOY_TUNE,
+      ...kit({
+        kick: 'x.......x.x.....',
+        snare: '....x.......x...',
+        hat: 'x.x.x.x.x.x.x.x.',
+      }),
+      drumBpm: 104,
+      chipLevel: 1,
+      chipTone: CLAV,
+      drumLevel: 0.6,
+      chipLfsr: 0.2,
+      chipXor: 0.6,
+      ...lane('A', [0, 3, 8, 1, 12, 0, 5, 10, 2, 7, 0, 11, 4, 0, 9, 6]),
+      mod0Src: SRC.laneA,
+      mod0Dest: DEST.chipLfsr,
+      mod0Depth: 0.7,
+      mod1Src: SRC.lfo,
+      mod1Dest: DEST.chipHardSync,
+      mod1Depth: 0.8,
+      modLfoHz: 0.2,
+      glitchMix: 0.3,
+      revMix: 0.3,
+      revDecayS: 2.5,
+    },
+  },
+  {
+    name: 'the toy writes into the fm chip',
+    says: 'The toy’s output is soldered onto Glint’s data bus, so its tune rewrites the FM chip’s pitch, keys and patch as it plays, and static knocks the toy into its own ROM more often every bar',
+    board: {
+      ...MINOR_TOY_TUNE,
+      ...kit({
+        kick: 'x...x...x...x...',
+        clap: '....x.......x...',
+        hat: '..x...x...x...x.',
+      }),
+      drumBpm: 108,
+      chipLevel: 0.5,
+      chipTone: CLAV,
+      drumLevel: 0.6,
+      fmLevel: 1,
+      fmVoice: FM_VOICE_NAMES.indexOf('brass'),
+      fmToyBus: 4,
+      mod0Src: SRC.phrase,
+      mod0Dest: DEST.chipCrash,
+      mod0Depth: 0.5,
+      ...phrase(4, PHRASE_SHAPE.stairs),
+      dlyMix: 0.25,
+      dlySync: synced('dotted eighths'),
+      dlyFb: 0.5,
+      revMix: 0.25,
+      revDecayS: 2,
     },
   },
   {
@@ -198,6 +253,31 @@ export const DEMO_SCENES: DemoScene[] = [
     },
   },
   {
+    name: 'the kit forgets its pattern',
+    says: 'Clatter’s pattern memory leaks and a loose contact lets its own output pick the next step, so a plain breakbeat drifts into another one, more of it every bar, and comes back',
+    board: {
+      ...kit({
+        kick: 'x.........x.....',
+        snare: '....x.......x...',
+        hat: 'x.x.x.x.x.x.x.x.',
+        'open hat': '..............x.',
+        tom: '.......x.......x',
+        bell: '..x.......x.....',
+      }),
+      drumBpm: 96,
+      chipLevel: 0,
+      drumLevel: 1.3,
+      drumRot: 0.5,
+      mod0Src: SRC.phrase,
+      mod0Dest: DEST.drumOutAddr,
+      mod0Depth: 0.8,
+      ...phrase(4, PHRASE_SHAPE.stairs),
+      echoLevel: 0.35,
+      revMix: 0.25,
+      revDecayS: 2,
+    },
+  },
+  {
     name: 'e.piano on the wrong channel',
     says: 'Glint plays e.piano chords while its note allocator lands on a different channel every bar, into a germanium fuzz and a Marshall that the loud chords push harder',
     board: {
@@ -290,39 +370,36 @@ export const DEMO_SCENES: DemoScene[] = [
     },
   },
   {
-    name: 'the band on one battery',
-    says: 'The toy, a Growler bassline and the kit share one set of cells, and an amp on the same cells pulls them down on every peak, so the whole band browns out, stutters and reboots on its own clock',
+    name: 'the sampler eats the chord',
+    says: 'Parlor writes its own mix back into sample memory, so each lap plays what the last one wrote, and held chords sum themselves into noise faster every bar until the wire lets go and the memory reads clean',
     board: {
-      ...MINOR_TOY_TUNE,
-      ...kit({
-        kick: 'x...x...x...x...',
-        snare: '....x.......x...',
-        hat: 'x.xxx.xxx.xxx.xx',
-      }),
-      drumBpm: 112,
-      chipLevel: 1.2,
-      chipTone: REED,
-      drumLevel: 1.2,
-      ...line(
-        'A2 . A3 A2 . A2 G2 . | F2 . F3 F2 E2 . E3 E2',
-        'x...x...x...x...',
+      ...tune(
+        'C5 ~ ~ ~ ~ ~ ~ ~ B4 ~ ~ ~ ~ ~ ~ ~ A4 ~ ~ ~ ~ ~ ~ ~ G4 ~ ~ ~ ~ ~ ~ ~',
+        'E4 ~ ~ ~ ~ ~ ~ ~ D4 ~ ~ ~ ~ ~ ~ ~ C4 ~ ~ ~ ~ ~ ~ ~ B3 ~ ~ ~ ~ ~ ~ ~',
+        'A3 ~ ~ ~ ~ ~ ~ ~ G3 ~ ~ ~ ~ ~ ~ ~ F3 ~ ~ ~ ~ ~ ~ ~ E3 ~ ~ ~ ~ ~ ~ ~',
       ),
-      monoWave1: 1,
-      monoRange1: -1,
-      monoMix1: 1,
-      monoCutoff: 600,
-      monoEmph: 0.5,
-      monoLevel: 1.6,
-      chipBattery: 0.3,
-      distSupply: SUPPLY.shared,
-      distDraw: 0.6,
-      distSpeaker: 0.4,
-      distMix: 0.45,
+      ...kit({
+        kick: 'x.......x.......',
+        snare: '....x.......x...',
+        hat: '..x...x...x...x.',
+      }),
+      drumBpm: 80,
+      chipLevel: 0,
+      drumLevel: 0.5,
+      pcmLevel: 3,
+      pcmVoice: PCM_VOICE_NAMES.indexOf('glass pad'),
       mod0Src: SRC.phrase,
-      mod0Dest: DEST.starve,
-      mod0Depth: 1.5,
-      ...phrase(8, PHRASE_SHAPE.rise),
-      outGain: 6,
+      mod0Dest: DEST.pcmWrite,
+      mod0Depth: 0.2,
+      ...phrase(4, PHRASE_SHAPE.stairs),
+      mod1Src: SRC.lfo,
+      mod1Dest: DEST.pcmSignDir,
+      mod1Depth: 0.4,
+      modLfoHz: 0.15,
+      ensMode: ENS_MODE.dimension,
+      ensMix: 0.5,
+      revMix: 0.35,
+      revDecayS: 4,
     },
   },
   {
