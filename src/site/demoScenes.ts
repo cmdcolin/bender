@@ -2,6 +2,7 @@ import { DEST } from '../dsp/modbus.ts'
 import { FM_VOICE_NAMES } from '../dsp/stages/fmVoices.ts'
 import { PCM_VOICE_NAMES } from '../dsp/stages/pcmRom.ts'
 import { ENV_CAPS } from '../dsp/stages/toyChip.ts'
+import { DAC_REF_TOY } from '../dsp/stages/toyDrum.ts'
 import { BENDS } from '../ui/controls/bends.ts'
 import { kit, tune } from '../ui/presets/write.ts'
 
@@ -70,12 +71,21 @@ export const DEMO_SCENES: DemoScene[] = [
   },
   {
     name: 'the volume carrier comes down',
-    says: 'The toy drones on a leaky envelope cap while its volume PWM is tapped so far down the clock divider that the carrier is a note of its own, and a chaotic wire throws the master clock up and down three octaves, so every fade is a change of tone and the whine never lands twice',
+    says: 'The toy drones on a leaky envelope cap with its volume PWM tapped so far down the clock divider that the carrier is a note of its own, a chaotic wire throws its clock up and down three octaves, and the kit’s converter takes its reference from the toy, so every hit is cut out of the whine and lands in a starved digital reverb',
     board: {
       ...CLUSTERS,
-      ...NO_PULSE,
+      ...kit({
+        kick: 'x.......x.....x.',
+        snare: '.....x.........',
+        tom: '...x.......x....',
+        hat: 'x.x...x.x.x...x.',
+      }),
       drumBpm: 70,
-      chipLevel: 0.6,
+      drumLevel: 3,
+      drumRef: DAC_REF_TOY,
+      drumRefDepth: 0.8,
+      drumRot: 0.3,
+      chipLevel: 0.2,
       chipEnvCap: LEAKY,
       chipPwm: 0.85,
       chipClockX: 0.4,
@@ -88,8 +98,14 @@ export const DEMO_SCENES: DemoScene[] = [
       mod1Dest: DEST.chipPwmTap,
       mod1Depth: 0.6,
       ...phrase(8, PHRASE_SHAPE.swell),
-      revMix: 0.2,
-      revDecayS: 2,
+      bendSlot0: bendSlot('Rack verb'),
+      rackMix: 0.35,
+      rackDecay: 0.9,
+      rackSize: 2,
+      rackClock: 0.3,
+      rackBits: 6,
+      rackWander: 0,
+      outGain: 4,
     },
   },
   {
