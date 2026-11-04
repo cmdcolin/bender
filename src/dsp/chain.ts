@@ -606,6 +606,7 @@ export class Chain {
     const toyRef =
       Math.round(p[IDX.drumRef]!) === DAC_REF_TOY ||
       p[IDX.fmToyBus]! > 0 ||
+      ctx.mod.read(DEST.fmToyBus) !== null ||
       (crushing && Math.round(p[IDX.crushRef]!) === CRUSH_REF_TOY)
     if (toyRef) ctx.toy.fill(0, 0, n)
     const fmTap = p[IDX.chipFmClock]! > 0

@@ -1133,16 +1133,27 @@ test('a wire on the adder lane narrows the adder', () => {
   expect(sine(wire)).toEqual(sine({ fmAdder: ADDER['8'] }))
 })
 
+const toyOnBus = (o: Partial<Controls>) =>
+  renderStems({ ...FM_ONLY, chipLevel: 0.6, ...o }, 3).stems[
+    SOURCE_TAPS.indexOf('fmChip')
+  ]!
+
 test('the toy on the data bus rewrites the chip as the toy plays', () => {
-  const fm = (fmToyBus: number) =>
-    renderStems({ ...FM_ONLY, chipLevel: 0.6, fmToyBus }, 3).stems[
-      SOURCE_TAPS.indexOf('fmChip')
-    ]!
-  const clean = fm(0)
-  expect(deviation(fm(1), clean)).toBeGreaterThan(0.3)
-  expect(spectrum(fm(8), SR).flatness).toBeGreaterThan(
+  const clean = toyOnBus({})
+  expect(deviation(toyOnBus({ fmToyBus: 1 }), clean)).toBeGreaterThan(0.3)
+  expect(spectrum(toyOnBus({ fmToyBus: 8 }), SR).flatness).toBeGreaterThan(
     spectrum(clean, SR).flatness * 3,
   )
+})
+
+test('a wire on the toy bus lane puts the toy on the bus as the knob does', () => {
+  const wired = toyOnBus({
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmToyBus,
+    mod0Depth: 4 / 9,
+  })
+  expect(deviation(wired, toyOnBus({ fmToyBus: 4 }))).toBeLessThan(0.01)
 })
 
 const sakuraStem = (o: Partial<Controls>, seconds: number) =>
