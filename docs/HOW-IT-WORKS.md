@@ -70,8 +70,11 @@ machines.
   after each hit on its voice.
 - **Jumpers:** each of the three has a **Plays Plinky’s notes** jumper. With it
   cut, the chip plays from its keybed and from any trigger bridge you patch
-  across from the drums. Each bridge on the map reads `kick → Glint`: the kit
-  voice, then the machine it strikes. See
+  across from the drums. Set to **lane 1**, **lane 2** or **lane 3**, it follows
+  only that lane of the melody memory, so Growler can take the bass, Parlor the
+  chords and Glint a lead. Plinky's **Lanes lifted** stops Plinky sounding a
+  lane while its gate still drives the jumpers. Each bridge on the map reads
+  `kick → Glint`: the kit voice, then the machine it strikes. See
   [the trigger patch](features.md#trigger-patch) in the feature list.
 - **In the panel:** the map puts the five on two rows, with the drums under the
   Plinky. The image above uses the same layout.
