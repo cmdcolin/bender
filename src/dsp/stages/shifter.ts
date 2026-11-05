@@ -149,8 +149,6 @@ export class Shifter implements Stage {
   private pairL = new Pair(0xb0de)
   private pairR = new Pair(0xb0de ^ 0x5eed)
   private knock = 0
-  private cosE = 1
-  private sinE = 0
 
   private readonly sr: number
 
@@ -257,7 +255,9 @@ export class Shifter implements Stage {
     const bits = ctx.trig.drumBits
     const gain = ctx.trig.drumGain
     if (knockAt === 0) this.knock = 0
-    this.trim(quadBase)
+    const offBase = Math.min(quadBase * QUARTER + this.knock, Math.PI)
+    let cosE = Math.cos(offBase)
+    let sinE = Math.sin(offBase)
 
     const clip = p[IDX.shiftClip]!
     const drive = 1 + CLIP_DRIVE * clip
@@ -281,16 +281,20 @@ export class Shifter implements Stage {
         if (bits[i]! !== 0)
           this.knock = Math.max(this.knock, knockAt * Math.min(gain[i]!, 1))
       }
-      if (knockAt > 0 || modQuad)
-        this.trim(modQuad ? clamp01(quadBase + modQuad[i]!) : quadBase)
+      if (knockAt > 0 || modQuad) {
+        const quad = modQuad ? clamp01(quadBase + modQuad[i]!) : quadBase
+        const off = Math.min(quad * QUARTER + this.knock, Math.PI)
+        cosE = Math.cos(off)
+        sinE = Math.sin(off)
+      }
       carrier.step()
       const head = Math.max(1 - RAIL_HEAD * sag, HEAD_FLOOR)
       const re = Math.min(Math.max(carrier.re, -head), head) / head
       const im = Math.min(Math.max(carrier.im, -head), head) / head
       const c = re
-      const s = im * this.cosE + c * this.sinE
+      const s = im * cosE + c * sinE
       const cR = -im
-      const sR = c * this.cosE - im * this.sinE
+      const sR = c * cosE - im * sinE
 
       const inL =
         clip > 0
@@ -313,12 +317,6 @@ export class Shifter implements Stage {
       io.r[i] = io.r[i]! * (1 - mix) + wr * mix
     }
     this.knock = flushDenormal(this.knock)
-  }
-
-  private trim(quad: number) {
-    const e = Math.min(quad * QUARTER + this.knock, Math.PI)
-    this.cosE = Math.cos(e)
-    this.sinE = Math.sin(e)
   }
 
   panic() {
