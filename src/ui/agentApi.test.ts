@@ -443,10 +443,24 @@ test('hit strikes the sheet, the bottle and kit voices, and warns at level 0', (
       ]),
     )
     expect(() => bender.hit('gong')).toThrow(/sheet, bottle or a kit voice/)
-    expect(() => bender.queue(() => bender.hit('kick'))).toThrow(/not queued/)
   } finally {
     engine.running.set(false)
   }
+})
+
+test('a hit inside a queue waits for the queue to land', async () => {
+  const posted: ToWorklet[] = []
+  Object.assign(engine, {
+    node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
+  })
+  let inside: unknown
+  const landing = bender.queue(() => {
+    inside = bender.hit('sheet')
+  })
+  expect(inside).toMatchObject({ lands: expect.stringMatching(/queue lands/) })
+  expect(posted.some(m => m.kind === 'struckHit')).toBe(false)
+  await landing
+  expect(posted.some(m => m.kind === 'struckHit')).toBe(true)
 })
 
 test('position reads bar, beat and step off the kit’s counter', () => {

@@ -73,7 +73,7 @@ const GUIDE = {
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory, one token a step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold. It also switches the chip to the memory, at tuneRate steps a second. An array of up to three strings writes one lane each. Glint, Parlor and Growler follow it on fmKeyGate, pcmKeyGate and monoKeyGate; 'lane 1' to 'lane 3' follow one lane, and tuneLift keeps lanes off Plinky. bender.drums({ kick: 'x...x...', hat: '..x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. x is a hit, ? a hit with probability drumChance, . a rest. Each character is a sixteenth, so a beat is four. A row's length sets its loop, an empty string clears it, and rows left out keep theirs. bpm: 130 sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
   line: `The bassline. bender.line('. A3 A3 A4 . A3 A3 A3', { accent: '...x', slide: '' }) writes a second 32-step memory, one token a step as in tune, and turns it on. It steps with the kit's sixteenths while the kit runs; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, whose stock 32′ range sounds each note two octaves down: write A3 for a 55 Hz A1, as sounds in the result shows. on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep theirs. The target's KeyGate jumper also plays the tune: 'no, cut' drops it, 'lane 1' keeps one lane. The result warns about anything keeping it silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate. The techno and acid techno presets load a groove to riff on.`,
-  hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once and is not queued: await bender.next('beat') first to land it near a beat. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
+  hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once; inside bender.queue it waits for the queue's bar and lands within about 20 ms of it. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
   sound: `Sound. Audio stays suspended until the page gets a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the drums, the bassline and a melody written with tune; the toy's demo songs start only with bender.play('song'), bender.play('drums') starts the kit alone, and bender.stop() stops all. A screenshot measures nothing of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due (short means missed audio blocks), the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), the watchdog reboots, the sources with signal, the notes each audible machine played, the drum hits. bender.link() returns a URL that loads this board.`,
 }
@@ -226,6 +226,7 @@ interface Queued {
   glide: Partial<Controls>
   seconds: number
   force: Set<ControlKey>
+  hits: (() => void)[]
 }
 
 let queueing: Queued | null = null
@@ -341,7 +342,13 @@ function queue(write: () => unknown, when: Bars | { bar: number } = 1) {
       "queue takes a function that writes, as bender.queue(() => bender.drums({ kick: 'x...' }), 4)",
     )
   const { at, every } = cueAt(when)
-  const taken: Queued = { cut: {}, glide: {}, seconds: 0, force: new Set() }
+  const taken: Queued = {
+    cut: {},
+    glide: {},
+    seconds: 0,
+    force: new Set(),
+    hits: [],
+  }
   queueing = taken
   try {
     if (write() instanceof Promise)
@@ -353,7 +360,10 @@ function queue(write: () => unknown, when: Bars | { bar: number } = 1) {
   }
   const now = !counting()
   return engine.cue(taken.cut, at, every).then(tick => {
-    if (tick !== null) land(taken.glide, taken.seconds, taken.force)
+    if (tick !== null) {
+      land(taken.glide, taken.seconds, taken.force)
+      for (const fire of taken.hits) fire()
+    }
     return {
       landed:
         tick === null
@@ -902,10 +912,6 @@ function rawBenderApi() {
       what: string | readonly string[],
       at: { x?: number; y?: number; gain?: number } = {},
     ) {
-      if (queueing)
-        throw new Error(
-          "hit plays at once and is not queued; await bender.next('beat') and then hit",
-        )
       const names = (typeof what === 'string' ? [what] : what).map(squash)
       const gain = toUnit(at.gain ?? 1)
       let bits = 0
@@ -919,11 +925,15 @@ function rawBenderApi() {
             `nothing to hit named '${name}'; hit takes sheet, bottle or a kit voice: ${DRUM_VOICES.map(v => v.label).join(', ')}`,
           )
       }
-      for (const target of struck) {
-        const home = STRUCK_HOME[target]
-        strike(target, toUnit(at.x ?? home.x), toUnit(at.y ?? home.y), gain)
+      const fire = () => {
+        for (const target of struck) {
+          const home = STRUCK_HOME[target]
+          strike(target, toUnit(at.x ?? home.x), toUnit(at.y ?? home.y), gain)
+        }
+        engine.drumHit(bits, gain)
       }
-      engine.drumHit(bits, gain)
+      if (queueing) queueing.hits.push(fire)
+      else fire()
       const c = engine.controls.get()
       const silent = CHANNELS.filter(
         ch =>
@@ -934,6 +944,9 @@ function rawBenderApi() {
       )
       return {
         hit: names,
+        ...(queueing && {
+          lands: 'when the queue lands, within about 20 ms of its bar',
+        }),
         warnings: [
           ...(engine.running.get() ? [] : [audioState()]),
           ...silent.map(ch => `${ch.key} is 0, so ${ch.name} is silent`),

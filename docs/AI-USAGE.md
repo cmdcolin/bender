@@ -103,8 +103,9 @@ Then ask Claude Code to open the public URL, or
 - `bender.next` resolves off the meters, up to about 16 ms after the downbeat.
   `bender.queue` lands its controls in the audio worklet on the sample the kit
   steps onto the bar, so the downbeat plays the new pattern; a stage that reads
-  its controls once a block takes them up within 128 samples. A glide inside a
-  queue starts from the meters. Play and stop have no queue.
+  its controls once a block takes them up within 128 samples. A glide or a
+  `bender.hit` inside a queue starts from the meters, within about 20 ms of the
+  bar. Play and stop have no queue.
 - A screenshot shows the panel and the scope. `bender.listen` measures the sound
   from the meters.
 - The Claude in Chrome JavaScript tool cuts a returned string at 1000 characters
