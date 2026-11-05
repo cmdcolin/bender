@@ -66,3 +66,13 @@ test('a set flashes the control it bent and draws it a lane', () => {
   expect(panel()?.querySelector('[role="img"]')).not.toBeNull()
   expect(document.body.textContent).toMatch(/Starve.*0\.50/)
 })
+
+test('a say puts its words up as a banner', () => {
+  render(<ActivityPanel />)
+  act(() => {
+    bender.say('drop it')
+  })
+  expect(document.body.textContent?.match(/drop it/g)?.length).toBeGreaterThan(
+    2,
+  )
+})

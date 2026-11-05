@@ -4,12 +4,11 @@ import { DRUM_VOICES } from '../drums.ts'
 import { activity, trace } from './activity.ts'
 import styles from './ActivityPanel.module.css'
 import { useStoreSelect } from './ControlsContext.ts'
-import { TRACE_MS, laneKeys } from './trace.ts'
+import { LANE_COLORS, TRACE_MS, laneKeys } from './trace.ts'
 
 const LANE_PX = 30
 const KIT_PX = 26
 const LABEL_PX = 9
-const LANE_COLORS = ['--accent', '--accent2', '--cool', '--mod', '--fg2']
 
 export function ActivityTrace() {
   const canvasRef = useRef<HTMLCanvasElement>(null)

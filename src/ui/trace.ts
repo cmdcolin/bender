@@ -40,6 +40,8 @@ interface MeterReading {
   tick: number
 }
 
+export const LANE_COLORS = ['--accent', '--accent2', '--cool', '--mod', '--fg2']
+
 export const laneKeys = (lines: readonly ActivityLine[]) =>
   [
     ...new Set(
@@ -48,6 +50,15 @@ export const laneKeys = (lines: readonly ActivityLine[]) =>
       ),
     ),
   ].slice(0, TRACE_LANES)
+
+export function bendColor(
+  key: ControlKey,
+  lines: readonly ActivityLine[],
+  fallback: number,
+) {
+  const lane = laneKeys(lines).indexOf(key)
+  return `var(${LANE_COLORS[(lane < 0 ? fallback : lane) % LANE_COLORS.length]})`
+}
 
 const posOf = (key: ControlKey, controls: Controls) => {
   const def = SLIDER_BY_KEY.get(key)

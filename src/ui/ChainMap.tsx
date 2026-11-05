@@ -17,6 +17,7 @@ import { CHANNELS, GROUPS, STAGE_ORDER, type Group } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { added, removable, shownOn, takeOff } from './fitted.ts'
 import { listView, PANEL_VIEWS, setListView } from './listView.ts'
+import { MapComets } from './MapComets.tsx'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
@@ -111,6 +112,7 @@ export function ChainMap({
     benched: benchNow.pedals,
     shown,
   })
+  const drawing = drawMap(map)
   const onIt = GROUPS.filter(g => shown.has(g.name))
   const offIt = GROUPS.filter(g => !shown.has(g.name))
 
@@ -147,7 +149,12 @@ export function ChainMap({
         hidden={folded}
         onClick={click}
       >
-        {mount(drawMap(map), 0)}
+        {createElement(
+          drawing.tag,
+          drawing.attrs,
+          drawing.kids?.map(mount),
+          <MapComets key="comets" map={map} />,
+        )}
       </div>
       {!coarse && !folded && (
         <Shelf

@@ -47,6 +47,23 @@ activity.subscribe(() =>
   trace.follow(laneKeys(activity.get().lines), Date.now()),
 )
 
+const FRESH_MS = 1000
+
+/** Calls `fn` once for each line the activity gains from now on, oldest first,
+    and for any line already there that is under a second old. */
+export function onFreshLines(fn: (line: ActivityLine) => void) {
+  let seen = -1
+  const check = () => {
+    const now = Date.now()
+    const { lines } = activity.get()
+    const fresh = lines.filter(l => l.id > seen && now - l.at < FRESH_MS)
+    seen = Math.max(seen, lines[0]?.id ?? -1)
+    for (const line of fresh.toReversed()) fn(line)
+  }
+  check()
+  return activity.subscribe(check)
+}
+
 let nextId = 0
 
 const short = (text: string, chars = TEXT_CHARS) =>

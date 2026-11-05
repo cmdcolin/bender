@@ -1,13 +1,16 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 
-import { activity, type ActivityLine, type Bend } from './activity.ts'
+import {
+  activity,
+  onFreshLines,
+  type ActivityLine,
+  type Bend,
+} from './activity.ts'
 import styles from './BendFlashes.module.css'
 import { SLIDER_BY_KEY } from './controls/index.ts'
-import { laneKeys, TRACE_LANES } from './trace.ts'
+import { bendColor } from './trace.ts'
 
-const FRESH_MS = 1000
 const MOST = 24
-const LANE_COLORS = ['--accent', '--accent2', '--cool', '--mod', '--fg2']
 const STACK_PX = 22
 
 const cssVars = (vars: Record<`--${string}`, string>): CSSProperties => vars
@@ -21,6 +24,11 @@ interface Flash {
   ring?: { left: number; top: number; width: number; height: number }
 }
 
+interface Banner {
+  id: number
+  text: string
+}
+
 function visibleRect(el: Element) {
   const r = el.getBoundingClientRect()
   const hit =
@@ -30,20 +38,14 @@ function visibleRect(el: Element) {
   return hit !== null && el.contains(hit) ? r : undefined
 }
 
-function flashFor(
-  line: ActivityLine,
-  bend: Bend,
-  i: number,
-  lanes: readonly string[],
-): Flash {
+function flashFor(line: ActivityLine, bend: Bend, i: number): Flash {
   const target = [...document.querySelectorAll(`[data-control="${bend.key}"]`)]
     .map(visibleRect)
     .find(r => r !== undefined)
   const panel = document
     .querySelector('[aria-label="script activity"]')
     ?.getBoundingClientRect()
-  const lane = lanes.indexOf(bend.key)
-  const color = `var(${LANE_COLORS[(lane < 0 ? i : lane) % TRACE_LANES]})`
+  const color = bendColor(bend.key, activity.get().lines, i)
   const text = `${SLIDER_BY_KEY.get(bend.key)?.label ?? bend.key} ${bend.value}`
   const id = `${line.id}:${bend.key}`
   return target
@@ -71,30 +73,33 @@ function flashFor(
 
 export function BendFlashes() {
   const [flashes, setFlashes] = useState<readonly Flash[]>([])
+  const [banner, setBanner] = useState<Banner | null>(null)
 
-  useEffect(() => {
-    let seen = -1
-    const spawn = () => {
-      const { lines } = activity.get()
-      const lanes = laneKeys(lines)
-      const now = Date.now()
-      const fresh = lines.filter(l => l.id > seen && now - l.at < FRESH_MS)
-      seen = Math.max(seen, lines[0]?.id ?? -1)
-      const spawned = fresh.flatMap(line =>
-        line.bends.map((bend, i) => flashFor(line, bend, i, lanes)),
-      )
-      if (spawned.length > 0)
-        setFlashes(shown => [...shown, ...spawned].slice(-MOST))
-    }
-    spawn()
-    return activity.subscribe(spawn)
-  }, [])
+  useEffect(
+    () =>
+      onFreshLines(line => {
+        if (line.said) setBanner({ id: line.id, text: line.text })
+        const spawned = line.bends.map((bend, i) => flashFor(line, bend, i))
+        if (spawned.length > 0)
+          setFlashes(shown => [...shown, ...spawned].slice(-MOST))
+      }),
+    [],
+  )
 
   const done = (id: string) =>
     setFlashes(shown => shown.filter(f => f.id !== id))
 
   return (
     <div className={styles.layer} aria-hidden="true">
+      {banner && (
+        <div
+          key={banner.id}
+          className={styles.banner}
+          onAnimationEnd={() => setBanner(null)}
+        >
+          {banner.text}
+        </div>
+      )}
       {flashes.map(f => (
         <div key={f.id} style={cssVars({ '--flash': f.color })}>
           {f.ring && <div className={styles.ring} style={f.ring} />}
