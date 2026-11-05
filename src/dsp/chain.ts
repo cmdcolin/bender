@@ -160,7 +160,7 @@ class DeskLoop {
   private readonly tiltLpL = new OnePoleLP()
   private readonly tiltLpR = new OnePoleLP()
   private tilt = 0
-  private tiltCoef = 0
+  private readonly tiltCoef: number
   delay = 1
   /** Fader up and a line to come back down: what makes this strip exist. */
   on = false
@@ -183,6 +183,7 @@ class DeskLoop {
   constructor(sr: number) {
     this.lineL = new DelayLine(0.5 * sr + 4)
     this.lineR = new DelayLine(0.5 * sr + 4)
+    this.tiltCoef = lpCoef(800, sr)
   }
 
   open(amt: number, ms: number, tilt: number, sr: number, wired = false) {
@@ -192,7 +193,6 @@ class DeskLoop {
     this.setAmt(amt)
     this.delay = Math.max((ms / 1000) * sr, 1)
     this.tilt = tilt
-    this.tiltCoef = lpCoef(800, sr)
   }
 
   setAmt(amt: number) {

@@ -609,6 +609,26 @@ const rampGain = (ramp: number, k: number, n: number) => {
   return 1 - Math.abs(ramp) * (1 - RAMP_FLOOR) * t
 }
 
+const kitCoefs = (sr: number) => ({
+  noiseEdge: lpCoef(NOISE_EDGE, sr),
+  romLpCoef: lpCoef(ROM_LP, sr),
+  clickCapCoef: lpCoef(CLICK_HI, sr),
+  clickSlewCoef: lpCoef(CLICK_LO, sr),
+  bellHpCoef: lpCoef(BELL_HP, sr),
+  bellLpCoef: lpCoef(BELL_LP, sr),
+  noiseLpCoef: lpCoef(NOISE_LP, sr),
+  noiseLidCoef: lpCoef(NOISE_LID, sr),
+  snareHpCoef: lpCoef(SNARE_HP, sr),
+  snareLpCoef: lpCoef(SNARE_LP, sr),
+  clapLpCoef: lpCoef(CLAP_LP, sr),
+  clapHpCoef: lpCoef(CLAP_HP, sr),
+  hatHpCoef: lpCoef(HAT_HP, sr),
+  hatLpCoef: lpCoef(HAT_LP, sr),
+  cymCrashCoef: lpCoef(CYM_CRASH, sr),
+  cymSplashCoef: lpCoef(CYM_SPLASH, sr),
+  cymLpCoef: lpCoef(CYM_LP, sr),
+})
+
 export class ToyDrum implements Stage {
   label = 'toyDrum'
   readonly writes = ['send'] as const
@@ -697,6 +717,7 @@ export class ToyDrum implements Stage {
   private metalHi = new BiquadState()
   private readonly metalLoBand: Biquad
   private readonly metalHiBand: Biquad
+  private readonly coefs: ReturnType<typeof kitCoefs>
   private hatHp = new Highpass(HAT_POLES)
   private hatLp = new Lowpass(HAT_LP_POLES)
   private cymCrash = new Highpass(CYM_POLES)
@@ -865,6 +886,7 @@ export class ToyDrum implements Stage {
     this.metal = new MetalBank(sr)
     this.metalLoBand = bandpass(METAL_LO, METAL_Q, sr)
     this.metalHiBand = bandpass(METAL_HI, METAL_Q, sr)
+    this.coefs = kitCoefs(sr)
     this.micTrig = new Transient(sr)
     this.addrBus = new Bus(ADDR_LINES, seed ^ 0xadd4)
     this.dataBus = new Bus(DATA_LINES, seed ^ 0xda7a)
@@ -1354,7 +1376,7 @@ export class ToyDrum implements Stage {
     // How far past the knee the noise transistor is biased, 1 being a junction
     // that has all the reverse voltage it wants.
     const noiseBias = Math.min(Math.max(p[IDX.drumNoiseBias]!, 0), 1)
-    const noiseEdge = lpCoef(NOISE_EDGE, this.sr)
+    const { noiseEdge } = this.coefs
     // The same pot on the hats' amplifier, between the same transistor and the
     // metal bank, and equal-power for the same reason: the two sources have
     // nothing in common, so an amplitude fade would dip in the middle.
@@ -1447,7 +1469,7 @@ export class ToyDrum implements Stage {
     // bright.
     const romHz = Math.max(p[IDX.drumRomHz]!, 1)
     const romRate = romHz / this.sr
-    const romLpCoef = lpCoef(ROM_LP, this.sr)
+    const { romLpCoef } = this.coefs
     // Decay is truncation on a recording rather than a time constant: under 1x
     // the gate shuts part way in, and over it the slab plays whole.
     const romCut = Math.min(decay, 1)
@@ -1513,21 +1535,23 @@ export class ToyDrum implements Stage {
 
     const chokeFall = Math.exp(CHOKE_COUNT * perSample)
 
-    const clickCapCoef = lpCoef(CLICK_HI, this.sr)
-    const clickSlewCoef = lpCoef(CLICK_LO, this.sr)
-    const bellHpCoef = lpCoef(BELL_HP, this.sr)
-    const bellLpCoef = lpCoef(BELL_LP, this.sr)
-    const noiseLpCoef = lpCoef(NOISE_LP, this.sr)
-    const noiseLidCoef = lpCoef(NOISE_LID, this.sr)
-    const snareHpCoef = lpCoef(SNARE_HP, this.sr)
-    const snareLpCoef = lpCoef(SNARE_LP, this.sr)
-    const clapLpCoef = lpCoef(CLAP_LP, this.sr)
-    const clapHpCoef = lpCoef(CLAP_HP, this.sr)
-    const hatHpCoef = lpCoef(HAT_HP, this.sr)
-    const hatLpCoef = lpCoef(HAT_LP, this.sr)
-    const cymCrashCoef = lpCoef(CYM_CRASH, this.sr)
-    const cymSplashCoef = lpCoef(CYM_SPLASH, this.sr)
-    const cymLpCoef = lpCoef(CYM_LP, this.sr)
+    const {
+      clickCapCoef,
+      clickSlewCoef,
+      bellHpCoef,
+      bellLpCoef,
+      noiseLpCoef,
+      noiseLidCoef,
+      snareHpCoef,
+      snareLpCoef,
+      clapLpCoef,
+      clapHpCoef,
+      hatHpCoef,
+      hatLpCoef,
+      cymCrashCoef,
+      cymSplashCoef,
+      cymLpCoef,
+    } = this.coefs
     // Equal power across the wiper, for the same reason the other two pots on
     // this board are: the two taps share the bank and not much else.
     const crashMix = Math.sqrt(1 - cymTone) * CYM_CRASH_GAIN
