@@ -1030,10 +1030,8 @@ export class ToyDrum implements Stage {
           this.loop > 0
             ? this.loopCells[v]!
             : this.rot > 0
-              ? this.rotCells[v]!
-              : strayed
-                ? this.wander.rows[v]!
-                : Math.round(p[VOICE_PARAM[v]!]!)
+              ? this.rotted(p, v)
+              : this.gridRow(p, v)
         const cellSoft = this.loop > 0 ? this.loopSoft[v]! : 0
         const maybe = strayed
           ? this.wander.maybes[v]!
@@ -1145,8 +1143,7 @@ export class ToyDrum implements Stage {
       const bit = 1 << this.loopAt[v]!
       let cells = this.rotCells[v]!
       if (cells & bit && rand() < rot * ROT_LEAK) cells &= ~bit
-      if (rand() < refresh)
-        cells = (cells & ~bit) | (Math.round(p[VOICE_PARAM[v]!]!) & bit)
+      if (rand() < refresh) cells = (cells & ~bit) | (this.gridRow(p, v) & bit)
       this.rotCells[v] = cells
     }
     for (let v = 0; v < N_VOICES; v++) {
@@ -1162,17 +1159,24 @@ export class ToyDrum implements Stage {
     }
   }
 
+  private gridRow(p: Float32Array, v: number) {
+    return this.wander.straying
+      ? this.wander.rows[v]!
+      : Math.round(p[VOICE_PARAM[v]!]!)
+  }
+
+  private rotted(p: Float32Array, v: number) {
+    const row = this.gridRow(p, v)
+    if (row !== this.rotSeen[v]) {
+      this.rotSeen[v] = row
+      this.rotCells[v] = row
+    }
+    return this.rotCells[v]!
+  }
+
   private wireRot(p: Float32Array, lane: Float32Array | null) {
     this.rot = Math.min(Math.max(p[IDX.drumRot]! + (lane ? lane[0]! : 0), 0), 1)
     if (this.rot === 0) this.rotSeen.fill(-1)
-    else
-      for (let v = 0; v < N_VOICES; v++) {
-        const row = Math.round(p[VOICE_PARAM[v]!]!)
-        if (row !== this.rotSeen[v]) {
-          this.rotSeen[v] = row
-          this.rotCells[v] = row
-        }
-      }
   }
 
   // Loads the register from the panel the first time it is wired, and again
