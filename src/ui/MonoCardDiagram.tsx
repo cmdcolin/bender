@@ -24,6 +24,8 @@ const KEYS = [
   'monoDacBit',
   'monoSag',
   'monoRegTrip',
+  'monoThump',
+  'monoFold',
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
@@ -31,8 +33,8 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   'key DAC': ['monoDacBit'],
   hold: ['monoDroop'],
   'exp conv': ['monoHeat'],
-  ladder: ['monoMismatch'],
-  VCA: ['monoLeak'],
+  ladder: ['monoMismatch', 'monoFold'],
+  VCA: ['monoLeak', 'monoThump'],
   contours: ['monoCap'],
 }
 
@@ -74,13 +76,13 @@ export function MonoCardDiagram() {
     { name: 'oscs', lit: false, help: 'The three oscillators.' },
     {
       name: 'ladder',
-      lit: on('monoMismatch'),
-      help: 'The transistor ladder filter. One pair off its partners moves and widens the peak.',
+      lit: on('monoMismatch') || on('monoFold'),
+      help: 'The transistor ladder filter. One pair off its partners moves and widens the peak, and an input pair biased off centre folds the wave.',
     },
     {
       name: 'VCA',
-      lit: on('monoLeak'),
-      help: 'The amplifier the loudness contour opens on every note. With a leak, the drone sounds with no key down.',
+      lit: on('monoLeak') || on('monoThump'),
+      help: 'The amplifier the loudness contour opens on every note. With a leak, the drone sounds with no key down, and with its control untrimmed every note thumps through.',
     },
   ]
   const widths = parts.map(p => boxWidth(p.name))
@@ -139,7 +141,7 @@ export function MonoCardDiagram() {
                 key={`cap${b.name}`}
                 arrow={arrow}
                 d={`M${centre(b)} ${LOW_Y} V${CHIP_Y + CHIP_H}`}
-                look="dash"
+                look={b === vca && on('monoThump') ? 'on' : 'dash'}
               />
             ))}
             <Chip

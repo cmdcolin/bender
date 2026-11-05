@@ -319,6 +319,8 @@ export const BEND_ENDS: Partial<
   drumOutAddr: [null, 1],
   monoRegTrip: [null, null],
   chipLfsr: [-0.5, 0],
+  monoThump: [null, null],
+  monoFold: [null, -1.5],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

@@ -200,6 +200,8 @@ const EVERYTHING: Partial<Controls> = {
   monoLevel: 0.5,
   monoEmph: 0.9,
   monoLoop: 0.5,
+  monoThump: 0.5,
+  monoFold: 0.5,
   oscLevel: 0.3,
   noiseLevel: 0.2,
   crackleAmp: 0.3,

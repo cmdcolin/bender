@@ -683,8 +683,8 @@ Five bends sit inside the die, between the counter and the memory.
 
 ## Growler's voice card
 
-The voice card has eight faults modelled on analog synth parts. The drawing
-under the **voice card** box shows each fault as a red reading on its part.
+The voice card has ten faults modelled on analog synth parts. The drawing under
+the **voice card** box shows each fault as a red reading on its part.
 
 - **Hot converter:** the exponential converter's transistor pair with no heater.
   The three oscillators drift apart and octave widths stretch. Low notes stay
@@ -717,6 +717,21 @@ under the **voice card** box shows each fault as a red reading on its part.
     no two cycles match. The knob sets the warming rate: a cycle takes 25 to 45
     seconds near the bottom and 9 to 14 seconds at full. Loud playing warms it a
     little faster.
+- **VCA thump:** the VCA's control voltage feeds through to its output, the
+  thump of a VCA nobody trimmed.
+  - Every attack lands with a click and a thud, and the note leans on the output
+    stage under it for a moment. A short release kicks the other way.
+  - An attack slower than about 0.1 s, or bigger contour caps, soften it. An
+    accent hits harder.
+  - **Feedback** carries the thump back into the ladder.
+- **Folding pair:** the ladder's input transistor pair sits off centre, so a
+  loud input folds back instead of clipping, the top side sooner than the
+  bottom. The knob and **Drive** set how many times it folds.
+  - The emphasis returns through the same pair, so the ladder folds its own
+    ringing.
+  - Up to about half way the note keeps its pitch and changes colour. Near full
+    it drops into sub-octaves and bursts of noise, and locks back in for
+    stretches. More emphasis gets there sooner.
 
 Two more cables run from the output jack, under the **mixer** box beside
 **Feedback**.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { bin, rms } from '../testRender.ts'
 import { MonoVoice, SYNC, WAVE, type MonoPatch } from './monoVoice.ts'
 
 const SR = 48000
@@ -380,10 +381,118 @@ describe('MonoVoice', () => {
     expect(full).toBeGreaterThan(2 * low)
   })
 
+  const DARK_BASS: Partial<MonoPatch> = {
+    wave: [WAVE.saw, WAVE.tri, WAVE.square],
+    range: [-1, -1, -2],
+    fine: [0, -12, 0],
+    level: [0.8, 0.7, 0],
+    cutoff: 140,
+    emphasis: 0.2,
+    drive: 1.6,
+    contour: 0.6,
+    drift: 0,
+  }
+  const attack = (x: Float32Array) => rms(x.subarray(0, 0.03 * SR))
+  const kick = (patch: Partial<MonoPatch>) => {
+    const off = play(patch, 48, 0.6)
+    const on = play({ ...patch, thump: 1 }, 48, 0.6)
+    return rms(on.map((v, i) => v - off[i]!))
+  }
+
+  it('kicks the attack of a dark bass with VCA thump, softer with a slow attack', () => {
+    const off = attack(play(DARK_BASS, 48, 0.1))
+    const on = attack(play({ ...DARK_BASS, thump: 1 }, 48, 0.1))
+    expect(on).toBeGreaterThan(1.2 * off)
+    expect(kick({ ...DARK_BASS, aA: 0.3 })).toBeLessThan(0.3 * kick(DARK_BASS))
+  })
+
+  function struck(patch: Partial<MonoPatch>, accent: boolean) {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, DARK_BASS, { accent: 1 }, patch)
+    v.noteOn(48, 1, accent)
+    const out = new Float32Array(0.4 * SR)
+    v.render(out, 0, 0.3 * SR)
+    v.noteOff(48)
+    v.render(out, 0.3 * SR, out.length)
+    return out
+  }
+  const thumped = (
+    patch: Partial<MonoPatch>,
+    accent: boolean,
+    from: number,
+    to: number,
+  ) => {
+    const off = struck(patch, accent).subarray(from * SR, to * SR)
+    const on = struck({ ...patch, thump: 1 }, accent).subarray(
+      from * SR,
+      to * SR,
+    )
+    return rms(on.map((v, i) => v - off[i]!))
+  }
+
+  it('thumps harder on an accent and kicks back on a short release', () => {
+    expect(thumped({}, true, 0, 0.05)).toBeGreaterThan(
+      1.3 * thumped({}, false, 0, 0.05),
+    )
+    expect(thumped({ aR: 0.005 }, false, 0.3, 0.36)).toBeGreaterThan(
+      3 * thumped({ aR: 0.5 }, false, 0.3, 0.36),
+    )
+  })
+
+  const LEAD: Partial<MonoPatch> = {
+    wave: [WAVE.saw, WAVE.saw, WAVE.tri],
+    range: [0, 0, -1],
+    fine: [0, 0, 0],
+    level: [0.8, 0.6, 0],
+    cutoff: 600,
+    contour: 2.5,
+    drive: 2.5,
+    emphasis: 0.3,
+    drift: 0,
+  }
+  const held = (x: Float32Array) => x.subarray(SR, 1.5 * SR)
+
+  it('folds a note into its sub-octave with the folding pair full', () => {
+    const off = held(play(LEAD, 60, 1.5))
+    const on = held(play({ ...LEAD, fold: 1 }, 60, 1.5))
+    const hz = 261.63
+    expect(bin(off, hz / 2)).toBeLessThan(0.01 * bin(off, hz))
+    expect(bin(on, hz / 2)).toBeGreaterThan(0.3 * bin(on, hz))
+  })
+
+  it('reshapes the note without leaving its pitch with the folding pair at half', () => {
+    const off = held(play(LEAD, 60, 1.5))
+    const half = held(play({ ...LEAD, fold: 0.5 }, 60, 1.5))
+    const hz = 261.63
+    expect(bin(half, hz / 2)).toBeLessThan(0.01 * bin(half, hz))
+    let diff = 0
+    for (let i = 0; i < off.length; i++) diff += (half[i]! - off[i]!) ** 2
+    expect(Math.sqrt(diff / off.length) / rms(off)).toBeGreaterThan(0.1)
+  })
+
+  it('keeps sounding through a held note with both new faults, the emphasis and the drive at full', () => {
+    const x = play(
+      {
+        ...LEAD,
+        fold: 1,
+        thump: 1,
+        drive: 4,
+        emphasis: 1.1,
+        loop: 1,
+        cutoff: 12000,
+      },
+      60,
+      4,
+    )
+    expect(x.every(v => Number.isFinite(v) && Math.abs(v) <= 1)).toBe(true)
+    for (let t = 0; t < 4; t += 0.1)
+      expect(rms(x.subarray(t * SR, (t + 0.1) * SR))).toBeGreaterThan(0.01)
+  })
+
   it('plays again after panic clears a NaN out of its oscillator and sag state', () => {
     const v = new MonoVoice(SR)
     Object.assign(v.patch, OPEN)
-    for (const field of ['sagEnv', 'v1', 'v2', 'pinkish'])
+    for (const field of ['sagEnv', 'v1', 'v2', 'pinkish', 'ampLow'])
       Reflect.set(v, field, NaN)
     Reflect.set(Reflect.get(v, 'osc0'), 'phase', NaN)
     v.panic()

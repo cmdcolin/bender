@@ -109,6 +109,32 @@ test('the regulator feeds the converter and ladder, the contours feed the ladder
   expect(xs(false)).toEqual([centre('ladder'), centre('VCA')])
 })
 
+test('VCA thump lights the VCA and the contour drop into it, and opens from the VCA', () => {
+  open()
+  const litDrops = () =>
+    [...card().querySelectorAll('path[class*="wireOn"]')].map(p =>
+      Number(/M([\d.]+)/.exec(p.getAttribute('d')!)![1]),
+    )
+  expect(litDrops()).toEqual([])
+  set({ monoThump: 0.5 })
+  expect(lit('VCA')).toBe(true)
+  expect(lit('contours')).toBe(false)
+  expect(litDrops()).toEqual([centre('VCA')])
+  set({ monoThump: 0 })
+  fireEvent.click(screen.getByRole('button', { name: 'VCA controls' }))
+  expect(screen.getByText('VCA thump')).not.toBeNull()
+})
+
+test('folding pair lights the ladder and opens from it', () => {
+  open()
+  set({ monoFold: 0.5 })
+  expect(lit('ladder')).toBe(true)
+  set({ monoFold: 0 })
+  expect(lit('ladder')).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'ladder controls' }))
+  expect(screen.getByText('Folding pair')).not.toBeNull()
+})
+
 test('each part of the card opens its own knob', () => {
   open()
   expect(screen.queryByText('Sag')).toBeNull()

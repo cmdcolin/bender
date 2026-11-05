@@ -72,6 +72,8 @@ const RINGING: Partial<Controls> = {
   monoLevel: 0.5,
   monoEmph: 0.9,
   monoLoop: 0.5,
+  monoThump: 0.5,
+  monoFold: 0.5,
 }
 
 // Minutes of simulated board per run, and every stage added to the path adds to

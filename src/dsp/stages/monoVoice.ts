@@ -92,6 +92,8 @@ export interface MonoPatch {
   loopPitch: number
   choke: number
   regTrip: number
+  thump: number
+  fold: number
 }
 
 export const MONO_DEFAULT: MonoPatch = {
@@ -139,6 +141,8 @@ export const MONO_DEFAULT: MonoPatch = {
   loopPitch: 0,
   choke: 0,
   regTrip: 0,
+  thump: 0,
+  fold: 0,
 }
 
 const OS = 2
@@ -168,6 +172,8 @@ const CHOKE_FLOOR = 0.02
 const CHOKE_OPEN = 0.25
 const CHOKE_ATTACK_S = 0.001
 const CHOKE_RELEASE_S = 0.03
+const THUMP = 4
+const THUMP_HZ = 50
 
 // tanh(x)/x as a rational, for the ladder's per-stage gains.
 function tanhXdX(x: number): number {
@@ -321,6 +327,11 @@ class Contour {
   }
 }
 
+const FOLD_BIAS = 0.35
+const FOLD_SIN = Math.sin(FOLD_BIAS)
+const FOLD_NORM = 0.98 / (1 + FOLD_SIN)
+const FOLD_GAIN = 3
+
 class Ladder {
   private s0 = 0
   private s1 = 0
@@ -334,9 +345,11 @@ class Ladder {
   f = 0
   r = 0
   skew = 1
+  fold = 0
+  foldGain = 1
 
   process() {
-    const { f, r, skew } = this
+    const { f, r, skew, fold } = this
     const x = this.y
     const ih = 0.5 * (x + this.zi)
     this.zi = x
@@ -364,15 +377,24 @@ class Ladder {
         c1 * g0 * this.s0 +
         c0 * ih) /
       (1 + r * c0)
-    const xx = t0 * (ih - r * y3)
+    const u = ih - r * y3
+    const clipped = t0 * u
+    const xx =
+      fold > 0
+        ? clipped +
+          fold *
+            ((Math.sin(this.foldGain * u + FOLD_BIAS) - FOLD_SIN) * FOLD_NORM -
+              clipped)
+        : clipped
     const y0 = t1 * g0 * (this.s0 + f0 * xx)
     const y1 = t2 * g1 * (this.s1 + f1 * y0)
     const y2 = t3 * g2 * (this.s2 + f2 * y1)
+    const out = fold > 0 ? g3 * (this.s3 + f3 * y2) : y3
     this.s0 = flushDenormal(this.s0 + 2 * f0 * (xx - y0))
     this.s1 = flushDenormal(this.s1 + 2 * f1 * (y0 - y1))
     this.s2 = flushDenormal(this.s2 + 2 * f2 * (y1 - y2))
-    this.s3 = flushDenormal(this.s3 + 2 * f3 * (y2 - t4 * y3))
-    this.y = y3
+    this.s3 = flushDenormal(this.s3 + 2 * f3 * (y2 - t4 * out))
+    this.y = out
   }
 
   reset() {
@@ -492,6 +514,7 @@ export class MonoVoice {
   private follow = 0
   private choked = false
   private sagEnv = 0
+  private ampLow = 0
   private v1 = 0
   private v2 = 0
   private tick = 0
@@ -641,6 +664,8 @@ export class MonoVoice {
     osc1.window = sync === SYNC.soft ? SOFT_WINDOW : 1
     ladder.r = r
     ladder.skew = skew
+    ladder.fold = p.fold
+    ladder.foldGain = 1 + FOLD_GAIN * p.fold
     const linFm = p.linFm
     const hiss = p.noise * 0.3 + FLOOR
     const loop = p.loop * 2
@@ -659,6 +684,8 @@ export class MonoVoice {
     const track = p.track / 12
     const sag = p.sag
     const gain = p.volume * 1.4
+    const thump = THUMP * p.thump
+    const thumpK = 1 - Math.exp((-2 * Math.PI * THUMP_HZ) / sr)
     const keyBase = 440 / osr
     const lo = free ? ratio[2]! / osr : 0
 
@@ -708,6 +735,8 @@ export class MonoVoice {
       if (regTrip > 0 || reg.temp > 0)
         reg.step(regTrip, this.sagEnv, sr, this.rng)
       const amp = (leak + (1 - leak) * ae) * this.boost * reg.rail
+      this.ampLow = flushDenormal(this.ampLow + thumpK * (amp - this.ampLow))
+      const jolt = thump * (amp - this.ampLow)
       const mod =
         modMix > 0
           ? modAmt *
@@ -782,7 +811,7 @@ export class MonoVoice {
         ladder.y = mix * inGain
         ladder.f = f
         ladder.process()
-        const v = ladder.y * amp
+        const v = thump > 0 ? ladder.y * amp + jolt : ladder.y * amp
         this.loopLow = flushDenormal(
           this.loopLow + loopHpK * (this.last - this.loopLow),
         )
@@ -817,6 +846,7 @@ export class MonoVoice {
     this.pinkish = 0
     this.regulator.reset()
     this.sagEnv = 0
+    this.ampLow = 0
     this.v1 = 0
     this.v2 = 0
     for (const osc of [this.osc0, this.osc1, this.osc2]) osc.reset()

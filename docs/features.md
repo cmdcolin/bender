@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-640 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 164
+642 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 165
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 164 presets, and a roll button on every heading as well as
+- **Whole boards.** 165 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -546,69 +546,72 @@ long each struck note stays down, and at 1 the tune plays legato and slides.
 _Struck by_ clips the kit’s trigger lines on, so a kick can restart the bass.
 The voice card has these faults: a converter with no heater, a VCA that leaks,
 oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck
-bit on the key DAC and a weak regulator.
+bit on the key DAC, a weak regulator, an untrimmed VCA that thumps and a ladder
+input pair that folds.
 
 <details>
-<summary>56 controls</summary>
+<summary>58 controls</summary>
 
-| control                         | range                                                             | what it does                                                                                                                                |
-| ------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Level                           | 0 to 4, normal 0 to 1                                             | How loud Growler is in the source mix                                                                                                       |
-| Mute                            | live or muted                                                     | Silences Growler on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness                          |
-| Supply                          | shared cells, second cells, bench supply                          | Which supply Growler runs off                                                                                                               |
-| Cutoff                          | 20 Hz to 12 kHz                                                   | Where the four-pole ladder filter starts cutting, 24 dB an octave                                                                           |
-| Emphasis                        | 0 to 1.1, normal 0 to 0.95                                        | Resonance at the cutoff                                                                                                                     |
-| Contour amount                  | 0 to 5 octaves                                                    | How many octaves the filter contour opens the cutoff at its peak                                                                            |
-| Drive                           | 0.25× to 4×                                                       | Gain from the mixer into the ladder                                                                                                         |
-| Glide                           | 0 to 1 s                                                          | Portamento between notes                                                                                                                    |
-| Melody memory                   | off or on                                                         | Plays the steps on the piano roll while the song runs, on the machine named under Plays on                                                  |
-| Plays on                        | Growler, Glint, Parlor                                            | Which machine has the memory’s line soldered to its key input                                                                               |
-| Memory rate                     | 0.2 to 24 Hz                                                      | Steps a second                                                                                                                              |
-| Kit sync                        | off, sixteenths, eighths, dotted eighths, quarters                | A wire from the drum machine’s step clock to the memory’s counter, which steps on every kit step, every second, every third or every fourth |
-| Osc 1 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 1’s waveform                                                                                                                     |
-| Osc 1 range                     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 1’s footage                                                                                                                      |
-| Osc 2 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 2’s waveform                                                                                                                     |
-| Osc 2 range                     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 2’s footage                                                                                                                      |
-| Osc 2 tune                      | −12 to +12 st                                                     | Oscillator 2 against oscillator 1, in semitones                                                                                             |
-| Sync                            | off, hard, soft                                                   | Osc 1 restarts osc 2, so osc 2’s tune sets the timbre and osc 1 sets the pitch                                                              |
-| Lin FM                          | 0× to 4×                                                          | Osc 2 into osc 1’s linear FM input, as a multiple of osc 1’s frequency                                                                      |
-| Osc 2 sweep                     | 0 to 36 st                                                        | How far the filter contour raises osc 2, in semitones                                                                                       |
-| Osc 3 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 3’s waveform, which is also the modulation shape when osc 3 drives the modulation bus                                            |
-| Osc 3 range                     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 3’s footage                                                                                                                      |
-| Osc 3 tune                      | −12 to +12 st                                                     | Oscillator 3 against oscillator 1, in semitones                                                                                             |
-| Osc 3 control                   | keyed, free, lo                                                   | _keyed_ follows the keyboard like the other two                                                                                             |
-| Drift                           | 0 to 20 ¢                                                         | Slow random wander on each oscillator, in cents                                                                                             |
-| Osc 1                           | off to full                                                       | Oscillator 1 into the filter                                                                                                                |
-| Osc 2                           | off to full                                                       | Oscillator 2 into the filter                                                                                                                |
-| Osc 3                           | off to full                                                       | Oscillator 3 into the filter                                                                                                                |
-| Noise                           | off to full                                                       | White noise into the filter                                                                                                                 |
-| Feedback                        | off to full                                                       | The output patched back into the mixer, the way players ran a cable from the headphone jack into the external input                         |
-| Out to pitch                    | off to full                                                       | The output patched into the pitch inputs of osc 1 and osc 2                                                                                 |
-| Out to gate                     | off to full                                                       | The rectified output wired across the gate line                                                                                             |
-| Attack                          | 0.001 to 10 s                                                     | How long the filter contour takes to open to its peak                                                                                       |
-| Decay                           | 0.001 to 10 s                                                     | How long the filter contour takes to fall from the peak to the sustain level                                                                |
-| Sustain                         | off to full                                                       | Where the filter contour sits while a key is down                                                                                           |
-| Release                         | 0.001 to 10 s                                                     | How long the filter contour takes to close after the key comes up                                                                           |
-| Key tracking                    | off to full                                                       | How far the cutoff follows the key                                                                                                          |
-| Attack                          | 0.001 to 10 s                                                     | How long the filter contour takes to open to its peak                                                                                       |
-| Decay                           | 0.001 to 10 s                                                     | How long the filter contour takes to fall from the peak to the sustain level                                                                |
-| Sustain                         | off to full                                                       | Where the filter contour sits while a key is down                                                                                           |
-| Release                         | 0.001 to 10 s                                                     | How long the filter contour takes to close after the key comes up                                                                           |
-| Source                          | off to full                                                       | What the modulation bus carries: osc 3 at 0, filtered noise at 1, a blend between                                                           |
-| To pitch                        | 0 to 12 st                                                        | How far the modulation moves oscillators 1 and 2, in semitones                                                                              |
-| To filter                       | 0 to 4 octaves                                                    | How far the modulation moves the cutoff, in octaves                                                                                         |
-| Gate                            | 0.05 to 1                                                         | How long a note struck off the toy’s gate or the kit’s trigger lines stays down, as a fraction of the toy’s sequencer step                  |
-| Accent                          | off to full                                                       | How hard an accented step of the melody memory hits: louder, and a kick to the cutoff through the accent cap                                |
-| Kit voice that plays this synth | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit | The kit’s trigger lines, clipped onto the synth’s gate                                                                                      |
-| Plays Plinky’s notes            | yes, soldered, no, cut, lane 1, lane 2, lane 3                    | The jumper from the toy’s gate line to the synth’s key input                                                                                |
-| Hot converter                   | off to full                                                       | The exponential converter’s transistor pair with its heater gone                                                                            |
-| Leaky VCA                       | off to full                                                       | A VCA that never shuts                                                                                                                      |
-| Contour caps                    | 1× to 40×                                                         | The timing capacitors in both contour generators, replaced with ones this many times bigger                                                 |
-| Mismatched pair                 | off to full                                                       | One transistor pair in the ladder off its partners, up to three times the cutoff of the other stages                                        |
-| Pitch droop                     | 0 to 2 per second                                                 | The sample-and-hold capacitor on the pitch voltage leaking toward 0 V                                                                       |
-| Key DAC bit                     | ok, b0 +1, b1 +2, b2 +4, b3 +8, b4 +16, b5 +32, b6 +64            | One bit of the key-to-voltage converter stuck high                                                                                          |
-| Sag                             | off to full                                                       | A weak regulator on the voice card                                                                                                          |
-| Regulator trip                  | off to full                                                       | The voice card regulator with a poor heatsink                                                                                               |
+| control                         | range                                                             | what it does                                                                                                                                              |
+| ------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Level                           | 0 to 4, normal 0 to 1                                             | How loud Growler is in the source mix                                                                                                                     |
+| Mute                            | live or muted                                                     | Silences Growler on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness                                        |
+| Supply                          | shared cells, second cells, bench supply                          | Which supply Growler runs off                                                                                                                             |
+| Cutoff                          | 20 Hz to 12 kHz                                                   | Where the four-pole ladder filter starts cutting, 24 dB an octave                                                                                         |
+| Emphasis                        | 0 to 1.1, normal 0 to 0.95                                        | Resonance at the cutoff                                                                                                                                   |
+| Contour amount                  | 0 to 5 octaves                                                    | How many octaves the filter contour opens the cutoff at its peak                                                                                          |
+| Drive                           | 0.25× to 4×                                                       | Gain from the mixer into the ladder                                                                                                                       |
+| Glide                           | 0 to 1 s                                                          | Portamento between notes                                                                                                                                  |
+| Melody memory                   | off or on                                                         | Plays the steps on the piano roll while the song runs, on the machine named under Plays on                                                                |
+| Plays on                        | Growler, Glint, Parlor                                            | Which machine has the memory’s line soldered to its key input                                                                                             |
+| Memory rate                     | 0.2 to 24 Hz                                                      | Steps a second                                                                                                                                            |
+| Kit sync                        | off, sixteenths, eighths, dotted eighths, quarters                | A wire from the drum machine’s step clock to the memory’s counter, which steps on every kit step, every second, every third or every fourth               |
+| Osc 1 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 1’s waveform                                                                                                                                   |
+| Osc 1 range                     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 1’s footage                                                                                                                                    |
+| Osc 2 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 2’s waveform                                                                                                                                   |
+| Osc 2 range                     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 2’s footage                                                                                                                                    |
+| Osc 2 tune                      | −12 to +12 st                                                     | Oscillator 2 against oscillator 1, in semitones                                                                                                           |
+| Sync                            | off, hard, soft                                                   | Osc 1 restarts osc 2, so osc 2’s tune sets the timbre and osc 1 sets the pitch                                                                            |
+| Lin FM                          | 0× to 4×                                                          | Osc 2 into osc 1’s linear FM input, as a multiple of osc 1’s frequency                                                                                    |
+| Osc 2 sweep                     | 0 to 36 st                                                        | How far the filter contour raises osc 2, in semitones                                                                                                     |
+| Osc 3 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 3’s waveform, which is also the modulation shape when osc 3 drives the modulation bus                                                          |
+| Osc 3 range                     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 3’s footage                                                                                                                                    |
+| Osc 3 tune                      | −12 to +12 st                                                     | Oscillator 3 against oscillator 1, in semitones                                                                                                           |
+| Osc 3 control                   | keyed, free, lo                                                   | _keyed_ follows the keyboard like the other two                                                                                                           |
+| Drift                           | 0 to 20 ¢                                                         | Slow random wander on each oscillator, in cents                                                                                                           |
+| Osc 1                           | off to full                                                       | Oscillator 1 into the filter                                                                                                                              |
+| Osc 2                           | off to full                                                       | Oscillator 2 into the filter                                                                                                                              |
+| Osc 3                           | off to full                                                       | Oscillator 3 into the filter                                                                                                                              |
+| Noise                           | off to full                                                       | White noise into the filter                                                                                                                               |
+| Feedback                        | off to full                                                       | The output patched back into the mixer, the way players ran a cable from the headphone jack into the external input                                       |
+| Out to pitch                    | off to full                                                       | The output patched into the pitch inputs of osc 1 and osc 2                                                                                               |
+| Out to gate                     | off to full                                                       | The rectified output wired across the gate line                                                                                                           |
+| Attack                          | 0.001 to 10 s                                                     | How long the filter contour takes to open to its peak                                                                                                     |
+| Decay                           | 0.001 to 10 s                                                     | How long the filter contour takes to fall from the peak to the sustain level                                                                              |
+| Sustain                         | off to full                                                       | Where the filter contour sits while a key is down                                                                                                         |
+| Release                         | 0.001 to 10 s                                                     | How long the filter contour takes to close after the key comes up                                                                                         |
+| Key tracking                    | off to full                                                       | How far the cutoff follows the key                                                                                                                        |
+| Attack                          | 0.001 to 10 s                                                     | How long the filter contour takes to open to its peak                                                                                                     |
+| Decay                           | 0.001 to 10 s                                                     | How long the filter contour takes to fall from the peak to the sustain level                                                                              |
+| Sustain                         | off to full                                                       | Where the filter contour sits while a key is down                                                                                                         |
+| Release                         | 0.001 to 10 s                                                     | How long the filter contour takes to close after the key comes up                                                                                         |
+| Source                          | off to full                                                       | What the modulation bus carries: osc 3 at 0, filtered noise at 1, a blend between                                                                         |
+| To pitch                        | 0 to 12 st                                                        | How far the modulation moves oscillators 1 and 2, in semitones                                                                                            |
+| To filter                       | 0 to 4 octaves                                                    | How far the modulation moves the cutoff, in octaves                                                                                                       |
+| Gate                            | 0.05 to 1                                                         | How long a note struck off the toy’s gate or the kit’s trigger lines stays down, as a fraction of the toy’s sequencer step                                |
+| Accent                          | off to full                                                       | How hard an accented step of the melody memory hits: louder, and a kick to the cutoff through the accent cap                                              |
+| Kit voice that plays this synth | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit | The kit’s trigger lines, clipped onto the synth’s gate                                                                                                    |
+| Plays Plinky’s notes            | yes, soldered, no, cut, lane 1, lane 2, lane 3                    | The jumper from the toy’s gate line to the synth’s key input                                                                                              |
+| Hot converter                   | off to full                                                       | The exponential converter’s transistor pair with its heater gone                                                                                          |
+| Leaky VCA                       | off to full                                                       | A VCA that never shuts                                                                                                                                    |
+| Contour caps                    | 1× to 40×                                                         | The timing capacitors in both contour generators, replaced with ones this many times bigger                                                               |
+| Mismatched pair                 | off to full                                                       | One transistor pair in the ladder off its partners, up to three times the cutoff of the other stages                                                      |
+| Pitch droop                     | 0 to 2 per second                                                 | The sample-and-hold capacitor on the pitch voltage leaking toward 0 V                                                                                     |
+| Key DAC bit                     | ok, b0 +1, b1 +2, b2 +4, b3 +8, b4 +16, b5 +32, b6 +64            | One bit of the key-to-voltage converter stuck high                                                                                                        |
+| Sag                             | off to full                                                       | A weak regulator on the voice card                                                                                                                        |
+| Regulator trip                  | off to full                                                       | The voice card regulator with a poor heatsink                                                                                                             |
+| VCA thump                       | off to full                                                       | The VCA’s control voltage feeding through to its output, the thump of a VCA nobody trimmed                                                                |
+| Folding pair                    | off to full                                                       | The ladder’s input transistor pair biased off centre, so past its knee it folds the wave back instead of clipping it, the top side sooner than the bottom |
 
 </details>
 
@@ -1673,7 +1676,7 @@ result:
 
 ### Presets
 
-164 presets. Each name is a link that opens the app with that board loaded, and
+165 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2100,6 +2103,10 @@ the board waits until you press play.
   — A mono bass runs on a bad voice card. The pitch hold leaks so each note
   sinks, the converter runs hot, a ladder pair is mismatched and loud notes sag
   the regulator
+- [**folding bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqLen:32,monoSeqStep0:3,monoSeqStep6:3,monoSeqStep8:4,monoSeqStep16:3,monoSeqStep22:-2,monoSeqStep26:-1,drumLevel:0,drumBpm:140,monoLevel:1.8,monoKeyGate:1,monoGate:0.9,monoWave2:0,monoRange2:-1,monoTune2:-12,monoMix1:0.8,monoMix2:0.7,monoMix3:0,monoLoop:0.3,monoCutoff:150,monoEmph:0.7,monoContour:1.4,monoTrack:0.3,monoDrive:2.4,monoFD:0.7,monoFS:0.15,monoFR:0.4,monoAD:1,monoAS:0.6,monoAR:0.35,monoThump:0.8,monoFold:0.85,revDecayS:5,revMix:0.25)
+  — A slow Phrygian line plays Growler from its melody memory with no kit. The
+  VCA’s control thumps through, so each note lands with a click and a thud, and
+  the ladder’s input pair folds its own resonance into sub-octaves and grit
 - [**filter kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:2.5,monoKeyGate:1,monoStruck:1,monoMix1:0,monoMix2:0,monoMix3:0,monoCutoff:33,monoEmph:1.08,monoContour:2.2,monoTrack:1,monoFD:0.07,monoFS:0,monoFR:0.05,monoAD:0.5,monoAS:0.6,monoAR:0.12)
   — Every oscillator is down and the ladder runs past self-oscillation, struck
   by the kick, so the filter contour drops a sine two octaves on each hit

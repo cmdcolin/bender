@@ -165,6 +165,8 @@ export class MonoSynth implements Stage {
     )
     v.choke = withLane(p[IDX.monoChoke]!, ctx.mod.read(DEST.monoChoke))
     v.regTrip = withLane(p[IDX.monoRegTrip]!, ctx.mod.read(DEST.monoRegTrip))
+    v.thump = p[IDX.monoThump]!
+    v.fold = p[IDX.monoFold]!
     this.ext = micInto(p, ctx, MIC.growlerIn)
     v.ext = this.ext ? MIC_IN_GAIN : 0
   }
