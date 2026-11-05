@@ -144,14 +144,16 @@ try {
   )
 
   // At 6 Hz the stacked lane strikes every 0.33 s, and a struck voice falls
-  // below the envelope floor 1.21 s later.
+  // below the envelope floor 1.21 s later. Parlor, up on the bench from the
+  // start, lets go on stop and takes its release to fall the rest of the way.
   await evaluate(page, 'bender.set({ tuneRate: 6 }), bender.listen(1000)')
   await evaluate(page, 'bender.stop()')
   await evaluate(page, 'bender.listen(1500)')
   const after = (await evaluate(page, 'bender.listen(1000)')) as Heard
   check(
     'the chord lane goes quiet within 1.5 s of stop at the new tune rate',
-    after.peak === 'silent' && after.notes?.Plinky === undefined,
+    after.notes?.Plinky === undefined &&
+      (after.peak === 'silent' || Number.parseFloat(after.peak ?? '0') < -40),
     after,
   )
 
