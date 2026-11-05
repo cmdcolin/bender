@@ -2,6 +2,14 @@
 
 All notable changes to bender are documented here.
 
+## [1.26.1](https://github.com/cmdcolin/bender/compare/v1.26.0...v1.26.1) - 2026-11-05
+
+### Fixes
+- *(engine)* [`efb7b20`](https://github.com/cmdcolin/bender/commit/efb7b203fc655386e37414f16c5b2ec363fa9144) the garbage budget test gets the long timeout its 24 seconds of audio need
+
+### Other Changes
+- [`4e5dffa`](https://github.com/cmdcolin/bender/commit/4e5dffaa6c7ec5e833be42ede2683f2aa1c21ab7) SYNC css styles with videoskillet
+
 ## [1.26.0](https://github.com/cmdcolin/bender/compare/v1.25.0...v1.26.0) - 2026-11-04
 
 ### Features
