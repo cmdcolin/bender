@@ -1,12 +1,17 @@
 ---
 name: taste
-description: What Colin likes and dislikes in bender's sound and in how an agent makes music with it. Read before voicing a preset, a demo scene or a live session.
+description:
+  What Colin likes and dislikes in bender's sound and in how an agent makes
+  music with it. Read before voicing a preset, a demo scene or a live session.
 ---
 
 # Taste
 
 Gathered from live sessions, with the words that decided each line. Add to it
 when Colin reacts to a sound.
+
+This is taste for making songs, scenes and showcase presets. It does not limit
+which bends get built: for the bends themselves "anything can go".
 
 ## Likes
 
@@ -43,8 +48,8 @@ when Colin reacts to a sound.
 - A kick pitched up: `drumSweep: 2.2` with `drumTankCouple: 0.35` was
   "interesting for a little but not better".
 - The kit's networks rung into drones (`drumRing: 0.93`) as a breakdown.
-- Random settings cycling, and so many changes at once that no one change can
-  be judged.
+- Random settings cycling, and so many changes at once that no one change can be
+  judged.
 - Chiptune: a bright toy melody over a kick and snare grid.
 
 ## Working with Colin
