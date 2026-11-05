@@ -76,6 +76,10 @@ which bends get built: for the bends themselves "anything can go".
 - A generic pedal move offered as a bend: fuzz, a filter sweep, tape drive ("a
   generic pedal, not a bend that i wanted").
 - A bend that swamps the melody and then retreats after a few seconds.
+- Under a locked-in melody, bends that invent notes of their own, such as
+  `pcmRunOn` running a voice on through the ROM ("random melodies that distract
+  from melancholy"). They "could apply in another scenario", where no melody is
+  being held.
 
 ## Working with Colin
 
