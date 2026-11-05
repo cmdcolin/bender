@@ -17,6 +17,8 @@ const THUNK_HZ = 165
 const CLICK_HZ = 2900
 const SPLIT = 0.0045
 const NECK = 0.3
+// One bottle, the same on every boot: the build's seed times only its taps.
+const LAYOUT_SEED = 0
 const PICKUPS = [
   [0.5, 0.75],
   [0.5 + 0.6 / Math.PI, 0.55],
@@ -36,7 +38,7 @@ const shell = (n: number) => (n * (n * n - 1)) / Math.sqrt(n * n + 1)
 const along = (y: number) =>
   Math.min(Math.max((y - NECK) / (1 - NECK), 0.06), 1)
 
-function bottleBody(seed: number): Body {
+function bottleBody(): Body {
   const ring = new Uint8Array(MODES)
   const height = new Uint8Array(MODES)
   const twin = new Uint8Array(MODES)
@@ -51,7 +53,7 @@ function bottleBody(seed: number): Body {
           Math.sin((height[j]! + 1) * Math.PI * along(y))
   }
   const lay = (c: Couplings) => {
-    const rng = mulberry32(seed ^ 0xb077)
+    const rng = mulberry32(LAYOUT_SEED)
     let j = 0
     for (const n of RINGS)
       for (const [h, up] of HEIGHTS.entries())
@@ -109,15 +111,6 @@ function bottleBody(seed: number): Body {
 
 export class Bottle extends Struck {
   constructor(sr: number, seed = 0xb077) {
-    super('bottle', sr, seed, bottleBody(seed), {
-      level: IDX.bottleLevel,
-      strikes: IDX.bottleStrikes,
-      struckBy: IDX.bottleStruckBy,
-      hard: IDX.bottleHard,
-      size: IDX.bottleSize,
-      hold: IDX.bottleHold,
-      shake: IDX.bottleShake,
-      rattle: IDX.bottleRattle,
-    })
+    super('bottle', sr, seed, bottleBody())
   }
 }

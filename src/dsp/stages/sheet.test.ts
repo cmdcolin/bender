@@ -6,7 +6,8 @@ import { ModBus } from '../modbus.ts'
 import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import { highEnergy, rms, SR } from '../testRender.ts'
 import { TriggerBus } from '../trigbus.ts'
-import { Sheet, SHEET_KEY_CHOICE } from './sheet.ts'
+import { Sheet } from './sheet.ts'
+import { KEY_CHOICE } from './struck.ts'
 
 const blank = (): Ctx => ({
   sr: SR,
@@ -94,7 +95,7 @@ test('left alone with nothing to shake it, the sheet is silent', () => {
 
 test('a key strikes it, and the ring loses its highs first', () => {
   const out = run(
-    { sheetStruckBy: SHEET_KEY_CHOICE, sheetHard: 1, sheetRattle: 0 },
+    { sheetStruckBy: KEY_CHOICE, sheetHard: 1, sheetRattle: 0 },
     1,
     { key: 2 },
   )
@@ -140,4 +141,33 @@ test('the hardest, smallest, longest-held, busiest sheet stays finite and in ran
   )
   expect(out.every(Number.isFinite)).toBe(true)
   expect(out.reduce((m, v) => Math.max(m, Math.abs(v)), 0)).toBeLessThan(8)
+})
+
+test('turned down it rests, and turned back up it starts still', () => {
+  const sheet = new Sheet(SR)
+  const board = { ...DEFAULT_CONTROLS, sheetStrikes: 0 }
+  const up = packParams({ ...board, sheetLevel: 1 })
+  const down = packParams({ ...board, sheetLevel: 0 })
+  const ctx = blank()
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const blocks = (p: Float32Array, n: number) => {
+    let sum = 0
+    for (let b = 0; b < n; b++) {
+      io.l.fill(0)
+      io.r.fill(0)
+      if (sheet.when(p)) sheet.process(io, p, ctx)
+      sum += rms(io.l)
+    }
+    return sum
+  }
+  sheet.strikeAt(0.3, 0.3, 1)
+  expect(blocks(up, 20)).toBeGreaterThan(0.01)
+  blocks(down, 4)
+  sheet.strikeAt(0.3, 0.3, 1)
+  blocks(down, 4)
+  expect(blocks(up, 20)).toBe(0)
 })

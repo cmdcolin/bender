@@ -1,3 +1,4 @@
+import { PICKUPS } from '../dsp/stages/sheet.ts'
 import { Faceplate } from './Faceplate.tsx'
 import { faceSpot } from './faceSpot.ts'
 import styles from './SheetFace.module.css'
@@ -8,10 +9,6 @@ import type { KeyboardEvent, PointerEvent } from 'react'
 
 const W = 120
 const H = 90
-const PICKUPS = [
-  [0.31 / 1.2, 0.17 / 0.9],
-  [0.83 / 1.2, 0.64 / 0.9],
-] as const
 
 function onPointerDown(e: PointerEvent<SVGSVGElement>) {
   const { x, y } = faceSpot(e.currentTarget, e.clientX, e.clientY, W, H)

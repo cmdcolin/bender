@@ -1,3 +1,4 @@
+import { IDX } from '../../engine/params.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
@@ -49,21 +50,21 @@ export interface Body {
   retune?(p: Float32Array, pitch: Float64Array, ring: Float64Array): void
 }
 
-export interface Keys {
-  level: number
-  strikes: number
-  struckBy: number
-  hard: number
-  size: number
-  hold: number
-  shake: number
-  rattle: number
-}
+const keysOf = (name: 'sheet' | 'bottle') => ({
+  level: IDX[`${name}Level`],
+  strikes: IDX[`${name}Strikes`],
+  struckBy: IDX[`${name}StruckBy`],
+  hard: IDX[`${name}Hard`],
+  size: IDX[`${name}Size`],
+  hold: IDX[`${name}Hold`],
+  shake: IDX[`${name}Shake`],
+  rattle: IDX[`${name}Rattle`],
+})
 
 export class Struck implements Stage {
   readonly label: string
   private readonly body: Body
-  private readonly keys: Keys
+  private readonly keys: ReturnType<typeof keysOf>
   private readonly modes: number
   private readonly c: Couplings
   private readonly pitch: Float64Array
@@ -93,14 +94,15 @@ export class Struck implements Stage {
   private handX = 0
   private handY = 0
   private handGain = 0
+  private hushed = true
   private readonly sr: number
 
-  constructor(label: string, sr: number, seed: number, body: Body, keys: Keys) {
+  constructor(label: 'sheet' | 'bottle', sr: number, seed: number, body: Body) {
     this.label = label
     this.sr = sr
     this.seed = seed
     this.body = body
-    this.keys = keys
+    this.keys = keysOf(label)
     this.rng = mulberry32(seed)
     const m = body.modes
     this.modes = m
@@ -122,8 +124,16 @@ export class Struck implements Stage {
     body.lay(this.c)
   }
 
+  // At level 0 the chain stops running it, so it rests there: turned back up it
+  // starts still, and a hand on it while it was silent never lands.
   when(p: Float32Array) {
-    return p[this.keys.level]! > 0
+    const on = p[this.keys.level]! > 0
+    if (!on) {
+      if (!this.hushed) this.hush()
+      this.handGain = 0
+    }
+    this.hushed = !on
+    return on
   }
 
   /** A hand on it: where, as fractions of its face, and how hard. */
@@ -358,9 +368,13 @@ export class Struck implements Stage {
   }
 
   panic() {
+    this.hush()
+    this.rng = mulberry32(this.seed)
+  }
+
+  private hush() {
     this.y1.fill(0)
     this.y2.fill(0)
-    this.rng = mulberry32(this.seed)
     this.pulseLeft = 0
     this.bounceIn = 0
     this.loud = 0

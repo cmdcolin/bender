@@ -1,8 +1,5 @@
-import { IDX } from '../../engine/params.ts'
 import { mulberry32 } from '../util/rng.ts'
-import { KEY_CHOICE, Struck, type Body, type Couplings } from './struck.ts'
-
-export const SHEET_KEY_CHOICE = KEY_CHOICE
+import { Struck, type Body, type Couplings } from './struck.ts'
 
 const MODES = 128
 const GRID = 56
@@ -12,7 +9,9 @@ const KAPPA = 1.22
 const LOWEST_HZ = 25
 const TOP_HZ = 12000
 const MODES_PER_HZ = ((Math.PI / 4) * WIDTH * DEPTH) / ((Math.PI / 2) * KAPPA)
-const PICKUPS = [
+// One sheet, the same on every boot: the build's seed times only its strikes.
+const LAYOUT_SEED = 0x4499
+export const PICKUPS = [
   [0.31 / WIDTH, 0.17 / DEPTH],
   [0.83 / WIDTH, 0.64 / DEPTH],
 ] as const
@@ -30,7 +29,7 @@ const plateHz = (kx: number, ky: number) =>
 // A 1.2 by 0.9 m steel sheet, 0.8 mm thick, lying on a floor: the lowest 56
 // modes as the plate has them, the rest log-spaced to 12 kHz with random
 // wavenumber angles.
-function sheetBody(seed: number): Body {
+function sheetBody(): Body {
   const kx = new Float64Array(MODES)
   const ky = new Float64Array(MODES)
   const px = new Float64Array(MODES)
@@ -42,7 +41,7 @@ function sheetBody(seed: number): Body {
     Math.sin(kx[j]! * x * WIDTH + px[j]!) *
     Math.sin(ky[j]! * y * DEPTH + py[j]!)
   const lay = (c: Couplings) => {
-    const rng = mulberry32(seed ^ 0x1a7e)
+    const rng = mulberry32(LAYOUT_SEED)
     const grid: [number, number][] = []
     for (let m = 1; m < 40; m++)
       for (let n = 1; n < 40; n++) {
@@ -102,15 +101,6 @@ function sheetBody(seed: number): Body {
 
 export class Sheet extends Struck {
   constructor(sr: number, seed = 0x5ee7) {
-    super('sheet', sr, seed, sheetBody(seed), {
-      level: IDX.sheetLevel,
-      strikes: IDX.sheetStrikes,
-      struckBy: IDX.sheetStruckBy,
-      hard: IDX.sheetHard,
-      size: IDX.sheetSize,
-      hold: IDX.sheetHold,
-      shake: IDX.sheetShake,
-      rattle: IDX.sheetRattle,
-    })
+    super('sheet', sr, seed, sheetBody())
   }
 }
