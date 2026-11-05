@@ -182,6 +182,7 @@ export class Comb implements Stage {
   private readonly loop = new Loop()
   private kickLeft = 0
   private kickV = 0
+  private onBrigade = false
 
   private readonly sr: number
   private readonly compAtk: number
@@ -196,8 +197,9 @@ export class Comb implements Stage {
     this.compAtk = timeCoef(COMP_ATK, sr)
     this.compRel = timeCoef(COMP_REL, sr)
     this.coupleCoef = lpCoef(COUPLING_HZ, sr)
-    this.left = new Brigade(max * R_STRETCH)
-    this.right = new Brigade(max * R_STRETCH)
+    const slowest = (max * R_STRETCH) / CLOCK_FLOOR
+    this.left = new Brigade(slowest)
+    this.right = new Brigade(slowest)
   }
 
   when(p: Float32Array) {
@@ -206,8 +208,28 @@ export class Comb implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const buckets = BUCKETS[Math.round(p[IDX.combChip]!)] ?? 0
-    if (buckets > 0) this.brigade(io, p, ctx, buckets)
+    const brigade = buckets > 0
+    if (brigade !== this.onBrigade) {
+      this.onBrigade = brigade
+      if (brigade) this.resetBrigade()
+      else this.resetStock()
+    }
+    if (brigade) this.brigade(io, p, ctx, buckets)
     else this.stock(io, p, ctx)
+  }
+
+  private resetStock() {
+    this.lineL.reset()
+    this.lineR.reset()
+    this.dampL.reset()
+    this.dampR.reset()
+  }
+
+  private resetBrigade() {
+    this.left.reset()
+    this.right.reset()
+    this.kickLeft = 0
+    this.kickV = 0
   }
 
   private stock(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -335,13 +357,7 @@ export class Comb implements Stage {
   }
 
   panic() {
-    this.lineL.reset()
-    this.lineR.reset()
-    this.dampL.reset()
-    this.dampR.reset()
-    this.left.reset()
-    this.right.reset()
-    this.kickLeft = 0
-    this.kickV = 0
+    this.resetStock()
+    this.resetBrigade()
   }
 }

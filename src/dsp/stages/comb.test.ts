@@ -16,6 +16,7 @@ import {
   SR,
   tail,
 } from '../testRender.ts'
+import { DEAD_V } from '../toyRail.ts'
 import { TriggerBus } from '../trigbus.ts'
 import { COMB_CHIP, Comb } from './comb.ts'
 
@@ -74,8 +75,8 @@ function stage(
   input: (t: number) => number,
   seconds = 1,
   wire: (ctx: Ctx, i: number, t: number) => void = () => {},
+  comb = new Comb(SR),
 ): Float32Array {
-  const comb = new Comb(SR)
   const p = packParams({ ...DEFAULT_CONTROLS, ...BBD, ...board })
   const ctx = blank()
   const io = {
@@ -209,4 +210,31 @@ test('a clock on a sagging rail drags the comb down with it', () => {
   const pitch = (b: Partial<Controls>) => ringHz(stage(b, click, 1.5, sagging))
   expect(pitch(board)).toBeCloseTo(220, -1)
   expect(pitch({ ...board, combSag: 1 })).toBeCloseTo(110, -1)
+})
+
+test.each([
+  ['1024 buckets', 'Karplus'],
+  ['Karplus', '1024 buckets'],
+])(
+  'a %s ring left for %s does not come back when the chip does',
+  (from, to) => {
+    const comb = new Comb(SR)
+    const scream = { combChip: chip(from), combHz: 220, combFb: 1.1 }
+    const away = { combChip: chip(to), combFb: 0 }
+    const keep = () => {}
+    expect(rms(tail(stage(scream, click, 1, keep, comb)))).toBeGreaterThan(0.05)
+    stage(away, silence, 0.2, keep, comb)
+    expect(rms(stage(scream, silence, 0.5, keep, comb))).toBe(0)
+  },
+)
+
+test('a clock on a dead rail holds the echo back as long as it is slowed', () => {
+  const dead = (ctx: Ctx, i: number) => {
+    ctx.railV[i] = DEAD_V
+  }
+  const out = stage({ combHz: 220, combFb: 0.5, combSag: 1 }, click, 0.5, dead)
+  const echo = out.findIndex((v, i) => i > 1000 && Math.abs(v) > 1e-3)
+  const slowed = SR / 220 / 0.02
+  expect(echo).toBeGreaterThan(0.95 * slowed)
+  expect(echo).toBeLessThan(1.05 * slowed)
 })
