@@ -58,7 +58,9 @@ const shared = globSync(
 const base = {
   exclude: [...defaultExclude, '.claude/**', ...SLOW_SKIPPED],
   testTimeout: 40000,
-  maxWorkers: Math.max(2, availableParallelism() >> 1),
+  maxWorkers:
+    Number(process.env.BENDER_MAX_WORKERS) ||
+    Math.max(2, availableParallelism() >> 1),
 }
 
 export default getViteConfig({

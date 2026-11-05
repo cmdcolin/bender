@@ -37,6 +37,7 @@
     "toy:pcb": "node hardware/toy/pcb.ts",
     "spectrum": "node scripts/spectrum.ts",
     "preview": "astro preview",
+    "ada": "scripts/ada.sh",
     "test": "scripts/heavy-run-slot.sh vitest run",
     "test:full": "BENDER_FULL=1 scripts/heavy-run-slot.sh vitest run",
     "test:changed": "scripts/heavy-run-slot.sh vitest run --changed main --passWithNoTests",

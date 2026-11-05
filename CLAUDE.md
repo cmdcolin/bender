@@ -57,6 +57,10 @@ queue on `BENDER_HEAVY_SLOTS` machine-wide slots (default 2,
 `scripts/heavy-run-slot.sh`), so four agents at once cannot overload the
 machine. `BENDER_HEAVY_SLOTS=0` turns the gate off.
 
+To keep heavy runs off this machine, run them on the shared box ada instead:
+`scripts/ada.sh typecheck`, `scripts/ada.sh test src/ui/agentApi.test.ts`. It
+syncs the working tree there and runs `pnpm` with the rest of the arguments.
+
 For a DSP change meant to leave the sound alone, run `pnpm golden write` before
 it and `pnpm golden check` after: every preset, compared sample for sample.
 `pnpm garbage` shows which DSP functions make the audio thread's garbage.
