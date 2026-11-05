@@ -4,7 +4,7 @@ import { DEAD_V } from '../toyRail.ts'
 import { clamp01 } from '../util/clamp.ts'
 import { DelayLine } from '../util/delayline.ts'
 import { Follower, coef as timeCoef } from '../util/follower.ts'
-import { SineOsc } from '../util/lfo.ts'
+import { RATE_MASK, SineOsc } from '../util/lfo.ts'
 import { ampVoicing, LoopAmp, newVoicing } from '../util/loopamp.ts'
 import { Highpass, Lowpass, OnePoleLP, lpCoef } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
@@ -183,6 +183,7 @@ export class Comb implements Stage {
   private kickLeft = 0
   private kickV = 0
   private onBrigade = false
+  private hzWired = 0
 
   private readonly sr: number
   private readonly compAtk: number
@@ -274,24 +275,35 @@ export class Comb implements Stage {
   private tune(c: Clock, hz: number, buckets: number, whistle: number) {
     const sr = this.sr
     const clock = buckets * hz
-    const pre = lpCoef(
+    c.preCoef = lpCoef(
       Math.min(Math.max(clock * PRE_OF_CLOCK, BAND_FLOOR), BAND_CEIL),
       sr,
     )
-    const post = lpCoef(
+    c.postCoef = lpCoef(
       Math.min(Math.max(clock * POST_OF_CLOCK, BAND_FLOOR), BAND_CEIL),
       sr,
     )
-    c.rate = clock / sr
-    c.preCoef = pre
-    c.postCoef = post
     c.whistleK = SineOsc.rate(clock, sr)
     c.whistleAmp =
       WHISTLE_MAX *
       whistle *
       clamp01((WHISTLE_TOP - clock) / (WHISTLE_TOP - WHISTLE_FULL))
+    this.retime(c, hz, buckets)
+  }
+
+  private retime(c: Clock, hz: number, buckets: number) {
+    const sr = this.sr
+    c.rate = (buckets * hz) / sr
     c.delay =
-      sr / hz - 1 - 2 * onePoleLag(pre) - 2 * onePoleLag(post) - 0.5 / c.rate
+      sr / hz -
+      1 -
+      2 * onePoleLag(c.preCoef) -
+      2 * onePoleLag(c.postCoef) -
+      0.5 / c.rate
+  }
+
+  private pitch(baseHz: number, lane: number) {
+    return Math.min(Math.max(baseHz * octaves(lane * 2), 20), 4000)
   }
 
   private brigade(io: StereoBlock, p: Float32Array, ctx: Ctx, buckets: number) {
@@ -303,11 +315,8 @@ export class Comb implements Stage {
     const whistle = this.lane(p, bay, IDX.combWhistle, DEST.combWhistle)
     const sag = this.lane(p, bay, IDX.combSag, DEST.combSag)
     const pull = PULL_DEPTH * this.lane(p, bay, IDX.combPull, DEST.combPull)
+    const baseHz = p[IDX.combHz]!
     const mod = bay.read(DEST.combHz)
-    const hz = Math.min(
-      Math.max(p[IDX.combHz]! * (mod ? octaves(mod[0]! * 2) : 1), 20),
-      4000,
-    )
     const mix = p[IDX.combMix]!
 
     const loop = this.loop
@@ -328,12 +337,29 @@ export class Comb implements Stage {
       sr,
       loop.voicing,
     )
-    this.tune(this.left.clock, hz, buckets, whistle)
-    this.tune(this.right.clock, hz / R_STRETCH, buckets, whistle)
+    let hz = mod ? this.hzWired || this.pitch(baseHz, mod[0]!) : 0
+    let step = 0
+    if (!mod) {
+      const fixed = this.pitch(baseHz, 0)
+      this.tune(this.left.clock, fixed, buckets, whistle)
+      this.tune(this.right.clock, fixed / R_STRETCH, buckets, whistle)
+    }
 
     const trig = ctx.trig
     const pulse = Math.round(PLUCK_S * sr)
     for (let i = 0; i < io.n; i++) {
+      if (mod) {
+        if ((i & RATE_MASK) === 0) {
+          const span = Math.min(RATE_MASK + 1, io.n - i)
+          const to = this.pitch(baseHz, mod[i + span - 1]!)
+          step = (to - hz) / span
+          this.tune(this.left.clock, to, buckets, whistle)
+          this.tune(this.right.clock, to / R_STRETCH, buckets, whistle)
+        }
+        hz += step
+        this.retime(this.left.clock, hz, buckets)
+        this.retime(this.right.clock, hz / R_STRETCH, buckets)
+      }
       if (pluck > 0 && trig.drumBits[i]! !== 0) {
         this.kickLeft = pulse
         this.kickV = PLUCK_V * pluck * Math.min(trig.drumGain[i]!, 1.5)
@@ -354,6 +380,7 @@ export class Comb implements Stage {
       io.l[i] = io.l[i]! * (1 - mix) + left.y * mix
       io.r[i] = io.r[i]! * (1 - mix) + right.y * mix
     }
+    this.hzWired = hz
   }
 
   panic() {

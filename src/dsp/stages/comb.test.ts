@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
 import { packParams } from '../../engine/params.ts'
-import { ModBus } from '../modbus.ts'
+import { DEST, ModBus } from '../modbus.ts'
 import { spectrum } from '../spectrum.ts'
 import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import {
@@ -237,4 +237,27 @@ test('a clock on a dead rail holds the echo back as long as it is slowed', () =>
   const slowed = SR / 220 / 0.02
   expect(echo).toBeGreaterThan(0.95 * slowed)
   expect(echo).toBeLessThan(1.05 * slowed)
+})
+
+class PitchLane extends ModBus {
+  readonly lane = new Float32Array(BLOCK)
+
+  override read(dest: number) {
+    return dest === DEST.combHz ? this.lane : null
+  }
+}
+
+test('the bucket brigade follows its pitch lane inside a block, not just at its edge', () => {
+  const bay = new PitchLane(SR)
+  const upAnOctaveButTheFirstSample = (ctx: Ctx, i: number) => {
+    ctx.mod = bay
+    bay.lane[i] = i === 0 ? 0 : 0.5
+  }
+  const ring = stage(
+    { combHz: 220, combFb: 1.1 },
+    click,
+    1.5,
+    upAnOctaveButTheFirstSample,
+  )
+  expect(ringHz(ring)).toBeCloseTo(440, -1)
 })
