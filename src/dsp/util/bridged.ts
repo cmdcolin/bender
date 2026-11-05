@@ -57,6 +57,12 @@ export class BridgedT {
   private lp = 0
   private bp = 0
   private env = 0
+  drive = 0
+  f = 0
+  rate = 0
+  sweep = 0
+  push = 0
+  out = 0
 
   /**
    * `drive` is the trigger pulse, which arrives as charge onto the tank rather
@@ -79,13 +85,8 @@ export class BridgedT {
    * so the first half-cycle of an 808 kick runs at three times the pitch of the
    * rest — the snap at the front of the drum, a millisecond long.
    */
-  process(
-    drive: number,
-    f: number,
-    rate: number,
-    sweep: number,
-    push = 0,
-  ): number {
+  run() {
+    const { drive, f, rate, sweep, push } = this
     const w = Math.min(
       Math.max(f * Math.max(1 + sweep * this.env + push, SWEEP_FLOOR), -1),
       1,
@@ -93,7 +94,7 @@ export class BridgedT {
     this.lp = flushDenormal(this.lp + w * this.bp)
     this.bp = rail(this.bp + drive - w * this.lp - 2 * rate * this.bp)
     this.env = Math.sqrt(this.bp * this.bp + this.lp * this.lp)
-    return this.bp
+    this.out = this.bp
   }
 
   /** How hard the tank is swinging, which for these voices is the envelope —

@@ -1769,7 +1769,8 @@ export class ToyDrum implements Stage {
                     (1 + this.trigSag),
                 )
               : 1
-          this.metal.step(powered ? pf * bankPf * flick : 0)
+          this.metal.pf = powered ? pf * bankPf * flick : 0
+          this.metal.step()
           // And the noise transistor, for the same reason and in the same place:
           // nothing on the board gates a junction either. Biased past the knee it
           // avalanches steadily and there is hiss; near the knee it latches in and
@@ -1824,13 +1825,14 @@ export class ToyDrum implements Stage {
                   : shock[v]!) + motorKick
             const tank = this.tanks[t]!
             if (drive === 0 && tank.level <= AUDIBLE) continue
-            const ringing = tank.process(
-              drive,
-              this.tankF[t]! * pf * bankFm * motorF,
-              motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!,
-              TANKS[t]!.sweep * sweep,
-              TANKS[t]!.push * drive * clickHeight,
-            )
+            tank.drive = drive
+            tank.f = this.tankF[t]! * pf * bankFm * motorF
+            tank.rate =
+              motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!
+            tank.sweep = TANKS[t]!.sweep * sweep
+            tank.push = TANKS[t]!.push * drive * clickHeight
+            tank.run()
+            const ringing = tank.out
             if (v === KICK) kickRing = ringing
             tankDraw += Math.abs(ringing)
             const y = ringing * this.tankGain[t]!
@@ -1986,8 +1988,12 @@ export class ToyDrum implements Stage {
           // in a few tens of milliseconds over a tail that hangs on. One
           // envelope raised to a power is the strike, and the envelope itself
           // is the tail.
-          const hi = this.metalHi.process(this.metal.clash, this.metalHiBand)
-          const lo = this.metalLo.process(this.metal.clash, this.metalLoBand)
+          this.metalHi.x = this.metal.clash
+          this.metalHi.run(this.metalHiBand)
+          const hi = this.metalHi.y
+          this.metalLo.x = this.metal.clash
+          this.metalLo.run(this.metalLoBand)
+          const lo = this.metalLo.y
           if (hats || cymOn) {
             if (hats) {
               const hat = this.hatLp.process(

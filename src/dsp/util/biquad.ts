@@ -92,8 +92,17 @@ export class BiquadState {
   private x2 = 0
   private y1 = 0
   private y2 = 0
+  x = 0
+  y = 0
 
-  process(x: number, c: Biquad): number {
+  process(x: number, c: Biquad) {
+    this.x = x
+    this.run(c)
+    return this.y
+  }
+
+  run(c: Biquad) {
+    const x = this.x
     const y = flushDenormal(
       c.b0 * x +
         c.b1 * this.x1 +
@@ -105,7 +114,7 @@ export class BiquadState {
     this.x1 = x
     this.y2 = this.y1
     this.y1 = y
-    return y
+    this.y = y
   }
 
   reset() {

@@ -248,7 +248,23 @@ export class ToyRail {
   // impedance that draws current when you bridge it; the oscillator pin is the
   // highest impedance on the board and draws essentially none. So the further
   // the clip moves onto the clock, the less of a choke it is.
+  load = 0
+  starve = 0
+  extra = 0
+  clipHz = 0
+  clipClock = 0
+
   tick(load: number, starve: number, extra: number, clipHz = 0, clipClock = 0) {
+    this.load = load
+    this.starve = starve
+    this.extra = extra
+    this.clipHz = clipHz
+    this.clipClock = clipClock
+    this.run()
+  }
+
+  run() {
+    const { load, starve, extra, clipHz, clipClock } = this
     // First, because the timebase reads the rail through its own decoupling and
     // every path out of this method leaves the voltage somewhere different — a
     // latch, a boot, an ordinary sample. A tick is a tick as far as the

@@ -113,8 +113,10 @@ export class Supplies {
     this.clipClock = p[IDX.chipClipClock]!
 
     const host = this.of(p[IDX.chipSupply]!)
-    if (host !== this.shared)
-      for (let i = 0; i < n; i++) this.tick(this.shared, i, 0)
+    if (host !== this.shared) {
+      this.shared.load = 0
+      for (let i = 0; i < n; i++) this.tick(this.shared, i)
+    }
 
     if (!onSecond(p)) return
     this.second.setBoard(
@@ -129,8 +131,10 @@ export class Supplies {
     this.starve2 = p[IDX.cell2Starve]!
     this.starve2Lane = ctx.mod.read(DEST.starve2)
     this.clip2Hz = p[IDX.cell2Clip]!
-    if (host !== this.second)
-      for (let i = 0; i < n; i++) this.tick(this.second, i, 0)
+    if (host !== this.second) {
+      this.second.load = 0
+      for (let i = 0; i < n; i++) this.tick(this.second, i)
+    }
   }
 
   // The kit's drop and reboot steps, a block behind the strobe: the supplies run
@@ -148,23 +152,28 @@ export class Supplies {
     this.dropLeft -= n
   }
 
-  /** One sample of whichever rail `rail` is, drawing `load` on top of what
-      the machines on it drew last block. The bench takes nothing. */
-  tick(rail: ToyRail, i: number, load: number) {
+  /** One sample of whichever rail `rail` is, drawing its `load` on top of
+      what the machines on it drew last block. The bench takes nothing. */
+  tick(rail: ToyRail, i: number) {
     const ctx = this.ctx!
     if (rail === this.shared) {
       const lane = this.starveLane
-      const starve = lane ? clamp01(this.starve + lane[i]!) : this.starve
-      const extra =
+      rail.starve = lane ? clamp01(this.starve + lane[i]!) : this.starve
+      rail.extra =
         (this.micToRail ? Math.abs(this.micToRail[i]!) * 2 : 0) +
         (this.fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0) +
         this.couple * Math.max(ctx.bright[i]!, 0) * 0.5
-      rail.tick(load, starve, extra, this.clipHz, this.clipClock)
+      rail.clipHz = this.clipHz
+      rail.clipClock = this.clipClock
+      rail.run()
       ctx.railV[i] = rail.v
     } else if (rail === this.second) {
       const lane = this.starve2Lane
-      const starve = lane ? clamp01(this.starve2 + lane[i]!) : this.starve2
-      rail.tick(load, starve, 0, this.clip2Hz, 0)
+      rail.starve = lane ? clamp01(this.starve2 + lane[i]!) : this.starve2
+      rail.extra = 0
+      rail.clipHz = this.clip2Hz
+      rail.clipClock = 0
+      rail.run()
     }
   }
 

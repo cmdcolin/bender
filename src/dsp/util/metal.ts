@@ -55,6 +55,7 @@ export class MetalBank {
   private phase = Float64Array.from(START)
   private inc = new Float64Array(N_METAL)
   private gain = SQUARE_MAX / N_METAL
+  pf = 1
   /** What comes off the summing stage this sample: the six summed, or with
       the squarer biased up, which way they are leaning. */
   clash = 0
@@ -97,7 +98,8 @@ export class MetalBank {
       The squares are the naive kind, so above a couple of kilohertz they are
       also harmonics folding back down the spectrum, as inharmonic hash under
       filters that pass nothing else. */
-  step(pf: number) {
+  step() {
+    const pf = this.pf
     let sum = 0
     let bell = 0
     for (let k = 0; k < N_METAL; k++) {
