@@ -198,6 +198,7 @@ export const PARAM_DEFS = [
   ['tuneLen', 'step'],
   ['tuneRate', 'slew'],
   ['tunePoly', 'step'],
+  ['tuneLift', 'step'],
   ['monoSeqOn', 'step'],
   ['monoSeqRate', 'slew'],
   ['monoSeqSync', 'step'],

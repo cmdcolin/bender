@@ -1,5 +1,5 @@
 import { N_DRUM_VOICES, voiceBit } from '../drums.ts'
-import { voiceMask } from '../dsp/trigbus.ts'
+import { followsGate, voiceMask } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
 
 // How long a wire stays lit after a kit hit: the same as a pad on the grid.
@@ -46,7 +46,7 @@ export function watchTriggers(root: HTMLElement): () => void {
 
     if (engine.chipNotes.get().size > 0) {
       const reaching = KEY_RUNS.map(
-        ([, gate, notes]) => c[gate] < 0.5 && notes.get().size > 0,
+        ([, gate, notes]) => followsGate(c[gate]) && notes.get().size > 0,
       )
       for (const [i, [id]] of KEY_RUNS.entries())
         if (reaching.slice(i).some(Boolean)) live.add(id)

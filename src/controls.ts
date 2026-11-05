@@ -202,6 +202,7 @@ export const DEFAULT_CONTROLS = {
   // Mono is the memory the toy shipped with: one note a step, the stacked
   // chips ignored. Poly plays all three lanes.
   tunePoly: 1,
+  tuneLift: 0,
   monoSeqOn: 0,
   monoSeqRate: 4,
   monoSeqSync: 0,

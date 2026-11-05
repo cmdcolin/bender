@@ -70,6 +70,7 @@ import {
   RING_TRIG_NAMES,
 } from '../../dsp/stages/toyDrum.ts'
 import { SFX_PICKS, SFX_WIRES } from '../../dsp/stages/toySfx.ts'
+import { GATE_CHOICES } from '../../dsp/trigbus.ts'
 import { NOTE_NAMES } from '../../notes.ts'
 import { SCALE_NAMES } from '../../scale.ts'
 import {
@@ -195,7 +196,7 @@ export const SOURCE_GROUPS: Group[] = [
     // the rate it plays them back at, and how many of its notes a step it
     // reads. A widget this tall pushes all of them far enough down that you
     // stop finding them.
-    lead: ['chipTune', 'tuneRate', 'tunePoly'],
+    lead: ['chipTune', 'tuneRate', 'tunePoly', 'tuneLift'],
     sliders: [
       {
         key: 'chipLevel',
@@ -251,6 +252,26 @@ export const SOURCE_GROUPS: Group[] = [
         choices: ['mono', 'poly'],
         needs: playingYours,
         help: 'Whether the chip reads the two memory chips stacked on the first one. Mono is the toy as it shipped: one note a step, off the melody oscillator, and the stacked lanes sit there unread. Poly plays all three — the melody where it always was, the other two on the key voices, which is the pin the piggyback’s output was soldered to. Four voices is the whole of the chip, so a three-note chord leaves one for your hands and the next thing that strikes takes the oldest.',
+      },
+      {
+        key: 'tuneLift',
+        label: 'Lanes lifted',
+        min: 0,
+        max: 7,
+        step: 1,
+        unit: '',
+        choices: [
+          'none',
+          'lane 1',
+          'lane 2',
+          'lanes 1 and 2',
+          'lane 3',
+          'lanes 1 and 3',
+          'lanes 2 and 3',
+          'all three',
+        ],
+        needs: playingYours,
+        help: 'Desolders a memory lane’s output resistor, so Plinky stops sounding it while its gate still runs out on the key line. Set Glint, Parlor or Growler’s jumper to that lane and the lane plays there alone.',
       },
       {
         key: 'chipTone',
@@ -1879,11 +1900,11 @@ export const SOURCE_GROUPS: Group[] = [
         label: 'Plays Plinky’s notes',
         part: 'clocks and wires',
         min: 0,
-        max: 1,
+        max: GATE_CHOICES.length - 1,
         step: 1,
         unit: '',
-        choices: ['yes, soldered', 'no, cut'],
-        help: 'The jumper from the toy’s gate line onto this chip’s key input — the accident of a wiring loom that makes the two boxes play the same part. Cut it and the chip stops following the keyboard next door and answers only its own keys, the kit’s trigger lines and the effect ROM. Its own keybed plays either way.',
+        choices: GATE_CHOICES,
+        help: 'The jumper from the toy’s gate line onto this chip’s key input — the accident of a wiring loom that makes the two boxes play the same part. Cut it and the chip stops following the keyboard next door and answers only its own keys, the kit’s trigger lines and the effect ROM. Its own keybed plays either way. Lane 1, 2 or 3 lifts one memory lane’s gate off the loom and follows only that lane.',
       },
       {
         key: 'fmModRatio',
@@ -2395,11 +2416,11 @@ export const SOURCE_GROUPS: Group[] = [
         label: 'Plays Plinky’s notes',
         part: 'clock and wires',
         min: 0,
-        max: 1,
+        max: GATE_CHOICES.length - 1,
         step: 1,
         unit: '',
-        choices: ['yes, soldered', 'no, cut'],
-        help: 'The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input. Out of the box the demo song and the arpeggio play the strings. Cut it and the keyboard answers only its own bed, the kit’s trigger lines and a controller. Its own keybed plays either way.',
+        choices: GATE_CHOICES,
+        help: 'The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input. Out of the box the demo song and the arpeggio play the strings. Cut it and the keyboard answers only its own bed, the kit’s trigger lines and a controller. Its own keybed plays either way. Lane 1, 2 or 3 lifts one memory lane’s gate off the loom and follows only that lane.',
       },
       {
         key: 'pcmAddrLine',
@@ -3132,11 +3153,11 @@ export const SOURCE_GROUPS: Group[] = [
         part: 'keys',
         label: 'Plays Plinky’s notes',
         min: 0,
-        max: 1,
+        max: GATE_CHOICES.length - 1,
         step: 1,
         unit: '',
-        choices: ['yes, soldered', 'no, cut'],
-        help: 'The jumper from the toy’s gate line to the synth’s key input. Soldered, the toy’s tune and arpeggio play the synth. Cut, notes reach it from its bed, the kit’s trigger lines and a controller.',
+        choices: GATE_CHOICES,
+        help: 'The jumper from the toy’s gate line to the synth’s key input. Soldered, the toy’s tune and arpeggio play the synth. Cut, notes reach it from its bed, the kit’s trigger lines and a controller. Lane 1, 2 or 3 lifts one memory lane’s gate off the loom and follows only that lane.',
       },
       {
         key: 'monoHeat',

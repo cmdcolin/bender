@@ -3,6 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { ROCK } from '../drums.ts'
 import { romIndex } from '../dsp/stages/roms.ts'
+import { GATE_CUT, GATE_LANE_1 } from '../dsp/trigbus.ts'
 import { PIANO_78S } from '../engine/archive.ts'
 import { sliderFor } from './controls/index.ts'
 import {
@@ -307,4 +308,19 @@ test('the board written back drops the shelf, so a reload rolls nothing', () => 
   const hash = sceneHash(board, PIANO_78S)
   expect(boardHash(hash, board)).not.toContain('shelf=')
   expect(boardHash(hash, board)).not.toContain('scene=')
+})
+
+test('lane jumpers and lifted lanes survive both forms of link', () => {
+  const lanes: Controls = {
+    ...DEFAULT_CONTROLS,
+    monoKeyGate: GATE_LANE_1,
+    pcmKeyGate: GATE_LANE_1 + 1,
+    fmKeyGate: GATE_LANE_1 + 2,
+    tuneLift: 0b110,
+  }
+  for (const prefix of ['', '#set='])
+    expect(
+      boardFrom(boardFromUrl('', `#${boardHash(prefix, lanes)}`) ?? {}, lanes),
+    ).toEqual(lanes)
+  expect(decodeControls('fmKeyGate:1')).toEqual({ fmKeyGate: GATE_CUT })
 })

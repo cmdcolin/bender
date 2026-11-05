@@ -268,7 +268,8 @@ export class MonoSynth implements Stage {
       }
     }
 
-    const gateOn = p[IDX.monoKeyGate]! < 0.5
+    const lineKeys = ctx.trig.keyLine(p[IDX.monoKeyGate]!)
+    const lineHeld = ctx.trig.heldLine(p[IDX.monoKeyGate]!)
     const sung = Math.round(p[IDX.monoSeqTo]!) === SEQ_TO_MONO
     const drumMask = voiceMask(Math.round(p[IDX.monoStruck]!))
     const gate = p[IDX.monoGate]!
@@ -287,7 +288,7 @@ export class MonoSynth implements Stage {
       }
       this.lastPhase = phase
 
-      const key = gateOn ? ctx.trig.key[i]! : 0
+      const key = lineKeys ? lineKeys[i]! : 0
       const seq = sung ? ctx.trig.seqKey[i]! : 0
       const bits =
         drumMask !== 0 ? Math.round(ctx.trig.drumBits[i]!) & drumMask : 0
@@ -296,7 +297,7 @@ export class MonoSynth implements Stage {
 
       this.run(i)
       if (key !== 0) {
-        this.strike(key - KEY_BIAS + A3_MIDI, ctx.trig.keyHeld[i]! > 0)
+        this.strike(key - KEY_BIAS + A3_MIDI, lineHeld[i]! > 0)
       } else if (seq !== 0) {
         this.sing(seq - KEY_BIAS + A3_MIDI, i, p, ctx)
       } else if (bits !== 0) {

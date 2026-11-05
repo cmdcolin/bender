@@ -158,6 +158,30 @@ test('tune writes the melody memory and switches the chip to play it', () => {
   expect(bender.summary().undo).toBe(1)
 })
 
+test('tune says which machines play which lane, and which lanes Plinky lifts', () => {
+  const set = bender.set({
+    monoLevel: 1,
+    monoKeyGate: 'lane 1',
+    pcmLevel: 1,
+    pcmKeyGate: 'lane 2',
+    fmLevel: 1,
+    fmMute: 'muted',
+    fmKeyGate: 'lane 3',
+    tuneLift: 'lanes 2 and 3',
+  })
+  expect(set.failed).toEqual([])
+  expect(bender.tune(['A2 . E2 .', 'C4 E4', 'E5 G5 A5 G5'])).toMatchObject({
+    lifted: 'lanes 2 and 3',
+    'played by': { Growler: 'lane 1', Parlor: 'lane 2' },
+  })
+  bender.set({ pcmKeyGate: 'yes, soldered' })
+  expect(bender.tune('C4')['played by']).toEqual({
+    Growler: 'lane 1',
+    Parlor: 'every lane',
+  })
+  bender.reset()
+})
+
 test('an invalid tune throws and leaves the board unchanged', () => {
   expect(() => bender.tune('C4 H4')).toThrow("lane 1: 'H4' is not a note name")
   expect(() => bender.tune('C9')).toThrow('C9 is outside the range C2 to C#7')

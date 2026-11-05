@@ -1,3 +1,4 @@
+import { followsGate } from '../dsp/trigbus.ts'
 import { SOUND_FLOOR, engine } from '../engine/engine.ts'
 import { SOURCE_TAPS, type SourceTap } from '../engine/params.ts'
 import { createStore } from '../listeners.ts'
@@ -15,7 +16,7 @@ const TAP_OF: Record<string, SourceTap> = {
 }
 
 const struck = (key: keyof Controls) => (c: Controls) => Math.round(c[key]) > 0
-const soldered = (key: keyof Controls) => (c: Controls) => c[key] < 0.5
+const soldered = (key: keyof Controls) => (c: Controls) => followsGate(c[key])
 
 // The machines that play a stage's part: the key line out of the toy keyboard,
 // and the trigger patch's bridges out of either toy.

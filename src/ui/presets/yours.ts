@@ -72,6 +72,7 @@ export const YOURS = new Set<ControlKey>([
   'tuneLen',
   'tuneRate',
   'tunePoly',
+  'tuneLift',
   'monoSeqOn',
   'monoSeqRate',
   'monoSeqLen',

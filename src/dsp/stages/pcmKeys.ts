@@ -478,7 +478,8 @@ export class PcmKeys implements Stage {
 
     const chord = Math.round(p[IDX.pcmChord]!)
     const vibrato = Math.round(p[IDX.pcmVibrato]!)
-    const gateOn = p[IDX.pcmKeyGate]! < 0.5
+    const lineKeys = ctx.trig.keyLine(p[IDX.pcmKeyGate]!)
+    const lineHeld = ctx.trig.heldLine(p[IDX.pcmKeyGate]!)
     const sings = Math.round(p[IDX.monoSeqTo]!) === SEQ_TO_PCM
     const drumMask = voiceMask(Math.round(p[IDX.pcmStruck]!))
     const loaded = this.selectVoice(Math.round(p[IDX.pcmVoice]!), p, writing)
@@ -511,9 +512,9 @@ export class PcmKeys implements Stage {
       while (this.vibPhase >= VIB_STEPS) this.vibPhase -= VIB_STEPS
       this.vibFactor = vibrato > 0 ? VIB_FACTOR[this.vibPhase | 0]! : 1
 
-      const struck = gateOn ? ctx.trig.key[i]! : 0
+      const struck = lineKeys ? lineKeys[i]! : 0
       if (struck !== 0) {
-        const hand = ctx.trig.keyHeld[i]! > 0
+        const hand = lineHeld[i]! > 0
         this.strike(struck - KEY_BIAS, 1, hand, chord, true, hand ? 0 : length)
       }
       const sung = sings ? ctx.trig.seqKey[i]! : 0

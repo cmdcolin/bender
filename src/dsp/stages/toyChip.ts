@@ -15,7 +15,7 @@ import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop, type ModBus } from '../modbus.ts'
 import { SupplyTap, poweredUp, type Supplies } from '../supplies.ts'
-import { voiceMask } from '../trigbus.ts'
+import { KEY_BIAS, voiceMask } from '../trigbus.ts'
 import { GroundEdge } from '../util/bounce.ts'
 import { Burst } from '../util/burst.ts'
 import { clamp01 } from '../util/clamp.ts'
@@ -431,6 +431,9 @@ export class ToyChip implements Stage {
     Array.from({ length: TUNE_STEPS }, () => REST),
   )
   private poly = false
+  private lifted = 0
+  private leadOut = 1
+  private readonly laneNotes = new Float64Array(LANE_IDX.length)
   private yours = false
   private len = 1
   private mineLen = 1
@@ -730,10 +733,14 @@ export class ToyChip implements Stage {
     v.env = gain
     v.held = false
     v.started = this.voiceClock++
+    this.gate(semitone)
+    return v
+  }
+
+  private gate(semitone: number) {
     this.keyNote = semitone
     this.keyPending = true
     this.keyHeldPending = false
-    return v
   }
 
   /** An effect button going down cuts whatever effect was sounding and starts
@@ -814,7 +821,12 @@ export class ToyChip implements Stage {
     let n = 0
     const rail = this.power.rail
     if (rail.booting || rail.dead || this.halted) return n
-    if (this.transport.tune && isNote(this.note) && this.env > ENV_FLOOR)
+    if (
+      this.transport.tune &&
+      this.leadOut > 0 &&
+      isNote(this.note) &&
+      this.env > ENV_FLOOR
+    )
       out[n++] = this.note
     if (this.accompLevel > 0) {
       if (this.bassEnv > ENV_FLOOR) out[n++] = this.bassNote
@@ -956,9 +968,13 @@ export class ToyChip implements Stage {
   // note — a chord the memory plays through the voices your hands would use.
   private strikeStacks(addr: number) {
     if (!this.poly) return
-    for (const lane of this.stacks) {
-      const note = lane[addr]!
-      if (isNote(note)) this.strike(note, 1)
+    for (let lane = 1; lane <= this.stacks.length; lane++) {
+      const note = this.stacks[lane - 1]![addr]!
+      if (isNote(note)) {
+        this.laneNotes[lane] = note + KEY_BIAS
+        if (this.lifted & (1 << lane)) this.gate(note)
+        else this.strike(note, 1)
+      }
     }
   }
 
@@ -974,6 +990,7 @@ export class ToyChip implements Stage {
     const step = this.readAt(tune, addr)
     this.note = isNote(step) ? step : REST
     this.env = isNote(step) ? 1 : 0
+    if (isNote(step) && this.transport.tune) this.laneNotes[0] = step + KEY_BIAS
     this.strikeStacks(addr)
     this.chord = this.triads[0]!
     this.bassFifth = false
@@ -1153,6 +1170,8 @@ export class ToyChip implements Stage {
     this.mineLen = asTuneLen(p[IDX.tuneLen]!)
     this.len = this.yours ? this.mineLen : rom.steps.length
     this.poly = this.yours && Math.round(p[IDX.tunePoly]!) === 1
+    this.lifted = this.yours ? Math.round(p[IDX.tuneLift]!) : 0
+    this.leadOut = this.lifted & 1 ? 0 : 1
     const clockX = p[IDX.chipClockX]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
@@ -1472,6 +1491,7 @@ export class ToyChip implements Stage {
           this.env = 1
           this.keyNote = step
           this.keyPending = true
+          this.laneNotes[0] = step + KEY_BIAS
           this.harmonize(step)
         } else if (step === REST) {
           this.note = REST
@@ -1642,6 +1662,13 @@ export class ToyChip implements Stage {
         this.keyPending = false
         if (sfxWire === WIRE_TOY) this.wirePress()
       }
+      for (let lane = 0; lane < this.laneNotes.length; lane++) {
+        const note = this.laneNotes[lane]!
+        if (note !== 0) {
+          ctx.trig.laneStruck(i, lane, note - KEY_BIAS)
+          this.laneNotes[lane] = 0
+        }
+      }
       io.l[i]! += out
       io.r[i]! += out
     }
@@ -1708,7 +1735,8 @@ export class ToyChip implements Stage {
         const v =
           this.tone(0, this.phase, width(duty, dutyEnv, this.env), inc) *
           env *
-          amp
+          amp *
+          this.leadOut
         if (pinned) {
           val[0] = v
           live[0] = 1
@@ -1957,6 +1985,7 @@ export class ToyChip implements Stage {
     this.env = 1
     this.keyNote = step
     this.keyPending = true
+    this.laneNotes[0] = step + KEY_BIAS
     this.harmonize(step)
     this.strikeStacks(addr)
   }

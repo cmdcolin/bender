@@ -25,6 +25,7 @@ import {
 } from '../drums.ts'
 import { BLOCK, METER_EVERY } from '../dsp/stage.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
+import { followsGate, gateLane } from '../dsp/trigbus.ts'
 import { strayNames } from '../dsp/wander.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
 import { STEM_FILES } from '../engine/params.ts'
@@ -68,9 +69,9 @@ const HELP = `window.bender controls bender, a circuit-bent toy keyboard and dru
 const GUIDE = {
   read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. bender has about 250 controls, so search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help.`,
   change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of them, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists unknown keys with the closest real ones, and failed lists values set could not read; set leaves those controls unchanged. Seconds as a second argument glide the controls there on animation frames, which the browser pauses in a hidden tab; set returns at once, so listen in a later call. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds. bender.say('the kick drops') labels the changes the page lists for a listener.`,
-  music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory with one token per step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold the previous note. tune also switches the chip to play the memory at tuneRate steps per second. An array of up to three strings writes chords, one string per lane. bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. An x is a hit, a question mark is a hit with probability drumChance, and a dot is a rest. Each character is a sixteenth, so a beat is four. The string length sets the row's loop length, an empty string clears the row, and rows missing from the call keep their pattern. bpm: 130 in the same call sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
+  music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory, one token a step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold. It also switches the chip to the memory, at tuneRate steps a second. An array of up to three strings writes one lane each. Glint, Parlor and Growler follow it on fmKeyGate, pcmKeyGate and monoKeyGate; 'lane 1' to 'lane 3' follow one lane, and tuneLift keeps lanes off Plinky. bender.drums({ kick: 'x...x...', hat: '..x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. x is a hit, ? a hit with probability drumChance, . a rest. Each character is a sixteenth, so a beat is four. A row's length sets its loop, an empty string clears it, and rows left out keep theirs. bpm: 130 sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
-  line: `The bassline. bender.line('. A3 A3 A4 . A3 A3 A3', { accent: '...x', slide: '' }) writes a second 32-step memory, one token per step as in tune, and turns it on. It steps with the kit's sixteenths while the kit runs, so a step lines up with a drum character; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, the mono synth, whose stock 32′ range sounds each note two octaves down: write A3 for a 55 Hz A1, and read where it lands in the result's sounds field. on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep what they had. The result warns about anything keeping it silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate. The techno and acid techno presets load a groove to riff on.`,
+  line: `The bassline. bender.line('. A3 A3 A4 . A3 A3 A3', { accent: '...x', slide: '' }) writes a second 32-step memory, one token a step as in tune, and turns it on. It steps with the kit's sixteenths while the kit runs; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, whose stock 32′ range sounds each note two octaves down: write A3 for a 55 Hz A1, as sounds in the result shows. on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep theirs. The target's KeyGate jumper also plays the tune: 'no, cut' drops it, 'lane 1' keeps one lane. The result warns about anything keeping it silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate. The techno and acid techno presets load a groove to riff on.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
   sound: `Sound. Audio stays suspended until the page gets a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the drums, the bassline and a melody written with tune; the toy's demo songs start only with bender.play('song'), bender.play('drums') starts the kit alone, and bender.stop() stops all. A screenshot measures nothing of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due (short means missed audio blocks), the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), the watchdog reboots, the sources with signal, the notes each audible machine played, the drum hits. bender.link() returns a URL that loads this board.`,
 }
@@ -388,6 +389,17 @@ const LINE_TARGETS = [
   gate: ControlKey
 }[]
 
+function playedBy(c: Controls) {
+  return Object.fromEntries(
+    LINE_TARGETS.filter(
+      t => c[t.level] > 0 && c[t.mute] === 0 && followsGate(c[t.gate]),
+    ).map(t => [
+      t.name,
+      gateLane(c[t.gate]) < 0 ? 'every lane' : show(t.gate, c[t.gate]),
+    ]),
+  )
+}
+
 // Growler's footage moves every note it plays, and an agent hears none of it:
 // listen names the written notes. Its stock 32′ puts a line written at A2 down
 // at 27 Hz.
@@ -427,7 +439,7 @@ function lineWarnings(c: Controls) {
     notes.push(`${target.level} is 0, so ${target.name} is silent`)
   if (c[target.mute] !== 0)
     notes.push(`${target.mute} is on, so ${target.name} is muted`)
-  if (c[target.gate] === 0 && engine.songPlaying.get())
+  if (followsGate(c[target.gate]) && engine.songPlaying.get())
     notes.push(
       `${target.name} also plays the toy's tune; set ${target.gate}: 'no, cut' to hear the line alone`,
     )
@@ -752,7 +764,12 @@ function rawBenderApi() {
       if (parsed.length > 1) patch.tunePoly = 1
       land(patch, 0)
       const c = engine.controls.get()
-      return { tune: tuneLines(c), rate: show('tuneRate', c.tuneRate) }
+      return {
+        tune: tuneLines(c),
+        rate: show('tuneRate', c.tuneRate),
+        lifted: show('tuneLift', c.tuneLift),
+        'played by': playedBy(c),
+      }
     },
 
     line(

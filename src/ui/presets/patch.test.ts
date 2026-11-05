@@ -6,6 +6,7 @@ import {
   type Controls,
 } from '../../controls.ts'
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
+import { YOURS } from '../../dsp/stages/roms.ts'
 import { mulberry32 } from '../../dsp/util/rng.ts'
 import { BENDS, GROUPS, choiceValue } from '../controls/index.ts'
 import { applyPreset } from './apply.ts'
@@ -331,4 +332,19 @@ test('a played chip nothing strikes gets its gate jumper back', () => {
   const keys = { ...DEFAULT_CONTROLS, pcmLevel: 0.8, pcmKeyGate: 1 }
   expect(cohereGates(keys).pcmKeyGate).toBe(0)
   expect(cohereGates({ ...keys, pcmStruck: 9 }).pcmKeyGate).toBe(1)
+})
+
+test('a played chip on a memory lane with no notes gets the whole line back', () => {
+  const lane2 = { ...DEFAULT_CONTROLS, fmLevel: 0.8, fmKeyGate: 3 }
+  expect(cohereGates(lane2).fmKeyGate).toBe(0)
+  expect(cohereGates({ ...lane2, fmKeyGate: 2 }).fmKeyGate).toBe(2)
+  const written = {
+    ...lane2,
+    chipTune: YOURS,
+    tunePoly: 1,
+    tuneLen: 4,
+    tuneStackA2: 7,
+  }
+  expect(cohereGates(written).fmKeyGate).toBe(3)
+  expect(cohereGates({ ...written, tunePoly: 0 }).fmKeyGate).toBe(0)
 })

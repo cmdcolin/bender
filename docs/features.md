@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-637 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 163
+638 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 163
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -117,7 +117,7 @@ puts the fault on, and the rows under it show the controls it set:
   of itself
 
 <details>
-<summary>56 controls</summary>
+<summary>57 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -127,6 +127,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Tune                | 19 of them, lullaby through yours                                                                                              | Which song the chip plays                                                                                                                                                                     |
 | Memory rate         | 0.2 to 24 Hz                                                                                                                   | How fast the memory plays its steps back; each ROM song has its own rate                                                                                                                      |
 | Memory notes        | mono or poly                                                                                                                   | Whether the chip reads the two memory chips stacked on the first one                                                                                                                          |
+| Lanes lifted        | none, lane 1, lane 2, lanes 1 and 2, lane 3, lanes 1 and 3, lanes 2 and 3, all three                                           | Desolders a memory lane’s output resistor, so Plinky stops sounding it while its gate still runs out on the key line                                                                          |
 | Tone                | organ 1/2, reed 1/4, clav 1/8, buzz 1/16                                                                                       | Which width of pulse the tone selector taps off the divider chain                                                                                                                             |
 | Auto bass-chord     | off to full                                                                                                                    | The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running                                                                                  |
 | Arpeggio            | off, up, down, up-down, random, as played                                                                                      | The counter that walks the ROM, walking the keys your hand is holding instead                                                                                                                 |
@@ -426,7 +427,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Clock                          | 0.05× to 16×                                                                             | Drags the chip’s own crystal                                                                                         |
 | CPU clock                      | 0.05× to 16×                                                                             | Drags the processor’s crystal, which the chip does not share                                                         |
 | Kit voice that plays this chip | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                        | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
-| Plays Plinky’s notes           | yes, soldered or no, cut                                                                 | The jumper from the toy’s gate line onto this chip’s key input                                                       |
+| Plays Plinky’s notes           | yes, soldered, no, cut, lane 1, lane 2, lane 3                                           | The jumper from the toy’s gate line onto this chip’s key input                                                       |
 | Mod ratio                      | 17 of them, as patched through 15×                                                       | What the modulator runs at against the note, as a multiple of it                                                     |
 | Car ratio                      | 17 of them, as patched through 15×                                                       | The same table on the carrier, which moves the note itself — 2 is the same patch an octave up                        |
 | Mod decay                      | 17 of them, as patched through 2.52 s                                                    | How long the modulator takes to fall away, which makes an FM note a bell or an organ                                 |
@@ -513,7 +514,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Chord memory                       | off, maj7, min7, min9, sus4, add9, power                                                                  | Puts a whole voicing under one key                                                                                                                                          |
 | ROM clock                          | 0.05× to 16×                                                                                              | Drags the counter that walks the ROM                                                                                                                                        |
 | Kit voice that plays this keyboard | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                         | The kit’s trigger lines, clipped onto this keyboard’s key input                                                                                                             |
-| Plays Plinky’s notes               | yes, soldered or no, cut                                                                                  | The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input                                                                                           |
+| Plays Plinky’s notes               | yes, soldered, no, cut, lane 1, lane 2, lane 3                                                            | The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input                                                                                           |
 | Address line †                     | 15 of them, off through A13                                                                               | Which of the counter’s wires to the ROM the fault is on                                                                                                                     |
 | Address fault                      | cut, to ground, to +V, bridged                                                                            | The same four faults any trace can take                                                                                                                                     |
 | Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires carrying the ROM’s output the fault is on                                                                                                          |
@@ -597,7 +598,7 @@ bit on the key DAC and a weak regulator.
 | Gate                            | 0.05 to 1                                                         | How long a note struck off the toy’s gate or the kit’s trigger lines stays down, as a fraction of the toy’s sequencer step                  |
 | Accent                          | off to full                                                       | How hard an accented step of the melody memory hits: louder, and a kick to the cutoff through the accent cap                                |
 | Kit voice that plays this synth | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit | The kit’s trigger lines, clipped onto the synth’s gate                                                                                      |
-| Plays Plinky’s notes            | yes, soldered or no, cut                                          | The jumper from the toy’s gate line to the synth’s key input                                                                                |
+| Plays Plinky’s notes            | yes, soldered, no, cut, lane 1, lane 2, lane 3                    | The jumper from the toy’s gate line to the synth’s key input                                                                                |
 | Hot converter                   | off to full                                                       | The exponential converter’s transistor pair with its heater gone                                                                            |
 | Leaky VCA                       | off to full                                                       | A VCA that never shuts                                                                                                                      |
 | Contour caps                    | 1× to 40×                                                         | The timing capacitors in both contour generators, replaced with ones this many times bigger                                                 |

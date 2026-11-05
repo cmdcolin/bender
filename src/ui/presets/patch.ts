@@ -1,6 +1,9 @@
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
+import { YOURS } from '../../dsp/stages/roms.ts'
 import { SUPPLY, SUPPLY_KEYS } from '../../dsp/supplies.ts'
+import { followsGate, GATE_ALL, gateLane } from '../../dsp/trigbus.ts'
 import { LANE_KEYS, LANE_MAX } from '../../lanes.ts'
+import { asTuneLen, isNote, laneSteps } from '../../tune.ts'
 import {
   BEND_SLOT_KEYS,
   bendAt,
@@ -586,13 +589,25 @@ const PLAYED = [
   rom?: ControlKey
 }[]
 
+const lanePlays = (board: Controls, choice: number) => {
+  const lane = gateLane(choice)
+  return (
+    lane <= 0 ||
+    (Math.round(board.chipTune) === YOURS &&
+      Math.round(board.tunePoly) === 1 &&
+      laneSteps(board, lane).slice(0, asTuneLen(board.tuneLen)).some(isNote))
+  )
+}
+
 export function cohereGates(board: Controls): Controls {
   const next = { ...board }
   for (const chip of PLAYED) {
-    if (!isUp(next, chip.level) || Math.round(next[chip.gate]) === 0) continue
+    const gate = next[chip.gate]
+    if (!isUp(next, chip.level) || (followsGate(gate) && lanePlays(next, gate)))
+      continue
     if (isUp(next, chip.struck)) continue
     if ('rom' in chip && isUp(next, chip.rom)) continue
-    next[chip.gate] = 0
+    next[chip.gate] = GATE_ALL
   }
   return next
 }

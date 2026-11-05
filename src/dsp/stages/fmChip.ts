@@ -1455,7 +1455,8 @@ export class FmChip implements Stage {
     // The jumper off the toy's gate. Cut it and the chip stops hearing the
     // keyboard next door — its own keys, the kit's lines and the effect ROM are
     // all still soldered where they were.
-    const gateOn = p[IDX.fmKeyGate]! < 0.5
+    const lineKeys = ctx.trig.keyLine(p[IDX.fmKeyGate]!)
+    const lineHeld = ctx.trig.heldLine(p[IDX.fmKeyGate]!)
     const sings = Math.round(p[IDX.monoSeqTo]!) === SEQ_TO_FM
 
     const modCold = bay.read(DEST.fmColdBoot)
@@ -1611,11 +1612,11 @@ export class FmChip implements Stage {
       // *Note length* comes in.
       const sung = sings ? ctx.trig.seqKey[i]! : 0
       if (sung !== 0) this.keyOn(sung - KEY_BIAS, lengthSamples, 0, true)
-      const struck = gateOn ? ctx.trig.key[i]! : 0
+      const struck = lineKeys ? lineKeys[i]! : 0
       if (struck !== 0) {
         this.keyOn(
           struck - KEY_BIAS,
-          ctx.trig.keyHeld[i]! > 0 ? 0 : lengthSamples,
+          lineHeld[i]! > 0 ? 0 : lengthSamples,
           0,
           true,
         )

@@ -1,4 +1,5 @@
 import { N_DRUM_VOICES, STEPS } from '../drums.ts'
+import { TUNE_LANES } from '../tune.ts'
 import { BLOCK } from './stage.ts'
 
 export { N_DRUM_VOICES }
@@ -23,6 +24,20 @@ export const STEP_CHOICE = N_DRUM_VOICES + 2
 export const SEQ_TO_MONO = 0
 export const SEQ_TO_FM = 1
 export const SEQ_TO_PCM = 2
+
+export const GATE_ALL = 0
+export const GATE_CUT = 1
+export const GATE_LANE_1 = 2
+export const GATE_CHOICES = [
+  'yes, soldered',
+  'no, cut',
+  ...Array.from({ length: TUNE_LANES }, (_, lane) => `lane ${lane + 1}`),
+]
+
+export const followsGate = (choice: number) => Math.round(choice) !== GATE_CUT
+
+export const gateLane = (choice: number) =>
+  Math.max(Math.round(choice) - GATE_LANE_1, -1)
 
 // A note rides the key line as semitone + this, so an empty sample stays 0
 // whatever the octave switch is doing to the numbers — the keys reach an octave
@@ -62,6 +77,11 @@ export class TriggerBus {
       a key and a drum hit, and what tells the chip on the other end of the wire
       whether to decide the length of the note itself. */
   readonly keyHeld = new Float32Array(BLOCK)
+  readonly laneKey = Array.from(
+    { length: TUNE_LANES },
+    () => new Float32Array(BLOCK),
+  )
+  private readonly unheld = new Float32Array(BLOCK)
   /** The keys a hand is holding down on any of the keyboards, by semitone. */
   readonly keysDown = new Set<number>()
   /** Every key that has gone down, counted, so a press shorter than a block
@@ -118,6 +138,23 @@ export class TriggerBus {
     this.keyHeld[i] = held ? 1 : 0
   }
 
+  laneStruck(i: number, lane: number, semitone: number) {
+    this.laneKey[lane]![i] = semitone + KEY_BIAS
+  }
+
+  keyLine(choice: number) {
+    const lane = gateLane(choice)
+    return lane >= 0
+      ? (this.laneKey[lane] ?? null)
+      : followsGate(choice)
+        ? this.key
+        : null
+  }
+
+  heldLine(choice: number) {
+    return gateLane(choice) >= 0 ? this.unheld : this.keyHeld
+  }
+
   seqStruck(
     i: number,
     semitone: number,
@@ -152,6 +189,7 @@ export class TriggerBus {
     this.melodyHz.fill(0, 0, n)
     this.key.fill(0, 0, n)
     this.keyHeld.fill(0, 0, n)
+    for (const lane of this.laneKey) lane.fill(0, 0, n)
     this.seqKey.fill(0, 0, n)
     this.seqSpan.fill(0, 0, n)
     this.seqAccent.fill(0, 0, n)
@@ -182,6 +220,7 @@ export class TriggerBus {
     this.melodyHz.fill(0)
     this.key.fill(0)
     this.keyHeld.fill(0)
+    for (const lane of this.laneKey) lane.fill(0)
     this.seqKey.fill(0)
     this.seqSpan.fill(0)
     this.seqAccent.fill(0)

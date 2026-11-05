@@ -9,6 +9,7 @@ import {
   TAPE_AT_PEDALS,
 } from '../dsp/stages/tape.ts'
 import { SUPPLY as ON, SUPPLY_KEYS } from '../dsp/supplies.ts'
+import { followsGate } from '../dsp/trigbus.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { cableName, TRIGGER_CABLES, type Signal } from './connections.ts'
 import {
@@ -353,7 +354,7 @@ export function onBoard(c: Controls): Set<string> {
   // A chip on the key line plays the toy keyboard's notes, so the keyboard is
   // its player even with its own fader down.
   for (const [chip, jumper] of KEYED)
-    if (on.has(chip) && c[jumper] < 0.5) on.add(TOY_ROW[0])
+    if (on.has(chip) && followsGate(c[jumper])) on.add(TOY_ROW[0])
   if (on.has('Feedback bus')) on.add(FB_TARGET[Math.round(c.fbDest)] ?? 'mix')
   if (on.has('Mic'))
     for (const jack of wiredJacks(c)) on.add(MIC_TARGET[jack] ?? 'mix')
@@ -1397,7 +1398,8 @@ function boardWires(m: Laid) {
     [pcm, 'pcmKeyGate'],
     [mono, 'monoKeyGate'],
   ])
-  const reaches = (i: number) => keyed.slice(i).some(n => jumper.get(n)! < 0.5)
+  const reaches = (i: number) =>
+    keyed.slice(i).some(n => followsGate(jumper.get(n)!))
   const keyLine = (i: number) => ({
     door: 'Trigger patch',
     key: jumperKey.get(keyed[i]!),

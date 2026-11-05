@@ -1,4 +1,4 @@
-import { ANY_CHOICE } from '../dsp/trigbus.ts'
+import { ANY_CHOICE, followsGate, GATE_ALL, GATE_CUT } from '../dsp/trigbus.ts'
 import { choiceName } from './controls/index.ts'
 
 import type { ControlKey, Controls } from '../controls.ts'
@@ -37,9 +37,9 @@ const jumper = (key: ControlKey, to: Machine): Connection => ({
   signal: 'notes',
   from: 'Plinky',
   to,
-  plugged: c => c[key] < 0.5,
-  plugIn: 0,
-  pullOut: 1,
+  plugged: c => followsGate(c[key]),
+  plugIn: GATE_ALL,
+  pullOut: GATE_CUT,
 })
 
 const voice = (
