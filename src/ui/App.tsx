@@ -86,7 +86,36 @@ const SAVE_HELP =
 const SAVE_SIGNED_OUT_HELP =
   'Keeps the board on screen under a name, on your account. Press it to read what an account is for; the board you are looking at is saved as soon as you sign in.'
 
+const morphLabel = (seconds: MorphSeconds) => `morph: ${MORPH_LABELS[seconds]}`
+
+const SLOT_LABELS = [
+  ...MORPH_SECONDS.map(morphLabel),
+  'stop here',
+  'on the one',
+  `in ${Math.max(...PHRASE_LOCKS)} bars`,
+]
+
+// Every label the slot can show is laid out hidden in one grid cell, so the
+// slot keeps the width of the widest and the row holds still when a morph
+// starts.
 function MorphControl(props: {
+  seconds: MorphSeconds
+  drifting: boolean
+  onSet: (s: MorphSeconds) => void
+}) {
+  return (
+    <span className={styles.morphSlot}>
+      {SLOT_LABELS.map(label => (
+        <span className={styles.morphSizer} key={label} aria-hidden>
+          {label}
+        </span>
+      ))}
+      <MorphFace {...props} />
+    </span>
+  )
+}
+
+function MorphFace(props: {
   seconds: MorphSeconds
   drifting: boolean
   onSet: (s: MorphSeconds) => void
@@ -96,24 +125,21 @@ function MorphControl(props: {
     engine.morphProgress.get,
   )
   const waiting = useStoreValue(engine.waiting)
-  if (waiting !== null && !props.drifting)
-    return <Waiting tick={waiting.tick} />
-  if (progress !== null && !props.drifting) {
-    return (
-      <Tip
-        text={`Travelling over ${props.seconds}s. Press to stop here and keep the half-way board — grabbing a slider does the same.`}
-      >
-        <button className={styles.flight} onClick={() => engine.stopMorph()}>
-          <span
-            className={styles.flightFill}
-            style={{ transform: `scaleX(${progress})` }}
-          />
-          <span className={styles.flightLabel}>stop here</span>
-        </button>
-      </Tip>
-    )
-  }
-  return (
+  return waiting !== null && !props.drifting ? (
+    <Waiting tick={waiting.tick} />
+  ) : progress !== null && !props.drifting ? (
+    <Tip
+      text={`Travelling over ${props.seconds}s. Press to stop here and keep the half-way board — grabbing a slider does the same.`}
+    >
+      <button className={styles.flight} onClick={() => engine.stopMorph()}>
+        <span
+          className={styles.flightFill}
+          style={{ transform: `scaleX(${progress})` }}
+        />
+        <span className={styles.flightLabel}>stop here</span>
+      </button>
+    </Tip>
+  ) : (
     <Tip
       text={
         props.seconds > 0
@@ -130,7 +156,9 @@ function MorphControl(props: {
         }}
       >
         {MORPH_SECONDS.map(s => (
-          <option key={s} value={s}>{`morph: ${MORPH_LABELS[s]}`}</option>
+          <option key={s} value={s}>
+            {morphLabel(s)}
+          </option>
         ))}
       </select>
     </Tip>
@@ -303,23 +331,46 @@ function ArcButton() {
   )
 }
 
-function BoardVerbs({
-  seconds,
-  drifting,
+function SaveButton({
   saveFlash,
   signedIn,
-  onLanded,
   onSave,
 }: {
-  seconds: MorphSeconds
-  drifting: boolean
   saveFlash: VoiceFlash['kind'] | undefined
   signedIn: boolean
-  onLanded: (landed: boolean) => void
   onSave: () => void
 }) {
   return (
-    <div className={styles.actions}>
+    <Tip text={signedIn ? SAVE_HELP : SAVE_SIGNED_OUT_HELP}>
+      <button
+        className={saveFlash === 'failed' ? styles.btnBad : styles.btn}
+        onClick={() => onSave()}
+      >
+        <SteadyLabel widest="saved ✓">
+          {saveFlash === 'saved'
+            ? 'saved ✓'
+            : saveFlash === 'failed'
+              ? 'save ✕'
+              : 'save'}
+        </SteadyLabel>
+      </button>
+    </Tip>
+  )
+}
+
+function BoardVerbs({
+  seconds,
+  drifting,
+  onLanded,
+  onSetMorph,
+}: {
+  seconds: MorphSeconds
+  drifting: boolean
+  onLanded: (landed: boolean) => void
+  onSetMorph: (s: MorphSeconds) => void
+}) {
+  return (
+    <div className={styles.group}>
       <Dice seconds={seconds} onLanded={onLanded} />
       <Tip text={MUTATE_HELP}>
         <button
@@ -372,29 +423,16 @@ function BoardVerbs({
         </Tip>
       )}
       <ArcButton />
+      <MorphControl seconds={seconds} drifting={drifting} onSet={onSetMorph} />
       <Tip text="Back to the board the toy ships with, and every stage you added off the map. It lands in the walk, so undo brings back the controls you were on.">
         <button
-          className={styles.btnQuiet}
+          className={styles.btn}
           onClick={() => {
             clearAdded()
             engine.morphTo({ ...DEFAULT_CONTROLS }, seconds)
           }}
         >
           reset
-        </button>
-      </Tip>
-      <Tip text={signedIn ? SAVE_HELP : SAVE_SIGNED_OUT_HELP}>
-        <button
-          className={saveFlash === 'failed' ? styles.btnBad : styles.btn}
-          onClick={onSave}
-        >
-          <SteadyLabel widest="saved ✓">
-            {saveFlash === 'saved'
-              ? 'saved ✓'
-              : saveFlash === 'failed'
-                ? 'save ✕'
-                : 'save'}
-          </SteadyLabel>
         </button>
       </Tip>
     </div>
@@ -406,26 +444,28 @@ function BoardVerbs({
 function History({ seconds }: { seconds: MorphSeconds }) {
   const walk = useStoreValue(engine.history)
   return (
-    <>
+    <div className={`${styles.group} ${styles.history}`}>
       <Tip text="Steps back through the boards you have been through (ctrl+z).">
         <button
-          className={walk.past.length ? styles.btn : styles.btnOff}
+          className={styles.icon}
+          aria-label="undo"
           onClick={() => engine.undo(seconds)}
           disabled={!walk.past.length}
         >
-          undo
+          ↶
         </button>
       </Tip>
       <Tip text="Steps forward again (ctrl+shift+z).">
         <button
-          className={walk.future.length ? styles.btn : styles.btnOff}
+          className={styles.icon}
+          aria-label="redo"
           onClick={() => engine.redo(seconds)}
           disabled={!walk.future.length}
         >
-          redo
+          ↷
         </button>
       </Tip>
-    </>
+    </div>
   )
 }
 
@@ -630,11 +670,11 @@ export function App(props: { openedFromLink?: boolean }) {
         </main>
 
         <div className={styles.side}>
-          <header className={styles.bar}>
-            <div className={styles.barMain}>
+          <header className={styles.header}>
+            <div className={styles.titleRow}>
               <Tip text="What this is, where the docs and the source are, and which build you are on.">
                 <button
-                  className={styles.nameplate}
+                  className={styles.brand}
                   onClick={() => setShowAbout(true)}
                 >
                   <img
@@ -642,40 +682,16 @@ export function App(props: { openedFromLink?: boolean }) {
                     src={`${siteRoot}favicon.svg`}
                     alt=""
                   />
-                  <span className={styles.brand}>bender</span>
-                  <span className={styles.version}>{versionLabel}</span>
+                  <span className={styles.wordmark}>bender</span>
+                  <span className={styles.brandVersion}>{versionLabel}</span>
                 </button>
               </Tip>
-              <BoardVerbs
-                seconds={morphSeconds}
-                drifting={drifting}
-                saveFlash={lib.flash?.kind}
-                signedIn={signedIn}
-                onLanded={setLanded}
-                onSave={askSave}
-              />
-              <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
-                <button
-                  className={presetsShown ? styles.btnOn : styles.btnQuiet}
-                  aria-pressed={presetsShown}
-                  onClick={() => showPresets(!presetsShown)}
-                >
-                  presets
-                </button>
-              </Tip>
-              <div className={styles.settings}>
-                <MorphControl
-                  seconds={morphSeconds}
-                  drifting={drifting}
-                  onSet={setMorph}
-                />
-                <PhraseLockControl />
+              <div className={styles.chrome}>
                 <MidiPanel
                   open={showMidi}
                   onToggle={() => setShowMidi(o => !o)}
                   onClose={() => setShowMidi(false)}
                 />
-                <ShareButton onCopy={() => copyLink(boardQuery())} />
                 <SavedVoices
                   voices={lib.voices}
                   recent={lib.recent}
@@ -693,23 +709,45 @@ export function App(props: { openedFromLink?: boolean }) {
                   status={lib.status}
                   error={lib.error}
                 />
-                <div className={styles.account}>
-                  <Account
-                    user={lib.user}
-                    status={lib.status}
-                    onSignIn={lib.signIn}
-                    onSignOut={lib.signOut}
-                  />
-                </div>
+                <Account
+                  user={lib.user}
+                  status={lib.status}
+                  onSignIn={lib.signIn}
+                  onSignOut={lib.signOut}
+                />
+                <AppMenu
+                  signedIn={signedIn}
+                  coarse={coarse}
+                  onWhy={() => setWhy({ pending: null })}
+                  onMidi={() => setShowMidi(true)}
+                />
               </div>
             </div>
-            <div className={styles.pinned}>
+            <div className={styles.bar}>
+              <div className={styles.group}>
+                <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
+                  <button
+                    className={presetsShown ? styles.btnOn : styles.btn}
+                    aria-pressed={presetsShown}
+                    onClick={() => showPresets(!presetsShown)}
+                  >
+                    presets
+                  </button>
+                </Tip>
+                <SaveButton
+                  saveFlash={lib.flash?.kind}
+                  signedIn={signedIn}
+                  onSave={askSave}
+                />
+                <ShareButton onCopy={() => copyLink(boardQuery())} />
+                <PhraseLockControl />
+              </div>
               <History seconds={morphSeconds} />
-              <AppMenu
-                signedIn={signedIn}
-                coarse={coarse}
-                onWhy={() => setWhy({ pending: null })}
-                onMidi={() => setShowMidi(true)}
+              <BoardVerbs
+                seconds={morphSeconds}
+                drifting={drifting}
+                onLanded={setLanded}
+                onSetMorph={setMorph}
               />
             </div>
           </header>

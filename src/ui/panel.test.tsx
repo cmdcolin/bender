@@ -394,7 +394,7 @@ test('a drift leaves the morph picker where it is', async () => {
 
   // Mid-leg, which is exactly when the flight bar used to take the row.
   expect(engine.morphProgress.get()).not.toBeNull()
-  expect(screen.queryByText('stop here')).toBeNull()
+  expect(screen.queryByRole('button', { name: 'stop here' })).toBeNull()
   expect(screen.getByDisplayValue(/^morph:/)).toBeTruthy()
 
   // And stopping keeps the board where it has got to, rather than letting the
@@ -412,7 +412,7 @@ test('a morph in flight puts the bar up instead', async () => {
   render(<App />)
   act(() => engine.morphTo({ ...DEFAULT_CONTROLS, dlyFb: 0.9 }, 8))
   await frame()
-  expect(screen.getByText('stop here')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'stop here' })).toBeTruthy()
   expect(screen.queryByDisplayValue(/^morph:/)).toBeNull()
 })
 

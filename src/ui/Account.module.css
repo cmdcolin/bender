@@ -1,8 +1,7 @@
 /* The account control in the panel's chrome, and the menu it opens. */
 
 .signIn {
-  composes: action from './button.module.css';
-  min-width: var(--verb-w);
+  composes: outline from './button.module.css';
 }
 
 /* Round and photo-sized — once you are signed in the photo is the label. The

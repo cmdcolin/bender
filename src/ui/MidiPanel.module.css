@@ -11,25 +11,20 @@
    whose knobs have all gone quiet with nothing on screen saying why is the one
    failure this is here to prevent. */
 .tab {
-  composes: action from './button.module.css';
-  min-width: var(--verb-w);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
+  composes: outline from './button.module.css';
 }
 
 /* Lit once there is a wire, and not while there isn't — which is the way round
    it used to be. */
 .tabOn {
   composes: tab;
-  composes: actionOn from './button.module.css';
+  composes: outlineOn from './button.module.css';
 }
 
 /* Amber, the colour a waiting knob is drawn in everywhere else on the board. */
 .tabWaiting {
   composes: tab;
-  composes: actionWaiting from './button.module.css';
+  composes: outlineWaiting from './button.module.css';
 }
 
 /* Until the wire is on, the way in is the ☰ menu. */

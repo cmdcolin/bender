@@ -141,26 +141,104 @@
   border-color: var(--accent);
 }
 
+/* The header bar's button, drawn as videoskillet's masthead and look bar draw
+   theirs: quiet ink in a faint outline, at the body size, as wide as its
+   label. */
+.outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: var(--ctl-h);
+  padding: 0 7px;
+  font-size: var(--fs);
+  line-height: 1.2;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--surface-raised) 50%, var(--surface));
+  color: var(--fg3);
+  border: 1px solid var(--border-quiet);
+  border-radius: var(--ctl-radius);
+  cursor: pointer;
+}
+
+.outline:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--fg4);
+}
+
+.outline:disabled {
+  color: #55555f;
+  border-color: var(--border-faint);
+  cursor: default;
+}
+
+.outlineOn {
+  composes: outline;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.outlineOn:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.outlineWaiting {
+  composes: outline;
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
+.outlineDanger {
+  composes: outline;
+  color: var(--alarm);
+  border-color: var(--alarm-edge);
+}
+
+/* Squared for a glyph: the menu, undo and redo. */
+.outlineIcon {
+  composes: outline;
+  width: var(--ctl-h);
+  padding: 0;
+}
+
+/* A dropdown in the header, the same box as the buttons beside it. Firefox
+   pads a native select past the button's padding, so the select drops its
+   own arrow and draws a chevron in its place. */
+.outlineSelect {
+  composes: outline;
+  appearance: none;
+  padding-right: var(--space-xl);
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 9px) 55%,
+    calc(100% - 5px) 55%;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+}
+
 /* A split button. The verb and its caret share a border, and the caret opens
    the verb's options. Its padding keeps it narrower than any label. */
 .splitMain {
-  composes: action;
+  composes: outline;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
 .splitCaret {
-  composes: actionQuiet;
-  border-left: none;
+  composes: outline;
+  margin-left: -1px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
-  padding: 0 var(--space-xs);
+  padding: 0 5px;
 }
 
 .splitCaretOn {
   composes: splitCaret;
   color: var(--fg);
-  background: var(--bg);
+  border-color: var(--fg4);
 }
 
 /* One quiet thing among many of its kind: a preset, a MIDI switch, a stage's

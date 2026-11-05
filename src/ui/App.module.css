@@ -4,30 +4,82 @@
   height: 100%;
 }
 
-.bar {
-  --verb-w: 56px;
+.header {
   flex: none;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--gap-ctl);
-  padding: var(--space-sm) var(--space-lg) var(--space-xs);
+  padding: var(--space-xs) var(--space-lg) var(--space-2xs);
 }
 
-.barMain {
-  flex: 1;
-  min-width: 0;
+/* CROSS_REPO_SYNC(masthead-title-row) */
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--space-2xs) 0 var(--space-xs);
+}
+/* CROSS_REPO_SYNC_END(masthead-title-row) */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.brandMark {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px #ffffff1a;
+}
+
+/* CROSS_REPO_SYNC(masthead-brand) */
+.wordmark {
+  font-size: var(--fs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #f2f2f6;
+}
+.brand:hover .wordmark {
+  color: #fff;
+}
+.brandVersion {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #ffffff70;
+  align-self: flex-end;
+}
+
+.chrome {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+}
+/* CROSS_REPO_SYNC_END(masthead-brand) */
+
+/* CROSS_REPO_SYNC(look-bar-rows) */
+.bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--gap-ctl);
+  gap: var(--space-xs) var(--space-md);
+  margin: 0 0 var(--space-2xs);
 }
-
-.pinned {
-  flex: none;
+.group {
   display: flex;
-  align-items: center;
-  gap: var(--gap-ctl);
+  flex-wrap: wrap;
+  gap: var(--space-xs);
 }
+.history {
+  margin-left: auto;
+}
+/* CROSS_REPO_SYNC_END(look-bar-rows) */
 
 .body {
   flex: 1;
@@ -123,107 +175,54 @@
   outline: none;
 }
 
-.nameplate {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-right: var(--space-sm);
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.nameplate:hover .version,
-.nameplate:focus-visible .version {
-  color: var(--fg2);
-}
-
-.brandMark {
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  box-shadow: 0 0 0 1px #ffffff1a;
-}
-
-.brand {
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--accent);
-}
-
-.version {
-  align-self: flex-end;
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--fg3);
-  font-variant-numeric: tabular-nums;
-}
-
 .menuBtn {
-  composes: actionQuiet from './button.module.css';
-}
-
-.actions,
-.settings,
-.account {
-  display: contents;
+  composes: outlineIcon from './button.module.css';
 }
 
 .btn {
-  composes: action from './button.module.css';
+  composes: outline from './button.module.css';
 }
 
 .btnBad {
-  composes: actionDanger from './button.module.css';
-}
-
-.btnQuiet {
-  composes: actionQuiet from './button.module.css';
+  composes: outlineDanger from './button.module.css';
 }
 
 .btnOn {
-  composes: actionOn from './button.module.css';
+  composes: outlineOn from './button.module.css';
 }
 
-.btnOff {
-  composes: actionOff from './button.module.css';
-}
-
-.btn,
-.btnBad,
-.btnQuiet,
-.btnOn,
-.btnOff,
-.morph,
-.flight {
-  min-width: var(--verb-w);
+.icon {
+  composes: outlineIcon from './button.module.css';
 }
 
 .morph {
-  composes: btn;
-  text-align: center;
-  appearance: none;
+  composes: outlineSelect from './button.module.css';
 }
 
-/* Firefox pads a native select past .btn's padding, hence the drawn chevron.
-   The element in the selector outranks .action's padding and background. */
-select.morph {
-  padding-right: var(--space-xl);
-  background-image:
-    linear-gradient(45deg, transparent 50%, currentColor 50%),
-    linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position:
-    calc(100% - 9px) 55%,
-    calc(100% - 5px) 55%;
-  background-size: 4px 4px;
-  background-repeat: no-repeat;
+/* CROSS_REPO_SYNC(morph-slot) */
+.morphSlot {
+  position: relative;
+  display: grid;
+}
+.morphSlot > * {
+  grid-area: 1 / 1;
+  box-sizing: border-box;
+}
+/* CROSS_REPO_SYNC_END(morph-slot) */
+
+.morphSizer {
+  composes: outlineSelect from './button.module.css';
+  visibility: hidden;
+}
+
+.morphSlot > select,
+.morphSlot > button {
+  position: absolute;
+  inset: 0;
 }
 
 .flight {
-  composes: actionOn from './button.module.css';
+  composes: outlineOn from './button.module.css';
   position: relative;
   overflow: hidden;
 }
@@ -330,40 +329,11 @@ select.morph {
   .side {
     display: contents;
   }
-  .bar {
-    --verb-w: 0;
+  .header {
     order: -1;
-    flex-wrap: wrap;
-    align-items: center;
     padding-inline: var(--space-md);
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-  }
-  .barMain {
-    display: contents;
-  }
-  .nameplate,
-  .account {
-    order: -3;
-  }
-  .account {
-    display: flex;
-  }
-  .share {
-    order: -2;
-  }
-  .pinned {
-    order: -2;
-    margin-left: auto;
-  }
-  .bar button:not(.nameplate) {
-    padding-inline: var(--space-xs);
-  }
-  .bar::after {
-    content: '';
-    order: -1;
-    flex-basis: 100%;
-    margin-top: calc(-1 * var(--gap-ctl));
   }
   .body {
     flex-direction: column;

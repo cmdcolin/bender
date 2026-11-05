@@ -1,15 +1,13 @@
 /* The library button in the panel's chrome, and the popover it opens. */
 
 .trigger {
-  composes: action from './button.module.css';
-  min-width: var(--verb-w);
+  composes: outline from './button.module.css';
 }
 
 /* A write that did not land. Red for as long as the ✕ is up, because two of the
    three ways to save happen with this menu shut. */
 .triggerBad {
-  composes: actionDanger from './button.module.css';
-  min-width: var(--verb-w);
+  composes: outlineDanger from './button.module.css';
 }
 
 .body {

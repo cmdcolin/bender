@@ -10,6 +10,18 @@
   composes: splitMain from './button.module.css';
 }
 
+.face,
+.caret,
+.caretOn {
+  position: relative;
+}
+
+.face:hover,
+.caret:hover,
+.caretOn:hover {
+  z-index: 1;
+}
+
 .caret {
   composes: splitCaret from './button.module.css';
 }
