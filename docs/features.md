@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-658 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 178
+658 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 180
 presets, 23 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 178 presets, and a roll button on every heading as well as
+- **Whole boards.** 180 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -1697,7 +1697,7 @@ result:
 
 ### Presets
 
-178 presets. Each name is a link that opens the app with that board loaded, and
+180 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1770,6 +1770,13 @@ the board waits until you press play.
 - [**standing ovation**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:9,fmAdder:3)
   — Applause plays off the effect ROM through a 9-bit log adder that wraps,
   until the room is a wall of white noise
+- [**dissolves every two bars**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.3,drumBpm:112,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmVoice:4,fmBusCut:0.35,fmExpLine:10,revMix:0.2,modLfoSync:2,mod0Src:1,mod0Dest:52,mod0Depth:0.45)
+  — A slow LFO works the cut on Glint’s exp table wire in and out, so the
+  clarinet breaks into hiss and comes back clean every two bars
+- [**the tune on the hi-hats**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.3,drumBpm:132,drumKick:34952,drumSnare:2056,drumHat:21845,drumOpen:8738,drumCym:43690,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmRhythm:2,fmAlloc:3)
+  — Glint’s rhythm bank runs at full width with the allocator stuck on the
+  hi-hat’s channel, so every note strikes the hat and snare at its own pitch and
+  drags the cymbal’s metal along with it
 - [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9,drumKick:32912,drumSnare:2056,drumHat:8738)
   — The kit’s converter is built from resistors off an unmeasured reel
 - [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,drumKick:32912,drumSnare:2056,drumHat:8738,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)
