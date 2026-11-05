@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-667 knobs and switches in 39 groups, eleven bends for six slots, 18 ROM tunes,
-181 presets, 23 stage settings and 58 named cuts. The generator reads everything
+666 knobs and switches in 39 groups, ten bends for six slots, 18 ROM tunes, 181
+presets, 23 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -36,9 +36,9 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   _fault on the bus_ opens on a row of named cuts: press **machine-gun** or
   **the note never ends** and the rows under it show which controls it set.
   **Random bus fault** under random ▾ draws from the same table.
-- **Eleven bends, six slots.** You pick which are on the board and in what
-  order, so five always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 173 destinations, among
+- **Ten bends, six slots.** You pick which are on the board and in what order,
+  so four always sit out. A mix at zero takes the stage out of the path.
+- **A patch bay that modulates itself.** Four wires, 174 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -658,6 +658,30 @@ Hiss with a colour control, and sparse crackle with a rate control.
 
 </details>
 
+### Sheet
+
+A big steel sheet with two contact mics on it. Click its face to hit it where
+you click; things also strike it at random, or a kit voice or a key does, and a
+hit sometimes bounces. The board’s own sound shakes it so it hums along, and
+turned well up it hears itself and howls. A loud sheet rattles against what it
+lies on. Hold runs from lying on a floor to hung from a corner.
+
+<details>
+<summary>8 controls</summary>
+
+| control   | range                                                                  | what it does                                                      |
+| --------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Level     | 0 to 4, normal 0 to 1                                                  | How loud the sheet is in the source mix                           |
+| Strikes   | 0 to 8 per second                                                      | How often something hits the sheet, at random                     |
+| Struck by | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key | A kit voice or a key that hits the sheet too                      |
+| Hardness  | off to full                                                            | A soft mallet at the bottom, a steel pipe at the top              |
+| Size      | 0.25× to 4×                                                            | Bigger sheets ring lower                                          |
+| Hold      | off to full                                                            | Lying on a floor at the bottom, hung from a corner at the top     |
+| Shake     | off to full                                                            | How hard the board’s own sound shakes the sheet, so it hums along |
+| Rattle    | off to full                                                            | How much a loud sheet buzzes against what it lies on              |
+
+</details>
+
 ### Spool
 
 A loaded audio file, looping through the chain. With _Struck by_ on a voice and
@@ -835,7 +859,7 @@ at zero, and a Glint turned up with nothing striking it (no hand on its keys, no
 tune next door) sits at three quarters and plays silence. _Bus drive_ is the
 summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.
 
-The desk is a widget, and its ten faders are counted under the machines they
+The desk is a widget, and its eleven faders are counted under the machines they
 belong to: each is the first knob on that machine's panel and one strip of this
 one.
 
@@ -850,7 +874,7 @@ one.
 
 ## Pedals
 
-Eleven pedals compete for six ordered sockets. Each has a mix, and a mix at zero
+Ten pedals compete for six ordered sockets. Each has a mix, and a mix at zero
 takes the stage out of the path. The other six follow the sockets: all of them
 are always on the board, their order is one control, and a pedal at zero mix
 leaves the path.
@@ -1164,30 +1188,6 @@ seconds ago into the room. Freeze holds the tank indefinitely.
 
 </details>
 
-### Sheet
-
-A big steel sheet with two contact mics on it. Things strike it at random, or a
-kit voice or a key does, and a hit sometimes bounces. The board’s own sound
-shakes it so it hums along, and a loud sheet rattles against what it lies on.
-Hold runs from lying on a floor to hung from a corner.
-
-<details>
-<summary>9 controls</summary>
-
-| control   | range                                                                  | what it does                                                                                                       |
-| --------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Strikes   | 0 to 8 per second                                                      | How often something hits the sheet, at random                                                                      |
-| Struck by | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key | A kit voice or a key that hits the sheet too                                                                       |
-| Hardness  | off to full                                                            | A soft mallet at the bottom, a steel pipe at the top                                                               |
-| Size      | 0.25× to 4×                                                            | Bigger sheets ring lower                                                                                           |
-| Hold      | off to full                                                            | Lying on a floor at the bottom, hung from a corner at the top                                                      |
-| Shake     | off to full                                                            | How hard the board’s own sound shakes the sheet, so it hums along                                                  |
-| Rattle    | off to full                                                            | How much a loud sheet buzzes against what it lies on                                                               |
-| Bypass    | on or bypassed                                                         | Takes Sheet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| Mix       | off to full                                                            | Dry/wet                                                                                                            |
-
-</details>
-
 ### Gnash
 
 Gnash models each circuit separately: _Screamer_ clips inside the feedback loop
@@ -1410,7 +1410,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 173 of them, filt cut through FM exp fault                                                                             | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 174 of them, filt cut through sheet level                                                                              | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -1634,9 +1634,9 @@ to move it, or move it with the arrow keys. To bring in a bend that is off the
 board, drag it or press it in the first section. A crusher into a filter and a
 filter into a crusher use the same two stages and sound different, and fuzz into
 a reverb gives a wall with a room behind it where a reverb into fuzz gives the
-room itself distorting. Eleven bends compete for six positions, so five always
-sit out. All six pedals stay on the board, and a pedal leaves the path when its
-mix is at zero.
+room itself distorting. Ten bends compete for six positions, so four always sit
+out. All six pedals stay on the board, and a pedal leaves the path when its mix
+is at zero.
 
 The panel draws two racks in place of a row of sliders: the six bend-slot
 controls under _sockets_, and the one order control under _after the sockets_.
@@ -1678,7 +1678,7 @@ result:
 
 | control      | range                                                                                              | what it does                                                    |
 | ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct, codec, verb, sheet                           | Which pedal runs in this socket                                 |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift, oct, codec, verb                                  | Which pedal runs in this socket                                 |
 | Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals after the sockets in |
 
 </details>
@@ -2147,9 +2147,9 @@ the board waits until you press play.
   — A VCA that never shuts passes two saws a tenth of a semitone apart back into
   the mixer, with osc 3 at a quarter of a hertz opening the ladder and closing
   it again. No key is needed
-- [**sheet in the drone**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,monoLevel:2,monoKeyGate:1,monoWave3:0,monoRange1:-1,monoRange2:-1,monoTune2:0.11,monoTune3:0,monoOsc3:2,monoDrift:6,monoMix3:0,monoNoise:0.1,monoLoop:0.4,monoCutoff:280,monoEmph:0.85,monoContour:0,monoTrack:0,monoDrive:2.4,monoModFilter:2,monoLeak:1,bendSlot4:11,bendSlot5:10,rackDecay:0.85,rackSize:1.6,rackMix:0.35,sheetStrikes:0.35,sheetHard:0.7,sheetSize:1.4,sheetHold:0.55,sheetShake:0.45,sheetMix:0.55,revDecayS:5,revMix:0.35)
+- [**sheet in the drone**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,monoLevel:2,monoKeyGate:1,monoWave3:0,monoRange1:-1,monoRange2:-1,monoTune2:0.11,monoTune3:0,monoOsc3:2,monoDrift:6,monoMix3:0,monoNoise:0.1,monoLoop:0.4,monoCutoff:280,monoEmph:0.85,monoContour:0,monoTrack:0,monoDrive:2.4,monoModFilter:2,monoLeak:1,sheetLevel:0.55,sheetStrikes:0.35,sheetHard:0.7,sheetSize:1.4,sheetHold:0.55,sheetShake:0.45,bendSlot5:10,rackDecay:0.85,rackSize:1.6,rackMix:0.35,revDecayS:5,revMix:0.35)
   — The leaky drone shakes a steel sheet lying beside it, something hits the
-  sheet now and then, and a rack reverb holds what rings
+  sheet now and then, and a rack reverb holds both
 - [**under the floor**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,monoLevel:2,monoKeyGate:1,monoWave3:0,monoTune2:0.07,monoTune3:0,monoOsc3:2,monoDrift:6,monoMix3:0,monoNoise:0.1,monoLoop:0.4,monoEmph:0.85,monoContour:0,monoTrack:0,monoDrive:2.4,monoModFilter:2,monoLeak:1,delayMs:700,dlyFb:0.7,wowDepthMs:4,wowHz:0.2,flutter:0.2,dlyToneHz:1500,dlyMix:0.4,revDecayS:14,revMix:0.5,ensMode:1,ensRate:0.2,ensMix:0.5,modLfoHz:0.03,mod0Src:1,mod0Dest:76,mod0Depth:0.4)
   — A leaky drone plays two octaves down through a slow ensemble, a dark
   wobbling tape echo and a fourteen-second room, with an LFO that takes half a

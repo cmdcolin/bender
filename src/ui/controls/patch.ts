@@ -369,6 +369,7 @@ export const PATCH_GROUPS: Group[] = [
             'shift quadrature',
             'FM exp line',
             'FM exp fault',
+            'sheet level',
           ],
           groups: [
             {
@@ -525,6 +526,7 @@ export const PATCH_GROUPS: Group[] = [
                 'track 1 mid',
               ],
             },
+            { name: 'Sheet', choices: ['sheet level'] },
             {
               name: 'Pedals',
               choices: [

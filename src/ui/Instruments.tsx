@@ -23,6 +23,7 @@ import { wireOn } from './micWiring.ts'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal } from './Pedals.tsx'
+import { SheetFace } from './SheetFace.tsx'
 import { levelOf } from './stageLevels.ts'
 import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
@@ -65,6 +66,8 @@ const TAPES: Row = [
   ['Layercake', FourTrackFace],
 ]
 
+const METAL: Row = [['Sheet', SheetFace]]
+
 const ADDED_LEVEL = 0.6
 
 const KIND: Record<string, string> = {
@@ -75,6 +78,7 @@ const KIND: Record<string, string> = {
   Growler: 'mono synth',
   Spool: 'tape loop',
   Layercake: 'four-track',
+  Sheet: 'struck metal',
 }
 
 // The keyboards, the kit, the tape loop and the four-track. A machine shows while its stage is
@@ -129,7 +133,7 @@ export function Instruments({
   const { grid: staged, pedals, bends } = useStoreValue(bench)
   const kit = staged ? [] : faces(KIT)
   const stagedKit = staged ? faces(KIT) : []
-  const tapes = faces(TAPES)
+  const tapes = [...faces(TAPES), ...faces(METAL)]
 
   const bringUp = (stage: string) => {
     bring(stage)

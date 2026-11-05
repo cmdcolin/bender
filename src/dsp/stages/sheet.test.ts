@@ -42,12 +42,18 @@ function run(
     input = (_t: number) => 0,
     key = -1,
     kick = -1,
-  }: { input?: (t: number) => number; key?: number; kick?: number } = {},
+    hand = -1,
+  }: {
+    input?: (t: number) => number
+    key?: number
+    kick?: number
+    hand?: number
+  } = {},
 ) {
   const sheet = new Sheet(SR)
   const p = packParams({
     ...DEFAULT_CONTROLS,
-    sheetMix: 1,
+    sheetLevel: 1,
     sheetStrikes: 0,
     ...board,
   })
@@ -68,10 +74,10 @@ function run(
       ctx.trig.drumBits[0] = KICK
       ctx.trig.drumGain[0] = 1
     }
-    for (let i = 0; i < BLOCK; i++) {
-      io.l[i] = input(b * BLOCK + i)
-      io.r[i] = io.l[i]!
-    }
+    if (b === hand) sheet.strikeAt(0.4, 0.6, 1)
+    for (let i = 0; i < BLOCK; i++) ctx.out[i] = input(b * BLOCK + i)
+    io.l.fill(0)
+    io.r.fill(0)
     sheet.process(io, p, ctx)
     out.set(io.l, b * BLOCK)
   }
@@ -100,6 +106,10 @@ test('a key strikes it, and the ring loses its highs first', () => {
   )
 })
 
+test('a hand strikes it from the face', () => {
+  expect(rms(run({}, 0.3, { hand: 2 }))).toBeGreaterThan(0.001)
+})
+
 test('a kick strikes it only while it is struck by the kick', () => {
   const struck = run({ sheetStruckBy: KICK }, 0.3, { kick: 2 })
   const ignored = run({ sheetStruckBy: 0 }, 0.3, { kick: 2 })
@@ -107,7 +117,7 @@ test('a kick strikes it only while it is struck by the kick', () => {
   expect(ignored.every(v => v === 0)).toBe(true)
 })
 
-test('shake rings the sheet off the board’s own sound', () => {
+test('shake rings the sheet off the board’s own output', () => {
   const drone = (t: number) => 0.3 * Math.sin((2 * Math.PI * 110 * t) / SR)
   const shaken = run({ sheetShake: 1 }, 1, { input: drone })
   const still = run({ sheetShake: 0 }, 1, { input: drone })

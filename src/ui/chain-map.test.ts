@@ -453,7 +453,7 @@ test("the README's diagrams are what the chain draws today — else `pnpm diagra
   }
 })
 
-// Six slots and eleven bends, so five are always in none of them. The rack heads
+// Six slots and ten bends, so four are always in none of them. The rack heads
 // the run and carries those beside it, each a door of its own — which is what
 // stops a stage that is on the board and not in the path from going missing
 // off the map, without drawing it in the signal's way.

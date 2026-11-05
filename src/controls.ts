@@ -586,6 +586,15 @@ export const DEFAULT_CONTROLS = {
   crackleAmp: 0,
   crackleRate: 20,
 
+  sheetLevel: 0,
+  sheetStrikes: 0.5,
+  sheetStruckBy: 0,
+  sheetHard: 0.6,
+  sheetSize: 1,
+  sheetHold: 0.3,
+  sheetShake: 0.2,
+  sheetRattle: 0.5,
+
   micLevel: 0,
   micPatch: 0,
   micDelay: 0,
@@ -815,16 +824,6 @@ export const DEFAULT_CONTROLS = {
   rackFreeze: 0,
   rackMix: 0,
   rackMute: 0,
-
-  sheetStrikes: 0.5,
-  sheetStruckBy: 0,
-  sheetHard: 0.6,
-  sheetSize: 1,
-  sheetHold: 0.3,
-  sheetShake: 0.2,
-  sheetRattle: 0.5,
-  sheetMix: 0,
-  sheetMute: 0,
 
   stompCircuit: 0,
   stompDrive: 18,

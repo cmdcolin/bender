@@ -61,7 +61,8 @@ test('every machine added has a ⋯ menu', () => {
     expect(group(name)).not.toBeNull()
   expect(screen.getByRole('region', { name: 'spool' })).toBeTruthy()
   expect(screen.getByRole('region', { name: 'layercake' })).toBeTruthy()
-  expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(7)
+  expect(screen.getByRole('region', { name: 'sheet' })).toBeTruthy()
+  expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(8)
 })
 
 test('Add instrument names each machine with what it is and lays out the pick', () => {
@@ -74,6 +75,7 @@ test('Add instrument names each machine with what it is and lays out the pick', 
       'Growler (mono synth)',
       'Spool (tape loop)',
       'Layercake (four-track)',
+      'Sheet (struck metal)',
     ],
   )
   fireEvent.click(screen.getByRole('menuitem', { name: /^Glint/ }))
@@ -111,7 +113,7 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
   const roll = screen.getAllByRole('button', { name: 'randomize' })
-  expect(roll).toHaveLength(7)
+  expect(roll).toHaveLength(8)
   const before = engine.controls.get()
   fireEvent.click(roll[0]!)
   const now = engine.controls.get()
@@ -200,7 +202,7 @@ test('the popover slider moves the Level, and zero lights the speaker and the mu
 test('only the machines with no speaker cap keep a Level slider on the face', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
-  expect(screen.getAllByRole('slider', { name: 'Level' })).toHaveLength(2)
+  expect(screen.getAllByRole('slider', { name: 'Level' })).toHaveLength(3)
   expect(
     within(machine('clatter')).queryByRole('slider', { name: 'Level' }),
   ).toBeNull()
@@ -262,7 +264,6 @@ test('Add pedal groups every pedal by sound, names it with what it is, benches t
     'Freq shifter (frequency shifter)',
     'Ring mod (ring modulator)',
     'Comb (comb filter)',
-    'Sheet (struck metal)',
     'Screech filter (resonant filter)',
     'Glitch buffer (stutter)',
   ])
@@ -324,7 +325,7 @@ test('every socketed pedal has a face', () => {
   fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
     fireEvent.click(item)
-  expect(bench.get().bends).toHaveLength(11)
+  expect(bench.get().bends).toHaveLength(10)
   for (const name of [
     'ring mod',
     'crusher',
@@ -336,7 +337,6 @@ test('every socketed pedal has a face', () => {
     'octave',
     'codec',
     'rack verb',
-    'sheet',
   ])
     expect(group(name)).not.toBeNull()
 })

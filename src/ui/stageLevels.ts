@@ -11,6 +11,7 @@ const LEVEL_OF: Record<string, ControlKey> = {
   Growler: 'monoLevel',
   Spool: 'sampleLevel',
   Layercake: 'fourLevel',
+  Sheet: 'sheetLevel',
 }
 
 const BYPASS_OF: Record<string, ControlKey> = Object.fromEntries([

@@ -1,0 +1,36 @@
+.sheet {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.plate {
+  fill: #8c9399;
+  stroke: #5b6166;
+}
+
+.pickup {
+  fill: #2a2d30;
+}
+
+.ring {
+  fill: none;
+  stroke: var(--accent2);
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring 0.6s ease-out forwards;
+}
+
+@keyframes ring {
+  from {
+    opacity: 1;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1);
+  }
+}

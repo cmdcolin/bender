@@ -2133,6 +2133,10 @@ export class Engine {
   //
   // A hit recorded late in a step goes to the next one, which the kit has yet
   // to play, so the kit is told to leave it out once rather than play it twice.
+  sheetHit(x: number, y: number, gain = 1) {
+    this.post({ kind: 'sheetHit', x, y, gain })
+  }
+
   drumHit(bits: number, gain = 1) {
     if (bits === 0) return
     if (!this.drumRecord.get() || !this.drumsPlaying.get()) {

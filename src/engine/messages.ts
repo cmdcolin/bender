@@ -83,6 +83,14 @@ export interface DrumHitMsg {
   skipTick?: number
 }
 
+/** A hand on the sheet, at x and y as fractions of its width and depth. */
+export interface SheetHitMsg {
+  kind: 'sheetHit'
+  x: number
+  y: number
+  gain: number
+}
+
 /** An effect button going down or coming up, on the toy's deck or Glint's. */
 export interface SfxMsg {
   kind: 'sfx'
@@ -142,6 +150,7 @@ export type ToWorklet =
   | FourBlankMsg
   | NoteMsg
   | DrumHitMsg
+  | SheetHitMsg
   | SfxMsg
   | TransportMsg
   | RecordMsg

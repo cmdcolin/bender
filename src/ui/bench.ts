@@ -26,6 +26,7 @@ export const INSTRUMENTS = [
   'Growler',
   'Spool',
   'Layercake',
+  'Sheet',
 ] as const
 
 const EMPTY: Bench = {

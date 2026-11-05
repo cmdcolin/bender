@@ -1,7 +1,7 @@
 ---
 name: metal-sheet
 description:
-  The steel sheet behind the Sheet bend: what an offline prototype settled,
+  The steel sheet behind the Sheet instrument: what an offline prototype settled,
   the contact-mic recordings it was measured against, and their sources.
 ---
 
@@ -52,19 +52,20 @@ Contact mic unless noted, measured on 128 kbps previews.
 - The prototype reached 0.05–0.1 s on hit highs, but only 18–22 % at 0.8–3 kHz
   and 1.9–2.6 dB of jitter on scrapes.
 
-## In the Sheet bend
+## In the Sheet instrument
 
 `src/dsp/stages/sheet.ts` keeps the damping, pitch, rattle and piezo tilt above
 with 128 modes (56 from the grid, 72 log-spaced to 12 kHz, the density boost
 capped at 4 so no one mode sings), at about 2 % of a core. Four modes run per
 loop: one mode a loop cost 6.7 ns per mode-sample, four cost 2.
 
-- **Not built:** scraping, the feedback howl and the bottle. Scraping wants a
-  pad to drag; the howl is the board's own feedback bus with the sheet in a
-  slot.
-- **Shake** drives the sheet from the board, tilted 1 / (1 + f / 600). Untilted
-  and at the first gain it drove the high modes into steady tones and pinned the
-  limiter.
+- **Not built:** scraping and the bottle. Scraping wants a pad to drag.
+- **Shake** drives the sheet from the board's output a block late, tilted 1 /
+  (1 + f / 600). Untilted and at the first gain it drove the high modes into
+  steady tones and pinned the limiter. The output includes the sheet, so Shake
+  is also the prototype's feedback loop: at Level 0.8 and Hold 0.8 a strike dies
+  away below 0.75, sustains near 0.9 and howls into the clipper at 1.
+- It was a bend for a day; it is a source so it can be played from its face.
 
 ## Sources
 

@@ -44,6 +44,7 @@ export interface BuiltChain {
   melody: MelodyMemory
   sampler: Sampler
   fourTrack: FourTrack
+  sheet: Sheet
   transport: Transport
   /** The shared toy supply, out here because it is the one state worth watching
       from outside the audio thread: the panel draws it, and a test asks it
@@ -104,7 +105,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     sampler,
   ]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
-  // 6 filt, 7 shift, 8 oct, 9 codec, 10 rack verb, 11 sheet — six slots for eleven bends, so you pick.
+  // 6 filt, 7 shift, 8 oct, 9 codec, 10 rack verb — six slots for ten bends, so you pick.
   // The codec seeds off the build's seed rather than drawing one.
   chain.bendById = [
     undefined,
@@ -118,7 +119,6 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Octave(sr),
     new Codec(sr, seed ^ 0xc0dec),
     new RackVerb(sr, seed ^ 0x5eb),
-    new Sheet(sr, seed ^ 0x5ee7),
   ]
   chain.pedals = [
     new Stompbox(sr),
@@ -135,6 +135,8 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   // the one it was before the four-track was on the board.
   const fourTrack = new FourTrack(sr, next())
   chain.sources.push(fourTrack)
+  const sheet = new Sheet(sr, seed ^ 0x5ee7)
+  chain.sources.push(sheet)
   return {
     chain,
     toyChip,
@@ -145,6 +147,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     melody,
     sampler,
     fourTrack,
+    sheet,
     transport,
     rail,
     supplies,

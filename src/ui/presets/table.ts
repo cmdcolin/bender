@@ -2728,7 +2728,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'sheet in the drone',
     blurb:
-      'The leaky drone shakes a steel sheet lying beside it, something hits the sheet now and then, and a rack reverb holds what rings',
+      'The leaky drone shakes a steel sheet lying beside it, something hits the sheet now and then, and a rack reverb holds both',
     patch: {
       monoLevel: 2,
       chipLevel: 0,
@@ -2753,8 +2753,7 @@ export const PRESETS: PresetDef[] = [
       monoDrift: 6,
       revMix: 0.35,
       revDecayS: 5,
-      bendSlot4: 11,
-      sheetMix: 0.55,
+      sheetLevel: 0.55,
       sheetStrikes: 0.35,
       sheetShake: 0.45,
       sheetHold: 0.55,

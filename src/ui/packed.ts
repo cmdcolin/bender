@@ -1034,6 +1034,7 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'shiftLeak',
   'fmExpLine',
   'fmExpFault',
+  'sheetLevel',
   'sheetStrikes',
   'sheetStruckBy',
   'sheetHard',
@@ -1041,8 +1042,6 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'sheetHold',
   'sheetShake',
   'sheetRattle',
-  'sheetMix',
-  'sheetMute',
 ]
 
 // Retired controls that old links still carry, each read into the control that

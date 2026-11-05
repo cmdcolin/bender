@@ -165,6 +165,7 @@ const LANDINGS: Landing[] = [
   at('FM operator ring', ['fmLevel']),
   at('FM exp line', ['fmLevel']),
   at('FM exp fault', ['fmLevel', 'fmExpLine']),
+  at('sheet level', ['sheetLevel']),
   at('FM cut depth', ['fmLevel'], {
     needs: c => sliderFor('fmBusCut').needs?.(c) ?? false,
   }),

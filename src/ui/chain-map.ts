@@ -207,6 +207,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   shiftQuad: 'Freq shifter',
   fmExpLine: 'Glint',
   fmExpFault: 'Glint',
+  sheetLevel: 'Sheet',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -262,6 +263,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
   Spool: ['sampleLevel'],
   Layercake: ['fourLevel'],
+  Sheet: ['sheetLevel'],
 }
 
 const levelKey = (n: MapNode) => SOURCE_LEVELS[n.label]?.[0]
@@ -300,9 +302,14 @@ const PCM_KEYS = 'Parlor'
 // The fourth on the gate line and the rail, next along from the home keyboard.
 const MONO = 'Growler'
 
-// The four that take no supply and no trigger from anything: they start where
-// they stand, and they are the only sources on the board that do.
-const LINE_ROW = ['Chaos osc', 'Noise & crackle', 'Spool', 'Layercake'] as const
+// The sources off the toy's supply rail, each standing on its own.
+const LINE_ROW = [
+  'Chaos osc',
+  'Noise & crackle',
+  'Spool',
+  'Layercake',
+  'Sheet',
+] as const
 
 // The levels and mixes that decide whether a stage is in the sound at all. Off
 // is the bottom of the travel, or the top for a control that boots there, such
@@ -800,11 +807,14 @@ function pickParts(c: Controls, o: Options) {
   const hasBoard = chipRows.length > 0
   const allLines = LINE_ROW.map(instrument)
   const lines = allLines.filter(drawn)
-  // Four across is wider than the panel's column too, so the panel stacks them
-  // two and two, an even grid hung off one bus line down the middle.
-  const lineRows = (
-    o.wrap ? [lines.slice(0, 2), lines.slice(2)] : [lines]
-  ).filter(r => r.length > 0)
+  // Four across fills the drawing, so a fifth starts a row of its own. The
+  // panel's column is narrower again, so it stacks them two by two, an even grid
+  // hung off one bus line down the middle.
+  const across = o.wrap ? 2 : 4
+  const lineRows = Array.from(
+    { length: Math.ceil(lines.length / across) },
+    (_, r) => lines.slice(r * across, (r + 1) * across),
+  )
   const spine = !!o.wrap
   // The frame is a door onto the parts on the board that have no box: the cap
   // on the timing pin, the reset chip, the one output stage.
@@ -833,7 +843,7 @@ function pickParts(c: Controls, o: Options) {
   }
 
   // The rack, at the head of the run: the signal walks into it before it walks
-  // the slots. Six slots and eleven bends, so five are always in none of them —
+  // the slots. Six slots and ten bends, so four are always in none of them —
   // those ride at the head of the path as loose chips, each a door of its own.
   const slotted = bendOrder(c)
   const bends = slotted.filter(has)
@@ -2264,6 +2274,20 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
         .join(' '),
       fill: c,
     }),
+  ],
+  // A sheet of steel with its two pickups.
+  Sheet: (x, y, c) => [
+    el('rect', {
+      x,
+      y: y + 2,
+      width: ICON,
+      height: 8,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 1,
+    }),
+    el('circle', { cx: x + 3.5, cy: y + 4.5, r: 1, fill: c }),
+    el('circle', { cx: x + 8.5, cy: y + 7.5, r: 1, fill: c }),
   ],
   // A cassette: the shell, its two hubs and the window between them.
   Layercake: (x, y, c) => [

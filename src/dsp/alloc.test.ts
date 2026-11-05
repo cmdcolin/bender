@@ -240,7 +240,7 @@ const EVERYTHING: Partial<Controls> = {
   octMix: 0.4,
   codecMix: 0.4,
   rackMix: 0.4,
-  sheetMix: 0.4,
+  sheetLevel: 0.4,
   stompMix: 0.4,
   stompSag: 0.5,
   dlyMix: 0.3,
@@ -290,7 +290,7 @@ const EVERYTHING: Partial<Controls> = {
   modLaneB11: -0.9,
 }
 
-// Six slots for eleven bends, so two boards between them seat every one.
+// Six slots for ten bends, so two boards between them seat every one.
 const FIRST_BENDS: Partial<Controls> = {
   bendSlot0: 1,
   bendSlot1: 2,
@@ -304,7 +304,7 @@ const LAST_BENDS: Partial<Controls> = {
   bendSlot1: 8,
   bendSlot2: 9,
   bendSlot3: 10,
-  bendSlot4: 11,
+  bendSlot4: 1,
   bendSlot5: 6,
 }
 

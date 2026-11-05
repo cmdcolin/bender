@@ -563,6 +563,14 @@ export const PARAM_DEFS = [
   ['noiseColor', 'slew'],
   ['crackleAmp', 'slew'],
   ['crackleRate', 'slew'],
+  ['sheetLevel', 'slew'],
+  ['sheetStrikes', 'slew'],
+  ['sheetStruckBy', 'step'],
+  ['sheetHard', 'slew'],
+  ['sheetSize', 'slew'],
+  ['sheetHold', 'slew'],
+  ['sheetShake', 'slew'],
+  ['sheetRattle', 'slew'],
 
   ['micLevel', 'slew'],
   ['micPatch', 'step'],
@@ -789,16 +797,6 @@ export const PARAM_DEFS = [
   ['rackFreeze', 'step'],
   ['rackMix', 'slew'],
   ['rackMute', 'ramp'],
-
-  ['sheetStrikes', 'slew'],
-  ['sheetStruckBy', 'step'],
-  ['sheetHard', 'slew'],
-  ['sheetSize', 'slew'],
-  ['sheetHold', 'slew'],
-  ['sheetShake', 'slew'],
-  ['sheetRattle', 'slew'],
-  ['sheetMix', 'slew'],
-  ['sheetMute', 'ramp'],
 
   ['stompCircuit', 'step'],
   ['stompDrive', 'ramp'],
@@ -1048,6 +1046,7 @@ export const SOURCE_TAPS = [
   'noise',
   'sampler',
   'fourTrack',
+  'sheet',
 ] as const
 
 export type SourceTap = (typeof SOURCE_TAPS)[number]
@@ -1066,6 +1065,7 @@ export const STEM_FILES = [
   'noise',
   'tape-loop',
   'four-track',
+  'sheet',
 ] as const
 
 export const MAX_SOURCES = SOURCE_TAPS.length

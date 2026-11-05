@@ -84,6 +84,9 @@ export class Sheet implements Stage {
   private reservoir = 0
   private rattleLeft = 0
   private rattleAmp = 0
+  private handX = 0
+  private handY = 0
+  private handGain = 0
   private readonly sr: number
 
   constructor(sr: number, seed = 0x5ee7) {
@@ -150,13 +153,20 @@ export class Sheet implements Stage {
   }
 
   when(p: Float32Array) {
-    return p[IDX.sheetMix]! > 0
+    return p[IDX.sheetLevel]! > 0
+  }
+
+  /** A hand on the sheet: where, as fractions of its width and depth, and how hard. */
+  strikeAt(x: number, y: number, gain: number) {
+    this.handX = Math.min(Math.max(x, 0), 1)
+    this.handY = Math.min(Math.max(y, 0), 1)
+    this.handGain = gain
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const sr = this.sr
     const n = io.n
-    const mix = p[IDX.sheetMix]!
+    const level = p[IDX.sheetLevel]!
     const strikeOdds = p[IDX.sheetStrikes]! / sr
     const struckBy = Math.round(p[IDX.sheetStruckBy]!)
     const mask = voiceMask(struckBy)
@@ -177,6 +187,10 @@ export class Sheet implements Stage {
     const empty = 1 / (RATTLE_EMPTY_S * sr)
     let anyStruck = false
     let anyRattle = false
+    if (this.handGain > 0) {
+      this.land(this.handGain, pulse, this.handX * WIDTH, this.handY * DEPTH)
+      this.handGain = 0
+    }
     for (let i = 0; i < n; i++) {
       if (this.rng() < strikeOdds) this.strike(0.5 + 0.5 * this.rng(), pulse)
       if (struckBy > 0) {
@@ -206,7 +220,7 @@ export class Sheet implements Stage {
       }
       rattled[i] = this.rattleLeft > 0 ? this.rattleAmp : 0
       this.rattleLeft = Math.max(0, this.rattleLeft - 1)
-      shaken[i] = (io.l[i]! + io.r[i]!) * shake
+      shaken[i] = ctx.out[i]! * shake
       anyStruck ||= struck[i] !== 0
       anyRattle ||= rattled[i] !== 0
     }
@@ -221,8 +235,8 @@ export class Sheet implements Stage {
     const follow = 1 - Math.exp((-2 * Math.PI * FOLLOW_HZ) / sr)
     for (let i = 0; i < n; i++) {
       this.loud += follow * (Math.abs(lows[i]!) - this.loud)
-      io.l[i] = io.l[i]! * (1 - mix) + wetL[i]! * OUT_GAIN * mix
-      io.r[i] = io.r[i]! * (1 - mix) + wetR[i]! * OUT_GAIN * mix
+      io.l[i]! += wetL[i]! * OUT_GAIN * level
+      io.r[i]! += wetR[i]! * OUT_GAIN * level
     }
     this.loud = this.loud < 1e-15 ? 0 : this.loud
     this.reservoir = this.reservoir < 1e-15 ? 0 : this.reservoir
@@ -333,8 +347,15 @@ export class Sheet implements Stage {
   }
 
   private strike(amp: number, pulse: number) {
-    const x = 0.05 + this.rng() * (WIDTH - 0.1)
-    const y = 0.05 + this.rng() * (DEPTH - 0.1)
+    this.land(
+      amp,
+      pulse,
+      0.05 + this.rng() * (WIDTH - 0.1),
+      0.05 + this.rng() * (DEPTH - 0.1),
+    )
+  }
+
+  private land(amp: number, pulse: number, x: number, y: number) {
     for (let j = 0; j < MODES; j++) this.struckIn[j] = this.shape(j, x, y)
     this.bounceAmp = amp * BOUNCE_LOSS
     this.bounceIn =
@@ -371,5 +392,6 @@ export class Sheet implements Stage {
     this.loud = 0
     this.reservoir = 0
     this.rattleLeft = 0
+    this.handGain = 0
   }
 }
