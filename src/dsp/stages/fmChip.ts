@@ -44,6 +44,8 @@ import {
   ROM_PATCH_BYTES,
   scaledRate,
   TEST,
+  TOM_BLOCK,
+  TOM_FNUM,
   VIB,
 } from './fmVoices.ts'
 import { WIRE_REBOOT, WIRE_STUCK, WIRE_TOY } from './toySfx.ts'
@@ -73,12 +75,18 @@ const N_REGS = GLINT_REGS
 
 // Where the percussion bank starts. Set the mode bit and everything from here
 // up stops belonging to the keyboard: the bass drum on the first of them, and
-// the snare and the hi-hat sharing the two operator slots of the last, which is
-// how a part with more channels than pins fits five drums into three voices.
+// the snare and the hi-hat sharing the two operator slots of the next. The
+// board as built starts it at the third channel, which keeps three drums and
+// two voices. At full width it starts at the second and the die's last channel
+// takes the tom and the cymbal, which is five drums in three voices and one
+// voice left for the tune.
 const RHYTHM_CH = 2
+const FULL_KIT_CH = 1
 
 /** What the hi-hat's slot runs at against the snare's, fixed on the die. */
 const HAT_MULT = 8
+/** How loud the cymbal's square comes out, against a sine's full scale. */
+const CYMBAL_LEVEL = 0.5
 
 // The shift register the percussion runs on: seventeen stages, one tap, and
 // free-running from power-on. Nothing on the panel reaches it and nothing
@@ -286,6 +294,18 @@ const DRUM_KEYS = [
   RHY.hat,
   RHY.hat,
 ]
+// At full width the tom goes on the tom and the bell and the cymbal on the
+// cymbal.
+const FULL_KIT_KEYS = [
+  RHY.bass,
+  RHY.snare,
+  RHY.hat,
+  RHY.snare,
+  RHY.tom,
+  RHY.cymbal,
+  RHY.hat,
+  RHY.cymbal,
+]
 
 /** The noise byte the effect ROM reads, which is a table on the real part. */
 const EFFECT_SEED = 0x5e
@@ -461,6 +481,8 @@ export class FmChip implements Stage {
   private bass = newPair()
   private snareRates = newRates()
   private hatRates = newRates()
+  private tomRates = newRates()
+  private cymbalRates = newRates()
   private noise = new Lfsr()
   /** the bit the register is holding, the slower one the snare latched off it,
       and where each of the two clocks has got to */
@@ -470,6 +492,11 @@ export class FmChip implements Stage {
   private snareClock = 0
   /** whether the mode bit was set last time the driver looked */
   private kitOn = false
+  /** the channel the percussion bank starts at */
+  private kitCh = RHYTHM_CH
+  /** the hi-hat channel's phase generator, which the cymbal reads its bits
+      off whether or not the hat is sounding */
+  private hatPhase = 0
   /** where the die's LFO has got to, and what it is worth this sample */
   private amPhase = 0
   private vibPhase = 0
@@ -686,12 +713,17 @@ export class FmChip implements Stage {
   // a slot each on the channel above and move on their own.
   private kitKeys(before: number, now: number) {
     if ((now & RHY.on) === 0) return
-    const bass = this.ch[RHYTHM_CH]!
-    const pair = this.ch[RHYTHM_CH + 1]!
+    const bass = this.ch[this.kitCh]!
+    const pair = this.ch[this.kitCh + 1]!
     kitEdge(before, now, RHY.bass, bass.car)
     kitEdge(before, now, RHY.bass, bass.mod)
     kitEdge(before, now, RHY.snare, pair.car)
     kitEdge(before, now, RHY.hat, pair.mod)
+    if (this.kitCh === FULL_KIT_CH) {
+      const top = this.ch[this.kitCh + 2]!
+      kitEdge(before, now, RHY.tom, top.mod)
+      kitEdge(before, now, RHY.cymbal, top.car)
+    }
   }
 
   private attack(i: number) {
@@ -754,19 +786,25 @@ export class FmChip implements Stage {
   // button up.
   private sendRhythm(on: boolean) {
     if (on) {
+      const at = this.kitCh
       // Where ROM says the bass drum sits, out through the ordinary frequency
       // registers — the one part of the kit still tuned rather than fixed.
-      this.write(REG.fnumLo + RHYTHM_CH, BASS_FNUM & 0xff)
-      this.write(
-        REG.keyBlock + RHYTHM_CH,
-        ((BASS_FNUM >> 8) & 1) | (BASS_BLOCK << 1),
-      )
+      this.write(REG.fnumLo + at, BASS_FNUM & 0xff)
+      this.write(REG.keyBlock + at, ((BASS_FNUM >> 8) & 1) | (BASS_BLOCK << 1))
       // And the noise pair, whose registers no longer pick a note — what they
       // still decide is how fast the hi-hat's gate runs.
-      this.write(REG.fnumLo + RHYTHM_CH + 1, 0)
-      this.write(REG.keyBlock + RHYTHM_CH + 1, (5 << 1) | 1)
-      this.write(REG.instVol + RHYTHM_CH, 0)
-      this.write(REG.instVol + RHYTHM_CH + 1, 0)
+      this.write(REG.fnumLo + at + 1, 0)
+      this.write(REG.keyBlock + at + 1, (5 << 1) | 1)
+      this.write(REG.instVol + at, 0)
+      this.write(REG.instVol + at + 1, 0)
+      if (at === FULL_KIT_CH) {
+        this.write(REG.fnumLo + at + 2, TOM_FNUM & 0xff)
+        this.write(
+          REG.keyBlock + at + 2,
+          ((TOM_FNUM >> 8) & 1) | (TOM_BLOCK << 1),
+        )
+        this.write(REG.instVol + at + 2, 0)
+      }
     }
     this.write(REG.rhythm, on ? RHY.on : 0)
   }
@@ -788,7 +826,7 @@ export class FmChip implements Stage {
   // meant: the sound the button makes is a voice you no longer have.
   private pick(note: number): Channel {
     if (this.stuckCh >= 0) return this.ch[this.stuckCh]!
-    const free = this.kitOn ? RHYTHM_CH : this.effect >= 0 ? EFFECT_CH : N_CH
+    const free = this.kitOn ? this.kitCh : this.effect >= 0 ? EFFECT_CH : N_CH
     for (let i = 0; i < free; i++) {
       const c = this.ch[i]!
       if (c.note === note && c.car.stage !== IDLE) return c
@@ -929,7 +967,7 @@ export class FmChip implements Stage {
       a driver that has been asked for drums does not have a fourth voice to
       lend an effect either. */
   private melodyChannels() {
-    if (this.kitOn) return RHYTHM_CH
+    if (this.kitOn) return this.kitCh
     return this.effect >= 0 ? EFFECT_CH : N_CH
   }
 
@@ -1065,6 +1103,32 @@ export class FmChip implements Stage {
       0,
       0,
     )
+    if (this.kitCh === FULL_KIT_CH) {
+      this.rates(
+        this.tomRates,
+        clockFactor,
+        0,
+        1,
+        KIT.tom.ad,
+        KIT.tom.sr,
+        1,
+        0,
+        0,
+        0,
+      )
+      this.rates(
+        this.cymbalRates,
+        clockFactor,
+        0,
+        1,
+        KIT.cymbal.ad,
+        KIT.cymbal.sr,
+        1,
+        0,
+        0,
+        0,
+      )
+    }
   }
 
   // Every melody channel's patch, once a block. Which eight bytes a channel
@@ -1195,7 +1259,9 @@ export class FmChip implements Stage {
       ((fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[(key >> 1) & 7]! * pitch) / this.sr
     const vol = this.volume(n)
 
-    if (n === RHYTHM_CH) {
+    if (n === this.kitCh + 2)
+      return this.tomCymbal(c, raced, wideOpen, inc, vol, pitch)
+    if (n === this.kitCh) {
       if (c.car.stage === IDLE) return 0
       // The test bit races the envelope counter and nothing else. What an
       // operator is — its multiplier, its level, how much of itself it gets
@@ -1272,6 +1338,55 @@ export class FmChip implements Stage {
       const env = wideOpen ? 1 : c.mod.env
       if (this.adderMask) logged += this.logMul(src, env * 0.7 * vol)
       else out += src * env * 0.7
+    }
+    return this.adderMask ? logged : out * vol
+  }
+
+  // The last channel at full width: the tom on one slot, a sine like the bass
+  // drum's with nothing modulating it, and the cymbal on the other. The
+  // cymbal has no sine and no shift register. It is a handful of phase bits
+  // gated together, three off the hi-hat channel's phase generator next door
+  // and two off its own, which is how the part made metal: the high bits beat
+  // and the low ones alias into a hash, and the hi-hat's tuning is the
+  // cymbal's.
+  private tomCymbal(
+    c: Channel,
+    raced: boolean,
+    wideOpen: boolean,
+    inc: number,
+    vol: number,
+    pitch: number,
+  ) {
+    const hatKey = this.regs[REG.keyBlock + this.kitCh + 1]!
+    const hatFnum =
+      this.regs[REG.fnumLo + this.kitCh + 1]! | ((hatKey & 1) << 8)
+    this.hatPhase =
+      (this.hatPhase +
+        ((hatFnum / FNUM_FULL) * FNUM_HZ * OCTAVE[(hatKey >> 1) & 7]! * pitch) /
+          this.sr) %
+      1
+    let out = 0
+    let logged = 0
+    if (c.mod.stage !== IDLE) {
+      this.stepEnv(c.mod, raced ? this.raceRates : this.tomRates)
+      c.mod.phase = (c.mod.phase + inc) % 1
+      this.wavePhase = c.mod.phase
+      this.wave(0)
+      const env = wideOpen ? 1 : c.mod.env
+      if (this.adderMask) logged += this.logMul(this.waveOut, env * vol)
+      else out += this.waveOut * env
+    }
+    if (c.car.stage !== IDLE) {
+      this.stepEnv(c.car, raced ? this.raceRates : this.cymbalRates)
+      c.car.phase = (c.car.phase + inc) % 1
+      const hh = (this.hatPhase * SINE_STEPS) | 0
+      const tc = (c.car.phase * SINE_STEPS) | 0
+      const metal =
+        ((((hh >> 2) ^ (hh >> 7)) | (hh >> 3)) ^ (tc >> 3) ^ (tc >> 5)) & 1
+      const src = metal ? CYMBAL_LEVEL : -CYMBAL_LEVEL
+      const env = wideOpen ? 1 : c.car.env
+      if (this.adderMask) logged += this.logMul(src, env * vol)
+      else out += src * env
     }
     return this.adderMask ? logged : out * vol
   }
@@ -1522,9 +1637,12 @@ export class FmChip implements Stage {
     // The rhythm button. An effect and the kit want the same channels and the
     // effect asked first, so pressing one puts the other down — which is the
     // arithmetic of four voices and no more, not a rule anybody wrote.
-    const wantKit = p[IDX.fmRhythm]! > 0.5 && this.effect < 0
-    if (wantKit !== this.kitOn) {
+    const rhythm = p[IDX.fmRhythm]!
+    const wantKit = rhythm > 0.5 && this.effect < 0
+    const kitCh = rhythm > 1.5 ? FULL_KIT_CH : RHYTHM_CH
+    if (wantKit !== this.kitOn || kitCh !== this.kitCh) {
       this.kitOn = wantKit
+      this.kitCh = kitCh
       this.sendRhythm(wantKit)
     }
     // What the die is actually doing, which is a different question: the button
@@ -1670,7 +1788,10 @@ export class FmChip implements Stage {
             // is somewhere for a strike to go as a strike, and the kit next
             // door lands on the kit on the die — otherwise it has to come out
             // as a note, which is the wire's own choice of one.
-            if (kit) this.keyDrum(DRUM_KEYS[v]!)
+            if (kit)
+              this.keyDrum(
+                (this.kitCh === FULL_KIT_CH ? FULL_KIT_KEYS : DRUM_KEYS)[v]!,
+              )
             else
               this.keyOn(
                 snap(DRUM_NOTES[v]!, keyScale, keyRoot),
@@ -1709,7 +1830,7 @@ export class FmChip implements Stage {
         // The CPU coming back to write the key up. Whether that write does
         // anything is between it and the wires.
         if (c.offIn > 0 && (c.offIn -= cpu) <= 0) this.keyOff(n)
-        if (kit && n >= RHYTHM_CH) {
+        if (kit && n >= this.kitCh) {
           const v = this.percussion(n, c, raced, wideOpen, pitch)
           sum += v
           if (slotted) this.slotOut[n] = v
@@ -1900,6 +2021,7 @@ export class FmChip implements Stage {
     this.noiseClock = 0
     this.snareClock = 0
     this.kitOn = false
+    this.hatPhase = 0
     this.dataBus.reset()
     this.addrBus.reset()
     this.waveBus.reset()

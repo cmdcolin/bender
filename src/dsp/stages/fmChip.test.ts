@@ -749,6 +749,52 @@ test('an effect and the bank want the same channels, and the effect wins', () =>
   expect(lowEnergy(bird) / rms(bird)).toBeLessThan(0.2)
 })
 
+// The bank at full width: five drums on three channels, and one voice left.
+const FULL_KIT = 2
+const TOM_HZ = 32.7 * 4 * (320 / 256)
+const BASS_HZ = 32.7 * 2 * (268 / 256)
+const kitOnly = (o: Partial<Controls>) =>
+  fmStem({ drumKick: 0, drumSnare: 0, drumHat: 0, ...o })
+
+test('at full width the kit’s tom line strikes a tom of the die’s own', () => {
+  const tom = (fmRhythm: number) =>
+    kitOnly({ fmRhythm, drumTom: 0b1000_1000_1000_1000 })
+  const full = tom(FULL_KIT)
+  const three = tom(1)
+  expect(bin(full, TOM_HZ)).toBeGreaterThan(5 * bin(three, TOM_HZ))
+  expect(bin(three, BASS_HZ)).toBeGreaterThan(5 * bin(full, BASS_HZ))
+})
+
+test('at full width the cymbal line strikes metal rather than the hat’s sand', () => {
+  const cym = (fmRhythm: number) =>
+    spectrum(kitOnly({ fmRhythm, drumCym: 0b1000_0000_1000_0000 }), SR)
+  expect(cym(FULL_KIT).flatness).toBeLessThan(0.3)
+  expect(cym(FULL_KIT).centroid).toBeGreaterThan(8000)
+  expect(cym(1).flatness).toBeGreaterThan(0.6)
+})
+
+test('at full width the tune has one voice left', () => {
+  const chord = (fmRhythm: number) =>
+    renderStems(
+      {
+        ...FM_ONLY,
+        fmRhythm,
+        fmKeyGate: 1,
+        fmVoice: voice('organ'),
+        fmBright: 0,
+      },
+      0.6,
+      built => {
+        built.fmChip.noteOn(0)
+        built.fmChip.noteOn(7)
+      },
+    ).stems[FM_TAP]!.subarray(Math.round(0.1 * SR))
+  const two = chord(1)
+  const one = chord(FULL_KIT)
+  expect(bin(two, 220)).toBeGreaterThan(0.5 * bin(two, 220 * 1.5))
+  expect(bin(one, 220)).toBeLessThan(0.05 * bin(two, 220))
+})
+
 // The bits the register map had no reader for. Six of the eight data wires did
 // something on this chip and two barely did, because the flags bytes read five
 // of their eight, the volume byte four, and the shape and key bytes five. What

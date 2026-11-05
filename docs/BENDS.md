@@ -366,6 +366,10 @@ write touches that register again.
     press, and the melody reaches the die as strikes. Patch-byte knives cannot
     reach the kit's rates.
   - An effect uses the same two channels, so each turns the other off.
+  - **full kit** opens the bank to the die's full width: three channels, five
+    drums, one voice left for the tune. The tom is a bare sine. The cymbal is
+    phase bits gated together, some off the hi-hat channel's phase generator, so
+    whatever retunes the hat retunes the cymbal.
 - **Vibrato:** the flag bits that wire an operator to the die's single LFO,
   tremolo at the top bit and vibrato below it. The button takes a patch write to
   apply, so a fault can leave it down with nothing wobbling. Tremolo is hard to
@@ -421,6 +425,9 @@ write touches that register again.
   - Stuck on 3 with **Rhythm** on: the tune retunes and strikes the bass drum.
   - Stuck on 4 with **Rhythm** on: the notes play on the snare and hi-hat
     channel, where frequency sets the shift register's gate rate.
+  - With **full kit** the bank starts a channel lower: stuck on 3 the notes
+    strike the hat and snare at their own pitch and drag the cymbal with them,
+    and stuck on 4 they strike the tom and cymbal at their own pitch.
   - Stuck on 4 with an effect running: the song fights the script for the
     channel.
 - **Cold boot:** the register file at power-on. On **garbage** the chip comes up

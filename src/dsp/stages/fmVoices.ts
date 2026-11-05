@@ -83,6 +83,8 @@ export const RHY = {
   /** and the keys, one per drum, in the order the die assigns them */
   bass: 0x10,
   snare: 0x08,
+  tom: 0x04,
+  cymbal: 0x02,
   hat: 0x01,
 } as const
 
@@ -487,6 +489,10 @@ export const KIT = {
   // patch to give an operator that has been cut off from the table.
   snare: { ad: nibbles([15, 11]), sr: nibbles([0, 11]) },
   hat: { ad: nibbles([15, 13]), sr: nibbles([0, 13]) },
+  // The two the bank only keys at full width: a tom on the sine table, and a
+  // cymbal that rings the hi-hat's phase against its own.
+  tom: { ad: nibbles([15, 8]), sr: nibbles([0, 8]) },
+  cymbal: { ad: nibbles([15, 7]), sr: nibbles([0, 7]) },
 }
 
 /** Where the die keys the bass drum: not a note anybody chose, but nine bits of
@@ -498,4 +504,7 @@ export const FM_LFO_NAMES = ['off', 'vibrato', 'tremolo', 'both']
 
 export const BASS_FNUM = 268
 export const BASS_BLOCK = 1
+/** And the tom's, which the cymbal shares. */
+export const TOM_FNUM = 320
+export const TOM_BLOCK = 2
 export const FM_VOICE_NAMES = FM_VOICES.map(v => v.name)
