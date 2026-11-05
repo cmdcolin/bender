@@ -2170,7 +2170,7 @@ back.
 ## Scripts
 
 <details>
-<summary>49 commands</summary>
+<summary>50 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2207,6 +2207,7 @@ back.
 | `pnpm toy:pcb`       | places and routes the toy board PCB with Freerouting and writes its gerbers                                                                                                            |
 | `pnpm spectrum`      | sweeps every wire and fault on every bus and reports what each sounds like, by frequency                                                                                               |
 | `pnpm preview`       | serves the built bundle                                                                                                                                                                |
+| `pnpm ada`           | runs a pnpm command on the shared box ada against this working tree, to keep heavy runs off this machine                                                                               |
 | `pnpm test`          | the suite without the sixteen slowest files, with a two-second torture test that pins every feedback past unity at once, and the panel in jsdom                                        |
 | `pnpm test:full`     | the suite plus the sixteen files that take fifteen seconds or more of audio rendering; CI runs this                                                                                    |
 | `pnpm test:changed`  | only the test files that import something changed since main                                                                                                                           |

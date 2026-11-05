@@ -131,6 +131,7 @@ const SCRIPTS: Record<string, string> = {
   golden:
     '`write` keeps every preset and board as rendered now, `check` renders them again and compares sample for sample',
   garbage: 'which DSP functions make the garbage on the audio thread',
+  ada: 'runs a pnpm command on the shared box ada against this working tree, to keep heavy runs off this machine',
   soak: 'whether any stage gets slower the longer it runs',
   panel: 'what the panel costs the browser per frame, in a real Chrome',
   agent:
