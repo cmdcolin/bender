@@ -26,6 +26,9 @@ when Colin reacts to a sound.
   `drumSweep: 1` ("quite good").
 - Steady tape hiss, at a fixed level.
 - Songs with sections that develop, and a groove leaned into once it works.
+- The jazzy lofi sound (minor 9th and major 7th e-piano, clarinet lead) now and
+  then, but not as the default: "not all the time". Vary the vibe from piece to
+  piece.
 - Editing while the music plays, with each change landing on the bar and named
   on screen.
 
@@ -37,8 +40,6 @@ when Colin reacts to a sound.
 - Glitch-buffer stutters and drum retriggers ("not my fav setting").
 - Contact crackle and noise layers.
 - Hiss that swells and fades with the music.
-- Jazzy minor 9th and major 7th e-piano grooves, the "lofi YouTube beats" sound,
-  once heard twice.
 - A kick pitched up: `drumSweep: 2.2` with `drumTankCouple: 0.35` was
   "interesting for a little but not better".
 - The kit's networks rung into drones (`drumRing: 0.93`) as a breakdown.
