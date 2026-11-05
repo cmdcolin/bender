@@ -62,6 +62,10 @@ const FACE: Record<string, Face> = {
     switch: 'rackFreeze',
     sliders: ['rackDecay', 'rackClock', 'rackMix'],
   },
+  Sheet: {
+    colour: '#5b6166',
+    sliders: ['sheetStrikes', 'sheetSize', 'sheetMix'],
+  },
 }
 
 function reading(stage: string, at: number, step: number, open: boolean) {

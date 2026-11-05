@@ -816,6 +816,16 @@ export const DEFAULT_CONTROLS = {
   rackMix: 0,
   rackMute: 0,
 
+  sheetStrikes: 0.5,
+  sheetStruckBy: 0,
+  sheetHard: 0.6,
+  sheetSize: 1,
+  sheetHold: 0.3,
+  sheetShake: 0.2,
+  sheetRattle: 0.5,
+  sheetMix: 0,
+  sheetMute: 0,
+
   stompCircuit: 0,
   stompDrive: 18,
   stompTone: 0.5,

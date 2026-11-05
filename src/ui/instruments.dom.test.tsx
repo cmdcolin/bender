@@ -262,6 +262,7 @@ test('Add pedal groups every pedal by sound, names it with what it is, benches t
     'Freq shifter (frequency shifter)',
     'Ring mod (ring modulator)',
     'Comb (comb filter)',
+    'Sheet (struck metal)',
     'Screech filter (resonant filter)',
     'Glitch buffer (stutter)',
   ])
@@ -323,7 +324,7 @@ test('every socketed pedal has a face', () => {
   fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
     fireEvent.click(item)
-  expect(bench.get().bends).toHaveLength(10)
+  expect(bench.get().bends).toHaveLength(11)
   for (const name of [
     'ring mod',
     'crusher',
@@ -335,6 +336,7 @@ test('every socketed pedal has a face', () => {
     'octave',
     'codec',
     'rack verb',
+    'sheet',
   ])
     expect(group(name)).not.toBeNull()
 })

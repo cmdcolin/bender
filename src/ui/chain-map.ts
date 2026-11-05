@@ -833,7 +833,7 @@ function pickParts(c: Controls, o: Options) {
   }
 
   // The rack, at the head of the run: the signal walks into it before it walks
-  // the slots. Six slots and ten bends, so four are always in none of them —
+  // the slots. Six slots and eleven bends, so five are always in none of them —
   // those ride at the head of the path as loose chips, each a door of its own.
   const slotted = bendOrder(c)
   const bends = slotted.filter(has)

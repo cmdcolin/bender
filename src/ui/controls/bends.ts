@@ -1,3 +1,4 @@
+import { VOICE_LABELS } from '../../drums.ts'
 import { FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
 import { CHOP_FILLS } from '../../dsp/stages/chopGate.ts'
 import { PIN_GAIN_MAX, STOCK_GAIN } from '../../dsp/stages/clipper.ts'
@@ -46,6 +47,7 @@ export const BENDS = [
   { group: 'Octave', label: 'oct', mix: 'octMix', mute: 'octMute' },
   { group: 'Codec', label: 'codec', mix: 'codecMix', mute: 'codecMute' },
   { group: 'Rack verb', label: 'verb', mix: 'rackMix', mute: 'rackMute' },
+  { group: 'Sheet', label: 'sheet', mix: 'sheetMix', mute: 'sheetMute' },
 ] as const satisfies readonly {
   group: string
   label: string
@@ -1397,6 +1399,98 @@ export const BEND_GROUPS: Group[] = [
       },
       {
         key: 'rackMix',
+        label: 'Mix',
+        role: 'mix',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Dry/wet.',
+      },
+    ],
+  },
+  {
+    name: 'Sheet',
+    place: 'Pedals',
+    sliders: [
+      {
+        key: 'sheetStrikes',
+        label: 'Strikes',
+        min: 0,
+        max: 8,
+        step: 0.01,
+        unit: '/s',
+        curve: 'log',
+        help: 'How often something hits the sheet, at random. A hit sometimes bounces.',
+      },
+      {
+        key: 'sheetStruckBy',
+        label: 'Struck by',
+        min: 0,
+        max: VOICE_LABELS.length + 2,
+        step: 1,
+        unit: '',
+        choices: ['off', ...VOICE_LABELS, 'any hit', 'key'],
+        help: 'A kit voice or a key that hits the sheet too.',
+      },
+      {
+        key: 'sheetHard',
+        label: 'Hardness',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'A soft mallet at the bottom, a steel pipe at the top.',
+      },
+      {
+        key: 'sheetSize',
+        label: 'Size',
+        min: 0.25,
+        max: 4,
+        step: 0.01,
+        unit: '×',
+        curve: 'log',
+        help: 'Bigger sheets ring lower.',
+      },
+      {
+        key: 'sheetHold',
+        label: 'Hold',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Lying on a floor at the bottom, hung from a corner at the top.',
+      },
+      {
+        key: 'sheetShake',
+        label: 'Shake',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How hard the board’s own sound shakes the sheet, so it hums along.',
+      },
+      {
+        key: 'sheetRattle',
+        label: 'Rattle',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much a loud sheet buzzes against what it lies on.',
+      },
+      {
+        key: 'sheetMute',
+        label: 'Bypass',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['on', 'bypassed'],
+        help: 'Takes Sheet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. A roll leaves it alone.',
+      },
+      {
+        key: 'sheetMix',
         label: 'Mix',
         role: 'mix',
         min: 0,

@@ -790,6 +790,16 @@ export const PARAM_DEFS = [
   ['rackMix', 'slew'],
   ['rackMute', 'ramp'],
 
+  ['sheetStrikes', 'slew'],
+  ['sheetStruckBy', 'step'],
+  ['sheetHard', 'slew'],
+  ['sheetSize', 'slew'],
+  ['sheetHold', 'slew'],
+  ['sheetShake', 'slew'],
+  ['sheetRattle', 'slew'],
+  ['sheetMix', 'slew'],
+  ['sheetMute', 'ramp'],
+
   ['stompCircuit', 'step'],
   ['stompDrive', 'ramp'],
   ['stompTone', 'slew'],

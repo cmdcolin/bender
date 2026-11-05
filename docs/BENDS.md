@@ -1042,6 +1042,22 @@ filters either side of the converters.
   word length and the knives keep working on what it holds.
 - The patch bay's **rack clock** and **rack decay** lanes ride Clock and Decay.
 
+## The sheet
+
+The Sheet bend is a 1.2 by 0.9 m steel sheet with two contact mics on it, one
+per side. 128 of its modes ring: the lowest 56 as the plate has them, the rest
+spread up to 12 kHz. Its decays were matched to contact-mic recordings
+(`agent-docs/ideas/waiting-on-a-call/metal-sheet-source.md`).
+
+- **Strikes**, **Struck by** and **Hardness:** random hits, a kit voice or a
+  key, from a soft mallet to a pipe. A hit lands at a random spot and sometimes
+  bounces.
+- **Shake:** the board's own sound drives the sheet, so it hums along.
+- **Rattle:** a loud sheet buzzes against the floor, in sparse clicks.
+- **Size** scales every mode. **Hold** runs from lying on a floor, where the
+  highs die in tens of milliseconds, to hung from a corner.
+- A loud sheet rings slightly sharp and settles as it decays.
+
 ## The clipper's amp
 
 The Clipper's **the amp** fold rebuilds it as the toy's own LM386 on one of the

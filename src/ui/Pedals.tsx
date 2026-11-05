@@ -96,6 +96,7 @@ const BY_SOUND: { section: string; kinds: Record<string, string> }[] = [
       'Freq shifter': 'frequency shifter',
       'Ring mod': 'ring modulator',
       Comb: 'comb filter',
+      Sheet: 'struck metal',
       'Screech filter': 'resonant filter',
       'Glitch buffer': 'stutter',
     },

@@ -20,6 +20,7 @@ import { RackVerb } from './stages/rackVerb.ts'
 import { RingMod } from './stages/ringmod.ts'
 import { Sampler } from './stages/sampler.ts'
 import { Screech } from './stages/screech.ts'
+import { Sheet } from './stages/sheet.ts'
 import { Shifter } from './stages/shifter.ts'
 import { SpringVerb } from './stages/springVerb.ts'
 import { StepFaults } from './stages/stepFaults.ts'
@@ -103,7 +104,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     sampler,
   ]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
-  // 6 filt, 7 shift, 8 oct, 9 codec, 10 rack verb — six slots for ten bends, so you pick.
+  // 6 filt, 7 shift, 8 oct, 9 codec, 10 rack verb, 11 sheet — six slots for eleven bends, so you pick.
   // The codec seeds off the build's seed rather than drawing one.
   chain.bendById = [
     undefined,
@@ -117,6 +118,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Octave(sr),
     new Codec(sr, seed ^ 0xc0dec),
     new RackVerb(sr, seed ^ 0x5eb),
+    new Sheet(sr, seed ^ 0x5ee7),
   ]
   chain.pedals = [
     new Stompbox(sr),

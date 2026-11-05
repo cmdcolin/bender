@@ -82,6 +82,7 @@ const BEND_BYPASS_IDX = [
   IDX.octMute,
   IDX.codecMute,
   IDX.rackMute,
+  IDX.sheetMute,
 ]
 
 // Where the brightness bus sits at zero: a programme-like split of high against
