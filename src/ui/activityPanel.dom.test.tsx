@@ -57,3 +57,12 @@ test('folding keeps the headline, and closing hides the panel', () => {
   })
   expect(panel()).toBeNull()
 })
+
+test('a set flashes the control it bent and draws it a lane', () => {
+  render(<ActivityPanel />)
+  act(() => {
+    bender.set('chipStarve', 0.5)
+  })
+  expect(panel()?.querySelector('[role="img"]')).not.toBeNull()
+  expect(document.body.textContent).toMatch(/Starve.*0\.50/)
+})

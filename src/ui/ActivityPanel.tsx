@@ -2,6 +2,8 @@ import { useState } from 'react'
 
 import { activity } from './activity.ts'
 import styles from './ActivityPanel.module.css'
+import { ActivityTrace } from './ActivityTrace.tsx'
+import { BendFlashes } from './BendFlashes.tsx'
 import { useStoreValue } from './ControlsContext.ts'
 import { Tip } from './Tip.tsx'
 
@@ -22,7 +24,7 @@ export function ActivityPanel() {
           text={
             folded
               ? 'Shows the calls the script made, newest first.'
-              : 'Folds the calls away and keeps the headline.'
+              : 'Folds the calls away and keeps the headline and the trace.'
           }
         >
           <button
@@ -44,6 +46,8 @@ export function ActivityPanel() {
           </button>
         </Tip>
       </div>
+      <ActivityTrace />
+      <BendFlashes />
       {!folded && (
         <ol className={styles.lines}>
           {lines.map(line => (

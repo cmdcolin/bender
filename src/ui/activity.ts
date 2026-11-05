@@ -1,4 +1,7 @@
+import { isControlKey, type ControlKey } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
+import { createTrace, laneKeys } from './trace.ts'
 
 import type { RawBenderApi } from './agentApi.ts'
 
@@ -6,11 +9,17 @@ export const ACTIVITY_LINES = 40
 const TEXT_CHARS = 32
 const BODY_CHARS = 100
 
+export interface Bend {
+  key: ControlKey
+  value: string
+}
+
 export interface ActivityLine {
   id: number
   at: number
   text: string
   said: boolean
+  bends: readonly Bend[]
 }
 
 export interface Activity {
@@ -20,19 +29,37 @@ export interface Activity {
 
 export const activity = createStore<Activity>({ headline: '', lines: [] })
 
+export const trace = createTrace(engine.controls.get())
+
+engine.controls.subscribe(() =>
+  trace.controls(engine.controls.get(), Date.now()),
+)
+
+engine.meter.subscribe(() => {
+  if (activity.get().lines.length > 0) {
+    const at = Date.now()
+    trace.meter(engine.meter.get(), at)
+    trace.prune(at)
+  }
+})
+
+activity.subscribe(() =>
+  trace.follow(laneKeys(activity.get().lines), Date.now()),
+)
+
 let nextId = 0
 
 const short = (text: string, chars = TEXT_CHARS) =>
   text.length > chars ? `${text.slice(0, chars - 1)}…` : text
 
-function note(text: string, said = false) {
+function note(text: string, said = false, bends: readonly Bend[] = []) {
   const { headline, lines } = activity.get()
   activity.set({
     headline,
-    lines: [{ id: nextId++, at: Date.now(), text, said }, ...lines].slice(
-      0,
-      ACTIVITY_LINES,
-    ),
+    lines: [
+      { id: nextId++, at: Date.now(), text, said, bends },
+      ...lines,
+    ].slice(0, ACTIVITY_LINES),
   })
 }
 
@@ -49,12 +76,16 @@ const pairs = (entries: [string, unknown][]) =>
 
 function after<A extends unknown[], R>(
   run: (...args: A) => R,
-  line: (result: R, ...args: NoInfer<A>) => string | undefined,
+  line: (
+    result: R,
+    ...args: NoInfer<A>
+  ) => string | { text: string; bends: readonly Bend[] } | undefined,
 ) {
   return (...args: A) => {
     const result = run(...args)
-    const text = line(result, ...args)
-    if (text !== undefined) note(text)
+    const said = line(result, ...args)
+    if (typeof said === 'string') note(said)
+    else if (said) note(said.text, false, said.bends)
     return result
   }
 }
@@ -74,7 +105,12 @@ export function recorded(api: RawBenderApi) {
       const entries = Object.entries(applied)
       return entries.length === 0
         ? undefined
-        : `set ${pairs(entries)}${glide(rest.at(typeof changes === 'string' ? 1 : 0))}`
+        : {
+            text: `set ${pairs(entries)}${glide(rest.at(typeof changes === 'string' ? 1 : 0))}`,
+            bends: entries.flatMap(([key, value]) =>
+              isControlKey(key) ? [{ key, value }] : [],
+            ),
+          }
     }),
 
     load: after(
