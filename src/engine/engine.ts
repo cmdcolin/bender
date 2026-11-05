@@ -2125,6 +2125,10 @@ export class Engine {
     }
   }
 
+  struckHit(target: 'sheet' | 'bottle', x: number, y: number, gain = 1) {
+    this.post({ kind: 'struckHit', target, x, y, gain })
+  }
+
   // A hit on the kit that no step named: a pad on a controller, or the row's own
   // name on the grid, played by hand. Neither sequencer need be running — the
   // kit answers a finger the way it answers the mic — but the kit does have to
@@ -2133,10 +2137,6 @@ export class Engine {
   //
   // A hit recorded late in a step goes to the next one, which the kit has yet
   // to play, so the kit is told to leave it out once rather than play it twice.
-  struckHit(target: 'sheet' | 'bottle', x: number, y: number, gain = 1) {
-    this.post({ kind: 'struckHit', target, x, y, gain })
-  }
-
   drumHit(bits: number, gain = 1) {
     if (bits === 0) return
     if (!this.drumRecord.get() || !this.drumsPlaying.get()) {
