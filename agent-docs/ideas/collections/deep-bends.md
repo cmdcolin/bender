@@ -3,7 +3,7 @@ name: deep-bends
 description:
   Ranked rebuilds of the bend slots as circuits on the board's supply, heat and
   buses — crusher as ADC into R-2R (built), clipper as the toy's LM386 (built),
-  comb as a BBD (built), glitch as a Discman, shifter as a Bode.
+  comb as a BBD (built), shifter as a Bode (built), glitch as a Discman.
 ---
 
 # Deep bends
@@ -14,7 +14,7 @@ crusher, the bend slots read only `ctx.mod`. Each candidate below rebuilds one
 slot as the circuit it imitates, so the board's modelling reaches it. Stock
 stays bit-identical: every new control rests off.
 
-**Built:** items 1–3; items 4–6 are candidates.
+**Built:** items 1, 2, 3 and 5; items 4 and 6 are candidates.
 
 ## 1. Crusher → ADC, bus, R-2R DAC (built)
 
@@ -147,10 +147,52 @@ from silence.
 - A `Bus` fault on the anti-skip RAM.
 - An mp3-decoder mode: faulted MDCT bins, dropped frames repeating, birdies.
 
-## 5. Shifter → Bode shifter
+## 5. Shifter → Bode shifter (built)
 
-- Allpass pairs drift with heat, so the unwanted sideband leaks back and beats.
-- Quadrature oscillator on the rail.
+Two allpass pairs, a quadrature oscillator, both sideband outputs and an input
+amp where the feedback re-enters (`src/dsp/stages/shifter.ts`). Survey on the
+`pnpm faults` board with the shifter in slot 1, fully wet at 200 Hz, against the
+stock shifter. Change is the rms difference over stock's rms. Motion is the
+p10–p90 spread of that difference over 100 ms frames, so a fault that comes and
+goes reads wide and a static one narrow. Leak is the turned-away sideband
+against the kept one on a 500 Hz sine shifted 300 Hz.
+
+| rank | control                | setting        | change | centroid | flat | motion | leak               |
+| ---- | ---------------------- | -------------- | ------ | -------- | ---- | ------ | ------------------ |
+|      | (stock)                |                | —      | 1909 Hz  | 0.08 | —      | −74 dB             |
+| 1    | Rail                   | 1, starve 0.35 | 1.67   | 2449 Hz  | 0.36 | 1.1 dB | kept side gone     |
+|      | (same, toy lead R 0.7) | 1              | 1.67   | 2583 Hz  | 0.38 | 0.7 dB |                    |
+|      | (full rail)            | 1              | 0.00   |          |      |        |                    |
+| 2    | Kit knock              | 1              | 1.15   | 1822 Hz  | 0.12 | 4.4 dB | +10 → −12 dB a hit |
+| 3    | Drift, self-heating    | 1              | 0.92   | 1826 Hz  | 0.10 | 4.0 dB | +7 loud, −5 quiet  |
+|      | (with board heat 1)    | 1              | 1.02   | 1734 Hz  | 0.11 | 5.0 dB |                    |
+| 4    | Outputs split (right)  | up L, down R   | 1.41   | 1666 Hz  | 0.07 | 0.2 dB | —                  |
+| 5    | Loop clip              | 1, fb 0.9      | 0.91   | 3163 Hz  | 0.42 | 3.2 dB | harmonic −16 dB    |
+|      | (stock, fb 0.9)        |                | 1.33   | 2668 Hz  | 0.26 |        |                    |
+| 6    | Carrier leak           | 1              | 1.01   | 702 Hz   | 0.02 | 6.6 dB | carrier −1.4 dB    |
+| 7    | Quadrature mistrim     | 1              | 0.99   | 1858 Hz  | 0.10 | 0.2 dB | 0 dB (0.3: −13 dB) |
+
+All seven are built. The stock rows for Rail are starved the same way. Rail
+ranks first on change and flatness. Kit knock and Drift rank over the louder
+split because they drift and recover with the music. The split and the clip are
+the wildest of the static ones.
+
+- Calls made toward the wilder sound: the parts heat with the programme's power
+  (a quarter-second lag), not only with board heat, which moves over minutes and
+  was inaudible within a bar; chain A's parts all run low and chain B's all
+  high, so a walk pulls the chains apart instead of averaging out, and past 0.8
+  bands flip to the other direction instead of stopping at a ring mod; a knock
+  can throw the oscillator a full half turn, so a hit flips the shift before it
+  swings back through the ring-mod clang; the rail oscillator runs through zero
+  into reverse rather than stalling, and its integrators clip at the rail, so a
+  sag squares the carrier up as well as slowing it; the split keeps each side's
+  own feedback, so the left climbs while the right falls; the loop amp clips
+  lopsided, so its offset rides the multiplier as the carrier on loud notes.
+- Rail and Carrier leak were first left out on `agent-docs/reference/taste.md`'s
+  dislikes (supply bends, pitch movement, a drone). The owner ruled that list is
+  for making songs, not for choosing bends, so both went in.
+- With rms instead of power driving the heat, the board pinned the parts hot and
+  the leak sat still (motion 1.9 dB against 4.0).
 
 ## 6. Systemic
 
