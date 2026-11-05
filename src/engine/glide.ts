@@ -13,13 +13,21 @@
 // Pure and frame-free on purpose: the engine owns the clock, this owns the
 // answer to "what does the board look like a third of the way along".
 
-import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls.ts'
+import {
+  CONTROL_KEYS,
+  readInOrder,
+  type ControlKey,
+  type Controls,
+} from '../controls.ts'
 import { CUT_KEYS, HOLD_KEYS } from '../ui/controls/index.ts'
 
 // Eased, not linear. A linear morph lurches into motion and stops dead, which
 // reads as two cuts with a slide between them; smoothstep leaves and arrives at
 // rest, so the whole thing sounds like one movement.
 const ease = (t: number): number => t * t * (3 - 2 * t)
+
+const fromValues: number[] = []
+const toValues: number[] = []
 
 export class Glide {
   // The keys that actually differ, split by how they travel. Worked out once: a
@@ -40,8 +48,12 @@ export class Glide {
   ) {
     this.from = from
     this.to = to
+    readInOrder(from, CONTROL_KEYS, fromValues)
+    readInOrder(to, CONTROL_KEYS, toValues)
     const moved = CONTROL_KEYS.filter(
-      k => (forceKeys.has(k) || !HOLD_KEYS.has(k)) && from[k] !== to[k],
+      (k, i) =>
+        fromValues[i] !== toValues[i] &&
+        (forceKeys.has(k) || !HOLD_KEYS.has(k)),
     )
     this.travel = moved.filter(k => !CUT_KEYS.has(k))
     this.switching = moved.filter(k => CUT_KEYS.has(k))

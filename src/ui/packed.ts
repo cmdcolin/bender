@@ -1,7 +1,9 @@
 import { fromBase64Url, toBase64Url } from 'skillet-shared/base64url'
 
 import {
+  CONTROL_KEYS,
   DEFAULT_CONTROLS,
+  readInOrder,
   type ControlKey,
   type Controls,
 } from '../controls.ts'
@@ -1023,11 +1025,15 @@ export const RENAMED = new Map<
   { key: ControlKey; step: number; value: (old: number) => number }
 >([['revDryCut', { key: 'revDry', step: 0.01, value: v => 1 - v }]])
 
-const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))
 const TUNE = new Set<ControlKey>([...TUNE_ALL_STEP_KEYS, ...MONO_SEQ_STEP_KEYS])
 
 const isLive = (key: ControlKey | Retired | undefined): key is ControlKey =>
   key !== undefined && !key.startsWith('gone:')
+
+const LIVE_SLOTS = URL_KEY_ORDER.flatMap((key, at) =>
+  isLive(key) ? [{ key, at, slot: CONTROL_KEYS.indexOf(key) }] : [],
+)
+const STOCK = readInOrder(DEFAULT_CONTROLS, CONTROL_KEYS, [])
 
 // Every control as a whole number of its own steps, counted from zero — and the
 // zero is the point. Counting from the control's own min is a step cheaper and
@@ -1085,24 +1091,31 @@ function putVarint(out: number[], n: number) {
   out.push(n)
 }
 
+const boardValues: number[] = []
+
 /** A board as bytes: every control off stock, by position in URL_KEY_ORDER. */
 export function packControls(
   c: Controls,
   skip: (key: ControlKey) => boolean,
 ): string {
+  readInOrder(c, CONTROL_KEYS, boardValues)
   const bytes: number[] = []
   let prev = -1
-  for (const key of URL_KEY_ORDER) {
-    if (!isLive(key) || skip(key)) continue
-    const v = c[key]
-    if (v === DEFAULT_CONTROLS[key] || !Number.isFinite(v)) continue
-    const i = INDEX.get(key) ?? 0
-    // The gap since the last control written rather than the index itself:
-    // what a board holds arrives in runs — sixteen steps of a melody are
-    // sixteen ones — and a run costs one byte a control instead of two.
-    putVarint(bytes, i - prev - 1)
-    prev = i
-    putVarint(bytes, zigzag(toInt(key, v)))
+  for (const { key, at, slot } of LIVE_SLOTS) {
+    const v = boardValues[slot]
+    if (
+      v !== undefined &&
+      v !== STOCK[slot] &&
+      Number.isFinite(v) &&
+      !skip(key)
+    ) {
+      // The gap since the last control written rather than the index itself:
+      // what a board holds arrives in runs — sixteen steps of a melody are
+      // sixteen ones — and a run costs one byte a control instead of two.
+      putVarint(bytes, at - prev - 1)
+      prev = at
+      putVarint(bytes, zigzag(toInt(key, v)))
+    }
   }
   return toBase64Url(bytes)
 }

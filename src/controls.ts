@@ -1013,5 +1013,35 @@ export const CONTROL_KEYS = Object.keys(DEFAULT_CONTROLS) as ControlKey[]
 export const isControlKey = (key: string): key is ControlKey =>
   Object.hasOwn(DEFAULT_CONTROLS, key)
 
-export const sameControls = (a: Controls, b: Controls) =>
-  CONTROL_KEYS.every(k => a[k] === b[k])
+// Hundreds of reads by computed name overflow V8's lookup caches; a for-in walk
+// reads each value straight off the object's layout. The computed reads remain
+// for a board whose keys are not in `keys` order.
+export function readInOrder<K extends string, V>(
+  values: Readonly<Record<K, V>>,
+  keys: readonly K[],
+  out: V[],
+) {
+  let i = 0
+  let ordered = true
+  for (const k in values) {
+    if (k === keys[i]) out[i++] = values[k]
+    else {
+      ordered = false
+      break
+    }
+  }
+  if (!ordered || i !== keys.length)
+    keys.forEach((k, j) => {
+      out[j] = values[k]
+    })
+  return out
+}
+
+const sameLeft: number[] = []
+const sameRight: number[] = []
+
+export const sameControls = (a: Controls, b: Controls) => {
+  readInOrder(a, CONTROL_KEYS, sameLeft)
+  readInOrder(b, CONTROL_KEYS, sameRight)
+  return sameLeft.every((v, i) => v === sameRight[i])
+}

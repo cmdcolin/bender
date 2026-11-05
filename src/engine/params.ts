@@ -2,7 +2,7 @@
 // layout of the packed Float32Array. Shared by both sides; keep dependency-free
 // beyond controls.ts (pure data).
 
-import type { ControlKey, Controls } from '../controls.ts'
+import { readInOrder, type ControlKey, type Controls } from '../controls.ts'
 
 // slew: one-pole toward target (~10 ms) — knob moves smear musically.
 // ramp: one-pole toward target (~3 ms) — gains where zipper is audible. The
@@ -1047,6 +1047,8 @@ export const N_TAPS = MAX_SOURCES + 2
 
 const PARAM_KEYS: readonly ParamName[] = PARAM_DEFS.map(([n]) => n)
 
+const packed: number[] = []
+
 // Fills `out` when given one. The engine packs a board per animation frame and
 // per frame of a morph, and postMessage serializes on the thread that calls it,
 // so the one buffer it hands over is free again the moment the post returns.
@@ -1054,9 +1056,17 @@ export function packParams(
   values: Controls,
   out = new Float32Array(N_PARAMS),
 ): Float32Array {
-  for (let i = 0; i < N_PARAMS; i++) out[i] = values[PARAM_KEYS[i]!]
+  out.set(readInOrder(values, PARAM_KEYS, packed))
   return out
 }
 
-export const paramMask = (patch: Partial<Controls>) =>
-  Uint8Array.from(PARAM_KEYS, key => (patch[key] === undefined ? 0 : 1))
+const PARAM_INDEX = new Map<string, number>(PARAM_KEYS.map((k, i) => [k, i]))
+
+export function paramMask(patch: Partial<Controls>) {
+  const mask = new Uint8Array(N_PARAMS)
+  for (const [key, value] of Object.entries(patch)) {
+    const i = PARAM_INDEX.get(key)
+    if (i !== undefined && value !== undefined) mask[i] = 1
+  }
+  return mask
+}
