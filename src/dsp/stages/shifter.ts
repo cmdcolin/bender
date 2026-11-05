@@ -237,8 +237,8 @@ export class Shifter implements Stage {
         msL += io.l[i]! * io.l[i]!
         msR += io.r[i]! * io.r[i]!
       }
-      pairL.warm += (msL / n - pairL.warm) * settle
-      pairR.warm += (msR / n - pairR.warm) * settle
+      pairL.warm = flushDenormal(pairL.warm + (msL / n - pairL.warm) * settle)
+      pairR.warm = flushDenormal(pairR.warm + (msR / n - pairR.warm) * settle)
       pairL.walk(drift, ctx.heat)
       pairR.walk(drift, ctx.heat)
       hL.coef = pairL.coef
