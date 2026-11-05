@@ -75,6 +75,7 @@ Then ask Claude Code to open the public URL, or
 | `bender.load(name, seconds?)`          | loads a preset                                                                                                                       |
 | `bender.reset(seconds?)`               | restores the defaults                                                                                                                |
 | `bender.undo()`, `bender.redo()`       | steps through the history, which gains one step per call that changes the board                                                      |
+| `bender.say(text)`                     | heads the activity panel, which lists each call that changes the board, with its time, once a script has made one                    |
 | `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`                                                                |
 | `bender.drums(rows)`                   | writes drum rows from step text, such as `{ kick: 'x(3,8)', hat: 'x.[xxx].' }`, and the ratchet, nudge, event and bar condition rows |
 | `bender.line(text, flags?)`            | writes the bassline memory, which Growler plays on the kit's sixteenths, with `accent` and `slide` rows such as `'..x.'`             |

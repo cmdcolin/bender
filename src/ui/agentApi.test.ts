@@ -5,6 +5,7 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
 import { HOLD, REST, TUNE_LANE_KEYS } from '../tune.ts'
+import { activity, ACTIVITY_LINES } from './activity.ts'
 import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi.ts'
 import { boardFromUrl } from './share.ts'
 import './testDom.ts'
@@ -431,4 +432,80 @@ test('queue lands at once while the kit is stopped, and unqueue drops what waits
     expect((await dropped).landed).toBe('dropped by unqueue')
     expect(engine.controls.get().dlyFb).toBe(0.9)
   })
+})
+
+const recent = (count: number) =>
+  activity
+    .get()
+    .lines.slice(0, count)
+    .map(line => line.text)
+    .toReversed()
+
+test('each call that changes the board records a line with its display values', () => {
+  bender.set({ chipStarve: 0.2, tapeSpeed: '1⅞' }, 6)
+  bender.set('drumBpm', 130)
+  bender.load('dying toy', 2)
+  bender.reset()
+  bender.undo()
+  bender.redo()
+  bender.tune(['C4 E4 G4 ~ . C5 D#5 . G4 . . C5 E5 G5', 'C3'])
+  bender.drums({ kick: 'x...x...', snare: '', bpm: 96 })
+  bender.line('. . C5 ~ D#5', { on: 'Glint', accent: 'x...' })
+  bender.play('drums')
+  bender.stop()
+  expect(recent(11)).toEqual([
+    'set chipStarve 0.20, tapeSpeed 1⅞ ips  (glide 6s)',
+    'set drumBpm 130 bpm',
+    'load dying toy  (glide 2s)',
+    'reset',
+    'undo',
+    'redo',
+    'tune C4 E4 G4 ~ . C5 D#5 . G4 . . C5…',
+    'drums kick x...x..., snare —, bpm 96',
+    'line . . C5 ~ D#5, on Glint, accent x...',
+    'play drums',
+    'stop',
+  ])
+})
+
+test('reading the board, and calls that fail or change nothing, record nothing', () => {
+  bender.set('chipStarve', 0.3)
+  const before = activity.get().lines
+  bender.summary()
+  bender.board()
+  bender.find('delay')
+  bender.describe('chipStarve')
+  bender.guide('read')
+  bender.presets()
+  bender.link()
+  bender.set({ nothing: 1 })
+  expect(() => bender.tune('Q9')).toThrow()
+  expect(() => bender.load('nope')).toThrow()
+  expect(activity.get().lines).toBe(before)
+})
+
+test('say heads the record and marks its line', () => {
+  expect(bender.say('  breath in the lead ')).toBe('breath in the lead')
+  bender.set('chipStarve', 0.4)
+  expect(activity.get().headline).toBe('breath in the lead')
+  expect(activity.get().lines.slice(0, 2)).toMatchObject([
+    { text: 'set chipStarve 0.40', said: false },
+    { text: 'breath in the lead', said: true },
+  ])
+})
+
+test('the record keeps only its newest lines', () => {
+  for (let i = 0; i < ACTIVITY_LINES + 5; i++) bender.set('drumBpm', 100 + i)
+  expect(activity.get().lines).toHaveLength(ACTIVITY_LINES)
+  expect(activity.get().lines[0]!.text).toBe(
+    `set drumBpm ${100 + ACTIVITY_LINES + 4} bpm`,
+  )
+})
+
+test('queue records a line above the writes it holds', async () => {
+  await bender.queue(() => bender.set({ dlyFb: 0.4 }), 4)
+  expect(recent(2)).toEqual([
+    'set dlyFb 0.40',
+    'queue the writes below for the next bar of 4',
+  ])
 })

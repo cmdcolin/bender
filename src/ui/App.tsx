@@ -15,6 +15,7 @@ import { pocketUrl, siteRoot } from '../site/paths.ts'
 import { versionLabel } from '../version.ts'
 import { AboutDialog } from './AboutDialog.tsx'
 import { Account } from './Account.tsx'
+import { ActivityPanel } from './ActivityPanel.tsx'
 import styles from './App.module.css'
 import { linkArc } from './arcLink.ts'
 import { BodyPad } from './BodyPad.tsx'
@@ -800,6 +801,7 @@ export function App(props: { openedFromLink?: boolean }) {
           </aside>
         </div>
       </div>
+      <ActivityPanel />
     </div>
   )
 }
