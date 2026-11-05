@@ -43,7 +43,7 @@ interface Heard {
   reboots?: number
   sources?: string[]
   drumHits?: string[]
-  toyNotes?: string[]
+  notes?: Record<string, string[]>
 }
 
 interface Position {
@@ -112,10 +112,10 @@ try {
   check(
     'listen hears the toy and the kit',
     clean.peak !== 'silent' &&
-      Boolean(clean.sources?.includes('toy')) &&
-      Boolean(clean.sources?.includes('drums')) &&
+      Boolean(clean.sources?.includes('Plinky')) &&
+      Boolean(clean.sources?.includes('Clatter')) &&
       Boolean(clean.drumHits?.includes('kick')) &&
-      Boolean(clean.toyNotes?.includes('E4')),
+      Boolean(clean.notes?.Plinky?.includes('E4')),
     clean,
   )
 
@@ -151,8 +151,23 @@ try {
   const after = (await evaluate(page, 'bender.listen(1000)')) as Heard
   check(
     'the chord lane goes quiet within 1.5 s of stop at the new tune rate',
-    after.peak === 'silent' && after.toyNotes?.length === 0,
+    after.peak === 'silent' && after.notes?.Plinky === undefined,
     after,
+  )
+
+  const struck = (await evaluate(
+    page,
+    `(async () => {
+      bender.set({ sheetLevel: 0.8 })
+      const heard = bender.listen(800)
+      bender.hit('sheet', { x: 0.3, y: 0.2 })
+      return heard
+    })()`,
+  )) as Heard
+  check(
+    'hit rings the sheet',
+    Boolean(struck.sources?.includes('Sheet')),
+    struck,
   )
 
   await evaluate(page, 'bender.play()')

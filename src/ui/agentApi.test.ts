@@ -125,7 +125,7 @@ test('help and every guide topic fit in one browser tool result', () => {
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, line, clock, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, line, hit, clock, sound",
   )
 })
 
@@ -364,10 +364,33 @@ test('listen ignores the meter message that covers audio from before the call', 
     setTimeout(() => meter(0.01, [0.0005, 0]), 60)
     expect(await heard).toMatchObject({
       peak: '-26.0 dBFS',
-      sources: ['toy'],
+      sources: ['Plinky'],
       drumHits: [],
     })
   } finally {
+    engine.running.set(false)
+  }
+})
+
+test('listen names the notes of each machine it heard, Parlor included', async () => {
+  const taps = new Float32Array(16)
+  taps[3] = 0.5
+  engine.running.set(true)
+  try {
+    const heard = bender.listen(150)
+    setTimeout(() => engine.meter.set({ ...engine.meter.get() }), 20)
+    setTimeout(() => {
+      engine.pcmNotes.set(new Set([0, 4]))
+      engine.fmNotes.set(new Set([7]))
+      engine.meter.set({ ...engine.meter.get(), taps })
+    }, 40)
+    expect(await heard).toMatchObject({
+      sources: ['Parlor'],
+      notes: { Parlor: ['A3', 'C#4'] },
+    })
+  } finally {
+    engine.pcmNotes.set(new Set())
+    engine.fmNotes.set(new Set())
     engine.running.set(false)
   }
 })
@@ -398,6 +421,33 @@ async function onTheClock(run: (posted: ToWorklet[]) => Promise<void>) {
     atTick(0, 0)
   }
 }
+
+test('hit strikes the sheet, the bottle and kit voices, and warns at level 0', () => {
+  const posted: ToWorklet[] = []
+  Object.assign(engine, {
+    node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
+  })
+  engine.running.set(true)
+  try {
+    bender.set({ sheetLevel: 0, bottleLevel: 0.5, drumLevel: 0.7 })
+    expect(bender.hit(['sheet', 'Open Hat'], { x: 2, gain: 0.5 })).toEqual({
+      hit: ['sheet', 'openhat'],
+      warnings: ['sheetLevel is 0, so Sheet is silent'],
+    })
+    expect(bender.hit('bottle').warnings).toEqual([])
+    expect(posted).toEqual(
+      expect.arrayContaining([
+        { kind: 'struckHit', target: 'sheet', x: 1, y: 0.5, gain: 0.5 },
+        { kind: 'drumHit', bits: 1 << 6, gain: 0.5 },
+        { kind: 'struckHit', target: 'bottle', x: 0.5, y: 0.7, gain: 1 },
+      ]),
+    )
+    expect(() => bender.hit('gong')).toThrow(/sheet, bottle or a kit voice/)
+    expect(() => bender.queue(() => bender.hit('kick'))).toThrow(/not queued/)
+  } finally {
+    engine.running.set(false)
+  }
+})
 
 test('position reads bar, beat and step off the kit’s counter', () => {
   atTick(37)
@@ -559,6 +609,17 @@ test('the record keeps only its newest lines', () => {
   expect(activity.get().lines[0]!.text).toBe(
     `set drumBpm ${100 + ACTIVITY_LINES + 4} bpm`,
   )
+})
+
+test('a call repeated at once counts up on one line', () => {
+  bender.hit('sheet')
+  bender.hit('sheet')
+  bender.hit('sheet')
+  expect(activity.get().lines[0]).toMatchObject({
+    text: 'hit sheet',
+    times: 3,
+  })
+  expect(activity.get().lines[1]!.text).not.toBe('hit sheet')
 })
 
 test('queue records a line above the writes it holds', async () => {

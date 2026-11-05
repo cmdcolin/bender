@@ -74,7 +74,7 @@ function Lines({ lines }: { lines: readonly ActivityLine[] }) {
         >
           <span className={styles.at}>{clock(line.at)}</span>
           <span className={line.said ? styles.said : styles.text}>
-            {line.text}
+            {line.times > 1 ? `${line.text}  ×${line.times}` : line.text}
           </span>
         </li>
       ))}

@@ -1,9 +1,8 @@
-import { useState } from 'react'
-
-import { engine } from '../engine/engine.ts'
 import { Faceplate } from './Faceplate.tsx'
 import { faceSpot } from './faceSpot.ts'
 import styles from './SheetFace.module.css'
+import { StrikeRings } from './StrikeRings.tsx'
+import { strike } from './strikes.ts'
 
 import type { KeyboardEvent, PointerEvent } from 'react'
 
@@ -14,13 +13,17 @@ const PICKUPS = [
   [0.83 / 1.2, 0.64 / 0.9],
 ] as const
 
-interface Mark {
-  id: number
-  x: number
-  y: number
+function onPointerDown(e: PointerEvent<SVGSVGElement>) {
+  const { x, y } = faceSpot(e.currentTarget, e.clientX, e.clientY, W, H)
+  strike('sheet', x, y)
 }
 
-let nextMark = 0
+function onKeyDown(e: KeyboardEvent<SVGSVGElement>) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault()
+    strike('sheet')
+  }
+}
 
 export function SheetFace({
   seconds,
@@ -29,21 +32,6 @@ export function SheetFace({
   seconds?: number
   onClose?: () => void
 }) {
-  const [marks, setMarks] = useState<Mark[]>([])
-  const hit = (x: number, y: number) => {
-    engine.struckHit('sheet', x, y)
-    setMarks(m => [...m.slice(-5), { id: nextMark++, x, y }])
-  }
-  const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
-    const { x, y } = faceSpot(e.currentTarget, e.clientX, e.clientY, W, H)
-    hit(x, y)
-  }
-  const onKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      hit(0.5, 0.5)
-    }
-  }
   return (
     <Faceplate stage="Sheet" seconds={seconds} onClose={onClose}>
       <svg
@@ -73,18 +61,13 @@ export function SheetFace({
             r={2.4}
           />
         ))}
-        {marks.map(m => (
-          <circle
-            key={m.id}
-            className={styles.ring}
-            cx={m.x * W}
-            cy={m.y * H}
-            r={9}
-            onAnimationEnd={() =>
-              setMarks(all => all.filter(o => o.id !== m.id))
-            }
-          />
-        ))}
+        <StrikeRings
+          target="sheet"
+          width={W}
+          height={H}
+          r={9}
+          className={styles.ring}
+        />
       </svg>
     </Faceplate>
   )

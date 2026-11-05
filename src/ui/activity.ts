@@ -20,6 +20,7 @@ export interface ActivityLine {
   text: string
   said: boolean
   bends: readonly Bend[]
+  times: number
 }
 
 export interface Activity {
@@ -48,6 +49,7 @@ activity.subscribe(() =>
 )
 
 const FRESH_MS = 1000
+const REPEAT_MS = 3000
 
 /** Calls `fn` once for each line the activity gains from now on, oldest first,
     and for any line already there that is under a second old. */
@@ -69,14 +71,21 @@ let nextId = 0
 const short = (text: string, chars = TEXT_CHARS) =>
   text.length > chars ? `${text.slice(0, chars - 1)}…` : text
 
+// A call repeated within a few seconds counts up on its line rather than
+// pushing the rest of the record off the panel.
 function note(text: string, said = false, bends: readonly Bend[] = []) {
   const { headline, lines } = activity.get()
+  const at = Date.now()
+  const top = lines[0]
   activity.set({
     headline,
-    lines: [
-      { id: nextId++, at: Date.now(), text, said, bends },
-      ...lines,
-    ].slice(0, ACTIVITY_LINES),
+    lines:
+      top && !said && top.text === text && at - top.at < REPEAT_MS
+        ? [{ ...top, at, times: top.times + 1 }, ...lines.slice(1)]
+        : [{ id: nextId++, at, text, said, bends, times: 1 }, ...lines].slice(
+            0,
+            ACTIVITY_LINES,
+          ),
   })
 }
 
@@ -166,6 +175,12 @@ export function recorded(api: RawBenderApi) {
     ),
 
     stop: after(api.stop.bind(api), () => 'stop'),
+
+    hit: after(
+      api.hit.bind(api),
+      (_result, what, _at = {}) =>
+        `hit ${typeof what === 'string' ? what : what.join(', ')}`,
+    ),
 
     queue: after(
       api.queue.bind(api),

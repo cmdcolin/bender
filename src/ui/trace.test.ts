@@ -10,6 +10,7 @@ const line = (id: number, keys: string[]): ActivityLine => ({
   at: 0,
   text: '',
   said: false,
+  times: 1,
   bends: keys.filter(isControlKey).map(key => ({ key, value: '' })),
 })
 
