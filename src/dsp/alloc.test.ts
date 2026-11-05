@@ -522,6 +522,7 @@ test.runIf(process.env.BENDER_FULL)(
       expect(Math.round(mb), 'MB a second').toBeLessThan(GARBAGE_BUDGET_MB)
     }
   },
+  300_000,
 )
 
 // `pnpm garbage`: where the budget above goes, by the innermost dsp function on
