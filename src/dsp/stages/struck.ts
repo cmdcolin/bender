@@ -95,6 +95,7 @@ export class Struck implements Stage {
   private handY = 0
   private handGain = 0
   private hushed = true
+  private ringing = false
   private readonly sr: number
 
   constructor(label: 'sheet' | 'bottle', sr: number, seed: number, body: Body) {
@@ -160,15 +161,13 @@ export class Struck implements Stage {
     const hold = HOLD_RANGE ** Math.min(Math.max(p[k.hold]!, 0), 1)
     const shake = p[k.shake]! ** 2 * this.body.shakeGain
     const rattle = p[k.rattle]!
-    this.body.retune?.(p, this.pitch, this.ringBy)
-    this.tune(size, hold)
-
     const { struck, shaken, rattled } = this
     const over = Math.max(0, this.loud / this.body.loud - RATTLE_FLOOR)
     const fill = (RATTLE_FILL * rattle * over * over) / sr
     const empty = 1 / (RATTLE_EMPTY_S * sr)
     let anyStruck = false
     let anyRattle = false
+    let anyShaken = false
     if (this.handGain > 0) {
       this.land(this.handGain, pulse, this.handX, this.handY)
       this.handGain = 0
@@ -205,14 +204,22 @@ export class Struck implements Stage {
       shaken[i] = ctx.out[i]! * shake
       anyStruck ||= struck[i] !== 0
       anyRattle ||= rattled[i] !== 0
+      anyShaken ||= shaken[i] !== 0
     }
 
     const { wetL, wetR, lows } = this
     wetL.fill(0)
     wetR.fill(0)
     lows.fill(0)
-    for (let j = 0; j < this.modes; j += 4)
-      this.ring(j, n, anyStruck, shake !== 0, anyRattle)
+    // Nothing moving it and every mode settled to 0 leaves it silent, so a
+    // sheet that sits idle costs nothing but the strike roll.
+    if (anyStruck || anyShaken || anyRattle || this.ringing) {
+      this.body.retune?.(p, this.pitch, this.ringBy)
+      this.tune(size, hold)
+      this.ringing = false
+      for (let j = 0; j < this.modes; j += 4)
+        this.ring(j, n, anyStruck, anyShaken, anyRattle)
+    }
 
     const follow = 1 - Math.exp((-2 * Math.PI * FOLLOW_HZ) / sr)
     const gain = this.body.outGain * level
@@ -312,6 +319,7 @@ export class Struck implements Stage {
 
   private settle(j: number, y1: number, y2: number) {
     const quiet = Math.abs(y1) < 1e-15 && Math.abs(y2) < 1e-15
+    this.ringing ||= !quiet
     this.y1[j] = quiet ? 0 : y1
     this.y2[j] = quiet ? 0 : y2
   }
@@ -375,6 +383,7 @@ export class Struck implements Stage {
   private hush() {
     this.y1.fill(0)
     this.y2.fill(0)
+    this.ringing = false
     this.pulseLeft = 0
     this.bounceIn = 0
     this.loud = 0
