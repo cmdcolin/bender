@@ -1018,6 +1018,13 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumHissKick',
   'monoThump',
   'monoFold',
+  'combChip',
+  'combPump',
+  'combRail',
+  'combPluck',
+  'combWhistle',
+  'combSag',
+  'combPull',
 ]
 
 // Retired controls that old links still carry, each read into the control that

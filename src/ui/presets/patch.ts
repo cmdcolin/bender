@@ -192,6 +192,12 @@ const LANDINGS: Landing[] = [
     needs: c => c.crushDataFault === 0,
   }),
   at('crush ladder', ['crushMix'], { bend: 'crush' }),
+  at('comb pump', ['combMix', 'combChip'], { bend: 'comb' }),
+  at('comb rail', ['combMix', 'combChip'], { bend: 'comb' }),
+  at('comb pluck', ['combMix', 'combChip'], { bend: 'comb' }),
+  at('comb whistle', ['combMix', 'combChip'], { bend: 'comb' }),
+  at('comb sag', ['combMix', 'combChip', 'chipStarve'], { bend: 'comb' }),
+  at('comb pull', ['combMix', 'combChip'], { bend: 'comb' }),
   at('crush DAC ref', ['crushMix', 'crushRef'], { bend: 'crush' }),
   at('second cells starve', [], {
     oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'pcmLevel', 'monoLevel'],

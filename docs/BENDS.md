@@ -1061,6 +1061,29 @@ rests on the bench supply.
   shrinks. Its output follows the cone's acceleration, so a cone pinned at its
   stop goes silent, and each slam clicks and rattles.
 
+## The comb's bucket brigade
+
+The Comb's **Chip** switch rebuilds it as a bucket brigade behind a compander,
+on an RC clock. The clock is the pitch times the buckets: 1024, 256 or 64. Below
+about 18 kHz the clock is in earshot, so a short chip or a low note darkens the
+comb and folds its input around the clock. Every fault rests off.
+
+- **Kit pluck:** the kit's trigger line couples into the chip's input, so every
+  hit plucks the comb, with the kit's fader down too.
+- **Loop amp:** drives the loop's op-amp into lopsided rails. The ring buzzes
+  instead of decaying, and past halfway the coupling cap blocks, so it
+  motorboats: 60% of the take silent at full.
+- **Compander pump:** the compressor's detector slows, so a hit after a gap
+  blooms up to 9 dB over the comb's own peak and collapses.
+- **Clock whistle:** the clock bleeds onto the output, rung by the buckets.
+  Heard on 64 buckets below 280 Hz and on 256 below 70 Hz.
+- **Clock pull:** the comb's output drags its own clock, so the ring
+  frequency-modulates itself into noise; past unity feedback it goes chaotic.
+- **Clock on the rail:** the clock runs off the shared cells. A starve dives the
+  comb, and below the toy's dead voltage it freezes on its buckets.
+- The patch bay's **comb pluck**, **comb rail**, **comb pump**, **comb
+  whistle**, **comb pull** and **comb sag** lanes ride them.
+
 ## Effects and pedals
 
 - **Brake + supply drag:** the tape delay's capstan as a weighted motor. Echoes

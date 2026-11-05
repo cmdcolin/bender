@@ -2,6 +2,7 @@ import { DATA_LINES, DRUM_ROMS } from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
 import { DEST } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
+import { COMB_CHIP } from '../../dsp/stages/comb.ts'
 import {
   CRUSH_ADC,
   CRUSH_CLOCK,
@@ -2981,6 +2982,90 @@ export const PRESETS: PresetDef[] = [
       cell2Battery: 0.5,
       distSpeaker: 0.7,
       distMix: 0.9,
+    },
+  },
+  {
+    name: 'the kit plucks the comb',
+    blurb:
+      'The kit’s fader is down, but its trigger line runs past the bucket brigade’s input, so every hit of a broken beat plucks a low comb that rings under the toy',
+    patch: {
+      ...romMasks('breaks'),
+      chipLevel: 0.3,
+      drumLevel: 0,
+      combChip: COMB_CHIP.indexOf('1024 buckets'),
+      combPluck: 1,
+      combHz: 82.4,
+      combFb: 0.97,
+      combDampHz: 4000,
+      combMix: 0.9,
+    },
+  },
+  {
+    name: 'bucket brigade motorboat',
+    blurb:
+      'The comb’s loop amp is driven into lopsided rails until its coupling cap blocks, so the ring buzzes, chokes dead, rebuilds out of the toy and chokes again',
+    patch: {
+      chipLevel: 0.8,
+      combChip: COMB_CHIP.indexOf('256 buckets'),
+      combRail: 0.6,
+      combHz: 110,
+      combFb: 1,
+      combMix: 1,
+    },
+  },
+  {
+    name: 'compander breathing',
+    blurb:
+      'The comb’s compressor has a cap far too big on its rectifier, so each hit after a gap blooms nine decibels over the comb and collapses as the compressor catches up',
+    patch: {
+      ...romMasks('one drop'),
+      chipLevel: 0,
+      drumLevel: 0.8,
+      combChip: COMB_CHIP.indexOf('1024 buckets'),
+      combPump: 1,
+      combHz: 73.4,
+      combFb: 0.9,
+      combMix: 1,
+    },
+  },
+  {
+    name: 'clock in earshot',
+    blurb:
+      'A 64-bucket chip tuned to 55 Hz clocks at 3.5 kHz, so the comb is dark and folded and its clock whistles on top, rung by whatever is in the buckets',
+    patch: {
+      chipLevel: 0.8,
+      combChip: COMB_CHIP.indexOf('64 buckets'),
+      combWhistle: 1,
+      combHz: 55,
+      combFb: 0.85,
+      combMix: 0.9,
+    },
+  },
+  {
+    name: 'the comb drags its own clock',
+    blurb:
+      'The comb’s output leaks onto its own RC clock, so every swing speeds or slows the pitch it is ringing at, and fed past unity the string snarls into chaos',
+    patch: {
+      chipLevel: 0.8,
+      combChip: COMB_CHIP.indexOf('1024 buckets'),
+      combPull: 1,
+      combHz: 110,
+      combFb: 1.1,
+      combMix: 0.9,
+    },
+  },
+  {
+    name: 'comb on dying cells',
+    blurb:
+      'The bucket brigade’s clock runs off the starved toy’s cells, so the comb dives with every note the toy pulls and freezes on its buckets while the toy reboots',
+    patch: {
+      chipLevel: 0.8,
+      chipStarve: 0.4,
+      combChip: COMB_CHIP.indexOf('256 buckets'),
+      combSag: 1,
+      combHz: 220,
+      combFb: 1.05,
+      combMix: 0.9,
     },
   },
 ]

@@ -738,6 +738,13 @@ export const DEFAULT_CONTROLS = {
   combDampHz: 6000,
   combMix: 0,
   combMute: 0,
+  combChip: 0,
+  combPump: 0,
+  combRail: 0,
+  combPluck: 0,
+  combWhistle: 0,
+  combSag: 0,
+  combPull: 0,
 
   glitchProb: 0.3,
   glitchSliceMs: 120,

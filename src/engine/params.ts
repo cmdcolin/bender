@@ -712,6 +712,13 @@ export const PARAM_DEFS = [
   ['combDampHz', 'slew'],
   ['combMix', 'slew'],
   ['combMute', 'ramp'],
+  ['combChip', 'step'],
+  ['combPump', 'slew'],
+  ['combRail', 'slew'],
+  ['combPluck', 'slew'],
+  ['combWhistle', 'slew'],
+  ['combSag', 'slew'],
+  ['combPull', 'slew'],
 
   ['glitchProb', 'step'],
   ['glitchSliceMs', 'step'],

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-642 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 165
+649 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 171
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 163 destinations, among
+- **A patch bay that modulates itself.** Four wires, 169 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 165 presets, and a roll button on every heading as well as
+- **Whole boards.** 171 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -967,15 +967,22 @@ fault on, and the rows under it show the controls it set:
 A tuned delay with feedback past unity — a pitch you can drive into oscillation.
 
 <details>
-<summary>5 controls</summary>
+<summary>12 controls</summary>
 
-| control  | range                 | what it does                                                                                                      |
-| -------- | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Pitch    | 20 Hz to 4 kHz        | The comb’s resonant pitch — it plays like a string                                                                |
-| Feedback | 0 to 2, normal 0 to 1 | Past 1.0 it self-oscillates, and the saturation limits the scream                                                 |
-| Damping  | 500 Hz to 15 kHz      | In-loop low-pass                                                                                                  |
-| Bypass   | on or bypassed        | Takes Comb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| Mix      | off to full           | Dry/wet                                                                                                           |
+| control           | range                                          | what it does                                                                                                                                                   |
+| ----------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pitch             | 20 Hz to 4 kHz                                 | The comb’s resonant pitch — it plays like a string                                                                                                             |
+| Feedback          | 0 to 2, normal 0 to 1                          | Past 1.0 it self-oscillates, and the saturation limits the scream                                                                                              |
+| Damping           | 500 Hz to 15 kHz                               | In-loop low-pass                                                                                                                                               |
+| Bypass            | on or bypassed                                 | Takes Comb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                              |
+| Mix               | off to full                                    | Dry/wet                                                                                                                                                        |
+| Chip              | Karplus, 1024 buckets, 256 buckets, 64 buckets | Karplus is a clean digital line                                                                                                                                |
+| Kit pluck         | off to full                                    | The kit’s trigger line runs past the chip’s input, and every hit couples in as a pulse, so the kit plays the comb like a string even with the kit’s fader down |
+| Loop amp          | off to full                                    | Gain into the op-amp that closes the loop, which squares off at lopsided rails                                                                                 |
+| Compander pump    | off to full                                    | A cap too big on the compressor’s rectifier, so it no longer agrees with the expander                                                                          |
+| Clock whistle     | off to full                                    | The clock bleeds onto the output pin and around the loop, rung by what is in the buckets                                                                       |
+| Clock pull        | off to full                                    | The comb’s output leaks onto the RC clock’s timing cap, so the clock runs fast on every upswing and slow on every downswing                                    |
+| Clock on the rail | off to full                                    | How much of the RC clock runs off the shared cells                                                                                                             |
 
 </details>
 
@@ -1365,7 +1372,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 163 of them, filt cut through chop width                                                                               | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 169 of them, filt cut through comb pull                                                                                | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -1676,7 +1683,7 @@ result:
 
 ### Presets
 
-165 presets. Each name is a link that opens the app with that board loaded, and
+171 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2157,6 +2164,29 @@ the board waits until you press play.
 - [**blown speaker on its own cells**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,cell2Battery:0.5,distMix:0.9,distSupply:1,distDraw:1,distSpeaker:0.7)
   — The amp runs on half-flat second cells and motorboats on its own while the
   toy plays steady, through a cone that slams its stops
+- [**the kit plucks the comb**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.3,drumLevel:0,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,combHz:82.4,combFb:0.97,combDampHz:4000,combMix:0.9,combChip:1,combPluck:1)
+  — The kit’s fader is down, but its trigger line runs past the bucket brigade’s
+  input, so every hit of a broken beat plucks a low comb that rings under the
+  toy
+- [**bucket brigade motorboat**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,combFb:1,combMix:1,combChip:2,combRail:0.6)
+  — The comb’s loop amp is driven into lopsided rails until its coupling cap
+  blocks, so the ring buzzes, chokes dead, rebuilds out of the toy and chokes
+  again
+- [**compander breathing**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumKick:128,drumSnare:128,drumHat:8738,drumAccent:128,combHz:73.4,combFb:0.9,combMix:1,combChip:1,combPump:1)
+  — The comb’s compressor has a cap far too big on its rectifier, so each hit
+  after a gap blooms nine decibels over the comb and collapses as the compressor
+  catches up
+- [**clock in earshot**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,combHz:55,combFb:0.85,combMix:0.9,combChip:3,combWhistle:1)
+  — A 64-bucket chip tuned to 55 Hz clocks at 3.5 kHz, so the comb is dark and
+  folded and its clock whistles on top, rung by whatever is in the buckets
+- [**the comb drags its own clock**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,combFb:1.1,combMix:0.9,combChip:1,combPull:1)
+  — The comb’s output leaks onto its own RC clock, so every swing speeds or
+  slows the pitch it is ringing at, and fed past unity the string snarls into
+  chaos
+- [**comb on dying cells**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipStarve:0.4,combHz:220,combFb:1.05,combMix:0.9,combChip:2,combSag:1)
+  — The bucket brigade’s clock runs off the starved toy’s cells, so the comb
+  dives with every note the toy pulls and freezes on its buckets while the toy
+  reboots
 
 ### Kit voices
 
