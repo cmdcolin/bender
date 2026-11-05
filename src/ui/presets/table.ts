@@ -1,6 +1,6 @@
 import { DATA_LINES, DRUM_ROMS } from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
-import { DEST } from '../../dsp/modbus.ts'
+import { DEST, LFO_SYNC_MODES } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
 import { COMB_CHIP } from '../../dsp/stages/comb.ts'
 import {
@@ -475,6 +475,45 @@ export const PRESETS: PresetDef[] = [
       fmLevel: 0.8,
       fmEffect: effect('applause'),
       fmAdder: 3,
+    },
+  },
+  {
+    name: 'dissolves every two bars',
+    blurb:
+      'A slow LFO works the cut on Glint’s exp table wire in and out, so the clarinet breaks into hiss and comes back clean every two bars',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.3,
+      drumBpm: 112,
+      ...romMasks('disco'),
+      fmLevel: 0.85,
+      fmVoice: voice('clarinet'),
+      fmExpLine: 10,
+      fmExpFault: FAULT.cut,
+      fmBusCut: 0.35,
+      modLfoShape: 0,
+      modLfoSync: LFO_SYNC_MODES.indexOf('two bars'),
+      mod0Src: 1,
+      mod0Dest: DEST.fmBusCut,
+      mod0Depth: 0.45,
+      revMix: 0.2,
+    },
+  },
+  {
+    name: 'the tune on the hi-hats',
+    blurb:
+      'Glint’s rhythm bank runs at full width with the allocator stuck on the hi-hat’s channel, so every note strikes the hat and snare at its own pitch and drags the cymbal’s metal along with it',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.3,
+      drumBpm: 132,
+      ...romMasks('disco'),
+      drumCym: 0b1010_1010_1010_1010,
+      drumHat: 0b0101_0101_0101_0101,
+      fmLevel: 0.85,
+      fmRhythm: 2,
+      fmStruck: ANY_CHOICE,
+      fmAlloc: 3,
     },
   },
   {
