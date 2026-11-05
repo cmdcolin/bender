@@ -2230,3 +2230,32 @@ test('pattern rot leaves out a kick that Wander has dropped', () => {
   expect(dropped).toBeGreaterThan(0)
   expect(kicks).toBe(0)
 })
+
+test('the loop leaves out a kick that Wander has dropped', () => {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    ...ROCK,
+    ...kitOnly,
+    drumBpm: 480,
+    drumWander: 1,
+    drumLoop: LOOP_XOR,
+  })
+  const io = makeIo()
+  const w = built.toyDrum.wander
+  let dropped = 0
+  let kicks = 0
+  for (let b = 0; b < (30 * SR) / BLOCK; b++) {
+    built.chain.process(io, p)
+    const fired = built.toyDrum.takeFired()
+    if (w.straying && !w.rows[0] && !w.ghosts[0] && !w.maybes[0]) {
+      if (w.wireLine < 0) {
+        dropped++
+        kicks += fired & 1
+      }
+    }
+  }
+  expect(dropped).toBeGreaterThan(0)
+  expect(kicks).toBe(0)
+})

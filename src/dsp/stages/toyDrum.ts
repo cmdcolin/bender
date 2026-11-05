@@ -1028,7 +1028,7 @@ export class ToyDrum implements Stage {
         const strayed = this.wander.straying
         const cells =
           this.loop > 0
-            ? this.loopCells[v]!
+            ? this.looped(p, v)
             : this.rot > 0
               ? this.rotted(p, v)
               : this.gridRow(p, v)
@@ -1174,29 +1174,31 @@ export class ToyDrum implements Stage {
     return this.rotCells[v]!
   }
 
+  // The register loads the row the bar plays the first time it is wired, and
+  // again for any row the panel or Wander writes while it circulates.
+  private looped(p: Float32Array, v: number) {
+    const row = this.gridRow(p, v)
+    if (row !== this.loopSeen[v]) {
+      this.loopSeen[v] = row
+      this.loopCells[v] = row
+      this.loopSoft[v] = 0
+    }
+    return this.loopCells[v]!
+  }
+
   private wireRot(p: Float32Array, lane: Float32Array | null) {
     this.rot = Math.min(Math.max(p[IDX.drumRot]! + (lane ? lane[0]! : 0), 0), 1)
     if (this.rot === 0) this.rotSeen.fill(-1)
   }
 
-  // Loads the register from the panel the first time it is wired, and again
-  // for any row the panel writes while it circulates.
   private wireLoop(p: Float32Array) {
     const tap = Math.round(p[IDX.drumLoop]!)
     const was = this.loop
     this.loop = tap > 0 && tap < LOOP_NAMES.length ? tap : 0
-    if (this.loop === 0) return
-    if (was === 0) {
+    if (this.loop > 0 && was === 0) {
       this.loopSeen.fill(-1)
       this.loopLate = 0
       this.loopLateSoft = 0
-    }
-    for (let v = 0; v < N_VOICES; v++) {
-      const row = Math.round(p[VOICE_PARAM[v]!]!)
-      if (row === this.loopSeen[v]) continue
-      this.loopSeen[v] = row
-      this.loopCells[v] = row
-      this.loopSoft[v] = 0
     }
   }
 
