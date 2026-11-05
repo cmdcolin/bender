@@ -43,7 +43,7 @@ afterEach(() => {
   engine.meter.set(booted)
 })
 
-test('the scope requests no frames for silent meter posts once its flat trace is drawn', () => {
+test('the scope requests frames while its ghosts fade and none once every trace is flat', () => {
   render(<Scope />)
   act(runFrames)
   post({ peak: 0 })
@@ -53,9 +53,14 @@ test('the scope requests no frames for silent meter posts once its flat trace is
   expect(frames).toHaveLength(1)
   act(runFrames)
 
-  post({ peak: 0, scope: new Float32Array(512) })
-  expect(frames).toHaveLength(1)
-  act(runFrames)
+  let fading = 0
+  for (; fading < 100; fading++) {
+    post({ peak: 0, scope: new Float32Array(512) })
+    if (frames.length === 0) break
+    act(runFrames)
+  }
+  expect(fading).toBeGreaterThan(1)
+  expect(fading).toBeLessThan(10)
   post({ peak: 0 })
   expect(frames).toHaveLength(0)
 })

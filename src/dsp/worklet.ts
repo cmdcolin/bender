@@ -4,6 +4,7 @@ import { Arc } from './arc.ts'
 import { buildBender, type BuiltChain } from './build.ts'
 import { Cue } from './cue.ts'
 import { Deck } from './deck.ts'
+import { ScopeTrace, SCOPE_RING_MASK } from './scopeTrace.ts'
 import { pour, slab, type Tracks } from './slab.ts'
 import { Smoother } from './smoother.ts'
 import { BLOCK, METER_EVERY, type StereoBlock } from './stage.ts'
@@ -12,8 +13,6 @@ import { ToyChip } from './stages/toyChip.ts'
 
 import type { MeterMsg, ToWorklet } from '../engine/messages.ts'
 
-const SCOPE_LEN = 512 // a power of two, so the ring wraps on a mask
-const SCOPE_MASK = SCOPE_LEN - 1
 const REC_CHUNK = 1 << 15 // frames per posted slab (~0.7 s at 48 k)
 
 class BenderProcessor extends AudioWorkletProcessor {
@@ -25,9 +24,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   private cue = new Cue(this.target)
   private io: StereoBlock
   private micMono = new Float32Array(BLOCK)
-  private scope = new Float32Array(SCOPE_LEN)
-  private scopeOut = new Float32Array(SCOPE_LEN)
-  private scopePos = 0
+  private trace = new ScopeTrace()
   private meterCountdown = METER_EVERY
   private meterMsg: MeterMsg
   // The chip's note report, written into per meter post and handed over as it
@@ -87,7 +84,7 @@ class BenderProcessor extends AudioWorkletProcessor {
     this.meterMsg = {
       kind: 'meter',
       peak: 0,
-      scope: this.scopeOut,
+      scope: this.trace.out,
       tick: 0,
       drumClock: 0,
       drumStepMs: 0,
@@ -310,16 +307,17 @@ class BenderProcessor extends AudioWorkletProcessor {
 
     // One pass for the trace and the peak: two walks over the same 128 samples
     // were two loop set-ups and two passes over the same line.
-    let scopePos = this.scopePos
+    const ring = this.trace.ring
+    let scopePos = this.trace.pos
     let peak = this.peak
     for (let i = 0; i < n; i++) {
       const v = l[i]!
-      this.scope[scopePos] = v
-      scopePos = (scopePos + 1) & SCOPE_MASK
+      ring[scopePos] = v
+      scopePos = (scopePos + 1) & SCOPE_RING_MASK
       const a = v < 0 ? -v : v
       if (a > peak) peak = a
     }
-    this.scopePos = scopePos
+    this.trace.pos = scopePos
     this.peak = peak
 
     // The take's slab, and its stems when it asked for them, as it goes; the
@@ -338,18 +336,10 @@ class BenderProcessor extends AudioWorkletProcessor {
     this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {
       this.meterCountdown = METER_EVERY
-      // Unrolled from wherever the write head stands into a buffer this owns.
-      // It used to be a fresh 2 kB array transferred away sixty times a second
-      // — 128 kB/s of garbage on the one thread that cannot afford a collection.
-      // Posting it untransferred costs a 2 kB copy in the serializer instead,
-      // which is nothing sixty times a second; it is unrolled into a second
-      // buffer because the write head moves on while the ring is still the
-      // ring, and the reader wants it laid out oldest first.
-      const scope = this.scopeOut
-      const ring = this.scope
-      const head = scopePos
-      for (let i = 0; i < SCOPE_LEN; i++)
-        scope[i] = ring[(head + i) & SCOPE_MASK]!
+      // Unrolled into a buffer this owns and posted untransferred: a fresh
+      // array sixty times a second was garbage on the one thread that cannot
+      // afford a collection, and the serializer's 2 kB copy costs nothing.
+      this.trace.unroll(peak)
       const rail = this.built.rail
       const sampler = this.built.sampler
       const four = this.built.fourTrack
