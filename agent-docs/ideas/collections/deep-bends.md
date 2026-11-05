@@ -3,7 +3,7 @@ name: deep-bends
 description:
   Ranked rebuilds of the bend slots as circuits on the board's supply, heat and
   buses — crusher as ADC into R-2R (built), clipper as the toy's LM386 (built),
-  comb as a BBD, glitch as a Discman, shifter as a Bode.
+  comb as a BBD (built), glitch as a Discman, shifter as a Bode.
 ---
 
 # Deep bends
@@ -14,7 +14,7 @@ crusher, the bend slots read only `ctx.mod`. Each candidate below rebuilds one
 slot as the circuit it imitates, so the board's modelling reaches it. Stock
 stays bit-identical: every new control rests off.
 
-**Built:** items 1 and 2; items 3–6 are candidates.
+**Built:** items 1–3; items 4–6 are candidates.
 
 ## 1. Crusher → ADC, bus, R-2R DAC (built)
 
@@ -97,11 +97,48 @@ fully wet:
 - Unbuilt: a trigger-bus tie for blocking, since loud transients already charge
   the cap; the clipper on the map's supply loop.
 
-## 3. Comb → bucket brigade on an RC clock
+## 3. Comb → bucket brigade on an RC clock (built)
 
-- `src/dsp/util/bbd.ts`. Pitch is the clock, so sag dives the comb.
-- Clock whistle, compander pumping, the loop amp clipping at the rail.
-- Kit triggers pluck it.
+A **Chip** switch on the comb (`src/dsp/stages/comb.ts`): Karplus is stock, and
+1024, 256 or 64 buckets put a bucket brigade in the loop behind an op-amp and an
+NE570-style 2:1 compander, one chip a side. The clock is pitch × buckets, so a
+short chip or a low note clocks under 18 kHz and the comb darkens and folds. On
+the default board fully wet, 1024 buckets move the take 0.07 from stock, 256
+move it 0.11 and 64 move it 0.23.
+
+Ranked by change (rms difference over the clean chip's rms) on the default board
+with the ROCK kit, fully wet, feedback 0.7, 110 Hz, each fault at 1:
+
+| fault             | chip, setting               | change | measured                                         |
+| ----------------- | --------------------------- | ------ | ------------------------------------------------ |
+| Clock whistle     | 64 buckets                  | 1.12   | centroid 552 → 6140 Hz                           |
+| (same)            | 256 buckets, 55 Hz          | 0.52   | centroid 422 → 5834 Hz; 0 on 1024 buckets        |
+| Loop amp          | 1024 buckets                | 0.99   | 60% of the take silent, envelope cv 0.41→1.87    |
+| Clock on the rail | toy starve 0.4              | 0.94   | 220 Hz comb at 110 Hz on a 0.6 rail              |
+| Clock pull        | 1024, feedback 1.1          | 0.83   | flatness 0.00 → 0.08, centroid 491 → 918 Hz      |
+| Compander pump    | 1024 buckets                | 0.36   | kit only: peak 0.26 → 0.74 (+9 dB), cv 1.12→1.54 |
+| Kit pluck         | toy playing, kit fader down | 0.22   | nothing on the faders: rms 0 → 0.18              |
+
+All six are built, each on a lane. Kit pluck ranks last on a busy board because
+the board already excites the comb, but it is the one fault that plays the comb
+from silence.
+
+- Calls made toward the wilder sound: the loop amp blocks past halfway, so the
+  top of its travel motorboats rather than only clipping (without blocking it
+  measured 0.37, a buzz); the pump slows the compressor rather than the
+  expander, so a hit after a gap blooms and collapses instead of latching into a
+  scream (a steeper expander law latched every board at the rail); the whistle
+  is rung by what is in the buckets, so it carries sidebands rather than sitting
+  as a steady tone; the clock stops at 2% below the toy's `DEAD_V`, so the comb
+  freezes on its buckets while the toy reboots.
+- The loop is ac-coupled at 10 Hz: a one-sided pulse latched the clean chip at
+  dc past unity feedback.
+- Unbuilt: a clock phase mismatch measured 0.48, but at 1024 buckets that was
+  the 48 kHz render folding an image at 28 kHz, and with the image under the
+  post filter it is a brightener. Charge left behind per transfer is the damping
+  knob plus a flat pitch (1% on 1024 buckets is 10 extra ticks). A `Bus` fault
+  on the chain does nothing a level knob does not: every packet passes every
+  bucket, so a bad one scales them all.
 
 ## 4. Glitch buffer → a Discman with anti-skip RAM
 
