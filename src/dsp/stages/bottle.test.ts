@@ -68,13 +68,9 @@ function run(
   const out = new Float32Array(blocks * BLOCK)
   for (let b = 0; b < blocks; b++) {
     ctx.trig.key.fill(0)
-    ctx.trig.drumBits.fill(0)
-    ctx.trig.drumGain.fill(0)
+    ctx.trig.swap(BLOCK)
     if (b === key) ctx.trig.key[0] = 1
-    if (b === kick) {
-      ctx.trig.drumBits[0] = KICK
-      ctx.trig.drumGain[0] = 1
-    }
+    if (b === kick) ctx.trig.drumFired(0, KICK, 1)
     if (b === hand) bottle.strikeAt(0.4, 0.6, 1)
     for (let i = 0; i < BLOCK; i++) ctx.out[i] = input(b * BLOCK + i)
     io.l.fill(0)

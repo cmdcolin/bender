@@ -168,6 +168,8 @@ export class Struck implements Stage {
     let anyStruck = false
     let anyRattle = false
     let anyShaken = false
+    const bits = ctx.trig.bitsNow
+    const gains = ctx.trig.gainNow
     if (this.handGain > 0) {
       this.land(this.handGain, pulse, this.handX, this.handY)
       this.handGain = 0
@@ -178,8 +180,8 @@ export class Struck implements Stage {
         const hit =
           struckBy === KEY_CHOICE
             ? ctx.trig.key[i]! > 0
-            : (Math.round(ctx.trig.drumBits[i]!) & mask) !== 0
-        if (hit) this.strike(Math.max(ctx.trig.drumGain[i]!, 0.6), pulse)
+            : (Math.round(bits[i]!) & mask) !== 0
+        if (hit) this.strike(Math.max(gains[i]!, 0.6), pulse)
       }
       if (this.bounceIn > 0) {
         this.bounceIn--

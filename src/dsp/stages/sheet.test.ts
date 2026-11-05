@@ -68,13 +68,9 @@ function run(
   const out = new Float32Array(blocks * BLOCK)
   for (let b = 0; b < blocks; b++) {
     ctx.trig.key.fill(0)
-    ctx.trig.drumBits.fill(0)
-    ctx.trig.drumGain.fill(0)
+    ctx.trig.swap(BLOCK)
     if (b === key) ctx.trig.key[0] = 1
-    if (b === kick) {
-      ctx.trig.drumBits[0] = KICK
-      ctx.trig.drumGain[0] = 1
-    }
+    if (b === kick) ctx.trig.drumFired(0, KICK, 1)
     if (b === hand) sheet.strikeAt(0.4, 0.6, 1)
     for (let i = 0; i < BLOCK; i++) ctx.out[i] = input(b * BLOCK + i)
     io.l.fill(0)
@@ -170,4 +166,11 @@ test('turned down it rests, and turned back up it starts still', () => {
   sheet.strikeAt(0.3, 0.3, 1)
   blocks(down, 4)
   expect(blocks(up, 20)).toBe(0)
+})
+
+test('a kick strikes it on the sample the kit fires, not a block later', () => {
+  const out = run({ sheetStruckBy: KICK, sheetHard: 1 }, 0.1, { kick: 2 })
+  const first = out.findIndex(v => v !== 0)
+  expect(first).toBeGreaterThanOrEqual(2 * BLOCK)
+  expect(first).toBeLessThan(2 * BLOCK + 8)
 })

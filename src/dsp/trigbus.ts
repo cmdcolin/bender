@@ -120,6 +120,16 @@ export class TriggerBus {
     return this.pendStep
   }
 
+  /** This block's hits, for a stage that runs after the kit to strike on the
+      sample the kit does. */
+  get bitsNow(): Float32Array {
+    return this.pendBits
+  }
+
+  get gainNow(): Float32Array {
+    return this.pendGain
+  }
+
   get stepLenNow() {
     return this.pendStepLen
   }
