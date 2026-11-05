@@ -69,20 +69,48 @@ const frameIn = (at: number, n: number) =>
 const frameOut = (at: number, n: number, from: number) =>
   Math.min(Math.max(Math.ceil(at * n), from + MIN_WINDOW), n)
 
+const REDRAW_FRAMES_PER_BLOCK = 1 << 16
+
+const binOf = (i: number, n: number) => ((i * PEAK_BINS) / n) | 0
+
+function peaksOver(
+  mono: Float32Array,
+  out: Float32Array,
+  from: number,
+  to: number,
+) {
+  const n = mono.length
+  let i = Math.ceil((from * n) / PEAK_BINS)
+  for (let b = from; b < to; b++) {
+    const end = Math.ceil(((b + 1) * n) / PEAK_BINS)
+    let hi = 0
+    let lo = 0
+    for (; i < end; i++) {
+      const x = mono[i]!
+      if (x > hi) hi = x
+      else if (x < lo) lo = x
+    }
+    out[b] = hi >= -lo ? hi : -lo
+  }
+}
+
 /** The envelope of a clip in `PEAK_BINS` bins, for whatever draws the reel. */
 export function peaksOf(
   mono: Float32Array,
   out = new Float32Array(PEAK_BINS),
 ): Float32Array {
-  out.fill(0)
-  const n = mono.length
-  for (let i = 0; i < n; i++) {
-    const bin = ((i * PEAK_BINS) / n) | 0
-    const v = mono[i]! < 0 ? -mono[i]! : mono[i]!
-    if (v > out[bin]!) out[bin] = v
-  }
+  peaksOver(mono, out, 0, PEAK_BINS)
   return out
 }
+
+/** The spare tape undo keeps a reel's last state on, made off the audio thread
+    for a reel that is about to be loaded. */
+export const undoTape = (frames: number) => ({
+  buf: new Float32Array(frames),
+  kept: new Uint8Array(chunksOf(frames)),
+})
+
+export type UndoTape = ReturnType<typeof undoTape>
 
 // A dropped audio file at bendable speed: looping through the chain, or waiting
 // on a trigger line the way the kit's own voices do. Struck, it is a seventh
@@ -131,6 +159,8 @@ export class Sampler implements Stage {
   readonly peaks = new Float32Array(PEAK_BINS)
   private binMax = 0
   private binAt = -1
+  private redrawFrom = 0
+  private redrawTo = 0
   // Where the window actually stood at the end of the last block, as fractions
   // of the reel. The knobs are only half the answer once a wire is on the
   // markers, and the panel draws the tape rather than the controls.
@@ -195,15 +225,18 @@ export class Sampler implements Stage {
     return this.winOut
   }
 
-  // The envelope comes in already worked out where there is somewhere better to
-  // work it out: a dropped file is scanned on the main thread on its way over,
-  // because a scan of 90 seconds is several audio blocks long and the audio
-  // thread has no several blocks to give. Offline callers hand over the buffer
-  // alone and pay for the scan where nothing is listening.
-  setBuffer(mono: Float32Array, peaks?: Float32Array) {
-    if (this.undoBuf.length < mono.length) {
-      this.undoBuf = new Float32Array(mono.length)
-      this.kept = new Uint8Array(chunksOf(mono.length))
+  // The envelope and the undo tape come in already made where there is
+  // somewhere better to make them: a dropped file is scanned on the main thread
+  // on its way over, because a scan of 90 seconds is several audio blocks long
+  // and the audio thread has no several blocks to give, nor 17 MB to allocate.
+  // Offline callers hand over the buffer alone and pay where nothing is
+  // listening.
+  setBuffer(mono: Float32Array, peaks?: Float32Array, undo?: UndoTape) {
+    const spare =
+      undo ?? (this.undoBuf.length < mono.length ? undoTape(mono.length) : null)
+    if (spare) {
+      this.undoBuf = spare.buf
+      this.kept = spare.kept
     }
     this.buf = mono
     this.pos = 0
@@ -211,6 +244,7 @@ export class Sampler implements Stage {
     this.taking = false
     this.undoLen = 0
     this.binAt = -1
+    this.redrawTo = 0
     if (peaks) this.peaks.set(peaks)
     else peaksOf(mono, this.peaks)
   }
@@ -252,6 +286,7 @@ export class Sampler implements Stage {
     this.taking = true
     this.undoLen = 0
     this.binAt = -1
+    this.redrawTo = 0
     this.peaks.fill(0)
   }
 
@@ -268,27 +303,53 @@ export class Sampler implements Stage {
     this.pos = 0
     this.taking = false
     this.binAt = -1
-    peaksOf(this.buf, this.peaks)
+    this.redrawBins(0, PEAK_BINS)
   }
 
   /** Swaps the reel with the copy made when the record head was last armed. */
   undo() {
     const buf = this.buf
     if (!buf || this.undoLen === 0 || buf.length !== this.undoLen) return
+    const n = buf.length
     const other = this.undoBuf
-    for (let c = 0; c < chunksOf(buf.length); c++) {
+    let first = n
+    let last = 0
+    for (let c = 0; c < chunksOf(n); c++) {
       if (this.kept[c]) {
-        const end = Math.min((c + 1) * UNDO_CHUNK, buf.length)
-        for (let i = c * UNDO_CHUNK; i < end; i++) {
+        const start = c * UNDO_CHUNK
+        const end = Math.min(start + UNDO_CHUNK, n)
+        for (let i = start; i < end; i++) {
           const was = buf[i]!
           buf[i] = other[i]!
           other[i] = was
         }
+        first = Math.min(first, start)
+        last = end
       }
     }
     this.undone = !this.undone
     this.binAt = -1
-    peaksOf(buf, this.peaks)
+    if (last > first) this.redrawBins(binOf(first, n), binOf(last - 1, n) + 1)
+  }
+
+  private redrawBins(from: number, to: number) {
+    const stale = this.redrawTo > this.redrawFrom
+    this.redrawFrom = stale ? Math.min(this.redrawFrom, from) : from
+    this.redrawTo = stale ? Math.max(this.redrawTo, to) : to
+  }
+
+  /** Rescans a block's worth of the stretch of drawing a gesture left stale. */
+  redraw() {
+    const buf = this.buf
+    if (buf && this.redrawTo > this.redrawFrom) {
+      const per = Math.max(
+        ((REDRAW_FRAMES_PER_BLOCK * PEAK_BINS) / buf.length) | 0,
+        1,
+      )
+      const to = Math.min(this.redrawFrom + per, this.redrawTo)
+      peaksOver(buf, this.peaks, this.redrawFrom, to)
+      this.redrawFrom = to
+    }
   }
 
   private snapshot(buf: Float32Array) {

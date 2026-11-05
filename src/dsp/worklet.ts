@@ -147,7 +147,7 @@ class BenderProcessor extends AudioWorkletProcessor {
           this.cue.drop()
           break
         case 'sample':
-          this.built.sampler.setBuffer(msg.mono, msg.peaks)
+          this.built.sampler.setBuffer(msg.mono, msg.peaks, msg.undo)
           break
         case 'seek':
           this.built.sampler.seek(msg.frac)
@@ -293,6 +293,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       ),
     )
     this.deck.process(io, this.smoother.cur)
+    this.built.sampler.redraw()
 
     // subarray builds a view object, and a view object on the audio thread is
     // garbage on the audio thread. A full block is what the host asks for

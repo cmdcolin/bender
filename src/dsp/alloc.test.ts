@@ -8,7 +8,7 @@ import { wildBoard } from '../ui/wild.ts'
 import { buildBender } from './build.ts'
 import { BLOCK } from './stage.ts'
 import { ENS_MODE } from './stages/ensemble.ts'
-import { peaksOf } from './stages/sampler.ts'
+import { peaksOf, undoTape } from './stages/sampler.ts'
 import { makeIo, sine } from './testRender.ts'
 
 import type { ToWorklet } from '../engine/messages.ts'
@@ -305,9 +305,16 @@ function gestures(board: Controls): ToWorklet[] {
   const nudged = packParams({ ...board, ringHz: board.ringHz * 1.5 })
   const pack = packParams(board)
   const wild = wildBoard(board, 3, new Set(OWNER_BY_KEY.values()))
+  const unarmed = packParams({ ...board, loopRec: 0 })
   const clip = sine(110, 0.5)
+  const long = sine(110, 21)
   return [
-    { kind: 'sample', mono: clip, peaks: peaksOf(clip) },
+    {
+      kind: 'sample',
+      mono: clip,
+      peaks: peaksOf(clip),
+      undo: undoTape(clip.length),
+    },
     { kind: 'params', pack: nudged },
     { kind: 'noteOn', semitone: 3, dest: 'toy', gain: 1 },
     { kind: 'noteOn', semitone: 5, dest: 'fm', gain: 0.8 },
@@ -336,6 +343,18 @@ function gestures(board: Controls): ToWorklet[] {
     { kind: 'transport', tune: true, drums: true },
     { kind: 'wild', wild: null },
     { kind: 'panic' },
+    { kind: 'params', pack: unarmed },
+    {
+      kind: 'sample',
+      mono: long,
+      peaks: peaksOf(long),
+      undo: undoTape(long.length),
+    },
+    { kind: 'params', pack: unarmed },
+    { kind: 'params', pack: unarmed },
+    { kind: 'params', pack: unarmed },
+    { kind: 'params', pack },
+    { kind: 'undoTake' },
   ]
 }
 

@@ -1,4 +1,5 @@
 import type { WildPack } from '../dsp/arc.ts'
+import type { UndoTape } from '../dsp/stages/sampler.ts'
 
 export interface ParamsMsg {
   kind: 'params'
@@ -17,6 +18,7 @@ export interface SampleMsg {
       minute and a half of audio is several audio blocks long, and the block is
       where the sampler would otherwise have to do it. */
   peaks: Float32Array
+  undo: UndoTape
 }
 
 /** A blank cassette in the four-track: every loop wiped and its wear gone.

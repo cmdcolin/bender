@@ -31,7 +31,7 @@ import {
 } from '../drums.ts'
 import { TRACKS } from '../dsp/stages/fourTrack.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
-import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler.ts'
+import { PEAK_BINS, peaksOf, undoTape } from '../dsp/stages/sampler.ts'
 import workletUrl from '../dsp/worklet.ts?worker&url'
 import { errorText } from '../errorText.ts'
 import { createStore, type Store } from '../listeners.ts'
@@ -799,6 +799,20 @@ export class Engine {
     this.node?.port.postMessage(msg, transfer ?? [])
   }
 
+  // Scanned and given its undo tape here, where 90 seconds of audio is a few
+  // milliseconds nobody is listening to, rather than in the block that would
+  // otherwise have to.
+  private postSample(mono: Float32Array) {
+    const peaks = peaksOf(mono)
+    const undo = undoTape(mono.length)
+    this.post({ kind: 'sample', mono, peaks, undo }, [
+      mono.buffer,
+      peaks.buffer,
+      undo.buf.buffer,
+      undo.kept.buffer,
+    ])
+  }
+
   set(key: ControlKey, value: number) {
     this.stopHunt()
     if (this.controls.get()[key] !== value) this.commitStep()
@@ -1540,10 +1554,7 @@ export class Engine {
       const chan = buf.getChannelData(ch)
       for (let i = 0; i < frames; i++) mono[i]! += chan[i]! / channels
     }
-    // Scanned here, where 90 seconds of audio is a few milliseconds nobody is
-    // listening to, rather than in the block that would otherwise have to.
-    const peaks = peaksOf(mono)
-    this.post({ kind: 'sample', mono, peaks }, [mono.buffer, peaks.buffer])
+    this.postSample(mono)
     this.sampleName.set(name)
     if (this.controls.get().sampleLevel === 0) this.set('sampleLevel', 0.7)
   }
@@ -1783,8 +1794,7 @@ export class Engine {
         mono[at + i] = 0.5 * (c.l[i]! + c.r[i]!)
       at += c.l.length
     }
-    const peaks = peaksOf(mono)
-    this.post({ kind: 'sample', mono, peaks }, [mono.buffer, peaks.buffer])
+    this.postSample(mono)
     this.sampleName.set(`last ${RETRO_S}s`)
   }
 
