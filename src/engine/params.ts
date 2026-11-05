@@ -1045,3 +1045,6 @@ export function packParams(
   for (let i = 0; i < N_PARAMS; i++) out[i] = values[PARAM_KEYS[i]!]
   return out
 }
+
+export const paramMask = (patch: Partial<Controls>) =>
+  Uint8Array.from(PARAM_KEYS, key => (patch[key] === undefined ? 0 : 1))

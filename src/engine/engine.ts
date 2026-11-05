@@ -59,6 +59,7 @@ import {
   N_TAPS,
   STEM_FILES,
   packParams,
+  paramMask,
 } from './params.ts'
 import {
   landingTick,
@@ -98,6 +99,14 @@ interface Queued {
   tick: number
   after?: (landed: number) => void
   past?: number
+}
+
+interface Cued {
+  id: number
+  at: number
+  every: number
+  patch: Partial<Controls>
+  landed: ((tick: number | null) => void)[]
 }
 const DRIFT_TRAIL = 12
 // Below this a stem is silence, and silence gets no file: a fader left down is
@@ -146,6 +155,7 @@ export interface Meter {
   tick: number
   drumClock: number
   drumStepMs: number
+  cued: number
   /** Voices the kit fired since the last meter, as the bit order of a step. */
   hits: number
   strays: number
@@ -380,6 +390,7 @@ export class Engine {
       tick: 0,
       drumClock: 0,
       drumStepMs: 0,
+      cued: 0,
       hits: 0,
       strays: 0,
       arc: 0,
@@ -580,6 +591,11 @@ export class Engine {
   // pattern reads as sounding between its own hits rather than flickering.
   private readonly soundHold = new Float32Array(MAX_SOURCES)
 
+  private cues: Cued[] = []
+  private cueIds = 0
+  private armedCue = 0
+  private cueTick = 0
+
   private driftTimer: ReturnType<typeof setTimeout> | undefined
   private readonly queued = new Map<QueueSlot, Queued>()
   private readonly queueTimers = new Map<
@@ -594,6 +610,7 @@ export class Engine {
     this.meter.subscribe(() => {
       this.meterAt = performance.now()
       this.checkQueue()
+      this.checkCues()
     })
   }
 
@@ -689,6 +706,7 @@ export class Engine {
           tick: msg.tick,
           drumClock: msg.drumClock,
           drumStepMs: msg.drumStepMs,
+          cued: msg.cued,
           hits: msg.hits,
           strays: msg.strays,
           arc: msg.arc,
@@ -905,6 +923,11 @@ export class Engine {
       stepMs: m.drumStepMs,
       ageMs: performance.now() - this.meterAt,
     }
+  }
+
+  /** Milliseconds until the kit's counter reaches `tick`, from the last meter. */
+  msUntil(tick: number) {
+    return msUntilTick(tick, this.counterReport())
   }
 
   /** How long a run of the phrase lock lasts at the kit's tempo, in seconds. */
@@ -1204,13 +1227,16 @@ export class Engine {
       phrase lock while the kit runs, else at once. One entry in the walk. The
       engine keeps a morph in flight moving the rest of the board. */
   writePattern(patch: Partial<Controls>) {
-    const land = () => {
-      this.armStep()
-      const { glide, morphTarget } = this
-      if (!glide || !morphTarget) {
-        this.writeBoard({ ...this.controls.get(), ...patch })
-        return
-      }
+    const land = () => this.landPattern(patch)
+    if (!this.queue('pattern', { land, seconds: 0 })) land()
+  }
+
+  private landPattern(patch: Partial<Controls>) {
+    this.armStep()
+    const { glide, morphTarget } = this
+    if (!glide || !morphTarget) {
+      this.writeBoard({ ...this.controls.get(), ...patch })
+    } else {
       this.stopHunt()
       this.commitStep()
       glide.release(Object.keys(patch))
@@ -1218,7 +1244,105 @@ export class Engine {
       this.controls.set({ ...this.controls.get(), ...patch })
       this.flushSoon()
     }
-    if (!this.queue('pattern', { land, seconds: 0 })) land()
+  }
+
+  /** Lands `patch` when the kit's counter reaches tick `at`, resolved in the
+      worklet on the sample the counter steps, or at once while the kit is
+      stopped. A cue with `every` steps re-aims at the next run of that many
+      steps when the counter goes back. Resolves with the tick it landed on, or
+      null if dropped. */
+  cue(patch: Partial<Controls>, at: number, every = 0): Promise<number | null> {
+    return new Promise(resolve => {
+      const same = this.cues.find(c => c.at === at)
+      if (!this.drumsPlaying.get() || !this.running.get()) {
+        this.landCue({ id: 0, at, every, patch, landed: [resolve] })
+      } else if (same) {
+        Object.assign(same.patch, patch)
+        same.landed.push(resolve)
+        this.armCue()
+      } else {
+        this.cues = [
+          ...this.cues,
+          {
+            id: ++this.cueIds,
+            at,
+            every,
+            patch: { ...patch },
+            landed: [resolve],
+          },
+        ].toSorted((a, b) => a.at - b.at)
+        this.armCue()
+      }
+    })
+  }
+
+  /** Drops every cue still waiting, and says how many there were. */
+  uncue() {
+    const dropped = this.cues
+    this.cues = []
+    this.armCue()
+    for (const c of dropped) for (const resolve of c.landed) resolve(null)
+    return dropped.length
+  }
+
+  /** The ticks the waiting cues land on, soonest first. */
+  cueTicks() {
+    return this.cues.map(c => c.at)
+  }
+
+  private armCue() {
+    const next = this.cues[0]
+    if (next) {
+      this.armedCue = next.id
+      this.post({
+        kind: 'cue',
+        id: next.id,
+        at: next.at,
+        pack: packParams({ ...this.controls.get(), ...next.patch }),
+        mask: paramMask(next.patch),
+      })
+    } else if (this.armedCue !== 0) {
+      this.armedCue = 0
+      this.post({ kind: 'uncue' })
+    }
+  }
+
+  private landCue(c: Cued) {
+    if (Object.keys(c.patch).length > 0) this.landPattern(c.patch)
+    this.flush()
+    const tick = this.meter.get().tick
+    for (const resolve of c.landed) resolve(tick)
+  }
+
+  private checkCues() {
+    const m = this.meter.get()
+    const back = m.tick < this.cueTick
+    this.cueTick = m.tick
+    const head = this.cues[0]
+    if (head && head.id === this.armedCue && m.cued === head.id) {
+      this.cues = this.cues.slice(1)
+      this.landCue(head)
+      this.armCue()
+    } else if (back && this.cues.some(c => c.every > 0)) {
+      this.cues = this.cues
+        .map(c =>
+          c.every > 0
+            ? {
+                ...c,
+                at: ((Math.floor(m.tick / c.every) + 1) * c.every) % CYCLE,
+              }
+            : c,
+        )
+        .toSorted((a, b) => a.at - b.at)
+      this.armCue()
+    }
+  }
+
+  private landCues() {
+    const waiting = this.cues
+    this.cues = []
+    for (const c of waiting) this.landCue(c)
+    this.armCue()
   }
 
   // Travel to a new board over `seconds`, or land in one frame at zero. It sets
@@ -1721,6 +1845,7 @@ export class Engine {
       return
     this.songPlaying.set(song)
     this.drumsPlaying.set(drums)
+    if (!drums) this.landCues()
     this.postTransport()
   }
 

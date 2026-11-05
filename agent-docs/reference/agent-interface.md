@@ -1,6 +1,6 @@
 ---
 name: agent-interface
-description: How an agent drives the board: window.bender, the eval results, and why not WebMCP or MIDI. Steps 2, 4 and 5 of the plan remain open.
+description: How an agent drives the board: window.bender, the eval results, and why not WebMCP or MIDI. Steps 4 and 5 of the plan remain open.
 ---
 
 # Driving the board from a program
@@ -32,9 +32,21 @@ gesture, so `bender.start()` waits one second and then reports the state. A CDP
 `Runtime.evaluate` with `userGesture: true` starts audio, and `scripts/agent.ts`
 checks the API that way in headless Chrome.
 
-Three items remain open. They are step 2 (`queue`), step 4 (`bender.find` and
-`bender.describe` read the control tables at runtime for an agent in the page,
-and an agent working from a shell still reads `controls.ts`), and step 5.
+Step 2 is built as `bender.queue(write, when)`. The writes made inside `write`
+collect into one patch, and `Engine.cue` posts it to the worklet with the
+counter tick it waits for. `src/dsp/cue.ts` writes it into the params in play on
+the sample the kit's counter steps onto that tick, so the downbeat reads the new
+pattern; the next meter reports the landing and the main thread commits the
+patch as one undo step. `bender.position` and `bender.next` read the same
+counter off the meters, so `next` resolves up to one meter period, about 16 ms,
+after the downbeat. A stopped kit lands a queue at once, as the phrase lock
+does. Play and stop cannot be queued, a glide inside a queue starts from the
+meters, and the panel's phrase lock still lands by a timer aimed off the meters
+(`Engine.queue`) rather than through `cue`.
+
+Two items remain open. They are step 4 (`bender.find` and `bender.describe` read
+the control tables at runtime for an agent in the page, and an agent working
+from a shell still reads `controls.ts`), and step 5.
 
 `pnpm agent:eval`, modelled on jbrowse's `scripts/agent-evals/webAgentEval.ts`,
 runs `claude -p --chrome` against four tasks and grades the board each session
@@ -81,7 +93,7 @@ underneath at rate.
 
 ## What was missing
 
-The plan below was written before `agentApi.ts`. Steps 1 and 3 are built, and
+The plan below was written before `agentApi.ts`. Steps 1, 2 and 3 are built, and
 the Status section above lists what remains.
 
 **The hash cannot stand in for `window.bender`.** `useBoardUrl` reads a hash as

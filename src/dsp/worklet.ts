@@ -2,6 +2,7 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params.ts'
 import { Arc } from './arc.ts'
 import { buildBender, type BuiltChain } from './build.ts'
+import { Cue } from './cue.ts'
 import { Deck } from './deck.ts'
 import { pour, slab, type Tracks } from './slab.ts'
 import { Smoother } from './smoother.ts'
@@ -21,6 +22,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   private deck: Deck
   private smoother: Smoother
   private arc = new Arc()
+  private cue = new Cue(this.target)
   private io: StereoBlock
   private micMono = new Float32Array(BLOCK)
   private scope = new Float32Array(SCOPE_LEN)
@@ -80,6 +82,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       n: BLOCK,
     }
     this.target.set(packParams(DEFAULT_CONTROLS))
+    this.built.toyDrum.cue = this.cue
     const { chain, sampler, fourTrack } = this.built
     this.meterMsg = {
       kind: 'meter',
@@ -88,6 +91,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       tick: 0,
       drumClock: 0,
       drumStepMs: 0,
+      cued: 0,
       hits: 0,
       strays: 0,
       arc: 0,
@@ -134,6 +138,13 @@ class BenderProcessor extends AudioWorkletProcessor {
       switch (msg.kind) {
         case 'params':
           this.target.set(msg.pack)
+          this.cue.hold()
+          break
+        case 'cue':
+          this.cue.arm(msg.id, msg.at, msg.pack, msg.mask)
+          break
+        case 'uncue':
+          this.cue.drop()
           break
         case 'sample':
           this.built.sampler.setBuffer(msg.mono, msg.peaks)
@@ -271,6 +282,7 @@ class BenderProcessor extends AudioWorkletProcessor {
     // half speed still comes out at the pitch it went in.
     this.deck.pushMic(mic ? this.micMono : null, n)
 
+    this.cue.reach(this.built.toyDrum.tick, this.smoother.cur)
     this.smoother.step(
       this.arc.step(
         this.target,
@@ -350,6 +362,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.tick = this.built.toyDrum.tick
       m.drumClock = this.built.toyDrum.stepClock
       m.drumStepMs = this.built.toyDrum.stepMs
+      m.cued = this.cue.landed
       m.hits = this.built.toyDrum.takeFired()
       m.strays = this.built.toyDrum.wander.packed
       m.arc = this.arc.pos

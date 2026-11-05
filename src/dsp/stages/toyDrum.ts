@@ -47,6 +47,7 @@ import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal } from '../util/softclip.ts'
 import { Wander } from '../wander.ts'
 
+import type { Cue } from '../cue.ts'
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 const TAU = 2 * Math.PI
@@ -617,6 +618,7 @@ export class ToyDrum implements Stage {
   private gndEdge = new GroundEdge(GND_TRIP)
   /** How long an unswung step lasts at the rate the counter is clocking now. */
   stepMs = 125
+  cue: Cue | null = null
   private repeats = 0
   // Whether the column the counter stands on passed its condition, and how the
   // last column with an A:B went, for a pre after it.
@@ -1623,6 +1625,7 @@ export class ToyDrum implements Stage {
               this.clearing = false
               this.rolledAt = -1
             }
+            this.cue?.reach(this.tick, p)
           }
           // A column's ratchet and nudge share what is left of its step, so
           // every repeat lands before the next strobe.

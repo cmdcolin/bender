@@ -9,6 +9,8 @@ import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi.ts'
 import { boardFromUrl } from './share.ts'
 import './testDom.ts'
 
+import type { ToWorklet } from '../engine/messages.ts'
+
 const bender = createBenderApi()
 
 test('set applies valid values and reports adjusted, unknown and failed ones', () => {
@@ -111,10 +113,18 @@ test('describe names find for a group name', () => {
 
 test('help and every guide topic fit in one browser tool result', () => {
   expect(bender.help.length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
-  for (const topic of ['read', 'change', 'music', 'drums', 'line', 'sound'])
+  for (const topic of [
+    'read',
+    'change',
+    'music',
+    'drums',
+    'line',
+    'clock',
+    'sound',
+  ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, line, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, line, clock, sound",
   )
 })
 
@@ -306,5 +316,119 @@ test('listen before audio starts returns how to start it', async () => {
   expect(await bender.listen(100)).toEqual({
     audio:
       'suspended: click an empty area of the page, then call bender.start() again',
+  })
+})
+
+const atTick = (tick: number, cued = engine.meter.get().cued) =>
+  engine.meter.set({ ...engine.meter.get(), tick, cued, drumStepMs: 125 })
+
+async function onTheClock(run: (posted: ToWorklet[]) => Promise<void>) {
+  const posted: ToWorklet[] = []
+  Object.assign(engine, {
+    node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
+  })
+  engine.running.set(true)
+  engine.setDrumsPlaying(true)
+  try {
+    await run(posted)
+  } finally {
+    engine.uncue()
+    engine.setDrumsPlaying(false)
+    engine.running.set(false)
+    atTick(0, 0)
+  }
+}
+
+test('position reads bar, beat and step off the kit’s counter', () => {
+  atTick(37)
+  expect(bender.position()).toEqual({
+    bar: 2,
+    beat: 1,
+    step: 5,
+    bpm: 120,
+    kit: 'stopped: bender.play() starts the counter',
+    waiting: [],
+  })
+  atTick(0)
+})
+
+test('next resolves on the first meter past the next downbeat of its run', async () => {
+  await onTheClock(async () => {
+    atTick(20)
+    let bar: number | undefined
+    const next = bender.next().then(p => (bar = p.bar))
+    atTick(31)
+    await Promise.resolve()
+    expect(bar).toBeUndefined()
+    atTick(32)
+    expect(await next).toBe(2)
+    const four = bender.next(4)
+    atTick(48)
+    atTick(64)
+    expect((await four).bar).toBe(4)
+    const beat = bender.next('beat')
+    atTick(68)
+    expect((await beat).beat).toBe(1)
+    const stopped = bender.next()
+    engine.setDrumsPlaying(false)
+    await expect(stopped).rejects.toThrow('the kit stopped before the downbeat')
+  })
+  expect(() => bender.next()).toThrow(/^the kit is stopped/)
+  expect(() => bender.next(0)).toThrow(/is not a count of bars/)
+})
+
+test('queue lands the writes made inside it on the next bar, through the worklet', async () => {
+  await onTheClock(async posted => {
+    atTick(5)
+    const landed = bender.queue(() => {
+      bender.drums({ kick: 'x...x...x...x...' })
+      bender.set({ dlyFb: 0.9 })
+    })
+    expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
+    expect(bender.position().waiting).toEqual(['bar 1'])
+    const cue = posted.findLast(m => m.kind === 'cue')
+    expect(cue).toMatchObject({ at: 16 })
+    atTick(16, cue?.id)
+    expect(await landed).toMatchObject({
+      landed: 'on bar 1',
+      bar: 1,
+      step: 0,
+      waiting: [],
+    })
+    expect(engine.controls.get().dlyFb).toBe(0.9)
+    expect(bender.board().drums.kick).toBe('x...x...x...x...')
+  })
+})
+
+test('queue aims at a named bar or a run of bars, and refuses one already begun', async () => {
+  await onTheClock(async () => {
+    atTick(40)
+    void bender.queue(() => bender.set({ dlyFb: 0.9 }), 4)
+    void bender.queue(() => bender.set({ dlyFb: 0.2 }), { bar: 9 })
+    expect(bender.position().waiting).toEqual(['bar 4', 'bar 9'])
+    expect(() =>
+      bender.queue(() => bender.set({ dlyFb: 0.5 }), { bar: 2 }),
+    ).toThrow('bar 2 has begun or passed; the counter is on bar 2')
+    expect(() =>
+      bender.queue(async () => {
+        bender.set({ dlyFb: 0.5 })
+      }),
+    ).toThrow(/writes after an await are not queued/)
+    expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
+    expect(bender.unqueue()).toEqual({ dropped: 2 })
+  })
+})
+
+test('queue lands at once while the kit is stopped, and unqueue drops what waits', async () => {
+  expect(await bender.queue(() => bender.set({ dlyFb: 0.9 }))).toMatchObject({
+    landed: 'at once, as the kit is not running',
+  })
+  expect(engine.controls.get().dlyFb).toBe(0.9)
+  await onTheClock(async () => {
+    atTick(5)
+    const dropped = bender.queue(() => bender.set({ dlyFb: 0.2 }))
+    bender.unqueue()
+    expect((await dropped).landed).toBe('dropped by unqueue')
+    expect(engine.controls.get().dlyFb).toBe(0.9)
   })
 })

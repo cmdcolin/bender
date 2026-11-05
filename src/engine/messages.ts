@@ -115,8 +115,24 @@ export interface RetroFlushMsg {
   kind: 'retroFlush'
 }
 
+/** Params to land when the kit's counter reaches tick `at`: `pack` holds the
+    values, and `mask` marks which of them the cue writes. */
+export interface CueMsg {
+  kind: 'cue'
+  id: number
+  at: number
+  pack: Float32Array
+  mask: Uint8Array
+}
+
+export interface UncueMsg {
+  kind: 'uncue'
+}
+
 export type ToWorklet =
   | ParamsMsg
+  | CueMsg
+  | UncueMsg
   | SampleMsg
   | SeekMsg
   | CloseTakeMsg
@@ -142,6 +158,8 @@ export interface MeterMsg {
       how long an unswung step lasts at the rate it is clocking. */
   drumClock: number
   drumStepMs: number
+  /** The id of the last cue the counter landed, 0 before any. */
+  cued: number
   /** Voices the kit has fired since the last meter, as the bit order of a step.
       The grid lights off this, so a hit from the mic, a bridged trigger line or
       a pad shows on the row it struck rather than only in the air. */

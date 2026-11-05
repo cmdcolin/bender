@@ -4,7 +4,7 @@ bender publishes `window.bender`, a JavaScript API for the page. A browsing
 agent such as Claude in Chrome calls it to read and change the board, write
 melodies and drum patterns, and measure the sound. The app page carries a
 `<meta name="ai-instructions">` tag and logs a console message, and each says to
-read `bender.help` first. `bender.help` returns an overview and lists six
+read `bender.help` first. `bender.help` returns an overview and lists seven
 topics, and `bender.guide(topic)` documents the calls in each.
 
 ![bender in Chrome with the Claude side panel open on the right. The panel shows the request "This page is bender, a circuit-bent toy keyboard, and it has a scripting API on window.bender. Load the dying toy preset, write a C minor arpeggio into the melody memory with a kick on every beat, play both, and tell me what bender.listen hears", followed by the steps Claude took: capturing the page, clicking, reading page text. On the left, the Toy keyboard section is open with its tune set to yours and the notes of the arpeggio in the piano roll.](img/claude-in-chrome.jpg)
@@ -65,7 +65,7 @@ Then ask Claude Code to open the public URL, or
 
 | Call                                   | Effect                                                                                                                               |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `bender.guide(topic)`                  | the calls for `read`, `change`, `music`, `drums`, `line` or `sound`                                                                  |
+| `bender.guide(topic)`                  | the calls for `read`, `change`, `music`, `drums`, `line`, `clock` or `sound`                                                         |
 | `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                                                                          |
 | `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text                                                           |
 | `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                        |
@@ -82,6 +82,10 @@ Then ask Claude Code to open the public URL, or
 | `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                      |
 | `bender.listen(ms)`                    | peak level, limiter gain reduction, supply rail, reboots, sources, the notes of each audible machine and drum hits                   |
 | `bender.link()`                        | a `#set=` URL for the current board                                                                                                  |
+| `bender.position()`                    | the kit's counter as bar, beat and step, its bpm, and the bars queued writes wait for                                                |
+| `bender.next(bars?)`                   | resolves just after the next downbeat, or after the next bar divisible by `bars`; `'beat'` waits for a beat                          |
+| `bender.queue(write, when?)`           | lands the writes made inside `write` on the kit's step at the next bar, the next bar divisible by `when`, or `{ bar: 32 }`           |
+| `bender.unqueue()`                     | drops queued writes                                                                                                                  |
 
 ## Limitations
 
@@ -94,6 +98,11 @@ Then ask Claude Code to open the public URL, or
 - `bender.set` with `seconds` glides on animation frames, and Chrome pauses
   animation frames in a hidden tab. Without `seconds`, `set` posts the new
   values to the audio worklet immediately, in any tab.
+- `bender.next` resolves off the meters, up to about 16 ms after the downbeat.
+  `bender.queue` lands its controls in the audio worklet on the sample the kit
+  steps onto the bar, so the downbeat plays the new pattern; a stage that reads
+  its controls once a block takes them up within 128 samples. A glide inside a
+  queue starts from the meters. Play and stop have no queue.
 - A screenshot shows the panel and the scope. `bender.listen` measures the sound
   from the meters.
 - The Claude in Chrome JavaScript tool cuts a returned string at 1000 characters
@@ -108,8 +117,9 @@ Then ask Claude Code to open the public URL, or
 `src/ui/agentApi.test.ts` runs the API in jsdom. `pnpm agent` serves the app,
 opens it in headless Chrome, starts audio with a synthesized gesture, writes a
 tune and a kit, and checks the readings from `bender.listen`, including that the
-board goes quiet after `bender.stop()`. The script exits non-zero when a check
-fails.
+board goes quiet after `bender.stop()`, and that `bender.next` and
+`bender.queue` land on the bars after the one `bender.position` reports. The
+script exits non-zero when a check fails.
 
 `pnpm agent:eval` builds and serves the site, then runs one `claude -p --chrome`
 session per task in `scripts/agent-eval.ts`. Each session opens the app in a tab

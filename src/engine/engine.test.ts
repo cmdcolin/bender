@@ -14,7 +14,7 @@ import {
 } from './engine.ts'
 import { IDX, MAX_SOURCES, STEM_FILES } from './params.ts'
 
-import type { RecMsg } from './messages.ts'
+import type { RecMsg, ToWorklet } from './messages.ts'
 
 // Animation frames never fire here, so morphs and param posts move only on the
 // engine's timer fallback, and a synchronous test sees a morph still in flight.
@@ -1432,4 +1432,86 @@ test('a hunt calls off a board still waiting for the downbeat', async () => {
   expect(engine.controls.get().drumKick).not.toBe(0x8888)
   expect(engine.history.get().past).toHaveLength(1)
   vi.useRealTimers()
+})
+
+function cueing() {
+  const engine = new Engine()
+  const posted: ToWorklet[] = []
+  Object.assign(engine, {
+    node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
+  })
+  engine.running.set(true)
+  engine.setDrumsPlaying(true)
+  counter(engine, 5)
+  const cues = () => posted.filter(m => m.kind === 'cue')
+  const landing = (tick: number) => {
+    const id = cues().at(-1)?.id ?? 0
+    engine.meter.set({ ...engine.meter.get(), tick, cued: id })
+  }
+  return { engine, posted, cues, landing }
+}
+
+test('a cue waits in the worklet, and the board follows on the meter that reports it landed', async () => {
+  const { engine, posted, cues, landing } = cueing()
+  const landed = engine.cue({ dlyFb: 0.5 }, 16)
+  const cue = cues()[0]
+  expect(cue).toMatchObject({ at: 16 })
+  expect(cue?.pack[IDX.dlyFb]).toBe(0.5)
+  expect(cue?.mask[IDX.dlyFb]).toBe(1)
+  expect(cue?.mask.reduce((a, b) => a + b, 0)).toBe(1)
+  counter(engine, 15)
+  expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
+  expect(engine.cueTicks()).toEqual([16])
+  landing(16)
+  expect(engine.controls.get().dlyFb).toBe(0.5)
+  expect(await landed).toBe(16)
+  expect(posted.slice(-2).map(m => m.kind)).toEqual(['params', 'uncue'])
+  expect(engine.history.get().past).toHaveLength(1)
+  expect(engine.cueTicks()).toEqual([])
+})
+
+test('two cues for one downbeat go to the worklet as one, and a following one waits its turn', async () => {
+  const { engine, cues, landing } = cueing()
+  const kick = engine.cue({ drumKick: 0x8888 }, 16)
+  const delay = engine.cue({ dlyFb: 0.5 }, 16)
+  const following = engine.cue({ dlyFb: 0.9 }, 32)
+  expect(cues().at(-1)?.mask[IDX.drumKick]).toBe(1)
+  expect(cues().at(-1)?.mask[IDX.dlyFb]).toBe(1)
+  landing(16)
+  expect(await Promise.all([kick, delay])).toEqual([16, 16])
+  expect(engine.controls.get()).toMatchObject({ drumKick: 0x8888, dlyFb: 0.5 })
+  expect(cues().at(-1)).toMatchObject({ at: 32 })
+  landing(32)
+  expect(await following).toBe(32)
+  expect(engine.controls.get().dlyFb).toBe(0.9)
+})
+
+test('stopping the kit lands every cue waiting, and a cue on a stopped kit lands at once', async () => {
+  const { engine } = cueing()
+  const waiting = engine.cue({ dlyFb: 0.5 }, 64)
+  engine.setDrumsPlaying(false)
+  expect(await waiting).toBe(5)
+  expect(engine.controls.get().dlyFb).toBe(0.5)
+  expect(await engine.cue({ dlyFb: 0.7 }, 80)).toBe(5)
+  expect(engine.controls.get().dlyFb).toBe(0.7)
+})
+
+test('a counter that goes back re-aims a cue on a run of bars, and not one on a named bar', () => {
+  const { engine, cues } = cueing()
+  counter(engine, 40)
+  void engine.cue({ dlyFb: 0.5 }, 64, 32)
+  void engine.cue({ dlyFb: 0.7 }, 96)
+  counter(engine, 3)
+  expect(engine.cueTicks()).toEqual([32, 96])
+  expect(cues().at(-1)).toMatchObject({ at: 32 })
+})
+
+test('uncue drops every cue waiting and tells the worklet', async () => {
+  const { engine, posted } = cueing()
+  const dropped = engine.cue({ dlyFb: 0.5 }, 16)
+  expect(engine.uncue()).toBe(1)
+  expect(await dropped).toBeNull()
+  expect(posted.at(-1)?.kind).toBe('uncue')
+  counter(engine, 16)
+  expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
 })

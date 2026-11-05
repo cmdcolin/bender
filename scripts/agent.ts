@@ -46,6 +46,18 @@ interface Heard {
   toyNotes?: string[]
 }
 
+interface Position {
+  bar: number
+  step: number
+}
+
+interface Clock {
+  before: Position
+  next: Position
+  queued: Position & { landed: string }
+  snare?: string
+}
+
 const served = await serveDev(PORT)
 const profile = mkdtempSync(join(tmpdir(), 'bender-agent-'))
 const chrome = spawn(
@@ -105,6 +117,30 @@ try {
       Boolean(clean.drumHits?.includes('kick')) &&
       Boolean(clean.toyNotes?.includes('E4')),
     clean,
+  )
+
+  const clock = (await evaluate(
+    page,
+    `(async () => {
+      const before = bender.position()
+      const next = await bender.next('bar')
+      const queued = await bender.queue(() =>
+        bender.drums({ snare: '....x.......x...' }),
+      )
+      return { before, next, queued, snare: bender.board().drums.snare }
+    })()`,
+  )) as Clock
+  check(
+    'next resolves on the downbeat after the bar position reports',
+    clock.next.bar === clock.before.bar + 1 && clock.next.step <= 1,
+    clock,
+  )
+  check(
+    'queue lands its writes on the bar after that',
+    clock.queued.landed === `on bar ${clock.next.bar + 1}` &&
+      clock.queued.step <= 1 &&
+      clock.snare === '....x.......x...',
+    clock,
   )
 
   // At 6 Hz the stacked lane strikes every 0.33 s, and a struck voice falls
