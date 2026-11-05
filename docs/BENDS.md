@@ -1047,7 +1047,7 @@ filters either side of the converters.
 The Sheet bend is a 1.2 by 0.9 m steel sheet with two contact mics on it, one
 per side. 128 of its modes ring: the lowest 56 as the plate has them, the rest
 spread up to 12 kHz. Its decays were matched to contact-mic recordings
-(`agent-docs/ideas/waiting-on-a-call/metal-sheet-source.md`).
+(`agent-docs/reference/metal-sheet.md`).
 
 - **Strikes**, **Struck by** and **Hardness:** random hits, a kit voice or a
   key, from a soft mallet to a pipe. A hit lands at a random spot and sometimes

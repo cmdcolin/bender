@@ -4,7 +4,7 @@ import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 
 // A steel sheet with contact mics on it, measured against contact-mic
-// recordings: agent-docs/ideas/waiting-on-a-call/metal-sheet-source.md.
+// recordings: agent-docs/reference/metal-sheet.md.
 
 export const SHEET_KEY_CHOICE = N_DRUM_VOICES + 2
 

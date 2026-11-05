@@ -1,12 +1,11 @@
 ---
-name: metal-sheet-source
+name: metal-sheet
 description:
-  A big steel sheet struck, scraped and fed back through a contact mic, for
-  harsh noise; prototyped offline against real recordings, with the numbers it
-  settled. Waits on whether to build it and on a CPU budget for the modes.
+  The steel sheet behind the Sheet bend: what an offline prototype settled,
+  the contact-mic recordings it was measured against, and their sources.
 ---
 
-# Metal sheet source
+# Metal sheet
 
 A contact mic on junk metal, run hot into dirt and feedback, is a harsh-noise
 staple. An offline prototype (2026-11-05) synthesised a glass bottle tapped, a
@@ -53,12 +52,19 @@ Contact mic unless noted, measured on 128 kbps previews.
 - The prototype reached 0.05–0.1 s on hit highs, but only 18–22 % at 0.8–3 kHz
   and 1.9–2.6 dB of jitter on scrapes.
 
-## Open
+## In the Sheet bend
 
-- **CPU:** 1,660 modes is offline only. A worklet budget is perhaps 100–150
-  modes plus something cheap for the dense top.
-- **Playing it:** a pad to drag (speed, pressure) and click (strike); kit hits
-  strike it too.
+`src/dsp/stages/sheet.ts` keeps the damping, pitch, rattle and piezo tilt above
+with 128 modes (56 from the grid, 72 log-spaced to 12 kHz, the density boost
+capped at 4 so no one mode sings), at about 2 % of a core. Four modes run per
+loop: one mode a loop cost 6.7 ns per mode-sample, four cost 2.
+
+- **Not built:** scraping, the feedback howl and the bottle. Scraping wants a
+  pad to drag; the howl is the board's own feedback bus with the sheet in a
+  slot.
+- **Shake** drives the sheet from the board, tilted 1 / (1 + f / 600). Untilted
+  and at the first gain it drove the high modes into steady tones and pinned the
+  limiter.
 
 ## Sources
 
