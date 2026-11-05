@@ -32,6 +32,8 @@ const BUS_KEYS = [
   'fmPatchFault',
   'fmPatchDataLine',
   'fmPatchDataFault',
+  'fmExpLine',
+  'fmExpFault',
   'fmBusCut',
   'fmStrobe',
   'fmToyBus',

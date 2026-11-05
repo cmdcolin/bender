@@ -468,6 +468,8 @@ export const PARAM_DEFS = [
   ['fmRot', 'slew'],
   ['fmHeat', 'slew'],
   ['fmRing', 'slew'],
+  ['fmExpLine', 'step'],
+  ['fmExpFault', 'step'],
 
   ['pcmLevel', 'slew'],
   ['pcmMute', 'ramp'],

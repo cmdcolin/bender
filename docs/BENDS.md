@@ -438,6 +438,15 @@ write touches that register again.
     bits and every 3 dB at 7.
   - A narrow adder folds the quiet middle of each sine into a harsh buzz at the
     note's pitch.
+- **Exp line:** the twelve wires from the log adder onto the exp table (E0–E7)
+  and the shifter after it (E8–E11). On linear the chip runs the log path
+  unwrapped while a line is chosen.
+  - E0–E3 are steps too small to hear. E7 is 3 dB, and each shifter line moves
+    levels by whole octaves.
+  - Every operator reads across these wires eight times a sample, so a parted
+    shifter line hands each one another's octave: E9 parted at 0.7 is hiss over
+    the tune, 0.69 flat.
+  - E10 or E11 to +V puts everything 24 or 48 dB down.
 - **Toy on bus:** solders the toy keyboard's output onto the low data bits,
   loudest toy bit on the lowest wire. The control counts bits, 1 to 8, and the
   toy must be sounding. The damage builds as the toy plays.

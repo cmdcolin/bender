@@ -225,6 +225,10 @@ export const BUS_SPECS: Record<string, BusSpec> = {
           [ribbon('fmWaveDataLine', 'fmWaveDataFault')],
         ],
       },
+      {
+        chips: ['adder', 'exp table'],
+        links: [[ribbon('fmExpLine', 'fmExpFault')]],
+      },
     ],
   },
 }

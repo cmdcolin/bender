@@ -214,6 +214,16 @@ const BUSES: BusDef[] = [
     modes: FM_MODES,
   },
   {
+    chip: 'fm',
+    bus: 'exp',
+    line: 'fmExpLine',
+    fault: 'fmExpFault',
+    depth: 'fmBusCut',
+    solo: FM,
+    tap: 'fmChip',
+    modes: FM_MODES,
+  },
+  {
     chip: 'keys',
     bus: 'addr',
     line: 'pcmAddrLine',

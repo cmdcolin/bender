@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-656 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 178
-presets, 23 stage settings and 57 named cuts. The generator reads everything
+658 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 178
+presets, 23 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 171 destinations, among
+- **A patch bay that modulates itself.** Four wires, 173 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 75 controls are shy, mostly the ones that act on the
+names it still sets it. 77 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -385,6 +385,11 @@ puts the fault on, and the rows under it show the controls it set:
   bit of both multipliers, so both operators run at nine times the note and the
   song comes out three octaves up as a whistle. The same wire also puts the song
   on half a sine and cuts every decay short
+- **levels from the wrong operator**: E9 between the log adder and the exp table
+  is parted most of the way. It tells the shifter whether to drop a level two
+  octaves, and every operator reads its level across it eight times a sample, so
+  each one keeps getting another’s octave. The tune stays in there under a hiss
+  that follows it
 - **one write late**: The latch misses often enough that every byte commits to
   the register the write before it named
 - **one voice, four times over**: The converter’s slot counter is stuck on the
@@ -407,7 +412,7 @@ puts the fault on, and the rows under it show the controls it set:
   harsh digital buzz at the pitch it always had
 
 <details>
-<summary>45 controls</summary>
+<summary>47 controls</summary>
 
 | control                        | range                                                                                    | what it does                                                                                                         |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -445,6 +450,8 @@ puts the fault on, and the rows under it show the controls it set:
 | Patch fault †                  | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s address                                                                         |
 | Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                                      | Which of the eight wires carrying the patch table’s output the fault is on                                           |
 | Patch data fault †             | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s way out                                                                         |
+| Exp line †                     | 13 of them, off through E11                                                              | Which of the twelve wires out of the log adder the fault is on                                                       |
+| Exp fault †                    | cut, to ground, to +V, bridged                                                           | The same four things, on the exp table’s address                                                                     |
 | Cut depth                      | off to full                                                                              | How far through the trace the cut goes; only the cut fault uses it                                                   |
 | Strobe slip †                  | off to full                                                                              | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
 | DAC slot †                     | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4                                 | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot           |
@@ -1379,7 +1386,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 171 of them, filt cut through shift quadrature                                                                         | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 173 of them, filt cut through FM exp fault                                                                             | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

@@ -367,6 +367,8 @@ export const PATCH_GROUPS: Group[] = [
             'comb pull',
             'shift drift',
             'shift quadrature',
+            'FM exp line',
+            'FM exp fault',
           ],
           groups: [
             {
@@ -467,6 +469,8 @@ export const PATCH_GROUPS: Group[] = [
                 'FM register rot',
                 'FM heat',
                 'FM operator ring',
+                'FM exp line',
+                'FM exp fault',
               ],
             },
             {

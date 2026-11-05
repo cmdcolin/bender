@@ -163,6 +163,11 @@ const LANDINGS: Landing[] = [
   at('FM register rot', ['fmLevel']),
   at('FM heat', ['fmLevel']),
   at('FM operator ring', ['fmLevel']),
+  at('FM exp line', ['fmLevel']),
+  at('FM exp fault', ['fmLevel', 'fmExpLine']),
+  at('FM cut depth', ['fmLevel'], {
+    needs: c => sliderFor('fmBusCut').needs?.(c) ?? false,
+  }),
   at('toy step tap', ['chipLevel']),
   at('toy env relax', ['chipLevel']),
   at('toy env on divider', ['chipLevel']),

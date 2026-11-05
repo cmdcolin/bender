@@ -205,6 +205,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   combPull: 'Comb',
   shiftDrift: 'Freq shifter',
   shiftQuad: 'Freq shifter',
+  fmExpLine: 'Glint',
+  fmExpFault: 'Glint',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

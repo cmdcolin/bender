@@ -184,6 +184,16 @@ const attOf = (x: number) => Math.max(Math.round(-ATT_STEPS * Math.log2(x)), 0)
 /** The adder widths the control offers after linear, in bits. */
 const ADDER_BITS = [0, 11, 10, 9, 8, 7]
 
+// The word the adder hands on, as wires. The low eight address the exp table
+// and the top four tell the shifter how many octaves down to put what it read,
+// so a fault low on the bus is a staircase cut into every level and a fault
+// high on it moves whole octaves of loudness at once. A knife here with the
+// adder on linear runs the part's arithmetic at a width nothing wraps at, so
+// the only thing bent is the wire.
+const EXP_LINES = 12
+const EXP_TOP = (1 << EXP_LINES) - 1
+const UNWRAPPED = 0x7fffffff
+
 // How far the toy's output swings the bus: a tune at its stock level spans most
 // of the byte.
 const TOY_BUS_GAIN = 2
@@ -227,6 +237,8 @@ const WAVE_DATA_SEED = 0x6b
 /** And on the patch table's two sides. */
 const PATCH_ADDR_SEED = 0x2e
 const PATCH_DATA_SEED = 0x91
+/** And on the exp table's address. */
+const EXP_SEED = 0x4d
 /** Which reads the blob's last pin is holding down, for a bridge part-made. */
 const BLOB_SEED = 0xc4
 
@@ -496,6 +508,11 @@ export class FmChip implements Stage {
   private patchDataLine = -1
   private patchDataFault = 0
   private fetched = new Uint8Array(1 << PATCH_BYTE_BITS)
+  // The exp table's address, which every operator on the log path reads its
+  // level back out by, eight or more times a sample.
+  private expBus = new Bus(EXP_LINES, EXP_SEED)
+  private expLine = -1
+  private expFault = 0
   // The blob of solder from the shift register's output onto those same pins,
   // and how far across them it ran. A hardware mod rather than a register
   // write, so nothing the CPU does touches it: it survives every patch, every
@@ -1430,7 +1447,19 @@ export class FmChip implements Stage {
       ADDER_BITS.length,
       bay.read(DEST.fmAdder),
     )
-    this.adderMask = adder > 0 ? (1 << ADDER_BITS[adder]!) - 1 : 0
+    this.expLine =
+      hop(p[IDX.fmExpLine]!, EXP_LINES + 1, bay.read(DEST.fmExpLine)) - 1
+    this.expFault = hop(
+      p[IDX.fmExpFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmExpFault),
+    )
+    this.adderMask =
+      adder > 0
+        ? (1 << ADDER_BITS[adder]!) - 1
+        : this.expLine >= 0
+          ? UNWRAPPED
+          : 0
     this.toyBits = hop(p[IDX.fmToyBus]!, 9, bay.read(DEST.fmToyBus))
     const toy = ctx.toy
     const micOnBus = micInto(p, ctx, MIC.glintBus)
@@ -1781,10 +1810,20 @@ export class FmChip implements Stage {
   }
 
   // One operator's output through the log domain: two attenuations added on
-  // an adder this.adderMask wide, then back through the exp table.
+  // an adder this.adderMask wide, then across the exp table's wires and back
+  // through the table.
   private logMul(s: number, gain: number) {
     if (s === 0 || gain <= 0) return 0
-    const att = (attOf(Math.abs(s)) + attOf(gain)) & this.adderMask
+    const sum = (attOf(Math.abs(s)) + attOf(gain)) & this.adderMask
+    const att =
+      this.expLine < 0
+        ? sum
+        : this.expBus.read(
+            Math.min(sum, EXP_TOP),
+            this.expLine,
+            this.expFault,
+            this.busCut,
+          )
     const out = EXP_TABLE[att & (ATT_STEPS - 1)]! / (1 << (att >> 8))
     return s < 0 ? -out : out
   }
@@ -1867,6 +1906,7 @@ export class FmChip implements Stage {
     this.waveDataBus.reset()
     this.patchBus.reset()
     this.patchDataBus.reset()
+    this.expBus.reset()
     this.held = 0
     this.slotPos = 0.5
     this.addrLatch.reset()

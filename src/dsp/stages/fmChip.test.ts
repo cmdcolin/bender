@@ -1133,6 +1133,46 @@ test('a wire on the adder lane narrows the adder', () => {
   expect(sine(wire)).toEqual(sine({ fmAdder: ADDER['8'] }))
 })
 
+// The word the adder hands the exp table and the shifter, as twelve wires.
+const EXP = { E0: 1, E9: 10, E11: 12 }
+
+test('a parted shifter line hands each operator another one’s octave', () => {
+  const clean = sine({})
+  const parted = sine({
+    fmExpLine: EXP.E9,
+    fmExpFault: FAULT.cut,
+    fmBusCut: 0.7,
+  })
+  expect(spectrum(parted, SR).flatness).toBeGreaterThan(0.3)
+  expect(spectrum(clean, SR).flatness).toBeLessThan(0.01)
+})
+
+test('the top shifter line held high puts every level 48 dB down', () => {
+  const clean = sine({})
+  const high = sine({ fmExpLine: EXP.E11, fmExpFault: FAULT.supply })
+  expect(rms(high)).toBeLessThan(0.01 * rms(clean))
+  expect(bin(high, 220)).toBeGreaterThan(0)
+})
+
+test('the bottom exp line is a step too small to hear', () => {
+  const clean = sine({})
+  expect(
+    deviation(sine({ fmExpLine: EXP.E0, fmExpFault: FAULT.supply }), clean),
+  ).toBeLessThan(0.02)
+})
+
+test('a wire on the exp line lane moves the fault', () => {
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmExpLine,
+    mod0Depth: EXP.E9 / 13,
+  }
+  expect(sine({ ...wire, fmExpFault: FAULT.ground })).toEqual(
+    sine({ fmExpLine: EXP.E9, fmExpFault: FAULT.ground }),
+  )
+})
+
 const toyOnBus = (o: Partial<Controls>) =>
   renderStems({ ...FM_ONLY, chipLevel: 0.6, ...o }, 3).stems[
     SOURCE_TAPS.indexOf('fmChip')

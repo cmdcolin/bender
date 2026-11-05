@@ -385,6 +385,18 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'Glint',
+    part: BUS,
+    name: 'levels from the wrong operator',
+    blurb:
+      'E9 between the log adder and the exp table is parted most of the way. It tells the shifter whether to drop a level two octaves, and every operator reads its level across it eight times a sample, so each one keeps getting another’s octave. The tune stays in there under a hiss that follows it',
+    patch: {
+      fmExpLine: pick('fmExpLine', 'E9'),
+      fmExpFault: pick('fmExpFault', 'cut'),
+      fmBusCut: 0.7,
+    },
+  },
+  {
     group: 'Parlor',
     part: BUS,
     name: 'the top bit sticks',
