@@ -59,13 +59,26 @@ with 128 modes (56 from the grid, 72 log-spaced to 12 kHz, the density boost
 capped at 4 so no one mode sings), at about 2 % of a core. Four modes run per
 loop: one mode a loop cost 6.7 ns per mode-sample, four cost 2.
 
-- **Not built:** scraping and the bottle. Scraping wants a pad to drag.
+- **Not built:** scraping. It wants a pad to drag.
 - **Shake** drives the sheet from the board's output a block late, tilted 1 /
   (1 + f / 600). Untilted and at the first gain it drove the high modes into
   steady tones and pinned the limiter. The output includes the sheet, so Shake
   is also the prototype's feedback loop: at Level 0.8 and Hold 0.8 a strike dies
   away below 0.75, sustains near 0.9 and howls into the clipper at 1.
 - It was a bend for a day; it is a source so it can be played from its face.
+
+## The Bottle instrument
+
+`src/dsp/stages/bottle.ts` is the prototype's bottle on the same engine
+(`src/dsp/stages/struck.ts`): rings n = 2 to 6 on a 760 Hz base, each a pair
+0.45 % apart, at three heights (1, 1.14 and 1.35 times), plus a 165 Hz thunk and
+a 2.9 kHz click. 32 modes, about a third of the sheet's cost. Across the face is
+the angle round the bottle and down it is the height along the wall.
+
+- **Ring:** walls take min(2.5 s, 2000 / f) times Hold to the 0.6; the thunk
+  0.09 s, the click 0.02 s.
+- **Fill** lowers the walls by 1 / sqrt(1 + 0.9 fill), the thunk by 0.3 fill,
+  and divides the walls' ring by 1 + 2 fill.
 
 ## Sources
 

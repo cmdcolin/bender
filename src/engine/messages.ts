@@ -83,9 +83,10 @@ export interface DrumHitMsg {
   skipTick?: number
 }
 
-/** A hand on the sheet, at x and y as fractions of its width and depth. */
-export interface SheetHitMsg {
-  kind: 'sheetHit'
+/** A hand on the sheet or the bottle, at x and y as fractions of its face. */
+export interface StruckHitMsg {
+  kind: 'struckHit'
+  target: 'sheet' | 'bottle'
   x: number
   y: number
   gain: number
@@ -150,7 +151,7 @@ export type ToWorklet =
   | FourBlankMsg
   | NoteMsg
   | DrumHitMsg
-  | SheetHitMsg
+  | StruckHitMsg
   | SfxMsg
   | TransportMsg
   | RecordMsg

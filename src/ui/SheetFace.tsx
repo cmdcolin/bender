@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { Faceplate } from './Faceplate.tsx'
+import { faceSpot } from './faceSpot.ts'
 import styles from './SheetFace.module.css'
 
 import type { KeyboardEvent, PointerEvent } from 'react'
@@ -30,12 +31,12 @@ export function SheetFace({
 }) {
   const [marks, setMarks] = useState<Mark[]>([])
   const hit = (x: number, y: number) => {
-    engine.sheetHit(x, y, 1)
+    engine.struckHit('sheet', x, y)
     setMarks(m => [...m.slice(-5), { id: nextMark++, x, y }])
   }
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
-    const box = e.currentTarget.getBoundingClientRect()
-    hit((e.clientX - box.left) / box.width, (e.clientY - box.top) / box.height)
+    const { x, y } = faceSpot(e.currentTarget, e.clientX, e.clientY, W, H)
+    hit(x, y)
   }
   const onKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {

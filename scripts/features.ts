@@ -64,6 +64,8 @@ const BLURBS: Record<string, string> = {
     'An analog octave pedal after MicroSputter V2: a comparator with hysteresis clocks a divider for the sub, an XOR against its own delayed edge doubles it for the octave up, and a switch samples the input on every divider rise. With Track down, harmonics and the divider’s own output reach the comparator, and a slow recovery after each edge makes it fire on extra edges and drop others. Bounce swaps the octave and the sub on a clock, up to audio rate.',
   Codec:
     'A perceptual codec, encoder into decoder: an MDCT, a bit budget spent on the loudest bands each frame, and a decoder that conceals lost frames. Low bitrates make bands flicker and the top end swirl, long frames smear hits into pre-echo, bit errors jump bands and chirp single bins, a decoder near its deadline stutters when the supply sags, and fed back into itself the codec re-encodes its own artefacts until they ring.',
+  Bottle:
+    'A glass bottle on a table with a contact mic taped to its side. Click its face to tap it where you click: across is round the bottle, down is along it. Things also tap it at random, or a kit voice or a key does. Fill pours water in, lower and duller the fuller it is. Shake lets the board’s own sound sing in the glass, and turned well up it howls.',
   Sheet:
     'A big steel sheet with two contact mics on it. Click its face to hit it where you click; things also strike it at random, or a kit voice or a key does, and a hit sometimes bounces. The board’s own sound shakes it so it hums along, and turned well up it hears itself and howls. A loud sheet rattles against what it lies on. Hold runs from lying on a floor to hung from a corner.',
   'Rack verb':

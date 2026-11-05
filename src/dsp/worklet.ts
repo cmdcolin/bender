@@ -181,8 +181,8 @@ class BenderProcessor extends AudioWorkletProcessor {
           if (msg.skipTick !== undefined)
             this.built.toyDrum.skip(msg.bits, msg.skipTick)
           break
-        case 'sheetHit':
-          this.built.sheet.strikeAt(msg.x, msg.y, msg.gain)
+        case 'struckHit':
+          this.built[msg.target].strikeAt(msg.x, msg.y, msg.gain)
           break
         case 'sfx': {
           const chip =

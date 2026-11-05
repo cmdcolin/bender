@@ -370,6 +370,7 @@ export const PATCH_GROUPS: Group[] = [
             'FM exp line',
             'FM exp fault',
             'sheet level',
+            'bottle level',
           ],
           groups: [
             {
@@ -527,6 +528,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             { name: 'Sheet', choices: ['sheet level'] },
+            { name: 'Bottle', choices: ['bottle level'] },
             {
               name: 'Pedals',
               choices: [

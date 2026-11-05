@@ -46,6 +46,7 @@ const BOARD: Partial<Controls> = {
   octMix: 0.5,
   rackMix: 0.5,
   sheetLevel: 0.5,
+  bottleLevel: 0.5,
   stompMix: 0.6,
   dlyMix: 0.5,
   echoLevel: 0.5,

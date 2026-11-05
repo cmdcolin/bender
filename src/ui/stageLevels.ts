@@ -12,6 +12,7 @@ const LEVEL_OF: Record<string, ControlKey> = {
   Spool: 'sampleLevel',
   Layercake: 'fourLevel',
   Sheet: 'sheetLevel',
+  Bottle: 'bottleLevel',
 }
 
 const BYPASS_OF: Record<string, ControlKey> = Object.fromEntries([

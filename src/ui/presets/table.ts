@@ -1521,6 +1521,28 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'glass under the tune',
+    blurb:
+      'Every note the toy plays taps a bottle a third full of water, and the rack reverb holds the toy and the glass together',
+    patch: {
+      chipLevel: 0.6,
+      bendSlot0: 10,
+      rackMix: 0.65,
+      rackDecay: 0.97,
+      rackSize: 2.2,
+      rackPre: 90,
+      rackWander: 0.7,
+      tapeMix: 0.6,
+      tapeWow: 0.45,
+      bottleLevel: 1,
+      bottleStruckBy: 10,
+      bottleStrikes: 0,
+      bottleFill: 0.3,
+      bottleHold: 0.5,
+      bottleHard: 0.85,
+    },
+  },
+  {
     name: 'slow clock',
     blurb:
       'The reverb’s sample clock is dragged down to a quarter, so every delay runs four times as long and the images of the slow clock fold into a gritty tail',

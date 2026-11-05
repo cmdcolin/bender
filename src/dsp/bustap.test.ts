@@ -97,6 +97,7 @@ test('the desk names the sources the chain is built with, in order', () => {
     7,
     8,
     9,
+    10,
     TAP_MIC,
   ])
 })

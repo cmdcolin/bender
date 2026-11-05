@@ -59,6 +59,7 @@ export const CHANNELS: readonly Channel[] = [
     yours: true,
   },
   { key: 'sheetLevel', name: 'Sheet', tap: sourceTap('sheet') },
+  { key: 'bottleLevel', name: 'Bottle', tap: sourceTap('bottle') },
   { key: 'micLevel', name: 'Mic', tap: TAP_MIC, yours: true },
 ]
 

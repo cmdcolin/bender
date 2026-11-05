@@ -6,6 +6,7 @@ import { AddMenu } from './AddMenu.tsx'
 import { bench, INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
+import { BottleFace } from './BottleFace.tsx'
 import { onBoard } from './chain-map.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
@@ -66,7 +67,10 @@ const TAPES: Row = [
   ['Layercake', FourTrackFace],
 ]
 
-const METAL: Row = [['Sheet', SheetFace]]
+const STRUCK: Row = [
+  ['Sheet', SheetFace],
+  ['Bottle', BottleFace],
+]
 
 const ADDED_LEVEL = 0.6
 
@@ -79,6 +83,7 @@ const KIND: Record<string, string> = {
   Spool: 'tape loop',
   Layercake: 'four-track',
   Sheet: 'struck metal',
+  Bottle: 'glass bottle',
 }
 
 // The keyboards, the kit, the tape loop and the four-track. A machine shows while its stage is
@@ -133,7 +138,7 @@ export function Instruments({
   const { grid: staged, pedals, bends } = useStoreValue(bench)
   const kit = staged ? [] : faces(KIT)
   const stagedKit = staged ? faces(KIT) : []
-  const tapes = [...faces(TAPES), ...faces(METAL)]
+  const tapes = [...faces(TAPES), ...faces(STRUCK)]
 
   const bringUp = (stage: string) => {
     bring(stage)

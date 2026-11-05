@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-666 knobs and switches in 39 groups, ten bends for six slots, 18 ROM tunes, 181
+675 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 182
 presets, 23 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 174 destinations, among
+- **A patch bay that modulates itself.** Four wires, 175 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 181 presets, and a roll button on every heading as well as
+- **Whole boards.** 182 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -682,6 +682,31 @@ lies on. Hold runs from lying on a floor to hung from a corner.
 
 </details>
 
+### Bottle
+
+A glass bottle on a table with a contact mic taped to its side. Click its face
+to tap it where you click: across is round the bottle, down is along it. Things
+also tap it at random, or a kit voice or a key does. Fill pours water in, lower
+and duller the fuller it is. Shake lets the board’s own sound sing in the glass,
+and turned well up it howls.
+
+<details>
+<summary>9 controls</summary>
+
+| control   | range                                                                  | what it does                                                        |
+| --------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Level     | 0 to 4, normal 0 to 1                                                  | How loud the bottle is in the source mix                            |
+| Strikes   | 0 to 8 per second                                                      | How often something taps the bottle, at random                      |
+| Struck by | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key | A kit voice or a key that taps the bottle too                       |
+| Hardness  | off to full                                                            | A fingertip at the bottom, a spoon at the top                       |
+| Size      | 0.25× to 4×                                                            | Bigger bottles ring lower                                           |
+| Fill      | off to full                                                            | Water in the bottle: lower and duller the fuller it is              |
+| Hold      | off to full                                                            | Standing on a table at the bottom, hung by the neck at the top      |
+| Shake     | off to full                                                            | How hard the board’s own sound shakes the bottle, so it sings along |
+| Rattle    | off to full                                                            | How much a loud bottle rocks and clinks on the table                |
+
+</details>
+
 ### Spool
 
 A loaded audio file, looping through the chain. With _Struck by_ on a voice and
@@ -859,7 +884,7 @@ at zero, and a Glint turned up with nothing striking it (no hand on its keys, no
 tune next door) sits at three quarters and plays silence. _Bus drive_ is the
 summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.
 
-The desk is a widget, and its eleven faders are counted under the machines they
+The desk is a widget, and its twelve faders are counted under the machines they
 belong to: each is the first knob on that machine's panel and one strip of this
 one.
 
@@ -1410,7 +1435,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 174 of them, filt cut through sheet level                                                                              | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 175 of them, filt cut through bottle level                                                                             | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -1721,7 +1746,7 @@ result:
 
 ### Presets
 
-181 presets. Each name is a link that opens the app with that board loaded, and
+182 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1944,6 +1969,9 @@ the board waits until you press play.
 - [**cheap cathedral**](https://cmdcolin.github.io/bender/app/#set=bendSlot0:10,rackDecay:0.97,rackSize:2.2,rackPre:90,rackWander:0.7,rackMix:0.65,tapeMix:0.6,tapeWow:0.45)
   — The toy plays through a 1980s rack reverb at its largest program and nearly
   full decay, onto a tape that wanders
+- [**glass under the tune**](https://cmdcolin.github.io/bender/app/#set=bottleLevel:1,bottleStrikes:0,bottleStruckBy:10,bottleHard:0.85,bottleFill:0.3,bottleHold:0.5,bendSlot0:10,rackDecay:0.97,rackSize:2.2,rackPre:90,rackWander:0.7,rackMix:0.65,tapeMix:0.6,tapeWow:0.45)
+  — Every note the toy plays taps a bottle a third full of water, and the rack
+  reverb holds the toy and the glass together
 - [**slow clock**](https://cmdcolin.github.io/bender/app/#set=bendSlot0:10,rackDecay:0.94,rackDamp:0.2,rackClock:0.25,rackMix:0.7)
   — The reverb’s sample clock is dragged down to a quarter, so every delay runs
   four times as long and the images of the slow clock fold into a gritty tail

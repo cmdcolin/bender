@@ -1042,6 +1042,15 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'sheetHold',
   'sheetShake',
   'sheetRattle',
+  'bottleLevel',
+  'bottleStrikes',
+  'bottleStruckBy',
+  'bottleHard',
+  'bottleSize',
+  'bottleFill',
+  'bottleHold',
+  'bottleShake',
+  'bottleRattle',
 ]
 
 // Retired controls that old links still carry, each read into the control that

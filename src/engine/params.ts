@@ -571,6 +571,15 @@ export const PARAM_DEFS = [
   ['sheetHold', 'slew'],
   ['sheetShake', 'slew'],
   ['sheetRattle', 'slew'],
+  ['bottleLevel', 'slew'],
+  ['bottleStrikes', 'slew'],
+  ['bottleStruckBy', 'step'],
+  ['bottleHard', 'slew'],
+  ['bottleSize', 'slew'],
+  ['bottleFill', 'slew'],
+  ['bottleHold', 'slew'],
+  ['bottleShake', 'slew'],
+  ['bottleRattle', 'slew'],
 
   ['micLevel', 'slew'],
   ['micPatch', 'step'],
@@ -1047,6 +1056,7 @@ export const SOURCE_TAPS = [
   'sampler',
   'fourTrack',
   'sheet',
+  'bottle',
 ] as const
 
 export type SourceTap = (typeof SOURCE_TAPS)[number]
@@ -1066,6 +1076,7 @@ export const STEM_FILES = [
   'tape-loop',
   'four-track',
   'sheet',
+  'bottle',
 ] as const
 
 export const MAX_SOURCES = SOURCE_TAPS.length

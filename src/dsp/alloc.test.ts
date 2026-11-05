@@ -241,6 +241,7 @@ const EVERYTHING: Partial<Controls> = {
   codecMix: 0.4,
   rackMix: 0.4,
   sheetLevel: 0.4,
+  bottleLevel: 0.4,
   stompMix: 0.4,
   stompSag: 0.5,
   dlyMix: 0.3,

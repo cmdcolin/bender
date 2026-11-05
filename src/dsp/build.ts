@@ -1,6 +1,7 @@
 import { Chain } from './chain.ts'
 import { MelodyMemory } from './melodyMemory.ts'
 import { Amp } from './stages/amp.ts'
+import { Bottle } from './stages/bottle.ts'
 import { Brownout } from './stages/brownout.ts'
 import { ChaosOsc } from './stages/chaosOsc.ts'
 import { Clipper } from './stages/clipper.ts'
@@ -45,6 +46,7 @@ export interface BuiltChain {
   sampler: Sampler
   fourTrack: FourTrack
   sheet: Sheet
+  bottle: Bottle
   transport: Transport
   /** The shared toy supply, out here because it is the one state worth watching
       from outside the audio thread: the panel draws it, and a test asks it
@@ -137,6 +139,8 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   chain.sources.push(fourTrack)
   const sheet = new Sheet(sr, seed ^ 0x5ee7)
   chain.sources.push(sheet)
+  const bottle = new Bottle(sr, seed ^ 0xb077)
+  chain.sources.push(bottle)
   return {
     chain,
     toyChip,
@@ -148,6 +152,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     sampler,
     fourTrack,
     sheet,
+    bottle,
     transport,
     rail,
     supplies,

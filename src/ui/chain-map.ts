@@ -208,6 +208,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmExpLine: 'Glint',
   fmExpFault: 'Glint',
   sheetLevel: 'Sheet',
+  bottleLevel: 'Bottle',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -264,6 +265,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   Spool: ['sampleLevel'],
   Layercake: ['fourLevel'],
   Sheet: ['sheetLevel'],
+  Bottle: ['bottleLevel'],
 }
 
 const levelKey = (n: MapNode) => SOURCE_LEVELS[n.label]?.[0]
@@ -309,6 +311,7 @@ const LINE_ROW = [
   'Spool',
   'Layercake',
   'Sheet',
+  'Bottle',
 ] as const
 
 // The levels and mixes that decide whether a stage is in the sound at all. Off
@@ -2288,6 +2291,16 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     }),
     el('circle', { cx: x + 3.5, cy: y + 4.5, r: 1, fill: c }),
     el('circle', { cx: x + 8.5, cy: y + 7.5, r: 1, fill: c }),
+  ],
+  // A bottle: neck, shoulder and body.
+  Bottle: (x, y, c) => [
+    el('path', {
+      d: `M ${x + 5} ${y} L ${x + 7} ${y} L ${x + 7} ${y + 3} L ${x + 9} ${y + 5} L ${x + 9} ${y + 12} L ${x + 3} ${y + 12} L ${x + 3} ${y + 5} L ${x + 5} ${y + 3} Z`,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 1,
+      strokeLinejoin: 'round',
+    }),
   ],
   // A cassette: the shell, its two hubs and the window between them.
   Layercake: (x, y, c) => [
