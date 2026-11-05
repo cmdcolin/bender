@@ -157,10 +157,10 @@ serialization is synchronous, reusing the buffer immediately afterwards is safe.
 `PerformanceObserver` delivers `gc` entries on a later tick, so the count
 printed before any entry arrived. `GCProfiler` counts synchronously, and it puts
 the heavy board at 82 collections per pass. A sampling heap profile of a Node
-render measures 62 MB allocated per second of audio on the heavy board and 6.4
-MB on the stock board. In Chrome the worklet allocated 34 MB a second on the
-heavy board and ran about 20 scavenges a second on the audio thread, each around
-0.35 ms on AC power.
+render measured 62 MB allocated per second of audio on the heavy board and 6.4
+MB on the stock board when this was first written. In Chrome the worklet
+allocated 34 MB a second on the heavy board and ran about 20 scavenges a second
+on the audio thread, each around 0.35 ms on AC power.
 
 Nearly all of the allocation is boxed doubles. V8 keeps a double unboxed inside
 one optimized function and writes a double field in place, but a call that stays
@@ -171,6 +171,19 @@ and no collections when the callee stores it in a field and the caller reads the
 field. TurboFan inlines a callee only while the caller's inlined bytecode stays
 under 920 bytes, and several stage `process` methods are over 4,000 bytes of
 bytecode on their own, so the helpers they call per sample stay out of line.
+
+The kit and the rails were the stock board's largest case: a tank's five
+arguments and its output, the metal bank's pitch, two biquads' samples and the
+rail's load, every sample. Handing each over in fields, with the coefficients
+that depend only on the sample rate worked out once, measured on ada:
+
+| garbage, collections per 100 s | before         | after          |
+| ------------------------------ | -------------- | -------------- |
+| stock board                    | 2.43 MB/s, 35  | 0.27 MB/s, 13  |
+| heavy board                    | 39.0 MB/s, 483 | 32.3 MB/s, 397 |
+
+The audio is bit-identical and the throughput unchanged; what it buys is fewer
+collections that can land in a block.
 
 ## Give V8 small loops to compile
 
@@ -349,6 +362,44 @@ made 8.6 million reads through the binding. Reading it once into a local, with
 the same division and bit-identical output, took the loop from 135 ms to 25 ms
 and the freeze to about half.
 
+### Nine hundred reads by computed name
+
+`packParams` read 917 keys off one board as `values[PARAM_KEYS[i]]`. That many
+distinct names overflow V8's lookup caches, so every read took the slow path: 53
+µs a call on ada, once a frame during a drag, a morph or a MIDI stream.
+`readInOrder` walks the board with `for…in` instead, which reads each value off
+the object's layout, and falls back to the named reads if a board's keys are out
+of order. Every full board is built by spreading the defaults first, so the
+fallback is for odd objects only.
+
+| on ada              | before | after  |
+| ------------------- | ------ | ------ |
+| `packParams`        | 53 µs  | 2.7 µs |
+| `sameControls`      | 115 µs | 4.9 µs |
+| `packControls`      | 119 µs | 4.1 µs |
+| `Glide` built       | 125 µs | 5.9 µs |
+| `paramMask`, 3 keys | 40 µs  | 0.6 µs |
+
+## A gesture is not a block
+
+Allocation and scans that a gesture triggers run inside one block like any other
+work. On the sample reel:
+
+- **Undo rescanned the whole reel** for its drawing inside one callback: 22 ms,
+  eight blocks, on a ninety-second reel. It now marks the bins it swapped as
+  stale, and `Sampler.redraw()` rescans at most 65,536 frames of them a block,
+  about 0.08 ms. Closing a take does the same.
+- **Loading a file over twenty seconds allocated its undo tape**, up to 17 MB,
+  on the audio thread. The main thread builds it and transfers it inside the
+  sample message.
+- **`peaksOf` divided once a sample** to find each sample's bin. It works out
+  each bin's range once and keeps a running max: 10 ms to 4 ms over ninety
+  seconds, bit-identical.
+
+The swap inside an undo is still in one callback, 4.8 ms on a fully overdubbed
+ninety-second reel. Spreading it would leave the reel half old and half new
+under the play head.
+
 ## What did not pay
 
 - **A polynomial sine.** `Math.sin` is 8.8 ns; a 5th-order minimax on the
@@ -395,41 +446,62 @@ and the freeze to about half.
 ## Still open
 
 - **The first five seconds.** The stock board settles at 0.0585 ms a block and
-  takes about five seconds to get there, putting 67 blocks over budget on the
-  way — 67 clicks on page load, every load. `bench.ts` renders 400 blocks before
-  it starts timing and `blocks.ts` renders 2000, so neither can see it;
-  `pnpm cold` measures it. Steady state shows no deoptimization (a 4 s render
-  deopts 81 times, a 40 s render 67), so the cause is tier-up and not a bug. A
-  throwaway warm-up chain halves it and costs 700 ms of silence at load;
+  takes about five seconds to get there. This once put 67 blocks over budget; on
+  2026-11-05 `pnpm cold` counted 5 locally and 2 on ada, with a first block of
+  4–15 ms and a spike or two between one and five seconds. `bench.ts` renders
+  400 blocks before it starts timing and `blocks.ts` renders 2000, so neither
+  can see it; `pnpm cold` measures it. Steady state shows no deoptimization (a 4
+  s render deopts 81 times, a 40 s render 67), so the cause is tier-up and not a
+  bug. A throwaway warm-up chain halves it and costs 700 ms of silence at load;
   faulting the delay lines in with `panic()` takes almost no time and is worth
   about a tenth. Neither finishes it, and the measurements come from Node while
   the worklet runs in Chrome. A DevTools profile of the first seconds is needed.
-- **`toyChip`** holds its voices as an array of objects and is the most
-  expensive stage on the board. The spring tank's flat-memory layout would apply
-  to it.
-- **The chain's safety tail** runs eight filter objects a sample.
+  The context waits suspended for the first click, which is a gap a warm-up
+  could fill without adding silence, if Chrome delivers port messages to a
+  suspended context's worklet; unverified.
+- **`toyChip`** holds its voices as an array of objects. The kit has overtaken
+  it as the most expensive stage, and with no keys held the flat layout would
+  save a few percent of the chip.
+- **`ToyDrum.process`** runs out of inlining budget after one one-pole, one
+  highpass, one biquad and `strike`, so everything after them stays a call.
+  Splitting it into per-voice methods would give each its own budget, the way
+  the tail split did.
+- **The chain's safety tail** runs eight filter objects a sample. The inlining
+  trace shows all of them inlined and nothing allocated, so only field loads are
+  left to save.
 - **`computeFeedback`** reads its comb through the clamping `read()` although
   the delay is fixed for the block.
 - **The tape's print-through** takes a second 4-point Hermite read whose output
-  goes straight into a 2500 Hz lowpass at 0.05 gain, where linear would do.
+  goes straight into a 2500 Hz lowpass at 0.05 gain, where linear would do. The
+  bigger cost is boxing: `readHermite` stays out of line, and on the heavy board
+  it is the second-largest allocation site at 4.6 MB/s across the tape, the tape
+  delay, the echo, the ensemble and the mic line.
+- **Out-of-line helpers that take or return doubles**, still: rackVerb's `tick`
+  and its helpers (about 18 of the second heavy board's 55 MB/s), the mono
+  voice's filters and noise closure (5 MB/s), screech's `Svf.process` (3 MB/s),
+  the stompbox's channel `process` (3.8 MB/s), and a closure the crusher builds
+  per conversion.
+- **A modulo on 96,000** every sample in `glitchBuf.ts`.
 - **Opening a stage** is still a 14–20 ms React render, the largest in the app.
-  The profile has no hotspot left, so the remaining saving is mounting fewer
-  elements, which the panel's density rules out.
+  `App` itself subscribes to the open stage, so an open re-renders the header,
+  the recorder, the pinned sliders, every keybed and the kit as well as the
+  rack. Moving that subscription into the pane that draws the map and the stage
+  is the next step.
 - **Paint and layerize, while the map is moving.** `pnpm panel morph` reports
   them at 0.49 and 0.29 ms a frame, which are the two largest columns and more
-  than all the javascript. The cost comes from the signal-path drawing: 179 SVG
-  elements replaced every 120 ms, and the compositor re-recording that corner of
-  the document each time. No cheap fix is known: the throttle is already in
-  place, and the next step is a canvas or memoising the subtrees that did not
-  move.
-- **The scope's trace** is the largest single thing javascript does per frame at
-  about 0.25% of one core, and it is already close to minimal: 512 `lineTo` into
-  a backing store 2216 pixels wide, so the trace is sparser than the canvas and
-  there is nothing to decimate. The remaining saving is drawing it less often,
-  and the trace is the one thing on screen read for its shape.
-- **`peaksOf` over a freshly dropped file** is the 19 ms still inside the sample
-  load's long task, and it is a full scan of ninety seconds of audio to fill 256
-  bins.
+  than all the javascript. The cost comes from the signal-path drawing, but not
+  from replacing it: React diffs about 280 elements every 120 ms and the DOM
+  takes five bar widths and two to four text nodes. Memoising subtrees would
+  save javascript, not paint. The SVG has no `contain`, so a changed label may
+  be dirtying more than the map; `contain: layout paint` on it is the next thing
+  to measure.
+- **The scope's trace** was the largest single thing javascript did per frame,
+  at about 0.25% of one core, before it kept six fading traces behind the
+  newest. It now strokes seven, and stops once silence has flattened them all.
+- **A MIDI controller's CC stream** applies each message on its own: a copy of
+  the board, every controls subscriber woken and a render of the slider, at up
+  to a thousand a second, while the worklet takes one pack a frame. Coalescing
+  to one write a frame is the change.
 
 ## Techniques from elsewhere
 
