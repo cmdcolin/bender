@@ -1989,6 +1989,11 @@ export class FmChip implements Stage {
     this.heldEffect = -1
     this.wireEffect = -1
     this.wireStuck = false
+    this.temp = 0
+    this.tripped = false
+    this.tripAt = TRIP_LOW + TRIP_SPAN / 2
+    this.restartAt = RESTART_LOW
+    this.faultRng = mulberry32(FAULT_SEED)
     this.powerUp()
   }
 

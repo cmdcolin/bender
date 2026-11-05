@@ -1348,3 +1348,23 @@ test('the operator ring turns the tune into broadband noise', () => {
   expect(spectrum(stem(1), SR).flatness).toBeGreaterThan(0.5)
   expect(spectrum(stem(0), SR).flatness).toBeLessThan(0.05)
 })
+
+test('a panic cools a chip that heat has tripped', () => {
+  let chip: BuiltChain['fmChip'] | undefined
+  let cooled: boolean | undefined
+  renderBender(
+    { ...FM_ONLY, fmHeat: 1 },
+    20,
+    b => {
+      chip = b.fmChip
+    },
+    undefined,
+    () => {
+      if (cooled === undefined && chip?.thermalTrip()) {
+        chip.panic()
+        cooled = !chip.thermalTrip()
+      }
+    },
+  )
+  expect(cooled).toBe(true)
+})
