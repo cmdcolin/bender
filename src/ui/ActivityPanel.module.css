@@ -19,6 +19,7 @@
 }
 
 .headline {
+  animation: arrive 0.6s ease-out both;
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
@@ -57,6 +58,11 @@
   gap: var(--space-md);
 }
 
+.fresh {
+  composes: line;
+  animation: wash 1.2s ease-out both;
+}
+
 .at {
   flex: none;
   color: var(--fg4);
@@ -69,10 +75,32 @@
   overflow-wrap: anywhere;
 }
 
+.fresh:first-child .text,
 .line:first-child .text {
   color: var(--fg);
 }
 
 .said {
   color: var(--accent2);
+}
+
+@keyframes wash {
+  from {
+    background: color-mix(in srgb, var(--flash) 28%, transparent);
+    box-shadow: inset 2px 0 var(--flash);
+  }
+  to {
+    background: transparent;
+    box-shadow: inset 2px 0 transparent;
+  }
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    color: var(--accent2);
+  }
+  to {
+    opacity: 1;
+  }
 }
