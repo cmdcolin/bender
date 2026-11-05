@@ -789,9 +789,12 @@ export class ToyDrum implements Stage {
   // the voices the register handed out at the counter's last arrival.
   private loop = 0
   private loopCells = new Uint16Array(N_VOICES)
+  private loopSoft = new Uint16Array(N_VOICES)
   private loopSeen = new Int32Array(N_VOICES).fill(-1)
   private loopLate = 0
+  private loopLateSoft = 0
   private loopHeld = 0
+  private loopHeldSoft = 0
   private loopAt = new Uint8Array(N_VOICES)
   // How far a voice has to have drained before its one-shot will answer again.
   // At 1 nothing is ever locked out, because an envelope leaves at 1 and only
@@ -1014,8 +1017,10 @@ export class ToyDrum implements Stage {
     }
     let bits = 0
     let soft = 0
-    if (this.loop > 0 && !roll) bits = this.loopHeld
-    else {
+    if (this.loop > 0 && !roll) {
+      bits = this.loopHeld
+      soft = this.loopHeldSoft
+    } else {
       for (let v = 0; v < N_VOICES; v++) {
         const step = this.stepAt(tick, v)
         const at = STEPS - 1 - step
@@ -1029,6 +1034,7 @@ export class ToyDrum implements Stage {
               : strayed
                 ? this.wander.rows[v]!
                 : Math.round(p[VOICE_PARAM[v]!]!)
+        const cellSoft = this.loop > 0 ? this.loopSoft[v]! : 0
         const maybe = strayed
           ? this.wander.maybes[v]!
           : Math.round(p[MAYBE_PARAM[v]!]!)
@@ -1046,15 +1052,20 @@ export class ToyDrum implements Stage {
             } else this.open |= this.diceHeld & bit
           }
           if (this.open & bit) bits |= bit
-          else if (this.loop > 0 && (cells >> at) & 1) bits |= bit
-        } else if ((cells >> at) & 1) bits |= bit
-        else if ((ghost >> at) & 1) {
+          else if (this.loop > 0 && (cells >> at) & 1) {
+            bits |= bit
+            if ((cellSoft >> at) & 1) soft |= bit
+          }
+        } else if ((cells >> at) & 1) {
+          bits |= bit
+          if ((cellSoft >> at) & 1) soft |= bit
+        } else if ((ghost >> at) & 1) {
           bits |= bit
           soft |= bit
         }
         this.loopAt[v] = at
       }
-      if (this.loop > 0) this.circulate(bits)
+      if (this.loop > 0) this.circulate(bits, soft)
       else if (this.rot > 0) this.decay(p, bits)
     }
     const accentStep = this.stepAt(tick, ACCENT_ROW)
@@ -1089,26 +1100,39 @@ export class ToyDrum implements Stage {
   // What comes back round into the cells the counter just read. The register
   // hands out a column, and each bit re-enters the loop through the fault: so a
   // pattern rewrites itself a lap at a time and nothing ever writes the panel.
-  private circulate(played: number) {
+  private circulate(played: number, soft: number) {
     this.loopHeld = played
+    this.loopHeldSoft = soft
     const late = this.loopLate
+    const lateSoft = this.loopLateSoft
     for (let v = 0; v < N_VOICES; v++) {
       const at = this.loopAt[v]!
       const cells = this.loopCells[v]!
+      const softs = this.loopSoft[v]!
       const out = (played >> v) & 1
+      const outSoft = (soft >> v) & 1
       let back = out
-      if (this.loop === LOOP_INVERT) back = out ^ 1
-      else if (this.loop === LOOP_LATE) {
+      let backSoft = outSoft
+      if (this.loop === LOOP_INVERT) {
+        back = out ^ 1
+        backSoft = 0
+      } else if (this.loop === LOOP_LATE) {
         back = (late >> v) & 1
+        backSoft = (lateSoft >> v) & 1
         this.loopLate = (this.loopLate & ~(1 << v)) | (out << v)
-      } else if (this.loop === LOOP_NEXT)
-        back = (played >> ((v + N_VOICES - 1) % N_VOICES)) & 1
-      else if (this.loop === LOOP_XOR) {
+        this.loopLateSoft = (this.loopLateSoft & ~(1 << v)) | (outSoft << v)
+      } else if (this.loop === LOOP_NEXT) {
+        const from = (v + N_VOICES - 1) % N_VOICES
+        back = (played >> from) & 1
+        backSoft = (soft >> from) & 1
+      } else if (this.loop === LOOP_XOR) {
         const len = this.lens[v]!
         const next = STEPS - 1 - ((STEPS - 1 - at + 1) % len)
         back = out ^ ((cells >> next) & 1)
+        backSoft = back & (out ? outSoft : (softs >> next) & 1)
       }
       this.loopCells[v] = (cells & ~(1 << at)) | (back << at)
+      this.loopSoft[v] = (softs & ~(1 << at)) | (backSoft << at)
     }
   }
 
@@ -1161,12 +1185,14 @@ export class ToyDrum implements Stage {
     if (was === 0) {
       this.loopSeen.fill(-1)
       this.loopLate = 0
+      this.loopLateSoft = 0
     }
     for (let v = 0; v < N_VOICES; v++) {
       const row = Math.round(p[VOICE_PARAM[v]!]!)
       if (row === this.loopSeen[v]) continue
       this.loopSeen[v] = row
       this.loopCells[v] = row
+      this.loopSoft[v] = 0
     }
   }
 

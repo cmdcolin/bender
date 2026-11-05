@@ -1656,6 +1656,7 @@ function bars(
 }
 
 const LOOP_INVERT = 1
+const LOOP_LATE = 2
 const LOOP_NEXT = 3
 const LOOP_XOR = 4
 
@@ -1683,6 +1684,26 @@ test('a pattern through an XOR walks away from the grid and the grid takes it ba
   })
   expect(walked[3]).not.toEqual(stock[3])
   expect(walked[5]).toEqual(stock[5])
+})
+
+test.each([
+  ['a step late', { drumLoop: LOOP_LATE }],
+  ['through an XOR', { drumLoop: LOOP_XOR }],
+])('a ghost going round the loop %s stays a ghost', (_, c) => {
+  const plain = loudest(soloVoice({ drumSnare: stepMask(2) }))
+  const looped = soloVoice({ drumSnareGhost: stepMask(2), ...c }, 4)
+  expect(onsets(looped).length).toBeGreaterThan(3)
+  expect(loudest(looped)).toBeLessThan(plain * 0.5)
+})
+
+test('a ratchet on a looped ghost step repeats it as a ghost', () => {
+  const plain = loudest(soloVoice({ drumSnare: stepMask(2) }))
+  const ratcheted = soloVoice({
+    drumSnareGhost: stepMask(2),
+    drumLoop: LOOP_XOR,
+    drumRatchet2: 2,
+  })
+  expect(loudest(ratcheted)).toBeLessThan(plain * 0.5)
 })
 
 // Four poles at 300 Hz, enough to hear a kick's swoop through hats over it.
