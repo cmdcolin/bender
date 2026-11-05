@@ -36,6 +36,20 @@ which bends get built: for the bends themselves "anything can go".
   piece.
 - Editing while the music plays, with each change landing on the bar and named
   on screen.
+- Melancholy as "textured piano and small synth melancholies", "sad listening":
+  Parlor's e.piano in 16th-note broken chords on cassette, a soft Growler
+  triangle doubling the tune, a quiet ghosted beat.
+- C minor and F minor, and their neighbours now and then ("i have felt 'trapped'
+  in them my whole life so variety is ok"). One key for a long time ("i can vibe
+  in the same key for a long time"), with the melody and the kit riffing inside
+  it.
+- The comb rung quietly on the tonic under everything (`combHz` at the root,
+  `combFb: 0.93`, `combMix: 0.08`): "constant resonant synth … quite good", and
+  nice for ambient.
+- Drums "a bit more mutant" through the kit's own circuit: `drumKickBias`,
+  `drumHissKick`, `drumBankFm`, `drumBits: 6`.
+- A bend that goes far commits to it: "better to lean into it if we go that
+  far".
 
 ## Dislikes
 
@@ -51,6 +65,17 @@ which bends get built: for the bends themselves "anything can go".
 - Random settings cycling, and so many changes at once that no one change can be
   judged.
 - Chiptune: a bright toy melody over a kick and snare grid.
+- Epic or cinematic in place of melancholy: strings and choir, long held notes,
+  i–VI–III–VII, the harmonic minor's major V, a big room. A sparse arrangement
+  reads the same way ("trying to create this false epicness"). Not "funeral".
+- Haunting in place of melancholy: the dark clanging ambient piece was "kinda
+  nice but just haunting".
+- Ambient texture on a fixed cycle ("just sounds like loop").
+- Clangs that are neither subtle nor rare, and FM bell clangs ("too silly and
+  synthetic").
+- A generic pedal move offered as a bend: fuzz, a filter sweep, tape drive ("a
+  generic pedal, not a bend that i wanted").
+- A bend that swamps the melody and then retreats after a few seconds.
 
 ## Working with Colin
 
