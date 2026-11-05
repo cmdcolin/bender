@@ -64,12 +64,27 @@ const shakeShare = (amount: number) => 0.12 + 0.5 * amount
 
 // Crackle is the loudest thing on the board per notch of its slider, and it
 // lands on top of the rest rather than beside it: bring it up and it is the only
-// thing the roll did that you can hear. A shy control mostly sits a roll out, and
-// comes on near its off end when it comes on at all. Nothing here reaches your
-// hand or the preset list — dial it where you like, and a preset that names
-// crackle still crackles when you pick it by name.
+// thing the roll did that you can hear. The glitch buffer is shy too, for taste
+// rather than volume, so a pick of bends nobody asked for rarely lands on it. A
+// shy control mostly sits a roll out, and comes on near its off end when it
+// comes on at all. Nothing here reaches your hand or the preset list — dial it
+// where you like, and a preset that names crackle or glitch still gets it when
+// you pick it by name.
 const SHY_ODDS = 0.08
 const SHY_TOP = 0.3
+
+export const isShy = (key: ControlKey) => sliderFor(key).shy === true
+
+export const unlessShy = <T>(
+  pool: readonly T[],
+  shy: (item: T) => boolean,
+  rand: () => number,
+) => {
+  const bold = pool.filter(item => !shy(item))
+  return bold.length === 0 || bold.length === pool.length || rand() < SHY_ODDS
+    ? pool
+    : bold
+}
 
 // The bottom of the travel only means anything on a control whose travel is an
 // amount. A list of choices is not ordered by how much of itself it is — a
@@ -176,9 +191,9 @@ const keepLevels = (next: Controls, current: Controls): Controls => {
 // preset it lands on hands over its board and nothing else.
 export function randomLook(current: Controls, rand: () => number): Controls {
   const preset = PRESETS[Math.floor(rand() * PRESETS.length)]!
-  // A preset that names crackle names it loud, and a roll that landed on that
-  // preset never asked for it. The shy controls get rolled shy whatever the
-  // preset had to say about them.
+  // A preset that names crackle or glitch names it loud, and a roll that landed
+  // on that preset never asked for it. The shy controls get rolled shy whatever
+  // the preset had to say about them.
   const rolled = keepLevels(
     unloadRail(
       calmShy(

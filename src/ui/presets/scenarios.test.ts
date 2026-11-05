@@ -74,6 +74,19 @@ test('one bend puts exactly one bend on the board, turned up', () => {
   }
 })
 
+test('one bend rarely picks the glitch buffer, and reaches every other bend', () => {
+  const roll = scenarioNamed('one bend')
+  const picked = Array.from({ length: 300 }, (_, i) => {
+    const after = roll(mine(), mulberry32(i + 1))
+    return BEND_SLOT_KEYS.map(k => after[k]).find(v => v !== 0)!
+  })
+  const glitch = BENDS.findIndex(b => b.label === 'glitch') + 1
+  expect(picked.filter(id => id === glitch).length / 300).toBeLessThan(0.04)
+  expect(new Set(picked.filter(id => id !== glitch)).size).toBe(
+    BENDS.length - 1,
+  )
+})
+
 test('wreck it winds up everything that can run away', () => {
   const roll = scenarioNamed('wreck it')
   for (let seed = 1; seed <= 20; seed++) {

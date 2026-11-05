@@ -9,6 +9,7 @@ import {
 } from './controls/index.ts'
 import { LETTERS } from './keyboard.ts'
 import { inTime } from './presets/quantize.ts'
+import { isShy, unlessShy } from './presets/roll.ts'
 import {
   ANTAGONISTS,
   drivable,
@@ -98,6 +99,11 @@ const silentGate = (c: Controls, key: ControlKey) => {
   return gate && gate !== key && !YOURS.has(gate) && !heard(c, key)
     ? gate
     : undefined
+}
+
+const wakesShy = (c: Controls, key: ControlKey) => {
+  const gate = gateOf(groupFor(key))
+  return gate !== undefined && isShy(gate) && !heard(c, key)
 }
 
 function slamMove(
@@ -192,7 +198,8 @@ function solderBend(c: Controls, nth: number, rand: () => number): Solder {
   )
   const open = quiet.filter(id => !bypassed(c, bendAt(id)!.group))
   const from = open.length > 0 ? open : quiet
-  const which = from[Math.floor(rand() * from.length)]!
+  const dealt = unlessShy(from, id => isShy(bendAt(id)!.mix), rand)
+  const which = dealt[Math.floor(rand() * dealt.length)]!
   const bend = bendAt(which)!
   return {
     name: `+ ${bend.label}`,
@@ -270,7 +277,7 @@ export function dealBendKeys(
 ): BendKey[] {
   // A stage whose level is yours — the sampler's — is not brought up by a
   // key, so its controls are dealt only while it can already be heard.
-  const pool = drivable(c).filter(d => {
+  const reachable = drivable(c).filter(d => {
     const group = groupFor(d.key)
     const gate = gateOf(group)
     const fader = faderOf(d.key)
@@ -282,6 +289,7 @@ export function dealBendKeys(
       (heard(c, d.key) || !gate || !YOURS.has(gate))
     )
   })
+  const pool = [...unlessShy(reachable, d => wakesShy(c, d.key), rand)]
   const taken = new Set<ControlKey>()
   const raised = new Set<ControlKey>()
   let soldered = 0

@@ -140,3 +140,12 @@ test('every machine offers the plain roll first and everything last', () => {
     expect(names.at(-1)).toBe('everything')
   }
 })
+
+test('the plain roll on the glitch buffer’s own face still wets it', () => {
+  const wet = SEEDS.filter(
+    seed =>
+      kind('sound').roll(machine('Glitch buffer'), mine(), mulberry32(seed))
+        .glitchMix > 0.3,
+  )
+  expect(wet.length).toBeGreaterThan(SEEDS.length / 3)
+})

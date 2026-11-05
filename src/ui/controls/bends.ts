@@ -730,6 +730,7 @@ export const BEND_GROUPS: Group[] = [
         key: 'glitchMix',
         label: 'Mix',
         role: 'mix',
+        shy: true,
         min: 0,
         max: 1,
         step: 0.01,

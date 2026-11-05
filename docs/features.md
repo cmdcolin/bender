@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 74 controls are shy, mostly the ones that act on the
+names it still sets it. 75 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -1019,7 +1019,7 @@ sometimes held.
 | Pitch   | norm, down, up, rand | Replay stutters at pitch, an octave away, or a random pick each event                                                      |
 | Freeze  | off or hold          | Holds the current slice forever — the CD stuck on a note                                                                   |
 | Bypass  | on or bypassed       | Takes Glitch buffer out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| Mix     | off to full          | Dry/wet                                                                                                                    |
+| Mix †   | off to full          | Dry/wet                                                                                                                    |
 
 </details>
 

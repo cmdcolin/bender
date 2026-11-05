@@ -221,6 +221,34 @@ test('pressing the dice on the crackle stage asks for crackle', () => {
   expect(Math.max(...levels)).toBeGreaterThan(0.5)
 })
 
+test('random rarely wets the glitch buffer, and never far', () => {
+  const before = mine()
+  let wet = 0
+  for (let seed = 1; seed <= 300; seed++) {
+    const after = randomLook(before, mulberry32(seed))
+    expect(after.glitchMix, `${seed}`).toBeLessThanOrEqual(0.3)
+    if (after.glitchMix > 0) wet++
+  }
+  expect(wet).toBeGreaterThan(0)
+  expect(wet / 300).toBeLessThan(0.15)
+})
+
+test('mutate does not wet a dry glitch buffer', () => {
+  for (let seed = 1; seed <= 60; seed++)
+    expect(mutate(mine(), 0.3, mulberry32(seed)).glitchMix).toBe(0)
+})
+
+test('pressing the dice on the glitch buffer asks for glitch', () => {
+  for (let seed = 1; seed <= 40; seed++) {
+    const after = rollGroup(
+      groupNamed('Glitch buffer'),
+      mine(),
+      mulberry32(seed),
+    )
+    expect(after.glitchMix, `${seed}`).toBeGreaterThan(0.3)
+  }
+})
+
 test('rolls and nudges from stock land inside every normal stretch', () => {
   const stretched = ALL_SLIDERS.filter(s => s.normal)
   for (let seed = 1; seed <= 10; seed++) {

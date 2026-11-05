@@ -203,6 +203,25 @@ test('a key that solders a bend into a socket picks one that is not bypassed', (
   }
 })
 
+test('a deal rarely brings a dry glitch buffer up', () => {
+  const seeds = Array.from({ length: 60 }, (_, i) => i + 1)
+  const wets = (seed: number) =>
+    dealBendKeys(DEFAULT_CONTROLS, seeded(seed), 'wreck').some(
+      k => (k.push(DEFAULT_CONTROLS).glitchMix ?? 0) > 0,
+    )
+  expect(seeds.filter(wets).length / seeds.length).toBeLessThan(0.2)
+})
+
+test('a glitch buffer you have wet is dealt like any other stage', () => {
+  const wet = { ...DEFAULT_CONTROLS, glitchMix: 0.6 }
+  const dealt = [1, 2, 3, 4, 5, 6, 7, 8].some(seed =>
+    dealBendKeys(wet, seeded(seed)).some(k =>
+      k.keys.some(key => key.startsWith('glitch')),
+    ),
+  )
+  expect(dealt).toBe(true)
+})
+
 test('no key is dealt on a bypassed effect, whose bypass is yours', () => {
   const board = {
     ...DEFAULT_CONTROLS,

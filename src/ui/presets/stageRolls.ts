@@ -69,7 +69,7 @@ export const STAGE_ROLLS: readonly StageRoll[] = [
       'Rolls the sound controls somewhere new. Faults, the supply, key lock and wiring stay where they are, and so does the pattern.',
     fits: () => true,
     roll: (group, current, rand) =>
-      rollKeys(current, keysOf(sliders(group, isSound)), rand),
+      rollKeys(current, keysOf(sliders(group, isSound)), rand, true),
   },
   {
     name: 'nudge',

@@ -20,7 +20,7 @@ import {
   solderCascade,
 } from './patch.ts'
 import { inTime } from './quantize.ts'
-import { rollGroup, rollKeys } from './roll.ts'
+import { isShy, rollGroup, rollKeys, unlessShy } from './roll.ts'
 import { CLOCK_KEYS, PART_KEYS, YOURS } from './yours.ts'
 
 import type { ControlKey, Controls } from '../../controls.ts'
@@ -88,7 +88,8 @@ function oneBend(current: Controls, rand: () => number): Controls {
     open.length > 0
       ? open
       : Array.from({ length: bendCount() }, (_, i) => i + 1)
-  const slot = pool[Math.floor(rand() * pool.length)]!
+  const dealt = unlessShy(pool, id => isShy(bendAt(id)!.mix), rand)
+  const slot = dealt[Math.floor(rand() * dealt.length)]!
   const bend = bendAt(slot)!
   const group = GROUPS.find(g => g.name === bend.group)!
   const next = rollGroup(group, current, rand)
