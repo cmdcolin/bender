@@ -209,6 +209,26 @@ test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
   expect(() => bender.drums({ hat: '[xxxxx]' })).toThrow(/a bracket holds/)
 })
 
+test('drums clears event every and a voice’s bars with an empty string or off', () => {
+  bender.drums({
+    'event every': '4:4',
+    'snare bars': '!4:4',
+    'kick bars': '1:2',
+  })
+  const out = bender.drums({
+    'event every': '',
+    'snare bars': 'off',
+    'kick bars': ' ',
+  })
+  const c = engine.controls.get()
+  expect(c.drumEventEvery).toBe(0)
+  expect(c.drumSnareCond).toBe(0)
+  expect(c.drumKickCond).toBe(0)
+  expect(out.drums).not.toHaveProperty('event every')
+  expect(out.drums).not.toHaveProperty('snare bars')
+  expect(out.drums).not.toHaveProperty('kick bars')
+})
+
 test('drums writes ghost steps and the board reads them back', () => {
   const out = bender.drums({ snare: '....x..g.g..x..g', hat: 'g(5,8)' })
   const c = engine.controls.get()
