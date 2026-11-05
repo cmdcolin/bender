@@ -28,7 +28,8 @@ A toy keyboard chip on a battery. Press a box on the die to open that part.
 
 ![The drum box's voices: triggers, one-shots, tanks, metal, noise, amps and a sample ROM.](../public/guide/guide-drum-voices.jpg)
 
-Tap pads, draw steps, press ▶. **Wander** lets the beat stray by itself.
+Tap pads, draw steps, press ▶. Clicking a step cycles it: hit, dice, ghost (a
+soft hit), off. **Wander** lets the beat stray by itself.
 
 ## More machines
 

@@ -1003,6 +1003,14 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'micPatch2',
   'micDelayOn',
   'micFreeze',
+  'drumKickGhost',
+  'drumSnareGhost',
+  'drumHatGhost',
+  'drumClapGhost',
+  'drumTomGhost',
+  'drumBellGhost',
+  'drumOpenGhost',
+  'drumCymGhost',
 ]
 
 // Retired controls that old links still carry, each read into the control that

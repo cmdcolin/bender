@@ -153,6 +153,29 @@ test('the hits column spreads a row’s count evenly from its first hit', () => 
   expect(screen.getByRole('button', { name: 'len' })).toBeTruthy()
 })
 
+test('a step clicks round hit, dice, ghost and off', () => {
+  act(() =>
+    engine.patch({ drumSnare: 0, drumSnareMaybe: 0, drumSnareGhost: 0 }),
+  )
+  render(<DrumGrid />)
+  const press = (name: string) =>
+    fireEvent.pointerDown(screen.getByRole('button', { name }), { button: 0 })
+  const snare = () => {
+    const c = engine.controls.get()
+    return rowText(c.drumSnare, c.drumSnareMaybe, 4, c.drumSnareGhost)
+  }
+  press('snare step 3')
+  expect(snare()).toBe('..x.')
+  press('snare step 3')
+  expect(snare()).toBe('..?.')
+  press('snare step 3')
+  expect(snare()).toBe('..g.')
+  const ghost = screen.getByRole('button', { name: 'snare step 3, ghost' })
+  expect(ghost.className.split(' ')).toContain(styles.cellGhost)
+  press('snare step 3, ghost')
+  expect(snare()).toBe('....')
+})
+
 test('the moves row names the strays Wander put on the bar', () => {
   render(<DrumGrid />)
   expect(screen.queryByText(/^wander:/)).toBeNull()

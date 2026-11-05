@@ -91,16 +91,18 @@ function useUnder(live: boolean, len: number): number {
 // the way down is what every cell the drag reaches becomes too. A drag that
 // decided per cell would be a hand rubbing a row out and back in again.
 //
-// So the three states are three drags. Off a dark step it draws a run of steps;
-// off a lit one it wires that run through the dice; off a maybe it wipes.
+// So the four states are four drags. Off a dark step it draws a run of steps;
+// off a lit one it wires that run through the dice; off a maybe it draws
+// ghosts; off a ghost it wipes.
 type Paint = RefObject<StepState | null>
 
-// One click, one state on. The accent row skips the middle one — it has no
-// maybe mask, so its contact is the two-state contact it always was.
+// One click, one state on. The accent row skips the middle two — it has no
+// maybe or ghost mask, so its contact is the two-state contact it always was.
 const NEXT: Record<StepState, StepState> = {
   off: 'on',
   on: 'maybe',
-  maybe: 'off',
+  maybe: 'ghost',
+  ghost: 'off',
 }
 
 // Through the walk, like every other verb on the panel: a ROM lands on top of
@@ -395,11 +397,13 @@ const Row = memo(function Row({
   paint: Paint
 }) {
   const mask = useControlValue(row.key)
-  // The accent row has no maybe mask, so it reads its own back and draws none:
-  // a hook cannot be asked for conditionally, and there is nothing else on the
-  // board a row would rather be watching.
+  // The accent row has no maybe or ghost mask, so it reads its own back and
+  // draws none: a hook cannot be asked for conditionally, and there is nothing
+  // else on the board a row would rather be watching.
   const dice = useControlValue(row.maybe ?? row.key)
   const maybe = row.maybe ? dice : 0
+  const soft = useControlValue(row.ghost ?? row.key)
+  const ghost = row.ghost ? soft : 0
   const len = asLen(useControlValue(row.len))
   const kind =
     row.key === 'drumAccent'
@@ -434,7 +438,7 @@ const Row = memo(function Row({
               className={
                 lit
                   ? styles.nameHit
-                  : mask || maybe
+                  : mask || maybe || ghost
                     ? styles.nameOn
                     : styles.name
               }
@@ -459,12 +463,12 @@ const Row = memo(function Row({
               paint={paint}
               className={cellClass({
                 kind,
-                state: stepState(mask, maybe, s),
+                state: stepState(mask, maybe, s, ghost),
                 beat: s % 4 === 0,
                 under: s === under,
                 past: s >= len,
               })}
-              state={stepState(mask, maybe, s)}
+              state={stepState(mask, maybe, s, ghost)}
             />
           ))}
         </div>
@@ -472,7 +476,11 @@ const Row = memo(function Row({
             numbers are, it is one tap on a phone, and it is the only way to
             give a row its sixteen steps back once you have shortened it. */}
         {tail === 'hits' ? (
-          <HitsSelect row={row} hits={hitsIn(mask | maybe, len)} len={len} />
+          <HitsSelect
+            row={row}
+            hits={hitsIn(mask | maybe | ghost, len)}
+            len={len}
+          />
         ) : tail === 'bars' ? (
           voice >= 0 ? (
             <CondSelect voice={voice} label={row.label} />
@@ -560,15 +568,14 @@ function HitsSelect({
 }) {
   const fill = (k: number) => {
     const board = engine.controls.get()
-    const was = board[row.key] | (row.maybe ? board[row.maybe] : 0)
+    const loose = row.maybe ? [row.maybe, row.ghost] : []
+    const was = loose.reduce((m, key) => m | board[key], board[row.key])
     const next: Controls = {
       ...board,
       [row.key]: euclidMask(k, len, was),
     }
-    if (row.maybe) {
-      const inRow = ((1 << len) - 1) << (STEPS - len)
-      next[row.maybe] = board[row.maybe] & ~inRow
-    }
+    const inRow = ((1 << len) - 1) << (STEPS - len)
+    for (const key of loose) next[key] = board[key] & ~inRow
     engine.armStep()
     engine.writeBoard(next)
   }
@@ -613,8 +620,8 @@ const Cell = memo(function Cell(props: {
   // writes a cell per event, and folding a bit into a rendered copy would make
   // every step of the run depend on React having caught up in between.
   //
-  // The two are kept apart rather than layered, so what the grid draws is what
-  // the kit reads: a step is in one mask or the other or neither.
+  // The masks are kept apart rather than layered, so what the grid draws is
+  // what the kit reads: a step is in one mask or none.
   const write = (to: StepState) => {
     const board = engine.controls.get()
     const bit = stepBit(step)
@@ -625,6 +632,9 @@ const Cell = memo(function Cell(props: {
     const dice =
       to === 'maybe' ? board[row.maybe] | bit : board[row.maybe] & ~bit
     if (dice !== board[row.maybe]) engine.set(row.maybe, dice)
+    const soft =
+      to === 'ghost' ? board[row.ghost] | bit : board[row.ghost] & ~bit
+    if (soft !== board[row.ghost]) engine.set(row.ghost, soft)
   }
   // Round the three states, or the two the accent row has.
   const next = () =>
@@ -633,16 +643,20 @@ const Cell = memo(function Cell(props: {
     <Tip
       text={
         row.maybe
-          ? `One click closes the step, a second wires it through the kit’s dice so it fires as often as Chance says, a third puts it out. Drag across the grid to write a run of whichever the step under your finger became — shift-click to bring the ${row.label} row round after step ${step + 1}.`
+          ? `One click closes the step, a second wires it through the kit’s dice so it fires as often as Chance says, a third makes it a ghost that strikes soft, a fourth puts it out. Drag across the grid to write a run of whichever the step under your finger became — shift-click to bring the ${row.label} row round after step ${step + 1}.`
           : `Drag across the grid to draw a run of steps — shift-click to bring the ${row.label} row round after step ${step + 1}.`
       }
     >
       <button
         className={props.className}
-        aria-label={`${row.label} step ${step + 1}`}
+        aria-label={`${row.label} step ${step + 1}${props.state === 'ghost' ? ', ghost' : ''}`}
         // Half-pressed is what a maybe step is: the contact is wired up and the
         // kit still has to decide.
-        aria-pressed={props.state === 'maybe' ? 'mixed' : props.state === 'on'}
+        aria-pressed={
+          props.state === 'maybe' || props.state === 'ghost'
+            ? 'mixed'
+            : props.state === 'on'
+        }
         // The press writes on the way down rather than on the click, because
         // this is where a drag starts and the step under the finger is the one
         // that says which way the drag writes.
@@ -880,9 +894,11 @@ function cellClass(s: {
             : styles.bend
           : s.state === 'maybe'
             ? styles.cellMaybe
-            : s.state === 'on'
-              ? styles.cellOn
-              : styles.cell
+            : s.state === 'ghost'
+              ? styles.cellGhost
+              : s.state === 'on'
+                ? styles.cellOn
+                : styles.cell
   return [
     base,
     s.beat && styles.beat,

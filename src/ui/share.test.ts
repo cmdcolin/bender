@@ -109,6 +109,17 @@ test('the drum pattern travels with the board', () => {
   })
 })
 
+test('ghost steps travel in the long form too', () => {
+  const board: Controls = {
+    ...DEFAULT_CONTROLS,
+    drumSnareGhost: 0b0001_0010_0100_0001,
+  }
+  expect(decodeControls(encodeControls(board)).drumSnareGhost).toBe(
+    board.drumSnareGhost,
+  )
+  expect(decodeControls('drumHatGhost:1e9')).toEqual({ drumHatGhost: 65535 })
+})
+
 test('junk decodes to nothing rather than to NaN', () => {
   expect(decodeControls('')).toEqual({})
   expect(decodeControls('nonsense')).toEqual({})

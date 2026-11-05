@@ -29,13 +29,38 @@ test('parseRow reads hits, dice hits and rests, and rowText writes them back', (
   expect(row).toEqual({
     mask: stepBit(0) | stepBit(6),
     maybe: stepBit(4),
+    ghost: 0,
     len: 8,
     ratchets: {},
   })
   expect(rowText(row.mask, row.maybe, row.len)).toBe('x...?.x.')
-  expect(parseRow('')).toEqual({ mask: 0, maybe: 0, len: STEPS, ratchets: {} })
+  expect(parseRow('')).toEqual({
+    mask: 0,
+    maybe: 0,
+    ghost: 0,
+    len: STEPS,
+    ratchets: {},
+  })
   expect(() => parseRow('x-x')).toThrow("'-' is not a step")
   expect(() => parseRow('.'.repeat(STEPS + 1))).toThrow(`${STEPS + 1} steps`)
+})
+
+test('a g is a ghost step, and rowText writes it back', () => {
+  const row = parseRow('x.g.|G?gx')
+  expect(row.mask).toBe(stepBit(0) | stepBit(7))
+  expect(row.ghost).toBe(stepBit(2) | stepBit(4) | stepBit(6))
+  expect(row.maybe).toBe(stepBit(5))
+  expect(rowText(row.mask, row.maybe, row.len, row.ghost)).toBe('x.g.g?gx')
+  expect(rowText(0, 0, 8, parseRow('g(3,8)').ghost)).toBe('g..g..g.')
+  const rolled = parseRow('x.[ggg].')
+  expect(rolled.ghost).toBe(stepBit(2))
+  expect(rolled.ratchets).toEqual({ 2: 3 })
+  expect(() => parseRow('[xg]')).toThrow('of x, of g or of ?')
+})
+
+test('a hard contact or the dice wins over a ghost on the same step', () => {
+  expect(rowText(stepBit(0), 0, 2, stepBit(0) | stepBit(1))).toBe('xg')
+  expect(rowText(0, stepBit(0), 2, stepBit(0))).toBe('?.')
 })
 
 test('step 1 is the high bit, so a mask literal reads like the grid', () => {

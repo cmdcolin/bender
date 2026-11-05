@@ -1,4 +1,4 @@
-import { GRID_ROWS, THROW_ROW } from '../../drums.ts'
+import { GRID_ROWS, rowMasks, THROW_ROW } from '../../drums.ts'
 import {
   MONO_SEQ_ACCENT_KEYS,
   MONO_SEQ_SLIDE_KEYS,
@@ -65,9 +65,7 @@ export const YOURS = new Set<ControlKey>([
   'loopIn',
   'loopOut',
   'chipTune',
-  ...GRID_ROWS.flatMap(r =>
-    r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
-  ),
+  ...GRID_ROWS.flatMap(r => [...rowMasks(r), r.len]),
   THROW_ROW.key,
   THROW_ROW.len,
   ...TUNE_ALL_STEP_KEYS,

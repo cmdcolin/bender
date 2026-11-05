@@ -110,6 +110,41 @@ test('an accented step hits harder than a plain one', () => {
   expect(loudest(hard)).toBeGreaterThan(loudest(plain) * 1.3)
 })
 
+test('a ghost step strikes every voice softer than a plain one, and still sounds', () => {
+  for (const key of VOICE_KEYS) {
+    const plain = loudest(soloVoice({ [key]: stepMask(2) }))
+    const ghost = loudest(soloVoice({ [`${key}Ghost`]: stepMask(2) }))
+    expect(ghost, key).toBeLessThan(plain * 0.5)
+    expect(ghost, key).toBeGreaterThan(plain * 0.2)
+  }
+})
+
+test('a ghost beside a full hit on one step leaves the full hit alone', () => {
+  const full = soloVoice({ drumKick: stepMask(2) })
+  const both = soloVoice({ drumKick: stepMask(2), drumHatGhost: stepMask(2) })
+  const kick = (x: Float32Array) =>
+    lowEnergy(x.subarray(0, Math.round(0.4 * SR)))
+  expect(kick(both)).toBeGreaterThan(kick(full) * 0.9)
+})
+
+test('a hard contact on a ghost step shorts the resistor', () => {
+  const plain = soloVoice({ drumSnare: stepMask(2) })
+  const both = soloVoice({
+    drumSnare: stepMask(2),
+    drumSnareGhost: stepMask(2),
+  })
+  expect(loudest(both)).toBeCloseTo(loudest(plain), 5)
+})
+
+test('an accent lifts a ghost step too', () => {
+  const ghost = soloVoice({ drumSnareGhost: stepMask(2) })
+  const lifted = soloVoice({
+    drumSnareGhost: stepMask(2),
+    drumAccent: stepMask(2),
+  })
+  expect(loudest(lifted)).toBeGreaterThan(loudest(ghost) * 1.3)
+})
+
 test('swing holds the offbeat back and takes it off the step after', () => {
   // hats on steps 3, 4 and 5, choked short so each hit is its own onset
   const pattern: Partial<Controls> = {

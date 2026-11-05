@@ -8,6 +8,7 @@ import {
   N_DRUM_VOICES,
   NUDGE_KEYS,
   RATCHET_KEYS,
+  rowMasks,
   THROW_ROW,
   VOICE_LABELS,
 } from '../../drums.ts'
@@ -867,9 +868,7 @@ export const SOURCE_GROUPS: Group[] = [
     editor: {
       kind: 'drums',
       keys: [
-        ...GRID_ROWS.flatMap(r =>
-          r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
-        ),
+        ...GRID_ROWS.flatMap(r => [...rowMasks(r), r.len]),
         THROW_ROW.key,
         THROW_ROW.len,
         'drumRowMute',

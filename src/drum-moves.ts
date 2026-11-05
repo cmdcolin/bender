@@ -6,10 +6,12 @@ import {
   GRID_ROWS,
   hasStep,
   PATTERN_KEYS,
+  rowMasks,
   STEPS,
   stepBit,
   type DrumLens,
   type DrumMasks,
+  type DrumGhostKey,
   type DrumMaybeKey,
   type DrumStepKey,
   type DrumVoiceKey,
@@ -351,12 +353,12 @@ export const shiftPattern = (masks: DrumMasks, lens: DrumLens, by: number) =>
   Object.fromEntries(
     GRID_ROWS.flatMap(row => {
       const len = asLen(lens[row.len])
-      const turn = (key: DrumStepKey | DrumMaybeKey) => [
+      const turn = (key: DrumStepKey | DrumMaybeKey | DrumGhostKey) => [
         key,
         rotate(masks[key], len, by),
       ]
-      // A voice's two masks are one row and come round on the one length.
-      return row.maybe ? [turn(row.key), turn(row.maybe)] : [turn(row.key)]
+      // A voice's masks are one row and come round on the one length.
+      return rowMasks(row).map(turn)
     }),
   ) as DrumMasks
 

@@ -300,8 +300,9 @@ because all six pedals are always on the board.\n`
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget, so the table below leaves it out. It has ${num(GRID_ROWS.length + 1)} rows
 (the ${num(DRUM_VOICES.length)} voices, an accent and an echo row), each with ${STEPS} steps and a
-length, and a second ${STEPS}-step mask on every voice for the steps that sometimes
-fire. That is ${n} more controls, and a link stores them like the rest.\n`
+length, and two more ${STEPS}-step masks on every voice: the steps that sometimes
+fire, and the ghost steps that strike soft. That is ${n} more controls, and a
+link stores them like the rest.\n`
 }
 
 function cuts(g: Group): string {

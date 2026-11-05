@@ -49,7 +49,7 @@ export const THROWS: ThrowDef[] = [
     name: 'drop',
     key: 'm',
     blurb: 'Kick out',
-    push: () => ({ drumKick: 0, drumKickMaybe: 0 }),
+    push: () => ({ drumKick: 0, drumKickMaybe: 0, drumKickGhost: 0 }),
   },
   {
     name: 'crush',

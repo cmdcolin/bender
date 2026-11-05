@@ -16,16 +16,19 @@ export const STEPS = 16
 // there is to cut or short — see the bus bend in toyDrum.
 export const ADDR_LINES = 4
 
-// Every voice carries two masks. `key` is the steps that close every lap, and
+// Every voice carries three masks. `key` is the steps that close every lap, and
 // `maybe` is the steps wired through the kit's dice instead — they close as
 // often as drumChance says, rolled fresh each time the counter reaches them,
 // which is the whole of how a sixteen-step pattern stops being sixteen steps
-// long. The two never overlap in anything the grid writes, and where a hand-
-// edited link makes them, the maybe wins.
+// long. `ghost` is the steps wired through a resistor in the voice's trigger
+// line: they close every lap, and the pulse arrives lower. The three never
+// overlap in anything the grid writes, and where a hand-edited link makes
+// them, the maybe wins and then the hard contact, which shorts the resistor.
 export const DRUM_VOICES = [
   {
     key: 'drumKick',
     maybe: 'drumKickMaybe',
+    ghost: 'drumKickGhost',
     len: 'drumKickLen',
     label: 'kick',
     help: 'A bridged-T network, shocked and left to ring. The trigger pulse snaps it at the front, and it pitches down as it runs down, so how hard you hit it is how far it swoops.',
@@ -33,6 +36,7 @@ export const DRUM_VOICES = [
   {
     key: 'drumSnare',
     maybe: 'drumSnareMaybe',
+    ghost: 'drumSnareGhost',
     len: 'drumSnareLen',
     label: 'snare',
     help: 'A noise transistor over two tuned networks at 185 and 330 Hz. Snappy is the pot between them.',
@@ -40,6 +44,7 @@ export const DRUM_VOICES = [
   {
     key: 'drumHat',
     maybe: 'drumHatMaybe',
+    ghost: 'drumHatGhost',
     len: 'drumHatLen',
     label: 'hat',
     help: 'The metal bank’s upper band through a high-pass, gated short. Metal is the pot between the bank and the noise transistor.',
@@ -47,6 +52,7 @@ export const DRUM_VOICES = [
   {
     key: 'drumClap',
     maybe: 'drumClapMaybe',
+    ghost: 'drumClapGhost',
     len: 'drumClapLen',
     label: 'clap',
     help: 'Three noise bursts nine milliseconds apart, then the tail.',
@@ -54,6 +60,7 @@ export const DRUM_VOICES = [
   {
     key: 'drumTom',
     maybe: 'drumTomMaybe',
+    ghost: 'drumTomGhost',
     len: 'drumTomLen',
     label: 'tom',
     help: 'The same network as the kick, tuned higher and rung shorter — the fill voice.',
@@ -61,6 +68,7 @@ export const DRUM_VOICES = [
   {
     key: 'drumBell',
     maybe: 'drumBellMaybe',
+    ghost: 'drumBellGhost',
     len: 'drumBellLen',
     label: 'bell',
     help: 'Two of the metal bank’s six oscillators through a band around the pair: the cowbell, a clank over a ring.',
@@ -68,6 +76,7 @@ export const DRUM_VOICES = [
   {
     key: 'drumOpen',
     maybe: 'drumOpenMaybe',
+    ghost: 'drumOpenGhost',
     len: 'drumOpenLen',
     label: 'open hat',
     help: 'The same bank and the same filter as the hat, held open instead of gated. A hat step cuts it short — the two share one cap.',
@@ -75,6 +84,7 @@ export const DRUM_VOICES = [
   {
     key: 'drumCym',
     maybe: 'drumCymMaybe',
+    ghost: 'drumCymGhost',
     len: 'drumCymLen',
     label: 'cymbal',
     help: 'All six oscillators through a wider band, a crash over a long tail nothing chokes. Cymbal tone is where the band sits.',
@@ -82,6 +92,7 @@ export const DRUM_VOICES = [
 ] as const satisfies readonly {
   key: ControlKey
   maybe: ControlKey
+  ghost: ControlKey
   len: ControlKey
   label: string
   help: string
@@ -95,6 +106,7 @@ export const DRUM_VOICES = [
 const ACCENT_ROW = {
   key: 'drumAccent',
   maybe: null,
+  ghost: null,
   len: 'drumAccentLen',
   label: 'accent',
   help: 'Not a voice — whatever plays on this step hits harder.',
@@ -106,6 +118,7 @@ export const GRID_ROWS = [...DRUM_VOICES, ACCENT_ROW] as const
 export const THROW_ROW = {
   key: 'drumThrow',
   maybe: null,
+  ghost: null,
   len: 'drumThrowLen',
   label: 'echo',
   help: 'Hits on these steps also go into Wraith.',
@@ -310,9 +323,12 @@ export const DATA_LINES = GRID_ROWS.length
 export const N_DRUM_VOICES = DRUM_VOICES.length
 export const VOICE_LABELS = DRUM_VOICES.map(v => v.label)
 
-/** How much harder an accented step lands than a plain one — the kit's only two
-    weights, and so the two ends a pad's velocity plays between. */
+/** How much harder an accented step lands than a plain one, and so the top of
+    a pad's velocity. */
 export const ACCENT_GAIN = 1.7
+
+/** How much of the trigger pulse a ghost step's resistor lets through. */
+export const GHOST_GAIN = 0.25
 
 /** One voice as a step's bit, for anything striking the trigger line by hand. */
 export const voiceBit = (voice: number) => 1 << voice
@@ -320,6 +336,7 @@ export const voiceBit = (voice: number) => 1 << voice
 export type DrumVoice = (typeof DRUM_VOICES)[number]
 export type DrumVoiceKey = DrumVoice['key']
 export type DrumMaybeKey = DrumVoice['maybe']
+export type DrumGhostKey = DrumVoice['ghost']
 export type DrumRow = (typeof GRID_ROWS)[number]
 export type DrumStepKey = DrumRow['key']
 export type DrumLenKey = DrumRow['len']
@@ -329,12 +346,14 @@ export const LEN_KEYS = new Set<ControlKey>([
   THROW_ROW.len,
 ])
 
-/** Every mask a pattern is made of, voice masks and maybe masks together, in
+/** The masks one row is made of. */
+export const rowMasks = (r: DrumRow) =>
+  r.maybe ? [r.key, r.maybe, r.ghost] : [r.key]
+
+/** Every mask a pattern is made of, voice, maybe and ghost masks together, in
     the order the grid draws them. A move that rewrites a pattern rewrites all
     of these or it hands back a bar with somebody else's maybes in it. */
-export const PATTERN_KEYS = GRID_ROWS.flatMap(r =>
-  r.maybe ? [r.key, r.maybe] : [r.key],
-)
+export const PATTERN_KEYS = GRID_ROWS.flatMap(rowMasks)
 
 /** Sixteen bits and nothing else, whatever a link or a stray float carried. */
 export const asMask = (v: number) =>
@@ -390,22 +409,32 @@ export const hasStep = (mask: number, step: number) =>
   (mask & stepBit(step)) !== 0
 export const toggleStep = (mask: number, step: number) => mask ^ stepBit(step)
 
-/** What one contact is, out of the two masks that answer for it. Three states
-    and one click cycling them, so a step is off, closed, or wired through the
-    dice — and a step in both masks is the dice, because that is the wire that
-    reaches the trigger line last. */
-export type StepState = 'off' | 'on' | 'maybe'
+/** What one contact is, out of the masks that answer for it. Four states and
+    one click cycling them, so a step is off, closed, closed soft, or wired
+    through the dice — and a step in the dice mask is the dice, because that is
+    the wire that reaches the trigger line last. */
+export type StepState = 'off' | 'on' | 'ghost' | 'maybe'
 
 export const stepState = (
   mask: number,
   maybe: number,
   step: number,
+  ghost = 0,
 ): StepState =>
-  hasStep(maybe, step) ? 'maybe' : hasStep(mask, step) ? 'on' : 'off'
+  hasStep(maybe, step)
+    ? 'maybe'
+    : hasStep(mask, step)
+      ? 'on'
+      : hasStep(ghost, step)
+        ? 'ghost'
+        : 'off'
 
 /** The pattern itself: a mask per row, and the length each row runs to. The two
     halves travel together through everything that rewrites a pattern. */
-export type DrumMasks = Record<DrumStepKey | DrumMaybeKey, number>
+export type DrumMasks = Record<
+  DrumStepKey | DrumMaybeKey | DrumGhostKey,
+  number
+>
 export type DrumLens = Record<DrumLenKey, number>
 
 export interface DrumRom {
@@ -523,14 +552,19 @@ export function romMatching(masks: DrumMasks): DrumRom | undefined {
   return DRUM_ROMS.find(r => PATTERN_KEYS.every(k => r.masks[k] === masks[k]))
 }
 
-const STEP_CHARS: Record<StepState, string> = { on: 'x', maybe: '?', off: '.' }
+const STEP_CHARS: Record<StepState, string> = {
+  on: 'x',
+  ghost: 'g',
+  maybe: '?',
+  off: '.',
+}
 
 /** Formats a row up to its length with one character per step: `x` for a hit,
-    `?` for a hit on the dice, `.` for a rest. */
-export const rowText = (mask: number, maybe: number, len: number) =>
+    `g` for a ghost, `?` for a hit on the dice, `.` for a rest. */
+export const rowText = (mask: number, maybe: number, len: number, ghost = 0) =>
   Array.from(
     { length: asLen(len) },
-    (_, s) => STEP_CHARS[stepState(mask, maybe, s)],
+    (_, s) => STEP_CHARS[stepState(mask, maybe, s, ghost)],
   ).join('')
 
 /** A Euclidean rhythm: `hits` spread as evenly as they go over `steps` by
@@ -575,13 +609,13 @@ export function euclidMask(hits: number, len: number, mask: number): number {
   return out
 }
 
-const EUCLID = /([x?.])\((\d+),(\d+)(?:,(-?\d+))?\)/g
+const EUCLID = /([xg?.])\((\d+),(\d+)(?:,(-?\d+))?\)/g
 
 /** Parses the format rowText writes, ignoring spaces and `|`. The text length
     sets the row length, and an empty string gives sixteen rests. Two short
     forms expand first: `x(3,8)` is a Euclidean row (a third number rotates
-    it), and `[xxx]` is one step struck three times, which the kit plays as a
-    ratchet on that column. */
+    it, and `g(3,8)` or `?(3,8)` spreads ghosts or dice), and `[xxx]` is one
+    step struck three times, which the kit plays as a ratchet on that column. */
 export function parseRow(text: string) {
   const flat = text
     .toLowerCase()
@@ -599,9 +633,9 @@ export function parseRow(text: string) {
     const end = flat.indexOf(']', i)
     const inner = end < 0 ? '' : flat.slice(i + 1, end)
     const count = inner.length
-    if (!/^(x+|\?+)$/.test(inner) || !RATCHETS.includes(count))
+    if (!/^(x+|g+|\?+)$/.test(inner) || !RATCHETS.includes(count))
       throw new Error(
-        `'[${inner}]' is not a step; a bracket holds ${RATCHETS.slice(1).join(', ')} of x or of ?`,
+        `'[${inner}]' is not a step; a bracket holds ${RATCHETS.slice(1).join(', ')} of x, of g or of ?`,
       )
     ratchets[steps.length] = count
     steps.push(inner[0]!)
@@ -611,12 +645,15 @@ export function parseRow(text: string) {
     throw new Error(`${steps.length} steps; the maximum is ${STEPS}`)
   let mask = 0
   let maybe = 0
+  let ghost = 0
   for (const [s, ch] of steps.entries()) {
     if (ch === 'x') mask |= stepBit(s)
     else if (ch === '?') maybe |= stepBit(s)
-    else if (ch !== '.') throw new Error(`'${ch}' is not a step; use x, ? or .`)
+    else if (ch === 'g') ghost |= stepBit(s)
+    else if (ch !== '.')
+      throw new Error(`'${ch}' is not a step; use x, g, ? or .`)
   }
-  return { mask, maybe, len: steps.length || STEPS, ratchets }
+  return { mask, maybe, ghost, len: steps.length || STEPS, ratchets }
 }
 
 /** The event row's letters, by EVENT value: c cut, d drop, b brake, f freeze,

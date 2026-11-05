@@ -5,6 +5,7 @@ import {
   RATCHET_KEYS,
   RATCHETS,
   EVENT_KEYS,
+  rowMasks,
 } from '../../drums.ts'
 import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
 import { YOURS as YOUR_TUNE } from '../../dsp/stages/roms.ts'
@@ -67,14 +68,15 @@ type KitRow = (typeof GRID_ROWS)[number]['label'] | 'ratchet' | 'event'
 /** The kit's grid, a row of text a voice, as the grid reads it back. */
 export function kit(rows: Partial<Record<KitRow, string>>): Partial<Controls> {
   const out: Partial<Controls> = Object.fromEntries(
-    GRID_ROWS.flatMap(r => [[r.key, 0], ...(r.maybe ? [[r.maybe, 0]] : [])]),
+    GRID_ROWS.flatMap(r => rowMasks(r).map(k => [k, 0])),
   )
   for (const row of GRID_ROWS) {
     const text = rows[row.label]
     if (text !== undefined) {
-      const { mask, maybe, len, ratchets } = parseRow(text)
+      const { mask, maybe, ghost, len, ratchets } = parseRow(text)
       out[row.key] = mask
       if (row.maybe) out[row.maybe] = maybe
+      if (row.ghost) out[row.ghost] = ghost
       out[row.len] = len
       for (const [s, count] of Object.entries(ratchets))
         out[RATCHET_KEYS[Number(s)]!] = RATCHETS.indexOf(count)

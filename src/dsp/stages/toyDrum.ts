@@ -14,6 +14,7 @@ import {
   RATCHETS,
   DATA_LINES,
   DRUM_VOICES,
+  GHOST_GAIN,
   GRID_ROWS,
   STEP_COND_KEYS,
   STEP_CONDS,
@@ -124,6 +125,7 @@ const VOICE_BITS = ACCENT_BIT - 1
 
 const VOICE_PARAM = DRUM_VOICES.map(v => IDX[v.key])
 const MAYBE_PARAM = DRUM_VOICES.map(v => IDX[v.maybe])
+const GHOST_PARAM = DRUM_VOICES.map(v => IDX[v.ghost])
 const LEN_PARAM = GRID_ROWS.map(r => IDX[r.len])
 const ACCENT_ROW = GRID_ROWS.length - 1
 
@@ -665,6 +667,7 @@ export class ToyDrum implements Stage {
   // feeds every voice on the board, so what a step takes off it is what the
   // next step does not get.
   private accentV = 1
+  private soft = 0
   private accentAmt = ACCENT_GAIN
   private accentSag = 0
   private accentPull = 0
@@ -983,6 +986,7 @@ export class ToyDrum implements Stage {
       this.open = 0
     }
     let bits = 0
+    let soft = 0
     if (this.loop > 0 && !roll) bits = this.loopHeld
     else {
       for (let v = 0; v < N_VOICES; v++) {
@@ -1001,6 +1005,9 @@ export class ToyDrum implements Stage {
         const maybe = strayed
           ? this.wander.maybes[v]!
           : Math.round(p[MAYBE_PARAM[v]!]!)
+        const ghost = strayed
+          ? this.wander.ghosts[v]!
+          : Math.round(p[GHOST_PARAM[v]!]!)
         if ((maybe >> at) & 1) {
           if (roll) {
             const closed = this.rng() < this.chance
@@ -1014,6 +1021,10 @@ export class ToyDrum implements Stage {
           if (this.open & bit) bits |= bit
           else if (this.loop > 0 && (cells >> at) & 1) bits |= bit
         } else if ((cells >> at) & 1) bits |= bit
+        else if ((ghost >> at) & 1) {
+          bits |= bit
+          soft |= bit
+        }
         this.loopAt[v] = at
       }
       if (this.loop > 0) this.circulate(bits)
@@ -1024,6 +1035,7 @@ export class ToyDrum implements Stage {
       ? this.wander.accent
       : Math.round(p[IDX.drumAccent]!)
     if ((accent >> (STEPS - 1 - accentStep)) & 1) bits |= ACCENT_BIT
+    this.soft = soft
     const wire = this.dataLine < 0 && this.wander.wireLine >= 0
     return this.dataBus.read(
       bits,
@@ -1038,6 +1050,7 @@ export class ToyDrum implements Stage {
     for (let v = 0; v < N_VOICES; v++) {
       w.rows[v] = Math.round(p[VOICE_PARAM[v]!]!)
       w.maybes[v] = Math.round(p[MAYBE_PARAM[v]!]!)
+      w.ghosts[v] = Math.round(p[GHOST_PARAM[v]!]!)
       w.lens[v] = this.lens[v]!
     }
     w.accent = Math.round(p[IDX.drumAccent]!)
@@ -1142,19 +1155,26 @@ export class ToyDrum implements Stage {
   // Every hit is stamped on the bus as it goes, whether the sequencer struck it,
   // the retrigger bend hammered it, a shout came in the mic or the keyboard's
   // gate reached across. The line is one node; what is soldered to it decides.
-  private hit(bits: number, gain: number, ctx: Ctx, i: number): number {
+  private hit(
+    bits: number,
+    gain: number,
+    ctx: Ctx,
+    i: number,
+    soft = 0,
+  ): number {
     if (!bits) return 0
     let struck = 0
     for (let v = 0; v < N_VOICES; v++) {
       if (!(bits & (1 << v))) continue
+      const g = soft & (1 << v) ? gain * GHOST_GAIN : gain
       if (v === CLAP) {
         if (this.clapsLeft > 0 || this.env[CLAP]! > this.trigFloor) continue
-        this.gain[v] = gain
+        this.gain[v] = g
         this.clapsLeft = this.clapCount
         this.clapTimer = 0
       } else {
         if (this.env[v]! > this.trigFloor) continue
-        this.gain[v] = gain
+        this.gain[v] = g
         this.env[v] = 1
       }
       // A voice that has just been struck is not being drained, whatever was
@@ -1165,7 +1185,7 @@ export class ToyDrum implements Stage {
         if (this.chokeFrom[w] === v) this.chokedBits |= 1 << w
       // Same charge whatever the one-shot's width: the pulse is where it goes,
       // not how much of it there is.
-      this.pulse[v] = gain * (1 - this.pulseFall)
+      this.pulse[v] = g * (1 - this.pulseFall)
       // And the needle goes back to the top of the slab. Unconditionally: the
       // mode is a switch on the output stage, not on the trigger line, so the
       // line does the same thing either way and only what listens to it moves.
@@ -1181,7 +1201,7 @@ export class ToyDrum implements Stage {
     if (struck & this.resetBit) this.clearing = true
     this.firedSince |= struck
     this.thrown = this.throwing ? this.thrown | struck : this.thrown & ~struck
-    ctx.trig.drumFired(i, struck, gain)
+    ctx.trig.drumFired(i, struck, struck & ~soft ? gain : gain * GHOST_GAIN)
     return struck
   }
 
@@ -1205,7 +1225,7 @@ export class ToyDrum implements Stage {
   }
 
   /** Holds back every voice after the first, one scan apart; returns the first. */
-  private scan(bits: number, gain: number): number {
+  private scan(bits: number, gain: number, soft: number): number {
     let first = 0
     let k = 0
     for (let v = 0; v < N_VOICES; v++) {
@@ -1215,7 +1235,7 @@ export class ToyDrum implements Stage {
       else {
         this.scanBits |= bit
         this.scanLeft[v] = k * this.scanSamples
-        this.scanGain[v] = gain
+        this.scanGain[v] = soft & bit ? gain * GHOST_GAIN : gain
         if (this.throwing) this.scanThrow |= bit
         else this.scanThrow &= ~bit
       }
@@ -1267,8 +1287,9 @@ export class ToyDrum implements Stage {
     const accent = (word & ACCENT_BIT) !== 0
     const gain =
       (accent ? 1 + (this.accentAmt - 1) * this.accentV : 1) * this.ratchetGain
-    if (this.scanSamples > 0 && bits & (bits - 1)) bits = this.scan(bits, gain)
-    const struck = this.hit(bits, gain, ctx, i)
+    if (this.scanSamples > 0 && bits & (bits - 1))
+      bits = this.scan(bits, gain, this.soft)
+    const struck = this.hit(bits, gain, ctx, i, this.soft)
     this.throwing = false
     if (!accent || !struck || this.accentSag <= 0) return
     let load = 0

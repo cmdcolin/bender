@@ -287,7 +287,7 @@ test('a drag writes whatever the step it started on became', () => {
 
 // Three states on one contact, and one click each way round them. The two masks
 // never hold the same step, because what the grid draws is what the kit reads.
-test('a step cycles off, on, wired through the dice, off', () => {
+test('a step cycles off, on, wired through the dice, a ghost, off', () => {
   render(<DrumKit />)
   const cell = screen.getByRole('button', { name: 'tom step 5' })
   const at = () => {
@@ -295,25 +295,30 @@ test('a step cycles off, on, wired through the dice, off', () => {
     return [
       hasStep(c.drumTom, 4),
       hasStep(c.drumTomMaybe, 4),
+      hasStep(c.drumTomGhost, 4),
       cell.getAttribute('aria-pressed'),
     ]
   }
-  expect(at()).toEqual([false, false, 'false'])
+  expect(at()).toEqual([false, false, false, 'false'])
   fireEvent.pointerDown(cell)
-  expect(at()).toEqual([true, false, 'true'])
+  expect(at()).toEqual([true, false, false, 'true'])
   fireEvent.pointerDown(cell)
-  expect(at()).toEqual([false, true, 'mixed'])
+  expect(at()).toEqual([false, true, false, 'mixed'])
   fireEvent.pointerDown(cell)
-  expect(at()).toEqual([false, false, 'false'])
+  expect(at()).toEqual([false, false, true, 'mixed'])
+  fireEvent.pointerDown(cell)
+  expect(at()).toEqual([false, false, false, 'false'])
 
-  // And the round trip is three steps in the walk, not six: the click that
-  // moved both masks at once is still one click.
+  // And the round trip is four steps in the walk, not eight: the click that
+  // moved two masks at once is still one click.
   act(() => engine.undo(0))
-  expect(at()).toEqual([false, true, 'mixed'])
+  expect(at()).toEqual([false, false, true, 'mixed'])
   act(() => engine.undo(0))
-  expect(at()).toEqual([true, false, 'true'])
+  expect(at()).toEqual([false, true, false, 'mixed'])
   act(() => engine.undo(0))
-  expect(at()).toEqual([false, false, 'false'])
+  expect(at()).toEqual([true, false, false, 'true'])
+  act(() => engine.undo(0))
+  expect(at()).toEqual([false, false, false, 'false'])
 })
 
 // The accent row has no maybe mask — it is a weight rather than a hit — so its

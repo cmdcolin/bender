@@ -36,6 +36,7 @@ const clearFrom = (w: Wander, at: number) => {
   for (let v = 0; v < N_DRUM_VOICES; v++) {
     w.rows[v]! &= keep
     w.maybes[v]! &= keep
+    w.ghosts[v]! &= keep
   }
   w.accent &= keep
 }
@@ -107,6 +108,7 @@ export const STRAYS: readonly Stray[] = [
     play: w => {
       w.rows[KICK] = 0
       w.maybes[KICK] = 0
+      w.ghosts[KICK] = 0
     },
   },
   {
@@ -143,6 +145,7 @@ export const STRAYS: readonly Stray[] = [
       for (let v = 0; v < N_DRUM_VOICES; v++) {
         w.rows[v] = rotate(w.rows[v]!, w.lens[v]!, by)
         w.maybes[v] = rotate(w.maybes[v]!, w.lens[v]!, by)
+        w.ghosts[v] = rotate(w.ghosts[v]!, w.lens[v]!, by)
       }
     },
   },
@@ -204,6 +207,7 @@ export const strayNames = (packed: number) =>
 export class Wander {
   readonly rows = new Uint16Array(N_DRUM_VOICES)
   readonly maybes = new Uint16Array(N_DRUM_VOICES)
+  readonly ghosts = new Uint16Array(N_DRUM_VOICES)
   accent = 0
   readonly lens = new Uint8Array(N_DRUM_VOICES).fill(STEPS)
   readonly ratchets = new Uint8Array(STEPS)
@@ -228,6 +232,7 @@ export class Wander {
     for (let v = 0; v < N_DRUM_VOICES; v++) {
       this.rows[v] = f(this.rows[v]!)
       this.maybes[v] = f(this.maybes[v]!)
+      this.ghosts[v] = f(this.ghosts[v]!)
     }
     this.accent = f(this.accent)
   }
@@ -242,7 +247,7 @@ export class Wander {
     return bar % 4 === 3 ? Math.min(0.25 + amount, 1) : amount * 0.5
   }
 
-  /** Decide `bar`. The caller has loaded rows, maybes, accent and lens from the
+  /** Decide `bar`. The caller has loaded rows, maybes, ghosts, accent and lens from the
       grid; a bar that strays rewrites them. */
   plan(amount: number, bar: number) {
     this.reset()

@@ -209,6 +209,21 @@ test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
   expect(() => bender.drums({ hat: '[xxxxx]' })).toThrow(/a bracket holds/)
 })
 
+test('drums writes ghost steps and the board reads them back', () => {
+  const out = bender.drums({ snare: '....x..g.g..x..g', hat: 'g(5,8)' })
+  const c = engine.controls.get()
+  expect(c.drumSnare).toBe(0b0000_1000_0000_1000)
+  expect(c.drumSnareGhost).toBe(0b0000_0001_0100_0001)
+  expect(out.drums.snare).toBe('....x..g.g..x..g')
+  expect(out.drums.hat).toBe('g.gg.gg.')
+  expect(bender.board().drums).toMatchObject({ snare: '....x..g.g..x..g' })
+  expect(() => bender.drums({ accent: 'xg' })).toThrow(
+    "the accent row accepts only 'x' and '.'",
+  )
+  bender.drums({ snare: '' })
+  expect(engine.controls.get().drumSnareGhost).toBe(0)
+})
+
 test('line writes the bassline memory on the kit clock and says why it is silent', () => {
   const out = bender.line('. A2 A2 | A3', { accent: '..x.', slide: '.x' })
   const c = engine.controls.get()

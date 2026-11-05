@@ -70,10 +70,8 @@ for (const [key, notes] of Object.entries(GM_PADS))
     standard leaves to the machine. */
 export const gmVoice = (note: number) => GM_VOICE_BY_NOTE.get(note) ?? null
 
-// How hard a pad's hit lands. The kit has two weights of its own — a plain step
-// and an accented one — so a pad plays between them: a middling hit is a plain
-// step, and the hardest is an accent. Softer than middling goes on down to a
-// ghost note, which the sequencer has no way of asking for at all.
+// How hard a pad's hit lands. A middling hit is a plain step, the hardest is an
+// accent, and softer than middling goes on down to about a ghost step.
 const PAD_FLOOR = 0.3
 export const padGain = (v: number) =>
   PAD_FLOOR + (ACCENT_GAIN - PAD_FLOOR) * (v / 127)

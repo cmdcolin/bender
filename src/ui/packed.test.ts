@@ -227,6 +227,17 @@ test('the melody and the kit travel with the board', () => {
   expect(round(board)).toEqual(board)
 })
 
+test('ghost steps travel with the board, and a link from before them opens unchanged', () => {
+  const board: Controls = {
+    ...stock(),
+    drumSnare: 0b0000_1000_0000_1000,
+    drumSnareGhost: 0b0001_0010_0100_0001,
+    drumHatGhost: 0b0101_0101_0101_0101,
+  }
+  expect(round(board)).toEqual(board)
+  expect(unpackControls(GOLDEN_LINK, nothing)).toEqual(GOLDEN_BOARD)
+})
+
 test('only what is off stock travels', () => {
   expect(packControls(stock(), nothing)).toBe('')
   expect(unpackControls('', nothing)).toEqual({})

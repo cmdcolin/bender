@@ -139,12 +139,17 @@
   background: #6f6f7c;
 }
 
+.ghost {
+  background: #9c988e;
+}
+
 .out {
   background: #1d1d22;
 }
 
 .off.head,
-.maybe.head {
+.maybe.head,
+.ghost.head {
   background: #6b2a22;
 }
 

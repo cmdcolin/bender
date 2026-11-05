@@ -323,6 +323,15 @@ export const PARAM_DEFS = [
   ['drumOpenMaybe', 'step'],
   ['drumCymMaybe', 'step'],
 
+  ['drumKickGhost', 'step'],
+  ['drumSnareGhost', 'step'],
+  ['drumHatGhost', 'step'],
+  ['drumClapGhost', 'step'],
+  ['drumTomGhost', 'step'],
+  ['drumBellGhost', 'step'],
+  ['drumOpenGhost', 'step'],
+  ['drumCymGhost', 'step'],
+
   ['drumKickLen', 'step'],
   ['drumSnareLen', 'step'],
   ['drumHatLen', 'step'],

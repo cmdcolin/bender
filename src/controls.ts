@@ -334,6 +334,15 @@ export const DEFAULT_CONTROLS = {
   drumOpenMaybe: 0,
   drumCymMaybe: 0,
 
+  drumKickGhost: 0,
+  drumSnareGhost: 0,
+  drumHatGhost: 0,
+  drumClapGhost: 0,
+  drumTomGhost: 0,
+  drumBellGhost: 0,
+  drumOpenGhost: 0,
+  drumCymGhost: 0,
+
   // How many of those steps each row plays before it comes round again. All
   // sixteen is the machine as it left the factory; anything else is polymeter —
   // five on the hat against sixteen on the kick takes a minute to line back up.

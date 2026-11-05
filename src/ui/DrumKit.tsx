@@ -201,13 +201,14 @@ const PatternRow = memo(function PatternRow({
 }) {
   const mask = useControlValue(voice.key)
   const maybe = useControlValue(voice.maybe)
+  const ghost = useControlValue(voice.ghost)
   const len = asLen(useControlValue(voice.len))
   const head = tick < 0 ? -1 : tick % len
   const flash = taken ? taken.tick % len : -1
   return (
     <span className={muted ? styles.rowMuted : styles.row} aria-hidden="true">
       {Array.from({ length: STEPS }, (_, s) => {
-        const state = s < len ? stepState(mask, maybe, s) : 'out'
+        const state = s < len ? stepState(mask, maybe, s, ghost) : 'out'
         const classes = [
           styles.cell,
           styles[state],
