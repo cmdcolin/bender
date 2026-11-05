@@ -277,6 +277,29 @@ test('the toy gate plays the keyboard, and cutting it stops', () => {
   expect(rms(cut)).toBeLessThan(1e-6)
 })
 
+test('stopping the song lets go of the keys its gate struck', () => {
+  const after = (stop: (b: BuiltChain) => void) => {
+    const built = buildBender(SR)
+    built.transport.tune = true
+    const p = packParams({ ...DEFAULT_CONTROLS, ...ALONE, pcmEnv: 0 })
+    const io = makeIo()
+    const blocks = (seconds: number) => Math.ceil((seconds * SR) / BLOCK)
+    for (let b = 0; b < blocks(1); b++) built.chain.process(io, p)
+    stop(built)
+    const out = new Float32Array(blocks(1.5) * BLOCK)
+    for (let b = 0; b < blocks(1.5); b++) {
+      built.chain.process(io, p)
+      out.set(io.l.subarray(0, BLOCK), b * BLOCK)
+    }
+    return rms(out.subarray(out.length / 2))
+  }
+  const rings = after(b => {
+    b.transport.tune = false
+  })
+  expect(rings).toBeGreaterThan(1e-3)
+  expect(after(b => b.runTransport(false, false))).toBeLessThan(rings / 5)
+})
+
 test('note length holds the song’s keys down', () => {
   const run = (over: Partial<Controls>) =>
     rms(

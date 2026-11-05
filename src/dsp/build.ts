@@ -48,6 +48,9 @@ export interface BuiltChain {
   sheet: Sheet
   bottle: Bottle
   transport: Transport
+  /** Starts or stops the song and the kit. The song stopping lets go of the
+      keys its gate struck on Parlor, whose voices otherwise ring out. */
+  runTransport(tune: boolean, drums: boolean): void
   /** The shared toy supply, out here because it is the one state worth watching
       from outside the audio thread: the panel draws it, and a test asks it
       whether the watchdog tripped. */
@@ -156,6 +159,11 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     transport,
     rail,
     supplies,
+    runTransport(tune: boolean, drums: boolean) {
+      if (transport.tune && !tune) pcmKeys.releaseGated()
+      transport.tune = tune
+      transport.drums = drums
+    },
     noteOff(semitone: number) {
       toyChip.noteOff(semitone)
       fmChip.gateOff(semitone)

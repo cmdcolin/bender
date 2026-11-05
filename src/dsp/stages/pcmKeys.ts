@@ -235,6 +235,12 @@ export class PcmKeys implements Stage {
     this.release(note, true)
   }
 
+  /** The toy's song stopping, which lets go of every key its gate struck. */
+  releaseGated() {
+    for (const v of this.voices)
+      if (v.gated && v.stage !== IDLE) v.stage = RELEASE
+  }
+
   private release(note: number, gated: boolean) {
     for (const v of this.voices) {
       if (v.root === note && v.gated === gated && v.stage !== IDLE)

@@ -205,8 +205,7 @@ class BenderProcessor extends AudioWorkletProcessor {
           }
           break
         case 'transport':
-          this.built.transport.tune = msg.tune
-          this.built.transport.drums = msg.drums
+          this.built.runTransport(msg.tune, msg.drums)
           break
         case 'panic':
           this.built.chain.panic()
