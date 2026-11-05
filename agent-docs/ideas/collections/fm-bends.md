@@ -1,9 +1,9 @@
 ---
 name: fm-bends
 description:
-  Further bends for the FM chip with hook points and measurements. Items 1–6, 8,
-  the allocator, cold boot and five effect scripts have landed with named cuts;
-  rhythm at full width leads what is left.
+  Further bends for the FM chip with hook points and measurements. Items 1–8,
+  the exp table's bus, the allocator, cold boot and five effect scripts have
+  landed with named cuts; mono and the spare register bits are what is left.
 ---
 
 # Further bends for the FM chip
@@ -15,12 +15,12 @@ did.
 The open candidates are proposals. Each landed section records the design calls
 made building it, and every new control defaults to the shipped sound.
 
-**Ten have landed since.** Items 1 to 6 and 8, the driver's allocator, cold boot
-and five more effect scripts are all built, and their sections say what came
-out. Every bend from the last two rounds has a named cut, rig or preset; see
-_Named and measured_ below. What remains is 7 and the small ones, ranked at the
-end. The numbers are how this document has been referred to elsewhere, so
-nothing is renumbered.
+**Twelve have landed since.** Items 1 to 8, the exp table's bus, the driver's
+allocator, cold boot and five more effect scripts are all built, and their
+sections say what came out. Every bend from the last three rounds has a named
+cut, rig or preset; see _Named and measured_ below. What remains is the small
+ones, ranked at the end. The numbers are how this document has been referred to
+elsewhere, so nothing is renumbered.
 
 ## How to judge one of these before building it
 
@@ -53,6 +53,9 @@ Where those numbers stand, per bus and per mode:
 | patch data (8) | melody | 40/40   | 0.42     | 0             | 1         |
 |                | rhythm | 40/40   | 0.40     | 9             | 1         |
 |                | wind   | 40/40   | 0.32     | 0             | 3         |
+| exp (12)       | melody | 59/60   | 0.61     | 0             | 4         |
+|                | rhythm | 59/60   | 0.73     | 2             | 14        |
+|                | wind   | 59/60   | 0.82     | 0             | 12        |
 
 The wave data rows are item 2, measured. Of the buses that came before it, it is
 the only one that reads the same in melody as in rhythm, which is the point of
@@ -97,9 +100,9 @@ register. What is left, and whether it is real on the part:
   or at a slower one the die keeps for the purpose. Worth having, and it lands
   in the register that already carries the octave, the top of the frequency and
   the key itself — the most crowded byte on the chip.
-- **the rhythm register's 0x04 and 0x02** — the tom and the cymbal. See _Rhythm
-  at full width_ below; the bits are dead because the drums have nowhere to go,
-  not because nothing reads them.
+- **the rhythm register's 0x04 and 0x02** — the tom and the cymbal. Read since
+  item 7 landed, at full width only; at the stock width the drums still have
+  nowhere to go.
 - **the test register's 0xf0** — four bits, and the one place on this chip where
   inventing hardware is defensible: the register is undocumented by
   construction, the driver only ever writes zero to it, and what the existing
@@ -133,7 +136,8 @@ default `linear`) with a hop lane. Design calls:
   that wide. 7 bits took its place.
 - The bass drum's two operators and the two noise slots go through it too, so
   the kit wraps with the rest of the chip.
-- The exp ROM's own address bus is not built; the adder carries the sound.
+- The exp ROM's own address bus was left for later and has since landed; see
+  _The exp table's address_ below.
 
 Measured on the `pnpm spectrum` board, FM stem, centroid and flatness against
 1.66 kHz and 0.001 clean:
@@ -283,20 +287,41 @@ and the kit's do.
 
 The two clocks from 5 have lanes as well.
 
-## 7. Rhythm at full width
+## 7. Rhythm at full width — landed
 
-`RHY` defines three keys and the die has five. `RHYTHM_CH = 2` gives the bank
-two channels; the comment above it already says "five drums into three voices"
-while the code implements three drums in two.
+`RHY` defined three keys and the die has five. Built as a third position on
+**Rhythm**, `full kit`: the bank starts at the second channel, the bass drum
+there, hi-hat and snare on the next, and the tom and cymbal (`RHY.tom` 0x04,
+`RHY.cymbal` 0x02) on the last, which leaves **one voice for the tune**. The
+kit's tom line strikes the tom, and its bell and cymbal lines the cymbal
+(`FULL_KIT_KEYS`). Design calls:
 
-Move it to 1 and the arithmetic is the real part's: bass drum on its own
-channel, hi-hat and snare sharing the next, tom and cymbal sharing the last —
-and **one voice left for the tune**. That trade is worth more than the drums
-are. Ask this chip for the whole kit and it can barely play a melody, which is
-the kind of constraint the rest of this board is made of.
+- A position on Rhythm rather than a control of its own, since width means
+  nothing with the bank off. `off` and `kit` keep their values.
+- The tom is a bare sine tuned from ROM (`TOM_FNUM`, `TOM_BLOCK`, 163 Hz), so
+  the wave-bus faults reach it.
+- The cymbal is the part's top-cymbal logic: three phase bits off the hi-hat
+  channel's phase generator gated with two of its own. A first build rang a
+  square against the hat slot's sign; with the hat idle that was a plain 2 kHz
+  beep at 0.005 flat. The bit logic aliases into a hash instead: soloed, 12.5
+  kHz centroid, 0.15 flat, 0.69 in the air band, against 9.5 kHz and 0.89 for
+  the hat. The two halves are XORed rather than ORed as on the part, which read
+  high seven times in eight and left 75% of the amplitude as DC.
+- The hi-hat channel's phase generator free-runs for the cymbal, so anything
+  that retunes the hat retunes the cymbal.
 
-It also lights `DRUM_KEYS`, which currently folds eight trigger lines onto three
-drums because there are only three places to put them.
+Measured on the sakura tune's FM stem with all eight kit lines clipped on,
+against the three-drum kit: centroid 1.55 → 1.77 kHz, sub band 0.10 → 0.20,
+deviation 0.72. Compounds as item 7 promised:
+
+- Allocator stuck on 3, the hi-hat's channel: every note keys it, so the tune
+  strikes the hat and snare at its own pitch and moves the cymbal's bits: 0.28
+  flat, centroid 3.8 kHz. Named as the preset _the tune on the hi-hats_.
+- Allocator stuck on 4: the tune strikes the tom and cymbal at its pitch, 0.21
+  flat.
+- DAC slot stuck on 4: only the tom and cymbal, four times over, centroid 7.2
+  kHz.
+- With E9 parted at 0.7 (below): 0.76 flat, the flattest take of this round.
 
 ## 8. One DAC, four channels, a slot counter — landed
 
@@ -388,6 +413,33 @@ Measured on the `pnpm spectrum` board, FM stem:
     melody but picks which of the kit's or the effect's channels the tune lands
     in.
 
+## The exp table's address — landed
+
+`logMul()` read `EXP_TABLE` by the low eight bits of the adder's sum and shifted
+by the rest. Built as `fmExpLine` / `fmExpFault`, a `Bus(12)` on that sum: E0–E7
+address the table, E8–E11 tell the shifter how many octaves down. Design calls:
+
+- Twelve wires, not the eight first proposed, because the shifter lines are
+  where the sound is. On the sakura board's FM stem E0–E3 measure under 0.11
+  deviation whatever the fault; the ROM's own top line, E7, reaches 0.43 flat
+  parted. The shifter lines reach further: E9 parted at 0.7 reads 0.70 flat with
+  a 7.85 kHz centroid and 0.38 in the air band, and E8 bridged moves the take
+  furthest, deviation 1.49.
+- A line chosen with **Log adder** on linear runs the log path unwrapped,
+  saturating at the bus's top, so the knife is heard alone. With no line chosen
+  nothing changes.
+- Every operator reads its level across these wires, eight or more times a
+  sample, so a parted line is the "wrong operator" bend the wave data bus made
+  for samples, made for levels.
+
+E10 and E11 to +V are 24 and 48 dB of attenuation on everything: 0.09 and 0.01
+of the level.
+
+`pnpm spectrum fm` puts it in the table at the top: more broadband faults in
+rhythm and wind than any other bus on the chip, since every one of them reaches
+the kit's and the effect's operators as well as the tune's. E11 to +V is the one
+silent fault of the sixty.
+
 ## Named and measured
 
 Every bend from the last two rounds has a name on the panel. Numbers are
@@ -398,6 +450,7 @@ fault off; the rigs are the FM stem on the `pnpm spectrum` board.
 | -------------------------------- | ----------------- | ----- | -------- | ---- |
 | a patch that will not hold still | cut, P2 cut 0.85  | 1.03× | 2.99 kHz | 0.41 |
 | nine times the note              | cut, B3 to +V     | 0.84× | 5.48 kHz | 0.08 |
+| levels from the wrong operator   | cut, E9 cut 0.7   | 0.97× | 5.11 kHz | 0.46 |
 | one voice, four times over       | cut, die & driver | 1.27× | 1.84 kHz | 0.02 |
 | the song upside down             | cut, slip 0.82    | 1.10× | 8.12 kHz | 0.05 |
 | one finger                       | cut, allocator    | 0.88× | 1.74 kHz | 0.07 |
@@ -411,6 +464,8 @@ fault off; the rigs are the FM stem on the `pnpm spectrum` board.
 | tune on the bass drum            | preset            |       | 1.63 kHz | 0.23 |
 | bird fight                       | preset            |       | 9.62 kHz | 0.29 |
 | standing ovation                 | preset            |       | 9.84 kHz | 0.83 |
+| dissolves every two bars         | preset            |       | 3.92 kHz | 0.45 |
+| the tune on the hi-hats          | preset            |       | 4.57 kHz | 0.34 |
 
 Design calls:
 
@@ -428,27 +483,27 @@ Design calls:
 
 ## What is left, ranked against each other
 
-1. **7, rhythm at full width.** Still structural, and it now compounds with the
-   allocator and the slot counter: a kit on three channels leaves one for the
-   tune, which a stuck allocator or slot can then take away.
-2. **The exp ROM's address bus.** The log path made it cheap: `logMul()` reads
-   `EXP_TABLE` by an address the adder just formed, so a `Bus(8)` there is a
-   fault on an amplitude rather than a phase or a byte.
+Items 7 and the exp table's bus landed in this order; the numbers below are kept
+so the doc can still be cited by them.
+
 3. **Mono.** A bodge wire putting one channel hard left would also make the slot
-   counter's slips audible as movement, not just as level.
+   counter's slips audible as movement, not just as level. At full width it
+   would also put the kit and the tune's one voice on opposite sides.
 4. **The test register's 0xf0 and the key register's sustain bit**, as above.
 
 ## Compositions to try
 
-All four are possible now and none is surfaced.
+All four are possible now; one is surfaced.
 
 **A brightness LFO against a marginal strobe.** A control-rate write storm
 through a latch that sometimes does not clock means the patch smears
 continuously across the register file instead of four times a note.
 
-**An LFO on the cut depth.** A cut whose trace conducts in time: most writes
-land, and the ones that do not land on the beat. Nothing else on this board has
-a fault that comes and goes on a clock.
+**An LFO on the cut depth — surfaced** as the preset _dissolves every two bars_,
+on the exp table's E9 rather than on the data bus. A two-bar sine LFO works the
+cut between 0 and 0.8 under a clarinet, and the stem's flatness swings 0.00 to
+0.53 and back each cycle. The data-bus version (D5 parted on the same clock)
+only hung notes and stayed at 0.00 flat throughout.
 
 **The blob against a fault on the wave address.** They are the two halves of the
 same table, and one is now broadband: a parted address line that no longer

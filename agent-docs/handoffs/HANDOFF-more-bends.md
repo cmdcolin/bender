@@ -8,9 +8,9 @@ option and record why in the commit and the idea doc.
 ## Next round, by source
 
 - **FM chip:** `agent-docs/ideas/collections/fm-bends.md`, "What is left,
-  ranked": rhythm at full width first, then a knife on the exp table's address,
-  then a mono bodge wire. "Compositions to try" lists four setups no preset
-  surfaces yet.
+  ranked": rhythm at full width and the exp table's bus have landed, so a mono
+  bodge wire is next, then the spare register bits. "Compositions to try" has
+  three setups no preset surfaces yet.
 - **Kit and ring mod:** `drum-bends.md` and `ring-mod.md` have no numbered
   candidates left. Each needs a fresh survey written the same way before
   building.
