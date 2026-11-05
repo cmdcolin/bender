@@ -49,6 +49,7 @@ export const VOICE_BOXES = {
     'drumMotor',
     'drumSweep',
     'drumTankCouple',
+    'drumHissKick',
     'drumBankSync',
   ],
   'metal bank': [
@@ -62,6 +63,7 @@ export const VOICE_BOXES = {
   noise: [
     'drumSnappy',
     'drumNoiseBias',
+    'drumKickBias',
     'drumClapGap',
     'drumClapCount',
     'drumDice',

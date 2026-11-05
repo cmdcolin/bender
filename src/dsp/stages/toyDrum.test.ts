@@ -1494,6 +1494,133 @@ test('two latched networks wired together stop holding one pitch', () => {
   expect(smear(0.5)).toBeGreaterThan(3 * smear(0))
 })
 
+const SNARE_ALONE: Partial<Controls> = { drumBpm: 60, drumSnare: stepMask(1) }
+
+test('hiss into the kick bows a hum out of its network under a snare alone', () => {
+  const dry = soloVoice(SNARE_ALONE, 1.2)
+  const bowed = soloVoice({ ...SNARE_ALONE, drumHissKick: 1 }, 1.2)
+  const hum = slice(bowed, 0.5, 1.2).map(
+    (v, i) => v - dry[i + Math.round(0.5 * SR)]!,
+  )
+  expect(lowEnergy(hum, 80)).toBeGreaterThan(
+    5 * lowEnergy(slice(dry, 0.5, 1.2), 80),
+  )
+  const kickHz = fineHz(slice(soloVoice(KICK_ALONE, 1.2), 0.6, 1.2))
+  expect(fineHz(hum)).toBeGreaterThan(0.8 * kickHz)
+  expect(fineHz(hum)).toBeLessThan(1.25 * kickHz)
+})
+
+test('a clap buzz bows the kick’s network about as loud as a kick strikes it', () => {
+  const buzz: Partial<Controls> = {
+    drumBpm: 60,
+    drumClap: stepMask(1),
+    drumClapCount: 40,
+    drumClapGap: 4,
+  }
+  const low = (x: Float32Array) => lowEnergy(slice(x, 0.3, 1), 80)
+  const kick = low(soloVoice(KICK_ALONE, 1))
+  expect(low(soloVoice({ ...buzz, drumHissKick: 1 }, 1))).toBeGreaterThan(
+    0.5 * kick,
+  )
+  expect(low(soloVoice(buzz, 1))).toBeLessThan(0.1 * kick)
+})
+
+test('hiss into the kick leaves a kick under the hats alone', () => {
+  const kit: Partial<Controls> = {
+    drumBpm: 60,
+    drumKick: stepMask(1),
+    drumHat: stepMask(1, 3),
+    drumOpen: stepMask(5),
+  }
+  expect(soloVoice({ ...kit, drumHissKick: 1 }, 2)).toEqual(soloVoice(kit, 2))
+})
+
+test('a bowed kick runs down to silence once the noise voices stop', () => {
+  const x = soloVoice(
+    {
+      drumBpm: 30,
+      drumSnare: stepMask(1),
+      drumClap: stepMask(1),
+      drumClapCount: 40,
+      drumClapGap: 4,
+      drumAccent: stepMask(1),
+      drumRing: 0.55,
+      drumHissKick: 1,
+      drumKickBias: 1,
+    },
+    7,
+  )
+  expect(loudest(x)).toBeLessThan(1)
+  expect(loudest(slice(x, 6, 7))).toBeLessThan(1e-4)
+})
+
+test('a latched kick bowed by its own chopped hiss stays inside the rails', () => {
+  const x = soloVoice(
+    {
+      drumBpm: 120,
+      drumKick: stepMask(1),
+      drumSnare: stepMask(1, 5, 9, 13),
+      drumClap: stepMask(3, 11),
+      drumClapCount: 64,
+      drumClapGap: 2,
+      drumAccent: 0xffff,
+      drumRing: 1,
+      drumHissKick: 1,
+      drumKickBias: 1,
+    },
+    4,
+  )
+  expect(loudest(x)).toBeLessThan(1)
+  expect(rms(slice(x, 3, 4))).toBeGreaterThan(0.01)
+})
+
+const highpassed = (x: Float32Array, hz: number) => {
+  const c = 1 - Math.exp((-2 * Math.PI * hz) / SR)
+  let y = 0
+  return x.map(v => {
+    y += c * (v - y)
+    return v - y
+  })
+}
+
+test('a kick on the noise bias chops an open hat struck under it at the kick’s pitch', () => {
+  const kit: Partial<Controls> = {
+    ...KICK_ALONE,
+    drumOpen: stepMask(1),
+    drumMetal: 0,
+  }
+  const dips = (x: Float32Array) => {
+    const hi = highpassed(x, 2000)
+    const top = loudest(hi)
+    const onset = hi.findIndex(v => Math.abs(v) > 0.3 * top)
+    const env = envelope(
+      hi.subarray(onset + Math.round(0.002 * SR), onset + Math.round(0.1 * SR)),
+      0.004,
+    )
+    let dip = 0
+    for (let i = 1; i + 1 < env.length; i++)
+      dip += Math.max((env[i - 1]! + env[i + 1]!) / 2 - env[i]!, 0)
+    return dip / env.reduce((a, v) => a + v, 0)
+  }
+  const stock = soloVoice(kit, 0.5)
+  const chopped = soloVoice({ ...kit, drumKickBias: 1 }, 0.5)
+  expect(dips(chopped)).toBeGreaterThan(4 * dips(stock))
+  expect(loudest(highpassed(chopped, 2000))).toBeLessThan(
+    2.5 * loudest(highpassed(stock, 2000)),
+  )
+})
+
+test('a kick on the noise bias leaves the noise voices alone with no kick', () => {
+  const kit: Partial<Controls> = {
+    drumBpm: 60,
+    drumSnare: stepMask(1),
+    drumHat: stepMask(3),
+    drumClap: stepMask(5),
+    drumTom: stepMask(7),
+  }
+  expect(soloVoice({ ...kit, drumKickBias: 1 }, 2)).toEqual(soloVoice(kit, 2))
+})
+
 // What struck on each step of the first few bars, one sixteen-bit mask a voice
 // a bar in the grid's bit order, read off the lights rather than the audio. The
 // counter leaves step one on its first edge, so that cell runs a lap behind.

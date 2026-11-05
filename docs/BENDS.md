@@ -518,6 +518,11 @@ tempo, swing, chance, tune, decay and mute.
 - **Tank coupling:** the kick's network drives the tom, which rings about an
   octave up.
   - Past a quarter of the travel the tom answers louder than the kick.
+- **Hiss into kick:** the snare's and the clap's amplifiers leak into the kick's
+  network, and their hiss bows it.
+  - A snare alone pulls a hum out of the kick at its pitch, about two thirds as
+    loud as a kick at the top of the travel, and no two hum alike.
+  - A clap buzz bows it as loud as a kick.
 - **Trigger pulse:** how long the one-shot holds the trigger down.
   - Narrow gives a click and a clean shock.
   - Wide gives no click and less body.
@@ -538,6 +543,12 @@ tempo, swing, chance, tune, decay and mute.
     a third of a millisecond and a tenth of a second (popcorn noise).
   - All four voices break up together mid-hit, and near the bottom the kit
     spits.
+- **Kick on bias:** the kick's network rides on the noise transistor's bias.
+  - While the kick rings, the snare, hats and clap are cut on one half of each
+    swing and doubled on the other, so they growl at the kick's pitch and fall
+    with its swoop.
+  - With Hiss into kick up as well, the chopped hiss bows the network that chops
+    it.
 - **Dice:** puts the kit's dice on the noise junction, which rolls while the
   junction conducts and holds its last answer otherwise.
   - A maybe step repeats its last answer 74% of the time at bias 0.5 against 51%

@@ -287,6 +287,8 @@ export const DEFAULT_CONTROLS = {
   drumClapGap: 9,
   drumClapCount: 3,
   drumTankCouple: 0,
+  drumKickBias: 0,
+  drumHissKick: 0,
   drumDice: 0,
   drumRef: 0,
   drumRefDepth: 1,

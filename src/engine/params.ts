@@ -281,6 +281,8 @@ export const PARAM_DEFS = [
   ['drumClapGap', 'slew'],
   ['drumClapCount', 'step'],
   ['drumTankCouple', 'slew'],
+  ['drumKickBias', 'slew'],
+  ['drumHissKick', 'slew'],
   ['drumDice', 'step'],
   ['drumRef', 'step'],
   ['drumRefDepth', 'slew'],

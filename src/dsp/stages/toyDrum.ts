@@ -234,6 +234,10 @@ const BANK_FM = 12
 // into its rail.
 const TANK_COUPLE = 0.05
 
+const KICK_BIAS = 4
+const BIAS_CEILING = 2
+const HISS_KICK = 0.04
+
 /** What the kit's dice is a comparator on. Free, it rolls on every arrival;
     on the junction, it rolls only while the noise transistor conducts and
     holds its last answer while the junction is off. */
@@ -830,6 +834,7 @@ export class ToyDrum implements Stage {
   private sumHeld = 0
   private motorV = 1
   private motorOff = false
+  private hissLeak = 0
   private tankBase = new Float32Array(N_TANKS)
   private rushHeat = 0
   private fuseHeat = 0
@@ -1554,6 +1559,9 @@ export class ToyDrum implements Stage {
     const syncTank = BANK_SYNC_TANK[Math.round(p[IDX.drumBankSync]!)] ?? -1
     const couple =
       TANK_COUPLE * Math.min(Math.max(p[IDX.drumTankCouple]!, 0), 1)
+    const kickBias = KICK_BIAS * Math.min(Math.max(p[IDX.drumKickBias]!, 0), 1)
+    const hissKick = HISS_KICK * Math.min(Math.max(p[IDX.drumHissKick]!, 0), 1)
+    if (hissKick === 0) this.hissLeak = 0
     const bankPf = octaves(
       -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
     )
@@ -1744,6 +1752,7 @@ export class ToyDrum implements Stage {
         // voice together — two octaves either way at full depth.
         const tune = modTune ? baseTune * octaves(2 * modTune[i]!) : baseTune
         const pf = rail.pitchFactor * tune
+        let kickRing = 0
         if (!sampled) {
           // The metal bank turns whether or not the pattern is asking it for
           // anything, because nothing on the board stops it: it is six RC
@@ -1789,7 +1798,6 @@ export class ToyDrum implements Stage {
           // starts retuning a note instead of restriking a drum.
           const bankFm = fmDepth > 0 ? 1 + fmDepth * this.metal.clash : 1
           let synced = 0
-          let kickRing = 0
           let tankDraw = 0
           let motorKick = 0
           if (motor > 0) {
@@ -1811,7 +1819,9 @@ export class ToyDrum implements Stage {
             const drive =
               (couple > 0 && v === TOM
                 ? shock[v]! + couple * kickRing
-                : shock[v]!) + motorKick
+                : v === KICK
+                  ? shock[v]! + this.hissLeak
+                  : shock[v]!) + motorKick
             const tank = this.tanks[t]!
             if (drive === 0 && tank.level <= AUDIBLE) continue
             const ringing = tank.process(
@@ -1925,11 +1935,22 @@ export class ToyDrum implements Stage {
           const hats = amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE
           const cymOn = amp[CYM]! > AUDIBLE
           let hatHiss = 0
+          let leak = 0
           if (snareOn || clapOn || hats) {
+            const breath =
+              kickBias > 0
+                ? Math.min(Math.max(1 + kickBias * kickRing, 0), BIAS_CEILING)
+                : 1
             const noise = this.noiseLid.process(
-              (this.rng() * 2 - 1) * this.noiseGate,
+              (this.rng() * 2 - 1) * this.noiseGate * breath,
               noiseLidCoef,
             )
+            if (hissKick > 0)
+              leak =
+                hissKick *
+                noise *
+                (amp[SNARE]! * weight[SNARE]! * hiss +
+                  amp[CLAP]! * weight[CLAP]!)
             this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
             hatHiss = noise - this.noiseLp
             if (snareOn) {
@@ -1953,6 +1974,7 @@ export class ToyDrum implements Stage {
               if (th & (1 << CLAP)) send += y
             }
           }
+          this.hissLeak = leak
           // The hats take the bank's upper band through a corner high enough
           // that only the clatter survives, with the pot between the bank and
           // the transistor ahead of them: one amplifier and one filter for
@@ -2251,6 +2273,7 @@ export class ToyDrum implements Stage {
     this.outAddr = 0
     this.motorV = 1
     this.motorOff = false
+    this.hissLeak = 0
     this.rushHeat = 0
     this.fuseHeat = 0
     this.fuseOpen = false

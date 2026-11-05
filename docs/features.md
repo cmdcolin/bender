@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-638 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 163
+640 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 164
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 163 presets, and a roll button on every heading as well as
+- **Whole boards.** 164 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -237,7 +237,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>65 controls</summary>
+<summary>67 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -256,6 +256,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Bank FM          | off to full                                                                                                        | A wire from the metal bank’s squarer into the bias of the kick, tom and snare networks                                                                  |
 | Bank sync        | off, to the kick, to the tom                                                                                       | Resets all six metal oscillators each time the kick or tom network swings up through zero                                                               |
 | Tank coupling    | off to full                                                                                                        | A wire from the kick’s network into the tom’s drive                                                                                                     |
+| Hiss into kick   | off to full                                                                                                        | A leak from the snare’s and the clap’s amplifiers into the kick’s network                                                                               |
 | Trigger pulse    | 0.05 to 8 ms                                                                                                       | How long the one-shot holds the trigger line down                                                                                                       |
 | Pulse sharing    | off to full                                                                                                        | How much charge a one-shot fired alongside others loses to them, since the one-shots all charge off one timing rail                                     |
 | Trigger load †   | off to full                                                                                                        | How much the one-shots’ charge costs the supply                                                                                                         |
@@ -263,6 +264,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Clap gap         | 0.5 to 250 ms                                                                                                      | The period of the small oscillator that fires the clap’s bursts                                                                                         |
 | Clap bursts      | 1 to 64                                                                                                            | How many bursts the oscillator fires before the clap rings out                                                                                          |
 | Noise bias       | off to full                                                                                                        | How hard the kit’s one noise transistor is biased                                                                                                       |
+| Kick on bias     | off to full                                                                                                        | A wire from the kick’s network onto the noise transistor’s bias                                                                                         |
 | Dice             | free or on the junction                                                                                            | What the kit’s dice is a comparator on                                                                                                                  |
 | Metal            | off to full                                                                                                        | What the hat and the open hat are fed from                                                                                                              |
 | Cymbal tone      | off to full                                                                                                        | Where the bottom of the cymbal’s band sits                                                                                                              |
@@ -1671,7 +1673,7 @@ result:
 
 ### Presets
 
-163 presets. Each name is a link that opens the app with that board loaded, and
+164 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1952,6 +1954,10 @@ the board waits until you press play.
   — The kick’s network is wired into the tom’s, both latched past the ring, so
   two oscillators force each other into a low smear that the pattern keeps
   retuning
+- [**bowed by the snare**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:140,drumTune:0.8,drumDecay:1.2,drumRing:0.55,drumSnappy:0.85,drumMetal:0.3,drumClapGap:4,drumClapCount:40,drumKickBias:0.7,drumHissKick:0.6,drumKick:32800,drumSnare:128,drumHat:8738,drumClap:2,drumAccent:32768,drumKickGhost:256)
+  — A slow half-time kit where the snare and a buzzing clap leak into the kick’s
+  network and bow a low hum out of it, while the ringing kick sits on the noise
+  transistor’s bias and makes the hats growl at its pitch
 - [**sticky dice**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumNoiseBias:0.3,drumMetal:0.4,drumDice:1,drumKick:43690,drumSnare:2056,drumAccent:32896,drumKickMaybe:5137,drumSnareMaybe:8484,drumHatMaybe:65535,drumOpenMaybe:514)
   — Every row has maybe steps and the dice is wired to a noise transistor at its
   knee. The hats spit, and the pattern locks for bars at a time before it
