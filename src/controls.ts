@@ -760,6 +760,13 @@ export const DEFAULT_CONTROLS = {
   shiftFb: 0,
   shiftMix: 0,
   shiftMute: 0,
+  shiftDrift: 0,
+  shiftQuad: 0,
+  shiftKnock: 0,
+  shiftSplit: 0,
+  shiftClip: 0,
+  shiftRail: 0,
+  shiftLeak: 0,
 
   octGain: 4,
   octTone: 1061,

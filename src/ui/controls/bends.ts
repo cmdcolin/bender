@@ -19,6 +19,7 @@ import {
 } from '../../dsp/stages/octave.ts'
 import { RACK_LINES, RACK_MAX_SIZE } from '../../dsp/stages/rackVerb.ts'
 import { RING_FROM, RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod.ts'
+import { SHIFT_OUTS } from '../../dsp/stages/shifter.ts'
 import { SUPPLY_NAMES } from '../../dsp/supplies.ts'
 
 import type { ControlKey } from '../../controls.ts'
@@ -857,6 +858,79 @@ export const BEND_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'Each lap shifts again, so partials climb (or fall) forever — the barber pole. Park it in a slot inside the global loop and the squeal can never settle on a pitch.',
+      },
+      {
+        key: 'shiftDrift',
+        lane: 'shift drift',
+        part: 'the allpass pairs',
+        label: 'Drift',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How far the parts in the two allpass chains can walk off value. They warm with the power through them, so a loud passage pulls the chains out of quadrature and the sideband you turned away leaks back and beats against the one you kept, then fades as they cool. Up full a loud bar passes both sidebands like a ring mod, and some bands flip to the other direction. Board heat walks them further.',
+      },
+      {
+        key: 'shiftQuad',
+        lane: 'shift quadrature',
+        part: 'the oscillator',
+        label: 'Quadrature',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Trims the oscillator’s sine off 90° from its cosine. The other sideband comes back at every frequency at once, 13 dB down at 0.3, and up full both sidebands come out equal, as from a ring mod.',
+      },
+      {
+        key: 'shiftKnock',
+        part: 'the oscillator',
+        label: 'Kit knock',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The kit’s trigger line couples into the oscillator, so every hit knocks it out of quadrature and it settles back over a tenth of a second. Up full a hit flips the shift to the other direction, then it swings back through a ring-mod clang to where it was, on every drum.',
+      },
+      {
+        key: 'shiftRail',
+        part: 'the oscillator',
+        label: 'Rail',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Runs the oscillator off the board’s shared rail instead of its own regulator. A full rail changes nothing; as the rail sags the shift slows, a quarter sag stops it and a half sag runs it backwards, and the integrators clip at the rail so the carrier squares up. Starve the toy or let its notes pull on a lead resistor and the shift lurches with every note.',
+      },
+      {
+        key: 'shiftLeak',
+        part: 'the oscillator',
+        label: 'Carrier leak',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Unbalances the multiplier, so the carrier itself comes through at the shift frequency. With Feedback up each lap shifts it again into a buzzing stack at every multiple of the shift.',
+      },
+      {
+        key: 'shiftSplit',
+        part: 'the outputs',
+        label: 'Outputs',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: SHIFT_OUTS,
+        help: 'Takes both of the box’s outputs at once: the up shift on the left and the down shift on the right, or the other way round with Direction on down. Each side keeps its own feedback, so with Feedback up the left climbs while the right falls.',
+      },
+      {
+        key: 'shiftClip',
+        part: 'the outputs',
+        label: 'Loop clip',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Runs the input amp, where the feedback comes back in, hot on a lopsided rail. It clips hard, more on the bottom than the top, so every lap adds harmonics for the next one to shift, and the offset it makes rides the multiplier as the carrier itself. With Feedback up the barber pole turns to a seething wash.',
       },
       {
         key: 'shiftMute',

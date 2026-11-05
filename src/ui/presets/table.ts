@@ -16,6 +16,7 @@ import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects.ts'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices.ts'
 import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom.ts'
 import { RING_FROM } from '../../dsp/stages/ringmod.ts'
+import { SHIFT_OUTS } from '../../dsp/stages/shifter.ts'
 import { ARP_MODES, ARP_SYNC_MODES } from '../../dsp/stages/toyChip.ts'
 import {
   BANK_GATE_NAMES,
@@ -3066,6 +3067,96 @@ export const PRESETS: PresetDef[] = [
       combHz: 220,
       combFb: 1.05,
       combMix: 0.9,
+    },
+  },
+  {
+    name: 'the pairs warm up',
+    blurb:
+      'The shifter’s allpass parts heat with the power through them, so every loud bar pulls the turned-away sideband back in to beat against the kept one, a few bands flip over, and the quiet bars come back clean',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 7,
+      shiftHz: 47,
+      shiftDrift: 1,
+      shiftMix: 1,
+    },
+  },
+  {
+    name: 'out of quadrature',
+    blurb:
+      'The shifter’s oscillator is trimmed a quarter turn off, so both sidebands come out, and with the feedback up every lap spreads each partial up and down at once into a lattice around the tune',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 7,
+      shiftHz: 9,
+      shiftFb: 0.85,
+      shiftQuad: 1,
+      shiftMix: 0.9,
+    },
+  },
+  {
+    name: 'the kit knocks the shifter',
+    blurb:
+      'Every drum hit couples into the shifter’s oscillator and knocks it out of quadrature: the shift flips over, swings back through a ring-mod clang and settles, on every hit',
+    patch: {
+      chipLevel: 0.8,
+      drumLevel: 0.8,
+      bendSlot0: 7,
+      shiftHz: 140,
+      shiftKnock: 1,
+      shiftMix: 1,
+    },
+  },
+  {
+    name: 'up the left, down the right',
+    blurb:
+      'Both of the shifter’s outputs at once, each with its own feedback: the left channel’s barber pole climbs while the right one falls',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 7,
+      shiftHz: 4,
+      shiftFb: 0.95,
+      shiftSplit: SHIFT_OUTS.indexOf('up left, down right'),
+      shiftMix: 0.9,
+    },
+  },
+  {
+    name: 'the barber pole boils',
+    blurb:
+      'The shifter’s input amp clips hard and lopsided where the feedback comes back in, so every lap adds harmonics for the next to shift and the carrier breaks through on the loud notes',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 7,
+      shiftHz: 7,
+      shiftFb: 0.9,
+      shiftClip: 1,
+      shiftMix: 0.9,
+    },
+  },
+  {
+    name: 'the shift hangs on the toy’s notes',
+    blurb:
+      'The shifter’s oscillator runs off the toy’s rail behind a lead resistor, so every note the toy plays sags it: the shift slows, stops, runs backwards and squares up, and the clang lurches with the tune',
+    patch: {
+      chipLevel: 0.8,
+      chipLeadR: 0.7,
+      bendSlot0: 7,
+      shiftHz: 150,
+      shiftRail: 1,
+      shiftMix: 1,
+    },
+  },
+  {
+    name: 'the carrier hums through',
+    blurb:
+      'The shifter’s multiplier is off balance, so its 55 Hz carrier leaks out, and with the feedback up every lap stacks it again into a buzz at each multiple of 55 under the shifted tune',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 7,
+      shiftHz: 55,
+      shiftFb: 0.9,
+      shiftLeak: 1,
+      shiftMix: 0.9,
     },
   },
 ]

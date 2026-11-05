@@ -224,8 +224,10 @@ export const DEST = {
   combWhistle: 166,
   combSag: 167,
   combPull: 168,
+  shiftDrift: 169,
+  shiftQuad: 170,
 } as const
-export const N_DEST = 169
+export const N_DEST = 171
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

@@ -1084,6 +1084,35 @@ comb and folds its input around the clock. Every fault rests off.
 - The patch bay's **comb pluck**, **comb rail**, **comb pump**, **comb
   whistle**, **comb pull** and **comb sag** lanes ride them.
 
+## The frequency shifter's Bode box
+
+The Freq shifter's lower headings rebuild it as an analog Bode shifter: two
+allpass chains, a quadrature oscillator, both sideband outputs and an input amp
+where the feedback comes back in. Every control rests off.
+
+- **Drift** (the allpass pairs): the chains' parts walk apart as they heat with
+  the power through them, so the turned-away sideband leaks back on loud bars
+  and fades as they cool. On a 500 Hz sine shifted 300 Hz, full Drift leaks it
+  at +7 dB loud and −5 dB quiet; 0.3 gives −9 and −16. Board heat walks the
+  parts further.
+- **Quadrature** (the oscillator): the sine trimmed off 90° from the cosine. The
+  other sideband comes back at every frequency, −13 dB at 0.3, equal at 1.
+- **Kit knock** (the oscillator): each kit hit throws the oscillator out of
+  quadrature and it settles over a tenth of a second. At 1 a hit flips the
+  shift's direction (+10 dB) and it swings back to −12 dB within 250 ms.
+- **Rail** (the oscillator): the oscillator runs off the shared rail. A full
+  rail changes nothing. A quarter sag stops the shift, a half sag runs it
+  backwards, and the integrators clip at the rail so the carrier squares up. On
+  a starved toy the take's flatness goes from 0.08 to 0.36.
+- **Carrier leak** (the oscillator): the multiplier is unbalanced, so the
+  carrier comes through at the shift frequency, and with Feedback up it stacks
+  into a buzz at every multiple of the shift.
+- **Outputs** (the outputs): up shift left and down shift right, each with its
+  own feedback, so with Feedback up one side climbs while the other falls.
+- **Loop clip** (the outputs): the input amp clips hard and lopsided. Each lap
+  adds harmonics for the next to shift, and the offset lets the carrier through
+  on loud notes. At Feedback 0.9 the take's flatness goes from 0.26 to 0.42.
+
 ## Effects and pedals
 
 - **Brake + supply drag:** the tape delay's capstan as a weighted motor. Echoes

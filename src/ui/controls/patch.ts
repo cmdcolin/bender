@@ -365,6 +365,8 @@ export const PATCH_GROUPS: Group[] = [
             'comb whistle',
             'comb sag',
             'comb pull',
+            'shift drift',
+            'shift quadrature',
           ],
           groups: [
             {
@@ -547,6 +549,8 @@ export const PATCH_GROUPS: Group[] = [
                 'dist pin gain',
                 'glitch',
                 'shift Hz',
+                'shift drift',
+                'shift quadrature',
                 'oct rate',
                 'oct chaos',
                 'codec rate',

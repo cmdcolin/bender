@@ -63,6 +63,15 @@ export class QuadOsc {
     this.sw = Math.sin(w)
   }
 
+  /** The same for a carrier that can run backwards: a negative rate turns
+      the phase the other way, so the rate passes through zero without a jump. */
+  setTurn(hz: number, sr: number) {
+    const top = sr * 0.49
+    const w = (2 * Math.PI * Math.min(Math.max(hz, -top), top)) / sr
+    this.cw = Math.cos(w)
+    this.sw = Math.sin(w)
+  }
+
   /** One turn. Read re and im after it, as cos and sin of the new phase. */
   step() {
     const re = this.re * this.cw - this.im * this.sw

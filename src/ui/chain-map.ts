@@ -203,6 +203,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   combWhistle: 'Comb',
   combSag: 'Comb',
   combPull: 'Comb',
+  shiftDrift: 'Freq shifter',
+  shiftQuad: 'Freq shifter',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

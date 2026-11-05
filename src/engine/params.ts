@@ -734,6 +734,13 @@ export const PARAM_DEFS = [
   ['shiftFb', 'ramp'],
   ['shiftMix', 'slew'],
   ['shiftMute', 'ramp'],
+  ['shiftDrift', 'slew'],
+  ['shiftQuad', 'slew'],
+  ['shiftKnock', 'slew'],
+  ['shiftSplit', 'step'],
+  ['shiftClip', 'slew'],
+  ['shiftRail', 'slew'],
+  ['shiftLeak', 'slew'],
 
   ['octGain', 'ramp'],
   ['octTone', 'slew'],

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-649 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 171
+656 knobs and switches in 38 groups, ten bends for six slots, 18 ROM tunes, 178
 presets, 23 stage settings and 57 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 169 destinations, among
+- **A patch bay that modulates itself.** Four wires, 171 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 171 presets, and a roll button on every heading as well as
+- **Whole boards.** 178 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -1044,15 +1044,22 @@ ratio, so harmonic input comes out inharmonic. With feedback each lap shifts
 again and partials climb forever.
 
 <details>
-<summary>5 controls</summary>
+<summary>12 controls</summary>
 
-| control   | range                 | what it does                                                                                                              |
-| --------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Shift     | 0.1 Hz to 2 kHz       | Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic            |
-| Direction | up or down            | Which sideband survives                                                                                                   |
-| Feedback  | 0 to 2, normal 0 to 1 | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                              |
-| Bypass    | on or bypassed        | Takes Freq shifter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
-| Mix       | off to full           | Dry/wet                                                                                                                   |
+| control      | range                               | what it does                                                                                                                              |
+| ------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Shift        | 0.1 Hz to 2 kHz                     | Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic                            |
+| Direction    | up or down                          | Which sideband survives                                                                                                                   |
+| Feedback     | 0 to 2, normal 0 to 1               | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                                              |
+| Drift        | off to full                         | How far the parts in the two allpass chains can walk off value                                                                            |
+| Quadrature   | off to full                         | Trims the oscillator’s sine off 90° from its cosine                                                                                       |
+| Kit knock    | off to full                         | The kit’s trigger line couples into the oscillator, so every hit knocks it out of quadrature and it settles back over a tenth of a second |
+| Rail         | off to full                         | Runs the oscillator off the board’s shared rail instead of its own regulator                                                              |
+| Carrier leak | off to full                         | Unbalances the multiplier, so the carrier itself comes through at the shift frequency                                                     |
+| Outputs      | one sideband or up left, down right | Takes both of the box’s outputs at once                                                                                                   |
+| Loop clip    | off to full                         | Runs the input amp, where the feedback comes back in, hot on a lopsided rail                                                              |
+| Bypass       | on or bypassed                      | Takes Freq shifter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                 |
+| Mix          | off to full                         | Dry/wet                                                                                                                                   |
 
 </details>
 
@@ -1372,7 +1379,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 169 of them, filt cut through comb pull                                                                                | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 171 of them, filt cut through shift quadrature                                                                         | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -1683,7 +1690,7 @@ result:
 
 ### Presets
 
-171 presets. Each name is a link that opens the app with that board loaded, and
+178 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2187,6 +2194,33 @@ the board waits until you press play.
   — The bucket brigade’s clock runs off the starved toy’s cells, so the comb
   dives with every note the toy pulls and freezes on its buckets while the toy
   reboots
+- [**the pairs warm up**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:7,shiftHz:47,shiftMix:1,shiftDrift:1)
+  — The shifter’s allpass parts heat with the power through them, so every loud
+  bar pulls the turned-away sideband back in to beat against the kept one, a few
+  bands flip over, and the quiet bars come back clean
+- [**out of quadrature**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:7,shiftHz:9,shiftFb:0.85,shiftMix:0.9,shiftQuad:1)
+  — The shifter’s oscillator is trimmed a quarter turn off, so both sidebands
+  come out, and with the feedback up every lap spreads each partial up and down
+  at once into a lattice around the tune
+- [**the kit knocks the shifter**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,drumLevel:0.8,bendSlot0:7,shiftHz:140,shiftMix:1,shiftKnock:1)
+  — Every drum hit couples into the shifter’s oscillator and knocks it out of
+  quadrature: the shift flips over, swings back through a ring-mod clang and
+  settles, on every hit
+- [**up the left, down the right**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:7,shiftHz:4,shiftFb:0.95,shiftMix:0.9,shiftSplit:1)
+  — Both of the shifter’s outputs at once, each with its own feedback: the left
+  channel’s barber pole climbs while the right one falls
+- [**the barber pole boils**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:7,shiftHz:7,shiftFb:0.9,shiftMix:0.9,shiftClip:1)
+  — The shifter’s input amp clips hard and lopsided where the feedback comes
+  back in, so every lap adds harmonics for the next to shift and the carrier
+  breaks through on the loud notes
+- [**the shift hangs on the toy’s notes**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipLeadR:0.7,bendSlot0:7,shiftHz:150,shiftMix:1,shiftRail:1)
+  — The shifter’s oscillator runs off the toy’s rail behind a lead resistor, so
+  every note the toy plays sags it: the shift slows, stops, runs backwards and
+  squares up, and the clang lurches with the tune
+- [**the carrier hums through**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,bendSlot0:7,shiftHz:55,shiftFb:0.9,shiftMix:0.9,shiftLeak:1)
+  — The shifter’s multiplier is off balance, so its 55 Hz carrier leaks out, and
+  with the feedback up every lap stacks it again into a buzz at each multiple of
+  55 under the shifted tune
 
 ### Kit voices
 

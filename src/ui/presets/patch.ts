@@ -213,6 +213,8 @@ const LANDINGS: Landing[] = [
   at('codec errors', ['codecMix'], { bend: 'codec' }),
   at('rack clock', ['rackMix'], { bend: 'verb' }),
   at('rack decay', ['rackMix'], { bend: 'verb' }),
+  at('shift drift', ['shiftMix'], { bend: 'shift' }),
+  at('shift quadrature', ['shiftMix'], { bend: 'shift' }),
   at('mono out to pitch', ['monoLevel']),
   at('mono out to gate', ['monoLevel']),
   at('mono regulator trip', ['monoLevel']),
