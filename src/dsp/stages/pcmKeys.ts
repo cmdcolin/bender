@@ -64,6 +64,9 @@ const CODE_WORDS = 2048
 const SCAN_HZ = 240
 const CARRY_LOW = 3
 const HEAT_FLOOR = 0.25
+// The rate the fault odds were voiced at. A fault rolled once a sample is
+// weighted by it, so the die heats and leaks as fast at 96 kHz as at 48.
+const VOICED_SR = 48000
 const HEAT_SPAN = 0.6
 
 const SAMPLE_WORDS = Math.round(SAMPLE_SECS * ROM_HZ)
@@ -173,6 +176,7 @@ export class PcmKeys implements Stage {
   private busy = 0
   private busWord = DAC_STEPS
   private heat = 0
+  private readonly perSample: number
   private trip = 1
   private dark = 0
   private faults = 0
@@ -194,6 +198,7 @@ export class PcmKeys implements Stage {
 
   constructor(sr: number, supplies: Supplies, sampler: Sampler) {
     this.sr = sr
+    this.perSample = VOICED_SR / sr
     this.power = new SupplyTap(supplies)
     this.sampler = sampler
     this.decim = sr / ROM_HZ
@@ -558,7 +563,7 @@ export class PcmKeys implements Stage {
             ? (this.code[(this.pc + 1) & (CODE_WORDS - 1)]! << 3) &
               (CODE_WORDS - 1)
             : (this.pc + 1) & (CODE_WORDS - 1)
-        this.faults++
+        this.faults += this.perSample
       }
 
       const runOn = knob(runOnBase, modRunOn, i) ** 2
@@ -609,7 +614,7 @@ export class PcmKeys implements Stage {
           v.pos -= this.memLen
           v.runOn = false
         }
-        if (leak > 0 && this.rng() < leak) {
+        if (leak > 0 && this.rng() < leak * this.perSample) {
           const high =
             this.rng() < leak ? (this.busWord & 0x0f) << 8 : v.reg & 0xf00
           v.reg = Math.max(high | this.busWord, 1)
