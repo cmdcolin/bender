@@ -109,7 +109,13 @@ function parts(group: Group): Part[] {
     if (isMute(def.key) || JACK_KEYS.has(def.key)) continue
     const name = def.part ?? null
     const last = out[out.length - 1]
-    if (last?.name === name) last.sliders.push(def)
+    const into =
+      name === null
+        ? last?.name === null
+          ? last
+          : undefined
+        : out.find(p => p.name === name)
+    if (into) into.sliders.push(def)
     else out.push({ name, sliders: [def] })
   }
   return out

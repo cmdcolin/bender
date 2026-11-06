@@ -644,3 +644,17 @@ test('the effect faces sit in signal order with a jack at each end, and loose be
   ).toBeTruthy()
   expect(screen.queryByRole('button', { name: /^Ring mod in/ })).toBeNull()
 })
+
+test('a listed panel shows each part once, with all its rows', () => {
+  const growler = GROUPS.find(g => g.name === 'Growler')!
+  render(<OpenGroup group={growler} onClose={() => {}} seconds={0} />)
+  fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
+  const folds = [...document.querySelectorAll('details > summary')].map(
+    s => s.firstChild?.textContent,
+  )
+  expect(folds).toEqual([...new Set(folds)])
+  const melody = [...document.querySelectorAll('details')].find(
+    d => d.querySelector('summary')?.firstChild?.textContent === 'melody',
+  )!
+  expect(within(melody).queryByText('Accent')).not.toBeNull()
+})
