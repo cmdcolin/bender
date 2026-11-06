@@ -58,6 +58,7 @@ export const SEQ_DESTS = [
   'mono',
   'fm',
   'pcm',
+  'lead',
 ] as const satisfies readonly NoteDest[]
 export type SeqDest = (typeof SEQ_DESTS)[number]
 

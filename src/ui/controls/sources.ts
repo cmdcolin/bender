@@ -264,7 +264,7 @@ export const SOURCE_GROUPS: Group[] = [
           'all three',
         ],
         needs: playingYours,
-        help: 'Desolders a memory lane’s output resistor, so Plinky stops sounding it while its gate still runs out on the key line. Set Glint, Parlor or Growler’s jumper to that lane and the lane plays there alone.',
+        help: 'Desolders a memory lane’s output resistor, so Plinky stops sounding it while its gate still runs out on the key line. Set Glint, Parlor, Growler or Howler’s jumper to that lane and the lane plays there alone.',
       },
       {
         key: 'chipTone',

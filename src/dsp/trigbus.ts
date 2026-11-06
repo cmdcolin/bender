@@ -24,6 +24,7 @@ export const STEP_CHOICE = N_DRUM_VOICES + 2
 export const SEQ_TO_MONO = 0
 export const SEQ_TO_FM = 1
 export const SEQ_TO_PCM = 2
+export const SEQ_TO_LEAD = 3
 
 export const GATE_ALL = 0
 export const GATE_CUT = 1

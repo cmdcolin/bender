@@ -5,6 +5,7 @@ import { packParams, SOURCE_TAPS } from '../../engine/params.ts'
 import { REST } from '../../tune.ts'
 import { buildBender } from '../build.ts'
 import { highEnergy, renderStems, rms, SR } from '../testRender.ts'
+import { SEQ_TO_LEAD } from '../trigbus.ts'
 
 const GROWLER = SOURCE_TAPS.indexOf('monoSynth')
 const HOWLER = SOURCE_TAPS.indexOf('leadSynth')
@@ -66,4 +67,15 @@ test('Howler’s stock voice is brighter than Growler’s on the same notes', ()
   const { stems } = renderStems(same, 1)
   const share = (x: Float32Array) => highEnergy(x, 2000) / rms(x)
   expect(share(stems[HOWLER]!)).toBeGreaterThan(2 * share(stems[GROWLER]!))
+})
+
+test('Growler’s memory aimed at Howler plays there, beside Howler’s own', () => {
+  const aimed = { ...BOTH, monoSeqTo: SEQ_TO_LEAD }
+  const lent = renderStems({ ...aimed, leadSeqOn: 0 }, 1).stems
+  expect(rms(lent[GROWLER]!)).toBeLessThan(1e-4)
+  expect(rms(lent[HOWLER]!)).toBeGreaterThan(0.05)
+
+  const both = renderStems(aimed, 1).stems
+  const own = renderStems({ ...aimed, monoSeqOn: 0 }, 1).stems
+  expect(rms(both[HOWLER]!)).toBeGreaterThan(1.2 * rms(own[HOWLER]!))
 })

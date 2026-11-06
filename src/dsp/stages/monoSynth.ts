@@ -5,7 +5,13 @@ import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
-import { KEY_BIAS, SEQ_TO_MONO, voiceMask } from '../trigbus.ts'
+import {
+  KEY_BIAS,
+  SEQ_TO_LEAD,
+  SEQ_TO_MONO,
+  voiceMask,
+  type SeqLine,
+} from '../trigbus.ts'
 import { removeAt } from '../util/list.ts'
 import { MonoVoice } from './monoVoice.ts'
 
@@ -87,8 +93,8 @@ function cardIdx(prefix: CardPrefix) {
 }
 
 // Where each build of the card is wired: its controls, its lanes on the bay,
-// its mic jack, the memory line it plays, and the Plays on choice that hands
-// that line to it, if the memory can play anything else.
+// its mic jack, the memory line it plays, and the Plays on choice that hands it
+// Growler's line. Growler's own line can be aimed away; Howler's cannot.
 export const GROWLER = {
   label: 'monoSynth',
   k: cardIdx('mono'),
@@ -102,7 +108,7 @@ export const GROWLER = {
   },
   mic: MIC.growlerIn,
   line: 'seq',
-  seqTo: IDX.monoSeqTo,
+  playsOn: SEQ_TO_MONO,
 } as const
 
 export const HOWLER = {
@@ -118,7 +124,7 @@ export const HOWLER = {
   },
   mic: MIC.howlerIn,
   line: 'leadSeq',
-  seqTo: -1,
+  playsOn: SEQ_TO_LEAD,
 } as const
 
 export type Card = typeof GROWLER | typeof HOWLER
@@ -291,8 +297,8 @@ export class MonoSynth implements Stage {
     this.gateLeft = length
   }
 
-  private sing(note: number, i: number, p: Float32Array, ctx: Ctx) {
-    const line = ctx.trig[this.card.line]
+  private sing(line: SeqLine, i: number, p: Float32Array) {
+    const note = line.key[i]! - KEY_BIAS + A3_MIDI
     const span = line.span[i]!
     const accent = line.accent[i]! > 0
     const slides = line.slide[i]! > 0
@@ -336,7 +342,7 @@ export class MonoSynth implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    const { k, dest, seqTo } = this.card
+    const { k, dest, line, playsOn } = this.card
     const rail = this.power.pick(p[k.supply]!)
     const voice = this.voice
     if (this.power.rebooted()) {
@@ -372,8 +378,9 @@ export class MonoSynth implements Stage {
 
     const lineKeys = ctx.trig.keyLine(p[k.keyGate]!)
     const lineHeld = ctx.trig.heldLine(p[k.keyGate]!)
-    const sung = seqTo < 0 || Math.round(p[seqTo]!) === SEQ_TO_MONO
-    const seqLine = ctx.trig[this.card.line]
+    const aimed = Math.round(p[IDX.monoSeqTo]!) === playsOn
+    const own = line === 'seq' && !aimed ? null : ctx.trig[line]
+    const lent = line !== 'seq' && aimed ? ctx.trig.seq : null
     const drumMask = voiceMask(Math.round(p[k.struck]!))
     const gate = p[k.gate]!
     this.gateLength = Math.max(gate * this.stepSamples, 1)
@@ -392,17 +399,22 @@ export class MonoSynth implements Stage {
       this.lastPhase = phase
 
       const key = lineKeys ? lineKeys[i]! : 0
-      const seq = sung ? seqLine.key[i]! : 0
+      const sung =
+        own && own.key[i]! !== 0
+          ? own
+          : lent && lent.key[i]! !== 0
+            ? lent
+            : null
       const bits =
         drumMask !== 0 ? Math.round(ctx.trig.drumBits[i]!) & drumMask : 0
       const closing = this.gateNote >= 0 && --this.gateLeft <= 0
-      if (key === 0 && seq === 0 && bits === 0 && !closing) continue
+      if (key === 0 && !sung && bits === 0 && !closing) continue
 
       this.run(i)
       if (key !== 0) {
         this.strike(key - KEY_BIAS + A3_MIDI, lineHeld[i]! > 0)
-      } else if (seq !== 0) {
-        this.sing(seq - KEY_BIAS + A3_MIDI, i, p, ctx)
+      } else if (sung) {
+        this.sing(sung, i, p)
       } else if (bits !== 0) {
         const gain = Math.min(ctx.trig.drumGain[i]! / ACCENT_GAIN, 1)
         this.strike(this.lastNote, false, gain)

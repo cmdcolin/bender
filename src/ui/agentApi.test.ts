@@ -404,6 +404,15 @@ test('a line on Howler writes its own memory and leaves the bassline alone', () 
   expect(bender.summary().lead).toBe('stopped on Howler')
 })
 
+test('the bassline aimed at Howler reports Howler and its warnings', () => {
+  bender.set({ monoSeqTo: 'Howler' })
+  const out = bender.line('A2 A2')
+  expect(engine.controls.get().monoSeqTo).toBe(3)
+  expect(out).toMatchObject({ 'plays on': 'Howler' })
+  expect(out.warnings).toContain('leadLevel is 0, so Howler is silent')
+  expect(bender.summary().line).toBe('stopped on Howler')
+})
+
 test('memory faults are controls, and the damage reads back until restore', () => {
   const posted: ToWorklet[] = []
   Object.assign(engine, {
