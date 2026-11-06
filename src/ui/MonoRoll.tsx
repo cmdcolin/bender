@@ -12,6 +12,7 @@ import {
   TUNE_STEPS,
   voicing,
 } from '../tune.ts'
+import { CARD_RECORD } from './cardRecord.ts'
 import { CARDS, keyOf, type CardStage } from './cards.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { Tip } from './Tip.tsx'
@@ -64,7 +65,8 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
   const on = Math.round(useControlValue(onKey)) === 1
   const sync = useControlValue(keyOf(stage, 'SeqSync'))
   const playing = useLinePlaying(stage)
-  const armed = useStoreValue(card.recording)
+  const rec = CARD_RECORD[stage]
+  const armed = useStoreValue(rec.recording)
   const pos = useSeqPos(stage)
   const [base, setBase] = useState(() => baseFor([steps]))
   const paint = useRef(false)
@@ -130,7 +132,7 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
               !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
             }
             aria-pressed={armed}
-            onClick={() => card.arm(!armed)}
+            onClick={() => rec.arm(!armed)}
           >
             record
           </button>

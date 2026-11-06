@@ -1,6 +1,6 @@
 import { engine } from '../engine/engine.ts'
 import { SEQ_DESTS } from '../engine/messages.ts'
-import { CARDS } from './cards.ts'
+import { CARD_RECORD } from './cardRecord.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import styles from './SeqRec.module.css'
 import { Tip } from './Tip.tsx'
@@ -60,7 +60,7 @@ export function SeqRec({ dest, name }: { dest: SeqDest; name: string }) {
 }
 
 export function LeadRec() {
-  const { recording, arm } = CARDS.Howler
+  const { recording, arm } = CARD_RECORD.Howler
   const armed = useStoreValue(recording)
   const playing = useLinePlaying('Howler')
   return (
