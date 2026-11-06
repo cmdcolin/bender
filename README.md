@@ -3,6 +3,8 @@
 A circuit bender in the browser, built on Web Audio's
 [AudioWorklet](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet).
 
+![The whole app: keyboards, a drum box and pedals on the bench, the header and the signal path map.](public/guide/guide-app.jpg)
+
 - [App](https://cmdcolin.github.io/bender/app/)
 - [Pocket](https://cmdcolin.github.io/bender/pocket/), for phones
 - [Home](https://cmdcolin.github.io/bender/), with your saved voices
@@ -15,7 +17,8 @@ Watch Claude Code play it:
 ## Machines
 
 Each machine is modelled down to its chips, buses and power rail, so every bend
-is a real hardware fault.
+is a real hardware fault: a paperclip on the clock pin, a solder blob on a bus
+wire, a pot soldered onto the die.
 
 - Plinky — a toy keyboard chip on a battery
 - Clatter — a toy drum box with a sample ROM
@@ -37,8 +40,6 @@ is a real hardware fault.
 - MIDI — plays the keys and turns the knobs
 - Share — a link holds the whole board
 
-Every control: [features.md](docs/features.md)
-
 ## Run
 
 ```sh
@@ -46,9 +47,12 @@ pnpm install
 pnpm dev
 ```
 
+Then open http://localhost:4321/bender/app/.
+
 ## Docs
 
 - [User guide](docs/USER-GUIDE.md)
+- [Features](docs/features.md) — every control
 - [Bends](docs/BENDS.md)
 - [How it works](docs/HOW-IT-WORKS.md)
 - [MIDI](docs/MIDI.md)
