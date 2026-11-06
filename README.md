@@ -14,11 +14,13 @@ A circuit bender in the browser, built on Web Audio's
 Watch Claude Code play it:
 [Letting an AI agent drive bender](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
 
+Names in bold below are what each part is called in the app.
+
 ## Machines
 
-Every machine goes by a name in the app. Each is modelled down to its chips,
-buses and power rail, so every bend is a real hardware fault: a paperclip on the
-clock pin, a solder blob on a bus wire, a pot soldered onto the die.
+Every machine is modelled down to its chips, buses and power rail, so a bend is
+a real hardware fault: a paperclip on the clock pin, a solder blob on a bus
+wire, a pot soldered onto the die.
 
 - **Plinky** — a toy keyboard chip on a battery
 - **Clatter** — a toy drum box with a sample ROM
@@ -28,9 +30,14 @@ clock pin, a solder blob on a bus wire, a pot soldered onto the die.
 - **Growler** — a Model D-style monosynth
 - **Howler** — Growler's card voiced as a lead
 
-## Pedals
+## Other sources
 
-The named pedals:
+- **Sheet** — a steel sheet with two contact mics
+- **Bottle** — a glass bottle with a contact mic
+- **Chaos osc** — two oscillators starving one supply
+- **Mic** — a live mic, patchable into a clock pin or bus
+
+## Pedals
 
 - **Gnash** — distortion
 - **Wraith** — tape delay
