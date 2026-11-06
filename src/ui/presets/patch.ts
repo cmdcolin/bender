@@ -312,7 +312,7 @@ function writeLane(
   rand: () => number,
 ) {
   for (const k of lane)
-    next[k] = rand() < 0.33 ? 0 : Math.round((rand() * 2 - 1) * LANE_MAX)
+    next[k] = rand() < 0.33 ? 0 : Math.round((rand() * 2 - 1) * LANE_MAX) || 0
 }
 
 const TAP_AT = new Map(TAPS.map(t => [t.src, t]))

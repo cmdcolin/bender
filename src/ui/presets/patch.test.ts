@@ -8,6 +8,7 @@ import {
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
 import { YOURS } from '../../dsp/stages/roms.ts'
 import { mulberry32 } from '../../dsp/util/rng.ts'
+import { LANE_KEYS } from '../../lanes.ts'
 import { BENDS, GROUPS, choiceValue } from '../controls/index.ts'
 import { applyPreset } from './apply.ts'
 import {
@@ -347,4 +348,12 @@ test('a played chip on a memory lane with no notes gets the whole line back', ()
   }
   expect(cohereGates(written).fmKeyGate).toBe(3)
   expect(cohereGates({ ...written, tunePoly: 0 }).fmKeyGate).toBe(0)
+})
+
+test('a rolled lane never lands a step on minus zero', () => {
+  for (let seed = 1; seed <= 200; seed++) {
+    const board = randomLook(mine(), mulberry32(seed))
+    const negative = LANE_KEYS.flat().filter(k => Object.is(board[k], -0))
+    expect(negative, `seed ${seed}`).toEqual([])
+  }
 })
