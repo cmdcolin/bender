@@ -7,7 +7,13 @@ import {
   type RefObject,
 } from 'react'
 
-import { DRUM_MOVES, masksOf, throwLast, type DrumMove } from '../drum-moves.ts'
+import {
+  DRUM_MOVES,
+  echoWake,
+  masksOf,
+  throwLast,
+  type DrumMove,
+} from '../drum-moves.ts'
 import {
   asLen,
   DRUM_ROMS,
@@ -866,10 +872,7 @@ function EventEvery() {
 // A throw onto a tape delay that is switched off would do nothing, so the first
 // one brings the echo up with only the throws going in.
 function wakeEcho(board: Controls) {
-  if (board.dlyMix > 0) return
-  engine.set('dlyMix', 0.7)
-  engine.set('dlySend', 0)
-  if (board.dlyFb < 0.55) engine.set('dlyFb', 0.55)
+  engine.patch(echoWake(board))
 }
 
 function cellClass(s: {

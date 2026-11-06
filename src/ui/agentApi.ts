@@ -5,9 +5,11 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
+import { DRUM_MOVES, echoWake, masksOf } from '../drum-moves.ts'
 import {
   asCond,
   asEventEvery,
+  asStepCond,
   CELL_ROWS,
   COND_KEYS,
   CONDS,
@@ -20,12 +22,17 @@ import {
   RATCHET_KEYS,
   RATCHETS,
   rowText,
+  STEP_COND_KEYS,
+  STEP_CONDS,
   STEPS,
+  THROW_ROW,
+  voiceBit,
   type CellRow,
 } from '../drums.ts'
 import { BLOCK, METER_EVERY } from '../dsp/stage.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { followsGate, gateLane } from '../dsp/trigbus.ts'
+import { mulberry32 } from '../dsp/util/rng.ts'
 import { strayNames } from '../dsp/wander.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
 import { BAND_ROWS } from '../engine/params.ts'
@@ -68,13 +75,14 @@ import { STRUCK_HOME, strike, type Struck } from './strikes.ts'
 // GUIDE_MAX_CHARS.
 export const GUIDE_MAX_CHARS = 900
 
-const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. The browser tool cuts any single returned string at 1000 characters, so return arrays and objects as they are, since JSON.stringify turns a long list into one string. Start with bender.summary(). The rest is in eleven topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'music' covers tune and drums, 'drums' the rest of the kit, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things by hand; 'speak' gives Prattle words; 'clock' lands changes on the bar with position, next and queue.`
+const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. Return arrays and objects as they are: the browser tool cuts a returned string at 1000 characters. Start with bender.summary(). The rest is in twelve topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'music' covers tune and drums, 'drums' the rest of the kit, 'perform' its mutes, fills, echo row and pattern moves, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things by hand; 'speak' gives Prattle words; 'clock' lands changes on the bar with position, next and queue.`
 
 const GUIDE = {
   read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. Each bend and pedal has an Into key: set({ ampInto: 'clatter' }) patches Ember onto the kit alone.`,
   change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of them, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists unknown keys with the closest real ones, and failed lists values set could not read; set leaves those controls unchanged. Seconds as a second argument glide the controls there on animation frames, which the browser pauses in a hidden tab; set returns at once, so listen in a later call. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds. bender.say('the kick drops') labels the changes the page lists for a listener.`,
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory, one token a step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold. It also switches the chip to the memory, at tuneRate steps a second. An array of up to three strings writes one lane each. Glint, Parlor and Growler follow it on fmKeyGate, pcmKeyGate and monoKeyGate; 'lane 1' to 'lane 3' follow one lane, and tuneLift keeps lanes off Plinky. bender.drums({ kick: 'x...x...', hat: '..x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. x is a hit, ? a hit with probability drumChance, . a rest. Each character is a sixteenth, so a beat is four. A row's length sets its loop, an empty string clears it, and rows left out keep theirs. bpm: 130 sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
+  perform: `Performing the kit. bender.drums({ mute: 'kick, open hat' }) silences rows and keeps their steps; mute: '' brings them back. echo: '............x...' is the echo row: hits on its steps also go into Wraith, the tape delay, which it turns up if it is off. fill: 'on' holds the fill key down. 'step bars' gives each column a condition, one token a column: '. . . . . . . . . . . . fill fill fill fill' plays the last beat only while fill is on. A dot plays every bar; the rest are ${STEP_CONDS.slice(1).join(', ')}, and pre plays when the last column with an A:B before it played. bender.move('vary') rewrites the pattern as the panel's buttons do: ${DRUM_MOVES.map(m => m.name).join(', ')}. { back: true } shifts backwards and { seed: 7 } repeats a roll. Inside bender.queue all of these land on the bar.`,
   line: `The bassline. bender.line('. A3 A3 A4 . A3 A3 A3', { accent: '...x', slide: '' }) writes a second 32-step memory, one token a step as in tune, and turns it on. It steps with the kit's sixteenths while the kit runs; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, whose stock 32′ range sounds each note two octaves down: write A3 for a 55 Hz A1, as sounds in the result shows. on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep theirs. The target's KeyGate jumper also plays the tune: 'no, cut' drops it, 'lane 1' keeps one lane. The result warns about anything keeping it silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate. The techno and acid techno presets load a groove to riff on.`,
   lead: `Howler, the lead: a second build of Growler's card with a 32-step memory of its own, so a lead plays over the bassline. bender.line('. . C5 ~ . C5 . D#5', { on: 'Howler', accent: '..x....x', slide: '...x' }) writes Howler's memory and leaves Growler's alone, with the same tokens, accent, slide and sync as the bassline. Howler's stock 8′ sounds the notes as written. Its level starts at 0: set leadLevel (0.9 is loud) and leadKeyGate: 'no, cut' to keep the toy's tune off it. Its sound is leadCutoff, leadEmph (near 1 it screams), leadSweep, leadFold, leadGate and leadAccent. The hard techno howl preset loads a 150 bpm groove with a lead to riff on, and howler torn tears the lead into noise.`,
   rot: `Memory faults, on Growler's memory as monoSeq* and Howler's as leadSeq*, all off by default. SeqAddrLine and SeqAddrFault fault a wire from the counter: { monoSeqAddrLine: 'A0', monoSeqAddrFault: 'to ground' } plays every step twice. SeqAddrCross plays the steps out of order and SeqCarry: 'wraps at 8' folds the line into its first 8 steps. SeqDataLine and SeqDataFault fault a wire out: D0 to D5 move notes by 1 to 32 semitones, the same wrong notes every lap; D6 is the accent and D7 the slide. SeqLeak (0 to 1) writes each note into the next step, so the line smears into repeats; SeqRot ('every bar') leaks one bit a bar, so notes sink and accents drop out. Those two change the memory itself and the damage stays when they are cleared: line and board show what it holds as ram, and bender.restore(), or restore('Howler'), writes the line back, as bender.line does.`,
@@ -532,9 +540,11 @@ const isHowler = (on: Value | undefined) =>
 
 const barsText = (bars: number) => `${bars}:${bars}`
 
+const PANEL_ROWS = [...GRID_ROWS, THROW_ROW]
+
 function drumLines(c: Controls) {
   const rows: Record<string, string> = {}
-  for (const row of GRID_ROWS) {
+  for (const row of PANEL_ROWS) {
     const maybe = row.maybe ? c[row.maybe] : 0
     const ghost = row.ghost ? c[row.ghost] : 0
     if (c[row.key] === 0 && maybe === 0 && ghost === 0) continue
@@ -548,7 +558,60 @@ function drumLines(c: Controls) {
       rows[name] = row.keys.map(k => row.write(c[k])).join('')
   if (c.drumEventEvery !== 0)
     rows['event every'] = barsText(EVENT_EVERY[asEventEvery(c.drumEventEvery)]!)
+  if (STEP_COND_KEYS.some(k => c[k] !== 0))
+    rows['step bars'] = STEP_COND_KEYS.map(k => stepCondText(c[k])).join(' ')
+  if (c.drumRowMute !== 0)
+    rows.mute = DRUM_VOICES.filter((_, v) => c.drumRowMute & voiceBit(v))
+      .map(v => v.label)
+      .join(', ')
+  if (c.drumFill > 0.5) rows.fill = 'on'
   return rows
+}
+
+const stepCondText = (v: number) => {
+  const c = asStepCond(v)
+  return c === 0 ? '.' : STEP_CONDS[c]!
+}
+
+function parseStepConds(text: string) {
+  const tokens = text.trim() === 'off' ? [] : text.trim().split(/\s+/)
+  if (tokens.length > STEPS)
+    throw new Error(`${tokens.length} columns; the maximum is ${STEPS}`)
+  return Array.from({ length: STEPS }, (_, s) => {
+    const token = tokens[s] ?? '.'
+    const at =
+      token === '.' ? 0 : (STEP_CONDS as readonly string[]).indexOf(token)
+    if (at < 0)
+      throw new Error(
+        `'${token}' is not a step condition; use . or one of ${STEP_CONDS.join(', ')}`,
+      )
+    return at
+  })
+}
+
+function parseMute(text: string) {
+  const names = text
+    .split(',')
+    .map(squash)
+    .filter(n => n !== '' && n !== 'none' && n !== 'off')
+  return names.reduce((mask, name) => {
+    const v = DRUM_VOICES.findIndex(d => squash(d.label) === name)
+    if (v < 0)
+      throw new Error(
+        `mute takes kit voices separated by commas: ${DRUM_VOICES.map(d => d.label).join(', ')}`,
+      )
+    return mask | voiceBit(v)
+  }, 0)
+}
+
+const ON_WORDS = ['on', '1', 'true', 'x']
+const OFF_WORDS = ['off', '0', 'false', '.', '']
+
+function parseSwitch(name: string, text: string) {
+  const word = text.trim().toLowerCase()
+  if (!ON_WORDS.includes(word) && !OFF_WORDS.includes(word))
+    throw new Error(`${name} takes on or off`)
+  return ON_WORDS.includes(word) ? 1 : 0
 }
 
 const squash = (name: string) => name.toLowerCase().replace(/\s/g, '')
@@ -942,6 +1005,19 @@ function rawBenderApi() {
           cells.push([wanted, text])
           continue
         }
+        if (wanted === 'stepbars') {
+          for (const [s, at] of parseStepConds(text).entries())
+            patch[STEP_COND_KEYS[s]!] = at
+          continue
+        }
+        if (wanted === 'mute') {
+          patch.drumRowMute = parseMute(text)
+          continue
+        }
+        if (wanted === 'fill') {
+          patch.drumFill = parseSwitch('fill', text)
+          continue
+        }
         const everyBar = text.trim() === '' || text.trim() === 'off'
         if (wanted === 'eventevery') {
           const at = everyBar
@@ -968,10 +1044,10 @@ function rawBenderApi() {
           patch[COND_KEYS[v]!] = at
           continue
         }
-        const row = GRID_ROWS.find(r => squash(r.label) === wanted)
+        const row = PANEL_ROWS.find(r => squash(r.label) === wanted)
         if (!row)
           throw new Error(
-            `no drum row named '${name}'; rows: ${GRID_ROWS.map(r => r.label).join(', ')}, ${Object.keys(CELL_ROWS).join(', ')}, event every, and a voice's bars`,
+            `no drum row named '${name}'; rows: ${PANEL_ROWS.map(r => r.label).join(', ')}, ${Object.keys(CELL_ROWS).join(', ')}, step bars, mute, fill, event every, and a voice's bars`,
           )
         const { mask, maybe, ghost, len, ratchets } = parseRow(text)
         if ((maybe | ghost) !== 0 && !row.maybe)
@@ -988,8 +1064,34 @@ function rawBenderApi() {
         for (const [s, key] of CELL_ROWS[row].keys.entries())
           patch[key] = values[s]!
       }
-      land(patch, 0)
+      const board = { ...engine.controls.get(), ...queueing?.cut }
+      land(
+        {
+          ...patch,
+          ...(patch.drumThrow !== undefined &&
+            patch.drumThrow !== 0 &&
+            echoWake(board)),
+        },
+        0,
+      )
       return { drums: drumLines(engine.controls.get()) }
+    },
+
+    move(name: string, opts: { back?: boolean; seed?: number } = {}) {
+      const move = DRUM_MOVES.find(m => squash(m.name) === squash(name))
+      if (!move)
+        throw new Error(
+          `no drum move named '${name}'; moves: ${DRUM_MOVES.map(m => m.name).join(', ')}`,
+        )
+      const board = { ...engine.controls.get(), ...queueing?.cut }
+      const written = move.play({
+        masks: masksOf(board),
+        lens: board,
+        rand: opts.seed === undefined ? Math.random : mulberry32(opts.seed),
+        back: opts.back ?? false,
+      })
+      land(written, 0)
+      return { move: move.name, drums: drumLines({ ...board, ...written }) }
     },
 
     hit(

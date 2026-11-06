@@ -131,7 +131,7 @@ test('help and every guide topic fit in one browser tool result', () => {
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, line, lead, rot, hit, speak, clock, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, perform, line, lead, rot, hit, speak, clock, sound",
   )
 })
 
@@ -272,6 +272,73 @@ test('drums writes ghost steps and the board reads them back', () => {
   )
   bender.drums({ snare: '' })
   expect(engine.controls.get().drumSnareGhost).toBe(0)
+})
+
+test('drums writes the echo row and turns a silent Wraith up for it', () => {
+  bender.set({ dlyMix: 0, dlyFb: 0.2 })
+  const out = bender.drums({ echo: '............x...' })
+  expect(out.drums.echo).toBe('............x...')
+  expect(engine.controls.get()).toMatchObject({
+    drumThrow: 0b0000_0000_0000_1000,
+    dlyMix: 0.7,
+    dlyFb: 0.55,
+  })
+  bender.set({ dlyMix: 0.3 })
+  bender.drums({ echo: 'x...' })
+  expect(engine.controls.get()).toMatchObject({ dlyMix: 0.3, drumThrowLen: 4 })
+  expect(() => bender.drums({ echo: 'x?' })).toThrow(
+    "the echo row accepts only 'x' and '.'",
+  )
+  bender.drums({ echo: '' })
+  expect(bender.board().drums).not.toHaveProperty('echo')
+})
+
+test('drums mutes rows by name, holds the fill key and reads both back', () => {
+  const out = bender.drums({ mute: 'kick, Open Hat', fill: 'on' })
+  const c = engine.controls.get()
+  expect(c.drumRowMute).toBe(0b100_0001)
+  expect(c.drumFill).toBe(1)
+  expect(out.drums).toMatchObject({ mute: 'kick, open hat', fill: 'on' })
+  const back = bender.drums({ mute: '', fill: 'off' })
+  expect(engine.controls.get()).toMatchObject({ drumRowMute: 0, drumFill: 0 })
+  expect(back.drums).not.toHaveProperty('mute')
+  expect(back.drums).not.toHaveProperty('fill')
+  expect(() => bender.drums({ mute: 'cowbell' })).toThrow(
+    /mute takes kit voices/,
+  )
+  expect(() => bender.drums({ fill: 'maybe' })).toThrow('fill takes on or off')
+})
+
+test('drums gives each column a condition with step bars', () => {
+  const out = bender.drums({
+    'step bars': '. . . . . . . . 1:2 . . . fill fill !pre pre',
+  })
+  const c = engine.controls.get()
+  expect(c.drumStepCond0).toBe(0)
+  expect(c.drumStepCond8).toBe(1)
+  expect(c.drumStepCond12).toBe(13)
+  expect(c.drumStepCond14).toBe(12)
+  expect(c.drumStepCond15).toBe(11)
+  expect(out.drums['step bars']).toBe(
+    '. . . . . . . . 1:2 . . . fill fill !pre pre',
+  )
+  expect(() => bender.drums({ 'step bars': 'often' })).toThrow(
+    /'often' is not a step condition/,
+  )
+  bender.drums({ 'step bars': 'off' })
+  expect(bender.board().drums).not.toHaveProperty('step bars')
+})
+
+test('move rewrites the pattern with the panel’s moves, repeatably with a seed', () => {
+  bender.drums({ kick: 'x...x...x...x...', snare: '....x.......x...' })
+  const shifted = bender.move('shift')
+  expect(shifted.drums.kick).toBe('.x...x...x...x..')
+  bender.move('shift', { back: true })
+  expect(bender.board().drums.kick).toBe('x...x...x...x...')
+  const once = bender.move('new beat', { seed: 7 }).drums
+  bender.drums({ kick: 'x...x...x...x...', snare: '....x.......x...' })
+  expect(bender.move('New Beat', { seed: 7 }).drums).toEqual(once)
+  expect(() => bender.move('explode')).toThrow(/moves: new beat, vary/)
 })
 
 test('line writes the bassline memory on the kit clock and says why it is silent', () => {
@@ -658,6 +725,7 @@ test('queue lands the writes made inside it on the next bar, through the worklet
     atTick(5)
     const landed = bender.queue(() => {
       bender.drums({ kick: 'x...x...x...x...' })
+      bender.move('shift')
       bender.set({ dlyFb: 0.9 })
     })
     expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
@@ -672,7 +740,7 @@ test('queue lands the writes made inside it on the next bar, through the worklet
       waiting: [],
     })
     expect(engine.controls.get().dlyFb).toBe(0.9)
-    expect(bender.board().drums.kick).toBe('x...x...x...x...')
+    expect(bender.board().drums.kick).toBe('.x...x...x...x..')
   })
 })
 

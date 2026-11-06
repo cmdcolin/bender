@@ -17,6 +17,7 @@ import {
   type DrumVoiceKey,
 } from './drums.ts'
 
+import type { Controls } from './controls.ts'
 import type { Rng } from './dsp/util/rng.ts'
 
 // What the machine can do to a pattern that a hand drawing sixteen contacts one
@@ -451,6 +452,13 @@ export function throwLast(masks: DrumMasks): number {
   const step = back >= 0 ? back : any
   return step < 0 ? 0 : stepBit(step)
 }
+
+/** What a first echo step turns up on a Wraith left silent, so the throw is
+    heard rather than sent into a delay with nothing coming back out of it. */
+export const echoWake = (board: Controls): Partial<Controls> =>
+  board.dlyMix > 0
+    ? {}
+    : { dlyMix: 0.7, dlySend: 0, ...(board.dlyFb < 0.55 && { dlyFb: 0.55 }) }
 
 /** Only the seven rows, out of a board that carries a hundred other numbers. */
 export const masksOf = (board: DrumMasks): DrumMasks =>
