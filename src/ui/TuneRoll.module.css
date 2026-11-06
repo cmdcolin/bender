@@ -165,6 +165,13 @@
   opacity: 0.35;
 }
 
+/* A step a memory fault rewrote: what the RAM holds, not what was written. */
+.headOn.rot,
+.holdOn.rot {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+
 /* Past the memory's own length: still a step you can write, but the counter
    comes round before it gets here. */
 .past {

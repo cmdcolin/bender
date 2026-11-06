@@ -21,8 +21,11 @@ import {
   cellClass,
   clampBase,
   isC,
+  RAM_ACCENT,
+  RAM_SLIDE,
   ROWS,
   useLinePlaying,
+  useRam,
   useSeqPos,
   useSteps,
 } from './tuneRoll.ts'
@@ -38,6 +41,7 @@ const wipe = (stage: CardStage) => {
     ...Object.fromEntries(steps.map(k => [k, REST])),
     ...Object.fromEntries([...accents, ...slides].map(k => [k, 0])),
   })
+  engine.restoreLine(CARDS[stage].prefix)
 }
 
 const turnOn = (stage: CardStage) => {
@@ -50,7 +54,10 @@ const turnOn = (stage: CardStage) => {
 // roll shows is what comes out of the synth. Only Growler's records.
 export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
   const card = CARDS[stage]
-  const steps = useSteps(stage)
+  const written = useSteps(stage)
+  const ram = useRam(stage)
+  const steps = ram ? ram.notes : written
+  const rotted = (s: number) => ram !== null && (ram.damage & (1 << s)) !== 0
   const lenKey = keyOf(stage, 'SeqLen')
   const onKey = keyOf(stage, 'SeqOn')
   const len = asTuneLen(useControlValue(lenKey))
@@ -77,9 +84,9 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
   }, [])
 
   const shift = (by: number) => setBase(b => clampBase(b + by))
-  const written = bars.map(b => b.note).filter(isNote)
-  const above = written.some(n => n > base + ROWS - 1)
-  const below = written.some(n => n < base)
+  const drawn = bars.map(b => b.note).filter(isNote)
+  const above = drawn.some(n => n > base + ROWS - 1)
+  const below = drawn.some(n => n < base)
   const notes = Array.from({ length: ROWS }, (_, i) => base + ROWS - 1 - i)
 
   return (
@@ -135,6 +142,16 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
             clear
           </button>
         </Tip>
+        {ram && (
+          <Tip text="A memory fault rewrote the amber steps. Press to write your line back over them.">
+            <button
+              className={styles.verb}
+              onClick={() => engine.restoreLine(card.prefix)}
+            >
+              restore
+            </button>
+          </Tip>
+        )}
         <span className={styles.spacer} />
         <Tip
           text={
@@ -227,6 +244,7 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
                         under: s === under,
                         past: s >= len,
                         wrap: s === len,
+                        rot: rotted(s),
                       })}
                     />
                   )
@@ -244,6 +262,7 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
           tip="Accent a step: louder, and a kick to the cutoff. Accents close together climb. Accent on the panel sets how hard."
           under={under}
           len={len}
+          ram={ram && { flags: ram.flags, bit: RAM_ACCENT, damage: ram.damage }}
         />
         <FlagRow
           name="slide"
@@ -252,6 +271,7 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
           tip="Slide a step into the next note: the gate stays down and the pitch glides, with no new attack. Into the same note it ties."
           under={under}
           len={len}
+          ram={ram && { flags: ram.flags, bit: RAM_SLIDE, damage: ram.damage }}
         />
       </div>
     </div>
@@ -265,8 +285,9 @@ function FlagRow(props: {
   tip: string
   under: number
   len: number
+  ram: { flags: number[]; bit: number; damage: number } | null
 }) {
-  const { keys, under, len } = props
+  const { keys, under, len, ram } = props
   const lo = useControlValue(keys[0])
   const hi = useControlValue(keys[1])
   const toggle = (step: number) => {
@@ -282,7 +303,10 @@ function FlagRow(props: {
         <span className={styles.name}>{props.name}</span>
         <div className={styles.cells}>
           {Array.from({ length: TUNE_STEPS }, (_, s) => {
-            const on = hasSeqFlag(lo, hi, s)
+            const rot = ram !== null && (ram.damage & (1 << s)) !== 0
+            const on = ram
+              ? (ram.flags[s]! & ram.bit) !== 0
+              : hasSeqFlag(lo, hi, s)
             return (
               <button
                 key={s}
@@ -295,6 +319,7 @@ function FlagRow(props: {
                   under: s === under,
                   past: s >= len,
                   wrap: s === len,
+                  rot,
                 })}
                 aria-label={`${props.name} step ${s + 1}`}
                 aria-pressed={on}

@@ -18,6 +18,9 @@ export const CARDS = {
     accents: MONO_SEQ_ACCENT_KEYS,
     slides: MONO_SEQ_SLIDE_KEYS,
     pos: 'monoSeqPos',
+    ram: 'monoSeqRam',
+    flags: 'monoSeqFlags',
+    damage: 'monoSeqDamage',
   },
   Howler: {
     prefix: 'lead',
@@ -27,6 +30,9 @@ export const CARDS = {
     accents: LEAD_SEQ_ACCENT_KEYS,
     slides: LEAD_SEQ_SLIDE_KEYS,
     pos: 'leadSeqPos',
+    ram: 'leadSeqRam',
+    flags: 'leadSeqFlags',
+    damage: 'leadSeqDamage',
   },
 } as const
 

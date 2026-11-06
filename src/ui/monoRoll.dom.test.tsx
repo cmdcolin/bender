@@ -114,3 +114,29 @@ test('the accent and slide rows flip one step’s bit each', () => {
   fireEvent.click(cell('acc step 1'))
   expect(engine.controls.get().monoSeqAccentLo).toBe(0)
 })
+
+test('a memory fault’s damage draws on the roll, with restore beside it', () => {
+  act(() => engine.patch({ monoSeqStep0: REST, monoSeqAccentLo: 0 }))
+  openMono()
+  expect(screen.queryByRole('button', { name: 'restore' })).toBeNull()
+  const ram = new Float32Array(32).fill(REST)
+  ram[0] = 3
+  const flags = new Uint8Array(32)
+  flags[0] = 1
+  const was = engine.meter.get()
+  act(() =>
+    engine.meter.set({
+      ...was,
+      monoSeqRam: ram,
+      monoSeqFlags: flags,
+      monoSeqDamage: 1,
+    }),
+  )
+  expect(lit('C4 step 1')).toBe(true)
+  expect(lit('acc step 1')).toBe(true)
+  expect(engine.controls.get().monoSeqStep0).toBe(REST)
+  fireEvent.click(screen.getByRole('button', { name: 'restore' }))
+  act(() => engine.meter.set(was))
+  expect(lit('C4 step 1')).toBe(false)
+  expect(screen.queryByRole('button', { name: 'restore' })).toBeNull()
+})

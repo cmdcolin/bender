@@ -42,6 +42,28 @@ export function useLanes(): number[][] {
   )
 }
 
+/** What a memory's RAM holds once a fault has rewritten it, or null while it
+    holds the panel's line. */
+export function useRam(stage: CardStage) {
+  const card = CARDS[stage]
+  const packed = useMeterValue(m =>
+    m[card.damage] === 0
+      ? ''
+      : [m[card.damage], ...m[card.ram], ...m[card.flags]].join(','),
+  )
+  const flat = packed === '' ? [] : packed.split(',').map(Number)
+  return flat.length === 0
+    ? null
+    : {
+        damage: flat[0]!,
+        notes: flat.slice(1, 1 + TUNE_STEPS),
+        flags: flat.slice(1 + TUNE_STEPS),
+      }
+}
+
+export const RAM_ACCENT = 1
+export const RAM_SLIDE = 2
+
 export function useSteps(stage: CardStage = 'Growler'): number[] {
   const packed = useBoardValue(c => CARDS[stage].steps.map(k => c[k]).join(','))
   return packed.split(',').map(Number)
@@ -78,9 +100,11 @@ export function cellClass(s: {
   under: boolean
   past: boolean
   wrap: boolean
+  rot?: boolean
 }): string {
   return [
     s.on ? (s.head ? styles.headOn : styles.holdOn) : styles.cell,
+    s.rot && styles.rot,
     s.ghost && styles.ghost,
     s.sharp && styles.sharp,
     s.beat && styles.beat,
