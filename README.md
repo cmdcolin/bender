@@ -18,10 +18,10 @@ Bold names are the app's own.
 
 ## Machines
 
-Circuit bending is rewiring a toy's circuit so it makes sounds it was never
-built for. Each machine here is modelled down to its chips and buses, so a bend
-behaves like the real fault. Slow Plinky's clock and its pitch, tempo and
-envelopes all drop together, because one clock drives all three.
+Circuit bending means opening up an electronic toy and rewiring it so it makes
+sounds it was never meant to. bender does it in software. Each machine is
+simulated down to its circuit, so a bend glitches it the way it would glitch the
+real toy: slow the clock and the tune drops in pitch and tempo at once.
 
 - **Plinky** — a toy keyboard's square-wave chip, with ROM tunes and auto bass
   chords
