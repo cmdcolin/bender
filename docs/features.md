@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-794 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 190
+809 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 191
 presets, 24 stage settings and 94 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 190 presets, and a roll button on every heading as well as
+- **Whole boards.** 191 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 89 controls are shy, mostly the ones that act on the
+names it still sets it. 102 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -1127,11 +1127,26 @@ belong to: each is the first knob on that machine's panel and one strip of this
 one.
 
 <details>
-<summary>1 control</summary>
+<summary>16 controls</summary>
 
-| control   | range         | what it does                              |
-| --------- | ------------- | ----------------------------------------- |
-| Bus drive | −12 to +24 dB | The summing amp the seven sources meet in |
+| control                | range                                                        | what it does                                                                                                       |
+| ---------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Bus drive              | −12 to +24 dB                                                | The summing amp the seven sources meet in                                                                          |
+| Duck keyed by          | kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit | The kit trigger line every channel’s duck vactrol hangs off, so the pump lands on the grid with swing and ratchets |
+| Duck release           | 0.25× to 4×                                                  | Scales how long the LDRs take to let go: about 40 ms from a light duck to 400 ms from a deep one at ×1             |
+| Plinky duck †          | off to full                                                  | A vactrol on Plinky’s channel, after its jacks                                                                     |
+| Clatter duck †         | off to full                                                  | A vactrol on Clatter’s channel, after its jacks                                                                    |
+| Glint duck †           | off to full                                                  | A vactrol on Glint’s channel, after its jacks                                                                      |
+| Parlor duck †          | off to full                                                  | A vactrol on Parlor’s channel, after its jacks                                                                     |
+| Growler duck †         | off to full                                                  | A vactrol on Growler’s channel, after its jacks                                                                    |
+| Chaos osc duck †       | off to full                                                  | A vactrol on Chaos osc’s channel, after its jacks                                                                  |
+| Noise & crackle duck † | off to full                                                  | A vactrol on Noise & crackle’s channel, after its jacks                                                            |
+| Spool duck †           | off to full                                                  | A vactrol on Spool’s channel, after its jacks                                                                      |
+| Layercake duck †       | off to full                                                  | A vactrol on Layercake’s channel, after its jacks                                                                  |
+| Sheet duck †           | off to full                                                  | A vactrol on Sheet’s channel, after its jacks                                                                      |
+| Bottle duck †          | off to full                                                  | A vactrol on Bottle’s channel, after its jacks                                                                     |
+| Howler duck †          | off to full                                                  | A vactrol on Howler’s channel, after its jacks                                                                     |
+| Prattle duck †         | off to full                                                  | A vactrol on Prattle’s channel, after its jacks                                                                    |
 
 </details>
 
@@ -2006,7 +2021,7 @@ result:
 
 ### Presets
 
-190 presets. Each name is a link that opens the app with that board loaded, and
+191 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2033,6 +2048,10 @@ the board waits until you press play.
   — A hard techno kick at 150 rumbles through Wraith at sixteenths, Growler
   rolls an acid bass under it, and Howler screams a synced lead off the beat,
   all through Ember
+- [**kick pumps the noise**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep0:-9,monoSeqStep1:-9,monoSeqStep2:3,monoSeqStep3:-9,monoSeqStep5:-9,monoSeqStep6:-6,monoSeqStep7:-9,monoSeqStep8:-9,monoSeqStep10:3,monoSeqStep11:-11,monoSeqStep12:-9,monoSeqStep13:-9,monoSeqStep15:-9,monoSeqAccentLo:37412,monoSeqSlideLo:8464,leadSeqOn:1,leadSeqLen:32,leadSeqStep2:15,leadSeqStep3:-127,leadSeqStep5:15,leadSeqStep7:18,leadSeqStep10:15,leadSeqStep11:-127,leadSeqStep12:10,leadSeqStep14:13,leadSeqStep15:-127,leadSeqStep18:15,leadSeqStep19:-127,leadSeqStep21:15,leadSeqStep23:18,leadSeqStep25:20,leadSeqStep27:18,leadSeqStep29:15,leadSeqStep31:10,leadSeqAccentLo:8480,leadSeqAccentHi:1314,leadSeqSlideLo:1,leadSeqSlideHi:16,drumLevel:0.9,drumBpm:150,drumTune:0.91,drumSweep:6,drumSwoopCap:10,drumKick:34952,drumHat:8738,drumClap:2056,drumOpen:514,drumThrow:34952,monoLevel:1.1,monoKeyGate:1,monoGate:0.5,monoAccent:0.9,monoGlide:0.06,monoRange1:-1,monoMix1:1,monoMix2:0,monoMix3:0,monoCutoff:420,monoEmph:0.88,monoContour:3.2,monoTrack:0.5,monoDrive:2.2,monoFD:0.15,monoFS:0,monoFR:0.08,monoAD:0.3,monoAS:0.7,monoAR:0.03,leadLevel:0.9,leadKeyGate:1,noiseLevel:1,dlySync:1,dlyFb:0.62,dlyToneHz:1400,dlySend:0,dlyMix:0.55,ampVoice:1,ampGain:0.45,ampMix:1,ampCab:0,ampLevel:4,modLfoHz:0.08,mod0Src:1,mod0Dest:76,mod0Depth:0.3,monoDuck:0.5,noiseDuck:0.9)
+  — The hard 150 kick lights a vactrol on the noise and Growler channels, so a
+  loud noise layer and the acid bass pump around it while Howler’s lead stays
+  put
 - [**howler torn**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,leadSeqOn:1,leadSeqLen:32,leadSeqStep1:15,leadSeqStep3:15,leadSeqStep5:18,leadSeqStep6:15,leadSeqStep9:15,leadSeqStep11:22,leadSeqStep13:20,leadSeqStep14:18,leadSeqStep17:15,leadSeqStep19:15,leadSeqStep21:18,leadSeqStep22:15,leadSeqStep25:13,leadSeqStep27:15,leadSeqStep29:10,leadSeqStep30:-127,leadSeqAccentLo:17425,leadSeqAccentHi:16708,leadSeqSlideLo:1025,leadSeqSlideHi:16,drumLevel:0.9,drumBpm:150,drumTune:0.91,drumSweep:6,drumSwoopCap:10,drumKick:34952,drumHat:8738,drumClap:2056,drumOpen:514,drumThrow:34952,leadLevel:1,leadKeyGate:1,leadSweep:28,leadEmph:1,leadLoopPitch:0.3,leadFold:0.8,dlySync:1,dlyFb:0.62,dlyToneHz:1400,dlySend:0,dlyMix:0.55,ampVoice:1,ampGain:0.45,ampMix:1,ampCab:0,ampLevel:4)
   — Howler alone over the hard kick, with its folding pair near the top and the
   output patched into its pitch, so each accented note tears into noise and

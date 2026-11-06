@@ -143,6 +143,25 @@ const HARD_KIT: Partial<Controls> = {
   ampMix: 1,
 }
 
+const HARD_HOWL: Partial<Controls> = {
+  ...HARD_KIT,
+  ...ACID,
+  ...line(
+    'C3 C3 C4 C3 . C3 D#3 C3 | C3 . C4 A#2 C3 C3 . C3',
+    'x..x..x...x..x..',
+    '..x....x...x....',
+  ),
+  ...lead(
+    '. . C5 ~ . C5 . D#5 | . . C5 ~ G4 . A#4 ~ | . . C5 ~ . C5 . D#5 | . F5 . D#5 . C5 . G4',
+    '..x....x..x.....|.....x.x..x...x.',
+    '...............x|...........x....',
+  ),
+  monoCutoff: 420,
+  monoAccent: 0.9,
+  monoLevel: 1.1,
+  leadLevel: 0.9,
+}
+
 export const PRESETS: PresetDef[] = [
   {
     name: 'mall strings',
@@ -263,23 +282,17 @@ export const PRESETS: PresetDef[] = [
     name: 'hard techno howl',
     blurb:
       'A hard techno kick at 150 rumbles through Wraith at sixteenths, Growler rolls an acid bass under it, and Howler screams a synced lead off the beat, all through Ember',
+    patch: HARD_HOWL,
+  },
+  {
+    name: 'kick pumps the noise',
+    blurb:
+      'The hard 150 kick lights a vactrol on the noise and Growler channels, so a loud noise layer and the acid bass pump around it while Howler’s lead stays put',
     patch: {
-      ...HARD_KIT,
-      ...ACID,
-      ...line(
-        'C3 C3 C4 C3 . C3 D#3 C3 | C3 . C4 A#2 C3 C3 . C3',
-        'x..x..x...x..x..',
-        '..x....x...x....',
-      ),
-      ...lead(
-        '. . C5 ~ . C5 . D#5 | . . C5 ~ G4 . A#4 ~ | . . C5 ~ . C5 . D#5 | . F5 . D#5 . C5 . G4',
-        '..x....x..x.....|.....x.x..x...x.',
-        '...............x|...........x....',
-      ),
-      monoCutoff: 420,
-      monoAccent: 0.9,
-      monoLevel: 1.1,
-      leadLevel: 0.9,
+      ...HARD_HOWL,
+      noiseLevel: 1,
+      noiseDuck: 0.9,
+      monoDuck: 0.5,
     },
   },
   {
