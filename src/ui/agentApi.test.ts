@@ -125,7 +125,7 @@ test('help and every guide topic fit in one browser tool result', () => {
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, line, hit, clock, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, line, lead, hit, clock, sound",
   )
 })
 
@@ -303,6 +303,32 @@ test('line writes the bassline memory on the kit clock and says why it is silent
     monoSeqSlideLo: 0b0100_0000_0000_0000,
   })
   expect(bender.summary().undo).toBe(2)
+})
+
+test('a line on Howler writes its own memory and leaves the bassline alone', () => {
+  bender.line('A2 A2')
+  const out = bender.line('. C5 ~ D#5', { on: 'Howler', accent: '.x' })
+  const c = engine.controls.get()
+  expect(c).toMatchObject({
+    leadSeqOn: 1,
+    leadSeqLen: 4,
+    leadSeqSync: 1,
+    leadSeqStep0: REST,
+    leadSeqStep1: 15,
+    leadSeqAccentLo: 0b0100_0000_0000_0000,
+    monoSeqLen: 2,
+    monoSeqTo: 0,
+  })
+  expect(out).toMatchObject({
+    line: '. C5 ~ D#5',
+    sounds: "C5 to D#5, at Howler's 8′ osc 1 range",
+    accent: '.x..',
+  })
+  expect(out).not.toHaveProperty('plays on')
+  expect(out.warnings).toContain('leadLevel is 0, so Howler is silent')
+  expect(bender.board().lead?.line).toBe('. C5 ~ D#5')
+  expect(bender.board().line?.line).toBe('A2 A2')
+  expect(bender.summary().lead).toBe('stopped on Howler')
 })
 
 test('an invalid line throws and leaves the board unchanged', () => {

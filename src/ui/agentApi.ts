@@ -35,9 +35,6 @@ import {
   isNote,
   laneSteps,
   laneText,
-  MONO_SEQ_ACCENT_KEYS,
-  MONO_SEQ_SLIDE_KEYS,
-  MONO_SEQ_STEP_KEYS,
   parseLane,
   parseSeqFlags,
   REST,
@@ -46,6 +43,7 @@ import {
   TUNE_LANES,
 } from '../tune.ts'
 import { recorded } from './activity.ts'
+import { CARDS, keyOf, type CardStage } from './cards.ts'
 import {
   ALL_SLIDERS,
   CHANNELS,
@@ -65,7 +63,7 @@ import { STRUCK_HOME, strike, type Struck } from './strikes.ts'
 // GUIDE_MAX_CHARS.
 export const GUIDE_MAX_CHARS = 900
 
-const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. The browser tool cuts any single returned string at 1000 characters, so return arrays and objects as they are, since JSON.stringify turns a long list into one string. Start with bender.summary(). The rest is in eight topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'music' covers tune and drums, 'drums' the rest of the kit, and 'line' the bassline memory; 'sound' covers start, play, stop, listen and link; 'hit' strikes the sheet, the bottle and the kit by hand; 'clock' lands changes on the bar with position, next and queue.`
+const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. The browser tool cuts any single returned string at 1000 characters, so return arrays and objects as they are, since JSON.stringify turns a long list into one string. Start with bender.summary(). The rest is in nine topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'music' covers tune and drums, 'drums' the rest of the kit, and 'line' the bassline memory and 'lead' Howler's; 'sound' covers start, play, stop, listen and link; 'hit' strikes the sheet, the bottle and the kit by hand; 'clock' lands changes on the bar with position, next and queue.`
 
 const GUIDE = {
   read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. Each bend and pedal has an Into key: set({ ampInto: 'clatter' }) patches Ember onto the kit alone.`,
@@ -73,6 +71,7 @@ const GUIDE = {
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory, one token a step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold. It also switches the chip to the memory, at tuneRate steps a second. An array of up to three strings writes one lane each. Glint, Parlor and Growler follow it on fmKeyGate, pcmKeyGate and monoKeyGate; 'lane 1' to 'lane 3' follow one lane, and tuneLift keeps lanes off Plinky. bender.drums({ kick: 'x...x...', hat: '..x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. x is a hit, ? a hit with probability drumChance, . a rest. Each character is a sixteenth, so a beat is four. A row's length sets its loop, an empty string clears it, and rows left out keep theirs. bpm: 130 sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
   line: `The bassline. bender.line('. A3 A3 A4 . A3 A3 A3', { accent: '...x', slide: '' }) writes a second 32-step memory, one token a step as in tune, and turns it on. It steps with the kit's sixteenths while the kit runs; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, whose stock 32′ range sounds each note two octaves down: write A3 for a 55 Hz A1, as sounds in the result shows. on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep theirs. The target's KeyGate jumper also plays the tune: 'no, cut' drops it, 'lane 1' keeps one lane. The result warns about anything keeping it silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate. The techno and acid techno presets load a groove to riff on.`,
+  lead: `Howler, the lead: a second build of Growler's card with a 32-step memory of its own, so a lead plays over the bassline. bender.line('. . C5 ~ . C5 . D#5', { on: 'Howler', accent: '..x....x', slide: '...x' }) writes Howler's memory and leaves Growler's alone, with the same tokens, accent, slide and sync as the bassline. Howler's stock 8′ sounds the notes as written. Its level starts at 0: set leadLevel (0.9 is loud) and leadKeyGate: 'no, cut' to keep the toy's tune off it. Its sound is leadCutoff, leadEmph (near 1 it screams), leadSweep, leadFold, leadGate and leadAccent. The hard techno howl preset loads a 150 bpm groove with a lead to riff on, and howler torn tears the lead into noise.`,
   hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once; inside bender.queue it waits for the queue's bar and lands within about 20 ms of it. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
   sound: `Sound. Audio stays suspended until the page gets a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the drums, the bassline and a melody written with tune; the toy's demo songs start only with bender.play('song'), bender.play('drums') starts the kit alone, and bender.stop() stops all. A screenshot measures nothing of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due (short means missed audio blocks), the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), watchdog reboots, the sources with signal and their sourcePeaks, each audible machine's notes, drum hits. bender.link() returns a URL that loads this board.`,
@@ -417,40 +416,57 @@ function playedBy(c: Controls) {
   )
 }
 
-// Growler's footage moves every note it plays, and an agent hears none of it:
-// listen names the written notes. Its stock 32′ puts a line written at A2 down
-// at 27 Hz.
-const growlerShift = (c: Controls) => 12 * Math.round(c.monoRange1)
+const HOWLER_TARGET = {
+  name: 'Howler',
+  level: 'leadLevel',
+  mute: 'leadMute',
+  gate: 'leadKeyGate',
+} as const
 
-function sounds(c: Controls, steps: readonly number[]) {
+// A card's footage moves every note it plays, and an agent hears none of it:
+// listen names the written notes. Growler's stock 32′ puts a line written at A2
+// down at 27 Hz; Howler's 8′ plays it as written.
+function sounds(c: Controls, steps: readonly number[], stage: CardStage) {
   const notes = steps.filter(isNote)
-  if (notes.length === 0 || Math.round(c.monoSeqTo) !== 0) return undefined
-  const shift = growlerShift(c)
+  const elsewhere = stage === 'Growler' && Math.round(c.monoSeqTo) !== 0
+  if (notes.length === 0 || elsewhere) return undefined
+  const footage = keyOf(stage, 'Range1')
+  const shift = 12 * Math.round(c[footage])
   const lo = semitoneName(Math.min(...notes) + shift)
   const hi = semitoneName(Math.max(...notes) + shift)
-  return `${lo} to ${hi}, at Growler's ${show('monoRange1', c.monoRange1)} osc 1 range`
+  return `${lo} to ${hi}, at ${stage}'s ${show(footage, c[footage])} osc 1 range`
 }
 
-function lineOf(c: Controls) {
-  const len = asTuneLen(c.monoSeqLen)
+function lineOf(c: Controls, stage: CardStage = 'Growler') {
+  const card = CARDS[stage]
+  const [on, sync] = [keyOf(stage, 'SeqOn'), keyOf(stage, 'SeqSync')]
+  const len = asTuneLen(c[keyOf(stage, 'SeqLen')])
   const flags = (keys: readonly [ControlKey, ControlKey]) =>
     seqFlagsText(c[keys[0]], c[keys[1]], len)
-  const steps = MONO_SEQ_STEP_KEYS.slice(0, len).map(k => c[k])
+  const steps = card.steps.slice(0, len).map(k => c[k])
   return {
     line: laneText(steps),
-    sounds: sounds(c, steps),
-    accent: flags(MONO_SEQ_ACCENT_KEYS),
-    slide: flags(MONO_SEQ_SLIDE_KEYS),
-    on: show('monoSeqOn', c.monoSeqOn),
-    'plays on': show('monoSeqTo', c.monoSeqTo),
-    sync: show('monoSeqSync', c.monoSeqSync),
+    sounds: sounds(c, steps, stage),
+    accent: flags(card.accents),
+    slide: flags(card.slides),
+    on: show(on, c[on]),
+    ...(stage === 'Growler' && {
+      'plays on': show('monoSeqTo', c.monoSeqTo),
+    }),
+    sync: show(sync, c[sync]),
   }
 }
 
+const lineRuns = (c: Controls, stage: CardStage) =>
+  engine.lineRuns(c, c[keyOf(stage, 'SeqSync')])
+
 // What stands between the line and the speaker, in the words of the controls
 // that fix it.
-function lineWarnings(c: Controls) {
-  const target = LINE_TARGETS[Math.round(c.monoSeqTo)] ?? LINE_TARGETS[0]
+function lineWarnings(c: Controls, stage: CardStage = 'Growler') {
+  const target =
+    stage === 'Howler'
+      ? HOWLER_TARGET
+      : (LINE_TARGETS[Math.round(c.monoSeqTo)] ?? LINE_TARGETS[0])
   const notes: string[] = []
   if (c[target.level] === 0)
     notes.push(`${target.level} is 0, so ${target.name} is silent`)
@@ -460,14 +476,20 @@ function lineWarnings(c: Controls) {
     notes.push(
       `${target.name} also plays the toy's tune; set ${target.gate}: 'no, cut' to hear the line alone`,
     )
-  if (!engine.lineRuns(c))
+  if (!lineRuns(c, stage))
     notes.push(
-      c.monoSeqSync === 0
+      c[keyOf(stage, 'SeqSync')] === 0
         ? "unsynced, the line runs with the toy's song, which is stopped; bender.play('song') starts both"
         : 'the kit clocks the line and is stopped; bender.play() starts both',
     )
   return notes
 }
+
+const lineState = (c: Controls, stage: CardStage) =>
+  `${lineRuns(c, stage) ? 'playing' : 'stopped'} on ${stage === 'Howler' ? 'Howler' : show('monoSeqTo', c.monoSeqTo)}`
+
+const isHowler = (on: Value | undefined) =>
+  typeof on === 'string' && on.trim().toLowerCase() === 'howler'
 
 const barsText = (bars: number) => `${bars}:${bars}`
 
@@ -528,10 +550,8 @@ function summary() {
     song: engine.songPlaying.get()
       ? `playing ${show('chipTune', c.chipTune)}${c.chipLevel === 0 ? ', silent at chipLevel 0' : ''}`
       : 'stopped',
-    line:
-      c.monoSeqOn === 0
-        ? 'off'
-        : `${engine.lineRuns(c) ? 'playing' : 'stopped'} on ${show('monoSeqTo', c.monoSeqTo)}`,
+    line: c.monoSeqOn === 0 ? 'off' : lineState(c, 'Growler'),
+    lead: c.leadSeqOn === 0 ? 'off' : lineState(c, 'Howler'),
     drums: engine.drumsPlaying.get()
       ? `playing at ${show('drumBpm', c.drumBpm)}`
       : 'stopped',
@@ -548,6 +568,7 @@ const PLAYERS = [
   { name: 'Glint', notes: engine.fmNotes },
   { name: 'Parlor', notes: engine.pcmNotes },
   { name: 'Growler', notes: engine.monoNotes },
+  { name: 'Howler', notes: engine.leadNotes },
 ]
 
 async function listen(ms = 1500) {
@@ -661,6 +682,7 @@ function rawBenderApi() {
         tune: tuneLines(c),
         drums: drumLines(c),
         ...(c.monoSeqOn !== 0 && { line: lineOf(c) }),
+        ...(c.leadSeqOn !== 0 && { lead: lineOf(c, 'Howler') }),
       }
     },
 
@@ -808,11 +830,14 @@ function rawBenderApi() {
       text: string,
       opts: { accent?: string; slide?: string; sync?: Value; on?: Value } = {},
     ) {
+      const stage: CardStage = isHowler(opts.on) ? 'Howler' : 'Growler'
+      const card = CARDS[stage]
       let steps: number[]
       try {
         steps = parseLane(text)
       } catch (e) {
-        const low = errorText(e).includes('outside the range')
+        const low =
+          stage === 'Growler' && errorText(e).includes('outside the range')
         throw new Error(
           low
             ? `${errorText(e)}; the line names keys, and Growler's stock 32′ range sounds each two octaves lower, so A3 sounds A1`
@@ -821,15 +846,14 @@ function rawBenderApi() {
         )
       }
       if (steps.length === 0) throw new Error('the line is empty')
-      const patch: Partial<Controls> = {
-        monoSeqOn: 1,
-        monoSeqLen: steps.length,
-      }
-      for (const [i, key] of MONO_SEQ_STEP_KEYS.entries())
-        patch[key] = steps[i] ?? REST
+      const sync = keyOf(stage, 'SeqSync')
+      const patch: Partial<Controls> = {}
+      patch[keyOf(stage, 'SeqOn')] = 1
+      patch[keyOf(stage, 'SeqLen')] = steps.length
+      for (const [i, key] of card.steps.entries()) patch[key] = steps[i] ?? REST
       for (const [name, keys] of [
-        ['accent', MONO_SEQ_ACCENT_KEYS],
-        ['slide', MONO_SEQ_SLIDE_KEYS],
+        ['accent', card.accents],
+        ['slide', card.slides],
       ] as const) {
         const flags = opts[name]
         if (flags === undefined) continue
@@ -840,13 +864,13 @@ function rawBenderApi() {
         }
       }
       const c = engine.controls.get()
-      const sync = opts.sync ?? (c.monoSeqSync === 0 ? 'sixteenths' : null)
-      if (sync !== null) patch.monoSeqSync = numberFor('monoSeqSync', sync)
-      if (opts.on !== undefined)
+      const synced = opts.sync ?? (c[sync] === 0 ? 'sixteenths' : null)
+      if (synced !== null) patch[sync] = numberFor(sync, synced)
+      if (opts.on !== undefined && stage === 'Growler')
         patch.monoSeqTo = numberFor('monoSeqTo', opts.on)
       land(patch, 0)
       const now = engine.controls.get()
-      return { ...lineOf(now), warnings: lineWarnings(now) }
+      return { ...lineOf(now, stage), warnings: lineWarnings(now, stage) }
     },
 
     drums(rows: Record<string, string | number>) {
