@@ -13,13 +13,15 @@ import {
   partKeys,
 } from './cuts.ts'
 import { mine } from './testBoard.ts'
+import { lead, line } from './write.ts'
 
 // A board with something going on for the fault to reach. Sakura is 32 steps at
 // three a second, so a stock board plays six of them in the two seconds a test
 // renders — cut the wire carrying the top of the address and the song never got
 // that far anyway. The clock runs the tune up to where the whole of it goes
 // past, and the kit gets a bar whose halves differ, because a pattern that is
-// the same twice over is one no address fault can be heard on.
+// the same twice over is one no address fault can be heard on. Both voice
+// cards get a line, for their memories' faults to reach.
 const busy = () => ({
   ...mine(),
   chipClockX: 6,
@@ -28,6 +30,16 @@ const busy = () => ({
   drumClap: 0b0000_0000_1000_0000,
   drumAccent: 0b1000_0000_0010_0000,
   drumBpm: 160,
+  ...line(
+    'A3 C4 . D#4 A3 A4 G3 ~ | A3 . C4 A3 D4 . A4 G4',
+    'x...x...x..x....',
+    '......x.....x...',
+  ),
+  ...lead(
+    '. C5 ~ G4 . D#5 C5 . | A#4 . C5 ~ . G5 F5 D#5',
+    '.x...x.....x...x',
+    '...x.......x....',
+  ),
 })
 
 test('every cut names controls that live under the heading it is offered from', () => {

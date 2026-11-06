@@ -1,7 +1,10 @@
 import { ROM_ADDR_LINES } from '../dsp/stages/roms.ts'
+import { keyOf, type CardStage } from './cards.ts'
 import { sliderFor } from './controls/index.ts'
+import { MEMORY_FAULTS } from './controls/monoCard.ts'
 
 import type { ControlKey } from '../controls.ts'
+import type { CardSuffix } from '../monoCard.ts'
 
 // Each bus a fault can reach, one trace a bit with the lowest on top. The
 // drawing reads the faulted trace and its fault off the board.
@@ -74,7 +77,44 @@ const ribbon = (
   cross?: ControlKey,
 ): Ribbon => ({ line, fault, cross })
 
+// A voice card's melody memory: the counter's step number in, the note word
+// with its accent and slide bits out, and the write enable that leaks the word
+// back into the next cell.
+function memoryBus(stage: CardStage): BusSpec {
+  const k = <S extends CardSuffix>(suffix: S) => keyOf(stage, suffix)
+  return {
+    label: `${stage.toLowerCase()} memory bus wiring`,
+    cut: k('SeqBusCut'),
+    rows: [
+      {
+        chips: ['counter', 'RAM', 'voice'],
+        links: [
+          [ribbon(k('SeqAddrLine'), k('SeqAddrFault'), k('SeqAddrCross'))],
+          [ribbon(k('SeqDataLine'), k('SeqDataFault'))],
+        ],
+        feeds: [
+          {
+            key: k('SeqCarry'),
+            chip: 0,
+            name: 'carry',
+            says: v => `carry cut, ${choice(k('SeqCarry'), v)}`,
+          },
+          {
+            key: k('SeqLeak'),
+            chip: 1,
+            from: { link: 1 },
+            name: 'write enable',
+            says: v => `write enable leaks ${Math.round(v * 100)}%`,
+          },
+        ],
+      },
+    ],
+  }
+}
+
 export const BUS_SPECS: Record<string, BusSpec> = {
+  [`Growler|${MEMORY_FAULTS}`]: memoryBus('Growler'),
+  [`Howler|${MEMORY_FAULTS}`]: memoryBus('Howler'),
   'Plinky|fault on the bus': {
     label: 'plinky bus wiring',
     cut: 'chipBusCut',

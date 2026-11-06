@@ -4,7 +4,10 @@ import {
   type Controls,
 } from '../../controls.ts'
 import { SUPPLY } from '../../dsp/supplies.ts'
+import { type CardSuffix } from '../../monoCard.ts'
+import { keyOf, type CardStage } from '../cards.ts'
 import { choiceValue, GROUPS, sliderFor } from '../controls/index.ts'
+import { MEMORY_FAULTS } from '../controls/monoCard.ts'
 import {
   TALK_BUS,
   TALK_CLOCK,
@@ -773,7 +776,87 @@ export const CUTS: CutDef[] = [
       'The smallest cone slams into its stops on every note, so the tune comes out as clicks and rattle',
     patch: { distSpeaker: 1 },
   },
+  ...memoryCuts('Growler'),
+  ...memoryCuts('Howler'),
 ]
+
+// The same faults on either card's memory, so Growler and Howler bend apart.
+function memoryCuts(stage: CardStage): CutDef[] {
+  const key = <S extends CardSuffix>(suffix: S) => keyOf(stage, suffix)
+  const at = (suffix: CardSuffix, choice: string) => pick(key(suffix), choice)
+  const cut = (
+    name: string,
+    blurb: string,
+    patch: Partial<Controls>,
+  ): CutDef => ({ group: stage, part: MEMORY_FAULTS, name, blurb, patch })
+  return [
+    cut(
+      'smear',
+      'The write enable leaks, so now and then a note is written into the step after it, and over the laps the line smears into repeats',
+      { [key('SeqLeak')]: 0.3 },
+    ),
+    cut(
+      'one note',
+      'The write enable is stuck, so every note is written into the next step and within a lap the line is one note, drifting a bit at a time',
+      { [key('SeqLeak')]: 1 },
+    ),
+    cut(
+      'rot',
+      'The refresh is starved and a bit leaks every beat, so the notes sink, the rests turn into notes, and the accents and slides drop out one by one',
+      { [key('SeqRot')]: at('SeqRot', 'every beat') },
+    ),
+    cut(
+      'folded loop',
+      'The counter’s carry is cut, so it wraps at 8 and the line folds into its first eight steps',
+      { [key('SeqCarry')]: at('SeqCarry', 'wraps at 8') },
+    ),
+    cut(
+      'every step twice',
+      'The bottom address wire is grounded, so the memory hands back each even step twice and the odd ones never play',
+      {
+        [key('SeqAddrLine')]: at('SeqAddrLine', 'A0'),
+        [key('SeqAddrFault')]: at('SeqAddrFault', 'to ground'),
+      },
+    ),
+    cut(
+      'out of order',
+      'A1 and A2 are crossed, so the middle pairs of every eight steps trade places, the same way every lap',
+      { [key('SeqAddrCross')]: at('SeqAddrCross', 'A1↔A2') },
+    ),
+    cut(
+      'wrong notes',
+      'D3 is held high, so every note without that bit plays eight semitones up, the same wrong notes every lap',
+      {
+        [key('SeqDataLine')]: at('SeqDataLine', 'D3 +8'),
+        [key('SeqDataFault')]: at('SeqDataFault', 'to +V'),
+      },
+    ),
+    cut(
+      'rests fill in',
+      'D5 is grounded, so every rest plays F♯4 and every note from G4 up falls 32 semitones',
+      {
+        [key('SeqDataLine')]: at('SeqDataLine', 'D5 +32'),
+        [key('SeqDataFault')]: at('SeqDataFault', 'to ground'),
+      },
+    ),
+    cut(
+      'accent on everything',
+      'The accent wire is held high, so every step lands accented',
+      {
+        [key('SeqDataLine')]: at('SeqDataLine', 'D6 accent'),
+        [key('SeqDataFault')]: at('SeqDataFault', 'to +V'),
+      },
+    ),
+    cut(
+      'all slide',
+      'The slide wire is held high, so every note glides into the next and the gate never lifts',
+      {
+        [key('SeqDataLine')]: at('SeqDataLine', 'D7 slide'),
+        [key('SeqDataFault')]: at('SeqDataFault', 'to +V'),
+      },
+    ),
+  ]
+}
 
 function groupOf(name: string) {
   const group = GROUPS.find(g => g.name === name)
