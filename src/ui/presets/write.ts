@@ -11,6 +11,7 @@ import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
 import { YOURS as YOUR_TUNE } from '../../dsp/stages/roms.ts'
 import { SYNC_MODES } from '../../dsp/stages/toyChip.ts'
 import {
+  LEAD_SEQ_STEP_KEYS,
   MONO_SEQ_STEP_KEYS,
   parseLane,
   parseSeqFlags,
@@ -43,6 +44,30 @@ export function line(
     monoSeqSlideLo,
     monoSeqSlideHi,
     monoKeyGate: 1,
+  }
+}
+
+/** Howler's memory, the same way, with Howler's own gate jumper cut. */
+export function lead(
+  notes: string,
+  accent = '',
+  slide = '',
+): Partial<Controls> {
+  const steps = parseLane(notes)
+  const [leadSeqAccentLo, leadSeqAccentHi] = parseSeqFlags(accent)
+  const [leadSeqSlideLo, leadSeqSlideHi] = parseSeqFlags(slide)
+  return {
+    ...Object.fromEntries(
+      LEAD_SEQ_STEP_KEYS.map((k, i) => [k, steps[i] ?? REST]),
+    ),
+    leadSeqOn: 1,
+    leadSeqSync: MEMORY_SYNC_MODES.indexOf('sixteenths'),
+    leadSeqLen: steps.length,
+    leadSeqAccentLo,
+    leadSeqAccentHi,
+    leadSeqSlideLo,
+    leadSeqSlideHi,
+    leadKeyGate: 1,
   }
 }
 

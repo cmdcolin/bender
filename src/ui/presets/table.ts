@@ -17,6 +17,7 @@ import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices.ts'
 import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom.ts'
 import { RING_FROM } from '../../dsp/stages/ringmod.ts'
 import { SHIFT_OUTS } from '../../dsp/stages/shifter.ts'
+import { DELAY_SYNC_MODES } from '../../dsp/stages/tapeDelay.ts'
 import { ARP_MODES, ARP_SYNC_MODES } from '../../dsp/stages/toyChip.ts'
 import {
   BANK_GATE_NAMES,
@@ -39,7 +40,7 @@ import {
 } from '../../engine/archive.ts'
 import { jackFor } from '../../jacks.ts'
 import { RAVE_STAB } from './rigs.ts'
-import { kit, line } from './write.ts'
+import { kit, lead, line } from './write.ts'
 
 import type { Controls } from '../../controls.ts'
 import type { Pool } from '../../engine/archive.ts'
@@ -109,6 +110,35 @@ const ROLLING: Partial<Controls> = {
   monoAS: 0.3,
   monoAR: 0.03,
   monoGate: 0.45,
+}
+
+// After DJ Valentimes' ZL2-PCD-7: the kick tuned up with a fast swoop, only
+// the kick thrown into Wraith, and the whole board through Ember.
+const HARD_KIT: Partial<Controls> = {
+  ...kit({
+    kick: 'x...x...x...x...',
+    hat: '..x...x...x...x.',
+    'open hat': '......x.......x.',
+    clap: '....x.......x...',
+  }),
+  drumThrow: 0x8888,
+  drumTune: 0.91,
+  drumSweep: 6,
+  drumSwoopCap: 10,
+  drumLevel: 0.9,
+  drumBpm: 150,
+  drumSwing: 0,
+  chipLevel: 0,
+  dlySync: DELAY_SYNC_MODES.indexOf('sixteenths'),
+  dlyFb: 0.62,
+  dlyToneHz: 1400,
+  dlySend: 0,
+  dlyMix: 0.55,
+  ampVoice: AMP_VOICE.marshall,
+  ampGain: 0.45,
+  ampCab: AMP_CAB.direct,
+  ampLevel: 4,
+  ampMix: 1,
 }
 
 export const PRESETS: PresetDef[] = [
@@ -225,6 +255,47 @@ export const PRESETS: PresetDef[] = [
       drumBpm: 132,
       drumSwing: 0,
       echoLevel: 0.2,
+    },
+  },
+  {
+    name: 'hard techno howl',
+    blurb:
+      'A hard techno kick at 150 rumbles through Wraith at sixteenths, Growler rolls an acid bass under it, and Howler screams a synced lead off the beat, all through Ember',
+    patch: {
+      ...HARD_KIT,
+      ...ACID,
+      ...line(
+        'C3 C3 C4 C3 . C3 D#3 C3 | C3 . C4 A#2 C3 C3 . C3',
+        'x..x..x...x..x..',
+        '..x....x...x....',
+      ),
+      ...lead(
+        '. . C5 ~ . C5 . D#5 | . . C5 ~ G4 . A#4 ~ | . . C5 ~ . C5 . D#5 | . F5 . D#5 . C5 . G4',
+        '..x....x..x.....|.....x.x..x...x.',
+        '...............x|...........x....',
+      ),
+      monoCutoff: 420,
+      monoAccent: 0.9,
+      monoLevel: 1.1,
+      leadLevel: 0.9,
+    },
+  },
+  {
+    name: 'howler torn',
+    blurb:
+      'Howler alone over the hard kick, with its folding pair near the top and the output patched into its pitch, so each accented note tears into noise and sub-octaves before it locks back in',
+    patch: {
+      ...HARD_KIT,
+      ...lead(
+        '. C5 . C5 . D#5 C5 . | . C5 . G5 . F5 D#5 . | . C5 . C5 . D#5 C5 . | . A#4 . C5 . G4 ~ .',
+        '.x...x.....x...x|.x.....x.x...x..',
+        '.....x.........x|...........x....',
+      ),
+      leadFold: 0.8,
+      leadLoopPitch: 0.3,
+      leadSweep: 28,
+      leadEmph: 1,
+      leadLevel: 1,
     },
   },
   {
