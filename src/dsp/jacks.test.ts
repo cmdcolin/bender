@@ -7,6 +7,7 @@ import { PEDALS } from '../pedals.ts'
 import { BENDS } from '../ui/controls/bends.ts'
 import { Chain } from './chain.ts'
 import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
+import { Amp } from './stages/amp.ts'
 import { makeIo, renderBender, rms, SR } from './testRender.ts'
 
 const writer = (label: string, v: number): Stage => ({
@@ -37,6 +38,9 @@ function spy(label: string, gain = 0.5) {
   return { stage, heard }
 }
 
+// A unit moving lines takes a block to fade out and one to fade in.
+const SETTLE = 3
+
 const EMPTY: Partial<Controls> = {
   bendSlot0: 0,
   bendSlot1: 0,
@@ -63,7 +67,8 @@ function rig() {
   chain.bendById = [undefined, undefined, bend.stage]
   chain.post = [probe]
   const run = (c: Partial<Controls>) => {
-    chain.process(makeIo(), packParams({ ...DEFAULT_CONTROLS, ...EMPTY, ...c }))
+    const p = packParams({ ...DEFAULT_CONTROLS, ...EMPTY, ...c })
+    for (let b = 0; b < SETTLE; b++) chain.process(makeIo(), p)
     return out.at(-1)!
   }
   return { run, pedal: pedal.heard, bend: bend.heard, chain }
@@ -82,7 +87,7 @@ test('a patched pedal leaves the master run', () => {
   const { run, pedal } = rig()
   run({})
   run({ stompInto: jackOf(1) })
-  expect(pedal).toHaveLength(2)
+  expect(pedal).toHaveLength(2 * SETTLE)
 })
 
 test('a bend patched into a machine leaves its socket and runs there', () => {
@@ -92,14 +97,14 @@ test('a bend patched into a machine leaves its socket and runs there', () => {
     (0.5 * 0.25 + 0.2) * 0.5,
     6,
   )
-  expect(bend).toHaveLength(2)
+  expect(bend).toHaveLength(2 * SETTLE)
   expect(bend.at(-1)).toBeCloseTo(0.5, 6)
 })
 
 test('a patched bend runs on its machine without a socket', () => {
   const { run, bend } = rig()
   expect(run({ crushInto: jackOf(1) })).toBeCloseTo((0.5 + 0.2 * 0.25) * 0.5, 6)
-  expect(bend).toHaveLength(1)
+  expect(bend).toHaveLength(SETTLE)
 })
 
 test('units on one machine run bends first, then pedals', () => {
@@ -163,6 +168,103 @@ test('Ember on Clatter leaves Plinky dry', () => {
   expect(rms(onKit)).toBeGreaterThan(0.01)
   expect(onKit).not.toEqual(onMaster)
   expect(onKit).not.toEqual(play(both))
+})
+
+const sine = (label: string, hz: number, amp: number): Stage => {
+  let phase = 0
+  return {
+    label,
+    process(io: StereoBlock) {
+      for (let i = 0; i < io.n; i++) {
+        const v = amp * Math.sin(phase)
+        phase += (2 * Math.PI * hz) / SR
+        io.l[i]! += v
+        io.r[i]! += v
+      }
+    },
+    panic: () => {},
+  }
+}
+
+const idle = (label: string): Stage => ({
+  label,
+  when: () => false,
+  process: () => {},
+  panic: () => {},
+})
+
+// The biggest sample-to-sample step in the blocks around a change made at
+// block 200, with Ember on a sine.
+function switchStep(change: Partial<Controls>) {
+  const chain = new Chain(SR)
+  chain.sources = [sine('a', 110, 0.3), sine('b', 0, 0)]
+  chain.pedals = [...PEDALS.slice(0, -1).map(p => idle(p.label)), new Amp(SR)]
+  const board = {
+    ...DEFAULT_CONTROLS,
+    ...EMPTY,
+    ampMix: 1,
+    ampGain: 0.05,
+    ampLevel: -24,
+  }
+  const before = packParams(board)
+  const after = packParams({ ...board, ...change })
+  const io = makeIo()
+  let last = 0
+  let worst = 0
+  for (let b = 0; b < 210; b++) {
+    chain.process(io, b < 200 ? before : after)
+    for (let i = 0; i < BLOCK; i++) {
+      if (b >= 199) worst = Math.max(worst, Math.abs(io.l[i]! - last))
+      last = io.l[i]!
+    }
+  }
+  return worst
+}
+
+test('moving a unit between lines mid-play fades like its footswitch', () => {
+  const footswitch = switchStep({ ampMute: 1 })
+  expect(switchStep({ ampInto: jackOf(1) })).toBeLessThan(2 * footswitch)
+  expect(switchStep({ ampInto: jackOf(0) })).toBeLessThan(2 * footswitch)
+})
+
+// A unit that plays back the block before the one it is handed.
+function late(label: string): Stage {
+  const held = new Float32Array(BLOCK)
+  return {
+    label,
+    process(io: StereoBlock) {
+      for (let i = 0; i < io.n; i++) {
+        const v = io.l[i]!
+        io.l[i] = held[i]!
+        io.r[i] = held[i]!
+        held[i] = v
+      }
+    },
+    panic: () => held.fill(0),
+  }
+}
+
+test('a unit moved onto a machine brings none of the master run with it', () => {
+  const chain = new Chain(SR)
+  chain.sources = [writer('a', 0.5), writer('b', 0)]
+  chain.pedals = [late('stomp')]
+  const out: number[] = []
+  chain.post = [
+    {
+      label: 'probe',
+      process(io: StereoBlock) {
+        out.push(...io.l)
+      },
+      panic: () => {},
+    },
+  ]
+  const hold = (c: Partial<Controls>) => {
+    const p = packParams({ ...DEFAULT_CONTROLS, ...EMPTY, ...c })
+    for (let b = 0; b < 4; b++) chain.process(makeIo(), p)
+  }
+  hold({})
+  hold({ stompInto: jackOf(1) })
+  for (const v of out.slice(2 * BLOCK)) expect(v).toBeCloseTo(0.5, 6)
 })
 
 test('a machine going bad drops only what the bus held, patched lines too', () => {

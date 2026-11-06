@@ -54,6 +54,26 @@ const BUS_REF = 0.6
 const TOY_TAP = SOURCE_TAPS.indexOf('toyChip')
 const FM_TAP = SOURCE_TAPS.indexOf('fmChip')
 
+/** Seats one unit on the line its jack names, and says whether it moved and
+    wants flushing. A unit leaving its line fades out there first, and only
+    once silent moves, to fade in on the next; the board's first block seats
+    every unit where it already is. */
+function reseat(
+  at: Int8Array,
+  seat: Float32Array,
+  from: Float32Array,
+  i: number,
+  want: number,
+  seated: boolean,
+) {
+  const was = seated ? seat[i]! : 0
+  const moving = want !== at[i] && was === 0
+  if (moving) at[i] = want
+  from[i] = seated ? was : 1
+  seat[i] = want === at[i] ? 1 : 0
+  return moving && seated
+}
+
 const SLOT_IDX = [
   IDX.bendSlot0,
   IDX.bendSlot1,
@@ -416,6 +436,15 @@ export class Chain {
   private readonly bendAt = new Int8Array(BEND_INTO_IDX.length).fill(-1)
   private readonly pedalAt = new Int8Array(PEDAL_INTO_IDX.length).fill(-1)
   private jacked = 0
+  /** Each unit's wet share on the line it is cabled onto, as this block began
+      and as it ends: a unit moving lines fades out on one and in on the next. */
+  private readonly bendSeatFrom = new Float32Array(BEND_INTO_IDX.length).fill(1)
+  private readonly bendSeat = new Float32Array(BEND_INTO_IDX.length).fill(1)
+  private readonly pedalSeatFrom = new Float32Array(PEDAL_INTO_IDX.length).fill(
+    1,
+  )
+  private readonly pedalSeat = new Float32Array(PEDAL_INTO_IDX.length).fill(1)
+  private seated = false
 
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
@@ -526,6 +555,7 @@ export class Chain {
     this.tapPrevR.fill(0)
     this.stems.fill(0)
     this.bands.reset()
+    this.seated = false
   }
 
   process(io: StereoBlock, p: Float32Array, mic?: Float32Array) {
@@ -863,7 +893,14 @@ export class Chain {
     if (s) {
       const to = 1 - p[BYPASS_IDX[i]!]!
       if (!s.when || s.when(p, this.ctx))
-        this.faded(s, io, p, n, this.bypassGain[i]!, to)
+        this.faded(
+          s,
+          io,
+          p,
+          n,
+          this.bypassGain[i]! * this.pedalSeatFrom[i]!,
+          to * this.pedalSeat[i]!,
+        )
       this.bypassGain[i] = to
     }
   }
@@ -876,8 +913,8 @@ export class Chain {
         io,
         p,
         n,
-        this.bendGain[id - 1]!,
-        1 - p[BEND_BYPASS_IDX[id - 1]!]!,
+        this.bendGain[id - 1]! * this.bendSeatFrom[id - 1]!,
+        (1 - p[BEND_BYPASS_IDX[id - 1]!]!) * this.bendSeat[id - 1]!,
       )
   }
 
@@ -886,16 +923,33 @@ export class Chain {
   // hands its units silence and their tails still ring out.
   private routeJacks(p: Float32Array, n: number) {
     let jacked = 0
+    const { seated } = this
     for (let i = 0; i < BEND_INTO_IDX.length; i++) {
-      const t = jackTap(p[BEND_INTO_IDX[i]!]!)
-      this.bendAt[i] = t
+      const want = jackTap(p[BEND_INTO_IDX[i]!]!)
+      if (
+        reseat(this.bendAt, this.bendSeat, this.bendSeatFrom, i, want, seated)
+      )
+        this.bendById[i + 1]?.panic()
+      const t = this.bendAt[i]!
       if (t >= 0) jacked |= 1 << t
     }
     for (let i = 0; i < PEDAL_INTO_IDX.length; i++) {
-      const t = jackTap(p[PEDAL_INTO_IDX[i]!]!)
-      this.pedalAt[i] = t
+      const want = jackTap(p[PEDAL_INTO_IDX[i]!]!)
+      if (
+        reseat(
+          this.pedalAt,
+          this.pedalSeat,
+          this.pedalSeatFrom,
+          i,
+          want,
+          seated,
+        )
+      )
+        this.pedals[i]?.panic()
+      const t = this.pedalAt[i]!
       if (t >= 0) jacked |= 1 << t
     }
+    this.seated = true
     this.jacked = jacked
     this.clearInserts(n)
   }
