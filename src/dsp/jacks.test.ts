@@ -8,6 +8,7 @@ import { BENDS } from '../ui/controls/bends.ts'
 import { Chain } from './chain.ts'
 import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
 import { Amp } from './stages/amp.ts'
+import { DAC_REF_TOY } from './stages/toyDrum.ts'
 import { makeIo, renderBender, rms, SR } from './testRender.ts'
 
 const writer = (label: string, v: number): Stage => ({
@@ -322,4 +323,59 @@ test('the mic’s meter reads its patched line', () => {
     mic,
   )
   expect(chain.taps[TAP_MIC]).toBeCloseTo(0.2, 6)
+})
+
+// The toy at 0.5 with a halving pedal on it, and the kit at 0.2; the ring mod
+// multiplies by the toy and reports the carrier it was handed.
+function carrierHeard(c: Partial<Controls>) {
+  const heard: number[] = []
+  const ring: Stage = {
+    label: 'ring',
+    process(_io, _p, ctx) {
+      heard.push(ctx.carrier[BLOCK - 1]!)
+    },
+    panic: () => {},
+  }
+  const chain = new Chain(SR)
+  chain.sources = [writer('toy', 0.5), writer('kit', 0.2)]
+  chain.pedals = [spy('pedal').stage]
+  chain.bendById = [undefined, ring]
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    ...EMPTY,
+    bendSlot0: 1,
+    ringFrom: 1,
+    stompInto: jackOf(0),
+    ...c,
+  })
+  for (let b = 0; b < SETTLE; b++) chain.process(makeIo(), p)
+  return heard.at(-1)
+}
+
+test('a carrier off a patched machine is its wet line, but dry to a unit on it', () => {
+  expect(carrierHeard({ stompInto: 0 })).toBeCloseTo(0.5, 6)
+  expect(carrierHeard({})).toBeCloseTo(0.25, 6)
+  expect(carrierHeard({ ringInto: jackOf(1) })).toBeCloseTo(0.25, 6)
+  expect(carrierHeard({ ringInto: jackOf(0) })).toBeCloseTo(0.5, 6)
+})
+
+test('the kit’s DAC hears the toy’s patched line a block on, as off a cable', () => {
+  const heard: number[] = []
+  const kit: Stage = {
+    label: 'kit',
+    process(_io, _p, ctx) {
+      heard.push(ctx.toy[BLOCK - 1]!)
+    },
+    panic: () => {},
+  }
+  const chain = new Chain(SR)
+  chain.sources = [writer('toy', 0.5), kit]
+  chain.pedals = [spy('pedal').stage]
+  const run = (c: Partial<Controls>) => {
+    const p = packParams({ ...DEFAULT_CONTROLS, drumRef: DAC_REF_TOY, ...c })
+    for (let b = 0; b < SETTLE; b++) chain.process(makeIo(), p)
+    return heard.at(-1)
+  }
+  expect(run({})).toBeCloseTo(0.5, 6)
+  expect(run({ stompInto: jackOf(0) })).toBeCloseTo(0.25, 6)
 })

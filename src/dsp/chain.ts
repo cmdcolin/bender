@@ -54,6 +54,11 @@ const BUS_REF = 0.6
 const TOY_TAP = SOURCE_TAPS.indexOf('toyChip')
 const FM_TAP = SOURCE_TAPS.indexOf('fmChip')
 
+const FEEDS_CARRIER = 1
+const FEEDS_LOGIC = 2
+const FEEDS_TOY = 4
+const FEEDS_FM = 8
+
 /** Seats one unit on the line its jack names, and says whether it moved and
     wants flushing. A unit leaving its line fades out there first, and only
     once silent moves, to fade in on the next; the board's first block seats
@@ -445,6 +450,9 @@ export class Chain {
   )
   private readonly pedalSeat = new Float32Array(PEDAL_INTO_IDX.length).fill(1)
   private seated = false
+  /** Which of the carrier, logic, toy and FM buses each machine's line feeds
+      this block, so those buses carry the line its units leave. */
+  private readonly feeds = new Uint8Array(TAP_MIC + 1)
   private readonly micWet = new Float32Array(BLOCK)
 
   sources: Stage[] = []
@@ -681,7 +689,10 @@ export class Chain {
       p[IDX.fmToyBus]! > 0 ||
       ctx.mod.read(DEST.fmToyBus) !== null ||
       (crushing && Math.round(p[IDX.crushRef]!) === CRUSH_REF_TOY)
-    if (toyRef) ctx.toy.fill(0, 0, n)
+    // A toy with units on it hands the kit and the FM chip its wet line, which
+    // is ready only once the sources have run: they hear last block's.
+    const toyLate = toyRef && (this.jacked & (1 << TOY_TAP)) !== 0
+    if (toyRef && !toyLate) ctx.toy.fill(0, 0, n)
     const fmTap =
       p[IDX.chipFmClock]! > 0 || ctx.mod.read(DEST.chipFmClock) !== null
     let fmRan = false
@@ -749,7 +760,7 @@ export class Chain {
             ins.r[i] = io.r[i]! - prevR[i]!
           }
         }
-        if (toyRef && k === TOY_TAP)
+        if (toyRef && !toyLate && k === TOY_TAP)
           for (let i = 0; i < n; i++) ctx.toy[i] = io.l[i]! - prev[i]!
         if (fmTap && k === FM_TAP) {
           for (let i = 0; i < n; i++) ctx.fm[i] = io.l[i]! - prev[i]!
@@ -795,7 +806,15 @@ export class Chain {
     if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
     if (logicFrom >= 0 && !logicRan) ctx.logic.fill(0, 0, n)
     if (fmTap && !fmRan) ctx.fm.fill(0, 0, n)
-    if (this.jacked) this.runInserts(io, p, n, cap)
+    if (this.jacked) {
+      const feeds = this.feeds
+      feeds.fill(0)
+      if (carFrom >= 0) feeds[carFrom]! |= FEEDS_CARRIER
+      if (logicFrom >= 0) feeds[logicFrom]! |= FEEDS_LOGIC
+      if (toyRef) feeds[TOY_TAP]! |= FEEDS_TOY
+      if (fmTap) feeds[FM_TAP]! |= FEEDS_FM
+      this.runInserts(io, p, n, cap)
+    }
     if (this.bands.on) {
       for (let k = 0; k < MAX_SOURCES; k++)
         this.bands.feed(k, stems, k * BLOCK, n)
@@ -971,53 +990,79 @@ export class Chain {
   // Each machine's line through the units cabled onto it, before the summing
   // amp: the dry line comes off the bus and the wet one goes back on. They run
   // in the racks' order — the bends as the sockets walk them, then any patched
-  // bend no socket holds, then the pedals — and the meter and the stem carry
-  // the wet line, as a channel insert prints into its channel.
+  // bend no socket holds, then the pedals — and the meter, the stem and the
+  // buses another stage reads off that machine all carry the wet line. A unit
+  // on the machine it reads a bus off hears the dry one, since the wet line is
+  // its own output. The lines that feed a bus run first, so a unit on another
+  // machine hears them wet.
   private runInserts(
     io: StereoBlock,
     p: Float32Array,
     n: number,
     cap: boolean,
   ) {
-    for (let t = 0; t < this.inserts.length; t++) {
-      if (this.jacked & (1 << t)) {
-        const ins = this.inserts[t]!
-        for (let i = 0; i < n; i++) {
-          io.l[i]! -= ins.l[i]!
-          io.r[i]! -= ins.r[i]!
-        }
-        let seen = 0
-        for (let k = 0; k < SLOT_IDX.length; k++) {
-          const id = Math.round(p[SLOT_IDX[this.order[k]!]!]!)
-          if (id > 0 && !(seen & (1 << id))) {
-            seen |= 1 << id
-            if (this.bendAt[id - 1] === t) this.runBend(id, ins, p, n)
-          }
-        }
-        for (let id = 1; id <= this.bendAt.length; id++)
-          if (!(seen & (1 << id)) && this.bendAt[id - 1] === t)
-            this.runBend(id, ins, p, n)
-        for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
-          if (this.pedalAt[i] === t) this.runPedal(i, ins, p, n)
-        let peak = 0
-        for (let i = 0; i < n; i++) {
-          const l = ins.l[i]!
-          io.l[i]! += l
-          io.r[i]! += ins.r[i]!
-          const a = l < 0 ? -l : l
-          if (a > peak) peak = a
-        }
-        if (peak > this.taps[t]!) this.taps[t] = peak
-        if (t === TAP_MIC) {
-          for (let i = 0; i < n; i++)
-            this.micWet[i] = 0.5 * (ins.l[i]! + ins.r[i]!)
-        } else if (cap) {
-          const base = t * BLOCK
-          for (let i = 0; i < n; i++)
-            this.stems[base + i] = 0.5 * (ins.l[i]! + ins.r[i]!)
+    for (let t = 0; t < this.inserts.length; t++)
+      if (this.feeds[t]) this.runInsert(t, io, p, n, cap)
+    for (let t = 0; t < this.inserts.length; t++)
+      if (!this.feeds[t]) this.runInsert(t, io, p, n, cap)
+  }
+
+  private runInsert(
+    t: number,
+    io: StereoBlock,
+    p: Float32Array,
+    n: number,
+    cap: boolean,
+  ) {
+    if (this.jacked & (1 << t)) {
+      const ins = this.inserts[t]!
+      const feeds = this.feeds[t]!
+      for (let i = 0; i < n; i++) {
+        io.l[i]! -= ins.l[i]!
+        io.r[i]! -= ins.r[i]!
+      }
+      if (feeds) this.carry(feeds, ins.l, n)
+      let seen = 0
+      for (let k = 0; k < SLOT_IDX.length; k++) {
+        const id = Math.round(p[SLOT_IDX[this.order[k]!]!]!)
+        if (id > 0 && !(seen & (1 << id))) {
+          seen |= 1 << id
+          if (this.bendAt[id - 1] === t) this.runBend(id, ins, p, n)
         }
       }
+      for (let id = 1; id <= this.bendAt.length; id++)
+        if (!(seen & (1 << id)) && this.bendAt[id - 1] === t)
+          this.runBend(id, ins, p, n)
+      for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
+        if (this.pedalAt[i] === t) this.runPedal(i, ins, p, n)
+      if (feeds) this.carry(feeds, ins.l, n)
+      let peak = 0
+      for (let i = 0; i < n; i++) {
+        const l = ins.l[i]!
+        io.l[i]! += l
+        io.r[i]! += ins.r[i]!
+        const a = l < 0 ? -l : l
+        if (a > peak) peak = a
+      }
+      if (peak > this.taps[t]!) this.taps[t] = peak
+      if (t === TAP_MIC) {
+        for (let i = 0; i < n; i++)
+          this.micWet[i] = 0.5 * (ins.l[i]! + ins.r[i]!)
+      } else if (cap) {
+        const base = t * BLOCK
+        for (let i = 0; i < n; i++)
+          this.stems[base + i] = 0.5 * (ins.l[i]! + ins.r[i]!)
+      }
     }
+  }
+
+  private carry(feeds: number, line: Float32Array, n: number) {
+    const ctx = this.ctx
+    if (feeds & FEEDS_CARRIER)
+      for (let i = 0; i < n; i++) ctx.carrier[i] = line[i]!
+    if (feeds & FEEDS_LOGIC) for (let i = 0; i < n; i++) ctx.logic[i] = line[i]!
+    if (feeds & FEEDS_TOY) for (let i = 0; i < n; i++) ctx.toy[i] = line[i]!
+    if (feeds & FEEDS_FM) for (let i = 0; i < n; i++) ctx.fm[i] = line[i]!
   }
 
   private faded(
