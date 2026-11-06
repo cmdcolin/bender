@@ -12,7 +12,7 @@ A circuit bender in the browser, built on Web Audio's
 Watch Claude Code play it:
 [Letting an AI agent drive bender](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
 
-## Features
+## Machines
 
 Each machine is modelled down to its chips, buses and power rail, so every bend
 is a real hardware fault.
@@ -23,9 +23,15 @@ is a real hardware fault.
 - Parlor — an eight-bit sampling keyboard
 - Growler — a Model D-style monosynth
 - Howler — Growler's card voiced as a lead
+
+## Effects and tape
+
 - Pedals — delay, reverb, distortion, chorus and a tube amp
 - Spool — a tape loop that records over itself
 - Four-track — a cassette desk with four tape loops
+
+## Playing
+
 - Sequencer — a piano roll and drum steps
 - Patch bay — LFOs and other modulation on any control
 - MIDI — plays the keys and turns the knobs
