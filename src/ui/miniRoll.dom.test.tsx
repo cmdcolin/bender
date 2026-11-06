@@ -6,8 +6,11 @@ import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
 import { SEQ_DESTS } from '../engine/messages.ts'
 import { bench } from './bench.ts'
+import { GROUPS } from './controls/index.ts'
 import { FmKeys } from './FmKeys.tsx'
 import { Keys } from './Keys.tsx'
+import { LeadKeys, MonoKeys } from './MonoKeys.tsx'
+import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
 const strip = () =>
@@ -47,6 +50,23 @@ test('pressing the strip opens the roll in the drawing', () => {
   fireEvent.click(strip()!)
   expect(onOpen).toHaveBeenCalledWith('Plinky')
   expect(bench.get().roll).toBe(true)
+})
+
+test.each([
+  ['Growler', <MonoKeys key="Growler" onOpen={() => {}} />],
+  ['Howler', <LeadKeys key="Howler" onOpen={() => {}} />],
+])('pressing %s’s strip opens the roll box in its drawing', (name, keys) => {
+  act(() => engine.patch({ monoSeqOn: 1, leadSeqOn: 1 }))
+  const group = GROUPS.find(g => g.name === name)!
+  render(
+    <>
+      {keys}
+      <OpenGroup group={group} onClose={() => {}} seconds={0} />
+    </>,
+  )
+  expect(screen.queryByRole('region', { name: 'piano roll' })).toBeNull()
+  fireEvent.click(strip()!)
+  expect(screen.getByRole('region', { name: 'piano roll' })).toBeTruthy()
 })
 
 const flash = () => strip()?.querySelector('rect[class*="taken"]')

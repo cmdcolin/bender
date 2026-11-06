@@ -11,6 +11,7 @@ import {
   useStoreValue,
 } from './ControlsContext.ts'
 import styles from './MiniRoll.module.css'
+import { aimAt } from './reveal.ts'
 import { Tip } from './Tip.tsx'
 import {
   useLanes,
@@ -20,6 +21,7 @@ import {
   useTunePos,
 } from './tuneRoll.ts'
 
+import type { ControlKey } from '../controls.ts'
 import type { NoteDest, SeqDest } from '../engine/messages.ts'
 
 // An octave, so one note reads as a dash rather than as a bar the full height.
@@ -78,6 +80,7 @@ function LeadMini({ onOpen }: Omit<Props, 'dest'>) {
       armed={false}
       memory="seq"
       stage="Howler"
+      aim="leadSeqOn"
       onOpen={onOpen}
     />
   )
@@ -100,6 +103,7 @@ function TuneMini({ onOpen }: Omit<Props, 'dest'>) {
       armed={armed}
       memory="tune"
       stage="Plinky"
+      aim="chipTune"
       onOpen={onOpen}
     />
   )
@@ -126,6 +130,7 @@ function SeqMini({ dest, onOpen }: Props & { dest: SeqDest }) {
       armed={armed}
       memory="seq"
       stage="Growler"
+      aim="monoSeqOn"
       onOpen={onOpen}
     />
   )
@@ -139,6 +144,7 @@ function Strip({
   armed,
   memory,
   stage,
+  aim,
   onOpen,
 }: {
   lanes: number[][]
@@ -148,6 +154,7 @@ function Strip({
   armed: boolean
   memory: 'tune' | 'seq'
   stage: string
+  aim: ControlKey
   onOpen?: (stage: string) => void
 }) {
   const recording = armed && playing
@@ -237,6 +244,7 @@ function Strip({
         onClick={() => {
           setBench({ ...bench.get(), roll: true })
           onOpen(stage)
+          aimAt(aim)
         }}
       >
         {drawing}
