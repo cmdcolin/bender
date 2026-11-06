@@ -140,6 +140,12 @@ export interface UncueMsg {
   kind: 'uncue'
 }
 
+/** Whether the live view is watching each source's bands. */
+export interface BandsMsg {
+  kind: 'bands'
+  on: boolean
+}
+
 export type ToWorklet =
   | ParamsMsg
   | CueMsg
@@ -158,6 +164,7 @@ export type ToWorklet =
   | PanicMsg
   | RetroFlushMsg
   | WildMsg
+  | BandsMsg
 
 export interface MeterMsg {
   kind: 'meter'
@@ -232,6 +239,10 @@ export interface MeterMsg {
       — the serializer copies it on the way across, so what arrives is this
       read and nothing of the next one. */
   taps: Float32Array
+  /** Each source's and the mic's octave bands over the last meter, in tap
+      order, `BAND_HZ` wide: see the chain's `bands`. Zero unless the live view
+      asked for them. */
+  bands: Float32Array
   /** What the bend rack is actually running, which is not what its six controls
       say whenever Solder is up: `walk[k]` is the position the signal reads at
       its kth step, and bit k of `dropped` says that step's joint was open. The

@@ -349,6 +349,8 @@ function gestures(board: Controls): ToWorklet[] {
     { kind: 'undoTake' },
     { kind: 'fourBlank' },
     { kind: 'record', on: false },
+    { kind: 'bands', on: false },
+    { kind: 'bands', on: true },
     { kind: 'record', on: true, stems: true },
     { kind: 'transport', tune: false, drums: true },
     { kind: 'transport', tune: true, drums: true },
@@ -388,6 +390,7 @@ function rig(make: Make, overrides: Partial<Controls>) {
     { kind: 'transport', tune: true, drums: true },
     { kind: 'params', pack: packParams(board) },
     { kind: 'record', on: true, stems: true },
+    { kind: 'bands', on: true },
   ]
   const said = gestures(board)
   let frame = 0

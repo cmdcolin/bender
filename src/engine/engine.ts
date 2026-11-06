@@ -32,6 +32,7 @@ import {
 import { TRACKS } from '../dsp/stages/fourTrack.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { PEAK_BINS, peaksOf, undoTape } from '../dsp/stages/sampler.ts'
+import { N_BANDS } from '../dsp/util/bandMeter.ts'
 import workletUrl from '../dsp/worklet.ts?worker&url'
 import { errorText } from '../errorText.ts'
 import { createStore, type Store } from '../listeners.ts'
@@ -56,6 +57,7 @@ import {
 import { Glide } from './glide.ts'
 import { SEQ_DESTS } from './messages.ts'
 import {
+  BAND_ROWS,
   MAX_SOURCES,
   N_PARAMS,
   N_TAPS,
@@ -181,6 +183,8 @@ export interface Meter {
       the chain's taps. Read by the mixer's meters, which draw straight to the
       DOM off it rather than through a render. */
   taps: Float32Array
+  /** Each source's and the mic's octave bands, while `watchBands` is on. */
+  bands: Float32Array
   /** Which position the chain is running at each step of its walk, and which
       steps have a joint open — what Solder is doing to the path, which no
       control on the board says. See the chain's own walk. */
@@ -410,6 +414,7 @@ export class Engine {
       faults: 0,
       faultStage: '',
       taps: new Float32Array(N_TAPS),
+      bands: new Float32Array(BAND_ROWS * N_BANDS),
       walk: Uint8Array.from([0, 1, 2, 3, 4, 5]),
       dropped: 0,
       sampleSecs: 0,
@@ -726,6 +731,7 @@ export class Engine {
           faults: msg.faults,
           faultStage: msg.faultStage,
           taps: msg.taps,
+          bands: msg.bands,
           walk: msg.walk,
           dropped: msg.dropped,
           sampleSecs: msg.sampleSecs,
@@ -759,6 +765,7 @@ export class Engine {
     this.node = node
     this.post({ kind: 'params', pack: this.packLive() })
     this.post({ kind: 'wild', wild: this.wild })
+    this.post({ kind: 'bands', on: this.bandsOn })
     this.postTransport()
   }
 
@@ -793,6 +800,15 @@ export class Engine {
   setWild(wild: WildPack | null) {
     this.wild = wild
     this.post({ kind: 'wild', wild })
+  }
+
+  private bandsOn = false
+
+  /** Whether the audio thread splits each source into octave bands for the
+      meter: off unless something is drawing them. */
+  watchBands(on: boolean) {
+    this.bandsOn = on
+    this.post({ kind: 'bands', on })
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {

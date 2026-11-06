@@ -1,4 +1,5 @@
 import {
+  BAND_ROWS,
   IDX,
   MAX_SOURCES,
   N_TAPS,
@@ -24,6 +25,7 @@ import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
 import { DAC_REF_TOY } from './stages/toyDrum.ts'
 import { Thermal } from './thermal.ts'
 import { TriggerBus } from './trigbus.ts'
+import { BandMeter } from './util/bandMeter.ts'
 import { GroundBounce } from './util/bounce.ts'
 import { Burst } from './util/burst.ts'
 import { DelayLine } from './util/delayline.ts'
@@ -373,6 +375,10 @@ export class Chain {
       for stems, and by nothing else. */
   capturing = false
 
+  /** Each source's and the mic's octave bands, for the live view. Splits the
+      sources into `stems` while it is on, the way the stem tape does. */
+  readonly bands: BandMeter
+
   /** Each muted source's gain as the last block ended, so a switch fades over
       one block rather than cutting. */
   private readonly muteGain = new Float32Array(MUTE_IDX.length).fill(1)
@@ -396,6 +402,7 @@ export class Chain {
 
   constructor(sr: number, seed = 1) {
     this.sr = sr
+    this.bands = new BandMeter(BAND_ROWS, sr)
     this.ctx = {
       sr,
       mic: new Float32Array(BLOCK),
@@ -491,6 +498,7 @@ export class Chain {
     this.tapPrev.fill(0)
     this.tapPrevR.fill(0)
     this.stems.fill(0)
+    this.bands.reset()
   }
 
   process(io: StereoBlock, p: Float32Array, mic?: Float32Array) {
@@ -613,7 +621,7 @@ export class Chain {
       p[IDX.chipFmClock]! > 0 || ctx.mod.read(DEST.chipFmClock) !== null
     let fmRan = false
     const prev = this.tapPrev
-    const cap = this.capturing
+    const cap = this.capturing || this.bands.on
     const prevR = this.tapPrevR
     const stems = this.stems
     for (let i = 0; i < n; i++) prev[i] = io.l[i]!
@@ -705,6 +713,12 @@ export class Chain {
         // land on the mic's; a test holds the two numbers together.
         if (k < MAX_SOURCES && peak > this.taps[k]!) this.taps[k] = peak
       }
+    }
+    if (this.bands.on) {
+      for (let k = 0; k < MAX_SOURCES; k++)
+        this.bands.feed(k, stems, k * BLOCK, n)
+      this.bands.feed(TAP_MIC, dry, 0, n)
+      this.bands.pass(n)
     }
     // A machine whose own `when` said no put nothing on the bus, so the carrier
     // is silence rather than last block's copy of it.

@@ -114,6 +114,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       monoNotes: this.monoNotes,
       monoNoteCount: 0,
       taps: chain.taps,
+      bands: chain.bands.levels,
       walk: chain.walk,
       dropped: 0,
       sampleSecs: 0,
@@ -216,6 +217,10 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
         case 'wild':
           this.arc.setWild(msg.wild)
+          break
+        case 'bands':
+          this.built.chain.bands.on = msg.on
+          if (!msg.on) this.built.chain.bands.reset()
           break
       }
     }
@@ -384,6 +389,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.sampleUndo = sampler.undoState
       m.sampleIn = sampler.windowIn
       m.sampleOut = sampler.windowOut
+      if (this.built.chain.bands.on) this.built.chain.bands.settle()
       this.port.postMessage(m)
       this.peak = 0
       this.duck = 0

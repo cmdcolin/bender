@@ -1083,6 +1083,7 @@ export const MAX_SOURCES = SOURCE_TAPS.length
 export const TAP_MIC = MAX_SOURCES
 export const TAP_BUS = MAX_SOURCES + 1
 export const N_TAPS = MAX_SOURCES + 2
+export const BAND_ROWS = TAP_MIC + 1
 
 const PARAM_KEYS: readonly ParamName[] = PARAM_DEFS.map(([n]) => n)
 
