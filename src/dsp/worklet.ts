@@ -195,6 +195,9 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'struckHit':
           this.built[msg.target].strikeAt(msg.x, msg.y, msg.gain)
           break
+        case 'talk':
+          this.built.prattle.say()
+          break
         case 'sfx': {
           const chip =
             msg.dest === 'fm' ? this.built.fmChip : this.built.toyChip

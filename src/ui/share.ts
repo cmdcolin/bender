@@ -14,6 +14,7 @@ import {
   LANE_LEN_SET,
   LANE_VALUE_KEYS,
 } from '../lanes.ts'
+import { asPhraseCode, PHRASE_KEY_SET } from '../prattle.ts'
 import {
   asTuneLen,
   asTuneStep,
@@ -131,9 +132,11 @@ export function coerceControl(key: ControlKey, v: number): number {
           : (asKitSetting(key, v) ??
             (LANE_LEN_SET.has(key)
               ? asLaneLen(v)
-              : EDITOR_KEYS.has(key)
-                ? asMask(v)
-                : snapToStep(sliderFor(key), v)))
+              : PHRASE_KEY_SET.has(key)
+                ? asPhraseCode(v)
+                : EDITOR_KEYS.has(key)
+                  ? asMask(v)
+                  : snapToStep(sliderFor(key), v)))
 }
 
 // Which form the bar is already in, and so which one the next write uses. A

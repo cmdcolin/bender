@@ -104,6 +104,7 @@ const MUTE_IDX = [
   NO_MUTE,
   NO_MUTE,
   IDX.leadMute,
+  IDX.talkMute,
 ] as const satisfies { length: typeof SOURCE_TAPS.length }
 
 const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])

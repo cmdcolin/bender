@@ -14,6 +14,7 @@ import {
   LANE_LEN_SET,
   LANE_VALUE_KEYS,
 } from '../lanes.ts'
+import { asPhraseCode, PHRASE_KEY_SET } from '../prattle.ts'
 import {
   asTuneLen,
   asTuneStep,
@@ -1170,6 +1171,58 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'leadRegTrip',
   'leadThump',
   'leadFold',
+  'talkLevel',
+  'talkMute',
+  'talkSupply',
+  'talkStruck',
+  'talkRepeat',
+  'talkInflect',
+  'talkClock',
+  'talkFrameDiv',
+  'talkLock',
+  'talkLoopBit',
+  'talkLoopSlip',
+  'talkDataLine',
+  'talkDataFault',
+  'talkAddrLine',
+  'talkAddrFault',
+  'talkBusCut',
+  'talkPitchLine',
+  'talkPitchFault',
+  'talkVoicing',
+  'talkLeak',
+  'talkPh0',
+  'talkPh1',
+  'talkPh2',
+  'talkPh3',
+  'talkPh4',
+  'talkPh5',
+  'talkPh6',
+  'talkPh7',
+  'talkPh8',
+  'talkPh9',
+  'talkPh10',
+  'talkPh11',
+  'talkPh12',
+  'talkPh13',
+  'talkPh14',
+  'talkPh15',
+  'talkPh16',
+  'talkPh17',
+  'talkPh18',
+  'talkPh19',
+  'talkPh20',
+  'talkPh21',
+  'talkPh22',
+  'talkPh23',
+  'talkPh24',
+  'talkPh25',
+  'talkPh26',
+  'talkPh27',
+  'talkPh28',
+  'talkPh29',
+  'talkPh30',
+  'talkPh31',
 ]
 
 // Retired controls that old links still carry, each read into the control that
@@ -1226,6 +1279,7 @@ function fromInt(key: ControlKey, n: number): number {
   // since grown past lands at the end of it rather than outside.
   if (def) return snapToStep(def, n * def.step)
   if (TUNE.has(key)) return asTuneStep(n)
+  if (PHRASE_KEY_SET.has(key)) return asPhraseCode(n)
   if (LEN_KEYS.has(key)) return asLen(n)
   if (key === 'tuneLen' || key === 'monoSeqLen' || key === 'leadSeqLen')
     return asTuneLen(n)

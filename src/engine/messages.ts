@@ -92,6 +92,11 @@ export interface StruckHitMsg {
   gain: number
 }
 
+/** Prattle speaking its phrase from the top. */
+export interface TalkMsg {
+  kind: 'talk'
+}
+
 /** An effect button going down or coming up, on the toy's deck or Glint's. */
 export interface SfxMsg {
   kind: 'sfx'
@@ -158,6 +163,7 @@ export type ToWorklet =
   | NoteMsg
   | DrumHitMsg
   | StruckHitMsg
+  | TalkMsg
   | SfxMsg
   | TransportMsg
   | RecordMsg

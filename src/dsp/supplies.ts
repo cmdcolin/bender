@@ -19,17 +19,19 @@ export const SUPPLY_KEYS = [
   'pcmSupply',
   'monoSupply',
   'leadSupply',
+  'talkSupply',
 ] as const
 
-// The six machines' faders, any one of which up keeps the supplies running.
-// A board with all six down ticks no rail, as it never did.
+// The seven machines’ faders, any one of which up keeps the supplies running.
+// A board with all seven down ticks no rail, as it never did.
 export const poweredUp = (p: Float32Array) =>
   p[IDX.chipLevel]! > 0 ||
   p[IDX.drumLevel]! > 0 ||
   p[IDX.fmLevel]! > 0 ||
   p[IDX.pcmLevel]! > 0 ||
   p[IDX.monoLevel]! > 0 ||
-  p[IDX.leadLevel]! > 0
+  p[IDX.leadLevel]! > 0 ||
+  p[IDX.talkLevel]! > 0
 
 const onSecond = (p: Float32Array) => {
   for (const k of SUPPLY_KEYS)

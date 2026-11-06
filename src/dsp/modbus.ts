@@ -237,8 +237,9 @@ export const DEST = {
   leadLoopPitch: 179,
   leadChoke: 180,
   leadRegTrip: 181,
+  talkLevel: 182,
 } as const
-export const N_DEST = 182
+export const N_DEST = 183
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
@@ -269,6 +270,7 @@ export const SOURCE_LEVEL_DEST = [
   DEST.sheetLevel,
   DEST.bottleLevel,
   DEST.leadLevel,
+  DEST.talkLevel,
 ] as const satisfies { length: typeof SOURCE_TAPS.length }
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth,

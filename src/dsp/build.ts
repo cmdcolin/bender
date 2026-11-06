@@ -17,6 +17,7 @@ import { HOWLER, MonoSynth } from './stages/monoSynth.ts'
 import { Noise } from './stages/noise.ts'
 import { Octave } from './stages/octave.ts'
 import { PcmKeys } from './stages/pcmKeys.ts'
+import { Prattle } from './stages/prattle.ts'
 import { RackVerb } from './stages/rackVerb.ts'
 import { RingMod } from './stages/ringmod.ts'
 import { Sampler } from './stages/sampler.ts'
@@ -44,6 +45,7 @@ export interface BuiltChain {
   monoSynth: MonoSynth
   melody: MelodyMemory
   leadSynth: MonoSynth
+  prattle: Prattle
   leadMelody: MelodyMemory
   sampler: Sampler
   fourTrack: FourTrack
@@ -151,6 +153,8 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   const bottle = new Bottle(sr, seed ^ 0xb077)
   chain.sources.push(bottle)
   chain.sources.push(leadSynth)
+  const prattle = new Prattle(sr, supplies)
+  chain.sources.push(prattle)
   return {
     chain,
     toyChip,
@@ -160,6 +164,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     monoSynth,
     melody,
     leadSynth,
+    prattle,
     leadMelody,
     sampler,
     fourTrack,
