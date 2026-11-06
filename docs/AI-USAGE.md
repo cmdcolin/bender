@@ -83,7 +83,7 @@ Then ask Claude Code to open the public URL, or
 | `bender.restore(on?)`                  | writes Growler's line, or Howler's with `'Howler'`, back over what a leaking write enable or bit rot did to the memory               |
 | `bender.start()`                       | starts audio, or reports that the page needs a click first                                                                           |
 | `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                      |
-| `bender.listen(ms)`                    | peak level, limiter gain reduction, supply rail, reboots, the machines heard and the peak of each, their notes and drum hits         |
+| `bender.listen(ms)`                    | peak, limiter, rail, reboots, the machines heard, their peaks and notes, drum hits, five-band levels and shares, and buried leads    |
 | `bender.hit(what, spot?)`              | strikes the Sheet or the Bottle, at `{ x, y }` on its face, or kit voices such as `['kick', 'open hat']`, by hand                    |
 | `bender.link()`                        | a `#set=` URL for the current board                                                                                                  |
 | `bender.position()`                    | the kit's counter as bar, beat and step, its bpm, and the bars queued writes wait for                                                |

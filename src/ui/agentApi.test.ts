@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
+import { N_BANDS } from '../dsp/util/bandMeter.ts'
 import { engine } from '../engine/engine.ts'
+import { BAND_ROWS, N_TAPS, SOURCE_TAPS } from '../engine/params.ts'
 import { HOLD, REST, TUNE_LANE_KEYS } from '../tune.ts'
 import { activity, ACTIVITY_LINES } from './activity.ts'
 import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi.ts'
@@ -470,6 +472,57 @@ test('listen names the notes of each machine it heard, Parlor included', async (
     engine.fmNotes.set(new Set())
     engine.running.set(false)
   }
+})
+
+test('listen splits the bands for its window and names a lead the rest buries', async () => {
+  const watch = vi.spyOn(engine, 'watchBands')
+  const noise = SOURCE_TAPS.indexOf('noise')
+  const lead = SOURCE_TAPS.indexOf('leadSynth')
+  const taps = new Float32Array(N_TAPS)
+  taps[noise] = 0.5
+  taps[lead] = 0.05
+  const bands = new Float32Array(BAND_ROWS * N_BANDS)
+  bands.fill(0.2, noise * N_BANDS, (noise + 1) * N_BANDS)
+  bands[lead * N_BANDS + 5] = 0.05
+  engine.running.set(true)
+  try {
+    const heard = bender.listen(150)
+    expect(watch).toHaveBeenLastCalledWith(true)
+    setTimeout(() => engine.meter.set({ ...engine.meter.get() }), 20)
+    setTimeout(() => {
+      engine.leadNotes.set(new Set([12]))
+      engine.meter.set({ ...engine.meter.get(), taps, bands })
+    }, 40)
+    expect(await heard).toMatchObject({
+      sources: ['Noise & crackle', 'Howler'],
+      bands: { Howler: { mid: -26 }, 'Noise & crackle': { mid: -11 } },
+      owners: { mid: { 'Noise & crackle': 0.97 } },
+      masked: { Howler: { share: 1, by: 'Noise & crackle', band: 'mid' } },
+    })
+    expect(watch).toHaveBeenLastCalledWith(false)
+  } finally {
+    engine.leadNotes.set(new Set())
+    engine.running.set(false)
+    watch.mockRestore()
+  }
+})
+
+test('a listen while the meter tiles are up leaves the bands on for them', async () => {
+  const posted: ToWorklet[] = []
+  Object.assign(engine, {
+    node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
+  })
+  const bands = () => posted.filter(m => m.kind === 'bands').map(m => m.on)
+  engine.running.set(true)
+  engine.watchBands(true)
+  try {
+    await bender.listen(100)
+    expect(bands()).toEqual([true, true, true])
+  } finally {
+    engine.watchBands(false)
+    engine.running.set(false)
+  }
+  expect(bands().at(-1)).toBe(false)
 })
 
 test('listen before audio starts returns how to start it', async () => {
