@@ -18,9 +18,10 @@ Bold names are the app's own.
 
 ## Machines
 
-Every machine is modelled down to its chips and buses, so a bend is a real
-hardware fault: a paperclip on the clock pin, a solder blob on a bus wire, a pot
-soldered onto the die.
+Circuit bending is rewiring a toy's circuit so it makes sounds it was never
+built for. Each machine here is modelled down to its chips and buses, so a bend
+behaves like the real fault. Slow Plinky's clock and its pitch, tempo and
+envelopes all drop together, because one clock drives all three.
 
 - **Plinky** — a toy keyboard's square-wave chip, with ROM tunes and auto bass
   chords
