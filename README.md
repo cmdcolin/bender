@@ -14,18 +14,22 @@ Watch Claude Code play it:
 
 ## Features
 
-- Toy keyboard
-- Drum machine
-- FM synth
-- Mono synth
-- Circuit bends
-- Guitar pedals
-- Tape loops
-- Cassette four-track
-- Sequencer
-- Patch bay
-- MIDI input
-- Shareable URLs
+Each machine is modelled down to its chips, buses and power rail, so every bend
+is a real hardware fault.
+
+- Plinky — a toy keyboard chip on a battery
+- Clatter — a toy drum box with a sample ROM
+- Glint — a two-operator FM chip
+- Parlor — an eight-bit sampling keyboard
+- Growler — a Model D-style monosynth
+- Howler — Growler's card voiced as a lead
+- Pedals — delay, reverb, distortion, chorus and a tube amp
+- Spool — a tape loop that records over itself
+- Four-track — a cassette desk with four tape loops
+- Sequencer — a piano roll and drum steps
+- Patch bay — LFOs and other modulation on any control
+- MIDI — plays the keys and turns the knobs
+- Share — a link holds the whole board
 
 Every control: [features.md](docs/features.md)
 
