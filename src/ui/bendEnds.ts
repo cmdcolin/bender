@@ -322,6 +322,10 @@ export const BEND_ENDS: Partial<
   chipLfsr: [-0.5, 0],
   monoThump: [null, null],
   monoFold: [null, -1.5],
+  drumTomSweep: [null, null],
+  drumTomSwoop: [null, null],
+  drumSnareSweep: [null, null],
+  drumSnareSwoop: [null, null],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

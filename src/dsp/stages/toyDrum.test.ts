@@ -1398,6 +1398,54 @@ test('with no swoop cap the kit swoops as it shipped', () => {
   )
 })
 
+const TOM_ALONE: Partial<Controls> = { drumBpm: 60, drumTom: stepMask(1) }
+const LASER: Partial<Controls> = { drumTomSweep: 200, drumTomSwoop: 50 }
+
+test('a tom with its own trimmer and cap fires a laser', () => {
+  const early = (x: Float32Array) => fineHz(slice(x, 0.26, 0.28))
+  const tail = (x: Float32Array) => fineHz(slice(x, 0.6, 0.8))
+  const middle = (x: Float32Array) => rms(slice(x, 0.35, 0.4))
+  const laser = soloVoice({ ...TOM_ALONE, ...LASER }, 1)
+  const smeared = soloVoice({ ...TOM_ALONE, drumTomSweep: 200 }, 1)
+  expect(early(laser)).toBeGreaterThan(tail(laser) * 8)
+  expect(early(laser)).toBeGreaterThan(early(smeared) * 2)
+  expect(middle(laser)).toBeGreaterThan(middle(smeared) * 4)
+})
+
+test('a tom laser leaves the kick alone', () => {
+  const kick = { ...KICK_ALONE, drumSweep: 3, drumSwoopCap: 5 }
+  expect(soloVoice({ ...kick, ...LASER }, 0.6)).toEqual(soloVoice(kick, 0.6))
+})
+
+test('the snare’s own trimmer and cap dive its two bodies', () => {
+  const early = (x: Float32Array) => fineHz(slice(x, 0.26, 0.28))
+  const tail = (x: Float32Array) => fineHz(slice(x, 0.5, 0.6))
+  const bodies = { drumBpm: 60, drumSnare: stepMask(1), drumSnappy: 0 }
+  const laser = soloVoice(
+    { ...bodies, drumSnareSweep: 200, drumSnareSwoop: 40 },
+    1,
+  )
+  expect(early(laser)).toBeGreaterThan(early(soloVoice(bodies, 1)) * 4)
+  expect(early(laser)).toBeGreaterThan(tail(laser) * 4)
+})
+
+test('with their own trimmers at stock the tom and snare swoop with the kit', () => {
+  const kit = {
+    drumBpm: 60,
+    drumTom: stepMask(1),
+    drumSnare: stepMask(3),
+    drumSweep: 4,
+    drumSwoopCap: 5,
+  }
+  const own = {
+    drumTomSweep: 1,
+    drumTomSwoop: 0,
+    drumSnareSweep: 1,
+    drumSnareSwoop: 0,
+  }
+  expect(soloVoice({ ...kit, ...own }, 1)).toEqual(soloVoice(kit, 1))
+})
+
 test('the metal bank on the tanks’ bias turns the kick into a clang', () => {
   const centroid = (fm: number) =>
     spectrum(

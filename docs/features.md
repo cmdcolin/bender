@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-678 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 182
+682 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 182
 presets, 23 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -237,7 +237,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>68 controls</summary>
+<summary>72 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -254,6 +254,10 @@ puts the fault on, and the rows under it show the controls it set:
 | Motorboat †      | off to full                                                                                                        | Runs the feedback transistor around the kick, tom and snare off a small local supply behind a resistor                                                  |
 | Sweep            | −1× to +8×                                                                                                         | The bias trimmer behind the swoop: how far above their resting pitch the kick, tom and snare networks start on a hard hit                               |
 | Swoop cap        | 0 to 200 ms                                                                                                        | How fast the swoop falls, set by a cap soldered onto the bias it reads                                                                                  |
+| Tom sweep        | −1× to +500×                                                                                                       | The tom network’s own bias trimmer, in series with Sweep                                                                                                |
+| Tom swoop        | 0 ms to 1 s                                                                                                        | A cap of the tom’s own on its bias, charged through a resistor off the tom’s trigger line and drained in this many milliseconds                         |
+| Snare sweep      | −1× to +500×                                                                                                       | A bias trimmer of the snare networks’ own, in series with Sweep, as Tom sweep is for the tom                                                            |
+| Snare swoop      | 0 ms to 1 s                                                                                                        | A cap of the snare’s own on its networks’ bias, charged off the snare’s trigger line and drained in this many milliseconds, as Tom swoop is for the tom |
 | Bank FM          | off to full                                                                                                        | A wire from the metal bank’s squarer into the bias of the kick, tom and snare networks                                                                  |
 | Bank sync        | off, to the kick, to the tom                                                                                       | Resets all six metal oscillators each time the kick or tom network swings up through zero                                                               |
 | Tank coupling    | off to full                                                                                                        | A wire from the kick’s network into the tom’s drive                                                                                                     |

@@ -517,6 +517,16 @@ tempo, swing, chance, tune, decay and mute.
   - At 0 there is no cap, and the swoop falls as fast as the drum runs down.
   - A few milliseconds with Sweep wound up chirps a kick down from high into a
     long sub: the hard kick of distorted techno.
+- **Tom sweep, Tom swoop:** the tom's network gets a bias trimmer of its own, in
+  series with Sweep, and a cap of its own, charged off its trigger line.
+  - The strike lands near rest and the tuning leaps a few milliseconds later, so
+    a big sweep no longer smears the strike.
+  - The charge runs the transistor hotter, so the tom rings on through the dive.
+  - Tom sweep 200 with a 50 ms swoop starts a tom at 2.9 kHz and dives it to
+    rest in about 250 ms, losing 5 dB on the way: a laser under a kick that
+    keeps its own chirp.
+- **Snare sweep, Snare swoop:** the same pair on the snare's two networks, which
+  dive together and beat under the noise.
 - **Motorboat:** the feedback transistor around the kick, tom and snare runs off
   a small local supply behind a resistor.
   - A ringing network pulls the supply down. Below a point the feedback stops

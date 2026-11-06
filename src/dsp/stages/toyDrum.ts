@@ -381,6 +381,16 @@ const TRIG_RECOVER = 0.02
 // The longest the swoop cap holds the tuning up, in milliseconds.
 const SWOOP_CAP_MAX = 200
 
+// The tom's and the snare's networks each carry a trimmer of their own in
+// series with Sweep, and a cap of their own on the bias, charged off their own
+// trigger line. At 0 ms a network shares the kit's swoop cap.
+const OWN_SWOOP: Partial<Record<number, { sweep: number; swoop: number }>> = {
+  [TOM]: { sweep: IDX.drumTomSweep, swoop: IDX.drumTomSwoop },
+  [SNARE]: { sweep: IDX.drumSnareSweep, swoop: IDX.drumSnareSwoop },
+}
+const OWN_SWOOP_MAX = 1000
+const OWN_CHARGE_S = 0.003
+
 // Where the ring knob crosses over. Below it the transistor hands back less
 // than it took and the drum is a drum; at it the network never runs down; past
 // it the loop makes up the difference and the tank grows into its own clipping.
@@ -690,6 +700,9 @@ export class ToyDrum implements Stage {
   private tankF = new Float32Array(N_TANKS)
   private tankRate = new Float32Array(N_TANKS)
   private tankGain = new Float32Array(N_TANKS)
+  private tankSweep = new Float64Array(N_TANKS)
+  private tankDrain = new Float64Array(N_TANKS)
+  private tankCharge = new Float64Array(N_TANKS)
   // The accent cap, as the fraction of its rested charge still on it. One cap
   // feeds every voice on the board, so what a step takes off it is what the
   // next step does not get.
@@ -1627,8 +1640,17 @@ export class ToyDrum implements Stage {
       -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
     )
     const bankGate = Math.round(p[IDX.drumBankGate]!) - 1
+    const ownCharge = 1 - Math.exp(-1 / (OWN_CHARGE_S * this.sr))
     for (let t = 0; t < N_TANKS; t++) {
       const spec = TANKS[t]!
+      const own = OWN_SWOOP[spec.voice]
+      const ownMs = own
+        ? Math.min(Math.max(p[own.swoop]!, 0), OWN_SWOOP_MAX)
+        : 0
+      this.tankSweep[t] = spec.sweep * sweep * (own ? p[own.sweep]! : 1)
+      this.tankDrain[t] =
+        ownMs > 0 ? Math.exp(-1000 / (ownMs * this.sr)) : drain
+      this.tankCharge[t] = ownMs > 0 ? ownCharge : 0
       this.tankF[t] = (TAU * spec.hz) / this.sr
       this.tankBase[t] = (spec.count * clock) / (this.sr * decay)
       this.tankRate[t] = (ringScale * spec.count * clock) / (this.sr * decay)
@@ -1890,8 +1912,9 @@ export class ToyDrum implements Stage {
             tank.f = this.tankF[t]! * pf * bankFm * motorF
             tank.rate =
               motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!
-            tank.sweep = TANKS[t]!.sweep * sweep
-            tank.drain = drain
+            tank.sweep = this.tankSweep[t]!
+            tank.drain = this.tankDrain[t]!
+            tank.charge = this.tankCharge[t]!
             tank.push = TANKS[t]!.push * drive * clickHeight
             tank.run()
             const ringing = tank.out

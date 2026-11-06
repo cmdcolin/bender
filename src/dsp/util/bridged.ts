@@ -63,6 +63,7 @@ export class BridgedT {
   sweep = 0
   push = 0
   drain = 0
+  charge = 0
   out = 0
   private cap = 0
 
@@ -92,19 +93,27 @@ export class BridgedT {
    * the trigger charges the cap to the swing and it drains on its own clock,
    * never above the swing, so the swoop falls in a few milliseconds while the
    * body rings on at rest.
+   *
+   * `charge` hangs the cap off the trigger line through a resistor: while the
+   * pulse is on, the cap closes that fraction of its gap to the swing each
+   * sample. The network takes its strike near rest and the tuning leaps after
+   * it, so a big sweep no longer smears the pulse out. The bias it holds also
+   * runs the transistor hotter, so the loss falls as the tuning lifts and the
+   * network rings on through the dive.
    */
   run() {
-    const { drive, f, rate, sweep, push, drain } = this
+    const { drive, f, rate, sweep, push, drain, charge } = this
     this.cap =
-      drain === 0 || drive !== 0
+      drain === 0 || (drive !== 0 && charge === 0)
         ? this.env
-        : Math.min(this.env, flushDenormal(this.cap * drain))
-    const w = Math.min(
-      Math.max(f * Math.max(1 + sweep * this.cap + push, SWEEP_FLOOR), -1),
-      1,
-    )
+        : drive !== 0
+          ? this.cap + charge * (this.env - this.cap)
+          : Math.min(this.env, flushDenormal(this.cap * drain))
+    const lift = Math.max(1 + sweep * this.cap + push, SWEEP_FLOOR)
+    const w = Math.min(Math.max(f * lift, -1), 1)
+    const loss = charge > 0 && lift > 1 ? rate / lift : rate
     this.lp = flushDenormal(this.lp + w * this.bp)
-    this.bp = rail(this.bp + drive - w * this.lp - 2 * rate * this.bp)
+    this.bp = rail(this.bp + drive - w * this.lp - 2 * loss * this.bp)
     this.env = Math.sqrt(this.bp * this.bp + this.lp * this.lp)
     this.out = this.bp
   }

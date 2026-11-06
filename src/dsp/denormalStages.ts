@@ -156,6 +156,11 @@ const WAKE: Rig[] = [
     cold: {},
   },
   {
+    name: 'snare’s own swoop cap draining under latched snare networks',
+    hot: { drumSnareSwoop: 5, drumSnareSweep: 200, drumRing: 0.95 },
+    cold: {},
+  },
+  {
     name: 'mod envelope onto a sustain of nothing',
     hot: {
       mod0Src: 15,
