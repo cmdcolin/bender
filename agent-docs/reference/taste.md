@@ -50,6 +50,22 @@ which bends get built: for the bends themselves "anything can go".
   `drumHissKick`, `drumBankFm`, `drumBits: 6`.
 - A bend that goes far commits to it: "better to lean into it if we go that
   far".
+- Hard techno at 150 after DJ Valentimes' ZL2-PCD-7: the kick at
+  `drumTune: 0.91`, `drumSweep: 6`, `drumSwoopCap: 10`, its rumble only the
+  kick thrown into Wraith at sixteenths, everything through Ember ("this is
+  pretty sick so far").
+- Several layers of noise at once over the groove, each machine re-rolling its
+  own faults every bar: Plinky's and Glint's chip settings, Parlor's bus faults
+  at a quarter to half its ROM clock ("kinda sweet lol", "several layers doing
+  some fun noise. i like it").
+- In a noise set, sounds over melodies: "dont need true melodies just crazy
+  sounds like that are fine".
+- A noise moment that echoes out: thrown into Wraith at dotted eighths on its
+  last bar, feedback held as the input closes.
+- Voices on the mic jacks: a chant into Growler and onto Glint's bus, screams
+  on the drum trigger line. Sheet and bottle smacks in rooms of their own, rare
+  ("make that even more infrequent").
+- Growler's acid loud and near self-oscillation, not buried under the layers.
 
 ## Dislikes
 
@@ -62,8 +78,9 @@ which bends get built: for the bends themselves "anything can go".
 - A kick pitched up: `drumSweep: 2.2` with `drumTankCouple: 0.35` was
   "interesting for a little but not better".
 - The kit's networks rung into drones (`drumRing: 0.93`) as a breakdown.
-- Random settings cycling, and so many changes at once that no one change can be
-  judged.
+- Random settings cycling across the whole board, and so many changes at once
+  that no one change can be judged. One machine re-rolling its own faults as a
+  layer is a like.
 - Chiptune: a bright toy melody over a kick and snare grid.
 - Epic or cinematic in place of melancholy: strings and choir, long held notes,
   i–VI–III–VII, the harmonic minor's major V, a big room. A sparse arrangement
@@ -76,6 +93,13 @@ which bends get built: for the bends themselves "anything can go".
 - A generic pedal move offered as a bend: fuzz, a filter sweep, tape drive ("a
   generic pedal, not a bend that i wanted").
 - A bend that swamps the melody and then retreats after a few seconds.
+- A held lead over the noise: Glint's brass was "kinda weak", Growler's
+  detuned saws "interesting but not really my style".
+- A plain feedback loop as a noise moment ("pretty much just feedback").
+- Lasers, osc 2 dived by the contour on every bass note, at length: "ok not
+  too much of that".
+- The clap through distortion and the spring, striking the sheet: "breathy",
+  "weird resonant overtones".
 - Under a locked-in melody, bends that invent notes of their own, such as
   `pcmRunOn` running a voice on through the ROM ("random melodies that distract
   from melancholy"). They "could apply in another scenario", where no melody is
