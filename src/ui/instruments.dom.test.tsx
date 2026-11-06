@@ -4,7 +4,7 @@ import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
-import { bench, parseBench } from './bench.ts'
+import { bench, INSTRUMENTS, parseBench } from './bench.ts'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import { shownOn } from './fitted.ts'
 import { Instruments } from './Instruments.tsx'
@@ -63,7 +63,9 @@ test('every machine added has a ⋯ menu', () => {
   expect(screen.getByRole('region', { name: 'layercake' })).toBeTruthy()
   expect(screen.getByRole('region', { name: 'sheet' })).toBeTruthy()
   expect(screen.getByRole('region', { name: 'bottle' })).toBeTruthy()
-  expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(10)
+  expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(
+    INSTRUMENTS.length,
+  )
 })
 
 test('Add instrument names each machine with what it is and lays out the pick', () => {
@@ -116,7 +118,7 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
   const roll = screen.getAllByRole('button', { name: 'randomize' })
-  expect(roll).toHaveLength(10)
+  expect(roll).toHaveLength(INSTRUMENTS.length)
   const before = engine.controls.get()
   fireEvent.click(roll[0]!)
   const now = engine.controls.get()

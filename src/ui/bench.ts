@@ -1,4 +1,5 @@
 import { createStore } from '../listeners.ts'
+import { MACHINES } from '../machines.ts'
 import { read, write } from './persist.ts'
 import { RENAMED } from './stageNames.ts'
 
@@ -18,18 +19,16 @@ export interface Bench {
   grid: boolean
 }
 
-export const INSTRUMENTS = [
-  'Plinky',
-  'Clatter',
-  'Glint',
-  'Parlor',
-  'Growler',
-  'Howler',
-  'Spool',
-  'Layercake',
-  'Sheet',
-  'Bottle',
-] as const
+const FACED = MACHINES.flatMap(m => ('face' in m ? [m] : []))
+
+/** The machines with a face on the bench, in its order: the toy board's, then
+    the rest. */
+export const BENCH_MACHINES = [
+  ...FACED.filter(m => m.map !== 'line'),
+  ...FACED.filter(m => m.map === 'line'),
+]
+
+export const INSTRUMENTS = BENCH_MACHINES.map(m => m.name)
 
 const EMPTY: Bench = {
   instruments: [],

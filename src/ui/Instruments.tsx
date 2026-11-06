@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
 import { AddMenu } from './AddMenu.tsx'
-import { bench, INSTRUMENTS } from './bench.ts'
+import { bench, BENCH_MACHINES, INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
 import { BottleFace } from './BottleFace.tsx'
@@ -54,40 +54,30 @@ function FourTrackFace({
   )
 }
 
-const KEYBOARDS: Row = [
-  ['Plinky', Keys],
-  ['Glint', FmKeys],
-  ['Parlor', PcmKeys],
-  ['Growler', MonoKeys],
-  ['Howler', LeadKeys],
-]
+const FACES = {
+  Plinky: Keys,
+  Clatter: DrumKit,
+  Glint: FmKeys,
+  Parlor: PcmKeys,
+  Growler: MonoKeys,
+  Howler: LeadKeys,
+  Spool: TapeLoopFace,
+  Layercake: FourTrackFace,
+  Sheet: SheetFace,
+  Bottle: BottleFace,
+} satisfies Record<(typeof BENCH_MACHINES)[number]['name'], Machine>
 
-const KIT: Row = [['Clatter', DrumKit]]
+const row = (machines: typeof BENCH_MACHINES): Row =>
+  machines.map(m => [m.name, FACES[m.name]])
 
-const TAPES: Row = [
-  ['Spool', TapeLoopFace],
-  ['Layercake', FourTrackFace],
-]
-
-const STRUCK: Row = [
-  ['Sheet', SheetFace],
-  ['Bottle', BottleFace],
-]
+// The keyboards, the kit, and the machines off the toy board.
+const KEYBOARDS = row(BENCH_MACHINES.filter(m => 'keybed' in m))
+const KIT = row(
+  BENCH_MACHINES.filter(m => m.map !== 'line' && !('keybed' in m)),
+)
+const OFF_BOARD = row(BENCH_MACHINES.filter(m => m.map === 'line'))
 
 const ADDED_LEVEL = 0.6
-
-const KIND: Record<string, string> = {
-  Plinky: 'toy keyboard',
-  Clatter: 'toy drums',
-  Glint: 'FM synth',
-  Parlor: 'home keyboard',
-  Growler: 'mono synth',
-  Howler: 'lead synth',
-  Spool: 'tape loop',
-  Layercake: 'four-track',
-  Sheet: 'struck metal',
-  Bottle: 'glass bottle',
-}
 
 // The keyboards, the kit, the tape loop and the four-track. A machine shows while its stage is
 // on the map: the toy and the kit from the start, the others once their faders
@@ -141,7 +131,7 @@ export function Instruments({
   const { grid: staged, pedals, bends } = useStoreValue(bench)
   const kit = staged ? [] : faces(KIT)
   const stagedKit = staged ? faces(KIT) : []
-  const tapes = [...faces(TAPES), ...faces(STRUCK)]
+  const tapes = faces(OFF_BOARD)
 
   const bringUp = (stage: string) => {
     bring(stage)
@@ -152,9 +142,9 @@ export function Instruments({
     }
   }
 
-  const choices = INSTRUMENTS.filter(stage => !face(stage)).map(stage => ({
-    stage,
-    kind: KIND[stage]!,
+  const choices = BENCH_MACHINES.filter(m => !face(m.name)).map(m => ({
+    stage: m.name,
+    kind: m.kind,
   }))
 
   return (

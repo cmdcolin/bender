@@ -7,6 +7,7 @@ import {
   PHRASE_SHAPES,
 } from '../../dsp/modbus.ts'
 import { LANE_KEYS, LANE_LEN_KEYS } from '../../lanes.ts'
+import { MACHINES } from '../../machines.ts'
 
 import type { Group } from './types.ts'
 
@@ -649,16 +650,9 @@ export const PATCH_GROUPS: Group[] = [
     // panel, where a hand reaching for it finds them; they are also six of the
     // nine wires this patch is, which is the only place all of them are one
     // thing you can see.
-    borrows: [
-      'fmStruck',
-      'fmKeyGate',
-      'pcmStruck',
-      'pcmKeyGate',
-      'monoStruck',
-      'monoKeyGate',
-      'leadStruck',
-      'leadKeyGate',
-    ],
+    borrows: MACHINES.flatMap(m =>
+      'keyGate' in m ? [m.struck, m.keyGate] : [],
+    ),
     sliders: [
       {
         key: 'trigToKeys',
