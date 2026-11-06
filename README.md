@@ -24,6 +24,20 @@ Watch Claude Code play it:
 - **Growler** — a bass synth
 - **Howler** — a lead synth
 
+Click a machine to open its circuit:
+
+**Plinky**
+
+<img src="public/guide/guide-die.jpg" alt="Plinky's chip: keyboard, key matrix, tune ROM, bus, voices, envelope, output pin and clock." width="520">
+
+**Clatter**
+
+<img src="public/guide/guide-drum-voices.jpg" alt="Clatter's drum voices: triggers, one-shots, tanks, metal bank, noise, amps, DAC and sample ROM." width="520">
+
+**Growler**
+
+<img src="public/guide/guide-growler-card.jpg" alt="Growler's voice card: three oscillators, mixer, filter and loudness, with feedback paths." width="520">
+
 ## Other sources
 
 - **Sheet** — a steel sheet you hit
