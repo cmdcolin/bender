@@ -48,10 +48,12 @@ wire, a pot soldered onto the die.
 
 Plus a ring mod, crusher, comb, octave, codec and more.
 
-## Tape
+## Tape and samples
 
 - **Spool** — a tape loop that records over itself
 - **Layercake** — a cassette four-track with four tape loops
+- Samples — Spool loads any audio file, or 78s, numbers stations, NASA comms and
+  old-time radio off archive.org
 
 ## Playing
 
