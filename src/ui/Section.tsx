@@ -20,6 +20,7 @@ import {
   type Group,
   type SliderDef,
 } from './controls/index.ts'
+import { isJack } from './controls/jacks.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { MuteCap } from './DeviceVerbs.tsx'
 import { foldDrawing, zoomFor } from './drawingFor.tsx'
@@ -36,6 +37,7 @@ import {
   type Verbs,
 } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
+import { JackCap } from './JackCap.tsx'
 import { listView, stageDrawings, VIEWS } from './listView.ts'
 import { MicCap } from './MicJacks.tsx'
 import { MicPatch, MicSwitch } from './MicPatch.tsx'
@@ -103,7 +105,7 @@ function parts(group: Group): Part[] {
   for (const def of group.sliders) {
     if ((group.lead ?? []).includes(def.key)) continue
     if ((group.handled ?? []).includes(def.key)) continue
-    if (isMute(def.key)) continue
+    if (isMute(def.key) || isJack(def.key)) continue
     const name = def.part ?? null
     const last = out[out.length - 1]
     if (last?.name === name) last.sliders.push(def)
@@ -399,6 +401,7 @@ export function OpenGroup({
         )}
         {kind === 'mic' && <MicSwitch />}
         <MicCap stage={group.name} />
+        <JackCap stage={group.name} />
         {(kind === 'roll' || group.memory) && !rollBoxed && (
           <EditorToggle which="roll" />
         )}

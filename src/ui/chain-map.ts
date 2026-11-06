@@ -21,6 +21,7 @@ import {
   sliderFor,
   touchedCount,
 } from './controls/index.ts'
+import { intoOf, patchedInto, UNITS } from './controls/jacks.ts'
 import { SUPPLY_OF } from './controls/supply.ts'
 import { MIC_JACKS, wireLabel, wireOn, wiredJacks } from './micWiring.ts'
 import { el, textWidth, type El } from './svg.ts'
@@ -371,6 +372,10 @@ export function onBoard(c: Controls): Set<string> {
       .add(SRC_GROUP[src] ?? 'Patch bay')
   }
   for (const t of triggerBridges(c)) on.add(t.from).add(t.to)
+  for (const u of UNITS) {
+    const machine = patchedInto(c[u.into])
+    if (machine) on.add(u.group).add(machine)
+  }
   // A chip on the key line plays the toy keyboard's notes, so the keyboard is
   // its player even with its own fader down.
   for (const [chip, jumper] of KEYED)
@@ -460,6 +465,8 @@ const TRIG_H = 13
 const TRACK = 6
 /** from the foot of the source rows down to the bar that collects them */
 const COLLECT_H = 14
+// the gap between the parts of a machine's insert column, and between columns
+const JACK_GAP = 6
 /** from the collector to the mix bus, and from the mix bus to the fold */
 const BAND_GAP = 12
 /** a source's own glyph, and the column it sits in at the left of its box */
@@ -849,8 +856,14 @@ function pickParts(c: Controls, o: Options) {
   // the slots. Six slots and ten bends, so four are always in none of them —
   // those ride at the head of the path as loose chips, each a door of its own.
   const slotted = bendOrder(c)
-  const bends = slotted.filter(has)
-  const loose = BENDS.filter(b => !slotted.includes(b.group) && has(b.group))
+  const machineOf = (unit: string) => {
+    const into = intoOf(unit)
+    return into ? patchedInto(c[into]) : undefined
+  }
+  const bends = slotted.filter(n => has(n) && !machineOf(n))
+  const loose = BENDS.filter(
+    b => !slotted.includes(b.group) && has(b.group) && !machineOf(b.group),
+  )
   for (const b of loose) doors.add(b.group)
   // The rack draws only a caption for its chips, and the run passes it by. Its
   // bounds anchor the chips and the run's arrow to the first bend.
@@ -867,8 +880,52 @@ function pickParts(c: Controls, o: Options) {
 
   for (const i of pedalOrderAt(c.pedalOrder)) {
     const { group, mute } = PEDALS[i]!
-    lay(stage(group, pedalWet(c, group) && !c[mute]))
+    if (!machineOf(group)) lay(stage(group, pedalWet(c, group) && !c[mute]))
   }
+
+  // Units cabled onto one machine, in the order they run there: a column per
+  // machine under the band, headed by the machine's name.
+  const pedalNames = pedalOrderAt(c.pedalOrder).map(i => PEDALS[i]!.group)
+  const runOrder = [
+    ...slotted,
+    ...BENDS.map(b => b.group).filter(g => !slotted.includes(g)),
+    ...pedalNames,
+  ]
+  const unitWet = (name: string) => {
+    const bend = BEND_BY_NAME.get(name)
+    const pedal = PEDALS.find(p => p.group === name)
+    return bend
+      ? c[bend.mix] > 0 && !c[bend.mute]
+      : pedal
+        ? pedalWet(c, name) && !c[pedal.mute]
+        : false
+  }
+  const inserts = [...new Set(runOrder.flatMap(n => machineOf(n) ?? []))].map(
+    machine => {
+      doors.add(machine)
+      const units = runOrder.filter(n => machineOf(n) === machine)
+      return {
+        machine,
+        head: mapNode(`into_${nodeId(machine)}`, 'label', machine, {
+          door: machine,
+          active: units.some(unitWet),
+          w: textWidth(machine, SMALL),
+          h: LABEL_H,
+        }),
+        chips: units.map(name => {
+          doors.add(name)
+          return mapNode(nodeId(name), 'chip', name, {
+            door: name,
+            active: unitWet(name),
+            open: o.open === name,
+            count: live ? touchedCount(name, c) : 0,
+            w: chipW(name) + iconCol(name),
+            h: CHIP_H - 2,
+          })
+        }),
+      }
+    },
+  )
 
   // The stage's own run test: the drop rate alone does nothing with no sag.
   lay(
@@ -1009,6 +1066,7 @@ function pickParts(c: Controls, o: Options) {
     trigAnchor,
     noTrigChip,
     supply,
+    inserts,
   }
 }
 
@@ -1096,6 +1154,36 @@ function measure(p: Parts) {
 
   const overUp = rackChips.some(ch => ch.x + ch.w > colW)
 
+  // The insert columns, packed out from the middle where the band meets the
+  // bus, alternately left and right, a new row when neither side has room.
+  const jackCols: { at: number; row: number; w: number; h: number }[] = []
+  const rowHeights: number[] = []
+  {
+    const mid = content / 2
+    let [left, right, row] = [mid, mid, 0]
+    for (const ins of p.inserts) {
+      const w = Math.max(ins.head.w, ...ins.chips.map(ch => ch.w))
+      const h = LABEL_H + ins.chips.length * (CHIP_H - 2 + JACK_GAP)
+      const leftRoom = (l: number) => l - JACK_GAP - w >= 0
+      const rightRoom = (r: number) => r + JACK_GAP + w <= content
+      if (!leftRoom(left) && !rightRoom(right) && (left < mid || right > mid)) {
+        row++
+        left = mid
+        right = mid
+      }
+      const goLeft =
+        leftRoom(left) && (mid - left <= right - mid || !rightRoom(right))
+      const at = goLeft
+        ? left - JACK_GAP - w
+        : Math.max(Math.min(right + JACK_GAP, content - w), 0)
+      if (goLeft) left = at
+      else right = at + w
+      jackCols.push({ at, row, w, h })
+      rowHeights[row] = Math.max(rowHeights[row] ?? 0, h)
+    }
+  }
+  const jackH = rowHeights.reduce((a, h) => a + h + JACK_GAP, 0)
+
   return {
     loop,
     down,
@@ -1107,6 +1195,9 @@ function measure(p: Parts) {
     boxW,
     rackChips,
     overUp,
+    jackCols,
+    rowHeights,
+    jackH,
   }
 }
 
@@ -1143,7 +1234,21 @@ function layDown(m: Measured) {
   const bandBottom = lineRows.length
     ? lineY + (lineRows.length - 1) * (BOX_H + BAND_GAP) + BOX_H
     : board.y + board.h
-  const collectY = bandBottom + COLLECT_H
+  const jackTop = bandBottom + (m.jackH ? ROW_GAP : 0)
+  {
+    const rowTop = (r: number) =>
+      jackTop + m.rowHeights.slice(0, r).reduce((a, h) => a + h + JACK_GAP, 0)
+    for (const [i, ins] of m.inserts.entries()) {
+      let y = rowTop(m.jackCols[i]!.row)
+      ins.head.y = y
+      y += LABEL_H + JACK_GAP
+      for (const ch of ins.chips) {
+        ch.y = y
+        y += ch.h + JACK_GAP
+      }
+    }
+  }
+  const collectY = jackTop + m.jackH + COLLECT_H
   mix.y = collectY + BAND_GAP
 
   const pathTop = mix.y + mix.h + (loop ? LABEL_H + ROW_GAP : ROW_GAP)
@@ -1217,6 +1322,21 @@ function layAcross(d: LaidDown) {
   for (const n of down) n.x = n === rack ? 0 : (colW - boxW) / 2
   for (const n of upCol) n.x = boxW + COL_GAP
   if (!loop) bus.x = (content - boxW) / 2
+  if (d.jackCols.length) {
+    const shift = Math.min(
+      Math.max(
+        spineAt(d) - content / 2,
+        -Math.min(...d.jackCols.map(j => j.at)),
+      ),
+      content - Math.max(...d.jackCols.map(j => j.at + j.w)),
+    )
+    for (const [i, ins] of d.inserts.entries()) {
+      const col = d.jackCols[i]!
+      const mid = col.at + shift + col.w / 2
+      ins.head.x = mid
+      for (const ch of ins.chips) ch.x = mid - ch.w / 2
+    }
+  }
   const footSpan =
     foot.reduce((a, n) => a + n.w, 0) + INST_GAP * (foot.length - 1)
   {
@@ -1243,10 +1363,17 @@ function layAcross(d: LaidDown) {
       }),
     ]),
   )
-  const parts: MapNode[] = [...loosePart.values()]
+  const jackParts = d.inserts.flatMap(ins => [ins.head, ...ins.chips])
+  const parts: MapNode[] = [...loosePart.values(), ...jackParts]
   const band = [...chips, ...lines]
   const byId = new Map(
-    [...pathAndBus, ...band, ...foot, mix].map(n => [n.id, n]),
+    [
+      ...pathAndBus,
+      ...band,
+      ...foot,
+      mix,
+      ...d.inserts.flatMap(ins => ins.chips),
+    ].map(n => [n.id, n]),
   )
 
   // Where the feedback lands, and so which side of the map it comes home on.
@@ -1551,15 +1678,67 @@ function boardWires(m: Laid) {
 // one of them, which is the whole reason the band is a grid. In a stacked band
 // it comes down the first gap, steps across between the rows and down the
 // second.
+// Where the band's leads meet on their way down to the bus: the gap between
+// the first row of line machines, else under the board, else over the bus.
+const gapAt = (row: readonly MapNode[], mix: MapNode) =>
+  row.length > 1 ? (row[0]!.x + row[0]!.w + row[1]!.x) / 2 : mix.x + mix.w / 2
+
+function spineAt(m: {
+  lineRows: MapNode[][]
+  chipRows: MapNode[][]
+  hasBoard: boolean
+  mix: MapNode
+}) {
+  const { lineRows, chipRows, hasBoard, mix } = m
+  const first = lineRows[0]
+  return first
+    ? gapAt(first, mix)
+    : hasBoard
+      ? gapAt(chipRows[chipRows.length - 1] ?? [], mix)
+      : midX(mix)
+}
+
 function bandWires(m: Laid) {
   const { k, wire, bar, mix, lineRows, chipRows, hasBoard, board, spine } = m
-  const { collectY, down } = m
+  const { collectY, down, inserts } = m
 
-  const gapX = (row: MapNode[]) =>
-    row.length > 1 ? (row[0]!.x + row[0]!.w + row[1]!.x) / 2 : mix.x + mix.w / 2
+  const gapX = (row: MapNode[]) => gapAt(row, mix)
   const channels = lineRows.map(gapX)
   const lastRow = chipRows[chipRows.length - 1] ?? []
-  const spineX = channels[0] ?? (hasBoard ? gapX(lastRow) : midX(mix))
+  const spineX = spineAt(m)
+
+  // Each machine's insert column: its name, cabled down through what is
+  // patched into it, and on into the bus where the band's leads meet.
+  for (const { machine, head, chips: units } of inserts) {
+    const x = head.x
+    const color = head.active ? k.accent : k.dim
+    const stops = [head, ...units]
+    for (let i = 1; i < stops.length; i++) {
+      const [a, b] = [stops[i - 1]!, stops[i]!]
+      wire(
+        `${a.id}-${b.id}`,
+        a,
+        b,
+        [
+          [x, a.y + a.h],
+          [x, b.y],
+        ],
+        { color, door: machine },
+      )
+    }
+    const last = stops[stops.length - 1]!
+    bar(
+      `${last.id}-in`,
+      last,
+      mix,
+      [
+        [x, last.y + last.h],
+        [x, collectY],
+        [spineX, collectY],
+      ],
+      { color: k.border, door: mix.door },
+    )
+  }
   const boardBottom = board.y + board.h
   const inGap =
     lastRow.length < 2 ||

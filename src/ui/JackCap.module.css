@@ -1,0 +1,67 @@
+.cap {
+  composes: capSnug from './button.module.css';
+}
+
+.capOn {
+  composes: capSnugOn from './button.module.css';
+}
+
+.cap,
+.capOn {
+  gap: var(--space-2xs);
+}
+
+.glyph {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  vertical-align: -0.125em;
+}
+
+.name {
+  max-width: 12rem;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  max-height: min(70vh, 34rem);
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--fs-sm);
+  text-align: left;
+  color: var(--fg2);
+  background: none;
+  border: none;
+  border-radius: var(--ctl-radius);
+  cursor: pointer;
+}
+
+.item:hover,
+.item:focus-visible {
+  color: var(--fg);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.itemOn {
+  composes: item;
+  color: var(--fg);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.on {
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}

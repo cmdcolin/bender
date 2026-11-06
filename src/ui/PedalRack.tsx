@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { engine } from '../engine/engine.ts'
 import { PEDALS, pedalOrderAt, pedalOrderOf } from '../pedals.ts'
 import { pedalWet } from './chain-map.ts'
+import { patchedInto } from './controls/jacks.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { RackNudge } from './RackNudge.tsx'
 import { move } from './reorder.ts'
@@ -20,8 +21,15 @@ function writeOrder(order: readonly number[]) {
 }
 
 const tagOf = (c: Controls, pedal: number) => {
-  const { group, mute } = PEDALS[pedal]!
-  return c[mute] > 0.5 ? 'bypassed' : !pedalWet(c, group) ? 'dry' : ''
+  const { group, mute, into } = PEDALS[pedal]!
+  const machine = patchedInto(c[into])
+  return machine
+    ? `on ${machine}`
+    : c[mute] > 0.5
+      ? 'bypassed'
+      : !pedalWet(c, group)
+        ? 'dry'
+        : ''
 }
 
 const TITLE_TAIL: Record<string, string> = {
@@ -64,7 +72,7 @@ export function PedalRack() {
         {order.map((pedal, i) => {
           const name = PEDALS[pedal]!.group
           const tag = tags[i]!
-          const title = `${name}, ${i + 1} of ${order.length}. ${TITLE_TAIL[tag]}`
+          const title = `${name}, ${i + 1} of ${order.length}. ${TITLE_TAIL[tag] ?? `It is patched into ${tag.slice(3)}, so it runs there in this order and leaves the master run.`}`
           return (
             <li
               key={pedal}

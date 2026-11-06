@@ -6,6 +6,7 @@ import { isBend } from './bendChain.ts'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
+import { JackCap } from './JackCap.tsx'
 import { Menu } from './Menu.tsx'
 import { menuCheck, menuItem } from './menuItems.ts'
 import { MicCap } from './MicJacks.tsx'
@@ -327,6 +328,7 @@ export function DeviceVerbs({
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !mute && <FaceLevel control={level} />}
       {!noMic && <MicCap stage={stage} />}
+      <JackCap stage={stage} />
       <Rolls group={group} seconds={seconds} more={more} />
       {onClose && (
         <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>

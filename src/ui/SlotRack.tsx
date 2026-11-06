@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls/index.ts'
+import { patchedInto } from './controls/jacks.ts'
 import { useBoardValue, useMeterValue } from './ControlsContext.ts'
 import { RackNudge } from './RackNudge.tsx'
 import { move } from './reorder.ts'
@@ -36,6 +37,9 @@ export function SlotRack() {
   const bypassRaw = useBoardValue(c =>
     BENDS.map(b => (c[b.mute] > 0.5 ? 1 : 0)).join(''),
   )
+  const onRaw = useBoardValue(c =>
+    BENDS.map(b => patchedInto(c[b.into]) ?? '').join('|'),
+  ).split('|')
   // Which box is under the hand and which row it is over, so the rack shows
   // where a drop would land while the hand is still moving. Not on the board:
   // a drag that never finishes has to leave the chain exactly as it was.
@@ -83,6 +87,7 @@ export function SlotRack() {
       step,
       mix: bend ? mixOf[id - 1]! : 0,
       bypassed: bend !== undefined && bypassRaw[id - 1] === '1',
+      on: bend ? onRaw[id - 1]! : '',
     }
   })
   const loose = BENDS.map((b, i) => ({ bend: b, id: i + 1 })).filter(
@@ -152,20 +157,27 @@ export function SlotRack() {
           // place until the relay moves it.
           const moved = !off && row.step !== row.i
           const quiet =
-            off || row.open || row.dupe || row.bypassed || row.mix === 0
+            off ||
+            row.open ||
+            row.dupe ||
+            row.bypassed ||
+            row.mix === 0 ||
+            row.on !== ''
           const title = off
             ? `Position ${row.i + 1} is empty — nothing runs here.`
-            : row.open
-              ? `${row.bend!.group} — the joint under it is open, so it is out of the path altogether until the solder comes back.`
-              : row.dupe
-                ? `${row.bend!.group} already sits earlier in the chain, so this position does nothing — a bend only runs at its first one.`
-                : row.bypassed
-                  ? `${row.bend!.group} is bypassed, so the signal passes straight through it.`
-                  : row.mix === 0
-                    ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
-                    : moved
-                      ? `${row.bend!.group} is set to position ${row.i + 1}, and the board has re-soldered it to ${row.step + 1}. Re-solder is what moves it; the settings are still yours.`
-                      : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it, or take it with the arrow keys.`
+            : row.on
+              ? `${row.bend!.group} is patched into ${row.on}, so it runs there and this position passes the master run straight through.`
+              : row.open
+                ? `${row.bend!.group} — the joint under it is open, so it is out of the path altogether until the solder comes back.`
+                : row.dupe
+                  ? `${row.bend!.group} already sits earlier in the chain, so this position does nothing — a bend only runs at its first one.`
+                  : row.bypassed
+                    ? `${row.bend!.group} is bypassed, so the signal passes straight through it.`
+                    : row.mix === 0
+                      ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
+                      : moved
+                        ? `${row.bend!.group} is set to position ${row.i + 1}, and the board has re-soldered it to ${row.step + 1}. Re-solder is what moves it; the settings are still yours.`
+                        : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it, or take it with the arrow keys.`
           // What the row of dry/wet faders under the rack used to be for, and
           // what no control on the board can say. A stage can be in the path
           // and inaudible, or somewhere other than where you put it, and both
@@ -173,17 +185,19 @@ export function SlotRack() {
           // Whichever is true of it now, said on the row it is about.
           const tag = off
             ? ''
-            : row.open
-              ? 'dropped'
-              : row.dupe
-                ? 'already above'
-                : row.bypassed
-                  ? 'bypassed'
-                  : row.mix === 0
-                    ? 'silent'
-                    : moved
-                      ? `now ${row.step + 1}`
-                      : ''
+            : row.on
+              ? `on ${row.on}`
+              : row.open
+                ? 'dropped'
+                : row.dupe
+                  ? 'already above'
+                  : row.bypassed
+                    ? 'bypassed'
+                    : row.mix === 0
+                      ? 'silent'
+                      : moved
+                        ? `now ${row.step + 1}`
+                        : ''
           return (
             <li
               key={row.i}
@@ -263,7 +277,11 @@ export function SlotRack() {
             key={bend.group}
             type="button"
             className={styles.loose}
-            title={`${bend.group} is in no position, so the signal never reaches it. Drag it onto one, or press it, to bring it into the chain.`}
+            title={
+              onRaw[id - 1]
+                ? `${bend.group} is patched into ${onRaw[id - 1]} and runs there. Drag it onto a position to order it among that machine’s units.`
+                : `${bend.group} is in no position, so the signal never reaches it. Drag it onto one, or press it, to bring it into the chain.`
+            }
             onClick={() => takeLoose(id)}
             draggable
             onDragStart={e => {
@@ -280,6 +298,9 @@ export function SlotRack() {
             }}
           >
             {bend.group}
+            {onRaw[id - 1] && (
+              <span className={styles.tag}> on {onRaw[id - 1]}</span>
+            )}
           </button>
         ))}
         {loose.length === 0 && (

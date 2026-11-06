@@ -6,6 +6,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { VOICE_LABELS } from '../drums.ts'
 import { N_DEST } from '../dsp/modbus.ts'
 import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus.ts'
+import { jackFor } from '../jacks.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import {
   buildMap,
@@ -999,4 +1000,30 @@ test('a bypassed pedal and a muted source draw idle whatever their level', () =>
   })
   expect(box(off, 'Wraith')!.active).toBe(false)
   expect(box(off, 'Glint')!.active).toBe(false)
+})
+
+test('a unit patched into a machine leaves the path and hangs under it', () => {
+  const board = {
+    ...DEFAULT_CONTROLS,
+    drumLevel: 0.8,
+    fmLevel: 0.6,
+    ampMix: 0.8,
+    combMix: 0.5,
+    crushMix: 0.5,
+    ampInto: jackFor('toyDrum'),
+    combInto: jackFor('toyDrum'),
+    crushInto: jackFor('fmChip'),
+  }
+  for (const wrap of [true, false]) {
+    const map = buildMap(board, { wrap, loop: wrap })
+    checkLayout(map)
+    expect(box(map, 'into_Clatter')?.door).toBe('Clatter')
+    expect(box(map, 'Ember')?.kind).toBe('chip')
+    expect(box(map, 'Crusher')?.kind).toBe('chip')
+    expect(hop(map, 'into_Clatter', 'Comb')).toBeDefined()
+    expect(hop(map, 'Comb', 'Ember')).toBeDefined()
+    expect(hop(map, 'into_Glint', 'Crusher')).toBeDefined()
+    expect(box(map, 'Ember')!.y).toBeLessThan(box(map, 'mix')!.y)
+  }
+  expect(onBoard(board)).toContain('Clatter')
 })
