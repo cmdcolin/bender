@@ -135,6 +135,8 @@ const SCRIPTS: Record<string, string> = {
   og: "renders the landing page's pile of instruments to public/og.jpg, the image a shared link unfurls with",
   jam: 'trims, encodes and uploads jams of the day, then records their waveform peaks in src/jam/jams.json',
   'guide-shots': 're-shoots the pictures in docs/USER-GUIDE.md',
+  'readme-shots':
+    "re-shoots the README gallery's full-app shots and zooms into docs/readme",
   'diagram-shots':
     'shoots every schematic in the panel to a directory, one png each',
   dash: "re-shoots the why-sign-in card's screenshot of the signed-in home page",

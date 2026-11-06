@@ -2608,7 +2608,7 @@ back.
 ## Scripts
 
 <details>
-<summary>50 commands</summary>
+<summary>51 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2634,6 +2634,7 @@ back.
 | `pnpm diagram`       | re-renders the README's signal path                                                                                                                                                    |
 | `pnpm features`      | rewrites docs/features.md — this file                                                                                                                                                  |
 | `pnpm guide-shots`   | re-shoots the pictures in docs/USER-GUIDE.md                                                                                                                                           |
+| `pnpm readme-shots`  | re-shoots the README gallery's full-app shots and zooms into docs/readme                                                                                                               |
 | `pnpm diagram-shots` | shoots every schematic in the panel to a directory, one png each                                                                                                                       |
 | `pnpm ink`           | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                        |
 | `pnpm faults`        | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                |
