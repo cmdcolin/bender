@@ -1793,7 +1793,7 @@ export class FmChip implements Stage {
       // comes off. Everything else on that wire — the ROM's tune, a drum hit
       // through the patch — is an edge and nothing more, and an edge is where
       // *Note length* comes in.
-      const sung = sings ? ctx.trig.seqKey[i]! : 0
+      const sung = sings ? ctx.trig.seq.key[i]! : 0
       if (sung !== 0) this.keyOn(sung - KEY_BIAS, lengthSamples, 0, true)
       const struck = lineKeys ? lineKeys[i]! : 0
       if (struck !== 0) {

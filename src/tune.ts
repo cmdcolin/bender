@@ -253,6 +253,50 @@ export const MONO_SEQ_SLIDE_KEYS = [
   'monoSeqSlideHi',
 ] as const satisfies readonly ControlKey[]
 
+/** Howler's memory, laid out the same way. */
+export const LEAD_SEQ_STEP_KEYS = [
+  'leadSeqStep0',
+  'leadSeqStep1',
+  'leadSeqStep2',
+  'leadSeqStep3',
+  'leadSeqStep4',
+  'leadSeqStep5',
+  'leadSeqStep6',
+  'leadSeqStep7',
+  'leadSeqStep8',
+  'leadSeqStep9',
+  'leadSeqStep10',
+  'leadSeqStep11',
+  'leadSeqStep12',
+  'leadSeqStep13',
+  'leadSeqStep14',
+  'leadSeqStep15',
+  'leadSeqStep16',
+  'leadSeqStep17',
+  'leadSeqStep18',
+  'leadSeqStep19',
+  'leadSeqStep20',
+  'leadSeqStep21',
+  'leadSeqStep22',
+  'leadSeqStep23',
+  'leadSeqStep24',
+  'leadSeqStep25',
+  'leadSeqStep26',
+  'leadSeqStep27',
+  'leadSeqStep28',
+  'leadSeqStep29',
+  'leadSeqStep30',
+  'leadSeqStep31',
+] as const satisfies readonly ControlKey[]
+export const LEAD_SEQ_ACCENT_KEYS = [
+  'leadSeqAccentLo',
+  'leadSeqAccentHi',
+] as const satisfies readonly ControlKey[]
+export const LEAD_SEQ_SLIDE_KEYS = [
+  'leadSeqSlideLo',
+  'leadSeqSlideHi',
+] as const satisfies readonly ControlKey[]
+
 export const seqFlagBit = (step: number) => 1 << (15 - (step & 15))
 export const hasSeqFlag = (lo: number, hi: number, step: number) =>
   ((step < 16 ? lo : hi) & seqFlagBit(step)) !== 0

@@ -21,6 +21,7 @@ export const MIC = {
   glintBus: 13,
   crushClock: 14,
   clipBypass: 15,
+  howlerIn: 16,
 } as const
 
 /** micPatch2 counts from "off", so its jack is one less than its value. */

@@ -130,6 +130,7 @@ export interface Group {
     | { kind: 'mic' }
     | { kind: 'loops' }
     | { kind: 'monoPath' }
+    | { kind: 'leadPath' }
     | { kind: 'tapeLoop' }
     | { kind: 'tapePath' }
     | { kind: 'fm' }

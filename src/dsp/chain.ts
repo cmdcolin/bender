@@ -63,14 +63,23 @@ const SLOT_IDX = [
   IDX.bendSlot5,
 ]
 
-/** The mute switches of the first sources, in the order the chain sums them. */
+/** The sources' mute switches, in the order the chain sums them; -1 where a
+    source has none. */
+const NO_MUTE = -1
 const MUTE_IDX = [
   IDX.chipMute,
   IDX.drumMute,
   IDX.fmMute,
   IDX.pcmMute,
   IDX.monoMute,
-]
+  NO_MUTE,
+  NO_MUTE,
+  NO_MUTE,
+  NO_MUTE,
+  NO_MUTE,
+  NO_MUTE,
+  IDX.leadMute,
+] as const satisfies { length: typeof SOURCE_TAPS.length }
 
 const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])
 const PEDAL_INTO_IDX = PEDALS.map(p => IDX[p.into])
@@ -263,8 +272,8 @@ class DeskLoop {
 // to — brownout, then the always-on safety tail: dc block → softclip →
 // feedback tap → limiter.
 export class Chain {
-  /** The second melody, ticked once a block right after the trigger bus clears. */
-  melody: MelodyMemory | null = null
+  /** The melody memories, ticked once a block right after the trigger bus clears. */
+  melodies: MelodyMemory[] = []
   supplies: Supplies | null = null
   private readonly ctx: Ctx
 
@@ -557,7 +566,7 @@ export class Chain {
     }
     // Last block's kit hits become the ones a bridged trigger line can read.
     ctx.trig.swap(n)
-    this.melody?.process(n, p, ctx)
+    for (const m of this.melodies) m.process(n, p, ctx)
     ctx.mod.build(n, p, ctx)
     const bounce = p[IDX.gndBounce]!
     const modBounce = ctx.mod.read(DEST.gndBounce)
@@ -660,8 +669,9 @@ export class Chain {
       const s = this.sources[k]!
       if (!s.when || s.when(p, ctx)) {
         const vca = k < MAX_SOURCES ? ctx.mod.read(SOURCE_LEVEL_DEST[k]!) : null
-        const muteTo = k < MUTE_IDX.length ? 1 - p[MUTE_IDX[k]!]! : 1
-        const muteFrom = k < MUTE_IDX.length ? this.muteGain[k]! : 1
+        const mute = MUTE_IDX[k] ?? NO_MUTE
+        const muteTo = mute === NO_MUTE ? 1 : 1 - p[mute]!
+        const muteFrom = mute === NO_MUTE ? 1 : this.muteGain[k]!
         const muting = muteTo < 1 || muteFrom < 1
         const jacked = k < MAX_SOURCES && (this.jacked & (1 << k)) !== 0
         if ((vca || muting || jacked) && !cap)

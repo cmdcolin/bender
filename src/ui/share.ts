@@ -17,6 +17,7 @@ import {
 import {
   asTuneLen,
   asTuneStep,
+  LEAD_SEQ_STEP_KEYS,
   MONO_SEQ_STEP_KEYS,
   TUNE_ALL_STEP_KEYS,
 } from '../tune.ts'
@@ -26,6 +27,7 @@ import { packControls, RENAMED, unpackControls } from './packed.ts'
 const TUNE_KEYS = new Set<ControlKey>([
   ...TUNE_ALL_STEP_KEYS,
   ...MONO_SEQ_STEP_KEYS,
+  ...LEAD_SEQ_STEP_KEYS,
 ])
 
 // A board as a link, in two forms that say the same thing.
@@ -122,7 +124,7 @@ export function coerceControl(key: ControlKey, v: number): number {
     ? asLen(v)
     : TUNE_KEYS.has(key)
       ? asTuneStep(v)
-      : key === 'tuneLen' || key === 'monoSeqLen'
+      : key === 'tuneLen' || key === 'monoSeqLen' || key === 'leadSeqLen'
         ? asTuneLen(v)
         : LANE_VALUE_KEYS.has(key)
           ? asLaneValue(v)

@@ -17,6 +17,7 @@ import {
 import {
   asTuneLen,
   asTuneStep,
+  LEAD_SEQ_STEP_KEYS,
   MONO_SEQ_STEP_KEYS,
   TUNE_ALL_STEP_KEYS,
 } from '../tune.ts'
@@ -1075,6 +1076,100 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'revInto',
   'ensInto',
   'ampInto',
+  'leadSupply',
+  'leadSeqOn',
+  'leadSeqRate',
+  'leadSeqSync',
+  'leadSeqLen',
+  'leadSeqStep0',
+  'leadSeqStep1',
+  'leadSeqStep2',
+  'leadSeqStep3',
+  'leadSeqStep4',
+  'leadSeqStep5',
+  'leadSeqStep6',
+  'leadSeqStep7',
+  'leadSeqStep8',
+  'leadSeqStep9',
+  'leadSeqStep10',
+  'leadSeqStep11',
+  'leadSeqStep12',
+  'leadSeqStep13',
+  'leadSeqStep14',
+  'leadSeqStep15',
+  'leadSeqStep16',
+  'leadSeqStep17',
+  'leadSeqStep18',
+  'leadSeqStep19',
+  'leadSeqStep20',
+  'leadSeqStep21',
+  'leadSeqStep22',
+  'leadSeqStep23',
+  'leadSeqStep24',
+  'leadSeqStep25',
+  'leadSeqStep26',
+  'leadSeqStep27',
+  'leadSeqStep28',
+  'leadSeqStep29',
+  'leadSeqStep30',
+  'leadSeqStep31',
+  'leadSeqAccentLo',
+  'leadSeqAccentHi',
+  'leadSeqSlideLo',
+  'leadSeqSlideHi',
+  'leadLevel',
+  'leadMute',
+  'leadKeyGate',
+  'leadGate',
+  'leadAccent',
+  'leadStruck',
+  'leadGlide',
+  'leadWave1',
+  'leadWave2',
+  'leadWave3',
+  'leadRange1',
+  'leadRange2',
+  'leadRange3',
+  'leadTune2',
+  'leadTune3',
+  'leadOsc3',
+  'leadSync',
+  'leadFm',
+  'leadSweep',
+  'leadDrift',
+  'leadMix1',
+  'leadMix2',
+  'leadMix3',
+  'leadNoise',
+  'leadLoop',
+  'leadCutoff',
+  'leadEmph',
+  'leadContour',
+  'leadTrack',
+  'leadDrive',
+  'leadFA',
+  'leadFD',
+  'leadFS',
+  'leadFR',
+  'leadAA',
+  'leadAD',
+  'leadAS',
+  'leadAR',
+  'leadModMix',
+  'leadModPitch',
+  'leadModFilter',
+  'leadHeat',
+  'leadLeak',
+  'leadCap',
+  'leadMismatch',
+  'leadDroop',
+  'leadDacBit',
+  'leadSag',
+  'leadLoopPitch',
+  'leadChoke',
+  'leadRegTrip',
+  'leadThump',
+  'leadFold',
 ]
 
 // Retired controls that old links still carry, each read into the control that
@@ -1084,7 +1179,11 @@ export const RENAMED = new Map<
   { key: ControlKey; step: number; value: (old: number) => number }
 >([['revDryCut', { key: 'revDry', step: 0.01, value: v => 1 - v }]])
 
-const TUNE = new Set<ControlKey>([...TUNE_ALL_STEP_KEYS, ...MONO_SEQ_STEP_KEYS])
+const TUNE = new Set<ControlKey>([
+  ...TUNE_ALL_STEP_KEYS,
+  ...MONO_SEQ_STEP_KEYS,
+  ...LEAD_SEQ_STEP_KEYS,
+])
 
 const isLive = (key: ControlKey | Retired | undefined): key is ControlKey =>
   key !== undefined && !key.startsWith('gone:')
@@ -1128,7 +1227,8 @@ function fromInt(key: ControlKey, n: number): number {
   if (def) return snapToStep(def, n * def.step)
   if (TUNE.has(key)) return asTuneStep(n)
   if (LEN_KEYS.has(key)) return asLen(n)
-  if (key === 'tuneLen' || key === 'monoSeqLen') return asTuneLen(n)
+  if (key === 'tuneLen' || key === 'monoSeqLen' || key === 'leadSeqLen')
+    return asTuneLen(n)
   if (LANE_VALUE_KEYS.has(key)) return asLaneValue(n)
   const kit = asKitSetting(key, n)
   if (kit !== undefined) return kit

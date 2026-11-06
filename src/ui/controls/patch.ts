@@ -371,6 +371,13 @@ export const PATCH_GROUPS: Group[] = [
             'FM exp fault',
             'sheet level',
             'bottle level',
+            'lead level',
+            'lead cutoff',
+            'lead emphasis',
+            'lead pitch',
+            'lead out to pitch',
+            'lead out to gate',
+            'lead regulator trip',
           ],
           groups: [
             {
@@ -505,6 +512,18 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
+              name: 'Howler',
+              choices: [
+                'lead level',
+                'lead cutoff',
+                'lead emphasis',
+                'lead pitch',
+                'lead out to pitch',
+                'lead out to gate',
+                'lead regulator trip',
+              ],
+            },
+            {
               name: 'Chaos osc',
               choices: ['osc pitch', 'osc starve', 'osc level'],
             },
@@ -635,6 +654,8 @@ export const PATCH_GROUPS: Group[] = [
       'pcmKeyGate',
       'monoStruck',
       'monoKeyGate',
+      'leadStruck',
+      'leadKeyGate',
     ],
     sliders: [
       {

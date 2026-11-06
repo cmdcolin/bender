@@ -1,4 +1,5 @@
 import { IDX } from '../engine/params.ts'
+import { cardKey, type CardPrefix, type CardSuffix } from '../monoCard.ts'
 import { asTuneLen, hasSeqFlag, HOLD, isNote } from '../tune.ts'
 import { SupplyTap, type Supplies } from './supplies.ts'
 
@@ -15,6 +16,27 @@ export const MEMORY_SYNC_MODES = [
   'quarters',
 ]
 const MEMORY_SYNC_STEPS = [0, 1, 2, 3, 4]
+
+function memoryIdx(prefix: CardPrefix) {
+  const at = (suffix: CardSuffix) => IDX[cardKey(prefix, suffix)]
+  return {
+    on: at('SeqOn'),
+    rate: at('SeqRate'),
+    sync: at('SeqSync'),
+    len: at('SeqLen'),
+    step0: at('SeqStep0'),
+    accentLo: at('SeqAccentLo'),
+    accentHi: at('SeqAccentHi'),
+    slideLo: at('SeqSlideLo'),
+    slideHi: at('SeqSlideHi'),
+    supply: at('Supply'),
+  }
+}
+
+/** Growler's memory and Howler's, and the line on the bus each strikes. */
+export const GROWLER_MEMORY = { k: memoryIdx('mono'), line: 'seq' } as const
+export const HOWLER_MEMORY = { k: memoryIdx('lead'), line: 'leadSeq' } as const
+type Memory = typeof GROWLER_MEMORY | typeof HOWLER_MEMORY
 
 // The second melody: a 32-step memory with a counter of its own, clocked off the
 // toy's supply so it sags and stalls with the rest of the board. Its notes ride
@@ -37,9 +59,18 @@ export class MelodyMemory {
   private readonly sr: number
   private readonly power: SupplyTap
   private readonly transport: Transport
+  private readonly k: Memory['k']
+  private readonly line: Memory['line']
 
-  constructor(sr: number, supplies: Supplies, transport: Transport) {
+  constructor(
+    sr: number,
+    supplies: Supplies,
+    transport: Transport,
+    memory: Memory = GROWLER_MEMORY,
+  ) {
     this.sr = sr
+    this.k = memory.k
+    this.line = memory.line
     this.power = new SupplyTap(supplies)
     this.transport = transport
   }
@@ -72,29 +103,30 @@ export class MelodyMemory {
     this.at = this.pos
     this.stepSamples = this.sr / rate
     this.stepMs = 1000 / rate
-    return p[IDX.monoSeqStep0 + this.pos]!
+    return p[this.k.step0 + this.pos]!
   }
 
   // A held step carries the note across, so the span runs to the next note.
   private run(len: number, p: Float32Array): number {
     let n = 1
     for (let k = this.pos + 1; k < len; k++) {
-      if (p[IDX.monoSeqStep0 + k] !== HOLD) break
+      if (p[this.k.step0 + k] !== HOLD) break
       n++
     }
     return n
   }
 
   process(n: number, p: Float32Array, ctx: Ctx) {
-    const rail = this.power.pick(p[IDX.monoSupply]!)
+    const k = this.k
+    const rail = this.power.pick(p[k.supply]!)
     if (this.power.rebooted()) {
       this.fresh = true
     }
-    const every = MEMORY_SYNC_STEPS[Math.round(p[IDX.monoSeqSync]!)] ?? 0
+    const every = MEMORY_SYNC_STEPS[Math.round(p[k.sync]!)] ?? 0
     // Synced, the kit is the clock and its run line is the one that counts, so
     // a bassline never needs the toy's song running under it.
     const running =
-      p[IDX.monoSeqOn]! > 0.5 &&
+      p[k.on]! > 0.5 &&
       (every ? this.transport.drums : this.transport.tune) &&
       !rail.booting &&
       !rail.latched &&
@@ -104,22 +136,23 @@ export class MelodyMemory {
       this.clock = 1
       return
     }
-    const len = asTuneLen(p[IDX.monoSeqLen]!)
+    const len = asTuneLen(p[k.len]!)
     const kitHz = ctx.trig.kitStepHz
     const rate = every
       ? Math.max(kitHz / every, 0.01)
-      : Math.max(p[IDX.monoSeqRate]!, 0.01) * rail.clockFactor
-    const accentLo = p[IDX.monoSeqAccentLo]!
-    const accentHi = p[IDX.monoSeqAccentHi]!
-    const slideLo = p[IDX.monoSeqSlideLo]!
-    const slideHi = p[IDX.monoSeqSlideHi]!
+      : Math.max(p[k.rate]!, 0.01) * rail.clockFactor
+    const accentLo = p[k.accentLo]!
+    const accentHi = p[k.accentHi]!
+    const slideLo = p[k.slideLo]!
+    const slideHi = p[k.slideHi]!
+    const line = ctx.trig[this.line]
     for (let i = 0; i < n; i++) {
       const step = every
         ? this.clocked(ctx.trig.drumStep[i]!, every, rate, len, p)
         : this.tick(rate, len, p)
       if (step === NO_STEP || !isNote(step)) continue
       const run = this.run(len, p)
-      ctx.trig.seqStruck(
+      line.struck(
         i,
         step,
         this.stepSamples * run,

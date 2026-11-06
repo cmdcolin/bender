@@ -1,5 +1,6 @@
 import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
+import { cardKey, type CardPrefix, type CardSuffix } from '../../monoCard.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
@@ -26,12 +27,108 @@ function withLane(base: number, lane: Float32Array | null) {
   return Math.min(Math.max(base + (lane ? lane[0]! : 0), 0), 1)
 }
 
+function cardIdx(prefix: CardPrefix) {
+  const at = (suffix: CardSuffix) => IDX[cardKey(prefix, suffix)]
+  return {
+    level: at('Level'),
+    supply: at('Supply'),
+    keyGate: at('KeyGate'),
+    gate: at('Gate'),
+    accent: at('Accent'),
+    struck: at('Struck'),
+    glide: at('Glide'),
+    wave1: at('Wave1'),
+    wave2: at('Wave2'),
+    wave3: at('Wave3'),
+    range1: at('Range1'),
+    range2: at('Range2'),
+    range3: at('Range3'),
+    tune2: at('Tune2'),
+    tune3: at('Tune3'),
+    osc3: at('Osc3'),
+    sync: at('Sync'),
+    fm: at('Fm'),
+    sweep: at('Sweep'),
+    drift: at('Drift'),
+    mix1: at('Mix1'),
+    mix2: at('Mix2'),
+    mix3: at('Mix3'),
+    noise: at('Noise'),
+    loop: at('Loop'),
+    cutoff: at('Cutoff'),
+    emph: at('Emph'),
+    contour: at('Contour'),
+    track: at('Track'),
+    drive: at('Drive'),
+    fA: at('FA'),
+    fD: at('FD'),
+    fS: at('FS'),
+    fR: at('FR'),
+    aA: at('AA'),
+    aD: at('AD'),
+    aS: at('AS'),
+    aR: at('AR'),
+    modMix: at('ModMix'),
+    modPitch: at('ModPitch'),
+    modFilter: at('ModFilter'),
+    heat: at('Heat'),
+    leak: at('Leak'),
+    cap: at('Cap'),
+    mismatch: at('Mismatch'),
+    droop: at('Droop'),
+    dacBit: at('DacBit'),
+    sag: at('Sag'),
+    loopPitch: at('LoopPitch'),
+    choke: at('Choke'),
+    regTrip: at('RegTrip'),
+    thump: at('Thump'),
+    fold: at('Fold'),
+  }
+}
+
+// Where each build of the card is wired: its controls, its lanes on the bay,
+// its mic jack, the memory line it plays, and the Plays on choice that hands
+// that line to it, if the memory can play anything else.
+export const GROWLER = {
+  label: 'monoSynth',
+  k: cardIdx('mono'),
+  dest: {
+    emph: DEST.monoEmph,
+    loopPitch: DEST.monoLoopPitch,
+    choke: DEST.monoChoke,
+    regTrip: DEST.monoRegTrip,
+    pitch: DEST.monoPitch,
+    cutoff: DEST.monoCutoff,
+  },
+  mic: MIC.growlerIn,
+  line: 'seq',
+  seqTo: IDX.monoSeqTo,
+} as const
+
+export const HOWLER = {
+  label: 'leadSynth',
+  k: cardIdx('lead'),
+  dest: {
+    emph: DEST.leadEmph,
+    loopPitch: DEST.leadLoopPitch,
+    choke: DEST.leadChoke,
+    regTrip: DEST.leadRegTrip,
+    pitch: DEST.leadPitch,
+    cutoff: DEST.leadCutoff,
+  },
+  mic: MIC.howlerIn,
+  line: 'leadSeq',
+  seqTo: -1,
+} as const
+
+export type Card = typeof GROWLER | typeof HOWLER
+
 // The voice card of a three-oscillator monosynth, wired onto the toy's supply
 // and its gate line. Keys from its own bed and a controller arrive with their
 // key-ups; strikes off the gate line and the kit's trigger lines have none, so
 // the gate closes after a fraction of the toy's sequencer step.
 export class MonoSynth implements Stage {
-  label = 'monoSynth'
+  readonly label: string
 
   private readonly voice: MonoVoice
   private readonly buf = new Float32Array(BLOCK)
@@ -54,16 +151,19 @@ export class MonoSynth implements Stage {
 
   private readonly sr: number
   private readonly power: SupplyTap
+  private readonly card: Card
 
-  constructor(sr: number, supplies: Supplies) {
+  constructor(sr: number, supplies: Supplies, card: Card = GROWLER) {
     this.sr = sr
+    this.card = card
+    this.label = card.label
     this.power = new SupplyTap(supplies)
     this.voice = new MonoVoice(sr)
     this.stepSamples = FALLBACK_STEP_S * sr
   }
 
   when(p: Float32Array) {
-    return p[IDX.monoLevel]! > 0
+    return p[this.card.k.level]! > 0
   }
 
   noteOn(semitone: number, gain = 1) {
@@ -108,66 +208,64 @@ export class MonoSynth implements Stage {
   }
 
   private patch(p: Float32Array, ctx: Ctx) {
+    const { k, dest, mic } = this.card
     const v = this.voice.patch
-    v.wave[0] = Math.round(p[IDX.monoWave1]!)
-    v.wave[1] = Math.round(p[IDX.monoWave2]!)
-    v.wave[2] = Math.round(p[IDX.monoWave3]!)
-    v.range[0] = Math.round(p[IDX.monoRange1]!)
-    v.range[1] = Math.round(p[IDX.monoRange2]!)
-    v.range[2] = Math.round(p[IDX.monoRange3]!)
-    v.fine[1] = p[IDX.monoTune2]!
-    v.fine[2] = p[IDX.monoTune3]!
-    v.level[0] = p[IDX.monoMix1]!
-    v.level[1] = p[IDX.monoMix2]!
-    v.level[2] = p[IDX.monoMix3]!
-    v.noise = p[IDX.monoNoise]!
-    v.loop = p[IDX.monoLoop]!
-    const osc3 = Math.round(p[IDX.monoOsc3]!)
+    v.wave[0] = Math.round(p[k.wave1]!)
+    v.wave[1] = Math.round(p[k.wave2]!)
+    v.wave[2] = Math.round(p[k.wave3]!)
+    v.range[0] = Math.round(p[k.range1]!)
+    v.range[1] = Math.round(p[k.range2]!)
+    v.range[2] = Math.round(p[k.range3]!)
+    v.fine[1] = p[k.tune2]!
+    v.fine[2] = p[k.tune3]!
+    v.level[0] = p[k.mix1]!
+    v.level[1] = p[k.mix2]!
+    v.level[2] = p[k.mix3]!
+    v.noise = p[k.noise]!
+    v.loop = p[k.loop]!
+    const osc3 = Math.round(p[k.osc3]!)
     v.osc3Free = osc3 >= 1
     v.osc3Lo = osc3 === 2
-    v.sync = Math.round(p[IDX.monoSync]!)
-    v.linFm = p[IDX.monoFm]!
-    v.envOsc2 = p[IDX.monoSweep]!
-    v.drift = p[IDX.monoDrift]!
-    v.cutoff = p[IDX.monoCutoff]!
-    const emphLane = ctx.mod.read(DEST.monoEmph)
+    v.sync = Math.round(p[k.sync]!)
+    v.linFm = p[k.fm]!
+    v.envOsc2 = p[k.sweep]!
+    v.drift = p[k.drift]!
+    v.cutoff = p[k.cutoff]!
+    const emphLane = ctx.mod.read(dest.emph)
     v.emphasis = Math.min(
-      Math.max(p[IDX.monoEmph]! + (emphLane ? emphLane[0]! * 1.1 : 0), 0),
+      Math.max(p[k.emph]! + (emphLane ? emphLane[0]! * 1.1 : 0), 0),
       1.1,
     )
-    v.contour = p[IDX.monoContour]!
-    v.track = p[IDX.monoTrack]!
-    v.drive = p[IDX.monoDrive]!
-    v.fA = p[IDX.monoFA]!
-    v.fD = p[IDX.monoFD]!
-    v.fS = p[IDX.monoFS]!
-    v.fR = p[IDX.monoFR]!
-    v.aA = p[IDX.monoAA]!
-    v.aD = p[IDX.monoAD]!
-    v.aS = p[IDX.monoAS]!
-    v.aR = p[IDX.monoAR]!
-    v.glide = p[IDX.monoGlide]!
+    v.contour = p[k.contour]!
+    v.track = p[k.track]!
+    v.drive = p[k.drive]!
+    v.fA = p[k.fA]!
+    v.fD = p[k.fD]!
+    v.fS = p[k.fS]!
+    v.fR = p[k.fR]!
+    v.aA = p[k.aA]!
+    v.aD = p[k.aD]!
+    v.aS = p[k.aS]!
+    v.aR = p[k.aR]!
+    v.glide = p[k.glide]!
     v.modAmt = 1
-    v.modMix = p[IDX.monoModMix]!
-    v.modPitch = p[IDX.monoModPitch]!
-    v.modFilter = p[IDX.monoModFilter]!
-    v.heat = Math.min(p[IDX.monoHeat]! + 0.3 * ctx.heat, 1)
-    v.vcaLeak = p[IDX.monoLeak]!
-    v.envCap = p[IDX.monoCap]!
-    v.mismatch = p[IDX.monoMismatch]!
-    v.droop = p[IDX.monoDroop]!
-    v.dacBit = Math.round(p[IDX.monoDacBit]!) - 1
-    v.sag = p[IDX.monoSag]!
-    v.accent = p[IDX.monoAccent]!
-    v.loopPitch = withLane(
-      p[IDX.monoLoopPitch]!,
-      ctx.mod.read(DEST.monoLoopPitch),
-    )
-    v.choke = withLane(p[IDX.monoChoke]!, ctx.mod.read(DEST.monoChoke))
-    v.regTrip = withLane(p[IDX.monoRegTrip]!, ctx.mod.read(DEST.monoRegTrip))
-    v.thump = p[IDX.monoThump]!
-    v.fold = p[IDX.monoFold]!
-    this.ext = micInto(p, ctx, MIC.growlerIn)
+    v.modMix = p[k.modMix]!
+    v.modPitch = p[k.modPitch]!
+    v.modFilter = p[k.modFilter]!
+    v.heat = Math.min(p[k.heat]! + 0.3 * ctx.heat, 1)
+    v.vcaLeak = p[k.leak]!
+    v.envCap = p[k.cap]!
+    v.mismatch = p[k.mismatch]!
+    v.droop = p[k.droop]!
+    v.dacBit = Math.round(p[k.dacBit]!) - 1
+    v.sag = p[k.sag]!
+    v.accent = p[k.accent]!
+    v.loopPitch = withLane(p[k.loopPitch]!, ctx.mod.read(dest.loopPitch))
+    v.choke = withLane(p[k.choke]!, ctx.mod.read(dest.choke))
+    v.regTrip = withLane(p[k.regTrip]!, ctx.mod.read(dest.regTrip))
+    v.thump = p[k.thump]!
+    v.fold = p[k.fold]!
+    this.ext = micInto(p, ctx, mic)
     v.ext = this.ext ? MIC_IN_GAIN : 0
   }
 
@@ -194,11 +292,12 @@ export class MonoSynth implements Stage {
   }
 
   private sing(note: number, i: number, p: Float32Array, ctx: Ctx) {
-    const span = ctx.trig.seqSpan[i]!
-    const accent = ctx.trig.seqAccent[i]! > 0
-    const slides = ctx.trig.seqSlide[i]! > 0
+    const line = ctx.trig[this.card.line]
+    const span = line.span[i]!
+    const accent = line.accent[i]! > 0
+    const slides = line.slide[i]! > 0
     const length = Math.max(
-      slides ? span * SLIDE_HOLD : span * p[IDX.monoGate]!,
+      slides ? span * SLIDE_HOLD : span * p[this.card.k.gate]!,
       1,
     )
     const from = this.gateNote
@@ -237,7 +336,8 @@ export class MonoSynth implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    const rail = this.power.pick(p[IDX.monoSupply]!)
+    const { k, dest, seqTo } = this.card
+    const rail = this.power.pick(p[k.supply]!)
     const voice = this.voice
     if (this.power.rebooted()) {
       voice.allOff()
@@ -262,19 +362,20 @@ export class MonoSynth implements Stage {
     }
     this.queued.length = 0
 
-    const pitchLane = ctx.mod.read(DEST.monoPitch)
-    const cutLane = ctx.mod.read(DEST.monoCutoff)
+    const pitchLane = ctx.mod.read(dest.pitch)
+    const cutLane = ctx.mod.read(dest.cutoff)
     if (cutLane) {
       for (let i = 0; i < io.n; i++) {
         this.cutoffLane[i] = cutLane[i]! * CUTOFF_LANE_OCTAVES
       }
     }
 
-    const lineKeys = ctx.trig.keyLine(p[IDX.monoKeyGate]!)
-    const lineHeld = ctx.trig.heldLine(p[IDX.monoKeyGate]!)
-    const sung = Math.round(p[IDX.monoSeqTo]!) === SEQ_TO_MONO
-    const drumMask = voiceMask(Math.round(p[IDX.monoStruck]!))
-    const gate = p[IDX.monoGate]!
+    const lineKeys = ctx.trig.keyLine(p[k.keyGate]!)
+    const lineHeld = ctx.trig.heldLine(p[k.keyGate]!)
+    const sung = seqTo < 0 || Math.round(p[seqTo]!) === SEQ_TO_MONO
+    const seqLine = ctx.trig[this.card.line]
+    const drumMask = voiceMask(Math.round(p[k.struck]!))
+    const gate = p[k.gate]!
     this.gateLength = Math.max(gate * this.stepSamples, 1)
 
     this.from = 0
@@ -291,7 +392,7 @@ export class MonoSynth implements Stage {
       this.lastPhase = phase
 
       const key = lineKeys ? lineKeys[i]! : 0
-      const seq = sung ? ctx.trig.seqKey[i]! : 0
+      const seq = sung ? seqLine.key[i]! : 0
       const bits =
         drumMask !== 0 ? Math.round(ctx.trig.drumBits[i]!) & drumMask : 0
       const closing = this.gateNote >= 0 && --this.gateLeft <= 0
@@ -312,7 +413,7 @@ export class MonoSynth implements Stage {
     }
     this.run(io.n)
 
-    const amp = rail.ampFactor * p[IDX.monoLevel]! * OUT_TRIM
+    const amp = rail.ampFactor * p[k.level]! * OUT_TRIM
     let load = 0
     for (let i = 0; i < io.n; i++) {
       const out = this.buf[i]! * amp

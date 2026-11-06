@@ -32,6 +32,7 @@ const BOARD: Partial<Controls> = {
   fmLevel: 0.5,
   pcmLevel: 0.5,
   monoLevel: 0.5,
+  leadLevel: 0.5,
   oscLevel: 0.3,
   noiseLevel: 0.2,
   loopRec: 1,

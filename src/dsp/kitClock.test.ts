@@ -41,7 +41,7 @@ function memorySteps(
     },
     undefined,
     built => {
-      const at = built.chain.melody!.at
+      const at = built.melody.at
       if (at !== last) steps++
       last = at
     },

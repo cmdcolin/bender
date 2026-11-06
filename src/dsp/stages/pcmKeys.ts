@@ -528,7 +528,7 @@ export class PcmKeys implements Stage {
         const hand = lineHeld[i]! > 0
         this.strike(struck - KEY_BIAS, 1, hand, chord, true, hand ? 0 : length)
       }
-      const sung = sings ? ctx.trig.seqKey[i]! : 0
+      const sung = sings ? ctx.trig.seq.key[i]! : 0
       if (sung !== 0)
         this.strike(sung - KEY_BIAS, 1, false, chord, true, length)
 

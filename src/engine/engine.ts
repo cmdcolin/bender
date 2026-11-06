@@ -171,6 +171,9 @@ export interface Meter {
   monoSeqPos: number
   monoSeqFrac: number
   monoSeqStepMs: number
+  leadSeqPos: number
+  leadSeqFrac: number
+  leadSeqStepMs: number
   tuneStepMs: number
   duck: number
   rail: number
@@ -405,6 +408,9 @@ export class Engine {
       monoSeqPos: 0,
       monoSeqFrac: 0,
       monoSeqStepMs: 0,
+      leadSeqPos: 0,
+      leadSeqFrac: 0,
+      leadSeqStepMs: 0,
       tuneStepMs: 0,
       duck: 0,
       rail: 1,
@@ -551,6 +557,8 @@ export class Engine {
   readonly pcmNotes = createStore<ReadonlySet<number>>(new Set())
   readonly monoKeysDown = createStore<ReadonlySet<number>>(new Set())
   readonly monoNotes = createStore<ReadonlySet<number>>(new Set())
+  readonly leadKeysDown = createStore<ReadonlySet<number>>(new Set())
+  readonly leadNotes = createStore<ReadonlySet<number>>(new Set())
   private readonly keysDownOn: Record<
     NoteDest,
     ReturnType<typeof createStore<ReadonlySet<number>>>
@@ -559,6 +567,7 @@ export class Engine {
     fm: this.fmKeysDown,
     pcm: this.pcmKeysDown,
     mono: this.monoKeysDown,
+    lead: this.leadKeysDown,
   }
   // Which sources are actually putting something on the bus, as a bit per
   // SOURCE_TAPS slot. A run switch says a sequencer is walking; this says the
@@ -700,6 +709,12 @@ export class Engine {
           msg.monoNoteCount,
         )
         if (mono !== this.monoNotes.get()) this.monoNotes.set(mono)
+        const lead = mergeNotes(
+          this.leadNotes.get(),
+          msg.leadNotes,
+          msg.leadNoteCount,
+        )
+        if (lead !== this.leadNotes.get()) this.leadNotes.set(lead)
         const newFaults = msg.faults - this.meter.get().faults
         if (newFaults > 0)
           console.warn(
@@ -722,6 +737,9 @@ export class Engine {
           monoSeqPos: msg.monoSeqPos,
           monoSeqFrac: msg.monoSeqFrac,
           monoSeqStepMs: msg.monoSeqStepMs,
+          leadSeqPos: msg.leadSeqPos,
+          leadSeqFrac: msg.leadSeqFrac,
+          leadSeqStepMs: msg.leadSeqStepMs,
           tuneStepMs: msg.tuneStepMs,
           duck: msg.duck,
           rail: msg.rail,
@@ -1984,6 +2002,7 @@ export class Engine {
     fm: new Map(),
     pcm: new Map(),
     mono: new Map(),
+    lead: new Map(),
   }
 
   // The key line's matrix, taken here rather than down on the wire: the drawn
@@ -2026,14 +2045,12 @@ export class Engine {
 
   /** The second melody runs off the kit's run line when it is synced to the
       kit, and off the song's otherwise. */
-  lineRuns(c: Controls = this.controls.get()) {
-    return c.monoSeqSync !== 0
-      ? this.drumsPlaying.get()
-      : this.songPlaying.get()
+  lineRuns(c: Controls = this.controls.get(), sync = c.monoSeqSync) {
+    return sync !== 0 ? this.drumsPlaying.get() : this.songPlaying.get()
   }
 
-  setLinePlaying(on: boolean) {
-    if (this.controls.get().monoSeqSync !== 0) this.setDrumsPlaying(on)
+  setLinePlaying(on: boolean, sync = this.controls.get().monoSeqSync) {
+    if (sync !== 0) this.setDrumsPlaying(on)
     else this.setSongPlaying(on)
   }
 

@@ -44,6 +44,38 @@ export const gateLane = (choice: number) =>
 // under the toy's own bottom, and semitone −1 is a note somebody pressed.
 export const KEY_BIAS = 128
 
+/** A melody memory's line: a note it struck this block, biased, and 0 where it
+    struck nothing. */
+export class SeqLine {
+  readonly key = new Float32Array(BLOCK)
+  /** How many samples that step lasts, plus the holds that follow it. */
+  readonly span = new Float32Array(BLOCK)
+  /** 1 where that step is accented. */
+  readonly accent = new Float32Array(BLOCK)
+  /** 1 where that step slides into the next note. */
+  readonly slide = new Float32Array(BLOCK)
+
+  struck(
+    i: number,
+    semitone: number,
+    span: number,
+    accent = false,
+    slide = false,
+  ) {
+    this.key[i] = semitone + KEY_BIAS
+    this.span[i] = span
+    this.accent[i] = accent ? 1 : 0
+    this.slide[i] = slide ? 1 : 0
+  }
+
+  clear(n: number) {
+    this.key.fill(0, 0, n)
+    this.span.fill(0, 0, n)
+    this.accent.fill(0, 0, n)
+    this.slide.fill(0, 0, n)
+  }
+}
+
 // The two boxes' trigger lines, brought out to a bus so a wire can bridge them.
 // The kit stamps which voices fired and how hard; the keyboard stamps the note
 // its gate struck.
@@ -87,16 +119,11 @@ export class TriggerBus {
   /** Every key that has gone down, counted, so a press shorter than a block
       still shows. */
   keyPresses = 0
-  /** A note the melody memory struck this block, biased; 0 where it struck
-      nothing. Its own line, so the memory plays one machine while the toy's
-      tune plays the others. */
-  readonly seqKey = new Float32Array(BLOCK)
-  /** How many samples that step lasts, plus the holds that follow it. */
-  readonly seqSpan = new Float32Array(BLOCK)
-  /** 1 where that step is accented. */
-  readonly seqAccent = new Float32Array(BLOCK)
-  /** 1 where that step slides into the next note. */
-  readonly seqSlide = new Float32Array(BLOCK)
+  /** Growler's melody memory, on its own line so it plays one machine while
+      the toy's tune plays the others. */
+  readonly seq = new SeqLine()
+  /** Howler's, which only Howler hears. */
+  readonly leadSeq = new SeqLine()
 
   private pendBits = new Float32Array(BLOCK)
   private pendGain = new Float32Array(BLOCK)
@@ -165,19 +192,6 @@ export class TriggerBus {
     return gateLane(choice) >= 0 ? this.unheld : this.keyHeld
   }
 
-  seqStruck(
-    i: number,
-    semitone: number,
-    span: number,
-    accent = false,
-    slide = false,
-  ) {
-    this.seqKey[i] = semitone + KEY_BIAS
-    this.seqSpan[i] = span
-    this.seqAccent[i] = accent ? 1 : 0
-    this.seqSlide[i] = slide ? 1 : 0
-  }
-
   // Once a block, from the chain: last block's kit hits become the readable
   // ones and both directions start the block clean.
   swap(n: number) {
@@ -200,10 +214,8 @@ export class TriggerBus {
     this.key.fill(0, 0, n)
     this.keyHeld.fill(0, 0, n)
     for (const lane of this.laneKey) lane.fill(0, 0, n)
-    this.seqKey.fill(0, 0, n)
-    this.seqSpan.fill(0, 0, n)
-    this.seqAccent.fill(0, 0, n)
-    this.seqSlide.fill(0, 0, n)
+    this.seq.clear(n)
+    this.leadSeq.clear(n)
   }
 
   keyGate(semitone: number, down: boolean) {
@@ -231,9 +243,7 @@ export class TriggerBus {
     this.key.fill(0)
     this.keyHeld.fill(0)
     for (const lane of this.laneKey) lane.fill(0)
-    this.seqKey.fill(0)
-    this.seqSpan.fill(0)
-    this.seqAccent.fill(0)
-    this.seqSlide.fill(0)
+    this.seq.clear(BLOCK)
+    this.leadSeq.clear(BLOCK)
   }
 }

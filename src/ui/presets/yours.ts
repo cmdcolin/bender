@@ -1,5 +1,8 @@
 import { GRID_ROWS, rowMasks, THROW_ROW } from '../../drums.ts'
 import {
+  LEAD_SEQ_ACCENT_KEYS,
+  LEAD_SEQ_SLIDE_KEYS,
+  LEAD_SEQ_STEP_KEYS,
   MONO_SEQ_ACCENT_KEYS,
   MONO_SEQ_SLIDE_KEYS,
   MONO_SEQ_STEP_KEYS,
@@ -80,6 +83,12 @@ export const YOURS = new Set<ControlKey>([
   ...MONO_SEQ_STEP_KEYS,
   ...MONO_SEQ_ACCENT_KEYS,
   ...MONO_SEQ_SLIDE_KEYS,
+  'leadSeqOn',
+  'leadSeqRate',
+  'leadSeqLen',
+  ...LEAD_SEQ_STEP_KEYS,
+  ...LEAD_SEQ_ACCENT_KEYS,
+  ...LEAD_SEQ_SLIDE_KEYS,
 ])
 
 export const keepYours = (

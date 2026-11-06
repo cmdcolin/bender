@@ -82,7 +82,7 @@ const LANDINGS: Landing[] = [
   // The rail the whole toy runs off, so any of the machines on it being
   // up is a wire there you can hear.
   at('starve', [], {
-    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'monoLevel'],
+    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'monoLevel', 'leadLevel'],
   }),
   at('drum tune', ['drumLevel']),
   at('kit tempo', ['drumLevel']),
@@ -225,6 +225,13 @@ const LANDINGS: Landing[] = [
   at('mono out to pitch', ['monoLevel']),
   at('mono out to gate', ['monoLevel']),
   at('mono regulator trip', ['monoLevel']),
+  at('lead level', ['leadLevel']),
+  at('lead cutoff', ['leadLevel']),
+  at('lead emphasis', ['leadLevel']),
+  at('lead pitch', ['leadLevel']),
+  at('lead out to pitch', ['leadLevel']),
+  at('lead out to gate', ['leadLevel']),
+  at('lead regulator trip', ['leadLevel']),
   at('kit motorboat', ['drumLevel']),
   at('kit clock rush', ['drumLevel']),
   at('kit pattern rot', ['drumLevel']),

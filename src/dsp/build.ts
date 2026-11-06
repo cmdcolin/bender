@@ -1,5 +1,5 @@
 import { Chain } from './chain.ts'
-import { MelodyMemory } from './melodyMemory.ts'
+import { HOWLER_MEMORY, MelodyMemory } from './melodyMemory.ts'
 import { Amp } from './stages/amp.ts'
 import { Bottle } from './stages/bottle.ts'
 import { Brownout } from './stages/brownout.ts'
@@ -13,7 +13,7 @@ import { Ensemble } from './stages/ensemble.ts'
 import { FmChip } from './stages/fmChip.ts'
 import { FourTrack } from './stages/fourTrack.ts'
 import { GlitchBuf } from './stages/glitchBuf.ts'
-import { MonoSynth } from './stages/monoSynth.ts'
+import { HOWLER, MonoSynth } from './stages/monoSynth.ts'
 import { Noise } from './stages/noise.ts'
 import { Octave } from './stages/octave.ts'
 import { PcmKeys } from './stages/pcmKeys.ts'
@@ -43,6 +43,8 @@ export interface BuiltChain {
   pcmKeys: PcmKeys
   monoSynth: MonoSynth
   melody: MelodyMemory
+  leadSynth: MonoSynth
+  leadMelody: MelodyMemory
   sampler: Sampler
   fourTrack: FourTrack
   sheet: Sheet
@@ -95,7 +97,11 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   // after it stays the one it was.
   const monoSynth = new MonoSynth(sr, supplies)
   const melody = new MelodyMemory(sr, supplies, transport)
-  chain.melody = melody
+  // Howler, the same card built again, with a memory of its own. Neither
+  // draws a seed.
+  const leadSynth = new MonoSynth(sr, supplies, HOWLER)
+  const leadMelody = new MelodyMemory(sr, supplies, transport, HOWLER_MEMORY)
+  chain.melodies = [melody, leadMelody]
   // In SOURCE_TAPS order, which is the order their meter taps come home in — a
   // test holds the two lists together, because the panel reads a channel off
   // its slot number and a source in the wrong one would meter as its neighbour.
@@ -144,6 +150,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   chain.sources.push(sheet)
   const bottle = new Bottle(sr, seed ^ 0xb077)
   chain.sources.push(bottle)
+  chain.sources.push(leadSynth)
   return {
     chain,
     toyChip,
@@ -152,6 +159,8 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     pcmKeys,
     monoSynth,
     melody,
+    leadSynth,
+    leadMelody,
     sampler,
     fourTrack,
     sheet,
@@ -169,6 +178,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
       fmChip.gateOff(semitone)
       pcmKeys.gateOff(semitone)
       monoSynth.gateOff(semitone)
+      leadSynth.gateOff(semitone)
     },
   }
 }

@@ -38,6 +38,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   // And the home keyboard's, which is the third bed on the panel.
   private pcmNotes = new Int16Array(PcmKeys.MAX_SOUNDING)
   private monoNotes = new Int16Array(1)
+  private leadNotes = new Int16Array(1)
   private peak = 0
   private duck = 0
   private recording = false
@@ -97,6 +98,9 @@ class BenderProcessor extends AudioWorkletProcessor {
       monoSeqPos: 0,
       monoSeqFrac: 0,
       monoSeqStepMs: 0,
+      leadSeqPos: 0,
+      leadSeqFrac: 0,
+      leadSeqStepMs: 0,
       tuneStepMs: 0,
       duck: 0,
       rail: 1,
@@ -113,6 +117,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       pcmNoteCount: 0,
       monoNotes: this.monoNotes,
       monoNoteCount: 0,
+      leadNotes: this.leadNotes,
+      leadNoteCount: 0,
       taps: chain.taps,
       bands: chain.bands.levels,
       walk: chain.walk,
@@ -167,6 +173,8 @@ class BenderProcessor extends AudioWorkletProcessor {
             this.built.pcmKeys.noteOn(msg.semitone, msg.gain)
           else if (msg.dest === 'mono')
             this.built.monoSynth.noteOn(msg.semitone, msg.gain)
+          else if (msg.dest === 'lead')
+            this.built.leadSynth.noteOn(msg.semitone, msg.gain)
           else this.built.toyChip.noteOn(msg.semitone, msg.gain)
           break
         case 'noteOff':
@@ -175,6 +183,8 @@ class BenderProcessor extends AudioWorkletProcessor {
           else if (msg.dest === 'pcm') this.built.pcmKeys.noteOff(msg.semitone)
           else if (msg.dest === 'mono')
             this.built.monoSynth.noteOff(msg.semitone)
+          else if (msg.dest === 'lead')
+            this.built.leadSynth.noteOff(msg.semitone)
           else this.built.noteOff(msg.semitone)
           break
         case 'drumHit':
@@ -355,6 +365,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       const fmSounding = this.built.fmChip.soundingNotes(this.fmNotes)
       const pcmSounding = this.built.pcmKeys.soundingNotes(this.pcmNotes)
       const monoSounding = this.built.monoSynth.soundingNotes(this.monoNotes)
+      const leadSounding = this.built.leadSynth.soundingNotes(this.leadNotes)
       const m = this.meterMsg
       m.peak = peak
       m.tick = this.built.toyDrum.tick
@@ -369,6 +380,9 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.monoSeqPos = this.built.melody.at
       m.monoSeqFrac = this.built.melody.frac
       m.monoSeqStepMs = this.built.melody.stepMs
+      m.leadSeqPos = this.built.leadMelody.at
+      m.leadSeqFrac = this.built.leadMelody.frac
+      m.leadSeqStepMs = this.built.leadMelody.stepMs
       m.tuneStepMs = this.built.toyChip.tuneStepMs
       m.duck = this.duck
       m.rail = rail.v
@@ -381,6 +395,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.fmNoteCount = fmSounding
       m.pcmNoteCount = pcmSounding
       m.monoNoteCount = monoSounding
+      m.leadNoteCount = leadSounding
       m.dropped = this.built.chain.dropped
       m.sampleSecs = sampler.frames / sampleRate
       m.samplePos = sampler.head

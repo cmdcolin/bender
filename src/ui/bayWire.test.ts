@@ -143,5 +143,10 @@ test('every lane a control claims is a lane the bay has, and claimed once', () =
   const unclaimed = dests.filter(
     d => !claimed.has(d) && !d.startsWith('retired'),
   )
-  expect(unclaimed).toEqual(['loop slide', 'loop span', 'mono pitch'])
+  expect(unclaimed).toEqual([
+    'loop slide',
+    'loop span',
+    'mono pitch',
+    'lead pitch',
+  ])
 })

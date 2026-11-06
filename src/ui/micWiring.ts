@@ -111,6 +111,12 @@ const JACKS: Record<(typeof MIC)[keyof typeof MIC], MicJack> = {
     part: 'clock pin',
     says: 'each cycle of your voice takes one sample, so you sing the sample rate and silence freezes it',
   },
+  [MIC.howlerIn]: {
+    name: 'Howler in',
+    stage: 'Howler',
+    part: 'external input',
+    says: 'a scream into the lead rings the ladder and folds with it',
+  },
 }
 
 export const MIC_JACKS: readonly MicJack[] = Object.values(MIC)
@@ -138,6 +144,7 @@ export const JACKS_BY_STAGE: readonly {
   { stage: 'Clatter', kind: 'toy drums', jacks: [MIC.drumTrig] },
   { stage: 'Glint', kind: 'FM synth', jacks: [MIC.glintBus] },
   { stage: 'Growler', kind: 'mono synth', jacks: [MIC.growlerIn] },
+  { stage: 'Howler', kind: 'lead synth', jacks: [MIC.howlerIn] },
   { stage: 'Spool', kind: 'tape loop', jacks: [MIC.tapeMotor] },
   { stage: 'Chaos osc', kind: 'oscillator', jacks: [MIC.oscSync, MIC.oscFm] },
   { stage: 'Wraith', kind: 'tape delay', jacks: [MIC.delayFb] },

@@ -48,10 +48,10 @@ export interface UndoTakeMsg {
 }
 
 /** Which keybed a note came off. The toy's gate is the default and reaches the
-    Glint, Parlor and Growler too wherever those jumpers are
-    still soldered on; the other three are the beds drawn under it, each wired
+    Glint, Parlor, Growler and Howler too wherever those jumpers are
+    still soldered on; the others are the beds drawn under it, each wired
     only to its own chip. */
-export type NoteDest = 'toy' | 'fm' | 'pcm' | 'mono'
+export type NoteDest = 'toy' | 'fm' | 'pcm' | 'mono' | 'lead'
 
 /** The machines the second melody can play, in the order of its Plays on choice. */
 export const SEQ_DESTS = [
@@ -196,6 +196,9 @@ export interface MeterMsg {
   monoSeqPos: number
   monoSeqFrac: number
   monoSeqStepMs: number
+  leadSeqPos: number
+  leadSeqFrac: number
+  leadSeqStepMs: number
   tuneStepMs: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number
@@ -233,6 +236,9 @@ export interface MeterMsg {
   /** The mono synth's one key, if it is playing one. */
   monoNotes: Int16Array
   monoNoteCount: number
+  /** And Howler's. */
+  leadNotes: Int16Array
+  leadNoteCount: number
   /** What each source, the mic and the mix bus itself have peaked at since the
       last meter — the chain's taps, in `SOURCE_TAPS` order with the mic and the
       bus above them. The worklet's own buffer, cleared the moment it is posted
