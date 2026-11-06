@@ -1691,11 +1691,6 @@ function boardWires(m: Laid) {
   }
 }
 
-// Everything meets on one bar and the bar feeds the mix. The board's own output
-// comes down the channel between two of the boxes under it rather than through
-// one of them, which is the whole reason the band is a grid. In a stacked band
-// it comes down the first gap, steps across between the rows and down the
-// second.
 // Where the band's leads meet on their way down to the bus: the gap between
 // the first row of line machines, else under the board, else over the bus.
 const gapAt = (row: readonly MapNode[], mix: MapNode) =>
@@ -1716,6 +1711,11 @@ function spineAt(m: {
       : midX(mix)
 }
 
+// Everything meets on one bar and the bar feeds the mix. The board's own output
+// comes down the channel between two of the boxes under it rather than through
+// one of them, which is the whole reason the band is a grid. In a stacked band
+// it comes down the first gap, steps across between the rows and down the
+// second.
 function bandWires(m: Laid) {
   const { k, wire, bar, mix, lineRows, chipRows, hasBoard, board, spine } = m
   const { collectY, down, inserts } = m
