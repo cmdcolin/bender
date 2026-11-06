@@ -10,7 +10,24 @@ import type { DEST } from './dsp/modbus.ts'
 //
 // A new machine goes on the end, because its place here is its meter tap, its
 // Patched into choice and its slot on the desk, which saved boards and the audio
-// thread count by.
+// thread count by. Beyond its record it needs:
+//
+// - its stage, built in dsp/build.ts and named in `sources`, and in `keybeds`
+//   and `gateLine` when it has keys or a jumper on the gate line;
+// - its controls in DEFAULT_CONTROLS, PARAM_DEFS and URL_KEY_ORDER, appended;
+// - its fader's lane in DEST (dsp/modbus.ts), named in the bay's dest choices
+//   (ui/controls/patch.ts), LANDINGS (ui/presets/patch.ts) and WIRE_BOX
+//   (ui/chain-map.ts);
+// - each mic jack's value in MIC (dsp/micJacks.ts), appended;
+// - its panel group, listed in SOURCE_GROUPS (ui/controls/sources.ts);
+// - its glyph in GLYPH (ui/chain-map.ts);
+// - with `face`, a component in FACES (ui/Instruments.tsx), and its line in the
+//   Add instrument test, and with `supply`, its name in the supply panel's;
+// - `pnpm features` and `pnpm diagram`, for docs/features.md and the README's
+//   signal path.
+//
+// The type checker asks for the `sources`, `keybeds`, `gateLine` and FACES
+// entries, a DEST lane for the first level, and a `cv` on the toy board.
 
 /** A lane on the patch bay that is also a control: a fader a bay wire rides. */
 type Lane = ControlKey & keyof typeof DEST

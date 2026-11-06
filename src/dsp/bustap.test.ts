@@ -86,22 +86,7 @@ test('the desk names the sources the chain is built with, in order', () => {
   expect(buildBender(SR).chain.sources.map(s => s.label)).toEqual([
     ...SOURCE_TAPS,
   ])
-  expect(CHANNELS.map(c => c.tap)).toEqual([
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    TAP_MIC,
-  ])
+  expect(CHANNELS.map(c => c.tap)).toEqual([...SOURCE_TAPS.keys(), TAP_MIC])
 })
 
 test('the mic meters where it is soldered, on the bus or off it', () => {
