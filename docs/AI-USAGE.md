@@ -79,6 +79,7 @@ Then ask Claude Code to open the public URL, or
 | `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`, or three lanes from an array                                  |
 | `bender.drums(rows)`                   | writes drum rows such as `{ kick: 'x(3,8)', hat: 'g.[xxx]' }` (`g` is a ghost), and the ratchet, nudge, event and bar condition rows |
 | `bender.line(text, flags?)`            | writes Growler's bassline memory on the kit's sixteenths, with `accent` and `slide` rows; `on: 'Howler'` writes Howler's lead        |
+| `bender.speak(text, opts?)`            | loads Prattle's phrase and says it; `struck: 'hat'` speaks a syllable a hit, `repeat: true` loops it                                 |
 | `bender.start()`                       | starts audio, or reports that the page needs a click first                                                                           |
 | `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                      |
 | `bender.listen(ms)`                    | peak level, limiter gain reduction, supply rail, reboots, the machines heard and the peak of each, their notes and drum hits         |

@@ -76,6 +76,10 @@ The `techno` and `acid techno` presets load the same kind of groove in one call,
   bassline alone; raise `leadLevel` and cut `leadKeyGate`. Its stock 8′ sounds
   the notes as written. `bender.load('hard techno howl')` loads a 150 bpm groove
   with one.
+- **A voice on the offbeats:**
+  `bender.speak('kill the bass', { struck: 'hat' })` has Prattle, the speech
+  chip, say a syllable on each hat. `bender.load('robot chant')` and
+  `bender.load('lattice howl')` load it bent.
 
 ## Starve the batteries
 
