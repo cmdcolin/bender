@@ -1,8 +1,9 @@
 // The wire format between main thread and worklet: PARAM_DEFS order IS the
 // layout of the packed Float32Array. Shared by both sides; keep dependency-free
-// beyond controls.ts (pure data).
+// beyond controls.ts and machines.ts (pure data).
 
 import { readInOrder, type ControlKey, type Controls } from '../controls.ts'
+import { MACHINES, type SourceTap } from '../machines.ts'
 
 // slew: one-pole toward target (~10 ms) — knob moves smear musically.
 // ramp: one-pole toward target (~3 ms) — gains where zipper is audible. The
@@ -1236,43 +1237,14 @@ export const SMOOTH_SEC: Float32Array = Float32Array.from(
 // The order is the order the chain wires them onto the bus, named by the label
 // each stage carries, so the mixer on the panel and the summing on the audio
 // thread come off one list rather than two that agree for now.
-export const SOURCE_TAPS = [
-  'toyChip',
-  'toyDrum',
-  'fmChip',
-  'pcmKeys',
-  'monoSynth',
-  'chaosOsc',
-  'noise',
-  'sampler',
-  'fourTrack',
-  'sheet',
-  'bottle',
-  'leadSynth',
-  'prattle',
-] as const
+export const SOURCE_TAPS = MACHINES.map(m => m.tap)
 
-export type SourceTap = (typeof SOURCE_TAPS)[number]
+export type { SourceTap }
 
 // What each source's stem is called in the downloads folder. The tap names are
 // the identifiers the audio thread is built out of; these are what somebody
-// reading a folder of stems at midnight wants to see on them. Same order,
-// and a test holds the two lists to the same length.
-export const STEM_FILES = [
-  'toy',
-  'drums',
-  'fm',
-  'keys',
-  'mono',
-  'chaos',
-  'noise',
-  'tape-loop',
-  'four-track',
-  'sheet',
-  'bottle',
-  'lead',
-  'prattle',
-] as const
+// reading a folder of stems at midnight wants to see on them.
+export const STEM_FILES = MACHINES.map(m => m.stem)
 
 export const MAX_SOURCES = SOURCE_TAPS.length
 export const TAP_MIC = MAX_SOURCES

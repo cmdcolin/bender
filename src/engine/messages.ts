@@ -1,5 +1,6 @@
 import type { WildPack } from '../dsp/arc.ts'
 import type { UndoTape } from '../dsp/stages/sampler.ts'
+import type { NoteDest } from '../machines.ts'
 
 export interface ParamsMsg {
   kind: 'params'
@@ -48,10 +49,9 @@ export interface UndoTakeMsg {
 }
 
 /** Which keybed a note came off. The toy's gate is the default and reaches the
-    Glint, Parlor, Growler and Howler too wherever those jumpers are
-    still soldered on; the others are the beds drawn under it, each wired
-    only to its own chip. */
-export type NoteDest = 'toy' | 'fm' | 'pcm' | 'mono' | 'lead'
+    machines on its gate line too wherever those jumpers are still soldered on;
+    the others are the beds drawn under it, each wired only to its own chip. */
+export type { NoteDest }
 
 /** The machines the second melody can play, in the order of its Plays on choice. */
 export const SEQ_DESTS = [
@@ -237,30 +237,17 @@ export interface MeterMsg {
       did it: see the chain's own `faults`. */
   faults: number
   faultStage: string
-  /** Every note the chip is sounding, in its own semitones — the tune, the
-      backing and the key voices. The panel's keyboard lights off this, which is
-      how a note nobody pressed (the ROM's, or one a drum hit struck) reaches the
-      screen at all.
+  /** Every note each keybed's chip is sounding, in `KEYBEDS` order, in its own
+      semitones: the toy's tune, backing and key voices, and whatever a hand,
+      the toy's gate or a drum line put on the others. The panel's keyboards
+      light off this, which is how a note nobody pressed (the ROM's, or one a
+      drum hit struck) reaches the screen at all.
 
-      The worklet's own buffer, posted untransferred like the record slabs, so
-      `noteCount` says how much of it is this report and the rest is last
+      The worklet's own buffers, posted untransferred like the record slabs, so
+      `keyNoteCounts` says how much of each is this report and the rest is last
       report's. */
-  notes: Int16Array
-  noteCount: number
-  /** The same, for the FM chip's own keybed: what its four channels are holding
-      down, whether a hand, the toy's gate or a drum line put them there. */
-  fmNotes: Int16Array
-  fmNoteCount: number
-  /** And again for the home keyboard's four voices, which a chord button can
-      fill from one key. */
-  pcmNotes: Int16Array
-  pcmNoteCount: number
-  /** The mono synth's one key, if it is playing one. */
-  monoNotes: Int16Array
-  monoNoteCount: number
-  /** And Howler's. */
-  leadNotes: Int16Array
-  leadNoteCount: number
+  keyNotes: Int16Array[]
+  keyNoteCounts: number[]
   /** What each source, the mic and the mix bus itself have peaked at since the
       last meter — the chain's taps, in `SOURCE_TAPS` order with the mic and the
       bus above them. The worklet's own buffer, cleared the moment it is posted

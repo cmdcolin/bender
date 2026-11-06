@@ -1,15 +1,14 @@
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params.ts'
+import { KEYBEDS } from '../machines.ts'
 import { Arc } from './arc.ts'
-import { buildBender, type BuiltChain } from './build.ts'
+import { buildBender, type BuiltChain, type KeyedChip } from './build.ts'
 import { Cue } from './cue.ts'
 import { Deck } from './deck.ts'
 import { ScopeTrace, SCOPE_RING_MASK } from './scopeTrace.ts'
 import { pour, slab, type Tracks } from './slab.ts'
 import { Smoother } from './smoother.ts'
 import { BLOCK, METER_EVERY, type StereoBlock } from './stage.ts'
-import { PcmKeys } from './stages/pcmKeys.ts'
-import { ToyChip } from './stages/toyChip.ts'
 
 import type { MeterMsg, ToWorklet } from '../engine/messages.ts'
 
@@ -27,18 +26,13 @@ class BenderProcessor extends AudioWorkletProcessor {
   private trace = new ScopeTrace()
   private meterCountdown = METER_EVERY
   private meterMsg: MeterMsg
-  // The chip's note report, written into per meter post and handed over as it
-  // stands. Slicing it to length would have been one small array sixty times a
-  // second on the thread that cannot afford a collection, so the count rides
+  // Each keybed's note report, written into per meter post and handed over as
+  // it stands. Slicing them to length would have been small arrays sixty times
+  // a second on the thread that cannot afford a collection, so the counts ride
   // along instead and the reader takes that many.
-  private chipNotes = new Int16Array(ToyChip.MAX_SOUNDING)
-  // The FM chip's four channels, reported beside the toy's: two keybeds on the
-  // panel, two lists of what is sounding.
-  private fmNotes = new Int16Array(4)
-  // And the home keyboard's, which is the third bed on the panel.
-  private pcmNotes = new Int16Array(PcmKeys.MAX_SOUNDING)
-  private monoNotes = new Int16Array(1)
-  private leadNotes = new Int16Array(1)
+  private keyChips: KeyedChip[]
+  private keyNotes: Int16Array[]
+  private keyNoteCounts: number[] = KEYBEDS.map(() => 0)
   private peak = 0
   private duck = 0
   private recording = false
@@ -81,6 +75,9 @@ class BenderProcessor extends AudioWorkletProcessor {
     }
     this.target.set(packParams(DEFAULT_CONTROLS))
     this.built.toyDrum.cue = this.cue
+    const { keybeds } = this.built
+    this.keyChips = KEYBEDS.map(d => keybeds[d].chip)
+    this.keyNotes = KEYBEDS.map(d => new Int16Array(keybeds[d].voices))
     const { chain, sampler, fourTrack } = this.built
     this.meterMsg = {
       kind: 'meter',
@@ -115,16 +112,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       reboots2: 0,
       faults: 0,
       faultStage: '',
-      notes: this.chipNotes,
-      noteCount: 0,
-      fmNotes: this.fmNotes,
-      fmNoteCount: 0,
-      pcmNotes: this.pcmNotes,
-      pcmNoteCount: 0,
-      monoNotes: this.monoNotes,
-      monoNoteCount: 0,
-      leadNotes: this.leadNotes,
-      leadNoteCount: 0,
+      keyNotes: this.keyNotes,
+      keyNoteCounts: this.keyNoteCounts,
       taps: chain.taps,
       bands: chain.bands.levels,
       walk: chain.walk,
@@ -173,25 +162,16 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
         case 'noteOn':
           this.built.chain.keyGate(msg.semitone, true)
-          if (msg.dest === 'fm')
-            this.built.fmChip.noteOn(msg.semitone, msg.gain)
-          else if (msg.dest === 'pcm')
-            this.built.pcmKeys.noteOn(msg.semitone, msg.gain)
-          else if (msg.dest === 'mono')
-            this.built.monoSynth.noteOn(msg.semitone, msg.gain)
-          else if (msg.dest === 'lead')
-            this.built.leadSynth.noteOn(msg.semitone, msg.gain)
-          else this.built.toyChip.noteOn(msg.semitone, msg.gain)
+          this.built.keybeds[msg.dest ?? 'toy'].chip.noteOn(
+            msg.semitone,
+            msg.gain,
+          )
           break
         case 'noteOff':
           this.built.chain.keyGate(msg.semitone, false)
-          if (msg.dest === 'fm') this.built.fmChip.noteOff(msg.semitone)
-          else if (msg.dest === 'pcm') this.built.pcmKeys.noteOff(msg.semitone)
-          else if (msg.dest === 'mono')
-            this.built.monoSynth.noteOff(msg.semitone)
-          else if (msg.dest === 'lead')
-            this.built.leadSynth.noteOff(msg.semitone)
-          else this.built.noteOff(msg.semitone)
+          if (msg.dest === undefined || msg.dest === 'toy')
+            this.built.noteOff(msg.semitone)
+          else this.built.keybeds[msg.dest].chip.noteOff(msg.semitone)
           break
         case 'drumHit':
           this.built.toyDrum.strike(msg.bits, msg.gain)
@@ -376,11 +356,10 @@ class BenderProcessor extends AudioWorkletProcessor {
       const sampler = this.built.sampler
       const four = this.built.fourTrack
       four.watch()
-      const sounding = this.built.toyChip.soundingNotes(this.chipNotes)
-      const fmSounding = this.built.fmChip.soundingNotes(this.fmNotes)
-      const pcmSounding = this.built.pcmKeys.soundingNotes(this.pcmNotes)
-      const monoSounding = this.built.monoSynth.soundingNotes(this.monoNotes)
-      const leadSounding = this.built.leadSynth.soundingNotes(this.leadNotes)
+      for (let i = 0; i < this.keyChips.length; i++)
+        this.keyNoteCounts[i] = this.keyChips[i]!.soundingNotes(
+          this.keyNotes[i]!,
+        )
       const m = this.meterMsg
       m.peak = peak
       m.tick = this.built.toyDrum.tick
@@ -408,11 +387,6 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.reboots2 = this.built.supplies.second.rebootCount
       m.faults = this.built.chain.faults
       m.faultStage = this.built.chain.faultStage
-      m.noteCount = sounding
-      m.fmNoteCount = fmSounding
-      m.pcmNoteCount = pcmSounding
-      m.monoNoteCount = monoSounding
-      m.leadNoteCount = leadSounding
       m.dropped = this.built.chain.dropped
       m.sampleSecs = sampler.frames / sampleRate
       m.samplePos = sampler.head

@@ -36,6 +36,7 @@ import { N_BANDS } from '../dsp/util/bandMeter.ts'
 import workletUrl from '../dsp/worklet.ts?worker&url'
 import { errorText } from '../errorText.ts'
 import { createStore, type Store } from '../listeners.ts'
+import { KEYBEDS, recordOf } from '../machines.ts'
 import { snap } from '../scale.ts'
 import {
   asTuneLen,
@@ -551,38 +552,31 @@ export class Engine {
   /** Controls pushed while a throw is held. They reach the audio thread over
       the board and never touch the board, the link or the walk. */
   readonly held = createStore<ReadonlyMap<string, Partial<Controls>>>(new Map())
-  // Which semitones are down under a hand: the on-screen keys, the computer
-  // keyboard, a controller on the wire. Held here rather than read back off the
-  // chip because it is exact and immediate — the keys light on the press, not on
-  // the next meter, and they light on a board whose audio has not started.
-  readonly keysDown = createStore<ReadonlySet<number>>(new Set())
-  // And what the chip says it is sounding, which is the rest of the board: the
-  // ROM's tune, the backing under it, a note a drum hit struck through the
-  // trigger patch. Yours show up in here too, a meter late.
-  readonly chipNotes = createStore<ReadonlySet<number>>(new Set())
-  // The same pair for the FM chip's keybed: what a hand is holding down on it,
-  // and what its channels are sounding — which is its own keys, the toy's gate
-  // wherever that jumper is still on, and whatever the kit's lines struck.
-  readonly fmKeysDown = createStore<ReadonlySet<number>>(new Set())
-  readonly fmNotes = createStore<ReadonlySet<number>>(new Set())
-  // And the same pair again for the home keyboard, whose four voices one key
-  // can fill on its own once the chord button is down.
-  readonly pcmKeysDown = createStore<ReadonlySet<number>>(new Set())
-  readonly pcmNotes = createStore<ReadonlySet<number>>(new Set())
-  readonly monoKeysDown = createStore<ReadonlySet<number>>(new Set())
-  readonly monoNotes = createStore<ReadonlySet<number>>(new Set())
-  readonly leadKeysDown = createStore<ReadonlySet<number>>(new Set())
-  readonly leadNotes = createStore<ReadonlySet<number>>(new Set())
-  private readonly keysDownOn: Record<
-    NoteDest,
-    ReturnType<typeof createStore<ReadonlySet<number>>>
-  > = {
-    toy: this.keysDown,
-    fm: this.fmKeysDown,
-    pcm: this.pcmKeysDown,
-    mono: this.monoKeysDown,
-    lead: this.leadKeysDown,
-  }
+  // Which semitones are down under a hand on each keybed: the on-screen keys,
+  // the computer keyboard, a controller on the wire. Held here rather than read
+  // back off the chip because it is exact and immediate — the keys light on the
+  // press, not on the next meter, and they light on a board whose audio has not
+  // started.
+  readonly keysDownOn = recordOf(KEYBEDS, () =>
+    createStore<ReadonlySet<number>>(new Set()),
+  )
+  // And what each chip says it is sounding, which is the rest of the board: the
+  // ROM's tune, the backing under it, the toy's gate wherever a jumper is still
+  // on, a note a drum hit struck through the trigger patch. Yours show up in
+  // here too, a meter late.
+  readonly notesOn = recordOf(KEYBEDS, () =>
+    createStore<ReadonlySet<number>>(new Set()),
+  )
+  readonly keysDown = this.keysDownOn.toy
+  readonly chipNotes = this.notesOn.toy
+  readonly fmKeysDown = this.keysDownOn.fm
+  readonly fmNotes = this.notesOn.fm
+  readonly pcmKeysDown = this.keysDownOn.pcm
+  readonly pcmNotes = this.notesOn.pcm
+  readonly monoKeysDown = this.keysDownOn.mono
+  readonly monoNotes = this.notesOn.mono
+  readonly leadKeysDown = this.keysDownOn.lead
+  readonly leadNotes = this.notesOn.lead
   // Which sources are actually putting something on the bus, as a bit per
   // SOURCE_TAPS slot. A run switch says a sequencer is walking; this says the
   // fader in front of it is up and the machine behind it is making a sound,
@@ -707,28 +701,15 @@ export class Engine {
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
       if (msg.kind === 'meter') {
-        const notes = mergeNotes(this.chipNotes.get(), msg.notes, msg.noteCount)
-        if (notes !== this.chipNotes.get()) this.chipNotes.set(notes)
-        const fm = mergeNotes(this.fmNotes.get(), msg.fmNotes, msg.fmNoteCount)
-        if (fm !== this.fmNotes.get()) this.fmNotes.set(fm)
-        const pcm = mergeNotes(
-          this.pcmNotes.get(),
-          msg.pcmNotes,
-          msg.pcmNoteCount,
-        )
-        if (pcm !== this.pcmNotes.get()) this.pcmNotes.set(pcm)
-        const mono = mergeNotes(
-          this.monoNotes.get(),
-          msg.monoNotes,
-          msg.monoNoteCount,
-        )
-        if (mono !== this.monoNotes.get()) this.monoNotes.set(mono)
-        const lead = mergeNotes(
-          this.leadNotes.get(),
-          msg.leadNotes,
-          msg.leadNoteCount,
-        )
-        if (lead !== this.leadNotes.get()) this.leadNotes.set(lead)
+        for (const [i, dest] of KEYBEDS.entries()) {
+          const store = this.notesOn[dest]
+          const notes = mergeNotes(
+            store.get(),
+            msg.keyNotes[i]!,
+            msg.keyNoteCounts[i],
+          )
+          if (notes !== store.get()) store.set(notes)
+        }
         const newFaults = msg.faults - this.meter.get().faults
         if (newFaults > 0)
           console.warn(
@@ -2023,13 +2004,7 @@ export class Engine {
 
   // Each key down and the note the lock snapped it to, so the release lets go of
   // that note even after the scale has changed under it.
-  private readonly struck: Record<NoteDest, Map<number, number>> = {
-    toy: new Map(),
-    fm: new Map(),
-    pcm: new Map(),
-    mono: new Map(),
-    lead: new Map(),
-  }
+  private readonly struck = recordOf(KEYBEDS, () => new Map<number, number>())
 
   // The key line's matrix, taken here rather than down on the wire: the drawn
   // keybeds light what is down, so the key that lights has to be the key that

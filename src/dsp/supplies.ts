@@ -1,5 +1,6 @@
 import { EVENT } from '../drums.ts'
 import { IDX } from '../engine/params.ts'
+import { MACHINES } from '../machines.ts'
 import { MIC, micInto } from './micJacks.ts'
 import { DEST } from './modbus.ts'
 import { eventOn } from './stages/stepFaults.ts'
@@ -12,26 +13,20 @@ import type { Ctx } from './stage.ts'
 export const SUPPLY = { shared: 0, second: 1, bench: 2 } as const
 export const SUPPLY_NAMES = ['shared cells', 'second cells', 'bench supply']
 
-export const SUPPLY_KEYS = [
-  'chipSupply',
-  'drumSupply',
-  'fmSupply',
-  'pcmSupply',
-  'monoSupply',
-  'leadSupply',
-  'talkSupply',
-] as const
+// The machines on the toy's battery rail, each with a Supply selector to take it
+// off.
+const SUPPLIED = MACHINES.flatMap(m => ('supply' in m ? [m] : []))
 
-// The seven machines’ faders, any one of which up keeps the supplies running.
-// A board with all seven down ticks no rail, as it never did.
-export const poweredUp = (p: Float32Array) =>
-  p[IDX.chipLevel]! > 0 ||
-  p[IDX.drumLevel]! > 0 ||
-  p[IDX.fmLevel]! > 0 ||
-  p[IDX.pcmLevel]! > 0 ||
-  p[IDX.monoLevel]! > 0 ||
-  p[IDX.leadLevel]! > 0 ||
-  p[IDX.talkLevel]! > 0
+export const SUPPLY_KEYS = SUPPLIED.map(m => m.supply)
+
+const SUPPLIED_LEVELS = SUPPLIED.map(m => IDX[m.levels[0]])
+
+// Their faders, any one of which up keeps the supplies running. A board with
+// all of them down ticks no rail, as it never did.
+export function poweredUp(p: Float32Array) {
+  for (const i of SUPPLIED_LEVELS) if (p[i]! > 0) return true
+  return false
+}
 
 const onSecond = (p: Float32Array) => {
   for (const k of SUPPLY_KEYS)

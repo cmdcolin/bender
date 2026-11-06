@@ -1,3 +1,5 @@
+import { SOURCE_TAPS, type SourceTap } from '../engine/params.ts'
+import { MACHINES, type NoteDest } from '../machines.ts'
 import { Chain } from './chain.ts'
 import { HOWLER_MEMORY, MelodyMemory } from './melodyMemory.ts'
 import { Amp } from './stages/amp.ts'
@@ -36,6 +38,20 @@ import { ToyRail } from './toyRail.ts'
 import { Transport } from './transport.ts'
 import { mulberry32 } from './util/rng.ts'
 
+import type { Stage } from './stage.ts'
+
+/** A chip a keybed plays. */
+export interface KeyedChip {
+  noteOn(semitone: number, gain?: number): void
+  noteOff(semitone: number): void
+  /** Writes the notes it is sounding into `out` and returns how many. */
+  soundingNotes(out: Int16Array): number
+}
+
+/** The keybeds on Plinky's gate line, in the order it runs through them. */
+const GATE_LINE = MACHINES.flatMap(m => ('keyGate' in m ? [m.keybed] : []))
+type GatedDest = (typeof GATE_LINE)[number]
+
 export interface BuiltChain {
   chain: Chain
   toyChip: ToyChip
@@ -61,7 +77,9 @@ export interface BuiltChain {
   rail: ToyRail
   /** The shared cells, the second cells and the bench supply. */
   supplies: Supplies
-  /** A key let go of, which reaches all four chips. The strike travels the gate line
+  /** The chip behind each keybed, and how many notes it reports sounding. */
+  keybeds: Record<NoteDest, { chip: KeyedChip; voices: number }>
+  /** A key let go of, which reaches every chip on the gate line. The strike travels the gate line
       on its own, so nobody has to hand it anywhere; a finger coming up is the
       half of a note no wire between them carries, and both ends need it — the
       toy to drop the voice it is holding, the FM chip to write the key back up
@@ -104,19 +122,8 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   const leadSynth = new MonoSynth(sr, supplies, HOWLER)
   const leadMelody = new MelodyMemory(sr, supplies, transport, HOWLER_MEMORY)
   chain.melodies = [melody, leadMelody]
-  // In SOURCE_TAPS order, which is the order their meter taps come home in — a
-  // test holds the two lists together, because the panel reads a channel off
-  // its slot number and a source in the wrong one would meter as its neighbour.
-  chain.sources = [
-    toyChip,
-    toyDrum,
-    fmChip,
-    pcmKeys,
-    monoSynth,
-    new ChaosOsc(sr),
-    new Noise(sr, next()),
-    sampler,
-  ]
+  const chaosOsc = new ChaosOsc(sr)
+  const noise = new Noise(sr, next())
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
   // 6 filt, 7 shift, 8 oct, 9 codec, 10 rack verb — six slots for ten bends, so you pick.
   // The codec seeds off the build's seed rather than drawing one.
@@ -147,14 +154,34 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   // Last of the sources and last to draw a seed, so every stream before it is
   // the one it was before the four-track was on the board.
   const fourTrack = new FourTrack(sr, next())
-  chain.sources.push(fourTrack)
   const sheet = new Sheet(sr, seed ^ 0x5ee7)
-  chain.sources.push(sheet)
   const bottle = new Bottle(sr, seed ^ 0xb077)
-  chain.sources.push(bottle)
-  chain.sources.push(leadSynth)
   const prattle = new Prattle(sr, supplies)
-  chain.sources.push(prattle)
+  // In SOURCE_TAPS order, which is the order their meter taps come home in — a
+  // test holds the two lists together, because the panel reads a channel off
+  // its slot number and a source in the wrong one would meter as its neighbour.
+  const sources = {
+    toyChip,
+    toyDrum,
+    fmChip,
+    pcmKeys,
+    monoSynth,
+    chaosOsc,
+    noise,
+    sampler,
+    fourTrack,
+    sheet,
+    bottle,
+    leadSynth,
+    prattle,
+  } satisfies Record<SourceTap, Stage>
+  chain.sources = SOURCE_TAPS.map(t => sources[t])
+  const gateLine = {
+    fm: fmChip,
+    pcm: pcmKeys,
+    mono: monoSynth,
+    lead: leadSynth,
+  } satisfies Record<GatedDest, { gateOff(semitone: number): void }>
   return {
     chain,
     toyChip,
@@ -178,12 +205,16 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
       transport.tune = tune
       transport.drums = drums
     },
+    keybeds: {
+      toy: { chip: toyChip, voices: ToyChip.MAX_SOUNDING },
+      fm: { chip: fmChip, voices: 4 },
+      pcm: { chip: pcmKeys, voices: PcmKeys.MAX_SOUNDING },
+      mono: { chip: monoSynth, voices: 1 },
+      lead: { chip: leadSynth, voices: 1 },
+    },
     noteOff(semitone: number) {
       toyChip.noteOff(semitone)
-      fmChip.gateOff(semitone)
-      pcmKeys.gateOff(semitone)
-      monoSynth.gateOff(semitone)
-      leadSynth.gateOff(semitone)
+      for (const dest of GATE_LINE) gateLine[dest].gateOff(semitone)
     },
   }
 }

@@ -8,6 +8,7 @@ import {
   TAP_MIC,
 } from '../engine/params.ts'
 import { BEND_INTO_KEYS, jackTap } from '../jacks.ts'
+import { MACHINES } from '../machines.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { MIC, micInto } from './micJacks.ts'
 import { DELAY_ON_FIRST, DELAY_ON_SECOND, MicLine } from './micLine.ts'
@@ -91,21 +92,7 @@ const SLOT_IDX = [
 /** The sources' mute switches, in the order the chain sums them; -1 where a
     source has none. */
 const NO_MUTE = -1
-const MUTE_IDX = [
-  IDX.chipMute,
-  IDX.drumMute,
-  IDX.fmMute,
-  IDX.pcmMute,
-  IDX.monoMute,
-  NO_MUTE,
-  NO_MUTE,
-  NO_MUTE,
-  NO_MUTE,
-  NO_MUTE,
-  NO_MUTE,
-  IDX.leadMute,
-  IDX.talkMute,
-] as const satisfies { length: typeof SOURCE_TAPS.length }
+const MUTE_IDX = MACHINES.map(m => ('mute' in m ? IDX[m.mute] : NO_MUTE))
 
 const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])
 const PEDAL_INTO_IDX = PEDALS.map(p => IDX[p.into])

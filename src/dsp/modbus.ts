@@ -1,5 +1,5 @@
 import { VOICE_LABELS, voiceBit } from '../drums.ts'
-import { IDX, type SOURCE_TAPS } from '../engine/params.ts'
+import { IDX } from '../engine/params.ts'
 import {
   asLaneLen,
   asLaneValue,
@@ -7,6 +7,7 @@ import {
   LANE_LEN_KEYS,
   LANE_MAX,
 } from '../lanes.ts'
+import { MACHINES } from '../machines.ts'
 import { BLOCK } from './stage.ts'
 import { Adsr, adsrRates, type AdsrRates } from './util/adsr.ts'
 import { Chaos, Drunk } from './util/drift.ts'
@@ -257,21 +258,7 @@ export function hop(
 
 // A fader's lane, in the order the chain sums the sources. The chain applies it
 // to what the source put on the bus, so a wire there is a VCA on the channel.
-export const SOURCE_LEVEL_DEST = [
-  DEST.chipLevel,
-  DEST.drumLevel,
-  DEST.fmLevel,
-  DEST.pcmLevel,
-  DEST.monoLevel,
-  DEST.oscLevel,
-  DEST.noiseLevel,
-  DEST.sampleLevel,
-  DEST.fourLevel,
-  DEST.sheetLevel,
-  DEST.bottleLevel,
-  DEST.leadLevel,
-  DEST.talkLevel,
-] as const satisfies { length: typeof SOURCE_TAPS.length }
+export const SOURCE_LEVEL_DEST = MACHINES.map(m => DEST[m.levels[0]])
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth,
 // in wire order, so wire i's depth is DEPTH_DEST[i]. They were once the last
