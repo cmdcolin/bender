@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { SOURCE_TAPS, STEM_FILES, packParams } from '../engine/params.ts'
+import { jackOf } from '../jacks.ts'
 import { buildBender } from './build.ts'
 import { Chain } from './chain.ts'
 import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
@@ -72,6 +73,36 @@ test('a stem is the dry source, whatever the board does to the sum', () => {
   const driven = renderStems({ ...board, mixDrive: 24 }, 1)
   expect(driven.master).not.toEqual(flat.master)
   expect(driven.stems[TOY]).toEqual(flat.stems[TOY])
+})
+
+// A unit patched onto a machine is a channel insert, and a channel insert is
+// printed into its stem. The same unit on the master run leaves it dry.
+test('a stem carries the units patched onto its machine', () => {
+  const chain = new Chain(SR)
+  chain.sources = [writer('a', 0.5, 0.5), writer('b', 0.2, 0.2)]
+  chain.pedals = [
+    {
+      label: 'stomp',
+      process(io: StereoBlock) {
+        for (let i = 0; i < io.n; i++) {
+          io.l[i]! *= 0.5
+          io.r[i]! *= 0.5
+        }
+      },
+      panic: () => {},
+    },
+  ]
+  chain.capturing = true
+  const stem = (stompInto: number) => {
+    const p = packParams({ ...DEFAULT_CONTROLS, stompInto })
+    for (let b = 0; b < 3; b++) chain.process(makeIo(), p)
+    return [chain.stems[BLOCK - 1], chain.stems[2 * BLOCK - 1]]
+  }
+  expect(stem(0)).toEqual([expect.closeTo(0.5, 6), expect.closeTo(0.2, 6)])
+  expect(stem(jackOf(0))).toEqual([
+    expect.closeTo(0.25, 6),
+    expect.closeTo(0.2, 6),
+  ])
 })
 
 // One track per source rather than two: all but the noise put the same sample

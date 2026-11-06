@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { BAND_ROWS, packParams, TAP_MIC } from '../engine/params.ts'
+import { jackOf } from '../jacks.ts'
 import { buildBender } from './build.ts'
 import { Chain } from './chain.ts'
 import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
@@ -105,6 +106,27 @@ test('watching the bands changes nothing about what comes out', () => {
     return out
   }
   expect(run(true)).toEqual(run(false))
+})
+
+test('a machine’s row reads the line its patched units leave', () => {
+  const silencer: Stage = {
+    label: 'stomp',
+    process(io: StereoBlock) {
+      io.l.fill(0, 0, io.n)
+      io.r.fill(0, 0, io.n)
+    },
+    panic: () => {},
+  }
+  const chain = new Chain(SR)
+  chain.sources = [sineStage(1000, 0.3), sineStage(1000, 0.3)]
+  chain.pedals = [silencer]
+  chain.bands.on = true
+  const p = packParams({ ...DEFAULT_CONTROLS, stompInto: jackOf(0) })
+  const io = makeIo()
+  for (let b = 0; b < 200; b++) chain.process(io, p)
+  chain.bands.settle()
+  expect(row(chain.bands.levels, 0).every(v => v === 0)).toBe(true)
+  expect(loudest(row(chain.bands.levels, 1))).toBe(5)
 })
 
 test('the bands stay empty while nobody is watching', () => {

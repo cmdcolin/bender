@@ -304,3 +304,22 @@ test('a machine going bad drops only what the bus held, patched lines too', () =
   expect(out).toEqual([expect.closeTo(0.1, 6), expect.closeTo(0.1, 6)])
   expect(chain.faults).toBe(1)
 })
+
+test('the mic’s meter reads its patched line', () => {
+  const mic = new Float32Array(BLOCK).fill(0.4)
+  const chain = new Chain(SR)
+  chain.sources = [writer('a', 0.5)]
+  chain.pedals = [spy('pedal').stage]
+  chain.taps.fill(0)
+  chain.process(
+    makeIo(),
+    packParams({
+      ...DEFAULT_CONTROLS,
+      micLevel: 1,
+      micPatch: 0,
+      stompInto: jackOf(TAP_MIC),
+    }),
+    mic,
+  )
+  expect(chain.taps[TAP_MIC]).toBeCloseTo(0.2, 6)
+})

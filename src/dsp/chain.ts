@@ -445,6 +445,7 @@ export class Chain {
   )
   private readonly pedalSeat = new Float32Array(PEDAL_INTO_IDX.length).fill(1)
   private seated = false
+  private readonly micWet = new Float32Array(BLOCK)
 
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
@@ -562,6 +563,8 @@ export class Chain {
     const { n } = io
     const ctx = this.ctx
     this.blockFaults = 0
+    this.routeJacks(p, n)
+    const micJacked = (this.jacked & (1 << TAP_MIC)) !== 0
 
     const micLevel = p[IDX.micLevel]!
     const dry = this.micDry
@@ -572,7 +575,8 @@ export class Chain {
       const a = v < 0 ? -v : v
       if (a > micPeak) micPeak = a
     }
-    if (micPeak > this.taps[TAP_MIC]!) this.taps[TAP_MIC] = micPeak
+    if (!micJacked && micPeak > this.taps[TAP_MIC]!)
+      this.taps[TAP_MIC] = micPeak
     const kitHz =
       ctx.trig.kitStepHz > 0 ? ctx.trig.kitStepHz : p[IDX.drumBpm]! / 15
     this.micLine.process(
@@ -609,7 +613,6 @@ export class Chain {
     ctx.send.fill(0, 0, n)
 
     const cluster = p[IDX.faultCluster]!
-    this.routeJacks(p, n)
     this.updateHeat(p, n)
     this.updateRelay(p, n, cluster)
 
@@ -631,7 +634,7 @@ export class Chain {
         io.l[i]! += micMix[i]!
         io.r[i]! += micMix[i]!
       }
-      if (this.jacked & (1 << TAP_MIC)) {
+      if (micJacked) {
         this.inserts[TAP_MIC]!.l.set(micMix)
         this.inserts[TAP_MIC]!.r.set(micMix)
       }
@@ -787,18 +790,18 @@ export class Chain {
           this.taps[k] = peak
       }
     }
-    if (this.bands.on) {
-      for (let k = 0; k < MAX_SOURCES; k++)
-        this.bands.feed(k, stems, k * BLOCK, n)
-      this.bands.feed(TAP_MIC, dry, 0, n)
-      this.bands.pass(n)
-    }
     // A machine whose own `when` said no put nothing on the bus, so the carrier
     // is silence rather than last block's copy of it.
     if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
     if (logicFrom >= 0 && !logicRan) ctx.logic.fill(0, 0, n)
     if (fmTap && !fmRan) ctx.fm.fill(0, 0, n)
-    if (this.jacked) this.runInserts(io, p, n)
+    if (this.jacked) this.runInserts(io, p, n, cap)
+    if (this.bands.on) {
+      for (let k = 0; k < MAX_SOURCES; k++)
+        this.bands.feed(k, stems, k * BLOCK, n)
+      this.bands.feed(TAP_MIC, micJacked ? this.micWet : dry, 0, n)
+      this.bands.pass(n)
+    }
 
     // The summing amp the sources meet in. Every desk has one and it is
     // never a wire: at unity it is skipped outright, because a soft clipper
@@ -968,8 +971,14 @@ export class Chain {
   // Each machine's line through the units cabled onto it, before the summing
   // amp: the dry line comes off the bus and the wet one goes back on. They run
   // in the racks' order — the bends as the sockets walk them, then any patched
-  // bend no socket holds, then the pedals — and the meter reads the wet line.
-  private runInserts(io: StereoBlock, p: Float32Array, n: number) {
+  // bend no socket holds, then the pedals — and the meter and the stem carry
+  // the wet line, as a channel insert prints into its channel.
+  private runInserts(
+    io: StereoBlock,
+    p: Float32Array,
+    n: number,
+    cap: boolean,
+  ) {
     for (let t = 0; t < this.inserts.length; t++) {
       if (this.jacked & (1 << t)) {
         const ins = this.inserts[t]!
@@ -998,7 +1007,15 @@ export class Chain {
           const a = l < 0 ? -l : l
           if (a > peak) peak = a
         }
-        if (t < MAX_SOURCES && peak > this.taps[t]!) this.taps[t] = peak
+        if (peak > this.taps[t]!) this.taps[t] = peak
+        if (t === TAP_MIC) {
+          for (let i = 0; i < n; i++)
+            this.micWet[i] = 0.5 * (ins.l[i]! + ins.r[i]!)
+        } else if (cap) {
+          const base = t * BLOCK
+          for (let i = 0; i < n; i++)
+            this.stems[base + i] = 0.5 * (ins.l[i]! + ins.r[i]!)
+        }
       }
     }
   }
