@@ -31,14 +31,17 @@ const tick = (i: number) => i / (TICKS - 1)
 
 // A control on the desk: a round knob, or a vertical fader. Drag it up and down,
 // step it with the arrow keys, double-click to put it back to stock. A knob with
-// a turn, like an EQ band, clicks into it on the way past.
+// a turn, like an EQ band, clicks into it on the way past. A small knob goes
+// without its name, for a row that already says it.
 export function Dial({
   def,
   fader = false,
+  small = false,
   short,
 }: {
   def: SliderDef
   fader?: boolean
+  small?: boolean
   short?: string
 }) {
   const value = useControlValue(def.key)
@@ -121,7 +124,11 @@ export function Dial({
       />
     </div>
   ) : (
-    <svg className={styles.knob} viewBox="0 0 40 40" aria-hidden="true">
+    <svg
+      className={small ? styles.knobSmall : styles.knob}
+      viewBox="0 0 40 40"
+      aria-hidden="true"
+    >
       <defs>
         <radialGradient id={shade} cx="35%" cy="30%" r="80%">
           <stop offset="0" className={styles.shineHi} />
@@ -187,10 +194,14 @@ export function Dial({
         onDoubleClick={reset}
       >
         {face}
-        <span className={touched ? styles.nameOn : styles.name}>
-          {short ?? def.label}
-        </span>
-        <span className={styles.reading}>{reading}</span>
+        {!small && (
+          <>
+            <span className={touched ? styles.nameOn : styles.name}>
+              {short ?? def.label}
+            </span>
+            <span className={styles.reading}>{reading}</span>
+          </>
+        )}
       </div>
     </Tip>
   )

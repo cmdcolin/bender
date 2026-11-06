@@ -196,6 +196,8 @@ export interface Meter {
       the chain's taps. Read by the mixer's meters, which draw straight to the
       DOM off it rather than through a render. */
   taps: Float32Array
+  /** How far each channel's duck has darkened it, for the desk's lamps. */
+  ldr: Float32Array
   /** Each source's and the mic's octave bands, while `watchBands` is on. */
   bands: Float32Array
   /** Which position the chain is running at each step of its walk, and which
@@ -443,6 +445,7 @@ export class Engine {
       faults: 0,
       faultStage: '',
       taps: new Float32Array(N_TAPS),
+      ldr: new Float32Array(MAX_SOURCES),
       bands: new Float32Array(BAND_ROWS * N_BANDS),
       walk: Uint8Array.from([0, 1, 2, 3, 4, 5]),
       dropped: 0,
@@ -763,6 +766,7 @@ export class Engine {
           faults: msg.faults,
           faultStage: msg.faultStage,
           taps: msg.taps,
+          ldr: msg.ldr,
           bands: msg.bands,
           walk: msg.walk,
           dropped: msg.dropped,

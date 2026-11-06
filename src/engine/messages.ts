@@ -254,6 +254,10 @@ export interface MeterMsg {
       — the serializer copies it on the way across, so what arrives is this
       read and nothing of the next one. */
   taps: Float32Array
+  /** How far each source's duck vactrol darkened its channel since the last
+      meter, 0 to 1, in `SOURCE_TAPS` order. The chain's own buffer, cleared
+      once posted like `taps`. */
+  ldr: Float32Array
   /** Each source's and the mic's octave bands over the last meter, in tap
       order, `BAND_HZ` wide: see the chain's `bands`. Zero unless the live view
       asked for them. */

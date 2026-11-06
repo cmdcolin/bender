@@ -3,8 +3,43 @@
    row rather than given a row of its own — eight channels each two lines tall is
    the whole panel spent on a mixer, and what a meter is for is being glanceable
    beside the thing it is about. */
+/* The fader and its meter, then the channel's duck knob and the lamp its LDR
+   darkens behind. */
 .strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--duck-w);
+  align-items: center;
+  gap: var(--space-xs);
+  --duck-w: 2.25rem;
+}
+
+.channel {
   position: relative;
+  min-width: 0;
+}
+
+.duck {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.lamp {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-quiet);
+  overflow: hidden;
+}
+
+.glow {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--alarm);
+  box-shadow: 0 0 4px var(--alarm);
+  opacity: 0;
 }
 
 .track {
@@ -44,7 +79,7 @@
     );
   align-items: center;
   gap: var(--space-sm);
-  margin: var(--space-sm) 0 var(--space-xs);
+  margin: var(--space-sm) calc(2.25rem + var(--space-xs)) var(--space-xs) 0;
   padding-top: var(--space-xs);
   border-top: 1px solid var(--border-quiet);
 }

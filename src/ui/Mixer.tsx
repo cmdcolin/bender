@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { TAP_BUS } from '../engine/params.ts'
-import { CHANNELS, sliderFor } from './controls/index.ts'
+import { CHANNELS, DUCKS, sliderFor } from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
+import { Dial } from './Dial.tsx'
 import { shownOn } from './fitted.ts'
 import { FALL, HOT, position, SILENT } from './meterScale.ts'
 import styles from './Mixer.module.css'
@@ -14,7 +15,11 @@ import { Tip } from './Tip.tsx'
 // out per render: the desk is the desk. Every channel that reaches the bus is
 // drawn, which is a longer list than the group's `borrows` — the mic and the
 // sampler are yours to set and the desk's only to show.
-const ROWS = CHANNELS.map(c => ({ ...c, def: sliderFor(c.key) }))
+const ROWS = CHANNELS.map(c => ({
+  ...c,
+  def: sliderFor(c.key),
+  duck: DUCKS[c.tap],
+}))
 const TAPS = [...ROWS.map(r => r.tap), TAP_BUS]
 
 // The desk. Every source's fader on one screen with a meter beside it, which is
@@ -28,6 +33,7 @@ const TAPS = [...ROWS.map(r => r.tap), TAP_BUS]
 // widths is a panel the board can feel.
 export function Mixer() {
   const bars = useRef<(HTMLSpanElement | null)[]>([])
+  const lamps = useRef<(HTMLSpanElement | null)[]>([])
   const readout = useRef<HTMLSpanElement>(null)
   const [all, setAll] = useState(false)
   const onMap = useBoardValue(c => {
@@ -46,10 +52,25 @@ export function Mixer() {
     // and on a stock board four of the eight are empty and stay empty.
     const painted: (string | undefined)[] = []
     const lit: (string | undefined)[] = []
+    const glow = new Float32Array(ROWS.length)
+    const glowing: (string | undefined)[] = []
     const draw = () => {
       raf = 0
-      const taps = engine.meter.get().taps
+      const { taps, ldr } = engine.meter.get()
       let moving = false
+      for (const [i, row] of ROWS.entries()) {
+        const lamp = lamps.current[i]
+        if (lamp) {
+          const fell = glow[i]! * FALL
+          glow[i] = Math.max(ldr[row.tap] ?? 0, fell < SILENT ? 0 : fell)
+          if (glow[i] > 0) moving = true
+          const opacity = glow[i].toFixed(2)
+          if (glowing[i] !== opacity) {
+            glowing[i] = opacity
+            lamp.style.opacity = opacity
+          }
+        }
+      }
       for (const [i, tap] of TAPS.entries()) {
         const bar = bars.current[i]
         if (bar) {
@@ -81,8 +102,9 @@ export function Mixer() {
       if (raf === 0) raf = requestAnimationFrame(draw)
     }
     const off = engine.meter.subscribe(() => {
-      const taps = engine.meter.get().taps
-      if (TAPS.some(tap => (taps[tap] ?? 0) > 0)) schedule()
+      const { taps, ldr } = engine.meter.get()
+      if (TAPS.some(tap => (taps[tap] ?? 0) > 0) || ldr.some(d => d > 0))
+        schedule()
     })
     schedule()
     return () => {
@@ -102,11 +124,26 @@ export function Mixer() {
 
   return (
     <>
-      {ROWS.map(({ def, name }, i) =>
+      {ROWS.map(({ def, name, duck }, i) =>
         all || onMap.includes(name) ? (
           <div key={def.key} className={styles.strip}>
-            <ControlSlider def={def} label={name} />
-            <span className={styles.track}>{bar(i)}</span>
+            <div className={styles.channel}>
+              <ControlSlider def={def} label={name} />
+              <span className={styles.track}>{bar(i)}</span>
+            </div>
+            {duck && (
+              <span className={styles.duck}>
+                <Dial def={duck} small />
+                <span className={styles.lamp}>
+                  <span
+                    ref={el => {
+                      lamps.current[i] = el
+                    }}
+                    className={styles.glow}
+                  />
+                </span>
+              </span>
+            )}
           </div>
         ) : null,
       )}

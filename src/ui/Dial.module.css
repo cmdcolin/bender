@@ -33,6 +33,11 @@
   margin: -0.125rem 0;
 }
 
+.knobSmall {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
 .tick,
 .tickOn {
   stroke-width: 1.5;
