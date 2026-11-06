@@ -18,8 +18,9 @@ import { join } from 'node:path'
 
 // The README's picture: `pnpm readme-shots` rewrites docs/readme/*.jpg. Each
 // picture is the whole app with one stage open, the part it is about outlined,
-// and a zoom of that part laid over the bench. Pass file names to retake only
-// those. Wants a Chrome and ImageMagick's `magick`.
+// and a zoom of that part, tied to it by callout lines, laid over the dimmed
+// rest. Pass file names to retake only those. Wants a Chrome and
+// ImageMagick's `magick`.
 
 const PORT = 5220
 const DEBUG_PORT = 9344
@@ -28,6 +29,9 @@ const DPR = 2
 const PAD = 4
 const MARGIN = 24
 const ACCENT = '#ffb020'
+const ZOOM_SHARE = 0.64
+const DIM = '55%'
+const SHADOW = 12
 const OUT = 'docs/readme'
 
 interface Shot {
@@ -142,19 +146,37 @@ async function open(page: Page, shot: Shot) {
 
 const magick = (args: string[]) => execFileSync('magick', args)
 
+const sizeOf = (file: string) => {
+  const [w = 0, h = 0] = execFileSync('magick', [
+    'identify',
+    '-format',
+    '%w %h',
+    file,
+  ])
+    .toString()
+    .split(' ')
+    .map(Number)
+  return { w, h }
+}
+
+const clamp = (n: number, lo: number, hi: number) =>
+  Math.min(Math.max(n, lo), hi)
+
 function compose(raw: string, work: string, shot: Shot, rect: Rect) {
+  const frame = { w: VIEW.width * DPR, h: VIEW.height * DPR }
   const box = {
     x: Math.round((rect.x - PAD) * DPR),
     y: Math.round((rect.y - PAD) * DPR),
     w: Math.round((rect.width + PAD * 2) * DPR),
     h: Math.round((rect.height + PAD * 2) * DPR),
   }
+  const crop = `${box.w}x${box.h}+${box.x}+${box.y}`
   const inset = join(work, 'inset.png')
-  const fit = `${Math.round(VIEW.width * DPR * 0.5)}x${Math.round(VIEW.height * DPR * 0.5)}`
+  const fit = `${Math.round(frame.w * ZOOM_SHARE)}x${Math.round(frame.h * 0.5)}`
   magick([
     raw,
     '-crop',
-    `${box.w}x${box.h}+${box.x}+${box.y}`,
+    crop,
     '+repage',
     '-resize',
     fit,
@@ -164,18 +186,51 @@ function compose(raw: string, work: string, shot: Shot, rect: Rect) {
     String(3 * DPR),
     inset,
   ])
-  const [, insetH = 0] = execFileSync('magick', [
-    'identify',
-    '-format',
-    '%w %h',
+  const size = sizeOf(inset)
+  const margin = MARGIN * DPR
+  const onLeft = box.x + box.w / 2 > frame.w / 2
+  const at = {
+    x: onLeft ? margin : frame.w - size.w - margin,
+    y: Math.round(
+      clamp(box.y + box.h / 2 - size.h / 2, margin, frame.h - size.h - margin),
+    ),
+  }
+  const from = onLeft ? box.x : box.x + box.w
+  const to = onLeft ? at.x + size.w : at.x
+  const blur = SHADOW * DPR
+  const shadowed = join(work, 'shadowed.png')
+  magick([
     inset,
+    '(',
+    '+clone',
+    '-background',
+    'black',
+    '-shadow',
+    `85x${blur}+0+0`,
+    ')',
+    '+swap',
+    '-background',
+    'none',
+    '-layers',
+    'merge',
+    '+repage',
+    shadowed,
   ])
-    .toString()
-    .split(' ')
-    .map(Number)
-  const at = MARGIN * DPR
   magick([
     raw,
+    '-fill',
+    'black',
+    '-colorize',
+    DIM,
+    '(',
+    raw,
+    '-crop',
+    crop,
+    '+repage',
+    ')',
+    '-geometry',
+    `+${box.x}+${box.y}`,
+    '-composite',
     '-fill',
     'none',
     '-stroke',
@@ -184,9 +239,13 @@ function compose(raw: string, work: string, shot: Shot, rect: Rect) {
     String(2 * DPR),
     '-draw',
     `rectangle ${box.x},${box.y} ${box.x + box.w},${box.y + box.h}`,
-    inset,
+    '-draw',
+    `line ${from},${box.y} ${to},${at.y}`,
+    '-draw',
+    `line ${from},${box.y + box.h} ${to},${at.y + size.h}`,
+    shadowed,
     '-geometry',
-    `+${at}+${VIEW.height * DPR - insetH - at}`,
+    `+${at.x - blur * 2}+${at.y - blur * 2}`,
     '-composite',
     '-resize',
     `${shot.width ?? 1600}x`,
