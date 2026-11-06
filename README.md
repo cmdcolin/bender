@@ -5,18 +5,29 @@ A circuit bender in the browser, built on Web Audio's
 
 - [App](https://cmdcolin.github.io/bender/app/)
 - [Pocket](https://cmdcolin.github.io/bender/pocket/), for phones
-- [Home](https://cmdcolin.github.io/bender/), with the blog and saved voices
+- [Home](https://cmdcolin.github.io/bender/), with your saved voices
+- [Blog](https://cmdcolin.github.io/bender/blog/)
 - [Jam of the day](https://cmdcolin.github.io/bender/jam/)
+
+Watch Claude Code play it:
+[Letting an AI agent drive bender](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
 
 ## Features
 
-- Bend a toy keyboard, drum machine, FM synth and mono synth
-- Pedals, tape loops, a varispeed deck and a cassette four-track
-- Sequencer, patch bay, MIDI and shareable URLs
+- Toy keyboard
+- Drum machine
+- FM synth
+- Mono synth
+- Circuit bends
+- Guitar pedals
+- Tape loops
+- Cassette four-track
+- Sequencer
+- Patch bay
+- MIDI input
+- Shareable URLs
 
-See [features.md](docs/features.md) for every control, and
-[Letting an AI agent drive bender](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
-to watch Claude Code play it.
+Every control: [features.md](docs/features.md)
 
 ## Run
 
