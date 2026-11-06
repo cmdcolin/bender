@@ -16,22 +16,35 @@ Watch Claude Code play it:
 
 ## Machines
 
-Each machine is modelled down to its chips, buses and power rail, so every bend
-is a real hardware fault: a paperclip on the clock pin, a solder blob on a bus
-wire, a pot soldered onto the die.
+Every machine goes by a name in the app. Each is modelled down to its chips,
+buses and power rail, so every bend is a real hardware fault: a paperclip on the
+clock pin, a solder blob on a bus wire, a pot soldered onto the die.
 
-- Plinky — a toy keyboard chip on a battery
-- Clatter — a toy drum box with a sample ROM
-- Glint — a two-operator FM chip
-- Parlor — an eight-bit sampling keyboard
-- Growler — a Model D-style monosynth
-- Howler — Growler's card voiced as a lead
+- **Plinky** — a toy keyboard chip on a battery
+- **Clatter** — a toy drum box with a sample ROM
+- **Glint** — a two-operator FM chip
+- **Parlor** — an eight-bit sampling keyboard
+- **Prattle** — a talking toy's speech chip
+- **Growler** — a Model D-style monosynth
+- **Howler** — Growler's card voiced as a lead
 
-## Effects and tape
+## Pedals
 
-- Pedals — delay, reverb, distortion, chorus and a tube amp
-- Spool — a tape loop that records over itself
-- Four-track — a cassette desk with four tape loops
+The named pedals:
+
+- **Gnash** — distortion
+- **Wraith** — tape delay
+- **Ricochet** — delay
+- **Boing** — spring reverb
+- **Chorale** — chorus and ensemble
+- **Ember** — tube amp
+
+Plus a ring mod, crusher, comb, octave, codec and more.
+
+## Tape
+
+- **Spool** — a tape loop that records over itself
+- **Layercake** — a cassette four-track with four tape loops
 
 ## Playing
 
