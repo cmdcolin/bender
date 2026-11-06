@@ -233,7 +233,7 @@ test('latch-up leaves a starving chip louder, not quieter', () => {
 //
 // Read off the rail rather than counted off the mix. What heat does to the
 // pitch is three parts in a thousand, and no crossing count of a whole board —
-// hats, reboots, six sources and a tape machine — resolves three parts in a
+// hats, reboots, every source and a tape machine — resolves three parts in a
 // thousand of anything. An earlier version of this test counted crossings of
 // the mix and passed on the strength of the drum kit being in it: with the kit
 // muted it failed, and it failed in the wrong direction, which is what a

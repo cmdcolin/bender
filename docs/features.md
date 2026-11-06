@@ -11,7 +11,7 @@ Try it: **https://cmdcolin.github.io/bender/app/**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../img/chain-dark.svg">
-  <img alt="The signal path: six sources sum into the mix bus, run through six reorderable bend slots and the pedals, then brownout, the tape machine and the output, with the feedback bus wired from the output back to the mix" src="../img/chain-light.svg" width="520">
+  <img alt="The signal path: the sources sum into the mix bus, run through six reorderable bend slots and the pedals, then brownout, the tape machine and the output, with the feedback bus wired from the output back to the mix" src="../img/chain-light.svg" width="520">
 </picture>
 
 The signal-path map in the panel draws this diagram live as you play, from the
@@ -1114,8 +1114,8 @@ dive.
 
 ### Mix bus
 
-The seven sources meet at this desk, and every fader appears here as well as on
-its machine’s panel, under the machine’s name, with a meter beside it that reads
+Every source meets at this desk, and every fader appears here as well as on its
+machine’s panel, under the machine’s name, with a meter beside it that reads
 what that channel puts on the bus, and the bus’s own meter under the lot. A
 fader’s position does not show whether sound is coming out. Glint’s fader boots
 at zero, and a Glint turned up with nothing striking it (no hand on its keys, no
@@ -1131,7 +1131,7 @@ one.
 
 | control                | range                                                        | what it does                                                                                                       |
 | ---------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| Bus drive              | −12 to +24 dB                                                | The summing amp the seven sources meet in                                                                          |
+| Bus drive              | −12 to +24 dB                                                | The summing amp every source meets in                                                                              |
 | Duck keyed by          | kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit | The kit trigger line every channel’s duck vactrol hangs off, so the pump lands on the grid with swing and ratchets |
 | Duck release           | 0.25× to 4×                                                  | Scales how long the LDRs take to let go: about 40 ms from a light duck to 400 ms from a deep one at ×1             |
 | Plinky duck †          | off to full                                                  | A vactrol on Plinky’s channel, after its jacks                                                                     |

@@ -98,7 +98,7 @@ and shows:
 - the bus meter underneath, read where the faders meet, ahead of the final
   output, so it shows which channel is eating the headroom
 
-**Bus drive** is the knob on the summing amp where all six sources meet. The amp
+**Bus drive** is the knob on the summing amp where every source meets. The amp
 is unity gain and the first saturation stage ahead of any bend. The feedback
 return enters the same bus, so a runaway feedback loop saturates in the same amp
 as everything else.

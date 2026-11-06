@@ -489,7 +489,7 @@ function Reading({
 }
 
 // `label` overrides the name the row prints, for a control drawn somewhere its
-// own name says nothing: the mixer gathers seven faders and six of them are
+// own name says nothing: the mixer gathers every machine’s fader, most of them
 // called *Level*, so on the desk each one is called the machine it belongs to.
 // Everything else about the row is the same row, deliberately — the same
 // tooltip, the same double-click back to stock, the same knob it is bound to.

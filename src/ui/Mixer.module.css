@@ -1,6 +1,6 @@
 /* A strip of the desk: the fader row as it is drawn anywhere else, with the
    channel's own meter laid along the foot of it. The bar is positioned over the
-   row rather than given a row of its own — eight channels each two lines tall is
+   row rather than given a row of its own — a channel per machine, two lines each, is
    the whole panel spent on a mixer, and what a meter is for is being glanceable
    beside the thing it is about. */
 /* The fader and its meter, then the channel's duck knob and the lamp its LDR
@@ -69,7 +69,7 @@
 }
 
 /* The sum of the strips above it, which has no fader of its own: what the bus
-   is turned up to is the seven faders, and what it is doing is this. Its own
+   is turned up to is the faders, and what it is doing is this. Its own
    knob is the row under it. */
 .bus {
   display: grid;
