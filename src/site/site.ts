@@ -3,7 +3,6 @@ import {
   appUrl,
   blogUrl,
   guideUrl,
-  jamUrl,
   privacyUrl,
   siteRoot,
 } from './paths.ts'
@@ -25,10 +24,8 @@ export const SITE = {
   app: appUrl,
   nav: [
     [guideUrl, 'User guide'],
-    [jamUrl, 'Jam of the day'],
     [blogUrl, 'Blog'],
     [aboutUrl, 'About'],
-    [REPO, 'GitHub'],
   ],
   footer: [
     [appUrl, 'Open the app ↗'],
