@@ -14,7 +14,7 @@ A circuit bender in the browser, built on Web Audio's
 Watch Claude Code play it:
 [Letting an AI agent drive bender](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
 
-Names in bold below are what each part is called in the app.
+Bold names are the app's own.
 
 ## Machines
 
@@ -33,38 +33,43 @@ soldered onto the die.
 
 ## Other sources
 
-- **Sheet** — a steel sheet you strike, which hums and howls with the board
+- **Sheet** — a struck steel sheet that rattles on the floor or swings from a
+  corner
 - **Bottle** — a glass bottle you tap and fill with water
 - **Chaos osc** — two cross-modulated oscillators that motorboat on their own
 - **Mic** — a live mic you can patch into a clock pin, a bus or Prattle's mouth
 
 ## Pedals
 
-- **Gnash** — distortion, one circuit per mode: screamer, rat, muff and more
+- **Gnash** — a distortion pedal, one circuit per mode: screamer, rat, muff and
+  more
 - **Wraith** — a three-head tape echo on a spliced five-second loop
-- **Ricochet** — a clean or bucket-brigade delay
+- **Ricochet** — a delay that can play backwards or beat-repeat
 - **Boing** — a spring reverb you can kick
-- **Chorale** — bucket-brigade chorus, ensemble and flanger
-- **Ember** — a tube amp and speaker, its tone stack solved from the circuit
+- **Chorale** — a bucket-brigade chorus, ensemble and flanger
+- **Ember** — a tube amp and speaker whose tone knobs load each other as in the
+  real circuit
 
-Plus a ring mod, crusher, comb, octave, codec and more.
+Ten more, among them **Ring mod**, **Crusher**, **Comb**, **Octave** and
+**Codec**.
 
 ## Tape and samples
 
 - **Spool** — a tape loop that plays a sample and records the board over it
 - **Layercake** — a cassette four-track: four loops of different lengths behind
   a mixing desk
-- Samples — Spool loads any audio file, or 78s, numbers stations, NASA comms and
-  old-time radio off archive.org
+- Samples — any audio file, or 78s, numbers stations, NASA comms and old-time
+  radio off archive.org
 
 ## Playing
 
 - Sequencer — a piano roll and drum steps
-- Patch bay — LFOs and other modulation on any control
+- Patch bay — four wires modulating 183 destinations, each other included
 - MIDI — plays the keys and turns the knobs
 - Share — a link holds the whole board
-- Agentic — Claude Code plays it, see the
-  [blog post](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
+- Presets — 190 boards, plus random, morph, hunt and drift
+- Agent — Claude Code plays it
+  ([blog post](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/))
 
 ## Run
 
