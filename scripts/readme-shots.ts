@@ -16,7 +16,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// The README's gallery: `pnpm readme-shots` rewrites docs/readme/*.jpg. Each
+// The README's picture: `pnpm readme-shots` rewrites docs/readme/*.jpg. Each
 // picture is the whole app with one stage open, the part it is about outlined,
 // and a zoom of that part laid over the bench. Pass file names to retake only
 // those. Wants a Chrome and ImageMagick's `magick`.
@@ -43,42 +43,16 @@ const drawing = (label: string) => `aside svg[aria-label="${label}"]`
 
 const SHOTS: Shot[] = [
   {
-    file: 'signal-path.jpg',
-    board: { fmLevel: 0.6, monoLevel: 0.6, dlyMix: 0.5, ampMix: 1 },
-    zoom: 'aside [aria-label="signal path"]',
-    width: 1800,
-  },
-  { file: 'clatter.jpg', stage: 'Clatter', zoom: drawing('toy drum voices') },
-  {
-    file: 'growler.jpg',
-    stage: 'Growler',
-    board: { monoLevel: 0.6 },
-    zoom: drawing('growler voice card'),
-  },
-  {
-    file: 'wraith.jpg',
-    stage: 'Wraith',
-    board: { dlyMix: 0.5 },
-    zoom: drawing('wraith signal path'),
-  },
-  {
-    file: 'ember.jpg',
-    stage: 'Ember',
-    board: { ampMix: 1 },
-    zoom: drawing('ember signal path and tone'),
-  },
-  {
-    file: 'plinky-bus.jpg',
+    file: 'plinky-bent.jpg',
     stage: 'Plinky',
-    press: 'bus',
-    zoom: drawing('plinky bus wiring'),
-  },
-  {
-    file: 'prattle-bus.jpg',
-    stage: 'Prattle',
-    board: { talkLevel: 0.6 },
-    press: 'fault on the bus',
-    zoom: drawing('prattle bus wiring'),
+    board: {
+      chipDataLine: 4,
+      chipDataFault: 3,
+      chipBendSpot: 1,
+      chipBendPot: 0.6,
+    },
+    zoom: drawing('toy chip die'),
+    width: 1800,
   },
 ]
 

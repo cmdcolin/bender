@@ -58,37 +58,12 @@ Also **Ring mod**, **Crusher**, **Comb**, **Octave**, **Codec** and others.
 - Agent — Claude Code plays it
   ([blog post](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/))
 
-## Gallery
+## Inside Plinky
 
-Each picture opens its board in the app.
+<a href="https://cmdcolin.github.io/bender/app/#p=CggABgMCAHg&v=3"><img src="docs/readme/plinky-bent.jpg" alt="The whole app with Plinky open, and a zoom of its circuit: the bus and the clock outlined red where two bends are on." width="100%"></a>
 
-### Signal path
-
-<a href="https://cmdcolin.github.io/bender/app/#p=UHhdZPoBeKYByAE&v=3"><img src="docs/readme/signal-path.jpg" alt="The whole app, with a zoom of the signal path map: power supply, the machines, mix bus, pedals and output." width="100%"></a>
-
-Every sound runs through one signal path, drawn at the top right. Click a box on
-it to open that part.
-
-### Instruments
-
-<table>
-<tr><td><a href="https://cmdcolin.github.io/bender/app/"><img src="docs/readme/clatter.jpg" alt="The app with Clatter open; a zoom shows its drum voices, from triggers to DAC." width="100%"></a><br><b>Clatter</b> — the drum voices</td></tr>
-<tr><td><a href="https://cmdcolin.github.io/bender/app/#p=qQN4&v=3"><img src="docs/readme/growler.jpg" alt="The app with Growler open; a zoom shows its voice card of oscillators, mixer, filter and loudness." width="100%"></a><br><b>Growler</b> — the voice card</td></tr>
-</table>
-
-### Pedals
-
-<table>
-<tr><td><a href="https://cmdcolin.github.io/bender/app/#p=rgFk&v=3"><img src="docs/readme/wraith.jpg" alt="The app with Wraith open; a zoom shows its tape loop, heads and feedback." width="100%"></a><br><b>Wraith</b> — the tape loop and heads</td></tr>
-<tr><td><a href="https://cmdcolin.github.io/bender/app/#p=0ATIAQ&v=3"><img src="docs/readme/ember.jpg" alt="The app with Ember open; a zoom shows preamp, tone stack, power amp and speaker with their curves." width="100%"></a><br><b>Ember</b> — the amp and its tone curves</td></tr>
-</table>
-
-### Chips
-
-<table>
-<tr><td><a href="https://cmdcolin.github.io/bender/app/"><img src="docs/readme/plinky-bus.jpg" alt="The app with Plinky's bus open; a zoom shows song select, counter, ROM, note table and divider wired by their lines." width="100%"></a><br><b>Plinky</b> — the tune ROM's bus</td></tr>
-<tr><td><a href="https://cmdcolin.github.io/bender/app/#p=vQh4&v=3"><img src="docs/readme/prattle-bus.jpg" alt="The app with Prattle's bus open; a zoom shows its frame ROM, coefficient ROM and lattice." width="100%"></a><br><b>Prattle</b> — the speech ROMs</td></tr>
-</table>
+Two bends on Plinky's circuit, marked in red: a bridged wire on the bus, and a
+pot soldered onto the clock. Click the picture to open this board.
 
 ## Run
 
