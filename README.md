@@ -18,40 +18,42 @@ Names in bold below are what each part is called in the app.
 
 ## Machines
 
-Every machine is modelled down to its chips, buses and power rail, so a bend is
-a real hardware fault: a paperclip on the clock pin, a solder blob on a bus
-wire, a pot soldered onto the die.
+Every machine is modelled down to its chips and buses, so a bend is a real
+hardware fault: a paperclip on the clock pin, a solder blob on a bus wire, a pot
+soldered onto the die.
 
-- **Plinky** — a toy keyboard chip on a battery
-- **Clatter** — a toy drum box with a sample ROM
-- **Glint** — a two-operator FM chip
-- **Parlor** — an eight-bit sampling keyboard
-- **Prattle** — a talking toy's speech chip
-- **Growler** — a Model D-style monosynth
-- **Howler** — Growler's card voiced as a lead
+- **Plinky** — a toy keyboard's square-wave chip, with ROM tunes and auto bass
+  chords
+- **Clatter** — a drum box whose step rows each run their own length
+- **Glint** — a four-voice FM chip that plays along with Plinky
+- **Parlor** — an eight-bit sampling keyboard of pads, strings, choirs and bells
+- **Prattle** — a talking toy's speech chip that says what you type
+- **Growler** — a Model D-style monosynth that plays Plinky's tune as a bassline
+- **Howler** — a second Growler voiced as a lead, with its own melody
 
 ## Other sources
 
-- **Sheet** — a steel sheet with two contact mics
-- **Bottle** — a glass bottle with a contact mic
-- **Chaos osc** — two oscillators starving one supply
-- **Mic** — a live mic, patchable into a clock pin or bus
+- **Sheet** — a steel sheet you strike, which hums and howls with the board
+- **Bottle** — a glass bottle you tap and fill with water
+- **Chaos osc** — two cross-modulated oscillators that motorboat on their own
+- **Mic** — a live mic you can patch into a clock pin, a bus or Prattle's mouth
 
 ## Pedals
 
-- **Gnash** — distortion
-- **Wraith** — tape delay
-- **Ricochet** — delay
-- **Boing** — spring reverb
-- **Chorale** — chorus and ensemble
-- **Ember** — tube amp
+- **Gnash** — distortion, one circuit per mode: screamer, rat, muff and more
+- **Wraith** — a three-head tape echo on a spliced five-second loop
+- **Ricochet** — a clean or bucket-brigade delay
+- **Boing** — a spring reverb you can kick
+- **Chorale** — bucket-brigade chorus, ensemble and flanger
+- **Ember** — a tube amp and speaker, its tone stack solved from the circuit
 
 Plus a ring mod, crusher, comb, octave, codec and more.
 
 ## Tape and samples
 
-- **Spool** — a tape loop that records over itself
-- **Layercake** — a cassette four-track with four tape loops
+- **Spool** — a tape loop that plays a sample and records the board over it
+- **Layercake** — a cassette four-track: four loops of different lengths behind
+  a mixing desk
 - Samples — Spool loads any audio file, or 78s, numbers stations, NASA comms and
   old-time radio off archive.org
 
