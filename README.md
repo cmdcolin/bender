@@ -54,8 +54,7 @@ Click a machine to open its circuit:
 - **Chorale** — chorus
 - **Ember** — tube amp
 
-Ten more, among them **Ring mod**, **Crusher**, **Comb**, **Octave** and
-**Codec**.
+Also **Ring mod**, **Crusher**, **Comb**, **Octave**, **Codec** and others.
 
 ## Tape and samples
 
@@ -69,7 +68,7 @@ Ten more, among them **Ring mod**, **Crusher**, **Comb**, **Octave** and
 - Patch bay — wire modulation onto the controls
 - MIDI — plug in a controller
 - Share — a link holds the whole board
-- Presets — 190 ready-made boards
+- Presets — boards to start from
 - Agent — Claude Code plays it
   ([blog post](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/))
 
