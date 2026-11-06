@@ -48,7 +48,7 @@ export function PhraseBox() {
   }
   return (
     <div className={styles.box}>
-      <div className={styles.held}>
+      <div className={held === '' ? styles.empty : styles.held}>
         {held === '' ? 'empty: it counts one to four' : held}
       </div>
       <div className={styles.row}>

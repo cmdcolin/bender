@@ -5,10 +5,21 @@
   margin-bottom: var(--space-md);
 }
 
-.held {
+.held,
+.empty {
   min-height: 1.3em;
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--mono);
   font-size: var(--fs-sm);
-  color: var(--fg2);
+  letter-spacing: 0.04em;
+  background: #0b0b0e;
+  border: 1px solid #000;
+  border-radius: 2px;
+  color: #ff5a3c;
+}
+
+.empty {
+  color: #8a4636;
 }
 
 .row {

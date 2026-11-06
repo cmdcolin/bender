@@ -1,0 +1,34 @@
+.body {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.body > :last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.grille {
+  flex: none;
+  width: 92px;
+  margin-top: var(--space-xs);
+}
+
+.rim {
+  fill: #1b1c20;
+  stroke: #3c3d44;
+}
+
+.hole,
+.lit {
+  transition: fill 0.12s;
+}
+
+.hole {
+  fill: #0b0b0e;
+}
+
+.lit {
+  fill: var(--accent);
+}

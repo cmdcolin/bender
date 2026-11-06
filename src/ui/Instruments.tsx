@@ -24,7 +24,7 @@ import { wireOn } from './micWiring.ts'
 import { LeadKeys, MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal } from './Pedals.tsx'
-import { PhraseBox } from './PhraseBox.tsx'
+import { PrattleFace } from './PrattleFace.tsx'
 import { SheetFace } from './SheetFace.tsx'
 import { SourceMeters, SourceMetersSwitch } from './SourceMeters.tsx'
 import { levelOf } from './stageLevels.ts'
@@ -51,20 +51,6 @@ function FourTrackFace({
   return (
     <Faceplate stage="Layercake" seconds={seconds} onClose={onClose}>
       <FourTrack />
-    </Faceplate>
-  )
-}
-
-function PrattleFace({
-  seconds,
-  onClose,
-}: {
-  seconds?: number
-  onClose?: () => void
-}) {
-  return (
-    <Faceplate stage="Prattle" seconds={seconds} onClose={onClose}>
-      <PhraseBox />
     </Faceplate>
   )
 }
