@@ -504,6 +504,9 @@ const peakOf = (x: Float32Array) =>
 test.each([
   ['pcmRunaway', 14],
   ['pcmCpuBus', 2],
+  ['pcmSlot', 2],
+  ['pcmWordRate', 2],
+  ['pcmRot', 3],
 ] as const)(
   '%s at full stays bounded and changes a held chord over %d s',
   (key, seconds) => {
@@ -544,4 +547,63 @@ test('thermal runaway stays clean until the die warms', () => {
   const clean = chordFor({}, 4)
   const warming = chordFor({ pcmRunaway: 1 }, 4)
   expect(differs(clean, warming)).toBeLessThan(1e-6)
+})
+
+const quietShare = (x: Float32Array, floor: number) => {
+  const win = 0.005 * SR
+  let quiet = 0
+  let all = 0
+  for (let at = 0; at + win <= x.length; at += win, all++)
+    if (rms(x.subarray(at, at + win)) < floor) quiet++
+  return quiet / all
+}
+
+test('a slow slot clock sounds a lone note one slot in four', () => {
+  const x = tail(held({ pcmSlot: 1 }, 12, 4), 3)
+  expect(quietShare(x, 1e-3)).toBeGreaterThan(0.65)
+  expect(quietShare(x, 1e-3)).toBeLessThan(0.8)
+  expect(quietShare(tail(held({}, 12, 4), 3), 1e-3)).toBe(0)
+})
+
+test('a slow slot clock plays a chord one voice at a time', () => {
+  const x = tail(chordFor({ pcmChord: 1, pcmSlot: 1 }, 4), 3)
+  expect(quietShare(x, 1e-3)).toBeLessThan(0.05)
+  const turn = 0.125 * SR
+  const peaks = new Set<number>()
+  for (let at = 0; at + turn <= x.length; at += turn) {
+    const part = x.subarray(at + turn / 4, at + (3 * turn) / 4)
+    peaks.add(Math.round(peakIn(part, 150, 1200, 2) / 20))
+  }
+  expect(peaks.size).toBeGreaterThanOrEqual(3)
+})
+
+test('the word on the bus bends each voice’s rate without stalling it', () => {
+  const lone = tail(held({ pcmWordRate: 1 }, 12, 1), 0.5)
+  expect(differs(tail(held({}, 12, 1), 0.5), lone)).toBeGreaterThan(0.3)
+  expect(rms(lone)).toBeGreaterThan(0.02)
+  const chord = spectrum(chordFor({ pcmWordRate: 1 }, 2), SR).flatness
+  expect(chord).toBeGreaterThan(0.05)
+})
+
+test('refresh rots a held note toward silence', () => {
+  const clean = held({}, 12, 6)
+  const rotting = held({ pcmRot: 1 }, 12, 6)
+  const early = rotting.subarray(0.2 * SR, 0.4 * SR)
+  expect(rms(early)).toBeGreaterThan(
+    rms(clean.subarray(0.2 * SR, 0.4 * SR)) / 2,
+  )
+  expect(rms(tail(rotting, 1))).toBeLessThan(rms(tail(clean, 1)) / 10)
+})
+
+test('refresh rots the sampled voice too', () => {
+  const run = (pcmRot: number) =>
+    play(
+      { ...ALONE, pcmVoice: SAMPLED, loopIn: 0.2, loopOut: 0.8, pcmRot },
+      4,
+      b => {
+        b.sampler.setBuffer(sine(300, 2))
+        b.pcmKeys.noteOn(24)
+      },
+    ).out
+  expect(rms(tail(run(1), 1))).toBeLessThan(rms(tail(run(0), 1)) / 10)
 })

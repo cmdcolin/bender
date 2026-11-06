@@ -46,6 +46,9 @@ const KEYS = [
   'pcmGlint',
   'pcmRunaway',
   'pcmCpuBus',
+  'pcmSlot',
+  'pcmWordRate',
+  'pcmRot',
 ] as const
 
 type Key = (typeof KEYS)[number]
@@ -80,12 +83,12 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     [
       'counter',
       OPENS.counter,
-      'The address counter. It walks the ROM at the rate the note asks for, so its clock sets the pitch and the aliasing together. Its up/down pin, the latch the four voices share and the die temperature that slows its carry chain sit here too.',
+      'The address counter. It walks the ROM at the rate the note asks for, so its clock sets the pitch and the aliasing together. Its up/down pin, the latch the four voices share, the adder in front of its rate divider and the die temperature that slows its carry chain sit here too.',
     ],
     [
       'ROM',
       OPENS.ROM,
-      'The recordings: one short loop per voice, cut into eight-bit words. The sampled voice reads the sampler’s reel instead. The loop comparator and the write strobe sit here too.',
+      'The recordings: one short loop per voice, cut into eight-bit words. The sampled voice reads the sampler’s reel instead. The loop comparator, the write strobe and the refresh that keeps the memory sit here too.',
     ],
     [
       'envelope',
@@ -95,7 +98,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     [
       'tone',
       OPENS.tone,
-      'The four voices sum into the eight-bit DAC, and a two-pole filter follows it.',
+      'The four voices take turns on the eight-bit DAC, so fast they sound together, and a two-pole filter follows it.',
     ],
   ]
   const box = boxMaker(r.touched)

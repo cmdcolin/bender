@@ -239,8 +239,11 @@ export const DEST = {
   leadChoke: 180,
   leadRegTrip: 181,
   talkLevel: 182,
+  pcmSlot: 183,
+  pcmWordRate: 184,
+  pcmRot: 185,
 } as const
-export const N_DEST = 183
+export const N_DEST = 186
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

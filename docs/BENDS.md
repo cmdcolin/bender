@@ -695,7 +695,7 @@ reaches the counter and the data.
   was cut at 9.9 kHz with no interpolation.
 - _ROM clock:_ drags the counter, so pitch and aliasing move together.
 
-Five bends sit inside the die, between the counter and the memory.
+Eight bends sit inside the die, between the counter and the DAC.
 
 - **Loop overrun:** the loop comparator may miss at each loop end. The counter
   then runs on through every voice after it in the ROM, round the memory and
@@ -739,6 +739,25 @@ Five bends sit inside the die, between the counter and the memory.
   - At 0 the die is cold, and a held note keeps a jumped pitch until it is
     struck again.
   - Its patch-bay lane is read once a block.
+- **Slot clock:** slows the clock that hands the DAC from voice to voice, so
+  only the voice whose turn it is sounds.
+  - Low, the turns chop a chord into a buzz.
+  - At the top each turn lasts 125 ms: a held chord plays as an arpeggio, and a
+    lone note sounds one turn in four.
+  - ROM clock drags it too.
+- **Word on rate:** the data bus shorts into the adder in front of each voice's
+  rate divider, so the word the last voice read bends the next voice's pitch.
+  - A lone note bends itself and growls.
+  - A chord bends round the ring and tangles into noise: at full on a held
+    chord, flatness 0.16 against 0.00 clean.
+  - High notes bend furthest, since their dividers are smallest.
+- **Refresh:** the memory goes unrefreshed, so its bits leak to zero one at a
+  time.
+  - A held note crackles as the top bits go, then fades to silence: in about
+    4 s at the top and 10 s at half.
+  - It works on _sampled_ too, and stacks with Write strobe.
+  - The memory reads clean again when this and Write strobe are both at zero,
+    or the rail reboots.
 
 ## Growler's voice card
 

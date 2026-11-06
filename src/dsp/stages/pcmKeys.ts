@@ -14,6 +14,7 @@ import {
   noteHz,
   PCM_ADDR_LINES,
   PCM_DATA_LINES,
+  RATE_MAX,
   rateReg,
   regHz,
   ROM_HZ,
@@ -68,6 +69,11 @@ const HEAT_FLOOR = 0.25
 // weighted by it, so the die heats and leaks as fast at 96 kHz as at 48.
 const VOICED_SR = 48000
 const HEAT_SPAN = 0.6
+const SLOT_TOP_HZ = 8000
+const SLOT_FLOOR_HZ = 8
+const SLOT_GAIN = 2
+const WORD_RATE_DEPTH = 32
+const ROT_FULL_SECS = 0.4
 
 const SAMPLE_WORDS = Math.round(SAMPLE_SECS * ROM_HZ)
 
@@ -180,6 +186,8 @@ export class PcmKeys implements Stage {
   private trip = 1
   private dark = 0
   private faults = 0
+  private slotPhase = 0
+  private rotDue = 0
 
   private vibPhase = 0
   private vibFactor = 1
@@ -471,6 +479,10 @@ export class PcmKeys implements Stage {
     this.regs = ctx.regs
 
     const runOnBase = p[IDX.pcmRunOn]!
+    const slotBase = p[IDX.pcmSlot]!
+    const modSlot = bay.read(DEST.pcmSlot)
+    const wordRateBase = p[IDX.pcmWordRate]!
+    const modWordRate = bay.read(DEST.pcmWordRate)
     const writeBase = p[IDX.pcmWrite]!
     const signBase = p[IDX.pcmSignDir]!
     const latchBase = p[IDX.pcmLatch]!
@@ -487,7 +499,8 @@ export class PcmKeys implements Stage {
     const leak = hot ** 2
     const leaky = 0.8 * hot
     this.faults = 0
-    const writing = knob(writeBase, modWrite, 0) > 0
+    const rot = knob(p[IDX.pcmRot]!, bay.read(DEST.pcmRot), 0) ** 2
+    const writing = knob(writeBase, modWrite, 0) > 0 || rot > 0
     if (!writing) this.ramFor = null
 
     const chord = Math.round(p[IDX.pcmChord]!)
@@ -514,6 +527,7 @@ export class PcmKeys implements Stage {
 
     for (const q of this.queued) this.strike(q.note, q.gain, q.held, chord)
     this.queued.length = 0
+    if (loaded && rot > 0 && this.mem) this.rot(rot, io.n)
 
     const span = this.loopEnd - this.loopStart
     const voices = this.voices
@@ -569,6 +583,16 @@ export class PcmKeys implements Stage {
         this.faults += this.perSample
       }
 
+      const slotKnob = knob(slotBase, modSlot, i)
+      let slot = -1
+      if (slotKnob > 0) {
+        this.slotPhase +=
+          (clock * SLOT_TOP_HZ * (SLOT_FLOOR_HZ / SLOT_TOP_HZ) ** slotKnob) /
+          this.sr
+        if (this.slotPhase >= N_VOICES) this.slotPhase %= N_VOICES
+        slot = this.slotPhase | 0
+      }
+      const wordRate = WORD_RATE_DEPTH * knob(wordRateBase, modWordRate, i) ** 2
       const runOn = knob(runOnBase, modRunOn, i) ** 2
       const flip = knob(signBase, modSign, i) ** 2
       const latch = knob(latchBase, modLatch, i)
@@ -582,7 +606,8 @@ export class PcmKeys implements Stage {
 
       let sum = 0
       let raw = 0
-      for (const v of voices) {
+      for (let k = 0; k < N_VOICES; k++) {
+        const v = voices[k]!
         if (v.stage === IDLE) continue
         if (v.left > 0 && --v.left === 0) {
           v.held = false
@@ -594,7 +619,21 @@ export class PcmKeys implements Stage {
           vibrato === 2 ? Math.min(v.age / vibDelay, 1) : vibrato > 0 ? 1 : 0
         if (flip === 0) v.dir = 1
         const before = v.pos | 0
-        v.pos += v.inc * clock * (1 + (this.vibFactor - 1) * depth) * v.dir
+        const inc =
+          wordRate > 0
+            ? (ROM_PER_CYCLE *
+                regHz(
+                  Math.min(
+                    Math.max(
+                      v.reg + Math.round(wordRate * (this.busWord - DAC_STEPS)),
+                      1,
+                    ),
+                    RATE_MAX,
+                  ),
+                )) /
+              this.sr
+            : v.inc
+        v.pos += inc * clock * (1 + (this.vibFactor - 1) * depth) * v.dir
         if (carry > 0 && v.dir > 0) {
           const after = v.pos | 0
           const flipped = before ^ after
@@ -632,7 +671,8 @@ export class PcmKeys implements Stage {
           v.low = low
         }
         raw += s
-        sum += s * v.env * v.gain * VOICE_GAIN
+        if (slot < 0) sum += s * v.env * v.gain * VOICE_GAIN
+        else if (k === slot) sum += s * v.env * v.gain * VOICE_GAIN * SLOT_GAIN
       }
 
       if (this.mem && this.ramFor !== null) {
@@ -656,6 +696,18 @@ export class PcmKeys implements Stage {
     }
     rail.drawing += load / io.n
     if (runaway > 0) this.warm(io.n, runaway, sounding)
+  }
+
+  private rot(rate: number, n: number) {
+    const mem = this.mem!
+    const from = this.base
+    const len = this.romLen
+    this.rotDue += (rate * 8 * len * n) / (ROT_FULL_SECS * this.sr)
+    while (this.rotDue >= 1) {
+      this.rotDue--
+      const at = from + ((this.rng() * len) | 0)
+      mem[at] = mem[at]! & ~(1 << ((this.rng() * 8) | 0))
+    }
   }
 
   private warm(n: number, runaway: number, sounding: number) {
@@ -708,6 +760,8 @@ export class PcmKeys implements Stage {
     this.dark = 0
     this.busy = 0
     this.scanPhase = 0
+    this.slotPhase = 0
+    this.rotDue = 0
     this.pc = 0
     this.busWord = DAC_STEPS
   }

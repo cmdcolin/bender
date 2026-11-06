@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-809 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 191
+812 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 194
 presets, 24 stage settings and 108 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 183 destinations, among
+- **A patch bay that modulates itself.** Four wires, 186 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 191 presets, and a roll button on every heading as well as
+- **Whole boards.** 194 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -552,7 +552,7 @@ puts the fault on, and the rows under it show the controls it set:
   wires that jump the read across the sample
 
 <details>
-<summary>27 controls</summary>
+<summary>30 controls</summary>
 
 | control                            | range                                                                                                     | what it does                                                                                                                                                                |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -583,6 +583,9 @@ puts the fault on, and the rows under it show the controls it set:
 | Shared latch                       | off to full                                                                                               | Slows the address latch the four voices share, so the top bits of each voice’s address come from the voice before it                                                        |
 | Thermal runaway †                  | off to full                                                                                               | Sets how fast the die warms                                                                                                                                                 |
 | CPU on bus †                       | off to full                                                                                               | The keyboard’s processor scans the keys 240 times a second over the data bus the voices read from                                                                           |
+| Slot clock                         | off to full                                                                                               | Slows the clock that hands the DAC from voice to voice                                                                                                                      |
+| Word on rate                       | off to full                                                                                               | Shorts the data bus into the adder in front of each voice’s rate divider, so the word the last voice read speeds up or slows down the next                                  |
+| Refresh                            | off to full                                                                                               | Starves the refresh of the memory the voice plays from, so its bits leak to zero one by one while the chip plays                                                            |
 
 </details>
 
@@ -1752,7 +1755,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 183 of them, filt cut through talk level                                                                               | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 186 of them, filt cut through keys refresh                                                                             | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -2063,7 +2066,7 @@ result:
 
 ### Presets
 
-191 presets. Each name is a link that opens the app with that board loaded, and
+194 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2076,6 +2079,15 @@ the board waits until you press play.
   — Whatever you dropped plays across the keyboard off the sample memory, with a
   data line on the rail and the address bus bridged. The tape loop’s fader is
   down, so the only copy you hear is the keyed one
+- [**one voice at a time**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.15,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.2,pcmChord:1,pcmSlot:1,revDecayS:5,revMix:0.45)
+  — Parlor’s slot clock is dragged down to its floor, so each chord of the demo
+  song plays one voice at a time as a slow arpeggio of strings
+- [**tangled choir**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.2,pcmLevel:0.85,pcmVoice:1,pcmEnv:2,pcmRelease:1,pcmTone:5000,pcmChord:2,pcmWordRate:0.75,tapeMix:0.5,tapeWow:0.4)
+  — The data bus is shorted into Parlor’s rate adder, so each voice of the choir
+  bends the next and every chord tangles into noise
+- [**rot and reboot**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.2,pcmLevel:0.9,pcmVoice:3,pcmRelease:0.8,pcmTone:5000,pcmChord:1,pcmRunaway:0.9,pcmRot:0.35,echoMs:380,echoLevel:0.35)
+  — Parlor’s memory goes unrefreshed and its die runs hot: the e.piano crackles
+  away to nothing until the chip cuts out, and it boots back clean
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
   — The rail starves, the pitch sags and the watchdog reboots the chips mid-tune
 - [**techno**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep1:0,monoSeqStep2:0,monoSeqStep3:0,monoSeqStep5:0,monoSeqStep6:0,monoSeqStep7:12,monoSeqStep9:0,monoSeqStep10:0,monoSeqStep11:0,monoSeqStep13:0,monoSeqStep14:12,monoSeqStep15:-2,monoSeqAccentLo:8738,drumLevel:0.9,drumBpm:130,drumKick:34952,drumHat:56797,drumClap:2056,drumOpen:8738,drumAccent:8738,monoLevel:1.2,monoKeyGate:1,monoGate:0.45,monoWave2:2,monoMix1:1,monoMix2:0.5,monoMix3:0,monoCutoff:380,monoEmph:0.45,monoContour:2.4,monoTrack:0.5,monoDrive:1.8,monoFD:0.12,monoFS:0,monoFR:0.06,monoAD:0.18,monoAS:0.3,monoAR:0.03)

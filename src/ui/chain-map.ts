@@ -223,6 +223,9 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   leadChoke: 'Howler',
   leadRegTrip: 'Howler',
   talkLevel: 'Prattle',
+  pcmSlot: 'Parlor',
+  pcmWordRate: 'Parlor',
+  pcmRot: 'Parlor',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

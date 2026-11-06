@@ -563,6 +563,9 @@ export const PARAM_DEFS = [
   ['pcmGlint', 'step'],
   ['pcmRunaway', 'slew'],
   ['pcmCpuBus', 'slew'],
+  ['pcmSlot', 'slew'],
+  ['pcmWordRate', 'slew'],
+  ['pcmRot', 'slew'],
 
   ['monoLevel', 'slew'],
   ['monoMute', 'ramp'],

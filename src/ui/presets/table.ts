@@ -224,6 +224,62 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'one voice at a time',
+    blurb:
+      'Parlor’s slot clock is dragged down to its floor, so each chord of the demo song plays one voice at a time as a slow arpeggio of strings',
+    patch: {
+      pcmLevel: 0.9,
+      pcmVoice: keys('strings'),
+      pcmEnv: 2,
+      pcmRelease: 1.2,
+      pcmTone: 4000,
+      pcmChord: 1,
+      pcmKeyGate: 0,
+      pcmSlot: 1,
+      chipLevel: 0.15,
+      revMix: 0.45,
+      revDecayS: 5,
+    },
+  },
+  {
+    name: 'tangled choir',
+    blurb:
+      'The data bus is shorted into Parlor’s rate adder, so each voice of the choir bends the next and every chord tangles into noise',
+    patch: {
+      pcmLevel: 0.85,
+      pcmVoice: keys('choir'),
+      pcmEnv: 2,
+      pcmRelease: 1,
+      pcmTone: 5000,
+      pcmChord: 2,
+      pcmKeyGate: 0,
+      pcmWordRate: 0.75,
+      chipLevel: 0.2,
+      tapeMix: 0.5,
+      tapeWow: 0.4,
+    },
+  },
+  {
+    name: 'rot and reboot',
+    blurb:
+      'Parlor’s memory goes unrefreshed and its die runs hot: the e.piano crackles away to nothing until the chip cuts out, and it boots back clean',
+    patch: {
+      pcmLevel: 0.9,
+      pcmVoice: keys('e.piano'),
+      pcmEnv: 0,
+      pcmRelease: 0.8,
+      pcmTone: 5000,
+      pcmChord: 1,
+      pcmKeyGate: 0,
+      pcmRot: 0.35,
+      pcmRunaway: 0.9,
+      chipLevel: 0.2,
+      echoLevel: 0.35,
+      echoMs: 380,
+      echoFb: 0.35,
+    },
+  },
+  {
     name: 'dying toy',
     blurb:
       'The rail starves, the pitch sags and the watchdog reboots the chips mid-tune',

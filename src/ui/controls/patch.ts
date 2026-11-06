@@ -380,6 +380,9 @@ export const PATCH_GROUPS: Group[] = [
             'lead out to gate',
             'lead regulator trip',
             'talk level',
+            'keys slot clock',
+            'keys word on rate',
+            'keys refresh',
           ],
           groups: [
             {
@@ -499,6 +502,9 @@ export const PATCH_GROUPS: Group[] = [
                 'keys Glint on bus',
                 'keys thermal runaway',
                 'keys CPU on bus',
+                'keys slot clock',
+                'keys word on rate',
+                'keys refresh',
               ],
             },
             {
