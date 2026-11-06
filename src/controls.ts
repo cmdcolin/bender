@@ -1234,6 +1234,22 @@ export const DEFAULT_CONTROLS = {
   ringDepth: 1,
   ringEdge: 0,
   ringFill: 0,
+
+  chipDuck: 0,
+  drumDuck: 0,
+  fmDuck: 0,
+  pcmDuck: 0,
+  monoDuck: 0,
+  oscDuck: 0,
+  noiseDuck: 0,
+  sampleDuck: 0,
+  fourDuck: 0,
+  sheetDuck: 0,
+  bottleDuck: 0,
+  leadDuck: 0,
+  talkDuck: 0,
+  duckKey: 1,
+  duckRelease: 1,
 }
 
 export type Controls = typeof DEFAULT_CONTROLS

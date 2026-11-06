@@ -1,8 +1,9 @@
+import { N_DRUM_VOICES, VOICE_LABELS } from '../../drums.ts'
 import { TAP_MIC } from '../../engine/params.ts'
 import { MACHINES } from '../../machines.ts'
 
 import type { ControlKey } from '../../controls.ts'
-import type { Group } from './types.ts'
+import type { Group, SliderDef } from './types.ts'
 
 // Where the seven of them meet.
 //
@@ -46,6 +47,17 @@ export const CHANNELS: readonly Channel[] = [
   { key: 'micLevel', name: 'Mic', tap: TAP_MIC, yours: true },
 ]
 
+export const DUCKS: readonly SliderDef[] = MACHINES.map(m => ({
+  key: m.duck,
+  label: `${m.name} duck`,
+  min: 0,
+  max: 1,
+  step: 0.01,
+  unit: '',
+  shy: true,
+  help: `A vactrol on ${m.name}’s channel, after its jacks: the kit voice keying it lights the LED and the LDR pulls the channel down, then lets go slower the deeper it went.`,
+}))
+
 export const MIX_GROUPS: Group[] = [
   {
     name: 'Mix bus',
@@ -62,6 +74,28 @@ export const MIX_GROUPS: Group[] = [
         unit: 'dB',
         help: 'The summing amp the seven sources meet in. At unity it is a wire, so nothing happens here until you move it. Wound up it is the one saturation ahead of the pedals, so the whole board arrives at them driven together — and whatever is loudest ducks the rest.',
       },
+      {
+        key: 'duckKey',
+        label: 'Duck keyed by',
+        min: 1,
+        max: N_DRUM_VOICES + 1,
+        step: 1,
+        unit: '',
+        choices: [...VOICE_LABELS, 'any hit'],
+        help: 'The kit trigger line every channel’s duck vactrol hangs off, so the pump lands on the grid with swing and ratchets.',
+      },
+      {
+        key: 'duckRelease',
+        label: 'Duck release',
+        min: 0.25,
+        max: 4,
+        step: 0.01,
+        unit: '×',
+        curve: 'log',
+        help: 'Scales how long the LDRs take to let go: about 40 ms from a light duck to 400 ms from a deep one at ×1.',
+      },
+      ...DUCKS,
     ],
+    handled: DUCKS.map(d => d.key),
   },
 ]

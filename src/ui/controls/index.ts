@@ -20,7 +20,7 @@ import { TAPE_GROUPS } from './tape.ts'
 import type { Group, SliderDef } from './types.ts'
 
 export { BENDS, BEND_SLOT_KEYS, bendAt } from './bends.ts'
-export { CHANNELS, type Channel } from './mix.ts'
+export { CHANNELS, DUCKS, type Channel } from './mix.ts'
 export { TRACK_NUMBERS, type Track } from './fourTrack.ts'
 export {
   STAGE_ORDER,

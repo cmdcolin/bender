@@ -1205,6 +1205,22 @@ export const PARAM_DEFS = [
   ['ringDepth', 'slew'],
   ['ringEdge', 'slew'],
   ['ringFill', 'step'],
+
+  ['chipDuck', 'slew'],
+  ['drumDuck', 'slew'],
+  ['fmDuck', 'slew'],
+  ['pcmDuck', 'slew'],
+  ['monoDuck', 'slew'],
+  ['oscDuck', 'slew'],
+  ['noiseDuck', 'slew'],
+  ['sampleDuck', 'slew'],
+  ['fourDuck', 'slew'],
+  ['sheetDuck', 'slew'],
+  ['bottleDuck', 'slew'],
+  ['leadDuck', 'slew'],
+  ['talkDuck', 'slew'],
+  ['duckKey', 'step'],
+  ['duckRelease', 'slew'],
 ] as const satisfies readonly (readonly [ControlKey, Smooth])[]
 
 export type ParamName = (typeof PARAM_DEFS)[number][0]

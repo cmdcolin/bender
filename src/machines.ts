@@ -56,6 +56,8 @@ interface MachineSpec {
   /** Its faders, the desk's first: any of them up puts it on the board. The
       first is also the lane a bay wire rides it on. */
   levels: readonly [Lane, ...ControlKey[]]
+  /** How hard the kit's trigger line lights the vactrol on its desk channel. */
+  duck: ControlKey
   /** Its fader is the player's monitoring level rather than the look's. */
   yours?: true
   mute?: ControlKey
@@ -91,6 +93,7 @@ export const MACHINES = [
     kind: 'toy keyboard',
     stem: 'toy',
     levels: ['chipLevel'],
+    duck: 'chipDuck',
     mute: 'chipMute',
     supply: 'chipSupply',
     keybed: 'toy',
@@ -133,6 +136,7 @@ export const MACHINES = [
     kind: 'toy drums',
     stem: 'drums',
     levels: ['drumLevel'],
+    duck: 'drumDuck',
     mute: 'drumMute',
     supply: 'drumSupply',
     cv: 'drumTune',
@@ -155,6 +159,7 @@ export const MACHINES = [
     kind: 'FM synth',
     stem: 'fm',
     levels: ['fmLevel'],
+    duck: 'fmDuck',
     mute: 'fmMute',
     supply: 'fmSupply',
     keybed: 'fm',
@@ -181,6 +186,7 @@ export const MACHINES = [
     kind: 'home keyboard',
     stem: 'keys',
     levels: ['pcmLevel'],
+    duck: 'pcmDuck',
     mute: 'pcmMute',
     supply: 'pcmSupply',
     keybed: 'pcm',
@@ -199,6 +205,7 @@ export const MACHINES = [
     kind: 'mono synth',
     stem: 'mono',
     levels: ['monoLevel'],
+    duck: 'monoDuck',
     mute: 'monoMute',
     supply: 'monoSupply',
     keybed: 'mono',
@@ -225,6 +232,7 @@ export const MACHINES = [
     kind: 'oscillator',
     stem: 'chaos',
     levels: ['oscLevel'],
+    duck: 'oscDuck',
     mic: [
       {
         jack: 'oscSync',
@@ -249,6 +257,7 @@ export const MACHINES = [
     kind: 'noise source',
     stem: 'noise',
     levels: ['noiseLevel', 'crackleAmp'],
+    duck: 'noiseDuck',
     map: 'line',
     blurb:
       'Hiss with a colour control, and sparse crackle with a rate control.',
@@ -259,6 +268,7 @@ export const MACHINES = [
     kind: 'tape loop',
     stem: 'tape-loop',
     levels: ['sampleLevel'],
+    duck: 'sampleDuck',
     yours: true,
     mic: [
       {
@@ -279,6 +289,7 @@ export const MACHINES = [
     kind: 'four-track',
     stem: 'four-track',
     levels: ['fourLevel'],
+    duck: 'fourDuck',
     yours: true,
     map: 'line',
     face: true,
@@ -291,6 +302,7 @@ export const MACHINES = [
     kind: 'struck metal',
     stem: 'sheet',
     levels: ['sheetLevel'],
+    duck: 'sheetDuck',
     map: 'line',
     face: true,
     blurb:
@@ -302,6 +314,7 @@ export const MACHINES = [
     kind: 'glass bottle',
     stem: 'bottle',
     levels: ['bottleLevel'],
+    duck: 'bottleDuck',
     map: 'line',
     face: true,
     blurb:
@@ -313,6 +326,7 @@ export const MACHINES = [
     kind: 'lead synth',
     stem: 'lead',
     levels: ['leadLevel'],
+    duck: 'leadDuck',
     mute: 'leadMute',
     supply: 'leadSupply',
     keybed: 'lead',
@@ -339,6 +353,7 @@ export const MACHINES = [
     kind: 'speech chip',
     stem: 'prattle',
     levels: ['talkLevel'],
+    duck: 'talkDuck',
     mute: 'talkMute',
     supply: 'talkSupply',
     struck: 'talkStruck',

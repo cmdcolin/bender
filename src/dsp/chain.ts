@@ -26,7 +26,7 @@ import { RING_FROM_TAP } from './stages/ringmod.ts'
 import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
 import { DAC_REF_TOY } from './stages/toyDrum.ts'
 import { Thermal } from './thermal.ts'
-import { TriggerBus } from './trigbus.ts'
+import { TriggerBus, voiceMask } from './trigbus.ts'
 import { BandMeter } from './util/bandMeter.ts'
 import { GroundBounce } from './util/bounce.ts'
 import { Burst } from './util/burst.ts'
@@ -42,6 +42,7 @@ import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole.ts'
 import { octaves } from './util/pitch.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
 import { flushDenormal, softclip } from './util/softclip.ts'
+import { Vactrol } from './vactrol.ts'
 
 import type { MelodyMemory } from './melodyMemory.ts'
 import type { Supplies } from './supplies.ts'
@@ -93,6 +94,7 @@ const SLOT_IDX = [
     source has none. */
 const NO_MUTE = -1
 const MUTE_IDX = MACHINES.map(m => ('mute' in m ? IDX[m.mute] : NO_MUTE))
+const DUCK_IDX = MACHINES.map(m => IDX[m.duck])
 
 const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])
 const PEDAL_INTO_IDX = PEDALS.map(p => IDX[p.into])
@@ -442,6 +444,12 @@ export class Chain {
       this block, so those buses carry the line its units leave. */
   private readonly feeds = new Uint8Array(TAP_MIC + 1)
   private readonly micWet = new Float32Array(BLOCK)
+  /** Each machine's channel vactrol, and one bit per channel it darkens. */
+  private readonly vactrols: Vactrol[]
+  private ducked = 0
+  /** How far each channel's vactrol has darkened its line since the last read,
+      0 to 1. Whoever reads it clears it; nothing in the audio path reads it. */
+  readonly ldr = new Float32Array(MAX_SOURCES)
 
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
@@ -481,6 +489,7 @@ export class Chain {
       trig: new TriggerBus(),
     }
     this.loops = Array.from({ length: N_LOOPS }, () => new DeskLoop(sr))
+    this.vactrols = MACHINES.map(() => new Vactrol(sr))
     this.thermal = new Thermal(sr)
     this.micLine = new MicLine(sr)
     this.ground = new GroundBounce(sr)
@@ -515,6 +524,8 @@ export class Chain {
     this.hfEnv.reset()
     this.allEnv.reset()
     for (const lp of this.loops) lp.reset()
+    for (const v of this.vactrols) v.reset()
+    this.ldr.fill(0)
     this.outEnv.reset()
     this.ctx.mod.panic()
     this.ctx.trig.panic()
@@ -960,7 +971,11 @@ export class Chain {
       if (t >= 0) jacked |= 1 << t
     }
     this.seated = true
-    this.jacked = jacked
+    let ducked = 0
+    for (let k = 0; k < DUCK_IDX.length; k++)
+      if (this.vactrols[k]!.live(p[DUCK_IDX[k]!]!)) ducked |= 1 << k
+    this.ducked = ducked
+    this.jacked = jacked | ducked
     this.clearInserts(n)
   }
 
@@ -1023,6 +1038,7 @@ export class Chain {
           this.runBend(id, ins, p, n)
       for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
         if (this.pedalAt[i] === t) this.runPedal(i, ins, p, n)
+      if (this.ducked & (1 << t)) this.duckLine(t, ins, p)
       if (feeds) this.carry(feeds, ins.l, n)
       let peak = 0
       for (let i = 0; i < n; i++) {
@@ -1042,6 +1058,21 @@ export class Chain {
           this.stems[base + i] = 0.5 * (ins.l[i]! + ins.r[i]!)
       }
     }
+  }
+
+  // The channel's vactrol, lit off the kit's trigger line as this block struck
+  // it: the kit has run by now, so a duck lands on the sample the hit does.
+  private duckLine(t: number, line: StereoBlock, p: Float32Array) {
+    const { trig } = this.ctx
+    const dark = this.vactrols[t]!.run(
+      line,
+      p[DUCK_IDX[t]!]!,
+      trig.bitsNow,
+      trig.gainNow,
+      voiceMask(Math.round(p[IDX.duckKey]!)),
+      p[IDX.duckRelease]!,
+    )
+    if (dark > this.ldr[t]!) this.ldr[t] = dark
   }
 
   private carry(feeds: number, line: Float32Array, n: number) {
