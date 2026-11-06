@@ -71,6 +71,12 @@ bender.play()
 The `techno` and `acid techno` presets load the same kind of groove in one call,
 `bender.load('techno')`.
 
+- **A lead over it:** Howler is a second build of Growler's card with a memory
+  of its own. `bender.line(notes, { on: 'Howler' })` writes it and leaves the
+  bassline alone; raise `leadLevel` and cut `leadKeyGate`. Its stock 8′ sounds
+  the notes as written. `bender.load('hard techno howl')` loads a 150 bpm groove
+  with one.
+
 ## Starve the batteries
 
 ```text
