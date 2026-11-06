@@ -388,6 +388,7 @@ export const PATCH_GROUPS: Group[] = [
             'FM carry',
             'FM slot skew',
             'FM mod into pitch',
+            'kit touch',
           ],
           groups: [
             {
@@ -456,6 +457,7 @@ export const PATCH_GROUPS: Group[] = [
                 'kit clock rush',
                 'kit pattern rot',
                 'kit out to address',
+                'kit touch',
               ],
             },
             {

@@ -4,6 +4,7 @@ import {
   parseRow,
   RATCHET_KEYS,
   RATCHETS,
+  RETRIG_KEYS,
   EVENT_KEYS,
   rowMasks,
 } from '../../drums.ts'
@@ -88,7 +89,11 @@ export function tune(melody: string, ...stacks: string[]): Partial<Controls> {
   }
 }
 
-type KitRow = (typeof GRID_ROWS)[number]['label'] | 'ratchet' | 'event'
+type KitRow =
+  | (typeof GRID_ROWS)[number]['label']
+  | 'ratchet'
+  | 'retrig'
+  | 'event'
 
 /** The kit's grid, a row of text a voice, as the grid reads it back. */
 export function kit(rows: Partial<Record<KitRow, string>>): Partial<Controls> {
@@ -110,6 +115,9 @@ export function kit(rows: Partial<Record<KitRow, string>>): Partial<Controls> {
   if (rows.ratchet !== undefined)
     for (const [s, v] of parseCells('ratchet', rows.ratchet).entries())
       out[RATCHET_KEYS[s]!] = v
+  if (rows.retrig !== undefined)
+    for (const [s, v] of parseCells('retrig', rows.retrig).entries())
+      out[RETRIG_KEYS[s]!] = v
   if (rows.event !== undefined)
     for (const [s, v] of parseCells('event', rows.event).entries())
       out[EVENT_KEYS[s]!] = v

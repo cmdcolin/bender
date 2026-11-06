@@ -12,6 +12,9 @@ import {
   NUDGE_PARTS,
   RATCHET_KEYS,
   RATCHETS,
+  RETRIG_KEYS,
+  RETRIGS,
+  asRetrig,
   DATA_LINES,
   DRUM_VOICES,
   GHOST_GAIN,
@@ -318,6 +321,43 @@ const GND_TRIP = 0.3
     free-runs; wired, the six stand still whenever that voice is silent. */
 export const BANK_GATE_NAMES = ['off', ...VOICE_LABELS.map(l => `on the ${l}`)]
 
+/** What the retrigger hammers: the step's own trigger line, every voice's at
+    once, or one voice's. */
+export const RETRIG_TARGET_NAMES = [
+  'the step',
+  'all voices',
+  ...VOICE_LABELS.map(l => `the ${l}`),
+]
+const RETRIG_ALL = 1
+// How far a full sweep glides the retrigger across one step, and the fastest
+// anything hammers the line.
+const RETRIG_SWEEP_OCT = 4
+const RETRIG_MAX_HZ = 8000
+
+/** The wall socket a hand on the board picks up. */
+export const MAINS_NAMES = ['60 Hz', '50 Hz']
+const MAINS_HZ = [60, 50]
+// Fingers and a paperclip across the trigger line. The clip holds a rate for
+// seconds and slips: mostly a few percent, now and then onto another plateau,
+// a neighbouring voice's pin or a later point in the slab.
+const CLIP_HOLD_S = 1.5
+const CLIP_SLIP_OCT = 0.1
+const CLIP_PLATEAU_OCT = 0.6
+const CLIP_LOOP_S = 0.012
+// Skin between the pins: each restart a little early or late, louder or
+// softer, with a crackle of its own.
+const SKIN_TIME = 0.02
+const SKIN_LEVEL = 0.4
+const SKIN_GRIT = 0.08
+const GRIT_FALL_S = 0.006
+// The body as an antenna: mains hum on the output, and past halfway a pull on
+// the retrigger toward the hum's subharmonics.
+const HUM_OUT = 0.02
+const HUM_LOCK = 0.0004
+const HUM_LOCK_FROM = 0.5
+const HUM_DIVS = 12
+const HUM_WRAP = 27720
+
 // The bridged-T networks, and which trigger line shocks each one. Three voices
 // have them: the kick and the tom are one tank apiece, and the snare is the two
 // the 808 puts under its noise — 185 and 330 Hz, close enough to beat.
@@ -611,6 +651,7 @@ let cutting = false
 const RATCHET_IDX = RATCHET_KEYS.map(k => IDX[k])
 const COND_IDX = COND_KEYS.map(k => IDX[k])
 const NUDGE_IDX = NUDGE_KEYS.map(k => IDX[k])
+const RETRIG_IDX = RETRIG_KEYS.map(k => IDX[k])
 const STEP_COND_IDX = STEP_COND_KEYS.map(k => IDX[k])
 const STEP_PRE = STEP_CONDS.indexOf('pre')
 // The quietest a repeat gets at either end of a full ramp.
@@ -672,6 +713,17 @@ export class ToyDrum implements Stage {
   /** Each row's length this block, clamped to something a modulo can use. */
   private lens = new Uint8Array(GRID_ROWS.length).fill(STEPS)
   private retrigPhase = 0
+  private colRetrig = 0
+  private span = 1
+  private clipLevel = 0
+  private clipHold = 0
+  private clipVoice = 0
+  private clipLoop = 0
+  private romStart = 0
+  private grit = 0
+  private humPhase = 0
+  private touchRng: Rng
+  private retrigTarget = 0
   private env = new Float32Array(N_VOICES)
   private amp = new Float32Array(N_VOICES)
   // How hard the last trigger hit each voice, and what its amplifier is
@@ -919,6 +971,7 @@ export class ToyDrum implements Stage {
     this.slipRng = mulberry32(seed ^ 0x5107)
     this.wander = new Wander(mulberry32(seed ^ 0x3a4d))
     this.fuseRng = mulberry32(seed ^ 0xf05e)
+    this.touchRng = mulberry32(seed ^ 0x70c4)
     this.rotRng = mulberry32(seed ^ 0x7077)
     this.outAddrRng = mulberry32(seed ^ 0x0add)
     // Off its own stream: the resistors were soldered on before the kit made a
@@ -1264,7 +1317,7 @@ export class ToyDrum implements Stage {
       // And the needle goes back to the top of the slab. Unconditionally: the
       // mode is a switch on the output stage, not on the trigger line, so the
       // line does the same thing either way and only what listens to it moves.
-      this.romPos[v] = 0
+      this.romPos[v] = this.romStart
       this.romGate[v] = 1
       struck |= 1 << v
     }
@@ -1337,6 +1390,81 @@ export class ToyDrum implements Stage {
     for (let v = 0; v < N_VOICES; v++)
       if (condPlays(p[COND_IDX[v]!]!, bar)) bits |= 1 << v
     return bits
+  }
+
+  private slipClip(touch: number, n: number) {
+    if (touch === 0) {
+      this.clipLevel = 0
+      this.clipHold = 0
+      this.clipVoice = 0
+      this.clipLoop = 0
+      this.grit = 0
+    } else {
+      this.clipHold -= n
+      if (this.clipHold <= 0) {
+        const rand = this.touchRng
+        const reach = CLIP_PLATEAU_OCT * touch
+        const slip = CLIP_SLIP_OCT * touch * (0.3 + 0.7 * rand())
+        this.clipLevel =
+          rand() < 0.15 * touch
+            ? reach * (2 * rand() - 1)
+            : Math.min(
+                Math.max(
+                  this.clipLevel + (rand() < 0.5 ? slip : -slip),
+                  -reach,
+                ),
+                reach,
+              )
+        const pin = rand()
+        this.clipVoice =
+          pin < 0.1 * touch
+            ? 1 << Math.floor(rand() * N_VOICES)
+            : pin < 0.25 * touch
+              ? 0
+              : this.clipVoice
+        const loop = rand()
+        this.clipLoop =
+          loop < 0.15 * touch
+            ? rand() * CLIP_LOOP_S
+            : loop < 0.3 * touch
+              ? 0
+              : this.clipLoop
+        this.clipHold =
+          CLIP_HOLD_S * this.sr * (1 + 2 * rand()) * (4 - 3 * touch)
+      }
+    }
+    return touch === 0 ? 1 : octaves(this.clipLevel)
+  }
+
+  // Each restart through skin lands a little off and a little different.
+  private touchFire(
+    p: Float32Array,
+    ctx: Ctx,
+    i: number,
+    touch: number,
+    romHz: number,
+  ) {
+    const rand = this.touchRng
+    this.retrigPhase += SKIN_TIME * touch * (rand() - 0.5)
+    this.grit = SKIN_GRIT * touch * (0.5 + rand())
+    this.ratchetGain = 1 + SKIN_LEVEL * touch * (rand() - 0.5)
+    this.romStart = this.clipLoop * romHz
+    if (this.clipVoice) this.hit(this.clipVoice, this.ratchetGain, ctx, i)
+    else this.retrigFire(p, ctx, i)
+    this.ratchetGain = 1
+    this.romStart = 0
+  }
+
+  private retrigFire(p: Float32Array, ctx: Ctx, i: number) {
+    const target = this.retrigTarget
+    if (target === 0) this.fire(p, ctx, i, true)
+    else
+      this.hit(
+        target === RETRIG_ALL ? VOICE_BITS : 1 << (target - 2),
+        this.ratchetGain,
+        ctx,
+        i,
+      )
   }
 
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
@@ -1442,6 +1570,23 @@ export class ToyDrum implements Stage {
     )
     const cymTone = Math.min(Math.max(p[IDX.drumCymTone]!, 0), 1)
     const baseRetrig = p[IDX.drumRetrigHz]!
+    const retrigSweep = Math.min(Math.max(p[IDX.drumRetrigSweep]!, -1), 1)
+    const modTouch = ctx.mod.read(DEST.drumTouch)
+    const touch = Math.min(
+      Math.max(p[IDX.drumTouch]! + (modTouch ? modTouch[0]! : 0), 0),
+      1,
+    )
+    const clipBy = this.slipClip(touch, io.n)
+    const humHz = MAINS_HZ[Math.round(p[IDX.drumTouchMains]!)] ?? MAINS_HZ[0]!
+    const humLock =
+      touch > HUM_LOCK_FROM
+        ? (HUM_LOCK * (touch - HUM_LOCK_FROM)) / (1 - HUM_LOCK_FROM)
+        : 0
+    const gritFall = Math.exp(-1 / (GRIT_FALL_S * this.sr))
+    this.retrigTarget = Math.min(
+      Math.max(Math.round(p[IDX.drumRetrigTarget]!), 0),
+      RETRIG_TARGET_NAMES.length - 1,
+    )
     const ramp = Math.min(Math.max(p[IDX.drumRatchetRamp]!, -1), 1)
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = micInto(p, ctx, MIC.drumTrig)
@@ -1764,6 +1909,10 @@ export class ToyDrum implements Stage {
             p[IDX.drumFill]! > 0.5,
           )
           if (cond > 0 && cond < STEP_PRE) this.lastCond = this.colPlays
+          this.colRetrig = this.colPlays
+            ? RETRIGS[asRetrig(p[RETRIG_IDX[col]!]!)]!
+            : 0
+          if (this.colRetrig > 0) this.retrigPhase = 0
           this.repeat = 0
           this.due = stepS * late
           this.gap = (stepS * (1 - late)) / this.repeats
@@ -1775,18 +1924,45 @@ export class ToyDrum implements Stage {
           this.repeat++
           this.due += this.gap
         }
+        this.span = span
       } else {
         this.repeats = 0
       }
       // the bend: hammer the current step's trigger line at audio rate
-      const retrigHz = mod
-        ? Math.min(baseRetrig * octaves(mod[i]! * 4), 8000)
-        : baseRetrig
+      const hammer = this.colRetrig > 0 ? this.colRetrig : baseRetrig
+      const modded = mod
+        ? Math.min(hammer * octaves(mod[i]! * 4), RETRIG_MAX_HZ)
+        : hammer
+      const swept =
+        retrigSweep === 0
+          ? modded
+          : Math.min(
+              modded *
+                octaves(
+                  retrigSweep *
+                    RETRIG_SWEEP_OCT *
+                    Math.min(this.stepClock / this.span, 1),
+                ),
+              RETRIG_MAX_HZ,
+            )
+      const retrigHz =
+        touch > 0 ? Math.min(swept * clipBy, RETRIG_MAX_HZ) : swept
+      if (touch > 0)
+        this.humPhase = (this.humPhase + humHz / this.sr) % HUM_WRAP
       if (this.transport.drums && retrigHz > 0.5) {
         this.retrigPhase += retrigHz / this.sr
+        if (humLock > 0) {
+          const div = Math.min(
+            Math.max(Math.round(humHz / retrigHz), 1),
+            HUM_DIVS,
+          )
+          const off = ((this.humPhase / div) % 1) - this.retrigPhase
+          this.retrigPhase += humLock * (off - Math.round(off))
+        }
         if (this.retrigPhase >= 1) {
           this.retrigPhase -= 1
-          this.fire(p, ctx, i, true)
+          if (touch > 0) this.touchFire(p, ctx, i, touch, romHz)
+          else this.retrigFire(p, ctx, i)
         }
       }
       // mic soldered onto the trigger line: clap at it and the kit fires
@@ -2267,6 +2443,13 @@ export class ToyDrum implements Stage {
             ? this.rushHeat * (1 - rushDrop)
             : this.rushHeat + rushCoef * (Math.abs(out) - this.rushHeat),
         )
+      }
+      if (touch > 0) {
+        const wave = Math.sin(TAU * this.humPhase)
+        out +=
+          HUM_OUT * touch * (wave + 0.5 * (Math.abs(wave) - 2 / Math.PI)) +
+          this.grit * (2 * this.touchRng() - 1)
+        this.grit *= gritFall
       }
       out *= level * KIT_GAIN
       if (send !== 0) ctx.send[i]! += send * level * KIT_GAIN

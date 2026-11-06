@@ -1,7 +1,13 @@
-import { DATA_LINES, DRUM_ROMS, VOICE_LABELS } from '../../drums.ts'
+import {
+  DATA_LINES,
+  DRUM_ROMS,
+  STEP_COND_KEYS,
+  STEP_CONDS,
+  VOICE_LABELS,
+} from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
 import { MEMORY_ROT_NAMES } from '../../dsp/melodyMemory.ts'
-import { DEST, LFO_SYNC_MODES } from '../../dsp/modbus.ts'
+import { DEST, LFO_SYNC_MODES, SRC } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
 import { COMB_CHIP } from '../../dsp/stages/comb.ts'
 import {
@@ -851,6 +857,59 @@ export const PRESETS: PresetDef[] = [
       bits: 6,
       revMix: 0.3,
       revDecayS: 3,
+    },
+  },
+  {
+    name: 'zip gun',
+    blurb:
+      'A hard techno kit off the sample ROM with a retrig row: the hats machine-gun, the snare rolls, and the last hat of the bar screams and zips down',
+    patch: {
+      ...kit({
+        kick: 'x...x...x...x...',
+        hat: '..x...x...x...x.',
+        snare: '....x.......x...',
+        'open hat': '......x.........',
+        retrig: '..3...6.....5.9.',
+      }),
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 138,
+      drumSwing: 0,
+      drumRom: 1,
+      drumRetrigSweep: -0.6,
+      distMix: 0.6,
+      driveDb: 24,
+      distMode: 2,
+      dlyMix: 0.15,
+      delayMs: 160,
+    },
+  },
+  {
+    name: 'ten million hits',
+    blurb:
+      'Fingers and a paperclip on the sampled kit’s trigger line: the tom restarts thirty times a second, so its ring is chopped into a machine gun that holds, slips and hums. The sequencer only strikes while F is held, and the body pad presses harder',
+    patch: {
+      ...kit({
+        tom: 'xxxxxxxxxxxxxxxx',
+        hat: 'xxxxxxxxxxxxxxxx',
+        snare: 'xxxxxxxxxxxxxxxx',
+        cymbal: 'xxxxxxxxxxxxxxxx',
+      }),
+      ...Object.fromEntries(
+        STEP_COND_KEYS.map(k => [k, STEP_CONDS.indexOf('fill')]),
+      ),
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 120,
+      drumSwing: 0,
+      drumRom: 1,
+      drumRomDataLine: 10,
+      drumRomDataFault: FAULT.bridge,
+      drumRetrigHz: 30,
+      drumTouch: 0.25,
+      mod0Src: SRC.bodyX,
+      mod0Dest: DEST.drumTouch,
+      mod0Depth: 0.5,
     },
   },
   {

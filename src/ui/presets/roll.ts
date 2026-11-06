@@ -15,6 +15,7 @@ import {
   NUDGES,
   RATCHET_KEYS,
   RATCHETS,
+  RETRIG_KEYS,
   STEPS,
 } from '../../drums.ts'
 import { JACK_KEYS } from '../../jacks.ts'
@@ -347,7 +348,7 @@ export const rollPattern = (
 function rollStepFx(rand: () => number): Partial<Controls> {
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
   const out: Partial<Controls> = {}
-  for (const k of [...RATCHET_KEYS, ...NUDGE_KEYS]) out[k] = 0
+  for (const k of [...RATCHET_KEYS, ...NUDGE_KEYS, ...RETRIG_KEYS]) out[k] = 0
   if (rand() < 0.6) {
     const n = 1 + Math.floor(rand() * 3)
     for (let i = 0; i < n; i++)

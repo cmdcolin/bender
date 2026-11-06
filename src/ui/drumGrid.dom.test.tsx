@@ -64,6 +64,19 @@ test('a ratchet cell clicks up through the counts and shift-click goes back', ()
   expect(engine.controls.get().drumNudge5).toBe(2)
 })
 
+test('a retrig cell clicks up the rates and prints them short', () => {
+  act(() => engine.patch({ drumRetrig3: 0 }))
+  render(<DrumGrid />)
+  const cell = () => screen.getByRole('button', { name: 'retrig step 4' })
+  fireEvent.click(cell())
+  expect(engine.controls.get().drumRetrig3).toBe(1)
+  expect(cell().textContent).toBe('20')
+  fireEvent.click(cell(), { shiftKey: true })
+  fireEvent.click(cell(), { shiftKey: true })
+  expect(engine.controls.get().drumRetrig3).toBe(9)
+  expect(cell().textContent).toBe('960')
+})
+
 test('an event cell clicks round the faults', () => {
   render(<DrumGrid />)
   const cell = () => screen.getByRole('button', { name: 'event step 13' })

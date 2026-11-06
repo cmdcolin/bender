@@ -215,6 +215,7 @@ test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
     kick: 'x(3,8)x(5,8)',
     hat: 'x.x.[xxx].x.',
     nudge: '....6',
+    retrig: '..5....9',
     event: '............bbbb',
     'event every': '4:4',
     'snare bars': '!4:4',
@@ -223,6 +224,8 @@ test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
   expect(out.drums.kick).toBe('x..x..x.x.xx.xx.')
   expect(c.drumRatchet4).toBe(2)
   expect(c.drumNudge4).toBe(6)
+  expect(c.drumRetrig2).toBe(5)
+  expect(c.drumRetrig7).toBe(9)
   expect(c.drumEvent12).toBe(3)
   expect(c.drumEvent11).toBe(0)
   expect(c.drumEventEvery).toBe(2)
@@ -230,11 +233,13 @@ test('drums writes Euclid rows, bracket ratchets and the tracker rows', () => {
   expect(out.drums).toMatchObject({
     ratchet: '....3...........',
     nudge: '....6...........',
+    retrig: '..5....9........',
     event: '............bbbb',
     'event every': '4:4',
     'snare bars': '!4:4',
   })
   expect(() => bender.drums({ event: 'z' })).toThrow(/'z' is not a event/)
+  expect(() => bender.drums({ retrig: '0' })).toThrow(/'0' is not a retrig/)
   expect(() => bender.drums({ 'kick bars': '5:4' })).toThrow(/one of 1:1/)
   expect(() => bender.drums({ hat: '[xxxxx]' })).toThrow(/a bracket holds/)
 })

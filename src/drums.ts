@@ -169,6 +169,31 @@ export const NUDGE_KEYS = [
 export const NUDGE_PARTS = 12
 export const NUDGES = [0, 2, 3, 4, 6, 8, 9]
 
+/** How fast each column hammers its trigger line for the length of its step,
+    as an index into RETRIGS, in Hz. */
+export const RETRIG_KEYS = [
+  'drumRetrig0',
+  'drumRetrig1',
+  'drumRetrig2',
+  'drumRetrig3',
+  'drumRetrig4',
+  'drumRetrig5',
+  'drumRetrig6',
+  'drumRetrig7',
+  'drumRetrig8',
+  'drumRetrig9',
+  'drumRetrig10',
+  'drumRetrig11',
+  'drumRetrig12',
+  'drumRetrig13',
+  'drumRetrig14',
+  'drumRetrig15',
+] as const satisfies readonly ControlKey[]
+export const RETRIGS = [0, 20, 25, 30, 40, 60, 90, 130, 660, 960]
+export const asRetrig = (v: number) =>
+  Math.min(Math.max(Math.round(v), 0), RETRIGS.length - 1)
+export const RETRIG_SET = new Set<ControlKey>(RETRIG_KEYS)
+
 /** The fault the kit puts on the whole board for each column's step, as an index
     into EVENTS. */
 export const EVENT_KEYS = [
@@ -306,6 +331,7 @@ export const STEP_COND_SET = new Set<ControlKey>(STEP_COND_KEYS)
 export function asKitSetting(key: ControlKey, v: number): number | undefined {
   if (RATCHET_SET.has(key)) return asRatchet(v)
   if (NUDGE_SET.has(key)) return asNudge(v)
+  if (RETRIG_SET.has(key)) return asRetrig(v)
   if (EVENT_SET.has(key) || key === 'drumEventLive') return asEvent(v)
   if (key === 'drumEventEvery') return asEventEvery(v)
   if (COND_SET.has(key)) return asCond(v)
@@ -681,6 +707,13 @@ export const CELL_ROWS = {
     write: (v: number) => EVENT_LETTERS[asEvent(v)]!,
     read: (ch: string) => (EVENT_LETTERS as readonly string[]).indexOf(ch),
     says: 'c cut, d drop, b brake, f freeze, r reboot, or . for none',
+  },
+  retrig: {
+    keys: RETRIG_KEYS,
+    write: (v: number) => (v ? String(asRetrig(v)) : '.'),
+    read: (ch: string) =>
+      ch === '.' ? 0 : /^[1-9]$/.test(ch) ? Number(ch) : -1,
+    says: `1 to 9 for ${RETRIGS.slice(1).join(', ')} Hz, or . for none`,
   },
 } as const
 

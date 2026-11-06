@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-817 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 194
+821 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 196
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 191 destinations, among
+- **A patch bay that modulates itself.** Four wires, 192 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 194 presets, and a roll button on every heading as well as
+- **Whole boards.** 196 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -203,7 +203,7 @@ steps, and the machine plays a pattern that differs from the one in the grid.
 The pattern grid is a widget, so the table below leaves it out. It has ten rows
 (the eight voices, an accent and an echo row), each with 16 steps and a length,
 and two more 16-step masks on every voice: the steps that sometimes fire, and
-the ghost steps that strike soft. That is 112 more controls, and a link stores
+the ghost steps that strike soft. That is 128 more controls, and a link stores
 them like the rest.
 
 Named cuts, one press each under _fault on the bus_, as in the panel. A press
@@ -255,7 +255,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>72 controls</summary>
+<summary>76 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -310,6 +310,10 @@ puts the fault on, and the rows under it show the controls it set:
 | ROM data †       | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the fault is on                                                                      |
 | Data fault †     | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag                                       | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
 | Retrigger        | 0 Hz to 4 kHz                                                                                                      | Retriggers the current step at this rate                                                                                                                |
+| Retrig sweep     | −1 to +1                                                                                                           | Glides the retrigger across each step, up to four octaves: down is a falling zip, up a rising whine                                                     |
+| Retrig target    | the step, all voices, the kick, the snare, the hat, the clap, the tom, the bell, the open hat, the cymbal          | What the retrigger hammers: the step’s voices, every voice at once, or one voice                                                                        |
+| Touch            | off to full                                                                                                        | Fingers and a paperclip across the trigger line                                                                                                         |
+| Mains            | 60 Hz or 50 Hz                                                                                                     | The hum your body picks up off the wall                                                                                                                 |
 | Ratchet ramp     | −1 to +1                                                                                                           | How the repeats of a ratcheted step land                                                                                                                |
 | Trigger floor    | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                                                    |
 | Scan             | 0 to 40 ms                                                                                                         | The chip strikes one voice per scan                                                                                                                     |
@@ -1776,7 +1780,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 191 of them, filt cut through FM mod into pitch                                                                        | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 192 of them, filt cut through kit touch                                                                                | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
@@ -2087,7 +2091,7 @@ result:
 
 ### Presets
 
-194 presets. Each name is a link that opens the app with that board loaded, and
+196 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2217,6 +2221,15 @@ the board waits until you press play.
   — The drum machine is retriggered into rolls
 - [**drum scream**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.95,drumBpm:45,drumRetrigHz:700,drumKick:32912,drumSnare:2056,drumHat:8738,bits:6,crushMix:0.5,revDecayS:3,revMix:0.3)
   — The retrigger runs past audio rate, so the kit becomes a pitch
+- [**zip gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:138,drumRom:1,drumRetrigSweep:-0.6,drumKick:34952,drumSnare:2056,drumHat:8738,drumOpen:512,drumRetrig2:3,drumRetrig6:6,drumRetrig12:5,drumRetrig14:9,driveDb:24,distMode:2,distMix:0.6,delayMs:160,dlyMix:0.15)
+  — A hard techno kit off the sample ROM with a retrig row: the hats
+  machine-gun, the snare rolls, and the last hat of the bar screams and zips
+  down
+- [**ten million hits**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:120,drumRom:1,drumRomDataLine:10,drumRomDataFault:3,drumRetrigHz:30,drumTouch:0.25,drumSnare:65535,drumHat:65535,drumTom:65535,drumCym:65535,drumStepCond0:13,drumStepCond1:13,drumStepCond2:13,drumStepCond3:13,drumStepCond4:13,drumStepCond5:13,drumStepCond6:13,drumStepCond7:13,drumStepCond8:13,drumStepCond9:13,drumStepCond10:13,drumStepCond11:13,drumStepCond12:13,drumStepCond13:13,drumStepCond14:13,drumStepCond15:13,mod0Src:5,mod0Dest:191)
+  — Fingers and a paperclip on the sampled kit’s trigger line: the tom restarts
+  thirty times a second, so its ring is chopped into a machine gun that holds,
+  slips and hums. The sequencer only strikes while F is held, and the body pad
+  presses harder
 - [**crushed chip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:2,bits:3,srHz:2600,srJitter:0.6,crushMix:0.9)
   — An overclocked tune plays through a dying DAC
 - [**tape scream**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.5,delayMs:120,dlyFb:1.4,wowDepthMs:4,wowHz:2,flutter:0.5,dlyToneHz:3000,dlyMix:0.7)

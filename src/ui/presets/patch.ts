@@ -241,6 +241,7 @@ const LANDINGS: Landing[] = [
   at('kit clock rush', ['drumLevel']),
   at('kit pattern rot', ['drumLevel']),
   at('kit out to address', ['drumLevel']),
+  at('kit touch', ['drumLevel']),
   at('kit step tap', ['drumLevel']),
   at('toy kit on addr', ['chipLevel', 'drumLevel']),
   at('ground bounce', [], { oneOf: ['chipLevel', 'drumLevel'] }),

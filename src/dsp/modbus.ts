@@ -247,8 +247,9 @@ export const DEST = {
   fmCarry: 188,
   fmSkew: 189,
   fmPitchWire: 190,
+  drumTouch: 191,
 } as const
-export const N_DEST = 191
+export const N_DEST = 192
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
@@ -281,7 +282,7 @@ const DEPTH_DEST = [
 const onDepth = (dest: number) => dest >= DEST.wDepth0 && dest <= DEST.wDepth3
 
 // Ids match the mod*Src choices.
-const SRC = {
+export const SRC = {
   off: 0,
   lfo: 1,
   supply: 2,

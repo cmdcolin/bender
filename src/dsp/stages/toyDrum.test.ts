@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
-import { CYCLE, ROCK, STEPS } from '../../drums.ts'
+import { CYCLE, DRUM_VOICES, ROCK, STEPS } from '../../drums.ts'
 import { IDX, packParams } from '../../engine/params.ts'
 import { buildBender, type BuiltChain } from '../build.ts'
-import { DEST } from '../modbus.ts'
+import { DEST, SRC } from '../modbus.ts'
 import { spectrum } from '../spectrum.ts'
 import { BLOCK } from '../stage.ts'
 import {
@@ -22,6 +22,7 @@ import {
   SR,
   stepMask,
 } from '../testRender.ts'
+import { RETRIG_TARGET_NAMES } from './toyDrum.ts'
 
 const loudest = (x: Float32Array) =>
   x.reduce((a, v) => Math.max(a, Math.abs(v)), 0)
@@ -2323,4 +2324,202 @@ test('the loop leaves out a kick that Wander has dropped', () => {
   }
   expect(dropped).toBeGreaterThan(0)
   expect(kicks).toBe(0)
+})
+
+// Each hit the kit struck, on its own sample: one sample a block, so a hit
+// is never folded into a neighbour's.
+function hitsOver(c: Partial<Controls>, seconds: number) {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0,
+    drumLevel: 1,
+    drumBpm: 60,
+    drumKick: 0,
+    drumSnare: 0,
+    drumHat: 0,
+    ...c,
+  })
+  const io = { ...makeIo(), n: 1 }
+  const hits: { at: number; col: number; bits: number }[] = []
+  for (let at = 0; at < seconds * SR; at++) {
+    built.chain.process(io, p)
+    const bits = built.toyDrum.takeFired()
+    if (bits) hits.push({ at, col: built.toyDrum.tick % STEPS, bits })
+  }
+  return hits
+}
+
+const hitGaps = (hits: { at: number }[]) =>
+  hits.slice(1).map((h, k) => h.at - hits[k]!.at)
+
+test('a retrig column hammers its own step at its rate and stops after it', () => {
+  // 90 Hz across a quarter-second step: 22 hits.
+  const hits = hitsOver(
+    {
+      drumRetrig4: 6,
+      drumRetrigTarget: RETRIG_TARGET_NAMES.indexOf('the hat'),
+    },
+    1.5,
+  )
+  expect(new Set(hits.map(h => h.col))).toEqual(new Set([4]))
+  const bar = hits.filter(h => h.at < STEPS * 0.25 * SR)
+  expect(bar).toHaveLength(22)
+  for (const gap of hitGaps(bar))
+    expect(Math.abs(gap - SR / 90)).toBeLessThan(2)
+})
+
+test('a fast retrig column screams at its pitch', () => {
+  const hits = hitsOver({ drumRetrig1: 9 }, 0.5).filter(h => h.col === 1)
+  const mean = hitGaps(hits).reduce((a, g) => a + g, 0) / (hits.length - 1)
+  expect(mean).toBeCloseTo(SR / 960, 0)
+})
+
+test('retrig sweep glides the rate down or up across the step', () => {
+  const span = (sweep: number) => {
+    const g = hitGaps(
+      hitsOver({ drumRetrig1: 6, drumRetrigSweep: sweep }, 0.5).filter(
+        h => h.col === 1,
+      ),
+    )
+    return { first: g[0]!, last: g.at(-1)! }
+  }
+  const flat = span(0)
+  const down = span(-1)
+  const up = span(1)
+  expect(Math.abs(flat.last - flat.first)).toBeLessThan(2)
+  expect(down.last).toBeGreaterThan(down.first * 3)
+  expect(up.last).toBeLessThan(up.first / 3)
+})
+
+test('retrig sweep bends the global retrigger too', () => {
+  const g = hitGaps(
+    hitsOver({ drumRetrigHz: 200, drumRetrigSweep: -1 }, 0.5).filter(
+      h => h.col === 1,
+    ),
+  )
+  expect(g.at(-1)!).toBeGreaterThan(g[0]! * 3)
+})
+
+test('retrig target picks which trigger lines get hammered', () => {
+  const step = { drumHat: stepMask(1), drumBell: stepMask(1) }
+  const lines = (target: number) =>
+    hitsOver({ ...step, drumRetrig1: 3, drumRetrigTarget: target }, 0.49)
+      .filter(h => h.col === 1)
+      .slice(1)
+      .map(h => h.bits)
+  expect(new Set(lines(0))).toEqual(new Set([(1 << 2) | (1 << 5)]))
+  const snare = RETRIG_TARGET_NAMES.indexOf('the snare')
+  expect(new Set(lines(snare))).toEqual(new Set([1 << 1]))
+  const all = lines(RETRIG_TARGET_NAMES.indexOf('all voices'))
+  expect(all.reduce((a, b) => a | b, 0)).toBe((1 << DRUM_VOICES.length) - 1)
+})
+
+test('a retrigger restarts the sampled kit’s slab, so the attack keeps sounding', () => {
+  const tail = (c: Partial<Controls>) =>
+    rms(
+      render(
+        {
+          chipLevel: 0,
+          drumLevel: 1,
+          drumRom: 1,
+          drumBpm: 30,
+          drumKick: 0,
+          drumSnare: 0,
+          drumHat: stepMask(1),
+          ...c,
+        },
+        0.95,
+      ).subarray(Math.round(0.85 * SR)),
+    )
+  expect(tail({ drumRetrig1: 9 })).toBeGreaterThan(tail({}) * 100)
+})
+
+// The retrigger's rate over each two seconds of a run, off the blocks its
+// hits land in: a block is under a tenth of a 30 Hz period, and two seconds
+// of them average that out to a tenth of a percent.
+function ratesOver(c: Partial<Controls>, seconds: number) {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  const p = packParams({ ...DEFAULT_CONTROLS, ...c })
+  const io = makeIo()
+  const at: number[] = []
+  for (let b = 0; b < (seconds * SR) / BLOCK; b++) {
+    built.chain.process(io, p)
+    if (built.toyDrum.takeFired()) at.push(b * BLOCK)
+  }
+  return Array.from({ length: seconds / 2 }, (_, w) => {
+    const inside = at.filter(t => t >= w * 2 * SR && t < (w + 1) * 2 * SR)
+    return (SR * (inside.length - 1)) / (inside.at(-1)! - inside[0]!)
+  })
+}
+
+const HAT_HAMMER: Partial<Controls> = {
+  chipLevel: 0,
+  drumLevel: 1,
+  drumKick: 0,
+  drumSnare: 0,
+  drumHat: 0,
+  drumRom: 1,
+  drumRetrigHz: 30,
+  drumRetrigTarget: RETRIG_TARGET_NAMES.indexOf('the hat'),
+}
+
+test('a light touch holds the retrigger, then slips it to another plateau', () => {
+  const rates = ratesOver({ ...HAT_HAMMER, drumTouch: 0.5 }, 24)
+  const slips = rates.filter(
+    (r, w) => w > 0 && Math.abs(r / rates[w - 1]! - 1) > 0.008,
+  )
+  expect(slips.length).toBeGreaterThanOrEqual(1)
+  expect(slips.length).toBeLessThanOrEqual(6)
+  for (const r of rates) {
+    expect(r).toBeGreaterThan(30 / 2 ** 0.35)
+    expect(r).toBeLessThan(30 * 2 ** 0.35)
+  }
+})
+
+test('skin puts every restart a little off', () => {
+  const restarts = hitGaps(
+    hitsOver(
+      {
+        drumRetrigHz: 30,
+        drumRetrigTarget: RETRIG_TARGET_NAMES.indexOf('the hat'),
+        drumTouch: 0.5,
+      },
+      0.5,
+    ),
+  )
+  const mean = restarts.reduce((a, g) => a + g, 0) / restarts.length
+  const spread = Math.max(...restarts) - Math.min(...restarts)
+  expect(spread).toBeGreaterThan(0.005 * mean)
+  expect(spread).toBeLessThan(0.1 * mean)
+})
+
+test('pressed hard, the body hum pulls the retrigger onto a mains subharmonic', () => {
+  const locked = (c: Partial<Controls>, mains: number) =>
+    ratesOver({ ...HAT_HAMMER, drumRetrigHz: 27, ...c }, 12)
+      .slice(1)
+      .filter(r => Math.abs(mains / Math.round(mains / r) / r - 1) < 0.01)
+      .length
+  expect(locked({ drumTouch: 1 }, 60)).toBeGreaterThanOrEqual(4)
+  expect(
+    locked({ drumTouch: 1, drumTouchMains: 1 }, 50),
+  ).toBeGreaterThanOrEqual(4)
+  expect(locked({}, 60)).toBe(0)
+})
+
+test('the body pad drives touch through the mod bay', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 1,
+    drumKick: 0,
+    drumSnare: 0,
+    drumHat: 0,
+    mod0Src: SRC.bodyX,
+    mod0Dest: DEST.drumTouch,
+    mod0Depth: 1,
+  }
+  expect(rms(render({ ...look, bodyX: 0 }, 0.5))).toBe(0)
+  expect(rms(render({ ...look, bodyX: 1 }, 0.5))).toBeGreaterThan(0.001)
 })

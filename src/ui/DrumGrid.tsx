@@ -33,6 +33,8 @@ import {
   NUDGES,
   RATCHET_KEYS,
   RATCHETS,
+  RETRIG_KEYS,
+  RETRIGS,
   STEPS,
   romMatching,
   stepBit,
@@ -267,6 +269,14 @@ export function DrumGrid() {
           values={RATCHETS.map((_, i) => i)}
           says={v => (v ? `×${RATCHETS[v]}` : '')}
           tip="How many times each step fires inside itself: ×2 to ×8, every voice on the step, each repeat rolling the dice again. Click to go up, shift-click to go down. Ratchet ramp fades or swells the repeats."
+        />
+        <CycleRow
+          live={live}
+          name="retrig"
+          keys={RETRIG_KEYS}
+          values={RETRIGS.map((_, i) => i)}
+          says={v => (v ? String(RETRIGS[v]) : '')}
+          tip="Hammers the step's trigger line for the whole step: 20 to 60 Hz chops each hit into a machine gun, 90 and 130 Hz growl, 660 and 960 Hz scream. Retrig sweep and target, under triggers, shape it. Click to go faster, shift-click slower."
         />
         <CycleRow
           live={live}
