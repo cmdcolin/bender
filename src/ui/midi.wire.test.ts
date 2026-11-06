@@ -84,6 +84,8 @@ beforeEach(async () => {
   engine.setDrumsPlaying(false)
   engine.chipNotes.set(new Set())
   engine.fmNotes.set(new Set())
+  engine.monoNotes.set(new Set())
+  engine.leadNotes.set(new Set())
   engine.meter.set({ ...engine.meter.get(), tick: 0 })
   sent.length = 0
   engine.writeBoard({ ...DEFAULT_CONTROLS })
@@ -835,6 +837,16 @@ test('the toy goes out on channel 1 and the FM chip on channel 2', () => {
   expect(sent).toEqual([
     [0x90, 60, 100],
     [0x91, 60, 100],
+  ])
+})
+
+test('Growler goes out on channel 4 and Howler on channel 5', () => {
+  midi.setNoteOut(true)
+  engine.monoNotes.set(new Set([3]))
+  engine.leadNotes.set(new Set([3]))
+  expect(sent).toEqual([
+    [0x93, 60, 100],
+    [0x94, 60, 100],
   ])
 })
 

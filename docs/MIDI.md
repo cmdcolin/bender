@@ -123,8 +123,9 @@ averages a clock over a beat, which includes most receivers and bender's own
 clock input, reads the right tempo. Anything that advances on single pulses gets
 them in sixes.
 
-**Send the notes** mirrors what the two chips are sounding as note-on and
-note-off, the toy on channel 1 and Glint on channel 2. The notes cover the whole
+**Send the notes** mirrors what the keyboards are sounding as note-on and
+note-off: the toy on channel 1, Glint on 2, Parlor on 3, Growler on 4 and Howler
+on 5. The notes cover the whole
 board: the ROM's tune, the backing under it, the arpeggio, and any note the
 kit's trigger lines struck go out alongside anything played on the keys. Pitches
 leave in MIDI's numbering, so the chip's zero note goes out as 57, the A3 the

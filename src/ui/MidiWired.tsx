@@ -548,7 +548,7 @@ export function Wired() {
             send the clock
           </button>
         </Tip>
-        <Tip text="Send what the two chips are sounding out as notes — the toy on channel 1, Glint on channel 2. That is the whole board, not just your hands: the ROM's tune, the backing under it, the arpeggio, and whatever the kit's trigger lines struck.">
+        <Tip text="Send what the keyboards are sounding out as notes: the toy on channel 1, Glint on 2, Parlor on 3, Growler on 4 and Howler on 5. That is the whole board, not just your hands: the ROM's tune, the backing under it, the arpeggio, and whatever the kit's trigger lines struck.">
           <button
             className={noteOut ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setNoteOut(!noteOut)}

@@ -330,7 +330,7 @@ export const MACHINES = [
     mute: 'leadMute',
     supply: 'leadSupply',
     keybed: 'lead',
-    midi: { route: 'Howler' },
+    midi: { route: 'Howler', out: 4 },
     keyGate: 'leadKeyGate',
     struck: 'leadStruck',
     cv: 'leadPitch',
