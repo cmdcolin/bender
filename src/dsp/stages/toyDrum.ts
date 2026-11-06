@@ -378,6 +378,9 @@ const PULSE_SHARE = 2
 const TRIG_FLICK_OCT = 2
 const TRIG_RECOVER = 0.02
 
+// The longest the swoop cap holds the tuning up, in milliseconds.
+const SWOOP_CAP_MAX = 200
+
 // Where the ring knob crosses over. Below it the transistor hands back less
 // than it took and the drum is a drum; at it the network never runs down; past
 // it the loop makes up the difference and the tank grows into its own clipping.
@@ -1611,6 +1614,8 @@ export class ToyDrum implements Stage {
     // stops being something that runs down at all.
     const ringScale = 1 - ring / RING_LATCH
     const sweep = p[IDX.drumSweep]!
+    const swoopMs = Math.min(Math.max(p[IDX.drumSwoopCap]!, 0), SWOOP_CAP_MAX)
+    const drain = swoopMs > 0 ? Math.exp(-1000 / (swoopMs * this.sr)) : 0
     const fmDepth = BANK_FM * Math.min(Math.max(p[IDX.drumBankFm]!, 0), 1)
     const syncTank = BANK_SYNC_TANK[Math.round(p[IDX.drumBankSync]!)] ?? -1
     const couple =
@@ -1886,6 +1891,7 @@ export class ToyDrum implements Stage {
             tank.rate =
               motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!
             tank.sweep = TANKS[t]!.sweep * sweep
+            tank.drain = drain
             tank.push = TANKS[t]!.push * drive * clickHeight
             tank.run()
             const ringing = tank.out

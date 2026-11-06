@@ -62,7 +62,9 @@ export class BridgedT {
   rate = 0
   sweep = 0
   push = 0
+  drain = 0
   out = 0
+  private cap = 0
 
   /**
    * `drive` is the trigger pulse, which arrives as charge onto the tank rather
@@ -84,11 +86,21 @@ export class BridgedT {
    * the line. The pulse drives the transistor far harder than any swing does,
    * so the first half-cycle of an 808 kick runs at three times the pitch of the
    * rest — the snap at the front of the drum, a millisecond long.
+   *
+   * `drain` is the swoop cap: what the cap on the bias keeps of itself each
+   * sample. At zero there is no cap and the tuning reads the swing. Above it
+   * the trigger charges the cap to the swing and it drains on its own clock,
+   * never above the swing, so the swoop falls in a few milliseconds while the
+   * body rings on at rest.
    */
   run() {
-    const { drive, f, rate, sweep, push } = this
+    const { drive, f, rate, sweep, push, drain } = this
+    this.cap =
+      drain === 0 || drive !== 0
+        ? this.env
+        : Math.min(this.env, flushDenormal(this.cap * drain))
     const w = Math.min(
-      Math.max(f * Math.max(1 + sweep * this.env + push, SWEEP_FLOOR), -1),
+      Math.max(f * Math.max(1 + sweep * this.cap + push, SWEEP_FLOOR), -1),
       1,
     )
     this.lp = flushDenormal(this.lp + w * this.bp)
@@ -110,5 +122,6 @@ export class BridgedT {
     this.lp = 0
     this.bp = 0
     this.env = 0
+    this.cap = 0
   }
 }

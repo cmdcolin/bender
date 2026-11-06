@@ -280,6 +280,7 @@ export const DEFAULT_CONTROLS = {
   drumAccentSag: 0,
   drumChoke: 0,
   drumSweep: 1,
+  drumSwoopCap: 0,
   drumBankFm: 0,
   drumBankSync: 0,
   drumBankStarve: 0,

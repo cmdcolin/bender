@@ -1381,6 +1381,23 @@ test('the sweep trimmer sends a kick up as a zap or under itself as a rise', () 
   expect(start(rise)).toBeLessThan(tail(rise) * 0.9)
 })
 
+test('a swoop cap drops a zapped kick to its rest pitch in milliseconds', () => {
+  const early = (x: Float32Array) => fineHz(slice(x, 0.28, 0.32))
+  const tail = (x: Float32Array) => fineHz(slice(x, 0.5, 0.7))
+  const zap = soloVoice({ ...KICK_ALONE, drumSweep: 8 }, 1)
+  const capped = soloVoice({ ...KICK_ALONE, drumSweep: 8, drumSwoopCap: 5 }, 1)
+  expect(early(zap)).toBeGreaterThan(tail(zap) * 1.5)
+  expect(early(capped)).toBeLessThan(tail(capped) * 1.15)
+  expect(early(capped)).toBeLessThan(early(zap) * 0.7)
+})
+
+test('with no swoop cap the kit swoops as it shipped', () => {
+  const kit = { ...KICK_ALONE, drumSweep: 4 }
+  expect(soloVoice({ ...kit, drumSwoopCap: 0 }, 0.6)).toEqual(
+    soloVoice(kit, 0.6),
+  )
+})
+
 test('the metal bank on the tanks’ bias turns the kick into a clang', () => {
   const centroid = (fm: number) =>
     spectrum(

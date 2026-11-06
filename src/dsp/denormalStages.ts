@@ -151,6 +151,11 @@ const WAKE: Rig[] = [
   },
   { name: 'brownout kick pump', hot: { brownKick: 1 }, cold: {} },
   {
+    name: 'swoop cap draining under a latched kick',
+    hot: { drumSwoopCap: 5, drumSweep: 4, drumRing: 0.95 },
+    cold: {},
+  },
+  {
     name: 'mod envelope onto a sustain of nothing',
     hot: {
       mod0Src: 15,

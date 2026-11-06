@@ -48,6 +48,7 @@ export const VOICE_BOXES = {
     'drumRing',
     'drumMotor',
     'drumSweep',
+    'drumSwoopCap',
     'drumTankCouple',
     'drumHissKick',
     'drumBankSync',

@@ -1034,6 +1034,17 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'The bias trimmer behind the swoop: how far above their resting pitch the kick, tom and snare networks start on a hard hit. At 1 the kit swoops as it shipped. Wound up, a kick starts several octaves high and falls like a Syndrum zap. Below 0 the tuning drops on a hard hit instead, so a kick starts low and rises as it rings out.',
       },
       {
+        key: 'drumSwoopCap',
+        needs: analogKit,
+        part: 'inside the voices',
+        label: 'Swoop cap',
+        min: 0,
+        max: 200,
+        step: 0.5,
+        unit: 'ms',
+        help: 'How fast the swoop falls, set by a cap soldered onto the bias it reads. At 0 there is none, and the tuning falls only as fast as the network runs down. Fitted, each hit charges the cap and it drains in this many milliseconds, so the swoop drops on its own clock while the drum rings on at rest: a few milliseconds and Sweep wound up give the hard kick of a distorted techno track, a chirp from high up into a long sub. It never holds the tuning above the swing, so a long cap is the kit as it shipped.',
+      },
+      {
         key: 'drumBankFm',
         needs: analogKit,
         part: 'inside the voices',

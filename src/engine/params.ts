@@ -274,6 +274,7 @@ export const PARAM_DEFS = [
   ['drumAccentSag', 'slew'],
   ['drumChoke', 'step'],
   ['drumSweep', 'slew'],
+  ['drumSwoopCap', 'slew'],
   ['drumBankFm', 'slew'],
   ['drumBankSync', 'step'],
   ['drumBankStarve', 'slew'],

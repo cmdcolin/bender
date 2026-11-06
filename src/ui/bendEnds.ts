@@ -33,6 +33,7 @@ export const BEND_ENDS: Partial<
   drumDecay: [-7, 3],
   drumRing: [null, 5.5],
   drumSweep: [0, -3.5],
+  drumSwoopCap: [null, null],
   drumBankFm: [null, -0.5],
   drumTankCouple: [null, 6],
   drumPulse: [3.5, -12],

@@ -512,6 +512,11 @@ tempo, swing, chance, tune, decay and mute.
   - 8 starts a kick several octaves up and falls like a Syndrum zap.
   - Below 0 the kick starts low and rises, down to three octaves under resting
     pitch.
+- **Swoop cap:** a cap on the bias the swoop reads, which each hit charges and
+  which drains in the set milliseconds.
+  - At 0 there is no cap, and the swoop falls as fast as the drum runs down.
+  - A few milliseconds with Sweep wound up chirps a kick down from high into a
+    long sub: the hard kick of distorted techno.
 - **Motorboat:** the feedback transistor around the kick, tom and snare runs off
   a small local supply behind a resistor.
   - A ringing network pulls the supply down. Below a point the feedback stops
