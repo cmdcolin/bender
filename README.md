@@ -1,60 +1,32 @@
 # bender
 
-virtual web based circuit bender
+A circuit bender in the browser, built on Web Audio's
+[AudioWorklet](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet).
 
-- App: https://cmdcolin.github.io/bender/app/
-- Simple version, laid out for phones: https://cmdcolin.github.io/bender/pocket/
-- Home page, and your saved voices once you sign in:
-  https://cmdcolin.github.io/bender/
-
-A shared link holds the board in the URL hash. When a link with a hash opens the
-home page, the page's script redirects to the app with the hash intact, so an
-old link still opens the same board.
+- [App](https://cmdcolin.github.io/bender/app/)
+- [Pocket](https://cmdcolin.github.io/bender/pocket/), laid out for phones
+- [Home page](https://cmdcolin.github.io/bender/), with the blog and your saved
+  voices
+- [Jam of the day](https://cmdcolin.github.io/bender/jam/), recordings made in
+  bender
 
 ## Features
 
-- Circuit bend a toy keyboard, drum machine, and basic FM synth
-- A three-oscillator ladder-filter mono synth on the same gate line, for bass
-  lines and drones, with seven faults on its voice card
-- The kit can sample itself: a 12-bit ROM mode with pitch and truncation, the
-  lofi drum machine
-- Tape delay, reverb, and distortion 'guitar pedals'
-- Ensemble pedal: bucket-brigade chorus, string-machine ensemble, dimension and
-  flange
-- A tube amp pedal with Fender and Marshall tone stacks solved from their
-  circuits, a push-pull power stage that sags, and a speaker
-- Allows custom piano roll and drum sequences
-- Patch bay with LFO and other modulations, wired from the bay or from the
-  `+ mod` button on a control
-- Tap in the tempo, either delay time, or the modulation rate
-- Buttons to easily randomize settings
-- Connect MIDI controller (works with Chrome, Firefox Nightly)
-- Tape loop: a looping tape with a head that re-records over the loop
-- Varispeed deck under the whole board — slow the entire instrument for real,
-  tempo and pitch together, with a motor that winds down
-- A tape machine that runs open reel, cassette or microcassette, with Dolby B or
-  dbx on record and play, and sits at the end of the board, ahead of the pedals
-  or ahead of the bends
-- A cassette four-track with four tape loops cut to their own lengths behind a
-  desk with EQ and an aux send. It can loop the board through itself, wear its
-  tape through, or squeal with nothing plugged in
-- Shareable URLs
+- Bend a toy keyboard, a drum machine, an FM synth and a ladder-filter mono
+  synth
+- A 12-bit ROM mode that lets the kit sample itself
+- Pedals: tape delay, reverb, distortion, ensemble and tube amp
+- Tape: a re-recording loop, a varispeed deck, a tape machine and a cassette
+  four-track
+- Piano roll and drum sequencer
+- Patch bay with LFOs and other modulation
+- MIDI controllers, tap tempo, randomize buttons and shareable URLs
 
-Uses the AudioWorklet API...surprisingly powerful and fast
-https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet
+Click a box in the signal path diagram to open its settings. Every control is in
+[docs/features.md](docs/features.md).
 
-See full feature list - [docs/features.md](docs/features.md)
-
-## User interface
-
-It's all kind of compact and wrapped into the signal path diagram: clicking a
-box there opens its settings panel ([How it works](docs/HOW-IT-WORKS.md)). It is
-a little tricky but it is better than just having 100 sliders all visible at
-once.
-
-For super tactile control, get a MIDI controller — I got one just because I made
-this! Any will do; mine's an Akai Professional MPK Mini (drum pad, 8 dials,
-keys).
+To watch Claude Code play it, see
+[Letting an AI agent drive bender](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/).
 
 ## Run
 
@@ -67,26 +39,14 @@ pnpm dev
 
 - [User guide](docs/USER-GUIDE.md) — the machines, the trigger patch and bends
 - [Bends](docs/BENDS.md) — what each fault does to the circuit, and why
-- [How it works](docs/HOW-IT-WORKS.md) — the signal path map and the app's
-  architecture
-- [Features](docs/features.md) — every control, generated from the app's tables
+- [How it works](docs/HOW-IT-WORKS.md) — the signal path map and architecture
 - [MIDI](docs/MIDI.md) — setting up a controller
-- [AI usage](docs/AI-USAGE.md) — playing bender from Claude in Chrome or Claude
-  Code through `window.bender`
-- [Techno with an AI agent](docs/AGENT-TECHNO.md) — Claude Code builds a groove
-  and bends it
+- [AI usage](docs/AI-USAGE.md) — scripting bender through `window.bender`
 - [Development](docs/DEVELOPMENT.md) — testing, benchmarking, releases
-- [Data flow](docs/dataflow.md) — how a block gets rendered across the two
-  threads
-- [Optimizations](docs/optimizations.md) — what the code does to fit inside an
-  audio callback
+- [Data flow](docs/dataflow.md) — how a block renders across the two threads
+- [Optimizations](docs/optimizations.md) — fitting inside an audio callback
 
-## Footnote
+## Credits
 
-Initial template with Claude Fable and extensively vibecoded. Follows in
-footsteps of https://github.com/cmdcolin/ntsc.js
-
-## Demos
-
-The [jam of the day](https://cmdcolin.github.io/bender/jam/) page plays
-recordings made in bender.
+Started from a Claude Fable template and extensively vibecoded. Follows in the
+footsteps of [ntsc.js](https://github.com/cmdcolin/ntsc.js).
