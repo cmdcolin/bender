@@ -17,6 +17,7 @@ export const SUPPLY_OF: Record<SupplyKey, string> = {
   pcmSupply: 'Parlor',
   monoSupply: 'Growler',
   leadSupply: 'Howler',
+  talkSupply: 'Prattle',
 }
 
 /** The machines a supply feeds, in panel order. */

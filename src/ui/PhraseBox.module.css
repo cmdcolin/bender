@@ -1,0 +1,53 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-ctl);
+  margin-bottom: var(--space-md);
+}
+
+.held {
+  min-height: 1.3em;
+  font-size: var(--fs-sm);
+  color: var(--fg2);
+}
+
+.row {
+  display: flex;
+  gap: var(--gap-ctl);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+}
+
+.input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.say {
+  composes: action from './button.module.css';
+}
+
+.words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.word {
+  composes: chipQuiet from './button.module.css';
+}
+
+.clear {
+  composes: chipQuiet from './button.module.css';
+  color: var(--fg3);
+}

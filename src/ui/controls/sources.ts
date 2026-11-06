@@ -76,6 +76,7 @@ const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS
 import { MIC_JACKS } from '../micWiring.ts'
 import { FOUR_TRACK_GROUP } from './fourTrack.ts'
 import { GROWLER_CARD, HOWLER_CARD, monoCardGroup } from './monoCard.ts'
+import { PRATTLE_GROUP } from './prattle.ts'
 import { supplyRow } from './supply.ts'
 
 import type { Group, SliderDef } from './types.ts'
@@ -2740,6 +2741,7 @@ export const SOURCE_GROUPS: Group[] = [
   },
   monoCardGroup(GROWLER_CARD),
   monoCardGroup(HOWLER_CARD),
+  PRATTLE_GROUP,
   {
     name: 'Chaos osc',
     place: 'Sources',

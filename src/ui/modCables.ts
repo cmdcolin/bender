@@ -66,6 +66,7 @@ export const CV_DEST: Record<Machine, number> = {
   Growler: DEST.monoPitch,
   Howler: DEST.leadPitch,
   Clatter: DEST.drumTune,
+  Prattle: DEST.talkLevel,
 }
 
 export const MOD_COLOUR = 'var(--mod)'

@@ -222,6 +222,7 @@ const LANDINGS: Landing[] = [
   at('mono out to gate', ['monoLevel']),
   at('mono regulator trip', ['monoLevel']),
   at('lead level', ['leadLevel']),
+  at('talk level', ['talkLevel']),
   at('lead cutoff', ['leadLevel']),
   at('lead emphasis', ['leadLevel']),
   at('lead pitch', ['leadLevel']),

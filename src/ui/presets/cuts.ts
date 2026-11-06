@@ -5,6 +5,13 @@ import {
 } from '../../controls.ts'
 import { SUPPLY } from '../../dsp/supplies.ts'
 import { choiceValue, GROUPS, sliderFor } from '../controls/index.ts'
+import {
+  TALK_BUS,
+  TALK_CLOCK,
+  TALK_FRAMES,
+  TALK_MOUTH,
+  TALK_PITCH,
+} from '../controls/prattle.ts'
 import { formatValue } from '../slider-scale.ts'
 
 // A fault on a bus is three controls that only mean anything together — a wire,
@@ -462,6 +469,152 @@ export const CUTS: CutDef[] = [
       pcmAddrFault: pick('pcmAddrFault', 'cut'),
       pcmBusCut: 0.85,
     },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_CLOCK,
+    name: 'giant',
+    blurb:
+      'The RC clock starved, so the voice, the speed and the formants all sink together',
+    patch: { talkClock: 0.4 },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_CLOCK,
+    name: 'chipmunk',
+    blurb: 'The RC clock pushed, so it chatters high and fast',
+    patch: { talkClock: 2.4 },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_CLOCK,
+    name: 'smear',
+    blurb:
+      'The frame clock divided by six and the pitch left alone, so each word stretches into a slow glide',
+    patch: { talkFrameDiv: pick('talkFrameDiv', '÷6') },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_CLOCK,
+    name: 'drone',
+    blurb:
+      'The frame clock stopped. Each start holds its first voiced frame, so every hit is a new held vowel',
+    patch: { talkFrameDiv: pick('talkFrameDiv', 'stopped') },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_CLOCK,
+    name: 'on the grid',
+    blurb:
+      'The frame counter runs off the kit’s step counter, four frames a step, so the words march with the pattern',
+    patch: { talkLock: pick('talkLock', 'kit step ×4') },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_FRAMES,
+    name: 'stutter',
+    blurb:
+      'The carry out of A1 is cut, so the counter loops four frames and a syllable repeats, slipping on now and then',
+    patch: { talkLoopBit: pick('talkLoopBit', 'A1'), talkLoopSlip: 0.2 },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_FRAMES,
+    name: 'stuck syllable',
+    blurb:
+      'The carry out of A2 is cut clean, so eight frames of ROM go round until the next word is struck',
+    patch: { talkLoopBit: pick('talkLoopBit', 'A2'), talkLoopSlip: 0 },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_FRAMES,
+    name: 'skipping record',
+    blurb:
+      'The carry out of A0 is half there, so it trips over every other frame on its way through the word',
+    patch: { talkLoopBit: pick('talkLoopBit', 'A0'), talkLoopSlip: 0.5 },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_BUS,
+    name: 'howl',
+    blurb:
+      'D10 held high adds one to every coefficient, so the lattice goes unstable and screams for as long as it talks',
+    patch: {
+      talkDataLine: pick('talkDataLine', 'D10'),
+      talkDataFault: pick('talkDataFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_BUS,
+    name: 'screech in the gaps',
+    blurb:
+      'The sign line grounded, so only the negative coefficients tip past one and the words break into screeches',
+    patch: {
+      talkDataLine: pick('talkDataLine', 'D11'),
+      talkDataFault: pick('talkDataFault', 'to ground'),
+    },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_BUS,
+    name: 'comes and goes',
+    blurb:
+      'D10 cut most of the way, so it floats after its neighbour and the howl breaks through the words and lets go',
+    patch: {
+      talkDataLine: pick('talkDataLine', 'D10'),
+      talkDataFault: pick('talkDataFault', 'cut'),
+      talkBusCut: 0.97,
+    },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_BUS,
+    name: 'alien vowels',
+    blurb:
+      'A5 held high, so each lattice stage reads its neighbour’s table and every vowel comes out wrong the same way',
+    patch: {
+      talkAddrLine: pick('talkAddrLine', 'A5'),
+      talkAddrFault: pick('talkAddrFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_PITCH,
+    name: 'growl',
+    blurb:
+      'P4 grounded, so the voice drops most of an octave and the rises fall instead',
+    patch: {
+      talkPitchLine: pick('talkPitchLine', 'P4'),
+      talkPitchFault: pick('talkPitchFault', 'to ground'),
+    },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_PITCH,
+    name: 'whistling hiss',
+    blurb:
+      'P5 held high, so the voice jumps up and the whispered sounds get a pitch of their own',
+    patch: {
+      talkPitchLine: pick('talkPitchLine', 'P5'),
+      talkPitchFault: pick('talkPitchFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_PITCH,
+    name: 'whisper',
+    blurb:
+      'The voicing gate stuck on the noise register, so every word is breath',
+    patch: { talkVoicing: pick('talkVoicing', 'stuck on hiss') },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_MOUTH,
+    name: 'the board speaks',
+    blurb:
+      'The board’s output leaks onto the excitation line, so the kit is shaped into the words',
+    patch: { talkLeak: 0.6 },
   },
   {
     group: 'Glint',

@@ -231,4 +231,27 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
+  'Prattle|fault on the bus': {
+    label: 'prattle bus wiring',
+    cut: 'talkBusCut',
+    rows: [
+      {
+        chips: ['frame ROM', 'coefficient ROM', 'lattice'],
+        links: [
+          [ribbon('talkAddrLine', 'talkAddrFault')],
+          [ribbon('talkDataLine', 'talkDataFault')],
+        ],
+      },
+    ],
+  },
+  'Prattle|pitch latch': {
+    label: 'prattle pitch latch wiring',
+    cut: 'talkBusCut',
+    rows: [
+      {
+        chips: ['frame ROM', 'pitch latch'],
+        links: [[ribbon('talkPitchLine', 'talkPitchFault')]],
+      },
+    ],
+  },
 }

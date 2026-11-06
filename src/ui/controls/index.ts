@@ -51,7 +51,8 @@ export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
 const editorKeys = (g: Group): ControlKey[] => [
   ...(g.editor?.kind === 'drums' ||
   g.editor?.kind === 'roll' ||
-  g.editor?.kind === 'patch'
+  g.editor?.kind === 'patch' ||
+  g.editor?.kind === 'phrase'
     ? g.editor.keys
     : []),
   ...(g.memory?.keys ?? []),
@@ -115,6 +116,7 @@ export const HOLD_KEYS = new Set<ControlKey>([
   'fmMute',
   'pcmMute',
   'monoMute',
+  'talkMute',
   ...PEDALS.map(p => p.mute),
   ...BENDS.map(b => b.mute),
   'bodyX',

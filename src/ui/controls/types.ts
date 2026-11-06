@@ -136,6 +136,7 @@ export interface Group {
     | { kind: 'fm' }
     | { kind: 'pcm' }
     | { kind: 'ampPath' }
+    | { kind: 'phrase'; keys: readonly ControlKey[] }
   /** A melody memory beside the group's editor. The drawing's piano roll box
       opens it; the listed panel shows it when the player shows piano rolls.
       Its steps and length have no slider. */

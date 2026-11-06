@@ -10,6 +10,7 @@ const LEVEL_OF: Record<string, ControlKey> = {
   Parlor: 'pcmLevel',
   Growler: 'monoLevel',
   Howler: 'leadLevel',
+  Prattle: 'talkLevel',
   Spool: 'sampleLevel',
   Layercake: 'fourLevel',
   Sheet: 'sheetLevel',
@@ -28,6 +29,7 @@ const MUTE_OF: Record<string, ControlKey> = {
   Parlor: 'pcmMute',
   Growler: 'monoMute',
   Howler: 'leadMute',
+  Prattle: 'talkMute',
   ...BYPASS_OF,
 }
 

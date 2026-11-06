@@ -48,6 +48,7 @@ import { OrderRack } from './OrderRack.tsx'
 import { PatchBay } from './PatchBay.tsx'
 import { PcmKeysDiagram } from './PcmKeysDiagram.tsx'
 import { BenchToggle } from './Pedals.tsx'
+import { PhraseBox } from './PhraseBox.tsx'
 import { cutsFor } from './presets/index.ts'
 import { scrollIntoPanel, useOnAim } from './reveal.ts'
 import { useStanding } from './rollBack.ts'
@@ -191,6 +192,7 @@ const PANELS: Partial<Record<EditorKind, ComponentType>> = {
   supply: SupplyReading,
   mic: MicPatch,
   loops: FourTrack,
+  phrase: PhraseBox,
 }
 
 const BARE_DRAWINGS: Partial<Record<EditorKind, ComponentType>> = {

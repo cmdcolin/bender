@@ -11,6 +11,7 @@ export type Machine =
   | 'Parlor'
   | 'Growler'
   | 'Howler'
+  | 'Prattle'
 
 /** Plinky's gate line carries notes; the kit's trigger lines carry hits. */
 export type Signal = 'notes' | 'hits'
@@ -81,6 +82,7 @@ export const TRIGGER_CABLES = [
   voice('pcmStruck', 'hits', 'Clatter', 'Parlor'),
   voice('monoStruck', 'hits', 'Clatter', 'Growler'),
   voice('leadStruck', 'hits', 'Clatter', 'Howler'),
+  voice('talkStruck', 'hits', 'Clatter', 'Prattle'),
 ]
 
 export const CONNECTIONS = [...TRIGGER_CABLES, ...KEY_LINE]

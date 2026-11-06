@@ -217,6 +217,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   leadLoopPitch: 'Howler',
   leadChoke: 'Howler',
   leadRegTrip: 'Howler',
+  talkLevel: 'Prattle',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -268,6 +269,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   Parlor: ['pcmLevel'],
   Growler: ['monoLevel'],
   Howler: ['leadLevel'],
+  Prattle: ['talkLevel'],
   Clatter: ['drumLevel'],
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
@@ -286,6 +288,7 @@ const SOURCE_MUTE: Record<string, ControlKey> = {
   Parlor: 'pcmMute',
   Growler: 'monoMute',
   Howler: 'leadMute',
+  Prattle: 'talkMute',
 }
 
 // The two you play, side by side across the head of the toy board. They are the
@@ -315,6 +318,9 @@ const PCM_KEYS = 'Parlor'
 // and the second build of it after that.
 const MONO = 'Growler'
 const LEAD = 'Howler'
+
+// The speech chip, on the rail but off the gate line: the kit strikes it.
+const TALK = 'Prattle'
 
 // The sources off the toy's supply rail, each standing on its own.
 const LINE_ROW = [
@@ -808,18 +814,19 @@ function pickParts(c: Controls, o: Options) {
   const pcm = instrument(PCM_KEYS)
   const mono = instrument(MONO)
   const lead = instrument(LEAD)
-  const allChips = [kb, drums, fm, pcm, mono, lead]
+  const talk = instrument(TALK)
+  const allChips = [kb, drums, fm, pcm, mono, lead, talk]
   const chips = allChips.filter(drawn)
   // Five across is wider than the panel's column, so the panel snakes the row:
   // the gate line runs along the top and drops onto the mono synth under its
   // end, and the drums sit under the keyboard they trade triggers with. Three
   // or fewer fit on one row.
-  const oneRow = [kb, fm, pcm, mono, lead, drums].filter(drawn)
+  const oneRow = [kb, fm, pcm, mono, lead, drums, talk].filter(drawn)
   const chipRows =
     o.wrap && oneRow.length > 3
       ? [
           [kb, fm, pcm],
-          [drums, mono, lead],
+          [drums, mono, lead, talk],
         ]
           .map(r => r.filter(drawn))
           .filter(r => r.length > 0)
@@ -2427,6 +2434,16 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       stroke: c,
       strokeWidth: 0.9,
       strokeLinejoin: 'miter',
+    }),
+  ],
+  // A speech balloon.
+  Prattle: (x, y, c) => [
+    el('path', {
+      d: `M ${x + 1} ${y + 1.5} H ${x + 11} V ${y + 8} H ${x + 5.5} L ${x + 2.5} ${y + 11} V ${y + 8} H ${x + 1} Z`,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+      strokeLinejoin: 'round',
     }),
   ],
   Howler: (x, y, c) => [

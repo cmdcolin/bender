@@ -14,6 +14,7 @@ const TAP_OF: Record<string, SourceTap> = {
   Parlor: 'pcmKeys',
   Growler: 'monoSynth',
   Howler: 'leadSynth',
+  Prattle: 'prattle',
 }
 
 const struck = (key: keyof Controls) => (c: Controls) => Math.round(c[key]) > 0
@@ -35,6 +36,7 @@ const PLAYED_ON: Record<string, [string, (c: Controls) => boolean][]> = {
     ['Parlor', struck('pcmStruck')],
     ['Growler', struck('monoStruck')],
     ['Howler', struck('leadStruck')],
+    ['Prattle', struck('talkStruck')],
   ],
 }
 

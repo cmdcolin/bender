@@ -378,6 +378,7 @@ export const PATCH_GROUPS: Group[] = [
             'lead out to pitch',
             'lead out to gate',
             'lead regulator trip',
+            'talk level',
           ],
           groups: [
             {
@@ -523,6 +524,7 @@ export const PATCH_GROUPS: Group[] = [
                 'lead regulator trip',
               ],
             },
+            { name: 'Prattle', choices: ['talk level'] },
             {
               name: 'Chaos osc',
               choices: ['osc pitch', 'osc starve', 'osc level'],

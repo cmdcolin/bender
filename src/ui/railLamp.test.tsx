@@ -56,7 +56,9 @@ test('the supply panel names what each set of cells feeds', () => {
   )
   const group = GROUPS.find(g => g.name === 'Power supply')!
   render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
-  expect(screen.getByText('Feeds Parlor, Growler and Howler.')).toBeTruthy()
+  expect(
+    screen.getByText('Feeds Parlor, Growler, Howler and Prattle.'),
+  ).toBeTruthy()
   expect(screen.getByText('Second cells feed Clatter and Glint.')).toBeTruthy()
   expect(screen.getByText('On the bench supply: Plinky.')).toBeTruthy()
 })
