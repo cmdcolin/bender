@@ -1,6 +1,7 @@
 import { takeOffBench } from './bench.ts'
 import {
   bypassed,
+  patchedOn,
   positionOf,
   sounds,
   stepOf,
@@ -64,7 +65,18 @@ const FACE: Record<string, Face> = {
   },
 }
 
-function reading(stage: string, at: number, step: number, open: boolean) {
+// A patched bend runs on its machine's line, where a socket holding it only
+// sets its order: the socket passes the master run through and its joint rests.
+const patchedReading = (stage: string, at: number, machine: string) => ({
+  text: 'jack',
+  label: `patched into ${machine}`,
+  tip:
+    at === 0
+      ? `${stage} is patched into ${machine} and runs on that machine alone, so it needs no socket.`
+      : `${stage} is patched into ${machine} and runs on that machine alone. Socket ${at} passes the master run straight through and only sets its order among ${machine}’s units; its joint rests.`,
+})
+
+function socketReading(stage: string, at: number, step: number, open: boolean) {
   if (at === 0)
     return {
       text: 'off',
@@ -98,7 +110,10 @@ function Position({ stage }: { stage: string }) {
   const walk = order!.split('').map(Number)
   const step = useBoardValue(c => stepOf(c, walk, stage))
   const open = step > 0 && (Number(mask) & (1 << (step - 1))) !== 0
-  const { text, label, tip } = reading(stage, at, step, open)
+  const machine = useBoardValue(c => patchedOn(c, stage))
+  const { text, label, tip } = machine
+    ? patchedReading(stage, at, machine)
+    : socketReading(stage, at, step, open)
   return (
     <Tip text={tip}>
       <span className={styles.badge} role="img" aria-label={label}>
@@ -120,7 +135,7 @@ export function BendFace({
   const face = FACE[stage]!
   const on = useBoardValue(c => sounds(c, stage))
   const why = useBoardValue(c =>
-    positionOf(c, stage) === 0
+    positionOf(c, stage) === 0 && !patchedOn(c, stage)
       ? 'unslotted'
       : bypassed(c, stage)
         ? 'bypassed'

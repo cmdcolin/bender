@@ -1,5 +1,6 @@
 import { engine } from '../engine/engine.ts'
 import { BEND_SLOT_KEYS, BENDS, bendAt } from './controls/index.ts'
+import { bendRuns, patchedInto } from './controls/jacks.ts'
 
 import type { Controls } from '../controls.ts'
 
@@ -26,8 +27,12 @@ export const stepOf = (c: Controls, walk: readonly number[], stage: string) =>
 export const bypassed = (c: Controls, stage: string) =>
   c[bendNamed(stage).mute] > 0.5
 
+/** The machine the bend is patched onto, or undefined on the master run. */
+export const patchedOn = (c: Controls, stage: string) =>
+  patchedInto(c[bendNamed(stage).into])
+
 export const sounds = (c: Controls, stage: string) =>
-  positionOf(c, stage) > 0 && c[bendNamed(stage).mix] > 0 && !bypassed(c, stage)
+  bendRuns(c, stage) && c[bendNamed(stage).mix] > 0 && !bypassed(c, stage)
 
 const silent = (c: Controls, slot: number) => {
   const bend = bendAt(c[BEND_SLOT_KEYS[slot]!])
@@ -47,7 +52,7 @@ export function switchOn(stage: string) {
   const board = engine.controls.get()
   const { mix, mute } = bendNamed(stage)
   const next = { ...board, [mute]: 0 }
-  if (positionOf(board, stage) === 0)
+  if (!bendRuns(board, stage))
     next[BEND_SLOT_KEYS[freeSlot(board)]!] = idOf(stage)
   if (board[mix] === 0) next[mix] = ADDED_MIX
   if (
