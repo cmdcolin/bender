@@ -2009,7 +2009,9 @@ export class ToyDrum implements Stage {
                 noise *
                 (amp[SNARE]! * weight[SNARE]! * hiss +
                   amp[CLAP]! * weight[CLAP]!)
-            this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
+            this.noiseLp = flushDenormal(
+              this.noiseLp + noiseLpCoef * (noise - this.noiseLp),
+            )
             hatHiss = noise - this.noiseLp
             if (snareOn) {
               const band = this.snareLid.process(
@@ -2021,8 +2023,12 @@ export class ToyDrum implements Stage {
               if (th & (1 << SNARE)) send += y
             }
             if (clapOn) {
-              this.clapFast += clapLpCoef * (noise - this.clapFast)
-              this.clapSlow += clapHpCoef * (noise - this.clapSlow)
+              this.clapFast = flushDenormal(
+                this.clapFast + clapLpCoef * (noise - this.clapFast),
+              )
+              this.clapSlow = flushDenormal(
+                this.clapSlow + clapHpCoef * (noise - this.clapSlow),
+              )
               const y =
                 (this.clapFast - this.clapSlow) *
                 amp[CLAP]! *
