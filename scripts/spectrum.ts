@@ -260,6 +260,9 @@ const FAULTS: [name: string, fault: number, depth: number][] = [
   ['to ground', FAULT.ground, 1],
   ['to +V', FAULT.supply, 1],
   ['bridged', FAULT.bridge, 1],
+  ['one hole along', FAULT.along, 1],
+  ['reversed', FAULT.reversed, 1],
+  ['bounce', FAULT.bounce, 1],
 ]
 
 const SECONDS = 2

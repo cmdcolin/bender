@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
+import { FAULT, FAULT_NAMES } from '../dsp/bus.ts'
 import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
@@ -99,6 +100,20 @@ test('the faulted trace carries its line name and fault in the drawing', () => {
   expect(hit).toHaveLength(1)
 })
 
+test.each([
+  [FAULT.along, 'one hole along'],
+  [FAULT.reversed, 'reversed'],
+  [FAULT.bounce, 'bounce'],
+])('a harness fault (%i) lights every trace from D0 up', (fault, name) => {
+  set({ pcmDataLine: 4, pcmDataFault: fault })
+  open('Parlor')
+  fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
+  const svg = drawing('parlor bus wiring')
+  expect(svg.querySelectorAll('path[class*="traceCut"]')).toHaveLength(4)
+  expect(texts(svg)).toContain('D0–D3')
+  expect(titles(svg)).toContain(`data line: D0–D3 ${name}`)
+})
+
 test('a bridge lights the faulted trace and its neighbour', () => {
   set({ pcmDataLine: 8, pcmDataFault: 3 })
   open('Parlor')
@@ -162,9 +177,7 @@ test('pressing a trace faults it, and pressing it again walks the faults', () =>
   expect(engine.controls.get().chipAddrLine).toBe(3)
   fireEvent.click(line('A2'))
   expect(engine.controls.get().chipAddrFault).toBe(1)
-  fireEvent.click(line('A2'))
-  fireEvent.click(line('A2'))
-  fireEvent.click(line('A2'))
+  for (let i = 1; i < FAULT_NAMES.length; i++) fireEvent.click(line('A2'))
   expect(engine.controls.get().chipAddrLine).toBe(0)
   expect(engine.controls.get().chipAddrFault).toBe(0)
 })

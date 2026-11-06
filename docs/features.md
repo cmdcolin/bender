@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
 809 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 191
-presets, 24 stage settings and 94 named cuts. The generator reads everything
+presets, 24 stage settings and 104 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -115,6 +115,12 @@ puts the fault on, and the rows under it show the controls it set:
 - **two songs at once**: A trace is half cut. Most steps arrive and the rest
   come back off the wire next door, so the melody flickers between two versions
   of itself
+- **the song bit-reversed**: The five counter wires reach the ROM in reverse
+  order. Every step still plays, in a fixed shuffle: the second step plays the
+  seventeenth, the third plays the ninth
+- **leaps on the way down**: Whenever a note code drops several bits at once,
+  the ground lifts and the whole code reads high, so those notes leap to the top
+  of the keyboard
 
 <details>
 <summary>57 controls</summary>
@@ -168,16 +174,16 @@ puts the fault on, and the rows under it show the controls it set:
 | Effect wire †       | 13 of them, off through stuck                                                                                                  | Solders a wire onto the effect buttons                                                                                                                                                        |
 | Button it presses   | laser, siren, ufo, bomb, gun, bird, random, next                                                                               | Which effect button the wire presses                                                                                                                                                          |
 | Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the fault is on                                                                                                                                    |
-| Data fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the wire                                                                                                                                                                     |
+| Data fault          | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | What happened to the wire                                                                                                                                                                     |
 | Address line †      | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the fault is on                                                                                                                            |
-| Address fault       | cut, to ground, to +V, bridged                                                                                                 | The same four things, on the address side                                                                                                                                                     |
+| Address fault       | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | The same four things, on the address side                                                                                                                                                     |
 | Cut depth           | off to full                                                                                                                    | How far through the trace the cut goes; only the cut fault uses it                                                                                                                            |
 | Loop wire †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | A jumper from one pin of the note latch back to the address side of the ROM                                                                                                                   |
 | Loop onto           | A0, A1, A2, A3, A4, reset                                                                                                      | Where the jumper lands                                                                                                                                                                        |
 | Song line †         | off, S0, S1, S2, S3, S4                                                                                                        | Which of the wires that pick the song the fault is on                                                                                                                                         |
-| Song fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the song wire                                                                                                                                                                |
+| Song fault          | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | What happened to the song wire                                                                                                                                                                |
 | Divider line †      | 13 of them, off through N11                                                                                                    | Which wire of the pitch divider the fault is on                                                                                                                                               |
-| Divider fault       | cut, to ground, to +V, bridged                                                                                                 | What happened to the divider wire                                                                                                                                                             |
+| Divider fault       | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | What happened to the divider wire                                                                                                                                                             |
 
 </details>
 
@@ -228,6 +234,12 @@ puts the fault on, and the rows under it show the controls it set:
 - **inside out every other bar**: The circulating bar’s return is inverted, so
   each lap plays the last one’s gaps, and a sparse bar and a bar of every voice
   on nearly every step take turns
+- **the kit mirrored**: The nine trigger wires reach the voices in reverse
+  order. The kick row strikes the accent, the snare row the cymbal, the hat row
+  the open hat and the clap row the bell
+- **each row plays the next voice**: The eight voice wires are soldered one hole
+  along, so the kick row plays the snare, the snare row the hat, and so on
+  round, with the cymbal row on the kick
 - **the kick plays the kit**: The end stop on the slab counter is cut, so the
   counter continues through every slab after the voice’s slab and one kick hit
   plays four seconds of the kit
@@ -288,9 +300,9 @@ puts the fault on, and the rows under it show the controls it set:
 | ROM clock        | 8 to 44.1 kHz                                                                                                      | How fast the slabs are read back                                                                                                                        |
 | Slab counter †   | stops at its slab’s end, runs on through the ROM, counts down, counts down and runs on                             | The two pins on the counter that walks a slab                                                                                                           |
 | ROM address †    | 18 of them, off through A16                                                                                        | Which of the wires carrying an address to the sample ROM the fault is on                                                                                |
-| Address fault †  | cut, to ground, to +V, bridged                                                                                     | What happened to that address wire                                                                                                                      |
+| Address fault †  | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                   | What happened to that address wire                                                                                                                      |
 | ROM data †       | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the fault is on                                                                      |
-| Data fault †     | cut, to ground, to +V, bridged                                                                                     | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
+| Data fault †     | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                   | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
 | Retrigger        | 0 Hz to 4 kHz                                                                                                      | Retriggers the current step at this rate                                                                                                                |
 | Ratchet ramp     | −1 to +1                                                                                                           | How the repeats of a ratcheted step land                                                                                                                |
 | Trigger floor    | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                                                    |
@@ -309,9 +321,9 @@ puts the fault on, and the rows under it show the controls it set:
 | Pattern loop †   | off, return inverted, return a step late, each row into the next, return through an XOR                            | Puts a fault in the shift register the bar circulates through, so every step re-enters the loop changed and the pattern rewrites itself a lap at a time |
 | Counter reset †  | off, on the kick, on the snare, on the hat, on the clap, on the tom, on the bell, on the open hat, on the cymbal   | Which voice’s trigger line is soldered to the step counter’s clear pin                                                                                  |
 | Address line †   | off, A0, A1, A2, A3                                                                                                | Which of the four wires carrying a step number to the pattern memory the fault is on                                                                    |
-| Address fault †  | cut, to ground, to +V, bridged                                                                                     | What happened to that address wire                                                                                                                      |
+| Address fault †  | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                   | What happened to that address wire                                                                                                                      |
 | Data line †      | off, D0, D1, D2, D3, D4, D5, D6, D7, D8                                                                            | Which of the wires carrying the word back the fault is on — one wire a row, in the order of the grid, so D8 is the accent                               |
-| Data fault †     | cut, to ground, to +V, bridged                                                                                     | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
+| Data fault †     | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                   | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
 | Cut depth        | off to full                                                                                                        | How far through the trace the cut goes; only the cut fault uses it                                                                                      |
 
 </details>
@@ -398,6 +410,12 @@ puts the fault on, and the rows under it show the controls it set:
   octaves, and every operator reads its level across it eight times a sample, so
   each one keeps getting another’s octave. The tune stays in there under a hiss
   that follows it
+- **drops into the bass**: The low four address wires are soldered one hole
+  along, so every write lands in another register of its block, always the same
+  one, and the tune falls into the bass
+- **a sine in shreds**: All ten wires into the sine table arrive in reverse
+  order, so each lap reads the table in a fixed shuffle. The pitch holds and the
+  sine becomes a bright buzz
 - **one write late**: The latch misses often enough that every byte commits to
   the register the write before it named
 - **one voice, four times over**: The converter’s slot counter is stuck on the
@@ -447,19 +465,19 @@ puts the fault on, and the rows under it show the controls it set:
 | Car ratio                      | 17 of them, as patched through 15×                                                       | The same table on the carrier, which moves the note itself — 2 is the same patch an octave up                                                           |
 | Mod decay                      | 17 of them, as patched through 2.52 s                                                    | How long the modulator takes to fall away, which makes an FM note a bell or an organ                                                                    |
 | Data line †                    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                      | Which of the eight wires carrying bytes to the register file the fault is on                                                                            |
-| Data fault                     | cut, to ground, to +V, bridged                                                           | What happened to the wire — the same four faults any trace can take                                                                                     |
+| Data fault                     | cut, to ground, to +V, bridged, one hole along, reversed, bounce                         | What happened to the wire — the same four faults any trace can take                                                                                     |
 | Address line †                 | off, A0, A1, A2, A3, A4, A5                                                              | Which of the six wires choosing the register the fault is on                                                                                            |
-| Address fault                  | cut, to ground, to +V, bridged                                                           | The same four things, on the address side                                                                                                               |
+| Address fault                  | cut, to ground, to +V, bridged, one hole along, reversed, bounce                         | The same four things, on the address side                                                                                                               |
 | Wave line †                    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                              | Which of the ten wires addressing the sine table the fault is on                                                                                        |
-| Wave fault †                   | cut, to ground, to +V, bridged                                                           | The same four things, on the wave ROM’s address                                                                                                         |
+| Wave fault †                   | cut, to ground, to +V, bridged, one hole along, reversed, bounce                         | The same four things, on the wave ROM’s address                                                                                                         |
 | Wave data line †               | off, T0, T1, T2, T3, T4, T5, T6, T7                                                      | Which of the eight wires carrying the sine table’s output the fault is on                                                                               |
-| Wave data fault †              | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s way out                                                                                                            |
+| Wave data fault †              | cut, to ground, to +V, bridged, one hole along, reversed, bounce                         | The same four things, on the table’s way out                                                                                                            |
 | Patch line †                   | off, P0, P1, P2, P3, P4, P5, P6                                                          | Which of the seven wires addressing the patch table the fault is on                                                                                     |
-| Patch fault †                  | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s address                                                                                                            |
+| Patch fault †                  | cut, to ground, to +V, bridged, one hole along, reversed, bounce                         | The same four things, on the table’s address                                                                                                            |
 | Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                                      | Which of the eight wires carrying the patch table’s output the fault is on                                                                              |
-| Patch data fault †             | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s way out                                                                                                            |
+| Patch data fault †             | cut, to ground, to +V, bridged, one hole along, reversed, bounce                         | The same four things, on the table’s way out                                                                                                            |
 | Exp line †                     | 13 of them, off through E11                                                              | Which of the twelve wires out of the log adder the fault is on                                                                                          |
-| Exp fault †                    | cut, to ground, to +V, bridged                                                           | The same four things, on the exp table’s address                                                                                                        |
+| Exp fault †                    | cut, to ground, to +V, bridged, one hole along, reversed, bounce                         | The same four things, on the exp table’s address                                                                                                        |
 | Cut depth                      | off to full                                                                              | How far through the trace the cut goes; only the cut fault uses it                                                                                      |
 | Strobe slip †                  | off to full                                                                              | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught                                    |
 | DAC slot †                     | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4                                 | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot                                              |
@@ -514,6 +532,12 @@ puts the fault on, and the rows under it show the controls it set:
   has no driver, so it holds whatever the last address left on it and then
   starts drifting after its neighbour. It is the one fault on this chip whose
   sound keeps changing
+- **folded over**: The eight data wires are soldered one hole along. Every word
+  arrives doubled, and the part that no longer fits wraps round to the other
+  side, so each wave folds over itself into a hard buzz
+- **grains of itself**: The low ten address wires arrive in reverse order. The
+  counter still runs at the key’s pitch, but each step jumps across the sample
+  in a fixed shuffle, and the voice shreds into a hiss of its own grains
 
 <details>
 <summary>27 controls</summary>
@@ -534,9 +558,9 @@ puts the fault on, and the rows under it show the controls it set:
 | Kit voice that plays this keyboard | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                         | The kit’s trigger lines, clipped onto this keyboard’s key input                                                                                                             |
 | Plays Plinky’s notes               | yes, soldered, no, cut, lane 1, lane 2, lane 3                                                            | The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input                                                                                           |
 | Address line †                     | 15 of them, off through A13                                                                               | Which of the counter’s wires to the ROM the fault is on                                                                                                                     |
-| Address fault                      | cut, to ground, to +V, bridged                                                                            | The same four faults any trace can take                                                                                                                                     |
+| Address fault                      | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                          | The same four faults any trace can take                                                                                                                                     |
 | Data line †                        | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires carrying the ROM’s output the fault is on                                                                                                          |
-| Data fault                         | cut, to ground, to +V, bridged                                                                            | To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was |
+| Data fault                         | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                          | To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was |
 | Cut depth                          | off to full                                                                                               | How far through the trace the cut goes; only the cut fault uses it                                                                                                          |
 | Crossed address †                  | 14 of them, off through A12↔A13                                                                           | Two neighbouring address wires swapped between the counter and the ROM                                                                                                      |
 | Crossed data †                     | off, D0↔D1, D1↔D2, D2↔D3, D3↔D4, D4↔D5, D5↔D6, D6↔D7                                                      | Two neighbouring data wires swapped between the ROM and the DAC                                                                                                             |
@@ -611,11 +635,11 @@ the fault on, and the rows under it show the controls it set:
 | Memory rate                     | 0.2 to 24 Hz                                                                                                                   | Steps a second                                                                                                                                            |
 | Kit sync                        | off, sixteenths, eighths, dotted eighths, quarters                                                                             | A wire from the drum machine’s step clock to the memory’s counter, which steps on every kit step, every second, every third or every fourth               |
 | Address line †                  | off, A0, A1, A2, A3, A4                                                                                                        | Which of the five wires carrying the step number from the counter to the memory has the fault                                                             |
-| Address fault                   | cut, to ground, to +V, bridged                                                                                                 | What happened to that address wire                                                                                                                        |
+| Address fault                   | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | What happened to that address wire                                                                                                                        |
 | Crossed address †               | off, A0↔A1, A1↔A2, A2↔A3, A3↔A4                                                                                                | Two address wires swapped on their way to the memory, so the line plays its own steps out of order, the same order every lap                              |
 | Carry cut †                     | off, wraps at 16, wraps at 8, wraps at 4, wraps at 2                                                                           | The carry between two of the counter’s stages cut, so it wraps early and the line folds into a loop of its first 16, 8, 4 or 2 steps                      |
 | Data line †                     | off, D0 +1, D1 +2, D2 +4, D3 +8, D4 +16, D5 +32, D6 accent, D7 slide                                                           | Which of the wires carrying each step out of the memory has the fault                                                                                     |
-| Data fault                      | cut, to ground, to +V, bridged                                                                                                 | What happened to that data wire                                                                                                                           |
+| Data fault                      | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | What happened to that data wire                                                                                                                           |
 | Cut depth                       | off to full                                                                                                                    | How far through the trace the cut goes                                                                                                                    |
 | Write leak †                    | off to full                                                                                                                    | A leaking write enable: as the counter moves on, the note it just read is written into the next step                                                      |
 | Bit rot †                       | off, every 32 bars, every 16 bars, every 8 bars, every 4 bars, every 2 bars, every bar, every half bar, every beat, every step | The memory’s refresh starved, so one bit somewhere in the line leaks away so often, on the kit’s clock                                                    |
@@ -719,11 +743,11 @@ the fault on, and the rows under it show the controls it set:
 | Memory rate                     | 0.2 to 24 Hz                                                                                                                   | Steps a second                                                                                                                                            |
 | Kit sync                        | off, sixteenths, eighths, dotted eighths, quarters                                                                             | A wire from the drum machine’s step clock to the memory’s counter, which steps on every kit step, every second, every third or every fourth               |
 | Address line †                  | off, A0, A1, A2, A3, A4                                                                                                        | Which of the five wires carrying the step number from the counter to the memory has the fault                                                             |
-| Address fault                   | cut, to ground, to +V, bridged                                                                                                 | What happened to that address wire                                                                                                                        |
+| Address fault                   | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | What happened to that address wire                                                                                                                        |
 | Crossed address †               | off, A0↔A1, A1↔A2, A2↔A3, A3↔A4                                                                                                | Two address wires swapped on their way to the memory, so the line plays its own steps out of order, the same order every lap                              |
 | Carry cut †                     | off, wraps at 16, wraps at 8, wraps at 4, wraps at 2                                                                           | The carry between two of the counter’s stages cut, so it wraps early and the line folds into a loop of its first 16, 8, 4 or 2 steps                      |
 | Data line †                     | off, D0 +1, D1 +2, D2 +4, D3 +8, D4 +16, D5 +32, D6 accent, D7 slide                                                           | Which of the wires carrying each step out of the memory has the fault                                                                                     |
-| Data fault                      | cut, to ground, to +V, bridged                                                                                                 | What happened to that data wire                                                                                                                           |
+| Data fault                      | cut, to ground, to +V, bridged, one hole along, reversed, bounce                                                               | What happened to that data wire                                                                                                                           |
 | Cut depth                       | off to full                                                                                                                    | How far through the trace the cut goes                                                                                                                    |
 | Write leak †                    | off to full                                                                                                                    | A leaking write enable: as the counter moves on, the note it just read is written into the next step                                                      |
 | Bit rot †                       | off, every 32 bars, every 16 bars, every 8 bars, every 4 bars, every 2 bars, every bar, every half bar, every beat, every step | The memory’s refresh starved, so one bit somewhere in the line leaks away so often, on the kit’s clock                                                    |
@@ -845,12 +869,12 @@ fault on, and the rows under it show the controls it set:
 | Carry cut after  | off, A0, A1, A2, A3, A4                                           | Cuts the frame counter’s carry, so it loops 2, 4, 8, 16 or 32 frames of ROM and a syllable stutters                   |
 | Carry leak       | off to full                                                       | How often the cut carry gets through anyway, so the stutter drifts on through the phrase                              |
 | Data line        | 13 of them, off through D11                                       | A wire of the coefficient ROM’s output                                                                                |
-| Data fault       | cut, to ground, to +V, bridged                                    | What happened to that wire                                                                                            |
+| Data fault       | cut, to ground, to +V, bridged, one hole along, reversed, bounce  | What happened to that wire                                                                                            |
 | Address line     | off, A0, A1, A2, A3, A4, A5, A6, A7, A8                           | A wire into the coefficient ROM                                                                                       |
-| Address fault    | cut, to ground, to +V, bridged                                    | What happened to that wire                                                                                            |
+| Address fault    | cut, to ground, to +V, bridged, one hole along, reversed, bounce  | What happened to that wire                                                                                            |
 | Cut depth        | off to full                                                       | How far through the trace a cut went                                                                                  |
 | Pitch line       | off, P0, P1, P2, P3, P4, P5                                       | A wire of the latch holding each frame’s pitch code                                                                   |
-| Pitch fault      | cut, to ground, to +V, bridged                                    | What happened to that wire                                                                                            |
+| Pitch fault      | cut, to ground, to +V, bridged, one hole along, reversed, bounce  | What happened to that wire                                                                                            |
 | Voicing gate     | as spoken, stuck on buzz, stuck on hiss                           | The switch between the pitch buzz and the noise register, stuck one way: every frame voiced, or every frame whispered |
 | Board leak       | off to full                                                       | The board’s own output crossing onto the excitation line, so the kit and everything else speak through the lattice    |
 
@@ -1208,6 +1232,12 @@ puts the fault on, and the rows under it show the controls it set:
 - **a bit that comes and goes**: D13 is parted most of the way, so the bit
   floats after its neighbour, and every time the trace still conducts the real
   bit slams back
+- **every word backwards**: All sixteen wires arrive in reverse order, so the
+  quiet low bits become the loud top ones and the board turns to a hiss that
+  follows its loudness
+- **spits on the jumps**: When several wires fall at once, the ground lifts and
+  every quiet wire reads high for that word, so the busier the board the more it
+  spits
 
 <details>
 <summary>16 controls</summary>
@@ -1227,7 +1257,7 @@ puts the fault on, and the rows under it show the controls it set:
 | DAC reference   | fixed, the rail, the toy chip, the mic, the bus                              | What the DAC’s reference pin is wired to                                                                                  |
 | Reference depth | off to full                                                                  | How much of the reference pin is that signal and how much the fixed voltage                                               |
 | Data line †     | 17 of them, off through D15                                                  | Which of the sixteen wires from the converter to the DAC the fault is on, D15 the top                                     |
-| Data fault      | cut, to ground, to +V, bridged                                               | What happened to the wire                                                                                                 |
+| Data fault      | cut, to ground, to +V, bridged, one hole along, reversed, bounce             | What happened to the wire                                                                                                 |
 | Cut depth       | off to full                                                                  | How far through the trace the cut went                                                                                    |
 | Patched into    | 15 of them, master through Prattle                                           | Cables Crusher onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
 
@@ -1459,26 +1489,26 @@ seconds ago into the room. Freeze holds the tank indefinitely.
 <details>
 <summary>18 controls</summary>
 
-| control        | range                              | what it does                                                                                                                |
-| -------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Decay          | 0 to 1.1, normal 0 to 0.98         | How much of the tank goes round again                                                                                       |
-| Size           | 0.05× to 2.9×                      | Scales every delay in the program                                                                                           |
-| Pre-delay      | 0 to 500 ms                        | The gap before the room answers, counted in the unit’s own clock ticks, so a slow clock lengthens it                        |
-| Damping        | 0 to 0.95                          | A low-pass inside the tank, so the top end dies first and each lap comes back darker                                        |
-| Wander         | off to full                        | Two slow sines swing a read tap in each half of the tank, so the tail detunes against itself and never settles on a ring    |
-| Clock          | 0.1× to 1.5×                       | The sample clock, 29.8 kHz at 1×                                                                                            |
-| Supply drag    | off to full                        | Runs the clock off the board’s sagging supply, so a starve or a brownout slows the clock and drags the tail’s pitch down    |
-| Word           | 4 to 16 bits                       | How many bits of each memory word the unit keeps, 12 as shipped                                                             |
-| Refresh fail   | off to full                        | The memory chips lose charge between refreshes, and bits leak out of words at random                                        |
-| Address line † | 17 of them, off through A15        | Which of the sixteen address wires to the memory the fault is on                                                            |
-| Address fault  | cut, to ground, to +V, bridged     | What happened to the address wire                                                                                           |
-| Data line †    | 17 of them, off through D15        | Which of the sixteen data wires from the memory the fault is on, D15 the sign                                               |
-| Data fault     | cut, to ground, to +V, bridged     | What happened to the data wire                                                                                              |
-| Cut depth      | off to full                        | How far through the trace the cut went, on either wire                                                                      |
-| Freeze         | off or hold                        | Shuts the input and holds the tank at full decay with no damping, so the room keeps whatever it held                        |
-| Bypass         | on or bypassed                     | Takes Rack verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Mix            | off to full                        | Dry/wet                                                                                                                     |
-| Patched into   | 15 of them, master through Prattle | Cables Rack verb onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control        | range                                                            | what it does                                                                                                                |
+| -------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Decay          | 0 to 1.1, normal 0 to 0.98                                       | How much of the tank goes round again                                                                                       |
+| Size           | 0.05× to 2.9×                                                    | Scales every delay in the program                                                                                           |
+| Pre-delay      | 0 to 500 ms                                                      | The gap before the room answers, counted in the unit’s own clock ticks, so a slow clock lengthens it                        |
+| Damping        | 0 to 0.95                                                        | A low-pass inside the tank, so the top end dies first and each lap comes back darker                                        |
+| Wander         | off to full                                                      | Two slow sines swing a read tap in each half of the tank, so the tail detunes against itself and never settles on a ring    |
+| Clock          | 0.1× to 1.5×                                                     | The sample clock, 29.8 kHz at 1×                                                                                            |
+| Supply drag    | off to full                                                      | Runs the clock off the board’s sagging supply, so a starve or a brownout slows the clock and drags the tail’s pitch down    |
+| Word           | 4 to 16 bits                                                     | How many bits of each memory word the unit keeps, 12 as shipped                                                             |
+| Refresh fail   | off to full                                                      | The memory chips lose charge between refreshes, and bits leak out of words at random                                        |
+| Address line † | 17 of them, off through A15                                      | Which of the sixteen address wires to the memory the fault is on                                                            |
+| Address fault  | cut, to ground, to +V, bridged, one hole along, reversed, bounce | What happened to the address wire                                                                                           |
+| Data line †    | 17 of them, off through D15                                      | Which of the sixteen data wires from the memory the fault is on, D15 the sign                                               |
+| Data fault     | cut, to ground, to +V, bridged, one hole along, reversed, bounce | What happened to the data wire                                                                                              |
+| Cut depth      | off to full                                                      | How far through the trace the cut went, on either wire                                                                      |
+| Freeze         | off or hold                                                      | Shuts the input and holds the tank at full decay with no damping, so the room keeps whatever it held                        |
+| Bypass         | on or bypassed                                                   | Takes Rack verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
+| Mix            | off to full                                                      | Dry/wet                                                                                                                     |
+| Patched into   | 15 of them, master through Prattle                               | Cables Rack verb onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
 
 </details>
 

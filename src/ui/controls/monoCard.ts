@@ -23,6 +23,7 @@ import {
   MONO_SEQ_SLIDE_KEYS,
   MONO_SEQ_STEP_KEYS,
 } from '../../tune.ts'
+import { withHarness } from './harness.ts'
 import { supplyRow } from './supply.ts'
 
 import type { ControlKey } from '../../controls.ts'
@@ -114,7 +115,9 @@ function memoryFaults(prefix: CardPrefix): SliderDef[] {
       unit: '',
       choices: FAULT_NAMES,
       needs: c => c[k('SeqAddrLine')] > 0,
-      help: 'What happened to that address wire. A cut floats and follows the wire beside it; bridged collapses the steps onto a lattice.',
+      help: withHarness(
+        'What happened to that address wire. A cut floats and follows the wire beside it; bridged collapses the steps onto a lattice.',
+      ),
     },
     {
       key: k('SeqAddrCross'),
@@ -165,7 +168,9 @@ function memoryFaults(prefix: CardPrefix): SliderDef[] {
       unit: '',
       choices: FAULT_NAMES,
       needs: c => c[k('SeqDataLine')] > 0,
-      help: 'What happened to that data wire. To +V on a note bit fills the rests in; to ground on the accent takes every accent out.',
+      help: withHarness(
+        'What happened to that data wire. To +V on a note bit fills the rests in; to ground on the accent takes every accent out.',
+      ),
     },
     {
       key: k('SeqBusCut'),

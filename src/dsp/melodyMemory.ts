@@ -9,7 +9,7 @@ import {
   isNote,
   TUNE_STEPS,
 } from '../tune.ts'
-import { Bus, cross, FAULT } from './bus.ts'
+import { Bus, cross, drifts } from './bus.ts'
 import { SupplyTap, type Supplies } from './supplies.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
 
@@ -266,7 +266,7 @@ export class MelodyMemory {
   // a floating pin, so it leaves a cut trace where the live read left it.
   private address(count: number, live: boolean) {
     const crossed = cross(count, this.addrCross)
-    return this.addrLine < 0 || (!live && this.addrFault === FAULT.cut)
+    return this.addrLine < 0 || (!live && drifts(this.addrFault))
       ? crossed
       : this.addrBus.read(crossed, this.addrLine, this.addrFault, this.cut) &
           (TUNE_STEPS - 1)
@@ -277,19 +277,19 @@ export class MelodyMemory {
   }
 
   private peeked(addr: number) {
-    return this.dataLine < 0 || this.dataFault === FAULT.cut
+    return this.dataLine < 0 || drifts(this.dataFault)
       ? wordOf(this.notes[addr]!, this.flags[addr]!)
       : this.faulted(wordOf(this.notes[addr]!, this.flags[addr]!))
   }
 
   private peekNote(addr: number) {
-    return this.dataLine < 0 || this.dataFault === FAULT.cut
+    return this.dataLine < 0 || drifts(this.dataFault)
       ? this.notes[addr]!
       : decodeTune(this.peeked(addr))
   }
 
   private peekFlags(addr: number) {
-    return this.dataLine < 0 || this.dataFault === FAULT.cut
+    return this.dataLine < 0 || drifts(this.dataFault)
       ? this.flags[addr]!
       : this.peeked(addr) >> FLAG_SHIFT
   }

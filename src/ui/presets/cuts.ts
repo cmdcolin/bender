@@ -108,6 +108,28 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'Plinky',
+    part: BUS,
+    name: 'the song bit-reversed',
+    blurb:
+      'The five counter wires reach the ROM in reverse order. Every step still plays, in a fixed shuffle: the second step plays the seventeenth, the third plays the ninth',
+    patch: {
+      chipAddrLine: pick('chipAddrLine', 'A4'),
+      chipAddrFault: pick('chipAddrFault', 'reversed'),
+    },
+  },
+  {
+    group: 'Plinky',
+    part: BUS,
+    name: 'leaps on the way down',
+    blurb:
+      'Whenever a note code drops several bits at once, the ground lifts and the whole code reads high, so those notes leap to the top of the keyboard',
+    patch: {
+      chipDataLine: pick('chipDataLine', 'D5'),
+      chipDataFault: pick('chipDataFault', 'bounce'),
+    },
+  },
+  {
     group: 'Clatter',
     part: BUS,
     name: 'machine-gun',
@@ -216,6 +238,28 @@ export const CUTS: CutDef[] = [
     blurb:
       'The circulating bar’s return is inverted, so each lap plays the last one’s gaps, and a sparse bar and a bar of every voice on nearly every step take turns',
     patch: { drumLoop: pick('drumLoop', 'return inverted') },
+  },
+  {
+    group: 'Clatter',
+    part: BUS,
+    name: 'the kit mirrored',
+    blurb:
+      'The nine trigger wires reach the voices in reverse order. The kick row strikes the accent, the snare row the cymbal, the hat row the open hat and the clap row the bell',
+    patch: {
+      drumDataLine: pick('drumDataLine', 'D8'),
+      drumDataFault: pick('drumDataFault', 'reversed'),
+    },
+  },
+  {
+    group: 'Clatter',
+    part: BUS,
+    name: 'each row plays the next voice',
+    blurb:
+      'The eight voice wires are soldered one hole along, so the kick row plays the snare, the snare row the hat, and so on round, with the cymbal row on the kick',
+    patch: {
+      drumDataLine: pick('drumDataLine', 'D7'),
+      drumDataFault: pick('drumDataFault', 'one hole along'),
+    },
   },
   {
     group: 'Clatter',
@@ -407,6 +451,28 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'Glint',
+    part: BUS,
+    name: 'drops into the bass',
+    blurb:
+      'The low four address wires are soldered one hole along, so every write lands in another register of its block, always the same one, and the tune falls into the bass',
+    patch: {
+      fmAddrLine: pick('fmAddrLine', 'A3'),
+      fmAddrFault: pick('fmAddrFault', 'one hole along'),
+    },
+  },
+  {
+    group: 'Glint',
+    part: BUS,
+    name: 'a sine in shreds',
+    blurb:
+      'All ten wires into the sine table arrive in reverse order, so each lap reads the table in a fixed shuffle. The pitch holds and the sine becomes a bright buzz',
+    patch: {
+      fmWaveLine: pick('fmWaveLine', 'W9'),
+      fmWaveFault: pick('fmWaveFault', 'reversed'),
+    },
+  },
+  {
     group: 'Parlor',
     part: BUS,
     name: 'the top bit sticks',
@@ -471,6 +537,28 @@ export const CUTS: CutDef[] = [
       pcmAddrLine: pick('pcmAddrLine', 'A7'),
       pcmAddrFault: pick('pcmAddrFault', 'cut'),
       pcmBusCut: 0.85,
+    },
+  },
+  {
+    group: 'Parlor',
+    part: BUS,
+    name: 'folded over',
+    blurb:
+      'The eight data wires are soldered one hole along. Every word arrives doubled, and the part that no longer fits wraps round to the other side, so each wave folds over itself into a hard buzz',
+    patch: {
+      pcmDataLine: pick('pcmDataLine', 'D7'),
+      pcmDataFault: pick('pcmDataFault', 'one hole along'),
+    },
+  },
+  {
+    group: 'Parlor',
+    part: BUS,
+    name: 'grains of itself',
+    blurb:
+      'The low ten address wires arrive in reverse order. The counter still runs at the key’s pitch, but each step jumps across the sample in a fixed shuffle, and the voice shreds into a hiss of its own grains',
+    patch: {
+      pcmAddrLine: pick('pcmAddrLine', 'A9'),
+      pcmAddrFault: pick('pcmAddrFault', 'reversed'),
     },
   },
   {
@@ -718,6 +806,28 @@ export const CUTS: CutDef[] = [
       crushDataLine: pick('crushDataLine', 'D13'),
       crushDataFault: pick('crushDataFault', 'cut'),
       crushBusCut: 0.7,
+    },
+  },
+  {
+    group: 'Crusher',
+    part: BUS,
+    name: 'every word backwards',
+    blurb:
+      'All sixteen wires arrive in reverse order, so the quiet low bits become the loud top ones and the board turns to a hiss that follows its loudness',
+    patch: {
+      crushDataLine: pick('crushDataLine', 'D15'),
+      crushDataFault: pick('crushDataFault', 'reversed'),
+    },
+  },
+  {
+    group: 'Crusher',
+    part: BUS,
+    name: 'spits on the jumps',
+    blurb:
+      'When several wires fall at once, the ground lifts and every quiet wire reads high for that word, so the busier the board the more it spits',
+    patch: {
+      crushDataLine: pick('crushDataLine', 'D15'),
+      crushDataFault: pick('crushDataFault', 'bounce'),
     },
   },
   {

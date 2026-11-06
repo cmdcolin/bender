@@ -23,6 +23,19 @@ The drawing shows the two blocks each bus joins and its width; the source is
 - **Knives:** a knife is a fault on one bus wire, set by a line control and a
   fault control under _fault on the bus_, such as **Address line** and **Address
   fault**.
+- **Harness faults:** **one hole along**, **reversed** and **bounce** take every
+  wire from the lowest up to the chosen one, at least two wires.
+  - **One hole along:** each wire lands one pin up and the top one loops back to
+    the bottom. Across a whole data bus every sample doubles and wraps round,
+    and across an address bus the counter skips every other word.
+  - **Reversed:** the wires arrive in reverse order. On an address bus every
+    word still plays, in a fixed shuffle. On a full audio word the quiet low
+    bits become the loud top ones, and the sound turns to hiss.
+  - **Bounce:** when several wires fall on the same word, the ground lifts and
+    every low wire in the run reads high for that word. It follows the traffic,
+    so a busy bus spits and a quiet one barely moves.
+  - The drawing shows reversed as a crossed bundle, one hole along as a jog with
+    one wire looping back, and bounce as a sprung ground.
 - **Named cuts:** each cut under _fault on the bus_ saves one wire and fault
   worth keeping.
 - **Panel drawing:** each chip's bus box (**pattern** on the drum machine) draws
@@ -301,7 +314,8 @@ A register keeps the last value the processor wrote, so a fault stays until a
 write touches that register again.
 
 - **Wire faults:** any bus wire can be forced **to ground**, forced **to +V**,
-  **bridged** to its neighbour (the driver pulling low wins) or **cut**.
+  **bridged** to its neighbour (the driver pulling low wins) or **cut**, or take
+  one of the harness faults.
   - A cut wire floats, holds the last bus value for a word or two, then follows
     its neighbour's edges a lap behind. It is the only fault that drifts.
 - **Cut depth:** how far the cut went. At partial depth the wire conducts some

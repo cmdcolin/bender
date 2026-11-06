@@ -208,6 +208,9 @@ const FAULTS: [name: string, fault: number, depth: number][] = [
   ['to ground', FAULT.ground, 0],
   ['to +V', FAULT.supply, 0],
   ['bridged', FAULT.bridge, 0],
+  ['one hole along', FAULT.along, 0],
+  ['reversed', FAULT.reversed, 0],
+  ['bounce', FAULT.bounce, 0],
 ]
 
 const pad = (s: string, n: number) => s.padEnd(n)
@@ -226,7 +229,7 @@ for (const def of BUSES.filter(b => !only || b.chip === only)) {
     `\n${def.chip} · ${def.bus} bus · ${wires.max} wires — base ${basePitch.toFixed(0)} Hz, sub ${baseSub.toFixed(3)}`,
   )
   console.log(
-    `  ${pad('wire', 6)}${pad('fault', 11)}${pad('change', 8)}${pad('pitch', 8)}sub`,
+    `  ${pad('wire', 6)}${pad('fault', 15)}${pad('change', 8)}${pad('pitch', 8)}sub`,
   )
   for (let wire = 1; wire <= wires.max; wire++) {
     const name = wires.choices![wire]!
@@ -250,7 +253,7 @@ for (const def of BUSES.filter(b => !only || b.chip === only)) {
           `${where} (${pitch.toFixed(2)}× pitch, ${weight.toFixed(2)}× sub)`,
         )
       console.log(
-        `  ${pad(name, 6)}${pad(label, 11)}${num(change)}  ${num(pitch)}×  ${num(weight)}×`,
+        `  ${pad(name, 6)}${pad(label, 15)}${num(change)}  ${num(pitch)}×  ${num(weight)}×`,
       )
     }
   }

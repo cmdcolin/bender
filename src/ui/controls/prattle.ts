@@ -7,6 +7,7 @@ import {
   PITCH_BITS,
 } from '../../dsp/stages/prattleRom.ts'
 import { PHRASE_KEYS } from '../../prattle.ts'
+import { withHarness } from './harness.ts'
 import { supplyRow } from './supply.ts'
 
 import type { Controls } from '../../controls.ts'
@@ -162,7 +163,7 @@ export const PRATTLE_GROUP: Group = {
       unit: '',
       choices: FAULT_NAMES,
       needs: c => c.talkDataLine > 0,
-      help: 'What happened to that wire.',
+      help: withHarness('What happened to that wire.'),
     },
     {
       key: 'talkAddrLine',
@@ -186,7 +187,7 @@ export const PRATTLE_GROUP: Group = {
       unit: '',
       choices: FAULT_NAMES,
       needs: c => c.talkAddrLine > 0,
-      help: 'What happened to that wire.',
+      help: withHarness('What happened to that wire.'),
     },
     {
       key: 'talkBusCut',
@@ -224,7 +225,7 @@ export const PRATTLE_GROUP: Group = {
       unit: '',
       choices: FAULT_NAMES,
       needs: c => c.talkPitchLine > 0,
-      help: 'What happened to that wire.',
+      help: withHarness('What happened to that wire.'),
     },
     {
       key: 'talkVoicing',

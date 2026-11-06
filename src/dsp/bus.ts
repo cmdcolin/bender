@@ -12,7 +12,7 @@ import { flushDenormal } from './util/softclip.ts'
 // wanders, and a chip reading a cut bus plays a different song, in time, for as
 // long as you leave it.
 //
-// Four things happen to a line, and they are four sounds:
+// Seven things happen to a line, and they are seven sounds:
 //
 // cut       the trace is severed and the pin behind it floats. A CMOS input
 //           with nothing driving it keeps the charge the last word left on it,
@@ -22,7 +22,7 @@ import { flushDenormal } from './util/softclip.ts'
 //           a pin nobody is driving after its neighbour's edges. So the bit
 //           holds for a word or two and then starts following the traffic next
 //           door, a lap behind and never quite arriving — which is the sound
-//           the other three cannot make, because all three of them stand still.
+//           none of the others make.
 //           Cut most of the way rather than all and it conducts as well, so
 //           real writes keep slamming it back to the truth in between.
 // ground    shorted low. That bit is gone from every word the chip reads.
@@ -33,8 +33,59 @@ import { flushDenormal } from './util/softclip.ts'
 //           they are no longer independent, and on parts like these whichever
 //           driver pulls low wins. Words collapse onto a lattice, so the tune
 //           comes out in clumps.
-export const FAULT = { cut: 0, ground: 1, supply: 2, bridge: 3 } as const
-export const FAULT_NAMES = ['cut', 'to ground', 'to +V', 'bridged']
+//
+// The last three take every wire from the lowest up to the chosen one, and
+// never fewer than two.
+//
+// along     the harness soldered one hole along, the end wire looped back
+//           to the first hole: the low bits rotate up one.
+// reversed  the harness soldered in reverse order.
+// bounce    the driver's ground lifts when enough wires fall at once, so
+//           every quiet wire in the harness reads high for that word.
+export const FAULT = {
+  cut: 0,
+  ground: 1,
+  supply: 2,
+  bridge: 3,
+  along: 4,
+  reversed: 5,
+  bounce: 6,
+} as const
+export const FAULT_NAMES = [
+  'cut',
+  'to ground',
+  'to +V',
+  'bridged',
+  'one hole along',
+  'reversed',
+  'bounce',
+]
+
+/** Whether a fault keeps state between words, so a lookahead would disturb it. */
+export const drifts = (fault: number) =>
+  fault === FAULT.cut || fault === FAULT.bounce
+
+/** The top wire of a harness fault's run, which starts at wire 0. */
+export const harnessTop = (line: number, width: number) =>
+  Math.min(Math.max(line, 1), width - 1)
+
+/** Whether a fault takes the run of wires from 0 up to its line. */
+export const harnessed = (fault: number) =>
+  fault === FAULT.along || fault === FAULT.reversed || fault === FAULT.bounce
+
+const harness = (top: number) => (2 << top) - 1
+
+function reverse(bits: number, width: number) {
+  let out = 0
+  for (let i = 0; i < width; i++) out |= ((bits >> i) & 1) << (width - 1 - i)
+  return out
+}
+
+function falls(from: number, to: number) {
+  let n = 0
+  for (let x = from & ~to; x; x &= x - 1) n++
+  return n
+}
 
 /** Line names for a bus of `width` wires, least significant first. */
 export const lineNames = (prefix: string, width: number) => [
@@ -53,12 +104,16 @@ export class Bus {
   private floating = -1
   /** The last word an unbroken bus carried, which is what a new cut holds. */
   private last = -1
+  /** The word the drivers put out last time, for counting falling wires. */
+  private driven = -1
 
   private readonly width: number
   private readonly seed
+  private readonly bounceAt: number
 
   constructor(width: number, seed = 7) {
     this.width = width
+    this.bounceAt = Math.max(2, Math.ceil(width / 3))
     this.seed = seed
     this.rng = mulberry32(seed)
   }
@@ -111,6 +166,24 @@ export class Bus {
         const pair = bit | (line + 1 < this.width ? bit << 1 : bit >> 1)
         return (word & pair) === pair ? word | pair : word & ~pair
       }
+      case FAULT.along: {
+        const top = harnessTop(line, this.width)
+        const mask = harness(top)
+        const low = word & mask
+        return (word & ~mask) | ((low << 1) & mask) | (low >> top)
+      }
+      case FAULT.reversed: {
+        const top = harnessTop(line, this.width)
+        const mask = harness(top)
+        return (word & ~mask) | reverse(word & mask, top + 1)
+      }
+      case FAULT.bounce: {
+        const before = this.driven
+        this.driven = word
+        return before >= 0 && falls(before, word) >= this.bounceAt
+          ? word | harness(harnessTop(line, this.width))
+          : word
+      }
       default:
         // Whatever the pin has drifted to, read through the input's threshold —
         // one wire's worth of analogue in the middle of a digital bus.
@@ -121,6 +194,7 @@ export class Bus {
   reset() {
     this.floating = -1
     this.last = -1
+    this.driven = -1
     this.charge = 0
     this.rng = mulberry32(this.seed)
   }

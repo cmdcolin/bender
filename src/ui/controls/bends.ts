@@ -21,6 +21,7 @@ import { RACK_LINES, RACK_MAX_SIZE } from '../../dsp/stages/rackVerb.ts'
 import { RING_FROM, RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod.ts'
 import { SHIFT_OUTS } from '../../dsp/stages/shifter.ts'
 import { SUPPLY_NAMES } from '../../dsp/supplies.ts'
+import { withHarness } from './harness.ts'
 
 import type { ControlKey } from '../../controls.ts'
 import type { Group } from './types.ts'
@@ -392,7 +393,9 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the wire. On audio words a cut is the one that moves: the floating pin holds, then drags after its neighbour’s edges a few words behind, so the bit comes and goes with the music.',
+        help: withHarness(
+          'What happened to the wire. On audio words a cut is the one that moves: the floating pin holds, then drags after its neighbour’s edges a few words behind, so the bit comes and goes with the music.',
+        ),
       },
       {
         key: 'crushBusCut',
@@ -1391,7 +1394,9 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the address wire. A cut floats and follows the wire next door, so the wrong words change with the traffic.',
+        help: withHarness(
+          'What happened to the address wire. A cut floats and follows the wire next door, so the wrong words change with the traffic.',
+        ),
       },
       {
         key: 'rackDataLine',
@@ -1416,7 +1421,9 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the data wire. A stuck high line adds a fixed offset to every word the tank reads, and the tank feeds it round until it clips.',
+        help: withHarness(
+          'What happened to the data wire. A stuck high line adds a fixed offset to every word the tank reads, and the tank feeds it round until it clips.',
+        ),
       },
       {
         key: 'rackBusCut',

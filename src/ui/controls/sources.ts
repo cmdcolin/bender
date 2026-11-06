@@ -68,6 +68,7 @@ import { GATE_CHOICES } from '../../dsp/trigbus.ts'
 import { NOTE_NAMES } from '../../notes.ts'
 import { SCALE_NAMES } from '../../scale.ts'
 import { TUNE_ALL_STEP_KEYS } from '../../tune.ts'
+import { withHarness } from './harness.ts'
 
 import type { Controls } from '../../controls.ts'
 
@@ -746,7 +747,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the wire. Cut leaves the pin floating, so the bit goes stale and carries the word before. To ground takes it out of every note; to +V puts it into every note, rests included, because a rest is only a code. Bridged brings the melody out in clumps.',
+        help: withHarness(
+          'What happened to the wire. Cut leaves the pin floating, so the bit goes stale and carries the word before. To ground takes it out of every note; to +V puts it into every note, rests included, because a rest is only a code. Bridged brings the melody out in clumps.',
+        ),
       },
       {
         key: 'chipAddrLine',
@@ -773,7 +776,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four things, on the address side. Cut leaves the step stale, so the tune stutters on notes it has already played; ground and +V nail that address bit for every read, which folds the song into half of itself; bridged ties two addresses together and the melody arrives in clumps of two and four.',
+        help: withHarness(
+          'The same four things, on the address side. Cut leaves the step stale, so the tune stutters on notes it has already played; ground and +V nail that address bit for every read, which folds the song into half of itself; bridged ties two addresses together and the melody arrives in clumps of two and four.',
+        ),
       },
       {
         key: 'chipBusCut',
@@ -838,7 +843,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the song wire. Ground and +V pin the read to one other song, or leave it alone if that bit already matches. Bridged ties the wire to the one beside it, so the two bits go high or low together. Cut lets the wire drift toward its neighbour, and with Cut depth near full the tune flickers between two songs.',
+        help: withHarness(
+          'What happened to the song wire. Ground and +V pin the read to one other song, or leave it alone if that bit already matches. Bridged ties the wire to the one beside it, so the two bits go high or low together. Cut lets the wire drift toward its neighbour, and with Cut depth near full the tune flickers between two songs.',
+        ),
       },
       {
         key: 'chipDivLine',
@@ -865,7 +872,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the divider wire. Each note loads its divider when it strikes, so a held note keeps its pitch until the next one. Ground lifts some notes up; +V drops some down; bridged and cut scatter them.',
+        help: withHarness(
+          'What happened to the divider wire. Each note loads its divider when it strikes, so a held note keeps its pitch until the next one. Ground lifts some notes up; +V drops some down; bridged and cut scatter them.',
+        ),
       },
     ],
   },
@@ -1451,7 +1460,9 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: FAULT_NAMES,
         shy: true,
-        help: 'What happened to that address wire. A cut follows the traffic next door, and Cut depth under the kit’s fault on the bus sets how far through it went. With a bridge, the counter reads the slabs in clumps.',
+        help: withHarness(
+          'What happened to that address wire. A cut follows the traffic next door, and Cut depth under the kit’s fault on the bus sets how far through it went. With a bridge, the counter reads the slabs in clumps.',
+        ),
       },
       {
         key: 'drumRomDataLine',
@@ -1478,7 +1489,9 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: FAULT_NAMES,
         shy: true,
-        help: 'What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour.',
+        help: withHarness(
+          'What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour.',
+        ),
       },
       {
         key: 'drumRetrigHz',
@@ -1702,7 +1715,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four faults any trace can take, on the side that chooses the step. A cut goes stale carrying the fetch before — usually the row above asking for the same step — so it wants to be most of the way through before the pattern moves. Bridged collapses the steps onto a lattice.',
+        help: withHarness(
+          'The same four faults any trace can take, on the side that chooses the step. A cut goes stale carrying the fetch before — usually the row above asking for the same step — so it wants to be most of the way through before the pattern moves. Bridged collapses the steps onto a lattice.',
+        ),
       },
       {
         key: 'drumDataLine',
@@ -1729,7 +1744,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four, on the side carrying the word. Bridged is the one worth knowing here: two rows soldered to each other come out only where both agree, so a busy pattern thins to what the pair have in common — and on the top wire that is an accent only where the cymbal crashes.',
+        help: withHarness(
+          'The same four, on the side carrying the word. Bridged is the one worth knowing here: two rows soldered to each other come out only where both agree, so a busy pattern thins to what the pair have in common — and on the top wire that is an accent only where the cymbal crashes.',
+        ),
       },
       {
         key: 'drumBusCut',
@@ -2061,7 +2078,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the wire — the same four faults any trace can take. Cut leaves the pin floating and the bit goes stale, carrying whatever the byte before had in it, which on a bus this busy is a different wrong answer every write. To ground and to +V nail the bit for every byte the processor sends.',
+        help: withHarness(
+          'What happened to the wire — the same four faults any trace can take. Cut leaves the pin floating and the bit goes stale, carrying whatever the byte before had in it, which on a bus this busy is a different wrong answer every write. To ground and to +V nail the bit for every byte the processor sends.',
+        ),
       },
       {
         key: 'fmAddrLine',
@@ -2088,7 +2107,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four things, on the address side. A0 held low files every odd register on top of the even one below it, so the four channels stop having frequencies of their own; the higher lines throw whole banks on top of each other.',
+        help: withHarness(
+          'The same four things, on the address side. A0 held low files every odd register on top of the even one below it, so the four channels stop having frequencies of their own; the higher lines throw whole banks on top of each other.',
+        ),
       },
       {
         key: 'fmWaveLine',
@@ -2116,7 +2137,9 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         choices: FAULT_NAMES,
-        help: 'The same four things, on the wave ROM’s address. Cut is the strange one: the line holds the last phase bit that reached it and stops being part of the wave at all. Back the cut depth off and the wave flickers between two shapes. Ground and +V nail it — a waveform rather than a fault.',
+        help: withHarness(
+          'The same four things, on the wave ROM’s address. Cut is the strange one: the line holds the last phase bit that reached it and stops being part of the wave at all. Back the cut depth off and the wave flickers between two shapes. Ground and +V nail it — a waveform rather than a fault.',
+        ),
       },
       {
         key: 'fmWaveDataLine',
@@ -2144,7 +2167,9 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         choices: FAULT_NAMES,
-        help: 'The same four things, on the table’s way out. To +V is a floor under every sample, so the quiet parts of a wave stop being quiet and the note comes out buzzing at full width; to ground punches a notch through the middle of the sine. T7 is the top of the word and takes half the amplitude with it.',
+        help: withHarness(
+          'The same four things, on the table’s way out. To +V is a floor under every sample, so the quiet parts of a wave stop being quiet and the note comes out buzzing at full width; to ground punches a notch through the middle of the sine. T7 is the top of the word and takes half the amplitude with it.',
+        ),
       },
       {
         key: 'fmPatchLine',
@@ -2172,7 +2197,9 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         choices: FAULT_NAMES,
-        help: 'The same four things, on the table’s address. The processor only ever asks for row zero, so on a row line only +V does anything until a fault on the data bus picks another row. On a byte line every fault pairs the bytes wrongly, the same wrong pairing every fetch: P0 to ground reads each even byte twice, so the carrier gets the modulator’s settings.',
+        help: withHarness(
+          'The same four things, on the table’s address. The processor only ever asks for row zero, so on a row line only +V does anything until a fault on the data bus picks another row. On a byte line every fault pairs the bytes wrongly, the same wrong pairing every fetch: P0 to ground reads each even byte twice, so the carrier gets the modulator’s settings.',
+        ),
       },
       {
         key: 'fmPatchDataLine',
@@ -2200,7 +2227,9 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         choices: FAULT_NAMES,
-        help: 'The same four things, on the table’s way out. One wire touches all eight bytes of every patch at once, so a single fault moves a ratio, a level and an envelope together — the same wrong patch on every fetch, on the die’s fifteen as much as on the processor’s.',
+        help: withHarness(
+          'The same four things, on the table’s way out. One wire touches all eight bytes of every patch at once, so a single fault moves a ratio, a level and an envelope together — the same wrong patch on every fetch, on the die’s fifteen as much as on the processor’s.',
+        ),
       },
       {
         key: 'fmExpLine',
@@ -2228,7 +2257,9 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         choices: FAULT_NAMES,
-        help: 'The same four things, on the exp table’s address. Every operator reads a level across these wires eight times a sample, so a parted line holds whichever operator drove it last and its level arrives on the wrong operator: the note turns to grit. To ground on a shifter line lifts everything below it by octaves; to +V pushes everything down by them.',
+        help: withHarness(
+          'The same four things, on the exp table’s address. Every operator reads a level across these wires eight times a sample, so a parted line holds whichever operator drove it last and its level arrives on the wrong operator: the note turns to grit. To ground on a shifter line lifts everything below it by octaves; to +V pushes everything down by them.',
+        ),
       },
       {
         key: 'fmBusCut',
@@ -2582,7 +2613,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four faults any trace can take. To ground and to +V nail the wire and the voice folds onto a fixed half of itself. Cut leaves the pin floating, so it holds whatever the last address had on it and then drifts after the line next door — the loop goes stale and starts wandering, which is the one of the four that never stands still.',
+        help: withHarness(
+          'The same four faults any trace can take. To ground and to +V nail the wire and the voice folds onto a fixed half of itself. Cut leaves the pin floating, so it holds whatever the last address had on it and then drifts after the line next door — the loop goes stale and starts wandering, which is the one of the four that never stands still.',
+        ),
       },
       {
         key: 'pcmDataLine',
@@ -2609,7 +2642,9 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was. To ground punches a notch through every word. Bridged collapses two wires onto each other, and the voice comes out in steps.',
+        help: withHarness(
+          'To +V sets that bit in every word the ROM returns, so nothing the chip plays is ever quiet again and a pad comes out as a square-edged buzz at the same pitch it always was. To ground punches a notch through every word. Bridged collapses two wires onto each other, and the voice comes out in steps.',
+        ),
       },
       {
         key: 'pcmBusCut',

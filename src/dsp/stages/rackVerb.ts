@@ -68,7 +68,8 @@ const dac = (x: number) => Math.min(Math.max(x, -1), 1)
 
 class FaultMask {
   line = -1
-  cut = false
+  fault = 0
+  viaBus = false
   private and = 0xffff
   private or = 0
   private pair = 0
@@ -77,7 +78,12 @@ class FaultMask {
     const on = line >= 0 && line < RACK_LINES
     const bit = on ? 1 << line : 0
     this.line = line
-    this.cut = on && fault === FAULT.cut
+    this.fault = fault
+    this.viaBus =
+      on &&
+      fault !== FAULT.ground &&
+      fault !== FAULT.supply &&
+      fault !== FAULT.bridge
     this.and = on && fault === FAULT.ground ? 0xffff & ~bit : 0xffff
     this.or = on && fault === FAULT.supply ? bit : 0
     this.pair =
@@ -289,14 +295,14 @@ export class RackVerb implements Stage {
   private at(line: number, t: number) {
     const a = (this.ptr + this.start[line]! + t) & MASK
     const w = this.aWires
-    return w.cut ? this.addr.read(a, w.line, FAULT.cut, this.cut) : w.apply(a)
+    return w.viaBus ? this.addr.read(a, w.line, w.fault, this.cut) : w.apply(a)
   }
 
   private read(line: number, t: number) {
     const w = this.dWires
     const raw = this.mem[this.at(line, t)]!
-    const word = w.cut
-      ? this.data.read(raw, w.line, FAULT.cut, this.cut)
+    const word = w.viaBus
+      ? this.data.read(raw, w.line, w.fault, this.cut)
       : w.apply(raw)
     return (word - MID) / MID
   }

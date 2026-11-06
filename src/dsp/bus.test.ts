@@ -185,3 +185,40 @@ test('an address line held low folds the song into half of itself', () => {
   // of the lap is the front half again — and the counter never noticed.
   expect(first!.slice(8)).toEqual(first!.slice(0, 8))
 })
+
+test('a harness one hole along rotates the run up one and leaves the wires above it alone', () => {
+  const bus = new Bus(6)
+  expect(bus.read(0b101101, 2, FAULT.along, 1)).toBe(0b101011)
+  expect(bus.read(0b100100, 2, FAULT.along, 1)).toBe(0b100001)
+  expect(bus.read(0b000001, 5, FAULT.along, 1)).toBe(0b000010)
+  expect(bus.read(0b100000, 5, FAULT.along, 1)).toBe(0b000001)
+  expect(bus.read(0b000001, 0, FAULT.along, 1)).toBe(
+    bus.read(0b000001, 1, FAULT.along, 1),
+  )
+})
+
+test('a reversed harness mirrors the run, and reversing twice restores it', () => {
+  const bus = new Bus(6)
+  expect(bus.read(0b110001, 3, FAULT.reversed, 1)).toBe(0b111000)
+  expect(bus.read(0b000001, 5, FAULT.reversed, 1)).toBe(0b100000)
+  for (let word = 0; word < 64; word++)
+    for (let line = 0; line < 6; line++)
+      expect(
+        bus.read(
+          bus.read(word, line, FAULT.reversed, 1),
+          line,
+          FAULT.reversed,
+          1,
+        ),
+      ).toBe(word)
+})
+
+test('bounce lifts the quiet wires of the run only on a word where enough wires fall', () => {
+  const bus = new Bus(6)
+  expect(bus.read(0b000111, 2, FAULT.bounce, 1)).toBe(0b000111)
+  expect(bus.read(0b001000, 2, FAULT.bounce, 1)).toBe(0b001111)
+  expect(bus.read(0b001001, 2, FAULT.bounce, 1)).toBe(0b001001)
+  expect(bus.read(0b000000, 2, FAULT.bounce, 1)).toBe(0b000111)
+  bus.reset()
+  expect(bus.read(0b000000, 2, FAULT.bounce, 1)).toBe(0b000000)
+})

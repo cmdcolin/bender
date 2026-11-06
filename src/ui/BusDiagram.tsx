@@ -1,4 +1,4 @@
-import { FAULT, FAULT_NAMES } from '../dsp/bus.ts'
+import { FAULT, FAULT_NAMES, harnessed, harnessTop } from '../dsp/bus.ts'
 import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import {
@@ -38,6 +38,7 @@ const CROSS_HALF = 4
 const TAP_AT = 0.9
 const LOOP_AT = 0.15
 const INJECT_AT = 0.3
+const JOG = 5
 
 const widthOf = (r: Ribbon) => sliderFor(r.line).choices!.length - 1
 const ribbonH = (r: Ribbon) => (widthOf(r) - 1) * PITCH
@@ -228,15 +229,18 @@ function Trace({
         : faulted - 1
       : -1
   const gx = along(p, GLYPH_AT)
+  const run = faulted >= 0 && harnessed(fault) ? harnessTop(faulted, n) : -1
+  const rewired = fault === FAULT.along || fault === FAULT.reversed
   const beside = fault === FAULT.ground || fault === FAULT.supply
-  const under = !beside && faulted >= n / 2
+  const under = !beside && run < 0 && faulted >= n / 2
   const y = lineY(p, faulted)
   const low = bottom(p)
   const what = sliderFor(p.ribbon.line).label.toLowerCase()
+  const span = run >= 0 ? `${names[0]}–${names[run]}` : names[faulted]
   const title =
     faulted < 0
       ? `${what}: ${names[0]}–${names[n - 1]}, no fault`
-      : `${what}: ${names[faulted]} ${choice(p.ribbon.fault, fault)}`
+      : `${what}: ${span} ${choice(p.ribbon.fault, fault)}`
   const next = (i: number) =>
     i !== faulted
       ? 'press to fault it'
@@ -248,11 +252,12 @@ function Trace({
     crossed > 0 && (i === crossed - 1 || i === crossed)
   const traces = names.map((name, i) => {
     const at = lineY(p, i)
-    const hit = i === faulted || i === pair
+    const hit = i === faulted || i === pair || i <= run
     const ends = [
       p.x0,
       ...(swapped(i) ? [cx - CROSS_HALF, cx + CROSS_HALF] : []),
       ...(i === faulted && fault === FAULT.cut ? [gx - 3, gx + 3] : []),
+      ...(rewired && i <= run ? [gx - JOG, gx + JOG] : []),
       p.x1,
     ]
     const d = ends
@@ -281,8 +286,29 @@ function Trace({
     )
   })
   const dot = <Dot x={gx} y={y} look="alarm" />
+  const lands = (i: number) =>
+    fault === FAULT.reversed ? run - i : i === run ? 0 : i + 1
+  const runY = lineY(p, run)
+  const spring = Array.from(
+    { length: 4 },
+    (_, k) => `L${gx + (k % 2 ? -2.5 : 2.5)} ${runY + 3 + k * 1.5}`,
+  ).join(' ')
   const glyph =
-    faulted < 0 ? null : fault === FAULT.ground ? (
+    faulted < 0 ? null : rewired ? (
+      <path
+        d={Array.from(
+          { length: run + 1 },
+          (_, i) =>
+            `M${gx - JOG} ${lineY(p, i)} L${gx + JOG} ${lineY(p, lands(i))}`,
+        ).join(' ')}
+        className={styles.jumper}
+      />
+    ) : fault === FAULT.bounce ? (
+      <path
+        d={`M${gx} ${p.top} V${runY} ${spring} L${gx} ${runY + 9} V${low + 4} M${gx - 5} ${low + 4} H${gx + 5} M${gx - 3} ${low + 6.5} H${gx + 3} M${gx - 1} ${low + 9} H${gx + 1}`}
+        className={styles.jumper}
+      />
+    ) : fault === FAULT.ground ? (
       <>
         <path
           d={`M${gx} ${y} V${low + 4} M${gx - 5} ${low + 4} H${gx + 5} M${gx - 3} ${low + 6.5} H${gx + 3} M${gx - 1} ${low + 9} H${gx + 1}`}
@@ -374,7 +400,7 @@ function Trace({
           textAnchor={beside ? 'start' : under ? 'end' : 'middle'}
           className={styles.faulted}
         >
-          {names[faulted]!}
+          {span}
         </text>
       )}
     </g>
