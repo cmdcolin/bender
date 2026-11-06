@@ -164,3 +164,41 @@ test('Ember on Clatter leaves Plinky dry', () => {
   expect(onKit).not.toEqual(onMaster)
   expect(onKit).not.toEqual(play(both))
 })
+
+test('a machine going bad drops only what the bus held, patched lines too', () => {
+  let blow = false
+  const bad: Stage = {
+    label: 'bad',
+    process(io: StereoBlock) {
+      if (blow) io.l[3] = Number.NaN
+    },
+    panic: () => {},
+  }
+  const silencer: Stage = {
+    label: 'stomp',
+    process(io: StereoBlock) {
+      io.l.fill(0, 0, io.n)
+      io.r.fill(0, 0, io.n)
+    },
+    panic: () => {},
+  }
+  const out: number[] = []
+  const chain = new Chain(SR)
+  chain.sources = [writer('a', 0.5), bad, writer('c', 0.1)]
+  chain.pedals = [silencer]
+  chain.post = [
+    {
+      label: 'probe',
+      process(io: StereoBlock) {
+        out.push(io.l[BLOCK - 1]!)
+      },
+      panic: () => {},
+    },
+  ]
+  const p = packParams({ ...DEFAULT_CONTROLS, ...EMPTY, stompInto: jackOf(0) })
+  chain.process(makeIo(), p)
+  blow = true
+  chain.process(makeIo(), p)
+  expect(out).toEqual([expect.closeTo(0.1, 6), expect.closeTo(0.1, 6)])
+  expect(chain.faults).toBe(1)
+})

@@ -687,6 +687,7 @@ export class Chain {
         if (this.contain(s, io, n)) {
           prev.fill(0, 0, n)
           prevR.fill(0, 0, n)
+          this.clearInserts(n)
           if (carrying) ctx.carrier.fill(0, 0, n)
           if (gating) ctx.logic.fill(0, 0, n)
         }
@@ -896,8 +897,12 @@ export class Chain {
       if (t >= 0) jacked |= 1 << t
     }
     this.jacked = jacked
+    this.clearInserts(n)
+  }
+
+  private clearInserts(n: number) {
     for (let t = 0; t < this.inserts.length; t++) {
-      if (jacked & (1 << t)) {
+      if (this.jacked & (1 << t)) {
         const ins = this.inserts[t]!
         ins.n = n
         ins.l.fill(0, 0, n)
