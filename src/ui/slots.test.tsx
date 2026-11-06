@@ -4,6 +4,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { jackFor } from '../jacks.ts'
 import { BENDS, bendAt, GROUPS, groupKeys } from './controls/index.ts'
 import { applyRig, rigsFor } from './presets/index.ts'
 import { OpenGroup } from './Section.tsx'
@@ -185,4 +186,54 @@ test('which copy of a doubled bend is dead follows the walk', () => {
   const rows = screen.getAllByRole('listitem')
   expect(rows[3]!.textContent).not.toContain('already above')
   expect(rows[0]!.textContent).toContain('already above')
+})
+
+const slotIds = () =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.entries(engine.controls.get()).filter(([k]) =>
+        k.startsWith('bendSlot'),
+      ),
+    ),
+  )
+
+// Octave rides loose on Clatter. A socket would only order it among Clatter's
+// units, so pressing it trades out no bend the master run is using.
+test('pressing a loose patched bend on a full rack leaves the rack alone', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS, octInto: jackFor('toyDrum') })
+  openRack()
+  const before = slotIds()
+  const chip = screen.getByTitle(/Octave is patched into Clatter/)
+  expect(chip.getAttribute('aria-disabled')).toBe('true')
+  expect(chip.title).toMatch(/pressing it changes nothing/)
+  fireEvent.click(chip)
+  expect(slotIds()).toBe(before)
+})
+
+test('pressing a loose patched bend takes a position the master run passes', () => {
+  engine.controls.set({
+    ...DEFAULT_CONTROLS,
+    crushInto: jackFor('toyDrum'),
+    octInto: jackFor('toyDrum'),
+  })
+  openRack()
+  const chip = screen.getByTitle(/Octave is patched into Clatter/)
+  expect(chip.title).toMatch(/position 2/)
+  fireEvent.click(chip)
+  const after = engine.controls.get()
+  expect(bendAt(after.bendSlot1)?.group).toBe('Octave')
+  expect(bendAt(after.bendSlot0)?.group).toBe('Ring mod')
+})
+
+test('a patched bend’s row says where it runs and that it is bypassed', () => {
+  engine.controls.set({
+    ...DEFAULT_CONTROLS,
+    ringInto: jackFor('toyDrum'),
+    ringMix: 1,
+    ringMute: 1,
+  })
+  openRack()
+  const row = screen.getAllByRole('listitem')[0]!
+  expect(row.textContent).toContain('on Clatter, bypassed')
+  expect(row.title).toMatch(/It is bypassed/)
 })

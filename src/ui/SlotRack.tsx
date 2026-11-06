@@ -139,12 +139,45 @@ export function SlotRack() {
   // Pressing a loose bend instead of dragging it. Somewhere empty if there is
   // anywhere empty, and the last position if there is not, because the trade a
   // full rack makes has to be one you can see: the bend that leaves is the one
-  // the signal was about to stop at anyway.
-  const takeLoose = (id: number) => {
+  // the signal was about to stop at anyway. A bend patched onto a machine
+  // already runs there, and a position only orders it among that machine's
+  // units, so it takes none a bend on the master run is using: an empty one,
+  // else one passing the master run through, else none.
+  const passes = (i: number) =>
+    slots[i] === 0 || !runs.has(i) || onRaw[slots[i]! - 1] !== ''
+  const pressTo = (id: number) => {
     const empty = slots.findIndex(v => v === 0)
-    const to = empty === -1 ? slots.length - 1 : empty
-    dropLoose(id, to)
-    setLand(to)
+    const through = slots.findIndex((_, i) => passes(i))
+    return empty !== -1
+      ? empty
+      : onRaw[id - 1] === ''
+        ? slots.length - 1
+        : through
+  }
+  const takeLoose = (id: number) => {
+    const to = pressTo(id)
+    if (to !== -1) {
+      dropLoose(id, to)
+      setLand(to)
+    }
+  }
+  const stateOf = (id: number) =>
+    bypassRaw[id - 1] === '1' ? 'bypassed' : mixOf[id - 1] === 0 ? 'silent' : ''
+  const looseTitle = (group: string, id: number) => {
+    const on = onRaw[id - 1]!
+    const to = pressTo(id)
+    const state = stateOf(id)
+    const why =
+      state === 'bypassed'
+        ? ` It is bypassed.`
+        : state === 'silent'
+          ? ` Its mix is at 0, so it plays silent.`
+          : ''
+    return on === ''
+      ? `${group} is in no position, so the signal never reaches it. Drag it onto one, or press it, to bring it into the chain.`
+      : to === -1
+        ? `${group} is patched into ${on} and runs there.${why} Every position holds a bend on the master run, so pressing it changes nothing; drag it onto one to trade that bend out.`
+        : `${group} is patched into ${on} and runs there.${why} Press it to set it in position ${to + 1}, which passes the master run through and orders it among ${on}’s units.`
   }
 
   return (
@@ -166,7 +199,7 @@ export function SlotRack() {
           const title = off
             ? `Position ${row.i + 1} is empty — nothing runs here.`
             : row.on
-              ? `${row.bend!.group} is patched into ${row.on}, so it runs there and this position passes the master run straight through.`
+              ? `${row.bend!.group} is patched into ${row.on}, so it runs there and this position passes the master run straight through.${row.bypassed ? ' It is bypassed.' : row.mix === 0 ? ' Its mix is at 0, so it plays silent.' : ''}`
               : row.open
                 ? `${row.bend!.group} — the joint under it is open, so it is out of the path altogether until the solder comes back.`
                 : row.dupe
@@ -186,7 +219,7 @@ export function SlotRack() {
           const tag = off
             ? ''
             : row.on
-              ? `on ${row.on}`
+              ? [`on ${row.on}`, stateOf(row.id)].filter(Boolean).join(', ')
               : row.open
                 ? 'dropped'
                 : row.dupe
@@ -277,11 +310,8 @@ export function SlotRack() {
             key={bend.group}
             type="button"
             className={styles.loose}
-            title={
-              onRaw[id - 1]
-                ? `${bend.group} is patched into ${onRaw[id - 1]} and runs there. Drag it onto a position to order it among that machine’s units.`
-                : `${bend.group} is in no position, so the signal never reaches it. Drag it onto one, or press it, to bring it into the chain.`
-            }
+            title={looseTitle(bend.group, id)}
+            aria-disabled={pressTo(id) === -1 || undefined}
             onClick={() => takeLoose(id)}
             draggable
             onDragStart={e => {
@@ -299,7 +329,12 @@ export function SlotRack() {
           >
             {bend.group}
             {onRaw[id - 1] && (
-              <span className={styles.tag}> on {onRaw[id - 1]}</span>
+              <span className={styles.tag}>
+                {' '}
+                {[`on ${onRaw[id - 1]}`, stateOf(id)]
+                  .filter(Boolean)
+                  .join(', ')}
+              </span>
             )}
           </button>
         ))}
