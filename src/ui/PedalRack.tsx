@@ -20,17 +20,13 @@ function writeOrder(order: readonly number[]) {
   }
 }
 
-const tagOf = (c: Controls, pedal: number) => {
-  const { group, mute, into } = PEDALS[pedal]!
-  const machine = patchedInto(c[into])
-  return machine
-    ? `on ${machine}`
-    : c[mute] > 0.5
-      ? 'bypassed'
-      : !pedalWet(c, group)
-        ? 'dry'
-        : ''
+const stateOf = (c: Controls, pedal: number) => {
+  const { group, mute } = PEDALS[pedal]!
+  return c[mute] > 0.5 ? 'bypassed' : !pedalWet(c, group) ? 'dry' : ''
 }
+
+const machineOf = (c: Controls, pedal: number) =>
+  patchedInto(c[PEDALS[pedal]!.into]) ?? ''
 
 const TITLE_TAIL: Record<string, string> = {
   bypassed:
@@ -42,11 +38,11 @@ const TITLE_TAIL: Record<string, string> = {
 export function PedalRack() {
   const at = useBoardValue(c => Math.round(c.pedalOrder))
   const order = pedalOrderAt(at)
-  const tags = useBoardValue(c =>
+  const rows = useBoardValue(c =>
     pedalOrderAt(c.pedalOrder)
-      .map(p => tagOf(c, p))
-      .join(','),
-  ).split(',')
+      .map(p => `${machineOf(c, p)}:${stateOf(c, p)}`)
+      .join('|'),
+  ).split('|')
   const [held, setHeld] = useState<number | null>(null)
   const [over, setOver] = useState<number | null>(null)
   const { list, setLand } = useLanding()
@@ -71,8 +67,14 @@ export function PedalRack() {
       <ol className={styles.slots} ref={list}>
         {order.map((pedal, i) => {
           const name = PEDALS[pedal]!.group
-          const tag = tags[i]!
-          const title = `${name}, ${i + 1} of ${order.length}. ${TITLE_TAIL[tag] ?? `It is patched into ${tag.slice(3)}, so it runs there in this order and leaves the master run.`}`
+          const [machine = '', state = ''] = rows[i]!.split(':')
+          const tag = [machine && `on ${machine}`, state]
+            .filter(Boolean)
+            .join(', ')
+          const patched = machine
+            ? `It is patched into ${machine}, so it runs there in this order and leaves the master run. `
+            : ''
+          const title = `${name}, ${i + 1} of ${order.length}. ${patched}${TITLE_TAIL[state]}`
           return (
             <li
               key={pedal}

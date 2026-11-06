@@ -4,6 +4,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { jackFor } from '../jacks.ts'
 import { PEDALS, PEDAL_ORDERS, pedalOrderAt } from '../pedals.ts'
 import { PedalRack } from './PedalRack.tsx'
 import './testDom.ts'
@@ -177,4 +178,18 @@ test('a tape delay fed by the feedback bus is not called dry at mix 0', () => {
   })
   openBoard()
   expect(screen.getAllByRole('listitem')[1]!.textContent).not.toContain('dry')
+})
+
+test('a patched pedal says where it runs and that it is bypassed', () => {
+  engine.controls.set({
+    ...DEFAULT_CONTROLS,
+    pedalOrder: 0,
+    stompMix: 0.5,
+    stompMute: 1,
+    stompInto: jackFor('toyDrum'),
+  })
+  openBoard()
+  const row = screen.getAllByRole('listitem')[0]!
+  expect(row.textContent).toContain('on Clatter, bypassed')
+  expect(row.title).toMatch(/patched into Clatter.*bypassed/)
 })
