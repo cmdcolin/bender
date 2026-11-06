@@ -68,3 +68,6 @@ questions, made without asking.
   `drumStepCond0` to `drumStepCond15` by name.
 - A morph that arrives on the downbeat sets every pattern mask the preset names
   as it lands, so a pattern queued for the same downbeat can lose to it.
+- Howler (`src/dsp/stages/monoSynth.ts`, `HOWLER`) has been rendered offline
+  only, and nobody has heard it. Its memory has no rec cap on its keybed, and
+  Growler's memory cannot be aimed at it with Plays on.
