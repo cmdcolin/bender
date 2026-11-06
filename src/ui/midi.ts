@@ -172,24 +172,28 @@ export type KeyRoute =
   | 'fm'
   | 'pcm'
   | 'mono'
+  | 'lead'
   | 'layer'
   | 'split'
   | 'bassSplit'
+  | 'leadSplit'
 
 const ROUTES: KeyRoute[] = [
   'toy',
   'fm',
   'pcm',
   'mono',
+  'lead',
   'layer',
   'split',
   'bassSplit',
+  'leadSplit',
 ]
 
-const ALL_BEDS: NoteDest[] = ['toy', 'fm', 'pcm', 'mono']
+const ALL_BEDS: NoteDest[] = ['toy', 'fm', 'pcm', 'mono', 'lead']
 
 export const isSplit = (route: KeyRoute) =>
-  route === 'split' || route === 'bassSplit'
+  route === 'split' || route === 'bassSplit' || route === 'leadSplit'
 
 export const parseRoute = (raw: string | null): KeyRoute =>
   ROUTES.find(r => r === raw) ?? 'toy'
@@ -214,7 +218,9 @@ const routeDests = (
       ? [midiNote < split ? 'toy' : 'fm']
       : route === 'bassSplit'
         ? [midiNote < split ? 'mono' : 'toy']
-        : [route]
+        : route === 'leadSplit'
+          ? [midiNote < split ? 'mono' : 'lead']
+          : [route]
 
 export const velocity = (v: number) =>
   VELOCITY_FLOOR + (1 - VELOCITY_FLOOR) * (v / 127)

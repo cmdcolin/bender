@@ -1,4 +1,4 @@
-import { SUPPLY } from '../dsp/supplies.ts'
+import { SUPPLY, SUPPLY_KEYS } from '../dsp/supplies.ts'
 import { machinesOn, sharedLoads } from './controls/supply.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { RailLamp } from './RailLamp.tsx'
@@ -16,7 +16,9 @@ export function SupplyReading() {
   const shared = useBoardValue(c => list(machinesOn(c, SUPPLY.shared)))
   const second = useBoardValue(c => list(machinesOn(c, SUPPLY.second)))
   const bench = useBoardValue(c => list(machinesOn(c, SUPPLY.bench)))
-  const all = useBoardValue(c => machinesOn(c, SUPPLY.shared).length === 5)
+  const all = useBoardValue(
+    c => machinesOn(c, SUPPLY.shared).length === SUPPLY_KEYS.length,
+  )
   const loads = useBoardValue(c => list(sharedLoads(c)))
 
   return (
@@ -25,7 +27,7 @@ export function SupplyReading() {
         <RailLamp />
         <p className={styles.feeds}>
           {all
-            ? 'Feeds Plinky, Clatter, Glint, Parlor and Growler. Every knob here sags all five at once, until a machine’s Supply moves it off these cells.'
+            ? 'Feeds Plinky, Clatter, Glint, Parlor, Growler and Howler. Every knob here sags all six at once, until a machine’s Supply moves it off these cells.'
             : shared
               ? `Feeds ${shared}.`
               : 'Feeds nothing: every machine is on other supplies.'}

@@ -44,6 +44,7 @@ const DECK = {
   fm: { down: engine.fmKeysDown, notes: engine.fmNotes },
   pcm: { down: engine.pcmKeysDown, notes: engine.pcmNotes },
   mono: { down: engine.monoKeysDown, notes: engine.monoNotes },
+  lead: { down: engine.leadKeysDown, notes: engine.leadNotes },
 } satisfies Record<NoteDest, unknown>
 
 // There is one computer keyboard in front of the panel and several beds on it,
@@ -55,6 +56,7 @@ const NEXT_BED: Record<NoteDest, NoteDest> = {
   fm: 'toy',
   pcm: 'toy',
   mono: 'toy',
+  lead: 'toy',
 }
 
 // Who is holding a key down, and so what colour it is.

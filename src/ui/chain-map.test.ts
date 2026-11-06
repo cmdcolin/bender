@@ -261,17 +261,35 @@ test('cutting the jumpers dims the key line from the far end in', () => {
       hop(map, 'Plinky', 'Glint')!,
       hop(map, 'Glint', 'Parlor')!,
       hop(map, 'Parlor', 'Growler')!,
+      hop(map, 'Growler', 'Howler')!,
     ].map(w => w.dash === undefined)
   }
-  expect(live({})).toEqual([true, true, true])
-  expect(live({ monoKeyGate: 1 })).toEqual([true, true, false])
-  expect(live({ monoKeyGate: 1, pcmKeyGate: 1 })).toEqual([true, false, false])
-  expect(live({ fmKeyGate: 1, pcmKeyGate: 1 })).toEqual([true, true, true])
+  expect(live({})).toEqual([true, true, true, true])
+  expect(live({ leadKeyGate: 1 })).toEqual([true, true, true, false])
+  expect(live({ leadKeyGate: 1, monoKeyGate: 1 })).toEqual([
+    true,
+    true,
+    false,
+    false,
+  ])
+  expect(live({ leadKeyGate: 1, monoKeyGate: 1, pcmKeyGate: 1 })).toEqual([
+    true,
+    false,
+    false,
+    false,
+  ])
+  expect(live({ fmKeyGate: 1, pcmKeyGate: 1 })).toEqual([
+    true,
+    true,
+    true,
+    true,
+  ])
   const cut = buildMap({
     ...DEFAULT_CONTROLS,
     fmKeyGate: 1,
     pcmKeyGate: 1,
     monoKeyGate: 1,
+    leadKeyGate: 1,
   })
   expect(hop(cut, 'Plinky', 'Glint')?.label?.text).toBe('notes cut')
 })

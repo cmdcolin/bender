@@ -9,6 +9,7 @@ const LEVEL_OF: Record<string, ControlKey> = {
   Glint: 'fmLevel',
   Parlor: 'pcmLevel',
   Growler: 'monoLevel',
+  Howler: 'leadLevel',
   Spool: 'sampleLevel',
   Layercake: 'fourLevel',
   Sheet: 'sheetLevel',
@@ -26,6 +27,7 @@ const MUTE_OF: Record<string, ControlKey> = {
   Glint: 'fmMute',
   Parlor: 'pcmMute',
   Growler: 'monoMute',
+  Howler: 'leadMute',
   ...BYPASS_OF,
 }
 

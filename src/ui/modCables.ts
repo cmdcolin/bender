@@ -53,6 +53,7 @@ export const CV_MACHINES: readonly Machine[] = [
   'Glint',
   'Parlor',
   'Growler',
+  'Howler',
   'Clatter',
 ]
 
@@ -63,6 +64,7 @@ export const CV_DEST: Record<Machine, number> = {
   Glint: DEST.fmClock,
   Parlor: DEST.pcmLevel,
   Growler: DEST.monoPitch,
+  Howler: DEST.leadPitch,
   Clatter: DEST.drumTune,
 }
 

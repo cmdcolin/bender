@@ -63,7 +63,7 @@ test('every machine added has a ⋯ menu', () => {
   expect(screen.getByRole('region', { name: 'layercake' })).toBeTruthy()
   expect(screen.getByRole('region', { name: 'sheet' })).toBeTruthy()
   expect(screen.getByRole('region', { name: 'bottle' })).toBeTruthy()
-  expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(9)
+  expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(10)
 })
 
 test('Add instrument names each machine with what it is and lays out the pick', () => {
@@ -74,6 +74,7 @@ test('Add instrument names each machine with what it is and lays out the pick', 
       'Glint (FM synth)',
       'Parlor (home keyboard)',
       'Growler (mono synth)',
+      'Howler (lead synth)',
       'Spool (tape loop)',
       'Layercake (four-track)',
       'Sheet (struck metal)',
@@ -115,7 +116,7 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
   const roll = screen.getAllByRole('button', { name: 'randomize' })
-  expect(roll).toHaveLength(9)
+  expect(roll).toHaveLength(10)
   const before = engine.controls.get()
   fireEvent.click(roll[0]!)
   const now = engine.controls.get()

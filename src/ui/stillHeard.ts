@@ -13,6 +13,7 @@ const TAP_OF: Record<string, SourceTap> = {
   Glint: 'fmChip',
   Parlor: 'pcmKeys',
   Growler: 'monoSynth',
+  Howler: 'leadSynth',
 }
 
 const struck = (key: keyof Controls) => (c: Controls) => Math.round(c[key]) > 0
@@ -25,6 +26,7 @@ const PLAYED_ON: Record<string, [string, (c: Controls) => boolean][]> = {
     ['Glint', soldered('fmKeyGate')],
     ['Parlor', soldered('pcmKeyGate')],
     ['Growler', soldered('monoKeyGate')],
+    ['Howler', soldered('leadKeyGate')],
     ['Clatter', struck('trigToDrum')],
   ],
   Clatter: [
@@ -32,6 +34,7 @@ const PLAYED_ON: Record<string, [string, (c: Controls) => boolean][]> = {
     ['Glint', struck('fmStruck')],
     ['Parlor', struck('pcmStruck')],
     ['Growler', struck('monoStruck')],
+    ['Howler', struck('leadStruck')],
   ],
 }
 

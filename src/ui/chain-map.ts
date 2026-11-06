@@ -210,6 +210,13 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmExpFault: 'Glint',
   sheetLevel: 'Sheet',
   bottleLevel: 'Bottle',
+  leadLevel: 'Howler',
+  leadCutoff: 'Howler',
+  leadEmph: 'Howler',
+  leadPitch: 'Howler',
+  leadLoopPitch: 'Howler',
+  leadChoke: 'Howler',
+  leadRegTrip: 'Howler',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -260,6 +267,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   Glint: ['fmLevel'],
   Parlor: ['pcmLevel'],
   Growler: ['monoLevel'],
+  Howler: ['leadLevel'],
   Clatter: ['drumLevel'],
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
@@ -277,6 +285,7 @@ const SOURCE_MUTE: Record<string, ControlKey> = {
   Glint: 'fmMute',
   Parlor: 'pcmMute',
   Growler: 'monoMute',
+  Howler: 'leadMute',
 }
 
 // The two you play, side by side across the head of the toy board. They are the
@@ -302,8 +311,10 @@ const FM_CHIP = 'Glint'
 // it is soldered to.
 const PCM_KEYS = 'Parlor'
 
-// The fourth on the gate line and the rail, next along from the home keyboard.
+// The fourth on the gate line and the rail, next along from the home keyboard,
+// and the second build of it after that.
 const MONO = 'Growler'
+const LEAD = 'Howler'
 
 // The sources off the toy's supply rail, each standing on its own.
 const LINE_ROW = [
@@ -341,6 +352,7 @@ const KEYED = [
   [FM_CHIP, 'fmKeyGate'],
   [PCM_KEYS, 'pcmKeyGate'],
   [MONO, 'monoKeyGate'],
+  [LEAD, 'leadKeyGate'],
 ] as const
 
 /** The two stages every board has. */
@@ -795,18 +807,19 @@ function pickParts(c: Controls, o: Options) {
   const fm = instrument(FM_CHIP)
   const pcm = instrument(PCM_KEYS)
   const mono = instrument(MONO)
-  const allChips = [kb, drums, fm, pcm, mono]
+  const lead = instrument(LEAD)
+  const allChips = [kb, drums, fm, pcm, mono, lead]
   const chips = allChips.filter(drawn)
   // Five across is wider than the panel's column, so the panel snakes the row:
   // the gate line runs along the top and drops onto the mono synth under its
   // end, and the drums sit under the keyboard they trade triggers with. Three
   // or fewer fit on one row.
-  const oneRow = [kb, fm, pcm, mono, drums].filter(drawn)
+  const oneRow = [kb, fm, pcm, mono, lead, drums].filter(drawn)
   const chipRows =
     o.wrap && oneRow.length > 3
       ? [
           [kb, fm, pcm],
-          [drums, mono],
+          [drums, mono, lead],
         ]
           .map(r => r.filter(drawn))
           .filter(r => r.length > 0)
@@ -986,7 +999,7 @@ function pickParts(c: Controls, o: Options) {
   const trigs = triggerBridges(c).filter(t => has(t.from) && has(t.to))
   doors.add('Trigger patch')
   // The key line runs from the keyboard through each chip clipped onto it.
-  const keyed = drawn(kb) ? [fm, pcm, mono].filter(drawn) : []
+  const keyed = drawn(kb) ? [fm, pcm, mono, lead].filter(drawn) : []
   const noTrig = hasBoard && has('Trigger patch') && trigs.length === 0
   const laneUsed = keyed.length > 0 || trigs.length > 0 || noTrig
   const wiredInto = new Set(
@@ -1037,6 +1050,7 @@ function pickParts(c: Controls, o: Options) {
     fm,
     pcm,
     mono,
+    lead,
     chips,
     chipRows,
     lower,
@@ -1479,7 +1493,8 @@ const onSharedCells = (c: Controls, label: string) => {
 // board's frame.
 function boardWires(m: Laid) {
   const { k, wire, bar, doors, board, chips, lower, railY, rail2Y, chipY } = m
-  const { kb, fm, pcm, mono, keyed, laneY, trigs, byId, trigY, noTrigChip } = m
+  const { kb, fm, pcm, mono, lead, keyed, laneY, trigs } = m
+  const { byId, trigY, noTrigChip } = m
   const { hasBoard } = m
 
   // One dotted loop round every machine on the rail. It starts mid-top so the
@@ -1542,11 +1557,13 @@ function boardWires(m: Laid) {
     [fm, m.c.fmKeyGate],
     [pcm, m.c.pcmKeyGate],
     [mono, m.c.monoKeyGate],
+    [lead, m.c.leadKeyGate],
   ])
   const jumperKey = new Map<MapNode, ControlKey>([
     [fm, 'fmKeyGate'],
     [pcm, 'pcmKeyGate'],
     [mono, 'monoKeyGate'],
+    [lead, 'leadKeyGate'],
   ])
   const reaches = (i: number) =>
     keyed.slice(i).some(n => followsGate(jumper.get(n)!))
@@ -1569,6 +1586,7 @@ function boardWires(m: Laid) {
     [fm, 'key-line'],
     [pcm, 'key-line-pcm'],
     [mono, 'key-line-mono'],
+    [lead, 'key-line-lead'],
   ])
   for (const [i, to] of keyed.entries()) {
     const from = i === 0 ? kb : keyed[i - 1]!
@@ -1584,8 +1602,8 @@ function boardWires(m: Laid) {
             ]
           : elbowV([dropX, from.y + from.h], [midX(to), to.y], to.y - 4)
         : [
-            [from.x + from.w, chipY + BOX_H / 2],
-            [to.x, chipY + BOX_H / 2],
+            [from.x + from.w, from.y + BOX_H / 2],
+            [to.x, from.y + BOX_H / 2],
           ]
     wire(keyId.get(to)!, from, to, pts, {
       ...keyLine(i),
@@ -2405,6 +2423,15 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
   Growler: (x, y, c) => [
     el('path', {
       d: `M ${x} ${y + 10} L ${x + 4} ${y + 2} V ${y + 10} L ${x + 8} ${y + 2} V ${y + 10} L ${x + 12} ${y + 2}`,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+      strokeLinejoin: 'miter',
+    }),
+  ],
+  Howler: (x, y, c) => [
+    el('path', {
+      d: `M ${x} ${y + 10} L ${x + 6} ${y + 1} V ${y + 10} L ${x + 12} ${y + 1} V ${y + 10}`,
       fill: 'none',
       stroke: c,
       strokeWidth: 0.9,

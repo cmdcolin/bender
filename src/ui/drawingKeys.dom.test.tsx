@@ -32,6 +32,8 @@ const REACHES_OUT: Record<string, readonly ControlKey[]> = {
     'pcmKeyGate',
     'monoStruck',
     'monoKeyGate',
+    'leadStruck',
+    'leadKeyGate',
   ],
 }
 

@@ -1,4 +1,4 @@
-import { MONO_SEQ_STEP_KEYS } from '../tune.ts'
+import { CARDS, keyOf, type CardStage } from './cards.ts'
 import { GROWLER_WIRED } from './cardWiring.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import chip from './ChipLook.module.css'
@@ -35,9 +35,8 @@ import { MonoRoll } from './MonoRoll.tsx'
 import { rollGlyph, ROLL_GLYPH_W } from './rollGlyph.tsx'
 
 import type { ControlKey } from '../controls.ts'
+import type { CardSuffix } from '../monoCard.ts'
 import type { Verbs, Zoom } from './foldHosting.ts'
-
-const keysOf = (part: string) => partKeys('Growler', part)
 
 // Each box opens one fold of the voice card, with that fold's dice and reset.
 const BOXES = {
@@ -73,35 +72,42 @@ const BOXES = {
 
 type BoxId = keyof typeof BOXES
 
-const LOOSE: Partial<Record<BoxId, ControlKey[]>> = {
-  keys: ['monoGlide'],
-  filter: ['monoCutoff', 'monoEmph', 'monoContour', 'monoDrive'],
-}
-
-const OUT_KEYS: ControlKey[] = ['monoLevel', 'monoSupply']
-
-const boxKeys = (id: BoxId) => [...keysOf(BOXES[id].part), ...(LOOSE[id] ?? [])]
-
 const PARTS = new Map<string, string>(
   Object.entries(BOXES).map(([id, b]) => [id, b.part]),
 )
 
 const ROLL = 'piano roll'
-const MEMORY_KEYS = keysOf('melody')
-const WRITTEN_KEYS: ControlKey[] = [
-  ...MEMORY_KEYS,
-  ...MONO_SEQ_STEP_KEYS,
-  'monoSeqLen',
-]
 
-const KEYS = [
-  ...new Set([
-    ...Object.values(BOXES).flatMap(b => keysOf(b.part)),
-    ...Object.values(LOOSE).flat(),
-    ...OUT_KEYS,
-    ...WRITTEN_KEYS,
-  ]),
-]
+function cardKeys(stage: CardStage) {
+  const k = <S extends CardSuffix>(suffix: S) => keyOf(stage, suffix)
+  const keysOf = (part: string) => partKeys(stage, part)
+  const loose: Partial<Record<BoxId, ControlKey[]>> = {
+    keys: [k('Glide')],
+    filter: [k('Cutoff'), k('Emph'), k('Contour'), k('Drive')],
+  }
+  const out: ControlKey[] = [k('Level'), k('Supply')]
+  const memory = keysOf('melody')
+  const written: ControlKey[] = [...memory, ...CARDS[stage].steps, k('SeqLen')]
+  return {
+    out,
+    memory,
+    written,
+    box: (id: BoxId) => [...keysOf(BOXES[id].part), ...(loose[id] ?? [])],
+    all: [
+      ...new Set([
+        ...Object.values(BOXES).flatMap(b => keysOf(b.part)),
+        ...Object.values(loose).flat(),
+        ...out,
+        ...written,
+      ]),
+    ],
+  }
+}
+
+const CARD_KEYS = {
+  Growler: cardKeys('Growler'),
+  Howler: cardKeys('Howler'),
+}
 
 const wire = (on: boolean): WireLook => (on ? 'on' : 'dash')
 
@@ -135,25 +141,29 @@ const HEIGHT = ROW2 + BOX_H + 4
 export function MonoPathDiagram({
   verbs,
   zoom,
+  stage = 'Growler',
 }: {
   verbs: Verbs
   zoom?: Zoom
+  stage?: CardStage
 }) {
-  const r = useReadings(KEYS)
+  const keys = CARD_KEYS[stage]
+  const k = <S extends CardSuffix>(suffix: S) => keyOf(stage, suffix)
+  const r = useReadings(keys.all)
   const pick = useSelectedBox()
-  const flow = useFlow('Growler')
+  const flow = useFlow(stage)
   const up = (key: ControlKey) => r.value(key) > 0
 
   const box = (id: BoxId, x: number, y: number): BoxSpec => {
-    const keys = boxKeys(id)
+    const opens = keys.box(id)
     return {
       id,
-      keys,
+      keys: opens,
       x,
       y,
       w: boxWidth(id),
       name: id,
-      touched: r.touched(...keys),
+      touched: r.touched(...opens),
       help: BOXES[id].help,
     }
   }
@@ -167,7 +177,7 @@ export function MonoPathDiagram({
   const widths = row.map(id => (id === 'frame' ? FRAME_W : boxWidth(id)))
   const { xs } = spread(widths, WIDTH - TAIL)
   const top = MID - BOX_H / 2
-  const keys = box('keys', xs[0]!, top)
+  const keysBox = box('keys', xs[0]!, top)
   const frameX = xs[1]!
   const mixer = box('mixer', xs[2]!, top)
   const filter = box('filter', xs[3]!, top)
@@ -180,20 +190,21 @@ export function MonoPathDiagram({
     w: glyphBoxWidth(ROLL, ROLL_GLYPH_W),
     h: BOX_H,
   }
-  const playsHere = up('monoSeqOn') && r.value('monoSeqTo') === 0
+  const playsHere =
+    up(k('SeqOn')) && (stage === 'Howler' || r.value('monoSeqTo') === 0)
   card.x = WIDTH - 2 - card.w
-  const boxes = [keys, mixer, filter, loud, mod, card]
+  const boxes = [keysBox, mixer, filter, loud, mod, card]
   const oscs = box('oscillators', frameX, FRAME_TOP)
   const words = [
-    { id: 'sync', keys: ['monoSync'] as const },
-    { id: 'FM', keys: ['monoFm'] as const },
-    { id: 'out', keys: OUT_KEYS },
+    { id: 'sync', keys: [k('Sync')] },
+    { id: 'FM', keys: [k('Fm')] },
+    { id: 'out', keys: keys.out },
   ]
   useOpensOnAim(pick, [
     ...boxes,
     oscs,
     ...words,
-    { id: ROLL, keys: MEMORY_KEYS },
+    { id: ROLL, keys: keys.memory },
   ])
   const rollOpen = pick.selected === ROLL
   const drawn = [...boxes, oscs].find(b => b.id === pick.selected)
@@ -226,7 +237,7 @@ export function MonoPathDiagram({
   const loopWire = `M${back} ${MID} V${over} H${loopX} V${top}`
   const noiseWire = `M${noiseX} ${over - 12} V${top}`
   const outPitchWire = `M${pitchX} ${MID} V${pitchLane} H${frameX + FRAME_W}`
-  const outGateWire = `M${gateX} ${MID} V${gateLane} H${keys.x + keys.w / 2} V${top}`
+  const outGateWire = `M${gateX} ${MID} V${gateLane} H${keysBox.x + keysBox.w / 2} V${top}`
   const tapWire = `M${tap} ${oscMid(2)} V${modMid} H${mod.x}`
   const cardWire = `M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`
   const outWire = `M${loud.x + loud.w} ${MID} H${WIDTH - 2}`
@@ -234,13 +245,20 @@ export function MonoPathDiagram({
   const fmWire = `M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`
   return (
     <>
-      <ChipDrawing width={WIDTH} height={HEIGHT} label="growler voice card">
+      <ChipDrawing
+        width={WIDTH}
+        height={HEIGHT}
+        label={`${CARDS[stage].label} voice card`}
+      >
         {arrow => (
           <>
-            <Wire arrow={arrow} d={`M${keys.x + keys.w} ${MID} H${frameX}`} />
             <Wire
               arrow={arrow}
-              d={`M${keys.x + keys.w / 2} ${ROW2} V${top + BOX_H}`}
+              d={`M${keysBox.x + keysBox.w} ${MID} H${frameX}`}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${keysBox.x + keysBox.w / 2} ${ROW2} V${top + BOX_H}`}
               look={wire(playsHere)}
             />
             {[0, 1, 2].map(i => (
@@ -260,18 +278,18 @@ export function MonoPathDiagram({
                 x={WIDTH - 2}
                 y={MID + 12}
                 anchor="end"
-                on={r.touched(...OUT_KEYS)}
+                on={r.touched(...keys.out)}
               >
                 out
               </Label>
             </Bend>
             <Bend name="feedback" opens="mixer" pick={pick} hit={loopWire}>
-              <Wire arrow={arrow} d={loopWire} look={wire(up('monoLoop'))} />
+              <Wire arrow={arrow} d={loopWire} look={wire(up(k('Loop')))} />
               <Label
                 x={laneWords}
                 y={over - 3}
                 anchor="middle"
-                on={up('monoLoop')}
+                on={up(k('Loop'))}
               >
                 feedback
               </Label>
@@ -286,13 +304,13 @@ export function MonoPathDiagram({
               <Wire
                 arrow={arrow}
                 d={outPitchWire}
-                look={wire(up('monoLoopPitch'))}
+                look={wire(up(k('LoopPitch')))}
               />
               <Label
                 x={laneWords}
                 y={pitchLane - 3}
                 anchor="middle"
-                on={up('monoLoopPitch')}
+                on={up(k('LoopPitch'))}
               >
                 out to pitch
               </Label>
@@ -304,28 +322,24 @@ export function MonoPathDiagram({
               pick={pick}
               hit={outGateWire}
             >
-              <Wire
-                arrow={arrow}
-                d={outGateWire}
-                look={wire(up('monoChoke'))}
-              />
+              <Wire arrow={arrow} d={outGateWire} look={wire(up(k('Choke')))} />
               <Label
                 x={laneWords}
                 y={gateLane - 3}
                 anchor="middle"
-                on={up('monoChoke')}
+                on={up(k('Choke'))}
               >
                 out to gate
               </Label>
             </Bend>
             <Dot x={gateX} y={MID} />
             <Bend name="noise" opens="mixer" pick={pick} hit={noiseWire}>
-              <Wire arrow={arrow} d={noiseWire} look={wire(up('monoNoise'))} />
+              <Wire arrow={arrow} d={noiseWire} look={wire(up(k('Noise')))} />
               <Label
                 x={noiseX}
                 y={over - 15}
                 anchor="middle"
-                on={up('monoNoise')}
+                on={up(k('Noise'))}
               >
                 noise
               </Label>
@@ -343,7 +357,7 @@ export function MonoPathDiagram({
               <Wire
                 arrow={arrow}
                 d={pitchWire}
-                look={wire(up('monoModPitch'))}
+                look={wire(up(k('ModPitch')))}
               />
             </Bend>
             <Bend
@@ -355,7 +369,7 @@ export function MonoPathDiagram({
               <Wire
                 arrow={arrow}
                 d={filterWire}
-                look={wire(up('monoModFilter'))}
+                look={wire(up(k('ModFilter')))}
               />
             </Bend>
             <Bend
@@ -410,14 +424,14 @@ export function MonoPathDiagram({
               </g>
             ))}
             <Bend name="sync" opens="sync" pick={pick} hit={syncWire}>
-              <Wire arrow={arrow} d={syncWire} look={wire(up('monoSync'))} />
-              <Label x={syncX + 4} y={gapY + 3} on={up('monoSync')}>
+              <Wire arrow={arrow} d={syncWire} look={wire(up(k('Sync')))} />
+              <Label x={syncX + 4} y={gapY + 3} on={up(k('Sync'))}>
                 sync
               </Label>
             </Bend>
             <Bend name="FM" opens="FM" pick={pick} hit={fmWire}>
-              <Wire arrow={arrow} d={fmWire} look={wire(up('monoFm'))} />
-              <Label x={fmX - 4} y={gapY + 3} anchor="end" on={up('monoFm')}>
+              <Wire arrow={arrow} d={fmWire} look={wire(up(k('Fm')))} />
+              <Label x={fmX - 4} y={gapY + 3} anchor="end" on={up(k('Fm'))}>
                 FM
               </Label>
             </Bend>
@@ -433,7 +447,7 @@ export function MonoPathDiagram({
               {...memory}
               name={ROLL}
               help="the second melody memory and its piano roll, and which machine it plays"
-              lit={r.touched(...WRITTEN_KEYS)}
+              lit={r.touched(...keys.written)}
               selected={rollOpen}
               onSelect={() => pick.toggle(ROLL)}
               glyphW={ROLL_GLYPH_W}
@@ -446,10 +460,10 @@ export function MonoPathDiagram({
         <OpenBox name={ROLL} onHide={() => pick.toggle(ROLL)}>
           <BoxRows
             title={ROLL}
-            keys={MEMORY_KEYS}
+            keys={keys.memory}
             inOrder
             verbs={verbs('melody')}
-            under={{ keys: MEMORY_KEYS, node: <MonoRoll /> }}
+            under={{ keys: keys.memory, node: <MonoRoll stage={stage} /> }}
           />
         </OpenBox>
       )}
@@ -473,4 +487,8 @@ export function MonoPathDiagram({
       )}
     </>
   )
+}
+
+export function LeadPathDiagram(props: { verbs: Verbs; zoom?: Zoom }) {
+  return <MonoPathDiagram {...props} stage="Howler" />
 }

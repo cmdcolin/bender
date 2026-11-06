@@ -4,7 +4,7 @@ import { ClipperAmpDiagram } from './ClipperAmpDiagram.tsx'
 import { FmDieDiagram } from './FmDieDiagram.tsx'
 import { DRAWN_ROWS, type Verbs, type Zoom } from './foldHosting.ts'
 import { KitWiringDiagram } from './KitWiringDiagram.tsx'
-import { MonoCardDiagram } from './MonoCardDiagram.tsx'
+import { LeadCardDiagram, MonoCardDiagram } from './MonoCardDiagram.tsx'
 import { SupplyDiagram } from './SupplyDiagram.tsx'
 import { ToyDieDiagram } from './ToyDieDiagram.tsx'
 import { ToyDrumDiagram } from './ToyDrumDiagram.tsx'
@@ -24,6 +24,7 @@ const DRAWINGS: Record<string, ComponentType<DrawingProps>> = {
   'Clatter|inside the voices': ToyDrumDiagram,
   'Glint|die and driver': FmDieDiagram,
   'Growler|voice card faults': MonoCardDiagram,
+  'Howler|voice card faults': LeadCardDiagram,
   'Power supply|the cells': SupplyDiagram,
   'Clipper|the amp': ClipperAmpDiagram,
 }

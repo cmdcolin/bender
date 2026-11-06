@@ -4,7 +4,13 @@ import { choiceName } from './controls/index.ts'
 import type { ControlKey, Controls } from '../controls.ts'
 import type { NoteDest } from '../engine/messages.ts'
 
-export type Machine = 'Plinky' | 'Clatter' | 'Glint' | 'Parlor' | 'Growler'
+export type Machine =
+  | 'Plinky'
+  | 'Clatter'
+  | 'Glint'
+  | 'Parlor'
+  | 'Growler'
+  | 'Howler'
 
 /** Plinky's gate line carries notes; the kit's trigger lines carry hits. */
 export type Signal = 'notes' | 'hits'
@@ -25,6 +31,7 @@ export const MACHINE_OF: Record<NoteDest, Machine> = {
   fm: 'Glint',
   pcm: 'Parlor',
   mono: 'Growler',
+  lead: 'Howler',
 }
 
 export const SIGNAL_COLOUR: Record<Signal, string> = {
@@ -61,6 +68,7 @@ export const KEY_LINE = [
   jumper('fmKeyGate', 'Glint'),
   jumper('pcmKeyGate', 'Parlor'),
   jumper('monoKeyGate', 'Growler'),
+  jumper('leadKeyGate', 'Howler'),
 ]
 
 export const KIT_TO_PLINKY = voice('trigToKeys', 'hits', 'Clatter', 'Plinky')
@@ -72,6 +80,7 @@ export const TRIGGER_CABLES = [
   voice('fmStruck', 'hits', 'Clatter', 'Glint'),
   voice('pcmStruck', 'hits', 'Clatter', 'Parlor'),
   voice('monoStruck', 'hits', 'Clatter', 'Growler'),
+  voice('leadStruck', 'hits', 'Clatter', 'Howler'),
 ]
 
 export const CONNECTIONS = [...TRIGGER_CABLES, ...KEY_LINE]

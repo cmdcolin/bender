@@ -64,14 +64,21 @@ export function endOf(key: string | undefined): End | null {
 
 /** A machine whose GATE jack takes Plinky's notes. */
 type Taker = Exclude<NoteDest, 'toy'> | 'kit'
-const GATE_TAKERS: readonly Taker[] = ['fm', 'pcm', 'mono', 'kit']
+const GATE_TAKERS: readonly Taker[] = ['fm', 'pcm', 'mono', 'lead', 'kit']
 
 export const gateInto = (taker: Taker): Connection =>
   taker === 'kit' ? PLINKY_TO_KIT : connectionInto(MACHINE_OF[taker], 'notes')!
 
 /** A TRIG input: a keyboard's, or the ADSR's gate on the MOD plate. */
 type TrigTaker = NoteDest | 'adsr'
-const TRIG_TAKERS: readonly TrigTaker[] = ['toy', 'fm', 'pcm', 'mono', 'adsr']
+const TRIG_TAKERS: readonly TrigTaker[] = [
+  'toy',
+  'fm',
+  'pcm',
+  'mono',
+  'lead',
+  'adsr',
+]
 
 const trigControl = (taker: TrigTaker): ControlKey =>
   taker === 'adsr'
@@ -110,6 +117,7 @@ const NAMED: Record<string, string> = {
   fm: 'Glint',
   pcm: 'Parlor',
   mono: 'Growler',
+  lead: 'Howler',
   kit: 'the kit',
   adsr: 'the ADSR',
 }

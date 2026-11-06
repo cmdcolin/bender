@@ -1,13 +1,13 @@
 import { engine } from '../engine/engine.ts'
 import {
   isNote,
-  MONO_SEQ_STEP_KEYS,
   NOTE_HI,
   NOTE_LO,
   TUNE_ALL_STEP_KEYS,
   TUNE_LANE_KEYS,
   TUNE_STEPS,
 } from '../tune.ts'
+import { CARDS, keyOf, type CardStage } from './cards.ts'
 import {
   useBoardValue,
   useMeterValue,
@@ -18,12 +18,13 @@ import styles from './TuneRoll.module.css'
 // Where each memory's counter is standing. It only moves when a step does, so a
 // roll redraws at the tune's rate rather than at the meter's.
 export const useTunePos = () => useMeterValue(m => m.tunePos)
-export const useSeqPos = () => useMeterValue(m => m.monoSeqPos)
+export const useSeqPos = (stage: CardStage = 'Growler') =>
+  useMeterValue(m => m[CARDS[stage].pos])
 
-/** Whether the second melody's counter is running: the kit's run line when it
-    is synced to the kit, the song's otherwise. */
-export function useLinePlaying() {
-  const synced = useBoardValue(c => c.monoSeqSync !== 0)
+/** Whether a card's melody counter is running: the kit's run line when it is
+    synced to the kit, the song's otherwise. */
+export function useLinePlaying(stage: CardStage = 'Growler') {
+  const synced = useBoardValue(c => c[keyOf(stage, 'SeqSync')] !== 0)
   const song = useStoreValue(engine.songPlaying)
   const drums = useStoreValue(engine.drumsPlaying)
   return synced ? drums : song
@@ -41,8 +42,8 @@ export function useLanes(): number[][] {
   )
 }
 
-export function useSteps(): number[] {
-  const packed = useBoardValue(c => MONO_SEQ_STEP_KEYS.map(k => c[k]).join(','))
+export function useSteps(stage: CardStage = 'Growler'): number[] {
+  const packed = useBoardValue(c => CARDS[stage].steps.map(k => c[k]).join(','))
   return packed.split(',').map(Number)
 }
 

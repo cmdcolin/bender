@@ -578,7 +578,7 @@ function KeyRouting() {
 
   return (
     <>
-      <Tip text="Which keybed the controller plays: the toy, Glint, Parlor, Growler, all of them at once, or the keybed cut in half. Split puts the toy below the split and Glint from it up; bass split puts Growler below and the toy from it up. Each chip has to be up in the mix to be heard.">
+      <Tip text="Which keybed the controller plays: the toy, Glint, Parlor, Growler, Howler, all of them at once, or the keybed cut in half. Split puts the toy below the split and Glint from it up; bass split puts Growler below and the toy from it up; lead split puts Growler below and Howler from it up. Each chip has to be up in the mix to be heard.">
         <select
           className={styles.select}
           value={route}
@@ -588,9 +588,11 @@ function KeyRouting() {
           <option value="fm">→ fm keys</option>
           <option value="pcm">→ home keys</option>
           <option value="mono">→ Growler</option>
+          <option value="lead">→ Howler</option>
           <option value="layer">→ all</option>
           <option value="split">→ split</option>
           <option value="bassSplit">→ bass split</option>
+          <option value="leadSplit">→ lead split</option>
         </select>
       </Tip>
       {isSplit(route) && (
@@ -600,7 +602,9 @@ function KeyRouting() {
               ? 'press the key to cut the board at — it sets the split rather than sounding'
               : route === 'bassSplit'
                 ? 'set the split by playing the key to cut the board at. Everything under it plays Growler; from that key up is the toy'
-                : 'set the split by playing the key to cut the board at. From that key up plays Glint; everything under it is the toy'
+                : route === 'leadSplit'
+                  ? 'set the split by playing the key to cut the board at. Everything under it plays Growler; from that key up is Howler'
+                  : 'set the split by playing the key to cut the board at. From that key up plays Glint; everything under it is the toy'
           }
         >
           <button

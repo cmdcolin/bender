@@ -42,7 +42,7 @@ import { listView, stageDrawings, VIEWS } from './listView.ts'
 import { MicCap } from './MicJacks.tsx'
 import { MicPatch, MicSwitch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
-import { MonoPathDiagram } from './MonoPathDiagram.tsx'
+import { LeadPathDiagram, MonoPathDiagram } from './MonoPathDiagram.tsx'
 import { MonoRoll } from './MonoRoll.tsx'
 import { OrderRack } from './OrderRack.tsx'
 import { PatchBay } from './PatchBay.tsx'
@@ -203,6 +203,7 @@ const PATH_DRAWINGS = {
   fm: FmChipDiagram,
   pcm: PcmKeysDiagram,
   monoPath: MonoPathDiagram,
+  leadPath: LeadPathDiagram,
 } as const
 
 const isPathKind = (kind?: string): kind is keyof typeof PATH_DRAWINGS =>

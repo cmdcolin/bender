@@ -21,7 +21,7 @@ import { Keys } from './Keys.tsx'
 import { MicFace } from './MicFace.tsx'
 import { MicMenu } from './MicJacks.tsx'
 import { wireOn } from './micWiring.ts'
-import { MonoKeys } from './MonoKeys.tsx'
+import { LeadKeys, MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal } from './Pedals.tsx'
 import { SheetFace } from './SheetFace.tsx'
@@ -59,6 +59,7 @@ const KEYBOARDS: Row = [
   ['Glint', FmKeys],
   ['Parlor', PcmKeys],
   ['Growler', MonoKeys],
+  ['Howler', LeadKeys],
 ]
 
 const KIT: Row = [['Clatter', DrumKit]]
@@ -81,6 +82,7 @@ const KIND: Record<string, string> = {
   Glint: 'FM synth',
   Parlor: 'home keyboard',
   Growler: 'mono synth',
+  Howler: 'lead synth',
   Spool: 'tape loop',
   Layercake: 'four-track',
   Sheet: 'struck metal',

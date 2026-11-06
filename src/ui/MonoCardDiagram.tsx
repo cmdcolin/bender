@@ -1,4 +1,5 @@
 import { Chip, type ChipBox } from './BusDiagram.tsx'
+import { CARDS, keyOf, type CardStage } from './cards.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   boxHeight,
@@ -14,28 +15,38 @@ import {
 import { Bend, BoxRows, Label, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
+import type { CardSuffix } from '../monoCard.ts'
 
-const KEYS = [
-  'monoHeat',
-  'monoLeak',
-  'monoCap',
-  'monoMismatch',
-  'monoDroop',
-  'monoDacBit',
-  'monoSag',
-  'monoRegTrip',
-  'monoThump',
-  'monoFold',
-] as const
+const SUFFIXES = [
+  'Heat',
+  'Leak',
+  'Cap',
+  'Mismatch',
+  'Droop',
+  'DacBit',
+  'Sag',
+  'RegTrip',
+  'Thump',
+  'Fold',
+] as const satisfies readonly CardSuffix[]
 
-const OPENS: Record<string, readonly ControlKey[]> = {
-  regulator: ['monoSag', 'monoRegTrip'],
-  'key DAC': ['monoDacBit'],
-  hold: ['monoDroop'],
-  'exp conv': ['monoHeat'],
-  ladder: ['monoMismatch', 'monoFold'],
-  VCA: ['monoLeak', 'monoThump'],
-  contours: ['monoCap'],
+function faultKeys(stage: CardStage) {
+  const k = <S extends CardSuffix>(suffix: S) => keyOf(stage, suffix)
+  const opens: Record<string, readonly ControlKey[]> = {
+    regulator: [k('Sag'), k('RegTrip')],
+    'key DAC': [k('DacBit')],
+    hold: [k('Droop')],
+    'exp conv': [k('Heat')],
+    ladder: [k('Mismatch'), k('Fold')],
+    VCA: [k('Leak'), k('Thump')],
+    contours: [k('Cap')],
+  }
+  return { keys: SUFFIXES.map(k), opens }
+}
+
+const FAULT_KEYS = {
+  Growler: faultKeys('Growler'),
+  Howler: faultKeys('Howler'),
 }
 
 const WIDTH = 420
@@ -50,38 +61,41 @@ const HEIGHT = LOW_Y + BAR_H + 4
 
 const centre = (b: ChipBox) => b.x + b.w / 2
 
-export function MonoCardDiagram() {
-  const r = useReadings(KEYS)
+function CardFaultsDiagram({ stage }: { stage: CardStage }) {
+  const { keys, opens } = FAULT_KEYS[stage]
+  const k = <S extends (typeof SUFFIXES)[number]>(suffix: S) =>
+    keyOf(stage, suffix)
+  const r = useReadings(keys)
   const pick = useSelectedBox()
-  useOpensOnAim(pick, OPENS)
-  const on = (key: (typeof KEYS)[number]) => r.value(key) > 0
-  const flow = useFlow('Growler')
+  useOpensOnAim(pick, opens)
+  const on = (suffix: (typeof SUFFIXES)[number]) => r.value(k(suffix)) > 0
+  const flow = useFlow(stage)
 
   const parts: { name: string; lit: boolean; help: string }[] = [
     {
       name: 'key DAC',
-      lit: on('monoDacBit'),
+      lit: on('DacBit'),
       help: 'The converter that turns a key number into a pitch voltage. One bit stuck high displaces half the keys.',
     },
     {
       name: 'hold',
-      lit: on('monoDroop'),
+      lit: on('Droop'),
       help: 'The sample-and-hold capacitor that keeps the pitch voltage while the key is down. A leak makes a held note sink.',
     },
     {
       name: 'exp conv',
-      lit: on('monoHeat'),
+      lit: on('Heat'),
       help: 'The exponential converter that turns the pitch voltage into oscillator frequencies. Without its heater the three oscillators drift apart, and the board’s own heat adds to it.',
     },
     { name: 'oscs', lit: false, help: 'The three oscillators.' },
     {
       name: 'ladder',
-      lit: on('monoMismatch') || on('monoFold'),
+      lit: on('Mismatch') || on('Fold'),
       help: 'The transistor ladder filter. One pair off its partners moves and widens the peak, and an input pair biased off centre folds the wave.',
     },
     {
       name: 'VCA',
-      lit: on('monoLeak') || on('monoThump'),
+      lit: on('Leak') || on('Thump'),
       help: 'The amplifier the loudness contour opens on every note. With a leak, the drone sounds with no key down, and with its control untrimmed every note thumps through.',
     },
   ]
@@ -100,14 +114,14 @@ export function MonoCardDiagram() {
   const regW = ladder.x + ladder.w - regX
   const lowX = ladder.x
   const lowW = vca.x + vca.w - lowX
-  const supplyBent = on('monoSag') || on('monoRegTrip')
+  const supplyBent = on('Sag') || on('RegTrip')
 
   return (
     <>
       <ChipDrawing
         width={WIDTH}
         height={HEIGHT}
-        label="growler voice card faults"
+        label={`${CARDS[stage].label} voice card faults`}
       >
         {arrow => (
           <>
@@ -141,7 +155,7 @@ export function MonoCardDiagram() {
                 key={`cap${b.name}`}
                 arrow={arrow}
                 d={`M${centre(b)} ${LOW_Y} V${CHIP_Y + CHIP_H}`}
-                look={b === vca && on('monoThump') ? 'on' : 'dash'}
+                look={b === vca && on('Thump') ? 'on' : 'dash'}
               />
             ))}
             <Chip
@@ -149,14 +163,14 @@ export function MonoCardDiagram() {
               lit={supplyBent}
               help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter. A hot regulator shuts off and on in bursts at its thermal limit."
               pick={pick}
-              keys={OPENS.regulator}
+              keys={opens.regulator}
             />
             <Chip
               box={{ name: 'contours', x: lowX, y: LOW_Y, w: lowW, h: BAR_H }}
-              lit={r.value('monoCap') > 1}
+              lit={r.value(k('Cap')) > 1}
               help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
               pick={pick}
-              keys={OPENS.contours}
+              keys={opens.contours}
             />
             {boxes.map((box, i) => (
               <Chip
@@ -165,7 +179,7 @@ export function MonoCardDiagram() {
                 lit={parts[i]!.lit}
                 help={parts[i]!.help}
                 pick={pick}
-                keys={OPENS[box.name]}
+                keys={opens[box.name]}
               />
             ))}
           </>
@@ -174,8 +188,16 @@ export function MonoCardDiagram() {
       <BoxRows
         card={card(pick)}
         hint="Press a box for its settings."
-        keys={pick.selected ? OPENS[pick.selected] : undefined}
+        keys={pick.selected ? opens[pick.selected] : undefined}
       />
     </>
   )
+}
+
+export function MonoCardDiagram() {
+  return <CardFaultsDiagram stage="Growler" />
+}
+
+export function LeadCardDiagram() {
+  return <CardFaultsDiagram stage="Howler" />
 }

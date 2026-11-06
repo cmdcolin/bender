@@ -13,14 +13,16 @@ const BRIDGES = [
   'fmStruck',
   'pcmStruck',
   'monoStruck',
+  'leadStruck',
 ] as const
 
-// The gate line's three runs, each live while a jumper at or beyond it is
+// The gate line's runs, each live while a jumper at or beyond it is
 // soldered and that machine is sounding a note.
 const KEY_RUNS = [
   ['key-line', 'fmKeyGate', engine.fmNotes],
   ['key-line-pcm', 'pcmKeyGate', engine.pcmNotes],
   ['key-line-mono', 'monoKeyGate', engine.monoNotes],
+  ['key-line-lead', 'leadKeyGate', engine.leadNotes],
 ] as const
 
 /** Marks `data-live` on the map's wires that are carrying a trigger right now:

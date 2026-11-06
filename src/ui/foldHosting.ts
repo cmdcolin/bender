@@ -22,6 +22,7 @@ export const DRAWN_ROWS = new Set(
     and the fold or drawing that holds them. */
 const HOSTED: Record<string, readonly string[]> = {
   'Growler|voice card': ['melody'],
+  'Howler|voice card': ['melody'],
   'Clatter|inside the voices': [
     'the converter',
     'Sample ROM',

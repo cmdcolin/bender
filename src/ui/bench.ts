@@ -24,6 +24,7 @@ export const INSTRUMENTS = [
   'Glint',
   'Parlor',
   'Growler',
+  'Howler',
   'Spool',
   'Layercake',
   'Sheet',

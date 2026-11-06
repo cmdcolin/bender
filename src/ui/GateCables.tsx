@@ -50,7 +50,7 @@ import type { NoteDest } from '../engine/messages.ts'
 // - MOD (blue) carries a patch bay source from the MOD plate to a machine's CV
 //   jack, one of the bay's four wires.
 
-type Keyboard = 'fm' | 'pcm' | 'mono'
+type Keyboard = 'fm' | 'pcm' | 'mono' | 'lead'
 
 const TRIG_VOICES = Array.from({ length: ANY_CHOICE }, (_, i) => i + 1)
 

@@ -55,8 +55,31 @@ interface Props {
 export function MiniRoll({ dest, onOpen }: Props) {
   return dest === 'toy' ? (
     <TuneMini onOpen={onOpen} />
+  ) : dest === 'lead' ? (
+    <LeadMini onOpen={onOpen} />
   ) : (
     <SeqMini dest={dest} onOpen={onOpen} />
+  )
+}
+
+function LeadMini({ onOpen }: Omit<Props, 'dest'>) {
+  const on = useBoardValue(c => Math.round(c.leadSeqOn) === 1)
+  const steps = useSteps('Howler')
+  const len = asTuneLen(useControlValue('leadSeqLen'))
+  const pos = useSeqPos('Howler')
+  const playing = useLinePlaying('Howler')
+  if (!on) return null
+  return (
+    <Strip
+      lanes={[steps]}
+      len={len}
+      pos={pos}
+      playing={playing}
+      armed={false}
+      memory="seq"
+      stage="Howler"
+      onOpen={onOpen}
+    />
   )
 }
 

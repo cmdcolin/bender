@@ -7,14 +7,12 @@ import {
   hasSeqFlag,
   HOLD,
   isNote,
-  MONO_SEQ_ACCENT_KEYS,
-  MONO_SEQ_SLIDE_KEYS,
-  MONO_SEQ_STEP_KEYS,
   REST,
   seqFlagBit,
   TUNE_STEPS,
   voicing,
 } from '../tune.ts'
+import { CARDS, keyOf, type CardStage } from './cards.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { Tip } from './Tip.tsx'
 import styles from './TuneRoll.module.css'
@@ -32,27 +30,35 @@ import {
 import type { ControlKey } from '../controls.ts'
 import type { RefObject } from 'react'
 
-const wipe = () => {
+const wipe = (stage: CardStage) => {
+  const { steps, accents, slides } = CARDS[stage]
   engine.armStep()
   engine.writeBoard({
     ...engine.controls.get(),
-    ...Object.fromEntries(MONO_SEQ_STEP_KEYS.map(k => [k, REST])),
-    ...Object.fromEntries(
-      [...MONO_SEQ_ACCENT_KEYS, ...MONO_SEQ_SLIDE_KEYS].map(k => [k, 0]),
-    ),
+    ...Object.fromEntries(steps.map(k => [k, REST])),
+    ...Object.fromEntries([...accents, ...slides].map(k => [k, 0])),
   })
 }
 
-// The mono synth's melody memory: one lane of the toy roll's grid, a row per
+const turnOn = (stage: CardStage) => {
+  const key = keyOf(stage, 'SeqOn')
+  if (engine.controls.get()[key] < 1) engine.set(key, 1)
+}
+
+// A voice card's melody memory: one lane of the toy roll's grid, a row per
 // pitch and a column per step. Drawing on it turns the memory on, so what the
-// roll shows is what comes out of the synth.
-export function MonoRoll() {
-  const steps = useSteps()
-  const len = asTuneLen(useControlValue('monoSeqLen'))
-  const on = Math.round(useControlValue('monoSeqOn')) === 1
-  const playing = useLinePlaying()
+// roll shows is what comes out of the synth. Only Growler's records.
+export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
+  const card = CARDS[stage]
+  const steps = useSteps(stage)
+  const lenKey = keyOf(stage, 'SeqLen')
+  const onKey = keyOf(stage, 'SeqOn')
+  const len = asTuneLen(useControlValue(lenKey))
+  const on = Math.round(useControlValue(onKey)) === 1
+  const sync = useControlValue(keyOf(stage, 'SeqSync'))
+  const playing = useLinePlaying(stage)
   const armed = useStoreValue(engine.seqRecord)
-  const pos = useSeqPos()
+  const pos = useSeqPos(stage)
   const [base, setBase] = useState(() => baseFor([steps]))
   const paint = useRef(false)
   const bars = voicing(steps)
@@ -83,7 +89,7 @@ export function MonoRoll() {
           <button
             className={playing ? styles.playOn : styles.play}
             aria-pressed={playing}
-            onClick={() => engine.setLinePlaying(!playing)}
+            onClick={() => engine.setLinePlaying(!playing, sync)}
           >
             {playing ? '❚❚' : '▶'}
           </button>
@@ -91,39 +97,41 @@ export function MonoRoll() {
         <Tip
           text={
             on
-              ? 'The memory plays through Growler while the song runs. Press to silence it; the steps stay.'
-              : 'The memory is off. Press to play it through Growler while the song runs. Drawing a note turns it on too.'
+              ? `The memory plays through ${stage} while the song runs. Press to silence it; the steps stay.`
+              : `The memory is off. Press to play it through ${stage} while the song runs. Drawing a note turns it on too.`
           }
         >
           <button
             className={on ? styles.playOn : styles.play}
             aria-pressed={on}
-            onClick={() => engine.set('monoSeqOn', on ? 0 : 1)}
+            onClick={() => engine.set(onKey, on ? 0 : 1)}
           >
             {on ? 'on' : 'off'}
           </button>
         </Tip>
-        <Tip
-          text={
-            !armed
-              ? 'play the melody in: arm this and every key you press on the machine the memory plays — on screen, on the letter keys, on a controller — writes the step the counter is standing on. Arming puts the memory on and runs the song'
-              : playing
-                ? 'every key you press on that machine is going into the memory, and a key held across steps comes out as one long note. Press to stop'
-                : 'armed, but the song is stopped — the keys sound and nothing is written. Run the song and they land on the step they arrive in'
-          }
-        >
-          <button
-            className={
-              !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
+        {stage === 'Growler' && (
+          <Tip
+            text={
+              !armed
+                ? 'play the melody in: arm this and every key you press on the machine the memory plays — on screen, on the letter keys, on a controller — writes the step the counter is standing on. Arming puts the memory on and runs the song'
+                : playing
+                  ? 'every key you press on that machine is going into the memory, and a key held across steps comes out as one long note. Press to stop'
+                  : 'armed, but the song is stopped — the keys sound and nothing is written. Run the song and they land on the step they arrive in'
             }
-            aria-pressed={armed}
-            onClick={() => engine.armSeqRecord(!armed)}
           >
-            record
-          </button>
-        </Tip>
+            <button
+              className={
+                !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
+              }
+              aria-pressed={armed}
+              onClick={() => engine.armSeqRecord(!armed)}
+            >
+              record
+            </button>
+          </Tip>
+        )}
         <Tip text="Wipe every step of the memory. One entry in the walk, so ctrl+z brings it back.">
-          <button className={styles.verb} onClick={() => wipe()}>
+          <button className={styles.verb} onClick={() => wipe(stage)}>
             clear
           </button>
         </Tip>
@@ -172,7 +180,7 @@ export function MonoRoll() {
                 className={len === TUNE_STEPS ? styles.len : styles.lenShort}
                 value={len}
                 onChange={e =>
-                  engine.set('monoSeqLen', Number(e.currentTarget.value))
+                  engine.set(lenKey, Number(e.currentTarget.value))
                 }
                 aria-label="loop length in steps"
               >
@@ -204,6 +212,7 @@ export function MonoRoll() {
                   return (
                     <Cell
                       key={s}
+                      stage={stage}
                       step={s}
                       note={note}
                       paint={paint}
@@ -230,14 +239,16 @@ export function MonoRoll() {
       <div className={`${styles.grid} ${styles.flags}`}>
         <FlagRow
           name="acc"
-          keys={MONO_SEQ_ACCENT_KEYS}
+          keys={card.accents}
+          stage={stage}
           tip="Accent a step: louder, and a kick to the cutoff. Accents close together climb. Accent on the panel sets how hard."
           under={under}
           len={len}
         />
         <FlagRow
           name="slide"
-          keys={MONO_SEQ_SLIDE_KEYS}
+          keys={card.slides}
+          stage={stage}
           tip="Slide a step into the next note: the gate stays down and the pitch glides, with no new attack. Into the same note it ties."
           under={under}
           len={len}
@@ -249,6 +260,7 @@ export function MonoRoll() {
 
 function FlagRow(props: {
   name: string
+  stage: CardStage
   keys: readonly [ControlKey, ControlKey]
   tip: string
   under: number
@@ -261,7 +273,7 @@ function FlagRow(props: {
     const key = keys[step < 16 ? 0 : 1]
     const mask = step < 16 ? lo : hi
     engine.armStep()
-    if (engine.controls.get().monoSeqOn < 1) engine.set('monoSeqOn', 1)
+    turnOn(props.stage)
     engine.set(key, mask ^ seqFlagBit(step))
   }
   return (
@@ -297,6 +309,7 @@ function FlagRow(props: {
 }
 
 const Cell = memo(function Cell(props: {
+  stage: CardStage
   step: number
   note: number
   on: boolean
@@ -304,10 +317,10 @@ const Cell = memo(function Cell(props: {
   className: string
   paint: RefObject<boolean>
 }) {
-  const { step, note, paint } = props
+  const { stage, step, note, paint } = props
   const write = (value: number) => {
-    if (engine.controls.get().monoSeqOn < 1) engine.set('monoSeqOn', 1)
-    engine.set(MONO_SEQ_STEP_KEYS[step]!, value)
+    turnOn(stage)
+    engine.set(CARDS[stage].steps[step]!, value)
   }
   const put = (shift: boolean) => write(shift ? HOLD : props.head ? REST : note)
   return (
