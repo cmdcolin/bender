@@ -80,6 +80,11 @@ The `techno` and `acid techno` presets load the same kind of groove in one call,
   `bender.speak('kill the bass', { struck: 'hat' })` has Prattle, the speech
   chip, say a syllable on each hat. `bender.load('robot chant')` and
   `bender.load('lattice howl')` load it bent.
+- **A line that rots:** each memory has faults of its own, off by default:
+  `bender.set({ monoSeqLeak: 0.3 })` smears Growler's line into repeats and
+  `monoSeqRot: 'every bar'` leaks a bit a bar. `bender.guide('rot')` lists them,
+  `line` shows the damage as `ram`, and `bender.restore()` writes the line back.
+  `bender.load('acid rot')` rots the bass under a steady Howler lead.
 
 ## Starve the batteries
 

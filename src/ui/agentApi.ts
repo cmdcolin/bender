@@ -39,6 +39,7 @@ import {
   parseLane,
   parseSeqFlags,
   REST,
+  seqFlagBit,
   seqFlagsText,
   TUNE_LANE_KEYS,
   TUNE_LANES,
@@ -64,7 +65,7 @@ import { STRUCK_HOME, strike, type Struck } from './strikes.ts'
 // GUIDE_MAX_CHARS.
 export const GUIDE_MAX_CHARS = 900
 
-const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. The browser tool cuts any single returned string at 1000 characters, so return arrays and objects as they are, since JSON.stringify turns a long list into one string. Start with bender.summary(). The rest is in ten topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'music' covers tune and drums, 'drums' the rest of the kit, and 'line' the bassline memory and 'lead' Howler's; 'sound' covers start, play, stop, listen and link; 'hit' strikes things by hand; 'speak' gives Prattle words; 'clock' lands changes on the bar with position, next and queue.`
+const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. The browser tool cuts any single returned string at 1000 characters, so return arrays and objects as they are, since JSON.stringify turns a long list into one string. Start with bender.summary(). The rest is in eleven topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'music' covers tune and drums, 'drums' the rest of the kit, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things by hand; 'speak' gives Prattle words; 'clock' lands changes on the bar with position, next and queue.`
 
 const GUIDE = {
   read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. Each bend and pedal has an Into key: set({ ampInto: 'clatter' }) patches Ember onto the kit alone.`,
@@ -73,6 +74,7 @@ const GUIDE = {
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
   line: `The bassline. bender.line('. A3 A3 A4 . A3 A3 A3', { accent: '...x', slide: '' }) writes a second 32-step memory, one token a step as in tune, and turns it on. It steps with the kit's sixteenths while the kit runs; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, whose stock 32′ range sounds each note two octaves down: write A3 for a 55 Hz A1, as sounds in the result shows. on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep theirs. The target's KeyGate jumper also plays the tune: 'no, cut' drops it, 'lane 1' keeps one lane. The result warns about anything keeping it silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate. The techno and acid techno presets load a groove to riff on.`,
   lead: `Howler, the lead: a second build of Growler's card with a 32-step memory of its own, so a lead plays over the bassline. bender.line('. . C5 ~ . C5 . D#5', { on: 'Howler', accent: '..x....x', slide: '...x' }) writes Howler's memory and leaves Growler's alone, with the same tokens, accent, slide and sync as the bassline. Howler's stock 8′ sounds the notes as written. Its level starts at 0: set leadLevel (0.9 is loud) and leadKeyGate: 'no, cut' to keep the toy's tune off it. Its sound is leadCutoff, leadEmph (near 1 it screams), leadSweep, leadFold, leadGate and leadAccent. The hard techno howl preset loads a 150 bpm groove with a lead to riff on, and howler torn tears the lead into noise.`,
+  rot: `Memory faults, on Growler's memory as monoSeq* and Howler's as leadSeq*, all off by default. SeqAddrLine and SeqAddrFault fault a wire from the counter: { monoSeqAddrLine: 'A0', monoSeqAddrFault: 'to ground' } plays every step twice. SeqAddrCross plays the steps out of order and SeqCarry: 'wraps at 8' folds the line into its first 8 steps. SeqDataLine and SeqDataFault fault a wire out: D0 to D5 move notes by 1 to 32 semitones, the same wrong notes every lap; D6 is the accent and D7 the slide. SeqLeak (0 to 1) writes each note into the next step, so the line smears into repeats; SeqRot ('every bar') leaks one bit a bar, so notes sink and accents drop out. Those two change the memory itself and the damage stays when they are cleared: line and board show what it holds as ram, and bender.restore(), or restore('Howler'), writes the line back, as bender.line does.`,
   hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once; inside bender.queue it waits for the queue's bar and lands within about 20 ms of it. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
   speak: `Prattle, a talking toy's speech chip. bender.speak('kill the bass') loads the phrase and says it once; speak('kill the bass', { struck: 'open hat' }) speaks the next syllable on each open hat hit, so words land on the grid, and { repeat: true } says it round and round. It knows numbers and techno words (bass, kick, drop, noise, acid, machine, error, reboot, again…) and sounds out the rest. Level starts at 0, so speak brings talkLevel up to 0.8. Bends: talkClock, talkFrameDiv ('stopped' drones), talkLock (frame clock off the kit), talkLoopBit and talkLoopSlip (a stuttering loop), talkDataLine/talkDataFault (D10 'to +V' howls), talkPitchLine/Fault, talkVoicing and talkLeak. The mic jack 'Prattle in' talks through its mouth. Presets: robot chant, lattice howl.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
@@ -442,6 +444,27 @@ function sounds(c: Controls, steps: readonly number[], stage: CardStage) {
   return `${lo} to ${hi}, at ${stage}'s ${show(footage, c[footage])} osc 1 range`
 }
 
+// What a fault left in the RAM, where it no longer holds what was written.
+function ramOf(stage: CardStage, len: number) {
+  const m = engine.meter.get()
+  const card = CARDS[stage]
+  const damage = m[card.damage]
+  return damage === 0
+    ? undefined
+    : {
+        line: laneText(Array.from(m[card.ram].subarray(0, len))),
+        accent: seqFlagsText(...flagWords(m[card.flags], 1), len),
+        slide: seqFlagsText(...flagWords(m[card.flags], 2), len),
+      }
+}
+
+function flagWords(flags: Uint8Array, bit: number): [number, number] {
+  const words: [number, number] = [0, 0]
+  for (const [s, f] of flags.entries())
+    if (f & bit) words[s < 16 ? 0 : 1] |= seqFlagBit(s)
+  return words
+}
+
 function lineOf(c: Controls, stage: CardStage = 'Growler') {
   const card = CARDS[stage]
   const [on, sync] = [keyOf(stage, 'SeqOn'), keyOf(stage, 'SeqSync')]
@@ -449,6 +472,7 @@ function lineOf(c: Controls, stage: CardStage = 'Growler') {
   const flags = (keys: readonly [ControlKey, ControlKey]) =>
     seqFlagsText(c[keys[0]], c[keys[1]], len)
   const steps = card.steps.slice(0, len).map(k => c[k])
+  const ram = ramOf(stage, len)
   return {
     line: laneText(steps),
     sounds: sounds(c, steps, stage),
@@ -459,7 +483,14 @@ function lineOf(c: Controls, stage: CardStage = 'Growler') {
       'plays on': show('monoSeqTo', c.monoSeqTo),
     }),
     sync: show(sync, c[sync]),
+    ...(ram && { ram }),
   }
+}
+
+function restoreLine(stage: CardStage) {
+  const fire = () => engine.restoreLine(CARDS[stage].prefix)
+  if (queueing) queueing.hits.push(fire)
+  else fire()
 }
 
 const lineRuns = (c: Controls, stage: CardStage) =>
@@ -874,8 +905,15 @@ function rawBenderApi() {
       if (opts.on !== undefined && stage === 'Growler')
         patch.monoSeqTo = numberFor('monoSeqTo', opts.on)
       land(patch, 0)
+      restoreLine(stage)
       const now = engine.controls.get()
       return { ...lineOf(now, stage), warnings: lineWarnings(now, stage) }
+    },
+
+    restore(on?: Value) {
+      const stage: CardStage = isHowler(on) ? 'Howler' : 'Growler'
+      restoreLine(stage)
+      return lineOf(engine.controls.get(), stage)
     },
 
     drums(rows: Record<string, string | number>) {

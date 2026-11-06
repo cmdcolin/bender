@@ -120,12 +120,16 @@ test('help and every guide topic fit in one browser tool result', () => {
     'music',
     'drums',
     'line',
+    'lead',
+    'rot',
+    'hit',
+    'speak',
     'clock',
     'sound',
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, line, lead, hit, speak, clock, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, line, lead, rot, hit, speak, clock, sound",
   )
 })
 
@@ -329,6 +333,52 @@ test('a line on Howler writes its own memory and leaves the bassline alone', () 
   expect(bender.board().lead?.line).toBe('. C5 ~ D#5')
   expect(bender.board().line?.line).toBe('A2 A2')
   expect(bender.summary().lead).toBe('stopped on Howler')
+})
+
+test('memory faults are controls, and the damage reads back until restore', () => {
+  const posted: ToWorklet[] = []
+  Object.assign(engine, {
+    node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
+  })
+  const was = engine.meter.get()
+  try {
+    bender.set({
+      monoSeqLeak: 0.3,
+      leadSeqRot: 'every bar',
+      monoSeqDataLine: 'D6 accent',
+    })
+    expect(engine.controls.get()).toMatchObject({
+      monoSeqLeak: 0.3,
+      leadSeqRot: 6,
+      monoSeqDataLine: 7,
+    })
+    bender.line('A2 A2')
+    expect(posted).toContainEqual({ kind: 'lineRestore', card: 'mono' })
+    expect(bender.board().line).not.toHaveProperty('ram')
+
+    const ram = new Float32Array(32).fill(REST)
+    ram[0] = -12
+    ram[1] = -11
+    const flags = new Uint8Array(32)
+    flags[1] = 1
+    engine.meter.set({
+      ...was,
+      monoSeqRam: ram,
+      monoSeqFlags: flags,
+      monoSeqDamage: 0b10,
+    })
+    expect(bender.board().line?.ram).toEqual({
+      line: 'A2 A#2',
+      accent: '.x',
+      slide: '..',
+    })
+    expect(bender.restore()).toMatchObject({ line: 'A2 A2' })
+    expect(posted.at(-1)).toEqual({ kind: 'lineRestore', card: 'mono' })
+    bender.restore('Howler')
+    expect(posted.at(-1)).toEqual({ kind: 'lineRestore', card: 'lead' })
+  } finally {
+    engine.meter.set(was)
+  }
 })
 
 test('an invalid line throws and leaves the board unchanged', () => {
