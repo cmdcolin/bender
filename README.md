@@ -85,5 +85,5 @@ Then open http://localhost:4321/bender/app/.
 
 ## Credits
 
-Started from a Claude Fable template and extensively vibecoded. Follows
-[ntsc.js](https://github.com/cmdcolin/ntsc.js).
+Started from a Claude Fable template and extensively vibecoded. See also
+[videoskillet.com](https://videoskillet.com).
