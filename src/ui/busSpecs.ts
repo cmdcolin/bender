@@ -269,6 +269,18 @@ export const BUS_SPECS: Record<string, BusSpec> = {
         chips: ['adder', 'exp table'],
         links: [[ribbon('fmExpLine', 'fmExpFault')]],
       },
+      {
+        chips: ['multiplier', 'accumulator'],
+        links: [[ribbon('fmIncLine', 'fmIncFault')]],
+        feeds: [
+          {
+            key: 'fmCarry',
+            chip: 1,
+            name: 'carry',
+            says: v => `carry cut, ${choice('fmCarry', v)}`,
+          },
+        ],
+      },
     ],
   },
   'Prattle|fault on the bus': {

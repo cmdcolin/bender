@@ -226,6 +226,11 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   pcmSlot: 'Parlor',
   pcmWordRate: 'Parlor',
   pcmRot: 'Parlor',
+  fmIncLine: 'Glint',
+  fmIncFault: 'Glint',
+  fmCarry: 'Glint',
+  fmSkew: 'Glint',
+  fmPitchWire: 'Glint',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

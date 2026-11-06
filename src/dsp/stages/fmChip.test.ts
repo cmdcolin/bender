@@ -1308,6 +1308,8 @@ test.each([
   ['fmRot', 4],
   ['fmHeat', 12],
   ['fmRing', 4],
+  ['fmSkew', 4],
+  ['fmPitchWire', 4],
 ] as const)(
   '%s at full stays bounded and changes the sound over %d s',
   (key, seconds) => {
@@ -1422,4 +1424,84 @@ test('a panic cools a chip that heat has tripped', () => {
     },
   )
   expect(cooled).toBe(true)
+})
+
+const A3 = 220
+const E4 = A3 * 2 ** (7 / 12)
+
+const heldOn = (o: Partial<Controls>, notes: number[]) =>
+  renderStems({ ...FM_ONLY, fmKeyGate: 1, ...o }, 1, built =>
+    notes.forEach(n => built.fmChip.noteOn(n)),
+  ).stems[FM_TAP]!.subarray(Math.round(0.2 * SR), Math.round(0.6 * SR))
+
+const onHarmonics = (x: Float32Array, f0: number) => {
+  let power = 0
+  for (let k = 1; k * f0 < SR / 2; k++) power += 2 * bin(x, k * f0) ** 2
+  return power / rms(x) ** 2
+}
+
+const INC = { I9: 10, I11: 12 }
+
+test('a stuck increment line takes the note off its own harmonics', () => {
+  const organPatch = { fmVoice: voice('organ') }
+  expect(onHarmonics(heldOn(organPatch, [0]), A3)).toBeGreaterThan(0.5)
+  const bent = heldOn(
+    { ...organPatch, fmIncLine: INC.I9, fmIncFault: FAULT.supply },
+    [0],
+  )
+  expect(onHarmonics(bent, A3)).toBeLessThan(0.1)
+})
+
+test('a wire on the increment line lane moves the fault', () => {
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmIncLine,
+    mod0Depth: INC.I11 / 20,
+  }
+  expect(sine({ ...wire, fmIncFault: FAULT.supply })).toEqual(
+    sine({ fmIncLine: INC.I11, fmIncFault: FAULT.supply }),
+  )
+})
+
+const C10 = 11
+
+test('a broken carry snaps neighbouring notes onto one pitch', () => {
+  const pair = (o: Partial<Controls>) =>
+    deviation(heldOn(o, [0]), heldOn(o, [2]))
+  const organPatch = { fmVoice: voice('organ') }
+  expect(pair(organPatch)).toBeGreaterThan(1)
+  expect(pair({ ...organPatch, fmCarry: C10 })).toBeLessThan(0.1)
+})
+
+test('a wire on the carry lane breaks the carry the knob does', () => {
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmCarry,
+    mod0Depth: C10 / 19,
+  }
+  expect(sine(wire)).toEqual(sine({ fmCarry: C10 }))
+})
+
+test('slot skew lets the notes of a chord modulate each other', () => {
+  const chord = (fmSkew: number) =>
+    heldOn({ fmVoice: voice('organ'), fmSkew }, [0, 7])
+  expect(bin(chord(1), E4 - A3)).toBeGreaterThan(5 * bin(chord(0), E4 - A3))
+})
+
+test('the pitch wire pulls a half-sine modulator’s note off its harmonics', () => {
+  const clarinet = (fmPitchWire: number) =>
+    heldOn({ fmVoice: voice('clarinet'), fmPitchWire }, [0])
+  expect(onHarmonics(clarinet(0), A3)).toBeGreaterThan(0.5)
+  expect(onHarmonics(clarinet(0.25), A3)).toBeLessThan(0.1)
+})
+
+test('the pitch wire brightens a note as far as the modulator swings', () => {
+  const centroidAt = (fmPitchWire: number) =>
+    spectrum(
+      heldOn({ fmVoice: voice('organ'), fmBright: 1, fmPitchWire }, [0]),
+      SR,
+    ).centroid
+  expect(centroidAt(1)).toBeGreaterThan(5 * centroidAt(0))
 })

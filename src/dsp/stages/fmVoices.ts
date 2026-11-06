@@ -466,6 +466,8 @@ export const ROM_VOICE_NAMES = ROM_VOICES.map(v => v.name)
 export const PATCH_BYTE_BITS = 3
 export const PATCH_ADDR_LINES = PATCH_BYTE_BITS + 4
 export const PATCH_DATA_LINES = 8
+export const PHASE_BITS = 19
+export const CARRY_LINES = PHASE_BITS - 1
 
 // The kit the die keeps in ROM. The bass drum is the only one of the three
 // still running off the sine table, so it is the only one that needs a patch —

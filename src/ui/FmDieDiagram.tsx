@@ -35,12 +35,14 @@ const KEYS = [
   'fmRot',
   'fmHeat',
   'fmRing',
+  'fmSkew',
+  'fmPitchWire',
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
   allocator: ['fmAlloc', 'fmStack'],
   registers: ['fmColdBoot', 'fmRot', 'fmHeat'],
-  voices: ['fmAdder', 'fmRing'],
+  voices: ['fmAdder', 'fmRing', 'fmSkew', 'fmPitchWire'],
   DAC: ['fmDacSlot', 'fmDacSlip'],
   'register rot': ['fmRot'],
   heat: ['fmHeat'],
@@ -82,7 +84,8 @@ export function FmDieDiagram() {
   const adder = read('fmAdder')
   const rot = r.value('fmRot') > 0
   const heat = r.value('fmHeat') > 0
-  const ringing = r.value('fmRing') > 0
+  const ringing =
+    r.value('fmRing') > 0 || r.value('fmSkew') > 0 || r.value('fmPitchWire') > 0
 
   const frameW = boxWidth('voice 4') + 16
   const widths = [
@@ -139,7 +142,9 @@ export function FmDieDiagram() {
               <title>
                 voices — Four channels of two operators each. The log adder sets
                 the arithmetic every operator uses. The operator ring feeds each
-                carrier into the next modulator.
+                carrier into the next modulator, slot skew hands each operator
+                the step of the slot before it, and a wire puts each modulator
+                on its carrier’s pitch.
               </title>
               <Plate
                 x={frameX}

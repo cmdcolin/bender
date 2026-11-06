@@ -383,6 +383,11 @@ export const PATCH_GROUPS: Group[] = [
             'keys slot clock',
             'keys word on rate',
             'keys refresh',
+            'FM increment line',
+            'FM increment fault',
+            'FM carry',
+            'FM slot skew',
+            'FM mod into pitch',
           ],
           groups: [
             {
@@ -485,6 +490,11 @@ export const PATCH_GROUPS: Group[] = [
                 'FM operator ring',
                 'FM exp line',
                 'FM exp fault',
+                'FM increment line',
+                'FM increment fault',
+                'FM carry',
+                'FM slot skew',
+                'FM mod into pitch',
               ],
             },
             {

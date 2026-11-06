@@ -515,6 +515,36 @@ write touches that register again.
     booster. Measured in 43 ms frames, the centroid's standard deviation is a
     third of an octave, against 0.04 for the booster.
   - Its patch-bay lane moves every sample.
+- **Increment line:** the nineteen wires from the multiplier to the phase
+  accumulator, which carry every operator's step per sample.
+  - A fault moves each operator by its own amount, so modulator and carrier stop
+    sitting at whole-number ratios and a note clangs like a bell. Held high, a
+    line only reaches operators whose step lacks that bit, so one note clangs
+    and the next stays clean.
+  - I0–I5 are inaudible. I9 to +V pulls a held organ note off its harmonics, I12
+    to ground takes 375 Hz off every operator that had it, and I14 and up throw
+    it into the top octave.
+- **Carry:** breaks the carry out of one accumulator bit, so the bits below it
+  wrap on their own.
+  - C9 to C11 snap every note onto the overtones of one low pitch, about 190 Hz
+    at C10, and neighbouring notes come out identical.
+  - C12 and C13 stop low notes turning, and what is left is slivers of sine, 0.9
+    of the stem in the air band.
+- **Slot skew:** the latch in front of the accumulator runs a slot late. Each
+  carrier takes its modulator's step and each modulator the step of the carrier
+  on the channel before it, so the notes of a chord modulate each other.
+  - At the top every sample is late. Below it the latch misses at random and the
+    pitches smear into noise.
+  - Its patch-bay lane moves every sample.
+- **Mod into pitch:** a wire from each modulator's output onto its carrier's
+  step, so the modulator moves frequency rather than phase.
+  - The swing is up to 16 kHz in hertz, the same on every note, so low notes run
+    through zero and high ones only buzz. A full swing with the brightness up
+    puts an organ's centroid near 9 kHz.
+  - A modulator on half a sine pushes one way only, so the clarinet and other
+    half-sine patches slide off pitch, and the pitch follows the modulator's
+    envelope.
+  - Its patch-bay lane moves every sample.
 
 ## Inside the drum voices
 

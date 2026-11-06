@@ -39,6 +39,8 @@ import {
   PATCH_BYTE_BITS,
   PATCH_BYTES,
   PATCH_DATA_LINES,
+  PHASE_BITS,
+  CARRY_LINES,
   REG,
   RHY,
   ROM_PATCH_BYTES,
@@ -335,6 +337,11 @@ const LIVE_REGS = Uint8Array.from([
 const ROT_FLIPS_PER_SEC = 1000
 const ROT_HOLD_SECS = 1.5
 const RING_CYCLES = 0.5
+const PHASE_FULL = 1 << PHASE_BITS
+const PHASE_TOP = PHASE_FULL - 1
+const INC_SEED = 0x35
+const SKEW_SEED = 0x6d
+const PITCH_WIRE_HZ = 16000
 const HEAT_PER_SEC = 0.12
 const HEAT_IDLE = 0.5
 const HEAT_ROT = 0.3
@@ -623,6 +630,14 @@ export class FmChip implements Stage {
   private writtenAt = new Float64Array(N_REGS)
   private faultRng = mulberry32(FAULT_SEED)
   private ringLatch = 0
+  private incBus = new Bus(PHASE_BITS, INC_SEED)
+  private incLine = -1
+  private incFault = 0
+  private carry = -1
+  private phaseFault = false
+  private slotInc = new Float64Array(2 * N_CH)
+  private lastSlotInc = 0
+  private skewRng = mulberry32(SKEW_SEED)
   private temp = 0
   private tripped = false
   private tripAt = TRIP_LOW + TRIP_SPAN / 2
@@ -1303,7 +1318,7 @@ export class FmChip implements Stage {
       const car = this.bass.car
       this.stepEnv(c.mod, raced ? this.raceRates : mod)
       this.stepEnv(c.car, raced ? this.raceRates : car)
-      c.mod.phase = (c.mod.phase + inc * mod.mult) % 1
+      this.advance(c.mod, inc * mod.mult, 0)
       const self = (c.mod.fb1 + c.mod.fb2) * mod.fb
       this.wavePhase = c.mod.phase + self
       this.wave(0)
@@ -1314,7 +1329,7 @@ export class FmChip implements Stage {
         : ms * modEnv * mod.level
       c.mod.fb2 = c.mod.fb1
       c.mod.fb1 = m
-      c.car.phase = (c.car.phase + inc * car.mult) % 1
+      this.advance(c.car, inc * car.mult, 0)
       this.wavePhase = c.car.phase + m * 2
       this.wave(0)
       const cs = this.waveOut
@@ -1351,7 +1366,7 @@ export class FmChip implements Stage {
       // so a little of the operator's own phase is still in there — which is
       // why a real one is pitched rather than pure sand.
       this.stepEnv(c.car, raced ? this.raceRates : this.snareRates)
-      c.car.phase = (c.car.phase + inc) % 1
+      this.advance(c.car, inc, 0)
       this.wavePhase = c.car.phase
       this.wave(0)
       const src = this.snareHiss * 0.75 + this.waveOut * 0.25
@@ -1363,7 +1378,7 @@ export class FmChip implements Stage {
       // And the hi-hat, which is the same register gated off a phase eight
       // times up: what makes it metal rather than more sand.
       this.stepEnv(c.mod, raced ? this.raceRates : this.hatRates)
-      c.mod.phase = (c.mod.phase + inc * HAT_MULT) % 1
+      this.advance(c.mod, inc * HAT_MULT, 0)
       this.wavePhase = c.mod.phase
       this.wave(0)
       const src = this.waveOut > 0 ? this.hiss : -this.hiss
@@ -1401,7 +1416,7 @@ export class FmChip implements Stage {
     let logged = 0
     if (c.mod.stage !== IDLE) {
       this.stepEnv(c.mod, raced ? this.raceRates : this.tomRates)
-      c.mod.phase = (c.mod.phase + inc) % 1
+      this.advance(c.mod, inc, 0)
       this.wavePhase = c.mod.phase
       this.wave(0)
       const env = wideOpen ? 1 : c.mod.env
@@ -1410,7 +1425,7 @@ export class FmChip implements Stage {
     }
     if (c.car.stage !== IDLE) {
       this.stepEnv(c.car, raced ? this.raceRates : this.cymbalRates)
-      c.car.phase = (c.car.phase + inc) % 1
+      this.advance(c.car, inc, 0)
       const hh = (this.hatPhase * SINE_STEPS) | 0
       const tc = (c.car.phase * SINE_STEPS) | 0
       const metal =
@@ -1517,6 +1532,7 @@ export class FmChip implements Stage {
     this.patchBus.age(aged)
     this.patchDataBus.age(aged)
     this.expBus.age(aged)
+    this.incBus.age(aged)
     const level = p[IDX.fmLevel]!
     const voice = Math.round(p[IDX.fmVoice]!)
     const brightKnob = p[IDX.fmBright]!
@@ -1629,6 +1645,20 @@ export class FmChip implements Stage {
     const modHeat = bay.read(DEST.fmHeat)
     const baseRing = p[IDX.fmRing]!
     const modRing = bay.read(DEST.fmRing)
+    this.incLine =
+      hop(p[IDX.fmIncLine]!, PHASE_BITS + 1, bay.read(DEST.fmIncLine)) - 1
+    this.incFault = hop(
+      p[IDX.fmIncFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmIncFault),
+    )
+    this.carry =
+      hop(p[IDX.fmCarry]!, CARRY_LINES + 1, bay.read(DEST.fmCarry)) - 1
+    this.phaseFault = this.incLine >= 0 || this.carry >= 0
+    const baseSkew = p[IDX.fmSkew]!
+    const modSkew = bay.read(DEST.fmSkew)
+    const baseWire = p[IDX.fmPitchWire]!
+    const modWire = bay.read(DEST.fmPitchWire)
     this.blob = baseBlob
     const rail = this.power.pick(p[IDX.fmSupply]!)
     const railAmp = rail.ampFactor
@@ -1866,6 +1896,13 @@ export class FmChip implements Stage {
 
       let sum = 0
       const pitch = rail.pitchFactor * xtal
+      const skew = modSkew ? clamp01(baseSkew + modSkew[i]!) : baseSkew
+      const wire =
+        ((modWire ? clamp01(baseWire + modWire[i]!) : baseWire) *
+          PITCH_WIRE_HZ *
+          pitch) /
+        this.sr
+      if (skew > 0) this.fillSlots(pitch)
       const slip = modSlip ? clamp01(baseSlip + modSlip[i]!) : baseSlip
       const slotted = this.dacSlot >= 0 || slip > 0
       if (slotted) this.slotOut.fill(0)
@@ -1914,8 +1951,15 @@ export class FmChip implements Stage {
         // it step together and stay in ratio. An operator wired to it against
         // one that is not is the pair coming apart and going back, which is the
         // only detune anywhere on a chip that has no detune register.
-        c.mod.phase =
-          (c.mod.phase + inc * mod.mult * (mod.vib ? this.vibFactor : 1)) % 1
+        let modStep = inc * mod.mult * (mod.vib ? this.vibFactor : 1)
+        let carStep = inc * car.mult * (car.vib ? this.vibFactor : 1)
+        if (skew > 0) {
+          if (this.skewRng() < skew) carStep = modStep
+          if (this.skewRng() < skew)
+            modStep = n === 0 ? this.lastSlotInc : this.slotInc[2 * n - 1]!
+        }
+        if (this.phaseFault) this.advance(c.mod, modStep, 0)
+        else c.mod.phase = (c.mod.phase + modStep) % 1
         const self = (c.mod.fb1 + c.mod.fb2) * mod.fb * fbBoost
         this.wavePhase = c.mod.phase + self + ringIn * this.ringLatch
         this.wave(mod.half)
@@ -1926,8 +1970,8 @@ export class FmChip implements Stage {
         c.mod.fb2 = c.mod.fb1
         c.mod.fb1 = m
 
-        c.car.phase =
-          (c.car.phase + inc * car.mult * (car.vib ? this.vibFactor : 1)) % 1
+        if (this.phaseFault || wire > 0) this.advance(c.car, carStep, wire * m)
+        else c.car.phase = (c.car.phase + carStep) % 1
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
         this.wavePhase = c.car.phase + m * 2 * indexBoost
@@ -1940,6 +1984,7 @@ export class FmChip implements Stage {
         sum += v
         if (slotted) this.slotOut[n] = v
       }
+      this.lastSlotInc = this.slotInc[2 * N_CH - 1]!
       if (slotted) sum = this.dac(slip)
 
       // One small output stage for four voices, as ever on a board like this,
@@ -1958,6 +2003,45 @@ export class FmChip implements Stage {
     }
     rail.drawing += load / io.n
     ctx.regs.set(this.regs)
+  }
+
+  private advance(op: Op, inc: number, push: number) {
+    const step =
+      (this.incLine < 0
+        ? inc
+        : this.incBus.read(
+            Math.min(Math.round(inc * PHASE_FULL), PHASE_TOP),
+            this.incLine,
+            this.incFault,
+            this.busCut,
+          ) / PHASE_FULL) + push
+    if (this.carry < 0) op.phase = (op.phase + step) % 1
+    else {
+      const below = (2 << this.carry) - 1
+      const acc = Math.floor(op.phase * PHASE_FULL) & PHASE_TOP
+      const word = Math.round(step * PHASE_FULL)
+      op.phase =
+        ((((acc & below) + (word & below)) & below) |
+          (((acc & ~below) + (word & ~below)) & PHASE_TOP)) /
+        PHASE_FULL
+    }
+  }
+
+  private fillSlots(pitch: number) {
+    for (let n = 0; n < N_CH; n++) {
+      const key = this.regs[REG.keyBlock + n]!
+      const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
+      const inc =
+        ((fnum / FNUM_FULL) *
+          FNUM_HZ *
+          OCTAVE[(key >> 1) & 7]! *
+          pitch *
+          this.taps[n]!) /
+        this.sr
+      const { mod, car } = this.chRates[n]!
+      this.slotInc[2 * n] = inc * mod.mult * (mod.vib ? this.vibFactor : 1)
+      this.slotInc[2 * n + 1] = inc * car.mult * (car.vib ? this.vibFactor : 1)
+    }
   }
 
   // The four slots through the one converter. A stuck counter sends one
@@ -2039,6 +2123,7 @@ export class FmChip implements Stage {
     this.tripAt = TRIP_LOW + TRIP_SPAN / 2
     this.restartAt = RESTART_LOW
     this.faultRng = mulberry32(FAULT_SEED)
+    this.skewRng = mulberry32(SKEW_SEED)
     this.powerUp()
   }
 
@@ -2087,6 +2172,8 @@ export class FmChip implements Stage {
     this.laneBright = -1
     this.writtenAt.fill(this.now)
     this.ringLatch = 0
+    this.incBus.reset()
+    this.lastSlotInc = 0
     if (!this.cold) return
     for (let r = 0; r < N_REGS; r++)
       this.regs[r] = Math.floor(this.bootRng() * 256)

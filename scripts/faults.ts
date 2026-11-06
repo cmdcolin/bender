@@ -155,6 +155,14 @@ const BUSES: BusDef[] = [
     solo: FM,
   },
   {
+    chip: 'fm',
+    bus: 'increment',
+    line: 'fmIncLine',
+    fault: 'fmIncFault',
+    depth: 'fmBusCut',
+    solo: FM,
+  },
+  {
     chip: 'keys',
     bus: 'addr',
     line: 'pcmAddrLine',

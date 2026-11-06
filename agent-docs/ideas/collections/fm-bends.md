@@ -3,7 +3,9 @@ name: fm-bends
 description:
   Further bends for the FM chip with hook points and measurements. Items 1–8,
   the exp table's bus, the allocator, cold boot and five effect scripts have
-  landed with named cuts; mono and the spare register bits are what is left.
+  landed with named cuts, and so has the phase generator (increment bus, carry,
+  slot skew, mod into pitch); mono, the spare register bits, a feedback tap and
+  the envelope state bits are what is left.
 ---
 
 # Further bends for the FM chip
@@ -439,6 +441,73 @@ of the level.
 rhythm and wind than any other bus on the chip, since every one of them reaches
 the kit's and the effect's operators as well as the tune's. E11 to +V is the one
 silent fault of the sixty.
+
+## The phase generator — landed
+
+Every bend above reaches the chip through its registers, its tables or its
+output. None reached the FM core itself: the multiplier that turns a note into a
+step per sample, the accumulator that integrates it, and the latch between them.
+Four bends now do, all in `advance()` and `fillSlots()` in `fmChip.ts`:
+
+- **Increment line** (`fmIncLine` / `fmIncFault`): a `Bus(19)` on each
+  operator's step, read as a 19-bit word. The 19 bits are the part's accumulator
+  width, so the sine table reads the top ten.
+- **Carry** (`fmCarry`, C0–C17): the carry out of one accumulator bit is lost.
+- **Slot skew** (`fmSkew`): with that chance per operator per sample, the
+  carrier takes its modulator's step and the modulator takes the step of the
+  previous channel's carrier.
+- **Mod into pitch** (`fmPitchWire`): the modulator's output is added to the
+  carrier's step, at up to `PITCH_WIRE_HZ`.
+
+Design calls, toward the wilder option:
+
+- Order on the die is multiplier → increment bus → skew latch → pitch wire →
+  accumulator, so all four stack.
+- The increment bus and the carry reach the kit's operators too, through
+  `advance()`. The pitch wire and skew are melody only.
+- `PITCH_WIRE_HZ` is 16 kHz, not the 2 kHz first built. At 2 kHz the organ's
+  centroid moved 0.85 → 0.84 kHz, because the modulator's output rarely nears
+  full swing. At 16 kHz with brightness up it reaches 9 kHz. The swing is in
+  hertz rather than in ratios, so low notes run through zero and high ones only
+  buzz.
+- Skew is random below the top of the knob, like **Slip the strobe**, so it
+  sweeps from smear (bell chord flatness 0.16 at 0.3) to the clean cross-channel
+  FM at 1.
+- The melody path keeps the inline phase step unless a line or carry is set or
+  the wire is up. With the call made unconditionally, the everything-on board's
+  `fmChip` cost rose from 130 to 157 and 160 ms on `pnpm bench`; with the guard
+  it measured 124 and 133.
+
+Measured on the sakura board's FM stem (4 s), against a 1.67 kHz centroid clean:
+
+| setting     | level | centroid | air band | flat  |
+| ----------- | ----- | -------- | -------- | ----- |
+| I11 to +V   | 1.00× | 2.33 kHz | 0.00     | 0.001 |
+| I12 to gnd  | 1.00× | 0.37 kHz | 0.00     | 0.000 |
+| I14 to +V   | 1.00× | 6.90 kHz | 0.64     | 0.001 |
+| I12 cut 0.7 | 1.11× | 1.43 kHz | 0.00     | 0.020 |
+| C10         | 0.97× | 1.37 kHz | 0.00     | 0.000 |
+| C12         | 0.57× | 4.31 kHz | 0.90     | 0.006 |
+| skew 1      | 1.12× | 0.80 kHz |          | 0.000 |
+
+They stay tonal, with flatness under 0.03, which is the point of them: they
+change which partials a note has, not how much noise is in it. Lines I0–I5 and
+carries C0–C7 measure as no change on that stem. I13 to I18 parted do nothing,
+since those bits are almost never set on a step.
+
+Named cuts: _every ratio off by the same hertz_ (I11 to +V), _the tune on a
+bugle_ (C10), _each note on the one before_ (skew 1), _the modulator on the
+pitch wire_ (wire 1).
+
+Still open from the same survey:
+
+- **Feedback tap.** The modulator's feedback averages its last two samples;
+  cutting one tap gives the period-two instability the averaging was there to
+  stop. Small, and close to the feedback booster.
+- **Vibrato on the wrong bit.** The LFO's step is added to the frequency a few
+  bits down; a fault there moves the vibrato depth from cents to semitones.
+- **Envelope state bits.** A fault on the two-bit stage register would trap
+  operators in attack or send decay straight to release.
 
 ## Named and measured
 

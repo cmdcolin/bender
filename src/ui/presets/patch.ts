@@ -161,6 +161,11 @@ const LANDINGS: Landing[] = [
   at('FM operator ring', ['fmLevel']),
   at('FM exp line', ['fmLevel']),
   at('FM exp fault', ['fmLevel', 'fmExpLine']),
+  at('FM increment line', ['fmLevel']),
+  at('FM increment fault', ['fmLevel', 'fmIncLine']),
+  at('FM carry', ['fmLevel']),
+  at('FM slot skew', ['fmLevel']),
+  at('FM mod into pitch', ['fmLevel']),
   at('sheet level', ['sheetLevel']),
   at('bottle level', ['bottleLevel']),
   at('FM cut depth', ['fmLevel'], {

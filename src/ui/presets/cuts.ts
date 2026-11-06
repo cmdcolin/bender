@@ -506,6 +506,25 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'Glint',
+    part: BUS,
+    name: 'every ratio off by the same hertz',
+    blurb:
+      'I11 between the multiplier and the phase accumulator is held high, so every operator whose step lacks that bit gains about 190 Hz. Modulator and carrier gain the same hertz at different ratios, so their partials stop lining up, and each note clangs differently',
+    patch: {
+      fmIncLine: pick('fmIncLine', 'I11'),
+      fmIncFault: pick('fmIncFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Glint',
+    part: BUS,
+    name: 'the tune on a bugle',
+    blurb:
+      'The phase accumulator loses its carry out of C10, so the low eleven bits of every step wrap on their own and only the part above them turns the phase. Every note snaps down onto the overtones of one low pitch, and the tune comes out as a bugle call',
+    patch: { fmCarry: pick('fmCarry', 'C10') },
+  },
+  {
     group: 'Parlor',
     part: BUS,
     name: 'the top bit sticks',
@@ -806,6 +825,22 @@ export const CUTS: CutDef[] = [
     blurb:
       'The log adder is cut to 7 bits, so anything 3 dB down wraps back to the top. The quiet middle of every wave folds up into a harsh digital buzz at the pitch it always had',
     patch: { fmAdder: pick('fmAdder', '7 bits') },
+  },
+  {
+    group: 'Glint',
+    part: DIE,
+    name: 'each note on the one before',
+    blurb:
+      'The latch in front of the phase accumulator runs a slot late. Each carrier plays at its modulator’s pitch and each modulator at the pitch of the channel before it, so the notes still ringing bend the one being played',
+    patch: { fmSkew: 1 },
+  },
+  {
+    group: 'Glint',
+    part: DIE,
+    name: 'the modulator on the pitch wire',
+    blurb:
+      'A wire puts each modulator’s output on its carrier’s frequency rather than its phase. The swing is the same in hertz on every note, so low notes run through zero and backwards while high ones only buzz',
+    patch: { fmPitchWire: 1 },
   },
   {
     group: 'Crusher',
