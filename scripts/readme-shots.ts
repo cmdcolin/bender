@@ -43,15 +43,11 @@ const drawing = (label: string) => `aside svg[aria-label="${label}"]`
 
 const SHOTS: Shot[] = [
   {
-    file: 'plinky-bent.jpg',
+    file: 'plinky-bus.jpg',
     stage: 'Plinky',
-    board: {
-      chipDataLine: 4,
-      chipDataFault: 3,
-      chipBendSpot: 1,
-      chipBendPot: 0.6,
-    },
-    zoom: drawing('toy chip die'),
+    board: { chipDataLine: 4, chipDataFault: 3 },
+    press: 'bus',
+    zoom: drawing('plinky bus wiring'),
     width: 1800,
   },
 ]

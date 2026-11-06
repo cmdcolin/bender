@@ -60,10 +60,10 @@ Also **Ring mod**, **Crusher**, **Comb**, **Octave**, **Codec** and others.
 
 ## Inside Plinky
 
-<a href="https://cmdcolin.github.io/bender/app/#p=CggABgMCAHg&v=3"><img src="docs/readme/plinky-bent.jpg" alt="The whole app with Plinky open, and a zoom of its circuit: the bus and the clock outlined red where two bends are on." width="100%"></a>
+<a href="https://cmdcolin.github.io/bender/app/#p=CggABg&v=3"><img src="docs/readme/plinky-bus.jpg" alt="The whole app with Plinky open, and a zoom of its bus wiring: song select and counter into the ROM, its data wires into the note table, then the divider. Data wire D3 is drawn red, bridged to its neighbour." width="100%"></a>
 
-Two bends on Plinky's circuit, marked in red: a bridged wire on the bus, and a
-pot soldered onto the clock. Click the picture to open this board.
+Plinky's bus wiring, with one bend on: data wire D3 bridged to its neighbour,
+drawn in red. Click the picture to open this board.
 
 ## Run
 
