@@ -557,15 +557,19 @@ export class Engine {
   // back off the chip because it is exact and immediate — the keys light on the
   // press, not on the next meter, and they light on a board whose audio has not
   // started.
-  readonly keysDownOn = recordOf(KEYBEDS, () =>
-    createStore<ReadonlySet<number>>(new Set()),
+  readonly keysDownOn = recordOf(
+    KEYBEDS,
+    d => d,
+    () => createStore<ReadonlySet<number>>(new Set()),
   )
   // And what each chip says it is sounding, which is the rest of the board: the
   // ROM's tune, the backing under it, the toy's gate wherever a jumper is still
   // on, a note a drum hit struck through the trigger patch. Yours show up in
   // here too, a meter late.
-  readonly notesOn = recordOf(KEYBEDS, () =>
-    createStore<ReadonlySet<number>>(new Set()),
+  readonly notesOn = recordOf(
+    KEYBEDS,
+    d => d,
+    () => createStore<ReadonlySet<number>>(new Set()),
   )
   readonly keysDown = this.keysDownOn.toy
   readonly chipNotes = this.notesOn.toy
@@ -2004,7 +2008,11 @@ export class Engine {
 
   // Each key down and the note the lock snapped it to, so the release lets go of
   // that note even after the scale has changed under it.
-  private readonly struck = recordOf(KEYBEDS, () => new Map<number, number>())
+  private readonly struck = recordOf(
+    KEYBEDS,
+    d => d,
+    () => new Map<number, number>(),
+  )
 
   // The key line's matrix, taken here rather than down on the wire: the drawn
   // keybeds light what is down, so the key that lights has to be the key that

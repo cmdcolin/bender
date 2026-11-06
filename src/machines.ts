@@ -345,15 +345,17 @@ export const machineNamed = (name: string) =>
 /** The keybeds, the toy's first, in the order the worklet reports them. */
 export const KEYBEDS = MACHINES.flatMap(m => ('keybed' in m ? [m.keybed] : []))
 
-/** A record with an entry for every key, which Object.fromEntries builds but
-    cannot type. */
-export function recordOf<K extends string, V>(
-  keys: readonly K[],
-  value: (key: K) => V,
+/** A record with an entry for every item, under the key it names, which
+    Object.fromEntries builds but cannot type. */
+export function recordOf<T, K extends string, V>(
+  items: readonly T[],
+  key: (item: T) => K,
+  value: (item: T) => V,
 ): Record<K, V>
-export function recordOf(
-  keys: readonly string[],
-  value: (key: string) => unknown,
+export function recordOf<T>(
+  items: readonly T[],
+  key: (item: T) => string,
+  value: (item: T) => unknown,
 ) {
-  return Object.fromEntries(keys.map(k => [k, value(k)]))
+  return Object.fromEntries(items.map(t => [key(t), value(t)]))
 }

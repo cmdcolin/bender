@@ -1,7 +1,13 @@
 import { asEvent, EVENT, EVENT_KEYS } from '../../drums.ts'
 import { MIC } from '../../dsp/micJacks.ts'
 import { DEST } from '../../dsp/modbus.ts'
-import { SUPPLY, SUPPLY_KEYS, SUPPLY_NAMES } from '../../dsp/supplies.ts'
+import {
+  SUPPLIED,
+  SUPPLY,
+  SUPPLY_KEYS,
+  SUPPLY_NAMES,
+} from '../../dsp/supplies.ts'
+import { recordOf } from '../../machines.ts'
 import { wireOn } from '../micWiring.ts'
 
 import type { ControlKey, Controls } from '../../controls.ts'
@@ -9,20 +15,15 @@ import type { Group, SliderDef } from './types.ts'
 
 export type SupplyKey = (typeof SUPPLY_KEYS)[number]
 
-/** Each machine's Supply selector, and the machine it belongs to. */
-export const SUPPLY_OF: Record<SupplyKey, string> = {
-  chipSupply: 'Plinky',
-  drumSupply: 'Clatter',
-  fmSupply: 'Glint',
-  pcmSupply: 'Parlor',
-  monoSupply: 'Growler',
-  leadSupply: 'Howler',
-  talkSupply: 'Prattle',
-}
+const SUPPLIER = recordOf(
+  SUPPLIED,
+  m => m.supply,
+  m => m.name,
+)
 
 /** The machines a supply feeds, in panel order. */
 export const machinesOn = (c: Controls, supply: number) =>
-  SUPPLY_KEYS.filter(k => Math.round(c[k]) === supply).map(k => SUPPLY_OF[k])
+  SUPPLIED.filter(m => Math.round(c[m.supply]) === supply).map(m => m.name)
 
 const onShared = (c: Controls, key: SupplyKey | 'distSupply') =>
   Math.round(c[key]) === SUPPLY.shared
@@ -106,7 +107,7 @@ export const supplyRow = (key: SupplyKey): SliderDef => ({
   unit: '',
   choices: SUPPLY_NAMES,
   menu: true,
-  help: `Which supply ${SUPPLY_OF[key]} runs off. The shared cells bend every machine on them together. Second cells have their own knobs in Power supply and their own reboots. The bench supply never sags.`,
+  help: `Which supply ${SUPPLIER[key]} runs off. The shared cells bend every machine on them together. Second cells have their own knobs in Power supply and their own reboots. The bench supply never sags.`,
 })
 
 // The battery rail the toy keyboard, drums, FM chip, home keyboard and mono

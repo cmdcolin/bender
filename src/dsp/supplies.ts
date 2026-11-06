@@ -15,7 +15,7 @@ export const SUPPLY_NAMES = ['shared cells', 'second cells', 'bench supply']
 
 // The machines on the toy's battery rail, each with a Supply selector to take it
 // off.
-const SUPPLIED = MACHINES.flatMap(m => ('supply' in m ? [m] : []))
+export const SUPPLIED = MACHINES.flatMap(m => ('supply' in m ? [m] : []))
 
 export const SUPPLY_KEYS = SUPPLIED.map(m => m.supply)
 

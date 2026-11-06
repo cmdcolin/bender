@@ -1,5 +1,6 @@
 import { MIC } from '../dsp/micJacks.ts'
 import { DELAY_ON_FIRST, DELAY_ON_SECOND } from '../dsp/micLine.ts'
+import { MACHINES, type Machine, type MachineJack } from '../machines.ts'
 
 import type { Controls } from '../controls.ts'
 
@@ -14,120 +15,107 @@ export interface MicJack {
   says: string
 }
 
-const JACKS: Record<(typeof MIC)[keyof typeof MIC], MicJack> = {
-  [MIC.mix]: {
-    name: 'mix',
-    stage: 'mix',
-    part: 'mix bus',
-    says: 'your voice plays through like any other source',
-  },
-  [MIC.toyRail]: {
-    name: 'chip rail',
-    stage: 'Plinky',
-    part: 'supply rail',
-    says: 'yelling browns the toy out',
-  },
-  [MIC.oscFm]: {
-    name: 'osc FM',
-    stage: 'Chaos osc',
-    part: 'FM input',
-    says: 'your voice bends oscillator A’s pitch',
-  },
-  [MIC.delayFb]: {
-    name: 'delay fb',
-    stage: 'Wraith',
-    part: 'feedback path',
-    says: 'your voice goes round with the repeats and builds up',
-  },
-  [MIC.ringCarrier]: {
-    name: 'ring car',
-    stage: 'Ring mod',
-    part: 'carrier',
-    says: 'your voice multiplies everything going through',
-  },
-  [MIC.drumTrig]: {
-    name: 'drum trig',
-    stage: 'Clatter',
-    part: 'trigger line',
-    says: 'a clap fires the kit',
-  },
-  [MIC.glitchTrig]: {
-    name: 'glitch trig',
-    stage: 'Glitch buffer',
-    part: 'trigger line',
-    says: 'a clap fires a glitch',
-  },
-  [MIC.toyClock]: {
-    name: 'toy clock',
-    stage: 'Plinky',
-    part: 'clock pin',
-    says: 'the pitch of your voice sets the tempo and tuning, and silence slows the toy to clicks',
-  },
-  [MIC.toyAddr]: {
-    name: 'toy addr',
-    stage: 'Plinky',
-    part: 'address bus',
-    says: 'louder sounds jump further through the song',
-  },
-  [MIC.toyData]: {
-    name: 'toy data',
-    stage: 'Plinky',
-    part: 'data bus',
-    says: 'talking shifts the notes and yelling scrambles them',
-  },
-  [MIC.oscSync]: {
-    name: 'osc sync',
-    stage: 'Chaos osc',
-    part: 'sync input',
-    says: 'each cycle of your voice restarts oscillator A, so it follows your pitch',
-  },
-  [MIC.tapeMotor]: {
-    name: 'tape motor',
-    stage: 'Spool',
-    part: 'capstan motor',
-    says: 'the tape runs as fast as you are loud and stops in silence',
-  },
-  [MIC.growlerIn]: {
-    name: 'Growler in',
-    stage: 'Growler',
-    part: 'external input',
-    says: 'hold a key and the filter and envelope open on your voice',
-  },
-  [MIC.glintBus]: {
-    name: 'Glint bus',
-    stage: 'Glint',
-    part: 'data bus',
-    says: 'your voice overwrites its settings, and they stay overwritten',
-  },
-  [MIC.clipBypass]: {
-    name: 'clip bypass',
-    stage: 'Clipper',
-    part: 'bypass pin',
-    says: 'your voice rides the amp’s supply straight into its input, and with the gain cap in it comes out two hundred times louder',
-  },
-  [MIC.crushClock]: {
-    name: 'crush clock',
-    stage: 'Crusher',
-    part: 'clock pin',
-    says: 'each cycle of your voice takes one sample, so you sing the sample rate and silence freezes it',
-  },
-  [MIC.howlerIn]: {
-    name: 'Howler in',
-    stage: 'Howler',
-    part: 'external input',
-    says: 'a scream into the lead rings the ladder and folds with it',
-  },
-  [MIC.prattleIn]: {
-    name: 'Prattle in',
-    stage: 'Prattle',
-    part: 'the mouth',
-    says: 'your voice replaces the chip’s buzz and hiss, so it speaks through Prattle’s mouth',
-  },
+interface StageJacks {
+  stage: string
+  kind?: string
+  jacks: readonly MachineJack[]
 }
 
-export const MIC_JACKS: readonly MicJack[] = Object.values(MIC)
-  .toSorted((a, b) => a - b)
-  .map(i => JACKS[i])
+// The jacks on stages that are not machines, the mix bus last.
+const OTHER_STAGES: readonly StageJacks[] = [
+  {
+    stage: 'Wraith',
+    kind: 'tape delay',
+    jacks: [
+      {
+        jack: 'delayFb',
+        name: 'delay fb',
+        part: 'feedback path',
+        says: 'your voice goes round with the repeats and builds up',
+      },
+    ],
+  },
+  {
+    stage: 'Ring mod',
+    jacks: [
+      {
+        jack: 'ringCarrier',
+        name: 'ring car',
+        part: 'carrier',
+        says: 'your voice multiplies everything going through',
+      },
+    ],
+  },
+  {
+    stage: 'Crusher',
+    jacks: [
+      {
+        jack: 'crushClock',
+        name: 'crush clock',
+        part: 'clock pin',
+        says: 'each cycle of your voice takes one sample, so you sing the sample rate and silence freezes it',
+      },
+    ],
+  },
+  {
+    stage: 'Clipper',
+    jacks: [
+      {
+        jack: 'clipBypass',
+        name: 'clip bypass',
+        part: 'bypass pin',
+        says: 'your voice rides the amp’s supply straight into its input, and with the gain cap in it comes out two hundred times louder',
+      },
+    ],
+  },
+  {
+    stage: 'Glitch buffer',
+    jacks: [
+      {
+        jack: 'glitchTrig',
+        name: 'glitch trig',
+        part: 'trigger line',
+        says: 'a clap fires a glitch',
+      },
+    ],
+  },
+  {
+    stage: 'mix',
+    jacks: [
+      {
+        jack: 'mix',
+        name: 'mix',
+        part: 'mix bus',
+        says: 'your voice plays through like any other source',
+      },
+    ],
+  },
+]
+
+const benchRank = (m: Machine) => (m.map !== 'line' ? 0 : 'face' in m ? 1 : 2)
+
+// The machines with a jack in bench order: the board's, then the other faces on
+// the bench, then the rest. Then the other stages.
+const STAGES: readonly StageJacks[] = [
+  ...MACHINES.flatMap(m =>
+    'mic' in m
+      ? [{ stage: m.name, kind: m.kind, jacks: m.mic, rank: benchRank(m) }]
+      : [],
+  )
+    .toSorted((a, b) => a.rank - b.rank)
+    .map(({ stage, kind, jacks }) => ({ stage, kind, jacks })),
+  ...OTHER_STAGES,
+]
+
+export const MIC_JACKS: readonly MicJack[] = STAGES.flatMap(
+  ({ stage, jacks }) =>
+    jacks.map(({ jack, name, part, says }) => ({
+      at: MIC[jack],
+      jack: { name, stage, part, says },
+    })),
+)
+  .toSorted((a, b) => a.at - b.at)
+  .map(j => j.jack)
 
 /** A jack in one line: "Plinky’s clock pin: the pitch…". */
 export const describeJack = (i: number) => {
@@ -135,32 +123,17 @@ export const describeJack = (i: number) => {
   return `${stage === 'mix' ? 'The mix bus' : `${stage}’s ${part}`}: ${says}`
 }
 
-// The machines with a jack, in bench order, each with its jacks in the order
-// its menu lists them, the wildest first.
+// Each stage with a jack, each with its jacks in the order its menu lists
+// them, the wildest first.
 export const JACKS_BY_STAGE: readonly {
   stage: string
   kind?: string
   jacks: number[]
-}[] = [
-  {
-    stage: 'Plinky',
-    kind: 'toy keyboard',
-    jacks: [MIC.toyClock, MIC.toyAddr, MIC.toyData, MIC.toyRail],
-  },
-  { stage: 'Clatter', kind: 'toy drums', jacks: [MIC.drumTrig] },
-  { stage: 'Glint', kind: 'FM synth', jacks: [MIC.glintBus] },
-  { stage: 'Growler', kind: 'mono synth', jacks: [MIC.growlerIn] },
-  { stage: 'Howler', kind: 'lead synth', jacks: [MIC.howlerIn] },
-  { stage: 'Prattle', kind: 'speech chip', jacks: [MIC.prattleIn] },
-  { stage: 'Spool', kind: 'tape loop', jacks: [MIC.tapeMotor] },
-  { stage: 'Chaos osc', kind: 'oscillator', jacks: [MIC.oscSync, MIC.oscFm] },
-  { stage: 'Wraith', kind: 'tape delay', jacks: [MIC.delayFb] },
-  { stage: 'Ring mod', jacks: [MIC.ringCarrier] },
-  { stage: 'Crusher', jacks: [MIC.crushClock] },
-  { stage: 'Clipper', jacks: [MIC.clipBypass] },
-  { stage: 'Glitch buffer', jacks: [MIC.glitchTrig] },
-  { stage: 'mix', jacks: [MIC.mix] },
-]
+}[] = STAGES.map(({ stage, kind, jacks }) => ({
+  stage,
+  ...(kind !== undefined && { kind }),
+  jacks: jacks.map(j => MIC[j.jack]),
+}))
 
 /** The micPatch values of the jacks on a stage, in menu order. */
 export const jacksOn = (stage: string): number[] =>

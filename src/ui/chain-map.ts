@@ -8,7 +8,7 @@ import {
   TAPE_AT_END,
   TAPE_AT_PEDALS,
 } from '../dsp/stages/tape.ts'
-import { SUPPLY as ON, SUPPLY_KEYS } from '../dsp/supplies.ts'
+import { SUPPLIED, SUPPLY as ON } from '../dsp/supplies.ts'
 import { followsGate } from '../dsp/trigbus.ts'
 import { MACHINES } from '../machines.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
@@ -23,7 +23,6 @@ import {
   touchedCount,
 } from './controls/index.ts'
 import { intoOf, patchedInto, UNITS } from './controls/jacks.ts'
-import { SUPPLY_OF } from './controls/supply.ts'
 import { MIC_JACKS, wireLabel, wireOn, wiredJacks } from './micWiring.ts'
 import { el, textWidth, type El } from './svg.ts'
 
@@ -1471,7 +1470,9 @@ function layAcross(d: LaidDown) {
   }
 }
 
-const SUPPLY_KEY = new Map(SUPPLY_KEYS.map(k => [SUPPLY_OF[k], k]))
+const SUPPLY_KEY = new Map<string, ControlKey>(
+  SUPPLIED.map(m => [m.name, m.supply]),
+)
 
 // A machine moved to the second cells or the bench drops no tap onto the rail.
 const onSharedCells = (c: Controls, label: string) => {
