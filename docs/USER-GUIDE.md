@@ -41,6 +41,11 @@ From **add instrument**.
 
 [![The FM chip's blocks: key, processor, bus, modulator, carrier and output.](../public/guide/guide-glint-path.jpg)](https://cmdcolin.github.io/bender/app/#p=UHg&v=3 'open this in the app')
 
+[![Glint's die, its allocator keying all four voices, set to all four with minor divider taps.](../public/guide/guide-allocator.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvtAEArAIB7AIOkKIEAcSIAQCQIArwAQACAIQCAAwAAgACAQzvAQI5SCgCP7AJBqAGEQpsAgIfAR8AHwEfAR8BHwEfABEBHxECKQKJAigGBA&v=3 'open this in the app')
+
+Click **die**, then **allocator**. **All four** plays each key on all four
+voices at once; **Divider taps** picks the chord.
+
 ### Parlor, an eight-bit sampling keyboard
 
 [![Parlor's keybed.](../public/guide/guide-parlor.jpg)](https://cmdcolin.github.io/bender/app/#p=mgN4&v=3 'open this in the app')
@@ -52,6 +57,23 @@ From **add instrument**.
 [![Growler's keybed.](../public/guide/guide-growler.jpg)](https://cmdcolin.github.io/bender/app/#p=qQN4&v=3 'open this in the app')
 
 [![The monosynth's voice card: oscillators, mixer, ladder filter and loudness stage.](../public/guide/guide-growler-card.jpg)](https://cmdcolin.github.io/bender/app/#p=qQN4&v=3 'open this in the app')
+
+### Howler, a second monosynth for leads
+
+[![Howler's keybed, its melody strip beside the name.](../public/guide/guide-howler.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvtAEArAIB7AIOkKIEAcSIAQCQIGF8A5gCAm4LEAECAJgBADybAYQIL5CiBAEAHNwBAAIAZAEYAwEIyAEAAAAAAsgGALABAIAFAGQAuAMBrAIAAACgAQHYBACMAQA8HrAJXwIAWgTIAQMAABAaAgIRABEABgARAREACwARABEBBgAVABEAEQEROgIBAgDIyAQBoIQBAbQBggIoGAICQAIeAP0BAR4BJAIeAP0BABQBGgD9AQIeAP0BAR4BJAEoASQBHgEUAMCEAQDEFAACACAAtAEBAg&v=3 'open this in the app')
+
+Growler's voice card with a melody memory of its own. Click the strip, then
+**piano roll** in the drawing, to write its line.
+
+### Prattle, a talking toy's speech chip
+
+From **+ add a stage** on the map.
+
+[![Prattle's panel: the phrase it holds, a phrase box, word chips and Struck by.](../public/guide/guide-prattle.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvtAEArAIB7AIOkKIEAcSIAQCQIGF8A5gCAm6rAYQIL5CiBAEAXbAJXwIAWgTIAQMAABBpAocCKHXAAgIGBQQAMgUKAAICTAAIACgAfgBCABoAfgBOABwAOgB-&v=3 'open this in the app')
+
+Type a phrase or click words, then **say it**. **Struck by** speaks the next
+syllable on each hit of a drum. The clock, frame counter and pitch latch below
+are its bends.
 
 ### Four-track
 
@@ -76,6 +98,16 @@ doing what.
 ![Two pedals, Ricochet and Boing, joined by a cord.](../public/guide/guide-pedals.jpg)
 
 **add pedal** adds effects. Drag a cord's jack to reorder them.
+
+[![Clatter's jack menu, with Ember patched onto Clatter alone.](../public/guide/guide-jacks.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvqgEApAIB1AIOkKIEAcSIAQCQIACECOICbgACP-gHXwIAvgEAjAEARgCCAQCgAQDIAQGMAQEEABcaAgIXARcAAAEXAREAFwEXARsBFwAAOgICgIgBAYBAmwIG&v=3 'open this in the app')
+
+The **⦿** jack on a machine, pedal or bend patches the pedal onto one machine
+instead of the whole mix.
+
+[![Growler's piano roll after bit rot: red steps the memory rewrote, restore, and the memory faults.](../public/guide/guide-rot.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvtAEArAIB7AIOkKIEAcSIAQCQIGF8A5gCAm4LEAECAJgBADybAYQIL5CiBAEAHPABAAIAZAEYAwEIyAEAAAAAAsgGALgBAIAFAGQAuAMBrAIAAACgAQHYBACMAQA8HrAJXwIAWgTIAQMAABAaAgIRABEABgARAREACwARABEBBgAVABEAEQEROgIBAgDIyAQBoIQBAbQBggIoGAICQAIeAP0BAR4BJAIeAP0BABQBGgD9AQIeAP0BAR4BJAEoASQBHgEUAMCEAQDEFAACACAAlgEBAm0IAAw&v=3 'open this in the app')
+
+**memory faults**, on Growler and Howler, rot the melody as it plays. Red steps
+are what the memory holds now; **restore** writes your line back.
 
 [![The power supply: cells, reset chip and clip feeding the machines.](../public/guide/guide-power.jpg)](https://cmdcolin.github.io/bender/app/#p=rQUCAAI&v=3 'open this in the app')
 
