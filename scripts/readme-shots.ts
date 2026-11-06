@@ -16,7 +16,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// The README's gallery: `pnpm readme-shots` rewrites public/readme/*.jpg. Each
+// The README's gallery: `pnpm readme-shots` rewrites docs/readme/*.jpg. Each
 // picture is the whole app with one stage open, the part it is about outlined,
 // and a zoom of that part laid over the bench. Pass file names to retake only
 // those. Wants a Chrome and ImageMagick's `magick`.
@@ -28,7 +28,7 @@ const DPR = 2
 const PAD = 4
 const MARGIN = 24
 const ACCENT = '#ffb020'
-const OUT = 'public/readme'
+const OUT = 'docs/readme'
 
 interface Shot {
   file: string
