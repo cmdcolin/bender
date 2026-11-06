@@ -63,14 +63,14 @@ const SHOTS: Shot[] = [
     file: 'guide-app.jpg',
     select: [
       'main [class*="_bench_"]',
-      'header[class*="_bar_"]',
+      'header[class*="_header_"]',
       'aside [class*="_map_"]',
     ],
     pad: 0,
   },
   {
     file: 'guide-header.jpg',
-    select: ['header[class*="_bar_"]'],
+    select: ['header[class*="_header_"]'],
     pad: 4,
   },
   {
