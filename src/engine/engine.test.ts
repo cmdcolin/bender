@@ -1188,6 +1188,19 @@ test('a key let go on its own step is that step and no more', () => {
   expect(engine.controls.get().monoSeqStep3).toBe(REST)
 })
 
+test('Howler’s rec writes Howler’s keys into its own memory', () => {
+  const engine = new Engine()
+  engine.meter.set({ ...engine.meter.get(), leadSeqPos: 3, leadSeqFrac: 0 })
+  engine.armLeadRecord(true)
+  expect(engine.controls.get().leadSeqOn).toBe(1)
+  expect(engine.drumsPlaying.get()).toBe(true)
+  engine.noteOn(7, 1, 'mono')
+  engine.noteOn(5, 1, 'lead')
+  const c = engine.controls.get()
+  expect(c.leadSeqStep3).toBe(5)
+  expect(c.monoSeqStep3).toBe(REST)
+})
+
 const counter = (engine: Engine, tick: number, drumClock = 0) =>
   engine.meter.set({ ...engine.meter.get(), tick, drumClock, drumStepMs: 125 })
 

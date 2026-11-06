@@ -51,7 +51,7 @@ const turnOn = (stage: CardStage) => {
 
 // A voice card's melody memory: one lane of the toy roll's grid, a row per
 // pitch and a column per step. Drawing on it turns the memory on, so what the
-// roll shows is what comes out of the synth. Only Growler's records.
+// roll shows is what comes out of the synth.
 export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
   const card = CARDS[stage]
   const written = useSteps(stage)
@@ -64,7 +64,7 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
   const on = Math.round(useControlValue(onKey)) === 1
   const sync = useControlValue(keyOf(stage, 'SeqSync'))
   const playing = useLinePlaying(stage)
-  const armed = useStoreValue(engine.seqRecord)
+  const armed = useStoreValue(card.recording)
   const pos = useSeqPos(stage)
   const [base, setBase] = useState(() => baseFor([steps]))
   const paint = useRef(false)
@@ -116,27 +116,25 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
             {on ? 'on' : 'off'}
           </button>
         </Tip>
-        {stage === 'Growler' && (
-          <Tip
-            text={
-              !armed
-                ? 'play the melody in: arm this and every key you press on the machine the memory plays — on screen, on the letter keys, on a controller — writes the step the counter is standing on. Arming puts the memory on and runs the song'
-                : playing
-                  ? 'every key you press on that machine is going into the memory, and a key held across steps comes out as one long note. Press to stop'
-                  : 'armed, but the song is stopped — the keys sound and nothing is written. Run the song and they land on the step they arrive in'
+        <Tip
+          text={
+            !armed
+              ? 'play the melody in: arm this and every key you press on the machine the memory plays — on screen, on the letter keys, on a controller — writes the step the counter is standing on. Arming puts the memory on and runs the song'
+              : playing
+                ? 'every key you press on that machine is going into the memory, and a key held across steps comes out as one long note. Press to stop'
+                : 'armed, but the song is stopped — the keys sound and nothing is written. Run the song and they land on the step they arrive in'
+          }
+        >
+          <button
+            className={
+              !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
             }
+            aria-pressed={armed}
+            onClick={() => card.arm(!armed)}
           >
-            <button
-              className={
-                !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
-              }
-              aria-pressed={armed}
-              onClick={() => engine.armSeqRecord(!armed)}
-            >
-              record
-            </button>
-          </Tip>
-        )}
+            record
+          </button>
+        </Tip>
         <Tip text="Wipe every step of the memory. One entry in the walk, so ctrl+z brings it back.">
           <button className={styles.verb} onClick={() => wipe(stage)}>
             clear

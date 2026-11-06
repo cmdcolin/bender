@@ -1,3 +1,4 @@
+import { engine } from '../engine/engine.ts'
 import { cardKey, type CardSuffix } from '../monoCard.ts'
 import {
   LEAD_SEQ_ACCENT_KEYS,
@@ -21,6 +22,8 @@ export const CARDS = {
     ram: 'monoSeqRam',
     flags: 'monoSeqFlags',
     damage: 'monoSeqDamage',
+    recording: engine.seqRecord,
+    arm: (on: boolean) => engine.armSeqRecord(on),
   },
   Howler: {
     prefix: 'lead',
@@ -33,6 +36,8 @@ export const CARDS = {
     ram: 'leadSeqRam',
     flags: 'leadSeqFlags',
     damage: 'leadSeqDamage',
+    recording: engine.leadRecord,
+    arm: (on: boolean) => engine.armLeadRecord(on),
   },
 } as const
 

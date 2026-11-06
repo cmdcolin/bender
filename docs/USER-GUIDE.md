@@ -62,8 +62,8 @@ voices at once; **Divider taps** picks the chord.
 
 [![Howler's keybed, its melody strip beside the name.](../public/guide/guide-howler.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvtAEArAIB7AIOkKIEAcSIAQCQIGF8A5gCAm4LEAECAJgBADybAYQIL5CiBAEAHNwBAAIAZAEYAwEIyAEAAAAAAsgGALABAIAFAGQAuAMBrAIAAACgAQHYBACMAQA8HrAJXwIAWgTIAQMAABAaAgIRABEABgARAREACwARABEBBgAVABEAEQEROgIBAgDIyAQBoIQBAbQBggIoGAICQAIeAP0BAR4BJAIeAP0BABQBGgD9AQIeAP0BAR4BJAEoASQBHgEUAMCEAQDEFAACACAAtAEBAg&v=3 'open this in the app')
 
-Growler's voice card with a melody memory of its own. Click the strip, then
-**piano roll** in the drawing, to write its line.
+Growler's voice card with a melody memory of its own. Click the strip to draw
+its line on the piano roll, or press **rec** and play it in.
 
 ### Prattle, a talking toy's speech chip
 

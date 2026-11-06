@@ -4,7 +4,7 @@ import { Keybed } from './Keybed.tsx'
 import { CvJack } from './ModJacks.tsx'
 import styles from './MonoKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
-import { SeqRec } from './SeqRec.tsx'
+import { LeadRec, SeqRec } from './SeqRec.tsx'
 
 import type { CardStage } from './cards.ts'
 
@@ -70,7 +70,11 @@ export function MonoKeys({
       extras={
         <>
           <RailLamp onOpen={onOpen} supply={bed.supply} />
-          {stage === 'Growler' && <SeqRec dest="mono" name="Growler" />}
+          {stage === 'Growler' ? (
+            <SeqRec dest="mono" name="Growler" />
+          ) : (
+            <LeadRec />
+          )}
         </>
       }
       stage={stage}

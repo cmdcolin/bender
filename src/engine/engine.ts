@@ -42,6 +42,7 @@ import {
   asTuneLen,
   foldNote,
   HOLD,
+  LEAD_SEQ_STEP_KEYS,
   MONO_SEQ_STEP_KEYS,
   REST,
   TUNE_LANE_KEYS,
@@ -223,8 +224,8 @@ export interface Meter {
   fourShed: Float32Array
 }
 
-// The two memories a hand plays into: the toy's tune, three lanes deep, and the
-// second melody, one. Each reads its own counter off the meter.
+// The memories a hand plays into: the toy's tune, three lanes deep, the second
+// melody and Howler's, one each. Each reads its own counter off the meter.
 const MEMORIES = {
   tune: {
     pos: 'tunePos',
@@ -240,9 +241,16 @@ const MEMORIES = {
     len: 'monoSeqLen',
     lanes: [MONO_SEQ_STEP_KEYS],
   },
+  lead: {
+    pos: 'leadSeqPos',
+    frac: 'leadSeqFrac',
+    stepMs: 'leadSeqStepMs',
+    len: 'leadSeqLen',
+    lanes: [LEAD_SEQ_STEP_KEYS],
+  },
 } as const
 
-type MemoryName = keyof typeof MEMORIES
+export type MemoryName = keyof typeof MEMORIES
 
 function memoryKey(memory: MemoryName, step: number, lane: number) {
   const keys = MEMORIES[memory].lanes[lane]!
@@ -465,10 +473,11 @@ export class Engine {
       on the step the chip is standing on. Off by default, for the same reason. */
   readonly tuneRecord = createStore(false)
   readonly seqRecord = createStore(false)
+  readonly leadRecord = createStore(false)
   /** The last note recording took: which memory, the step it went to, and
       when. */
   readonly noteTaken = createStore<{
-    memory: 'tune' | 'seq'
+    memory: MemoryName
     step: number
     at: number
   } | null>(null)
@@ -1983,6 +1992,7 @@ export class Engine {
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
       this.writeNote('tune', note)
     if (this.recordsSeq(dest)) this.writeNote('seq', note)
+    if (this.recordsLead(dest)) this.writeNote('lead', note)
   }
 
   sfx(dest: 'toy' | 'fm', sfx: number, on: boolean) {
@@ -1998,6 +2008,7 @@ export class Engine {
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
       this.writeHeld('tune', note)
     if (this.recordsSeq(dest)) this.writeHeld('seq', note)
+    if (this.recordsLead(dest)) this.writeHeld('lead', note)
   }
 
   /** Whether a key, as pressed rather than as the scale lock snapped it, is
@@ -2052,6 +2063,17 @@ export class Engine {
     if (on) this.setLinePlaying(true)
   }
 
+  /** Howler's memory plays only Howler, so its rec cap has nothing to aim. */
+  armLeadRecord(on: boolean) {
+    const c = this.controls.get()
+    if (on && c.leadSeqOn !== 1) {
+      this.armStep()
+      this.set('leadSeqOn', 1)
+    }
+    this.leadRecord.set(on)
+    if (on) this.setLinePlaying(true, c.leadSeqSync)
+  }
+
   /** The second melody runs off the kit's run line when it is synced to the
       kit, and off the song's otherwise. */
   lineRuns(c: Controls = this.controls.get(), sync = c.monoSeqSync) {
@@ -2068,6 +2090,15 @@ export class Engine {
       this.seqRecord.get() &&
       this.lineRuns() &&
       dest === SEQ_DESTS[Math.round(this.controls.get().monoSeqTo)]
+    )
+  }
+
+  private recordsLead(dest: NoteDest) {
+    const c = this.controls.get()
+    return (
+      dest === 'lead' &&
+      this.leadRecord.get() &&
+      this.lineRuns(c, c.leadSeqSync)
     )
   }
 
@@ -2094,7 +2125,7 @@ export class Engine {
   private readonly struckAt: Record<
     MemoryName,
     Map<number, { step: number; lane: number }>
-  > = { tune: new Map(), seq: new Map() }
+  > = { tune: new Map(), seq: new Map(), lead: new Map() }
 
   /** Which step of a memory a note played now belongs to. */
   private memoryStep(memory: MemoryName): number {

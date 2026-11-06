@@ -69,6 +69,16 @@ test.each([
   expect(screen.getByRole('region', { name: 'piano roll' })).toBeTruthy()
 })
 
+test('Howler’s rec cap arms its own memory and rings its strip', () => {
+  render(<LeadKeys onOpen={() => {}} />)
+  expect(strip()).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'rec' }))
+  expect(engine.leadRecord.get()).toBe(true)
+  expect(engine.seqRecord.get()).toBe(false)
+  expect(engine.controls.get().leadSeqOn).toBe(1)
+  expect(strip()?.className).toMatch(/rec/)
+})
+
 const flash = () => strip()?.querySelector('rect[class*="taken"]')
 
 test('a note recording takes flashes on the strip', () => {

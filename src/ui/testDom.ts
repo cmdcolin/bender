@@ -199,6 +199,8 @@ function resetBoard() {
   engine.setDrumsPlaying(false)
   engine.drumRecord.set(false)
   engine.tuneRecord.set(false)
+  engine.seqRecord.set(false)
+  engine.leadRecord.set(false)
   letterKeys.set('toy')
   engine.held.set(new Map())
   bendRow.set(0)
