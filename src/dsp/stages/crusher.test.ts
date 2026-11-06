@@ -215,6 +215,20 @@ test('the chain hands the gate the machine it names', () => {
   expect(apart(stock, glint)).toBeLessThan(0.01)
 })
 
+test('the gate takes Howler’s words once Howler is up in the mix', () => {
+  const xor = {
+    ...WET,
+    crushLogic: CRUSH_LOGIC.indexOf('XOR'),
+    crushWith: CRUSH_WITH.indexOf('howler'),
+  }
+  const stock = render(WET, 1)
+  expect(apart(stock, render(xor, 1))).toBeLessThan(0.01)
+  const up = { leadLevel: 0.6 }
+  expect(
+    apart(render({ ...WET, ...up }, 1), render({ ...xor, ...up }, 1)),
+  ).toBeGreaterThan(0.4)
+})
+
 test('a SAR on a starved toy comes out coarser than the stock crusher', () => {
   const starved = { ...WET, chipSync: 0, chipStarve: 0.35 }
   const stock = render(starved, 2)

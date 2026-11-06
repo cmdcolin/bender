@@ -386,6 +386,12 @@ test('a carrier off the kit gates the board to the hits', () => {
   expect(quiet(knob)).toBeLessThan(0.2)
 })
 
+test('a carrier off Howler is silence until Howler is up', () => {
+  const board: Partial<Controls> = { ...RING, ringFrom: from('howler') }
+  expect(rms(render(board, 2))).toBeLessThan(1e-4)
+  expect(rms(render({ ...board, leadLevel: 0.6 }, 2))).toBeGreaterThan(0.01)
+})
+
 test('the mic carrier still overrides the oscillator', () => {
   const silent = play({ ringHz: 430, micPatch: 4 })
   // nothing is coming in the mic, so the carrier is flat zero and the wet path

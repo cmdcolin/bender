@@ -45,6 +45,7 @@ const WITH = [
   ['keys', 'pcmKeys'],
   ['growler', 'monoSynth'],
   ['layercake', 'fourTrack'],
+  ['howler', 'leadSynth'],
 ] as const satisfies readonly (readonly [string, SourceTap])[]
 
 export const CRUSH_WITH = WITH.map(([label]) => label)

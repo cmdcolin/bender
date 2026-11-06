@@ -50,6 +50,8 @@ const CARRIERS = [
   ['layercake', 'fourTrack', NOW],
   ['sheet', 'sheet', NOW],
   ['bottle', 'bottle', NOW],
+  ['howler', 'leadSynth', NOW],
+  ['prattle', 'prattle', NOW],
 ] as const satisfies readonly (readonly [string, SourceTap | null, number])[]
 
 export const RING_FROM = CARRIERS.map(([label]) => label)
