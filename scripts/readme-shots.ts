@@ -48,32 +48,12 @@ const SHOTS: Shot[] = [
     zoom: 'aside [aria-label="signal path"]',
     width: 1800,
   },
-  { file: 'plinky.jpg', stage: 'Plinky', zoom: drawing('toy chip die') },
   { file: 'clatter.jpg', stage: 'Clatter', zoom: drawing('toy drum voices') },
-  {
-    file: 'glint.jpg',
-    stage: 'Glint',
-    board: { fmLevel: 0.6 },
-    zoom: drawing('glint signal path'),
-  },
-  {
-    file: 'parlor.jpg',
-    stage: 'Parlor',
-    board: { pcmLevel: 0.6 },
-    zoom: drawing('parlor signal path'),
-  },
   {
     file: 'growler.jpg',
     stage: 'Growler',
     board: { monoLevel: 0.6 },
     zoom: drawing('growler voice card'),
-  },
-  {
-    file: 'layercake.jpg',
-    stage: 'Layercake',
-    board: { fourLevel: 0.7 },
-    press: 'channel strip',
-    zoom: drawing('track 1 signal path'),
   },
   {
     file: 'wraith.jpg',
@@ -88,42 +68,10 @@ const SHOTS: Shot[] = [
     zoom: drawing('ember signal path and tone'),
   },
   {
-    file: 'clipper.jpg',
-    stage: 'Clipper',
-    board: { distMix: 0.5 },
-    zoom: drawing("the toy's amp"),
-  },
-  {
-    file: 'tape-machine.jpg',
-    stage: 'Tape machine',
-    board: { tapeMix: 0.5 },
-    zoom: drawing('tape machine signal path'),
-  },
-  {
     file: 'plinky-bus.jpg',
     stage: 'Plinky',
     press: 'bus',
     zoom: drawing('plinky bus wiring'),
-  },
-  {
-    file: 'glint-die.jpg',
-    stage: 'Glint',
-    board: { fmLevel: 0.6 },
-    press: 'die',
-    zoom: drawing('FM die and driver'),
-  },
-  {
-    file: 'parlor-bus.jpg',
-    stage: 'Parlor',
-    board: { pcmLevel: 0.6 },
-    press: 'addr bus',
-    zoom: drawing('parlor bus wiring'),
-  },
-  {
-    file: 'growler-memory.jpg',
-    stage: 'Growler',
-    board: { monoLevel: 0.6 },
-    zoom: drawing('growler memory bus wiring'),
   },
   {
     file: 'prattle-bus.jpg',
@@ -131,12 +79,6 @@ const SHOTS: Shot[] = [
     board: { talkLevel: 0.6 },
     press: 'fault on the bus',
     zoom: drawing('prattle bus wiring'),
-  },
-  {
-    file: 'crusher-bus.jpg',
-    stage: 'Crusher',
-    board: { crushMix: 0.5 },
-    zoom: drawing('crusher bus wiring'),
   },
 ]
 
@@ -277,7 +219,7 @@ function compose(raw: string, work: string, shot: Shot, rect: Rect) {
     `+${at}+${VIEW.height * DPR - insetH - at}`,
     '-composite',
     '-resize',
-    `${shot.width ?? 1200}x`,
+    `${shot.width ?? 1600}x`,
     '-quality',
     '84',
     join(OUT, shot.file),
