@@ -4,13 +4,8 @@ import { SUPPLY, SUPPLY_KEYS } from '../../dsp/supplies.ts'
 import { followsGate, GATE_ALL, gateLane } from '../../dsp/trigbus.ts'
 import { LANE_KEYS, LANE_MAX } from '../../lanes.ts'
 import { asTuneLen, isNote, laneSteps } from '../../tune.ts'
-import {
-  BEND_SLOT_KEYS,
-  bendAt,
-  choiceValue,
-  sliderFor,
-  snapToStep,
-} from '../controls/index.ts'
+import { BENDS, choiceValue, sliderFor, snapToStep } from '../controls/index.ts'
+import { bendRuns } from '../controls/jacks.ts'
 import { fromPos, ordinary } from '../slider-scale.ts'
 import { inTime } from './quantize.ts'
 
@@ -40,14 +35,15 @@ const depthTarget = (dest: number) => DEPTH_DEST.indexOf(Math.round(dest))
 
 const isUp = (c: Controls, key: ControlKey) => c[key] > sliderFor(key).min
 
-const slotted = (c: Controls, label: string) =>
-  BEND_SLOT_KEYS.some(k => bendAt(c[k])?.label === label)
+const runs = (c: Controls, label: string) =>
+  BENDS.some(b => b.label === label && bendRuns(c, b.group))
 
 // Where a wire can land, and what has to be up for landing there to be a sound
 // rather than a row of text. `up` is everything that must be off its bottom
 // stop; `oneOf` is a rail several machines share, where any one of them running
-// is enough. A bend also has to be in a slot — a stage that isn't in the chain
-// is not in the chain however wet its mix says it is.
+// is enough. A bend also has to be in a slot or patched onto a machine — a
+// stage that isn't in the chain is not in the chain however wet its mix says
+// it is.
 //
 // `hands` is a stage only you can bring in: there is no sample under the
 // sampler until you fetch one, so a roll never lands a wire there cold, and
@@ -254,12 +250,12 @@ const FB_AMOUNT = choiceValue('mod0Dest', 'fb amount')
 const heard = (c: Controls, l: Landing) =>
   l.up.every(k => isUp(c, k)) &&
   (!l.oneOf || l.oneOf.some(k => isUp(c, k))) &&
-  (!l.bend || slotted(c, l.bend)) &&
+  (!l.bend || runs(c, l.bend)) &&
   (!l.needs || l.needs(c))
 
 /** True when a roll is allowed to turn this landing on. */
 const reachable = (c: Controls, l: Landing) =>
-  !l.hands && (!l.bend || slotted(c, l.bend)) && (!l.needs || l.needs(c))
+  !l.hands && (!l.bend || runs(c, l.bend)) && (!l.needs || l.needs(c))
 
 // Where a wire can pick up, and what has to be running for it to be carrying
 // anything.

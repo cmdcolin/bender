@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { jackFor } from '../jacks.ts'
 import { BEND_SLOT_KEYS, bendAt } from '../ui/controls/index.ts'
 import { heard } from '../ui/presets/scenarios.ts'
 import { TOUCH_MODES, tiltPoint, touchMode, touchPush } from './touch.ts'
@@ -76,4 +77,15 @@ test('tilt reads from where the phone sat when it came on', () => {
   expect(tiltPoint({ beta: 60, gamma: 25 }, rest).x).toBe(1)
   expect(tiltPoint({ beta: 35, gamma: 0 }, rest).y).toBe(1)
   expect(tiltPoint({ beta: 120, gamma: -90 }, rest)).toEqual({ x: 0, y: 0 })
+})
+
+test('a bend patched onto a machine borrows no slot', () => {
+  const patched = {
+    ...DEFAULT_CONTROLS,
+    bendSlot3: 0,
+    filtInto: jackFor('toyDrum'),
+  }
+  expect(touchPush(mode('dub'), 0.5, 0.5, patched)).not.toHaveProperty(
+    LAST_SLOT,
+  )
 })

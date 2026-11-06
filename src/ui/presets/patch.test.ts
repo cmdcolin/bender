@@ -8,6 +8,7 @@ import {
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
 import { YOURS } from '../../dsp/stages/roms.ts'
 import { mulberry32 } from '../../dsp/util/rng.ts'
+import { jackFor } from '../../jacks.ts'
 import { LANE_KEYS } from '../../lanes.ts'
 import { BENDS, GROUPS, choiceValue } from '../controls/index.ts'
 import { applyPreset } from './apply.ts'
@@ -356,4 +357,19 @@ test('a rolled lane never lands a step on minus zero', () => {
     const negative = LANE_KEYS.flat().filter(k => Object.is(board[k], -0))
     expect(negative, `seed ${seed}`).toEqual([])
   }
+})
+
+test('a wire onto a bend patched onto a machine is a wire onto a running stage', () => {
+  const c: Controls = {
+    ...DEFAULT_CONTROLS,
+    bendSlot1: 0,
+    crushMix: 1,
+    crushInto: jackFor('pcmKeys'),
+    mod0Src: choiceValue('mod0Src', 'LFO'),
+    mod0Dest: choiceValue('mod0Dest', 'bit depth'),
+    mod0Depth: 0.8,
+  }
+  expect(bayFaults(c)).toEqual([])
+  for (let seed = 1; seed <= 10; seed++)
+    expect(coherePatch(c, mulberry32(seed)).mod0Dest).toBe(c.mod0Dest)
 })

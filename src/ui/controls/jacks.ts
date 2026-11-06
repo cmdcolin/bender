@@ -1,9 +1,9 @@
 import { JACK_TAPS } from '../../jacks.ts'
 import { PEDALS } from '../../pedals.ts'
-import { BENDS } from './bends.ts'
+import { BEND_SLOT_KEYS, bendAt, BENDS } from './bends.ts'
 import { CHANNELS } from './mix.ts'
 
-import type { ControlKey } from '../../controls.ts'
+import type { ControlKey, Controls } from '../../controls.ts'
 import type { Group, SliderDef } from './types.ts'
 
 export const MASTER = 'master'
@@ -29,6 +29,16 @@ export const intoOf = (stage: string): ControlKey | undefined =>
 export const patchedInto = (value: number): string | undefined => {
   const name = JACK_NAMES[Math.round(value)]
   return name === MASTER ? undefined : name
+}
+
+/** Whether a bend runs at all: patched onto a machine, or held by a socket. */
+export const bendRuns = (c: Controls, group: string) => {
+  const bend = BENDS.find(b => b.group === group)
+  return (
+    bend !== undefined &&
+    (patchedInto(c[bend.into]) !== undefined ||
+      BEND_SLOT_KEYS.some(k => bendAt(c[k])?.group === group))
+  )
 }
 
 const jackSlider = (key: ControlKey, stage: string): SliderDef => ({

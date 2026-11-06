@@ -1,9 +1,11 @@
 import { expect, test } from 'vitest'
 
+import { DEFAULT_CONTROLS } from '../../controls.ts'
 import { mulberry32 } from '../../dsp/util/rng.ts'
+import { jackFor } from '../../jacks.ts'
 import { BENDS, BEND_SLOT_KEYS } from '../controls/index.ts'
 import { CUTS, cutStands, cutWired } from './cuts.ts'
-import { SCENARIOS } from './scenarios.ts'
+import { heard, inChain, SCENARIOS } from './scenarios.ts'
 import { mine, yours } from './testBoard.ts'
 
 const scenarioNamed = (name: string) =>
@@ -109,4 +111,13 @@ test('random dub puts the echo on a dotted or straight division of the beat', ()
     expect(near, `seed ${seed}: ${ratio}`).toBe(true)
     expect(after.dlyMix).toBeGreaterThan(0)
   }
+})
+
+// A bend patched onto a machine runs there with no socket holding it.
+test('a bend patched onto a machine is in the chain and heard', () => {
+  const c = { ...DEFAULT_CONTROLS, crushMix: 1, crushInto: jackFor('pcmKeys') }
+  for (const k of BEND_SLOT_KEYS) if (Math.round(c[k]) === 2) c[k] = 0
+  expect(inChain(c, 'Crusher')).toBe(true)
+  expect(heard(c, 'bits')).toBe(true)
+  expect(inChain({ ...c, crushInto: 0 }, 'Crusher')).toBe(false)
 })

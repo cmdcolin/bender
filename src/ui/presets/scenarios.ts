@@ -9,6 +9,7 @@ import {
   sliderFor,
   snapToStep,
 } from '../controls/index.ts'
+import { bendRuns } from '../controls/jacks.ts'
 import { fromPos } from '../slider-scale.ts'
 import { bypassOf } from '../stageLevels.ts'
 import { applyCut, CUTS, type CutDef } from './cuts.ts'
@@ -158,8 +159,7 @@ export const gateOf = (group: string): ControlKey | undefined => {
 }
 
 export const inChain = (c: Controls, group: string) =>
-  !BENDS.some(b => b.group === group) ||
-  BEND_SLOT_KEYS.some(k => bendAt(c[k])?.group === group)
+  !BENDS.some(b => b.group === group) || bendRuns(c, group)
 
 /** Whether moving this control can be heard on the board as it stands. */
 export const bypassed = (c: Controls, group: string) => {
@@ -352,10 +352,7 @@ function dub(current: Controls, rand: () => number): Controls {
   set('revKick', 0.2, 0.5)
   set('drumTune', 0.6, 0.9)
   set('drumDecay', 1.3, 3)
-  if (
-    rand() < 0.5 &&
-    BEND_SLOT_KEYS.some(k => bendAt(current[k])?.label === 'filt')
-  ) {
+  if (rand() < 0.5 && bendRuns(current, 'Screech filter')) {
     next.filtMode = 0
     set('filtHz', 500, 1200)
     set('filtRes', 0.6, 0.9)
