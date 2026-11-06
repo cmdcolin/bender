@@ -3,6 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { packParams } from '../engine/params.ts'
 import { buildBender } from './build.ts'
+import { FAULT_NAMES } from './bus.ts'
 import { DEST, hop } from './modbus.ts'
 import { BLOCK } from './stage.ts'
 import { makeIo, pitchHz, render, rms, SR, tail } from './testRender.ts'
@@ -309,7 +310,7 @@ test.each([
     chip: 'toy data fault',
     board: { chipLevel: 0.8, chipDataLine: 2 },
     dest: DEST.chipDataFault,
-    depth: 0.5,
+    depth: 2 / FAULT_NAMES.length,
     byHand: { chipDataFault: 2 },
   },
   {
