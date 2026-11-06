@@ -4,6 +4,8 @@ import pkg from '../package.json' with { type: 'json' }
 import { DEFAULT_CONTROLS } from '../src/controls.ts'
 import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums.ts'
 import { ROMS } from '../src/dsp/stages/roms.ts'
+import { SUPPLIED } from '../src/dsp/supplies.ts'
+import { machineNamed } from '../src/machines.ts'
 import { PEDAL_ORDERS } from '../src/pedals.ts'
 import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends.ts'
 import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls/index.ts'
@@ -18,36 +20,13 @@ import type { Group, SliderDef } from '../src/ui/controls/types.ts'
 
 // Generates docs/features.md; features.test.ts fails if the committed copy
 // falls behind. Counts, group names, ranges and choices come from the control
-// tables, each control's line comes from its tooltip, and BLURBS holds the text
-// a table cannot say. A group without a BLURBS entry throws.
+// tables, each control's line comes from its tooltip, and a machine's record or
+// BLURBS holds the text a table cannot say. A group without either throws.
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const BLURBS: Record<string, string> = {
-  Plinky:
-    'A square-wave divider chip running a ROM, with a tone control that taps the divider at a different width, an auto bass-chord section, playable voices over the top and six effect buttons that sweep the divider. Its clock, counter, bias and gate are each a place to solder a pot onto: *Bend spot* picks which and *Bend pot* sets how far. The panel *Power supply* holds the battery rail that Plinky shares with four other machines.',
-  'Power supply':
-    'Plinky, drums, Glint, Parlor, Growler, Howler and Prattle all run off this battery rail, so a sag here bends all seven at once. *Starve* pulls the rail down, *Batteries* keeps it below full, *Lead resistance* makes every note sag it on the attack, and *Reservoir* sets how long the rail takes to get there. *Watchdog* is the voltage at which the reset chip reboots the chips, and *Latch-up* is how often a brownout jams one instead. The *Clip* knobs set the paperclip: how often it touches, how hard it bites, how long it stays, and the charge and release rates. A release faster than the charge makes the touch a dive.',
-  Clatter:
-    'A step grid with a length per row, so a five-step hat runs against a sixteen-step kick until they line back up. *Retrigger* repeats the current step at audio rate. *Cross-patch* connects one voice’s amplifier to another’s envelope, so a hit on one voice opens the amplifier of a voice that was not struck. *Address line* and *Data line* cut the wires between the step counter and the pattern memory: the counter keeps counting, the memory returns the wrong steps, and the machine plays a pattern that differs from the one in the grid.',
-  Glint:
-    'The board’s FM synthesiser: two operators a voice, four voices, on the same rail. It has no sequencer: its key input is soldered onto the toy’s gate line, so out of the box it plays whatever strikes a note there. *Struck by* also clips the kit’s trigger lines on, and *Follows toy* cuts the gate jumper (it then reads *own keys only*), so Glint plays only from the keybed on its board. Once the chip is up in the mix, the panel draws that keybed under the toy’s, with a hold and octave for each, and the *keys* switch on either deck sets which of the two the computer’s letter keys play. A processor configures Glint a byte at a time over a bus, and *Data line* and *Address line* cut that bus: a byte that lands wrong stays wrong until the processor writes that register again, and if the wire carrying the key back up cannot go low, the note never ends. *Wave line* cuts the other bus, which the processor never touches. Glint looks its sine up in a table by address, so a fault on that bus reshapes the wave as you play, and the wave is whole again as soon as the fault clears. *Effect* plays a bird, surf, wind, a siren or crickets from the ROM. Each effect is a program of register writes, and these programs write to the bus more often than anything else does. The effect buttons over the keys run any of them while held.',
-  Parlor:
-    'An eight-bit sampling home keyboard, and the only machine on this board that makes pads, strings, choirs and bells. It has no oscillator: a ROM holds one short recording of each voice, an attack and then a loop, and a counter steps through that ROM at a rate set by the note. The ROM was cut at 9.9 kHz and the output is not interpolated, so every voice has its images over it, and *Tone*, a two-pole reconstruction filter, sets how much of that you hear. The rate is a twelve-bit divider, so the top octave comes out a few cents sharp and the bottom is in tune. *Address line* cuts the counter’s wires, so each word is real but read from the wrong place and a voice folds onto its first half or reads every sample twice. *Data line* cuts the wires out of the ROM; held high, the top wire folds the bottom half of every wave up onto the top of it. *Chord memory* puts a voicing under one key and fills all four voices with it. *sampled* plays whatever you dropped on the sampler across the keyboard, from a second and a half of memory, with the reel’s loop markers as its loop.',
-  Growler:
-    'A three-oscillator monosynth voice card after the Model D, soldered onto the toy’s supply and gate line. It has three band-limited oscillators with hard sync and a sweep for osc 2, a mixer with noise and the output looped back in, and a four-pole transistor ladder filter that saturates and self-oscillates. It also has two contour generators, glide, and osc 3 as a modulator at audio rate or below. Out of the box the toy’s tune plays it two octaves down; *Gate* sets how long each struck note stays down, and at 1 the tune plays legato and slides. *Struck by* clips the kit’s trigger lines on, so a kick can restart the bass. The voice card has these faults: a converter with no heater, a VCA that leaks, oversized contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck bit on the key DAC, a weak regulator, an untrimmed VCA that thumps and a ladder input pair that folds. The melody memory has faults of its own under *memory faults*: address and data lines, a counter whose carry is cut, a write enable that leaks each note into the next step, and a starved refresh that leaks a bit at a time. The last two change what the memory holds, and *restore* on the roll writes the line back.',
-  Howler:
-    "A second build of Growler’s card, voiced as a lead: 8′, osc 2 hard-synced and swept by the filter contour, the ladder near oscillation and its folding pair partly in, with a short gate and a hard accent. It has a 32-step melody memory of its own, kit-synced like Growler’s, so a lead plays over the bassline, with the same *memory faults* as Growler’s and wired apart from them. `bender.line(notes, { on: 'Howler' })` writes it, and *lead split* on the MIDI menu plays Growler under the split and Howler over it.",
-  Prattle:
-    "A talking toy's speech chip: a ten-stage lattice filter excited by a glottal pulse off a pitch divider or by a noise register, reading 54 allophones from ROM, each a run of frames of energy, pitch and ten quantised reflection coefficients worked out from formant targets. One RC clock runs the samples, the pitch and the frames. Type a phrase or click words into its box; numbers and techno words come from a dictionary and the rest is sounded out. *Struck by* speaks a syllable per kit hit, so words land on the grid, and *Frame clock from* can run the frames off the kit's counter. Faults: the RC clock, a frame divider that smears or stops on one vowel, a cut carry that loops the frame counter into a stutter, the coefficient ROM's address and data wires (D10 and D11 push a coefficient past one and the lattice howls into its saturating adders), the pitch latch, a stuck voicing gate and the board leaking onto the excitation. *Prattle in* puts the mic in place of the buzz. `bender.speak('kill the bass')` sets the words.",
-  'Chaos osc':
-    'Two oscillators share one starving supply: B modulates A’s frequency, the output current drains the rail, the rail modulates pitch and amplitude, and the stall-and-recover cycle motorboats without any input.',
-  'Noise & crackle':
-    'Hiss with a colour control, and sparse crackle with a rate control.',
-  Spool:
-    'A loaded audio file, looping through the chain. With *Struck by* on a voice and *Ending* on one-shot, it plays whatever you dropped as a seventh drum voice. A bay wire can connect to the reel’s capstan and both loop markers, so it can shift the reel’s pitch as a starve shifts the toy’s, or move the loop window around the recording while the head plays on.',
-  Layercake:
-    'A cassette four-track: a desk of four channel strips, each with knobs and a fader, in front of four tape loops, each cut to a separate length and all on one capstan. A channel takes its input from its loop, the board, the mic or the desk’s aux return, passes it through a trim preamp and three bands of EQ into a fader and an aux send, and records onto its loop over whatever the erase head left. With input on the board and a loop recording, the signal loops round the whole board, so each lap comes back through every bend again. With input on the aux and its send up, the desk is a mixer with nothing plugged in: the sweepable mid tunes the squeal and the op-amp rails clip it. *Wear* sheds oxide at the same places every lap, and *Batteries* lowers the motor and the rails together.',
+  'Power supply': `${andList(SUPPLIED.map(m => m.name))} all run off this battery rail, so a sag here bends all ${num(SUPPLIED.length)} at once. *Starve* pulls the rail down, *Batteries* keeps it below full, *Lead resistance* makes every note sag it on the attack, and *Reservoir* sets how long the rail takes to get there. *Watchdog* is the voltage at which the reset chip reboots the chips, and *Latch-up* is how often a brownout jams one instead. The *Clip* knobs set the paperclip: how often it touches, how hard it bites, how long it stays, and the charge and release rates. A release faster than the charge makes the touch a dive.`,
   Mic: 'A live microphone, the one source that need not reach the mix. *Mic patch* picks the jack: the mix, the toy’s supply rail, clock pin, address bus or data bus, the oscillator’s FM or sync input, the delay’s feedback, the ring modulator’s carrier, a trigger line, Spool’s capstan motor, Growler’s or Howler’s external input, Glint’s data bus or Prattle’s mouth. *mic into* on the bench bar and the mic cap on each machine list the jacks with what a voice does at each. *Second jack* solders a second wire off the mic, so one voice drives two machines. *Delay* puts a delay line between the mic and its jacks, so a jack hears you late, *Repeats* sends it round again, *Delay on* puts it on one wire only, and *Freeze* holds what is in it and plays it round and round. With the mic on the board, its face on the bench holds the switch that opens it, its level, the delay and the freeze.',
   'Mix bus':
     'The seven sources meet at this desk, and every fader appears here as well as on its machine’s panel, under the machine’s name, with a meter beside it that reads what that channel puts on the bus, and the bus’s own meter under the lot. A fader’s position does not show whether sound is coming out. Glint’s fader boots at zero, and a Glint turned up with nothing striking it (no hand on its keys, no tune next door) sits at three quarters and plays silence. *Bus drive* is the summing amp, at unity gain at 0 dB and the one saturation ahead of the bends.',
@@ -68,10 +47,6 @@ const BLURBS: Record<string, string> = {
     'An analog octave pedal after MicroSputter V2: a comparator with hysteresis clocks a divider for the sub, an XOR against its own delayed edge doubles it for the octave up, and a switch samples the input on every divider rise. With Track down, harmonics and the divider’s own output reach the comparator, and a slow recovery after each edge makes it fire on extra edges and drop others. Bounce swaps the octave and the sub on a clock, up to audio rate.',
   Codec:
     'A perceptual codec, encoder into decoder: an MDCT, a bit budget spent on the loudest bands each frame, and a decoder that conceals lost frames. Low bitrates make bands flicker and the top end swirl, long frames smear hits into pre-echo, bit errors jump bands and chirp single bins, a decoder near its deadline stutters when the supply sags, and fed back into itself the codec re-encodes its own artefacts until they ring.',
-  Bottle:
-    'A glass bottle on a table with a contact mic taped to its side. Click its face to tap it where you click: across is round the bottle, down is along it. Things also tap it at random, or a kit voice or a key does. Fill pours water in, lower and duller the fuller it is. Shake lets the board’s own sound sing in the glass, and turned well up it howls.',
-  Sheet:
-    'A big steel sheet with two contact mics on it. Click its face to hit it where you click; things also strike it at random, or a kit voice or a key does, and a hit sometimes bounces. The board’s own sound shakes it so it hums along, and turned well up it hears itself and howls. A loud sheet rattles against what it lies on. Hold runs from lying on a floor to hung from a corner.',
   'Rack verb':
     'A budget digital reverb from the 1980s. A plate program runs out of one 64K-word memory on a 29.8 kHz clock, with 12-bit words and fixed 10 kHz filters either side. A slow clock makes the room longer and grittier, and moving it bends the tail like tape speed. Refresh fail leaks bits out of the memory, a short word turns each tail into hash, and a fault on the address bus pulls audio from seconds ago into the room. Freeze holds the tank indefinitely.',
   'Signal order':
@@ -182,7 +157,7 @@ const presetUrl = (p: PresetDef) =>
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-const num = (n: number) => {
+function num(n: number) {
   const words = [
     'zero',
     'one',
@@ -199,6 +174,12 @@ const num = (n: number) => {
     'twelve',
   ]
   return words[n] ?? String(n)
+}
+
+function andList(words: readonly string[]) {
+  return words.length < 2
+    ? words.join('')
+    : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`
 }
 
 const n = (v: number) => String(Number(v.toFixed(4)))
@@ -333,10 +314,10 @@ the result:\n\n${lines}\n`
 }
 
 function groupSection(g: Group): string {
-  const blurb = BLURBS[g.name]
+  const blurb = machineNamed(g.name)?.blurb ?? BLURBS[g.name]
   if (!blurb) {
     throw new Error(
-      `no blurb for control group '${g.name}' — add one to BLURBS in scripts/features.ts`,
+      `no blurb for control group '${g.name}' — add one to its record in src/machines.ts or to BLURBS in scripts/features.ts`,
     )
   }
   const table = rows(g.sliders).join('\n')

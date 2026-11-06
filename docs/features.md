@@ -1074,7 +1074,7 @@ delay and the freeze.
 
 ### Power supply
 
-Plinky, drums, Glint, Parlor, Growler, Howler and Prattle all run off this
+Plinky, Clatter, Glint, Parlor, Growler, Howler and Prattle all run off this
 battery rail, so a sag here bends all seven at once. _Starve_ pulls the rail
 down, _Batteries_ keeps it below full, _Lead resistance_ makes every note sag it
 on the attack, and _Reservoir_ sets how long the rail takes to get there.
