@@ -39,6 +39,7 @@ import { CvJack, ModOut } from './ModJacks.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { NoteDest } from '../engine/messages.ts'
+import type { GatedDest } from '../machines.ts'
 
 // The patch cords on the bench, in lanes down a gutter beside the keyboards.
 // benchCables.ts says what each line carries and how its jacks plug:
@@ -50,7 +51,7 @@ import type { NoteDest } from '../engine/messages.ts'
 // - MOD (blue) carries a patch bay source from the MOD plate to a machine's CV
 //   jack, one of the bay's four wires.
 
-type Keyboard = 'fm' | 'pcm' | 'mono' | 'lead'
+type Keyboard = GatedDest
 
 const TRIG_VOICES = Array.from({ length: ANY_CHOICE }, (_, i) => i + 1)
 

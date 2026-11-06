@@ -36,28 +36,11 @@ import { Tip } from './Tip.tsx'
 
 import type { NoteDest } from '../engine/messages.ts'
 
-// The machines with keys on them, and the two stores each one reports through:
-// what a hand is holding down on that bed, and what the chip behind it is
-// sounding on its own. One component draws every bed, so the wiring is a table.
-const DECK = {
-  toy: { down: engine.keysDown, notes: engine.chipNotes },
-  fm: { down: engine.fmKeysDown, notes: engine.fmNotes },
-  pcm: { down: engine.pcmKeysDown, notes: engine.pcmNotes },
-  mono: { down: engine.monoKeysDown, notes: engine.monoNotes },
-  lead: { down: engine.leadKeysDown, notes: engine.leadNotes },
-} satisfies Record<NoteDest, unknown>
-
 // There is one computer keyboard in front of the panel and several beds on it,
 // so switching the letters off here switches them on somewhere. The toy is the
 // only bed always drawn — the others appear when their fader comes up — so the
 // letters go back to it, and from the toy they go on to the FM chip.
-const NEXT_BED: Record<NoteDest, NoteDest> = {
-  toy: 'fm',
-  fm: 'toy',
-  pcm: 'toy',
-  mono: 'toy',
-  lead: 'toy',
-}
+const nextBed = (dest: NoteDest): NoteDest => (dest === 'toy' ? 'fm' : 'toy')
 
 // Who is holding a key down, and so what colour it is.
 type Lit = 'hand' | 'chip' | 'dark'
@@ -181,8 +164,10 @@ export function Keybed({
   // which for the toy is the ROM's tune and the backing under it, and for the
   // other two is the toy's gate and the kit's trigger lines. Your own notes are
   // in both, a meter apart, so yours wins and the chip's is what is left.
-  const keysDown = useStoreValue(DECK[dest].down)
-  const chipNotes = useStoreValue(DECK[dest].notes)
+  // What a hand is holding down on this bed, and what the chip behind it is
+  // sounding on its own.
+  const keysDown = useStoreValue(engine.keysDownOn[dest])
+  const chipNotes = useStoreValue(engine.notesOn[dest])
   const owns = useStoreValue(letterKeys) === dest
   const keyScale = useControlValue('keyScale')
   const keyRoot = useControlValue('keyRoot')
@@ -197,7 +182,7 @@ export function Keybed({
   const map = useStoreValue(keymap)
   const noteLetters = noteKeys(map)
   const octaveLetters = octaveKeys(map)
-  const other = NEXT_BED[dest]
+  const other = nextBed(dest)
   const isDown = (key: number) => held.current.has(at(key))
   const touched = (semitone: number) =>
     touching.has(semitone) && engine.isStruck(semitone, dest)

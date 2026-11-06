@@ -336,6 +336,9 @@ export type MachineName = Machine['name']
 export type SourceTap = Machine['tap']
 export type NoteDest = Extract<Machine, { keybed: string }>['keybed']
 
+/** The keybeds on Plinky's gate line, each behind a jumper. */
+export type GatedDest = Extract<Machine, { keyGate: string }>['keybed']
+
 /** The machines on the toy board, inside its frame and on its rail. */
 export type BoardMachine = Exclude<Machine, { map: 'line' }>['name']
 

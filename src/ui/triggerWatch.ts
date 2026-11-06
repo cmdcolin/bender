@@ -1,29 +1,18 @@
 import { N_DRUM_VOICES, voiceBit } from '../drums.ts'
 import { followsGate, voiceMask } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
+import { KEY_RUNS, TRIGGER_CABLES } from './connections.ts'
 
 // How long a wire stays lit after a kit hit: the same as a pad on the grid.
 const FLASH_MS = 110
 
 // The kit's bridges, by the wire the map draws them as and the control that
 // picks the voice.
-const BRIDGES = [
-  'trigToKeys',
-  'trigToDrum',
-  'fmStruck',
-  'pcmStruck',
-  'monoStruck',
-  'leadStruck',
-] as const
+const BRIDGES = TRIGGER_CABLES.map(x => x.key)
 
 // The gate line's runs, each live while a jumper at or beyond it is
 // soldered and that machine is sounding a note.
-const KEY_RUNS = [
-  ['key-line', 'fmKeyGate', engine.fmNotes],
-  ['key-line-pcm', 'pcmKeyGate', engine.pcmNotes],
-  ['key-line-mono', 'monoKeyGate', engine.monoNotes],
-  ['key-line-lead', 'leadKeyGate', engine.leadNotes],
-] as const
+const RUNS = KEY_RUNS.map(r => ({ ...r, notes: engine.notesOn[r.keybed] }))
 
 /** Marks `data-live` on the map's wires that are carrying a trigger right now:
     a bridge while the kit voice it listens to is hitting, a run of the gate line
@@ -47,10 +36,10 @@ export function watchTriggers(root: HTMLElement): () => void {
       if (struck & voiceMask(Math.round(c[key]))) live.add(key)
 
     if (engine.chipNotes.get().size > 0) {
-      const reaching = KEY_RUNS.map(
-        ([, gate, notes]) => followsGate(c[gate]) && notes.get().size > 0,
+      const reaching = RUNS.map(
+        r => followsGate(c[r.jumper]) && r.notes.get().size > 0,
       )
-      for (const [i, [id]] of KEY_RUNS.entries())
+      for (const [i, { id }] of RUNS.entries())
         if (reaching.slice(i).some(Boolean)) live.add(id)
     }
 
@@ -77,7 +66,7 @@ export function watchTriggers(root: HTMLElement): () => void {
   const offs = [
     engine.meter.subscribe(post),
     engine.chipNotes.subscribe(paint),
-    ...KEY_RUNS.map(([, , notes]) => notes.subscribe(paint)),
+    ...RUNS.map(r => r.notes.subscribe(paint)),
   ]
   return () => {
     clearTimeout(timer)

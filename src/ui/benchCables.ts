@@ -1,7 +1,9 @@
 import { VOICE_LABELS } from '../drums.ts'
 import { ANY_CHOICE } from '../dsp/trigbus.ts'
+import { KEYBEDS } from '../machines.ts'
 import {
   connectionInto,
+  KEY_RUNS,
   MACHINE_OF,
   PLINKY_TO_KIT,
   SIGNAL_COLOUR,
@@ -64,21 +66,14 @@ export function endOf(key: string | undefined): End | null {
 
 /** A machine whose GATE jack takes Plinky's notes. */
 type Taker = Exclude<NoteDest, 'toy'> | 'kit'
-const GATE_TAKERS: readonly Taker[] = ['fm', 'pcm', 'mono', 'lead', 'kit']
+const GATE_TAKERS: readonly Taker[] = [...KEY_RUNS.map(r => r.keybed), 'kit']
 
 export const gateInto = (taker: Taker): Connection =>
   taker === 'kit' ? PLINKY_TO_KIT : connectionInto(MACHINE_OF[taker], 'notes')!
 
 /** A TRIG input: a keyboard's, or the ADSR's gate on the MOD plate. */
 type TrigTaker = NoteDest | 'adsr'
-const TRIG_TAKERS: readonly TrigTaker[] = [
-  'toy',
-  'fm',
-  'pcm',
-  'mono',
-  'lead',
-  'adsr',
-]
+const TRIG_TAKERS: readonly TrigTaker[] = [...KEYBEDS, 'adsr']
 
 const trigControl = (taker: TrigTaker): ControlKey =>
   taker === 'adsr'
@@ -113,11 +108,7 @@ export const voicePlate = (voice: number) => {
 }
 
 const NAMED: Record<string, string> = {
-  toy: 'Plinky',
-  fm: 'Glint',
-  pcm: 'Parlor',
-  mono: 'Growler',
-  lead: 'Howler',
+  ...MACHINE_OF,
   kit: 'the kit',
   adsr: 'the ADSR',
 }

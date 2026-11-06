@@ -4,7 +4,9 @@ import {
   type Controls,
 } from '../controls.ts'
 import { DEST } from '../dsp/modbus.ts'
+import { KEYBEDS, MACHINES, recordOf } from '../machines.ts'
 import { WIRE_TARGET } from './chain-map.ts'
+import { MACHINE_OF } from './connections.ts'
 import { choiceName, choiceValue } from './controls/index.ts'
 
 import type { Facing } from './cablePaths.ts'
@@ -48,26 +50,19 @@ export const sourcePlate = (src: number) => {
 
 export const destName = (dest: number) => choiceName('mod0Dest', dest)
 
+/** The machines with a CV jack on the bench: the keyboards, then the kit. */
 export const CV_MACHINES: readonly Machine[] = [
-  'Plinky',
-  'Glint',
-  'Parlor',
-  'Growler',
-  'Howler',
+  ...KEYBEDS.map(d => MACHINE_OF[d]),
   'Clatter',
 ]
 
 /** Where a fresh cable into a machine's CV jack lands: its pitch or clock where
     the bay reaches one, else its level. */
-export const CV_DEST: Record<Machine, number> = {
-  Plinky: DEST.chipClock,
-  Glint: DEST.fmClock,
-  Parlor: DEST.pcmLevel,
-  Growler: DEST.monoPitch,
-  Howler: DEST.leadPitch,
-  Clatter: DEST.drumTune,
-  Prattle: DEST.talkLevel,
-}
+export const CV_DEST: Record<Machine, number> = recordOf(
+  MACHINES.flatMap(m => ('cv' in m ? [m] : [])),
+  m => m.name,
+  m => DEST[m.cv],
+)
 
 export const MOD_COLOUR = 'var(--mod)'
 

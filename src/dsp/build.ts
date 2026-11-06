@@ -1,5 +1,5 @@
 import { SOURCE_TAPS, type SourceTap } from '../engine/params.ts'
-import { MACHINES, type NoteDest } from '../machines.ts'
+import { MACHINES, type GatedDest, type NoteDest } from '../machines.ts'
 import { Chain } from './chain.ts'
 import { HOWLER_MEMORY, MelodyMemory } from './melodyMemory.ts'
 import { Amp } from './stages/amp.ts'
@@ -50,7 +50,6 @@ export interface KeyedChip {
 
 /** The keybeds on Plinky's gate line, in the order it runs through them. */
 const GATE_LINE = MACHINES.flatMap(m => ('keyGate' in m ? [m.keybed] : []))
-type GatedDest = (typeof GATE_LINE)[number]
 
 export interface BuiltChain {
   chain: Chain

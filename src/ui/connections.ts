@@ -1,17 +1,12 @@
 import { ANY_CHOICE, followsGate, GATE_ALL, GATE_CUT } from '../dsp/trigbus.ts'
+import { MACHINES, recordOf } from '../machines.ts'
 import { choiceName } from './controls/index.ts'
 
 import type { ControlKey, Controls } from '../controls.ts'
 import type { NoteDest } from '../engine/messages.ts'
+import type { BoardMachine } from '../machines.ts'
 
-export type Machine =
-  | 'Plinky'
-  | 'Clatter'
-  | 'Glint'
-  | 'Parlor'
-  | 'Growler'
-  | 'Howler'
-  | 'Prattle'
+export type Machine = BoardMachine
 
 /** Plinky's gate line carries notes; the kit's trigger lines carry hits. */
 export type Signal = 'notes' | 'hits'
@@ -27,13 +22,11 @@ export interface Connection {
   pullOut: number
 }
 
-export const MACHINE_OF: Record<NoteDest, Machine> = {
-  toy: 'Plinky',
-  fm: 'Glint',
-  pcm: 'Parlor',
-  mono: 'Growler',
-  lead: 'Howler',
-}
+export const MACHINE_OF: Record<NoteDest, Machine> = recordOf(
+  MACHINES.flatMap(m => ('keybed' in m ? [m] : [])),
+  m => m.keybed,
+  m => m.name,
+)
 
 export const SIGNAL_COLOUR: Record<Signal, string> = {
   notes: 'var(--accent2)',
@@ -65,12 +58,19 @@ const voice = (
   pullOut: 0,
 })
 
-export const KEY_LINE = [
-  jumper('fmKeyGate', 'Glint'),
-  jumper('pcmKeyGate', 'Parlor'),
-  jumper('monoKeyGate', 'Growler'),
-  jumper('leadKeyGate', 'Howler'),
-]
+const GATED = MACHINES.flatMap(m => ('keyGate' in m ? [m] : []))
+
+export const KEY_LINE = GATED.map(m => jumper(m.keyGate, m.name))
+
+/** The gate line's runs from the toy out: the wire the map draws each one as,
+    the jumper that solders on the machine at its far end, and that machine's
+    keybed. */
+export const KEY_RUNS = GATED.map((m, i) => ({
+  id: i === 0 ? 'key-line' : `key-line-${m.keybed}`,
+  jumper: m.keyGate,
+  machine: m.name,
+  keybed: m.keybed,
+}))
 
 export const KIT_TO_PLINKY = voice('trigToKeys', 'hits', 'Clatter', 'Plinky')
 export const PLINKY_TO_KIT = voice('trigToDrum', 'notes', 'Plinky', 'Clatter')
@@ -78,11 +78,9 @@ export const PLINKY_TO_KIT = voice('trigToDrum', 'notes', 'Plinky', 'Clatter')
 export const TRIGGER_CABLES = [
   KIT_TO_PLINKY,
   PLINKY_TO_KIT,
-  voice('fmStruck', 'hits', 'Clatter', 'Glint'),
-  voice('pcmStruck', 'hits', 'Clatter', 'Parlor'),
-  voice('monoStruck', 'hits', 'Clatter', 'Growler'),
-  voice('leadStruck', 'hits', 'Clatter', 'Howler'),
-  voice('talkStruck', 'hits', 'Clatter', 'Prattle'),
+  ...MACHINES.flatMap(m =>
+    'struck' in m ? [voice(m.struck, 'hits', 'Clatter', m.name)] : [],
+  ),
 ]
 
 export const CONNECTIONS = [...TRIGGER_CABLES, ...KEY_LINE]

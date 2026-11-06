@@ -12,7 +12,12 @@ import { SUPPLIED, SUPPLY as ON } from '../dsp/supplies.ts'
 import { followsGate } from '../dsp/trigbus.ts'
 import { MACHINES } from '../machines.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
-import { cableName, TRIGGER_CABLES, type Signal } from './connections.ts'
+import {
+  cableName,
+  KEY_RUNS,
+  TRIGGER_CABLES,
+  type Signal,
+} from './connections.ts'
 import {
   bendAt,
   BENDS,
@@ -277,42 +282,25 @@ const SOURCE_MUTE: Record<string, ControlKey> = Object.fromEntries(
 // pair: two machines with a run switch, a pattern and a set of keys each.
 const TOY_ROW = ['Plinky', 'Clatter'] as const
 
-// And the one you don't. The FM chip has no keyboard and no sequencer of its
+// And the ones you don't. The FM chip has no keyboard and no sequencer of its
 // own — its key input is soldered onto the toy's gate line — so it stands next
 // to the keyboard, on the end of that wire, rather than beside the drums as an
-// equal. It hung underneath for a while, which said the same thing and cost a
-// whole row of the drawing to say: a 34px band holding one box, with the half
-// beside it empty. Adjacency says it for nothing, and the row had the width to
-// give — two boxes were being stretched to 190 to carry labels wanting 128.
+// equal, and each machine soldered on after it stands the far side of the one
+// before, because the wire runs along the row and a box on the end of it
+// belongs next to the box it is soldered to. A machine the kit strikes but the
+// gate line never reaches stands after the drums.
 //
 // All of them are inside the frame because they are one piece of hardware on
 // one supply, which is what the frame and its rail are there to say; the starve
 // knob on the keyboard's panel bends every one of them.
-const FM_CHIP = 'Glint'
+const BOARD = MACHINES.filter(m => m.map !== 'line')
 
-// The third die hanging off that same gate line, and drawn the far side of the
-// FM chip for the same reason the FM chip is drawn beside the keyboard: the
-// wire runs along the row, and a box on the end of it belongs next to the box
-// it is soldered to.
-const PCM_KEYS = 'Parlor'
-
-// The fourth on the gate line and the rail, next along from the home keyboard,
-// and the second build of it after that.
+// The mono synth, which a lone box under the row hangs under the end of the
+// gate line for.
 const MONO = 'Growler'
-const LEAD = 'Howler'
-
-// The speech chip, on the rail but off the gate line: the kit strikes it.
-const TALK = 'Prattle'
 
 // The sources off the toy's supply rail, each standing on its own.
-const LINE_ROW = [
-  'Chaos osc',
-  'Noise & crackle',
-  'Spool',
-  'Layercake',
-  'Sheet',
-  'Bottle',
-] as const
+const LINE_ROW = MACHINES.filter(m => m.map === 'line').map(m => m.name)
 
 // The levels and mixes that decide whether a stage is in the sound at all. Off
 // is the bottom of the travel, or the top for a control that boots there, such
@@ -335,13 +323,6 @@ export const gateOff = (key: ControlKey): number => offValue(sliderFor(key))
 
 const gateOpen = (name: string, c: Controls) =>
   GATES[name]!.some(k => c[k] !== gateOff(k))
-
-const KEYED = [
-  [FM_CHIP, 'fmKeyGate'],
-  [PCM_KEYS, 'pcmKeyGate'],
-  [MONO, 'monoKeyGate'],
-  [LEAD, 'leadKeyGate'],
-] as const
 
 /** The two stages every board has. */
 export const FIXED: ReadonlySet<string> = new Set(['Mix bus', 'Output'])
@@ -378,8 +359,8 @@ export function onBoard(c: Controls): Set<string> {
   }
   // A chip on the key line plays the toy keyboard's notes, so the keyboard is
   // its player even with its own fader down.
-  for (const [chip, jumper] of KEYED)
-    if (on.has(chip) && followsGate(c[jumper])) on.add(TOY_ROW[0])
+  for (const run of KEY_RUNS)
+    if (on.has(run.machine) && followsGate(c[run.jumper])) on.add(TOY_ROW[0])
   if (on.has('Feedback bus')) on.add(FB_TARGET[Math.round(c.fbDest)] ?? 'mix')
   if (on.has('Mic'))
     for (const jack of wiredJacks(c)) on.add(MIC_TARGET[jack] ?? 'mix')
@@ -790,27 +771,30 @@ function pickParts(c: Controls, o: Options) {
   }
   const has = (name: string) => !o.shown || o.shown.has(name)
   const drawn = (n: MapNode) => has(n.label)
-  const kb = instrument(TOY_ROW[0])
-  const drums = instrument(TOY_ROW[1])
-  const fm = instrument(FM_CHIP)
-  const pcm = instrument(PCM_KEYS)
-  const mono = instrument(MONO)
-  const lead = instrument(LEAD)
-  const talk = instrument(TALK)
-  const allChips = [kb, drums, fm, pcm, mono, lead, talk]
+  const allChips = BOARD.map(m => instrument(m.name))
+  const box = (name: string) => allChips.find(n => n.label === name)!
+  const kb = box(TOY_ROW[0])
+  const drums = box(TOY_ROW[1])
+  const mono = box(MONO)
+  const gateLine = KEY_RUNS.map(r => box(r.machine))
   const chips = allChips.filter(drawn)
   // Five across is wider than the panel's column, so the panel snakes the row:
   // the gate line runs along the top and drops onto the mono synth under its
   // end, and the drums sit under the keyboard they trade triggers with. Three
   // or fewer fit on one row.
-  const oneRow = [kb, fm, pcm, mono, lead, drums, talk].filter(drawn)
+  const oneRow = [
+    kb,
+    ...gateLine,
+    ...allChips.filter(n => n !== kb && !gateLine.includes(n)),
+  ].filter(drawn)
   const chipRows =
     o.wrap && oneRow.length > 3
-      ? [
-          [kb, fm, pcm],
-          [drums, mono, lead, talk],
-        ]
-          .map(r => r.filter(drawn))
+      ? (['top', 'under'] as const)
+          .map(row =>
+            BOARD.filter(m => m.map === row)
+              .map(m => box(m.name))
+              .filter(drawn),
+          )
           .filter(r => r.length > 0)
       : oneRow.length > 0
         ? [oneRow]
@@ -988,7 +972,7 @@ function pickParts(c: Controls, o: Options) {
   const trigs = triggerBridges(c).filter(t => has(t.from) && has(t.to))
   doors.add('Trigger patch')
   // The key line runs from the keyboard through each chip clipped onto it.
-  const keyed = drawn(kb) ? [fm, pcm, mono, lead].filter(drawn) : []
+  const keyed = drawn(kb) ? gateLine.filter(drawn) : []
   const noTrig = hasBoard && has('Trigger patch') && trigs.length === 0
   const laneUsed = keyed.length > 0 || trigs.length > 0 || noTrig
   const wiredInto = new Set(
@@ -1036,10 +1020,7 @@ function pickParts(c: Controls, o: Options) {
     has,
     drawn,
     kb,
-    fm,
-    pcm,
     mono,
-    lead,
     chips,
     chipRows,
     lower,
@@ -1480,11 +1461,14 @@ const onSharedCells = (c: Controls, label: string) => {
   return !key || Math.round(c[key]) === ON.shared
 }
 
+// The run of the gate line that ends on a box.
+const runOf = (n: MapNode) => KEY_RUNS.find(r => r.machine === n.label)!
+
 // The supply rail, the key line and the trigger bridges, all inside the toy
 // board's frame.
 function boardWires(m: Laid) {
   const { k, wire, bar, doors, board, chips, lower, railY, rail2Y, chipY } = m
-  const { kb, fm, pcm, mono, lead, keyed, laneY, trigs } = m
+  const { kb, keyed, laneY, trigs } = m
   const { byId, trigY, noTrigChip } = m
   const { hasBoard } = m
 
@@ -1544,23 +1528,11 @@ function boardWires(m: Laid) {
   // has no keyboard and no sequencer, so every note it plays arrives on the
   // gate line the toy brings out. Each chip clips on through its own jumper, and
   // a run is drawn live while any drawn jumper beyond it is still soldered.
-  const jumper = new Map([
-    [fm, m.c.fmKeyGate],
-    [pcm, m.c.pcmKeyGate],
-    [mono, m.c.monoKeyGate],
-    [lead, m.c.leadKeyGate],
-  ])
-  const jumperKey = new Map<MapNode, ControlKey>([
-    [fm, 'fmKeyGate'],
-    [pcm, 'pcmKeyGate'],
-    [mono, 'monoKeyGate'],
-    [lead, 'leadKeyGate'],
-  ])
   const reaches = (i: number) =>
-    keyed.slice(i).some(n => followsGate(jumper.get(n)!))
+    keyed.slice(i).some(n => followsGate(m.c[runOf(n).jumper]))
   const keyLine = (i: number) => ({
     door: 'Trigger patch',
-    key: jumperKey.get(keyed[i]!),
+    key: runOf(keyed[i]!).jumper,
     ...(reaches(i) ? { color: k.accent2 } : { color: k.dim, dash: '3 3' }),
   })
   // In the lane under the joint rather than on it. The gap between two boxes
@@ -1573,12 +1545,6 @@ function boardWires(m: Laid) {
     y: laneY + LABEL_H,
     anchor: 'middle',
   }
-  const keyId = new Map([
-    [fm, 'key-line'],
-    [pcm, 'key-line-pcm'],
-    [mono, 'key-line-mono'],
-    [lead, 'key-line-lead'],
-  ])
   for (const [i, to] of keyed.entries()) {
     const from = i === 0 ? kb : keyed[i - 1]!
     // Snaked, the line drops off the end of the row onto the box under it, near
@@ -1596,7 +1562,7 @@ function boardWires(m: Laid) {
             [from.x + from.w, from.y + BOX_H / 2],
             [to.x, from.y + BOX_H / 2],
           ]
-    wire(keyId.get(to)!, from, to, pts, {
+    wire(runOf(to).id, from, to, pts, {
       ...keyLine(i),
       ...(i === 0 && { label: keyLabel }),
     })

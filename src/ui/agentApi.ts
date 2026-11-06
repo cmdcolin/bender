@@ -30,6 +30,7 @@ import { strayNames } from '../dsp/wander.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
 import { BAND_ROWS } from '../engine/params.ts'
 import { errorText } from '../errorText.ts'
+import { MACHINES } from '../machines.ts'
 import { semitoneName } from '../notes.ts'
 import { phraseControls, phraseOf, phraseText } from '../prattle.ts'
 import {
@@ -601,13 +602,9 @@ function summary() {
   }
 }
 
-const PLAYERS = [
-  { name: 'Plinky', notes: engine.chipNotes },
-  { name: 'Glint', notes: engine.fmNotes },
-  { name: 'Parlor', notes: engine.pcmNotes },
-  { name: 'Growler', notes: engine.monoNotes },
-  { name: 'Howler', notes: engine.leadNotes },
-]
+const PLAYERS = MACHINES.flatMap(m =>
+  'keybed' in m ? [{ name: m.name, notes: engine.notesOn[m.keybed] }] : [],
+)
 
 async function listen(ms = 1500) {
   if (!engine.running.get()) return { audio: audioState() }
