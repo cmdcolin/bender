@@ -14,11 +14,12 @@ threads exchange messages, and which steps run per sample rather than per block.
 The panel owns a `Controls` object. `packParams` flattens it to a `Float32Array`
 and posts it across; the worklet keeps the newest one as a target and glides
 toward it a block at a time, so a knob dragged at frame rate produces no steps
-in the audio. Every block then builds its buses, sums the sources, runs the bend
-slots in whatever order the board is wired in, then the pedals, the post stages
-and the safety tail — and hands one 128-frame buffer back. Every sixth block the
-worklet posts a meter message the other way, and the panel draws its scope,
-meters and rail lamp from it.
+in the audio. Every block then builds its buses, sums the sources, runs each
+machine with a unit patched onto it through its insert line before the summing
+amp, then runs the bend slots in whatever order the board is wired in, the
+pedals, the post stages and the safety tail — and hands one 128-frame buffer
+back. Every sixth block the worklet posts a meter message the other way, and the
+panel draws its scope, meters and rail lamp from it.
 
 Apart from the params, the diagram is the main path only. The mic arrives as an
 input to the same callback and is mixed into `ctx.mic`; the sampler's audio, the
