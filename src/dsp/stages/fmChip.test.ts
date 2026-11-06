@@ -1091,6 +1091,61 @@ test('a stuck allocator plays a chord as its last note', () => {
   expect(bin(stuck, 220)).toBeLessThan(0.05 * bin(free, 220))
 })
 
+const stacked = (o: Partial<Controls>, ...notes: number[]) =>
+  renderStems(
+    { ...FM_ONLY, fmKeyGate: 1, fmVoice: voice('organ'), fmBright: 0, ...o },
+    1.1,
+    built => {
+      for (const n of notes) built.fmChip.noteOn(n)
+    },
+  ).stems[FM_TAP]!.subarray(Math.round(0.1 * SR))
+
+const hann = (x: Float32Array) =>
+  x.map((v, i) => v * Math.sin((Math.PI * i) / x.length) ** 2)
+
+const peakNear = (x: Float32Array, hz: number) => {
+  let best = hz
+  let most = 0
+  for (let f = hz - 4; f <= hz + 4; f += 0.05) {
+    const m = bin(x, f)
+    if (m > most) {
+      best = f
+      most = m
+    }
+  }
+  return best
+}
+
+test.each([
+  ['fifths', [1, 3 / 2, 2, 3]],
+  ['octaves', [1, 2, 4, 1 / 2]],
+  ['minor', [1, 6 / 5, 3 / 2, 2]],
+  ['wrong divider', [1, 8 / 5, 8 / 11, 8 / 13]],
+])('all four sounds one key as a %s stack that holds still', (row, ratios) => {
+  const fmStack = ['fifths', 'octaves', 'minor', 'wrong divider'].indexOf(row)
+  const one = stacked({}, 0)
+  const x = stacked({ fmAlloc: 5, fmStack }, 0)
+  const early = hann(x.subarray(0, SR / 2))
+  const later = hann(x.subarray(SR / 2))
+  for (const r of ratios) {
+    const hz = 220 * r
+    expect(bin(x, hz), `${hz}`).toBeGreaterThan(0.2 * bin(one, 220))
+    if (!Number.isInteger(r))
+      expect(bin(one, hz), `${hz}`).toBeLessThan(0.05 * bin(one, 220))
+    const at = peakNear(early, hz)
+    expect(Math.abs(at / hz - 1), `${hz}`).toBeLessThan(0.004)
+    expect(Math.abs(peakNear(later, hz) - at), `${hz}`).toBeLessThan(0.06)
+  }
+})
+
+test('all four plays a chord as its last note, stacked', () => {
+  const free = stacked({}, 0, 7)
+  const x = stacked({ fmAlloc: 5, fmStack: 2 }, 0, 7)
+  const fifth = 220 * Math.pow(2, 7 / 12)
+  expect(bin(x, (fifth * 6) / 5)).toBeGreaterThan(0.5 * bin(free, fifth))
+  expect(bin(x, 220)).toBeLessThan(0.05 * bin(free, 220))
+})
+
 test('stuck on the bass drum’s channel, the tune retunes the drum', () => {
   const sub = (o: Partial<Controls>) =>
     spectrum(fmStem({ fmKeyGate: 0, drumSnare: 0, drumHat: 0, ...o }), SR)

@@ -106,6 +106,15 @@ class Lfsr {
   }
 }
 
+// The divider tap each channel's frequency counter runs off once the allocator
+// keys all four, as its pitch against the key's.
+const STACK_TAPS = [
+  [1, 3 / 2, 2, 3],
+  [1, 2, 4, 1 / 2],
+  [1, 6 / 5, 3 / 2, 2],
+  [1, 8 / 5, 8 / 11, 8 / 13],
+]
+
 // Attenuation, in the two step sizes the register file uses: three quarters of
 // a decibel for the modulator's six bits, three for the carrier's four.
 const atten = (steps: number, perStep: number) =>
@@ -553,6 +562,8 @@ export class FmChip implements Stage {
   private slotOut = new Float64Array(N_CH)
   /** the channel a stuck allocator hands every note, or -1 */
   private stuckCh = -1
+  private stacked = false
+  private taps = new Float64Array(N_CH).fill(1)
   private cold = false
   /** the attenuation adder's mask, or 0 for the linear path */
   private adderMask = 0
@@ -845,10 +856,29 @@ export class FmChip implements Stage {
   // exactly as the part laid it out. One wire wrong up there moves the pitch and
   // whether the note happens at all.
   private keyOn(note: number, lengthSamples: number, vol = 0, gated = false) {
+    if (this.stacked)
+      for (let i = 0; i < N_CH; i++)
+        this.keyChannel(i, note, lengthSamples, vol, gated)
+    else
+      this.keyChannel(
+        this.ch.indexOf(this.pick(note)),
+        note,
+        lengthSamples,
+        vol,
+        gated,
+      )
+  }
+
+  private keyChannel(
+    i: number,
+    note: number,
+    lengthSamples: number,
+    vol: number,
+    gated: boolean,
+  ) {
     const hz = A3_HZ * Math.pow(2, note / 12)
     const block = blockOf(hz)
     const fnum = Math.min(Math.round(fnumOf(hz, block)), 511)
-    const i = this.ch.indexOf(this.pick(note))
     const c = this.ch[i]!
     c.note = note
     c.started = this.clock++
@@ -941,7 +971,9 @@ export class FmChip implements Stage {
   }
 
   private keyUp(note: number, gated: boolean) {
-    const n = Math.max(this.melodyChannels(), this.stuckCh + 1)
+    const n = this.stacked
+      ? N_CH
+      : Math.max(this.melodyChannels(), this.stuckCh + 1)
     for (let i = 0; i < n; i++) {
       const c = this.ch[i]!
       if (c.note === note && c.gated === gated) this.keyOff(i)
@@ -1556,7 +1588,11 @@ export class FmChip implements Stage {
     this.dacSlot =
       hop(p[IDX.fmDacSlot]!, N_CH + 1, bay.read(DEST.fmDacSlot)) - 1
     const baseSlip = p[IDX.fmDacSlip]!
-    this.stuckCh = hop(p[IDX.fmAlloc]!, N_CH + 1, bay.read(DEST.fmAlloc)) - 1
+    const alloc = hop(p[IDX.fmAlloc]!, N_CH + 2, bay.read(DEST.fmAlloc))
+    this.stuckCh = alloc > N_CH ? -1 : alloc - 1
+    this.stacked = alloc > N_CH
+    const taps = this.stacked ? STACK_TAPS[Math.round(p[IDX.fmStack]!)]! : null
+    for (let n = 0; n < N_CH; n++) this.taps[n] = taps ? taps[n]! : 1
     const adder = hop(
       p[IDX.fmAdder]!,
       ADDER_BITS.length,
@@ -1844,7 +1880,8 @@ export class FmChip implements Stage {
         const key = this.regs[REG.keyBlock + n]!
         const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
         const block = (key >> 1) & 7
-        const hz = (fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[block]! * pitch
+        const hz =
+          (fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[block]! * pitch * this.taps[n]!
 
         const { mod, car } = this.chRates[n]!
         this.stepEnv(c.mod, raced ? this.raceRates : mod)

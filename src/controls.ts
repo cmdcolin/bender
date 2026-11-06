@@ -483,6 +483,7 @@ export const DEFAULT_CONTROLS = {
   fmDacSlot: 0,
   fmDacSlip: 0,
   fmAlloc: 0,
+  fmStack: 0,
   fmColdBoot: 0,
   fmAdder: 0,
   fmToyBus: 0,
