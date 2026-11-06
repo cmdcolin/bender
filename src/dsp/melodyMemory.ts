@@ -399,6 +399,9 @@ export class MelodyMemory {
   }
 
   process(n: number, p: Float32Array, ctx: Ctx) {
+    const aged = n / ctx.sr
+    this.addrBus.age(aged)
+    this.dataBus.age(aged)
     const k = this.k
     this.load(p)
     this.wire(p)

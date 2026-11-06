@@ -34,7 +34,7 @@ import { flushDenormal } from './util/softclip.ts'
 //           driver pulls low wins. Words collapse onto a lattice, so the tune
 //           comes out in clumps.
 //
-// The last three take every wire from the lowest up to the chosen one, and
+// The last four take every wire from the lowest up to the chosen one, and
 // never fewer than two.
 //
 // along     the harness soldered one hole along, the end wire looped back
@@ -42,6 +42,9 @@ import { flushDenormal } from './util/softclip.ts'
 // reversed  the harness soldered in reverse order.
 // bounce    the driver's ground lifts when enough wires fall at once, so
 //           every quiet wire in the harness reads high for that word.
+// probe     a probe tip dragged along the harness by hand. It wanders on its
+//           own, bridges the pair it rests between, touches one pin at a time
+//           on the way, and now and then lifts off.
 export const FAULT = {
   cut: 0,
   ground: 1,
@@ -50,6 +53,7 @@ export const FAULT = {
   along: 4,
   reversed: 5,
   bounce: 6,
+  probe: 7,
 } as const
 export const FAULT_NAMES = [
   'cut',
@@ -59,6 +63,7 @@ export const FAULT_NAMES = [
   'one hole along',
   'reversed',
   'bounce',
+  'probe drag',
 ]
 
 /** Whether a fault keeps state between words, so a lookahead would disturb it. */
@@ -71,7 +76,10 @@ export const harnessTop = (line: number, width: number) =>
 
 /** Whether a fault takes the run of wires from 0 up to its line. */
 export const harnessed = (fault: number) =>
-  fault === FAULT.along || fault === FAULT.reversed || fault === FAULT.bounce
+  fault === FAULT.along ||
+  fault === FAULT.reversed ||
+  fault === FAULT.bounce ||
+  fault === FAULT.probe
 
 const harness = (top: number) => (2 << top) - 1
 
@@ -96,6 +104,18 @@ export const lineNames = (prefix: string, width: number) => [
 /** How much of the neighbour's edge crosses into a parted trace, per word. */
 const COUPLING = 0.12
 
+/** The probe's fastest drag, in lengths of the harness a second. */
+const PROBE_SPEED = 0.8
+/** How often a second the hand changes direction, lifts off and lands. */
+const PROBE_TURN = 2
+const PROBE_LIFT = 0.7
+const PROBE_LAND = 5
+/** How far between two pins the tip must sit to touch both. */
+const PROBE_REACH = 0.2
+
+const bridged = (word: number, pair: number) =>
+  (word & pair) === pair ? word | pair : word & ~pair
+
 export class Bus {
   private rng: Rng
   /** The floating pin's charge, between the rails rather than on one of them. */
@@ -106,6 +126,11 @@ export class Bus {
   private last = -1
   /** The word the drivers put out last time, for counting falling wires. */
   private driven = -1
+  private hand: Rng
+  /** Where the probe tip is along the harness, 0 at wire 0 and 1 at its top. */
+  private tip = 0.5
+  private drag = 0
+  private touching = true
 
   private readonly width: number
   private readonly seed
@@ -116,6 +141,29 @@ export class Bus {
     this.bounceAt = Math.max(2, Math.ceil(width / 3))
     this.seed = seed
     this.rng = mulberry32(seed)
+    this.hand = mulberry32(seed ^ 0x9b0e)
+  }
+
+  /** Moves the probe on by `seconds`, whether or not a probe is on the bus. */
+  age(seconds: number) {
+    const hand = this.hand
+    if (hand() < PROBE_TURN * seconds)
+      this.drag = (hand() * 2 - 1) * PROBE_SPEED
+    if (hand() < (this.touching ? PROBE_LIFT : PROBE_LAND) * seconds)
+      this.touching = !this.touching
+    const tip = this.tip + this.drag * seconds
+    this.tip = tip < 0 ? -tip : tip > 1 ? 2 - tip : tip
+    if (tip < 0 || tip > 1) this.drag = -this.drag
+  }
+
+  private probe(word: number, top: number) {
+    if (!this.touching) return word
+    const along = this.tip * top
+    const low = Math.min(Math.floor(along), top - 1)
+    const off = along - low
+    return off < PROBE_REACH || off > 1 - PROBE_REACH
+      ? word
+      : bridged(word, 0b11 << low)
   }
 
   /** Where a floating line sits after one more word has gone past next door. */
@@ -163,8 +211,10 @@ export class Bus {
       case FAULT.bridge: {
         // The neighbour above, or below at the top of the bus — the fault is
         // one blob of solder and there is always something on one side of it.
-        const pair = bit | (line + 1 < this.width ? bit << 1 : bit >> 1)
-        return (word & pair) === pair ? word | pair : word & ~pair
+        return bridged(
+          word,
+          bit | (line + 1 < this.width ? bit << 1 : bit >> 1),
+        )
       }
       case FAULT.along: {
         const top = harnessTop(line, this.width)
@@ -184,6 +234,8 @@ export class Bus {
           ? word | harness(harnessTop(line, this.width))
           : word
       }
+      case FAULT.probe:
+        return this.probe(word, harnessTop(line, this.width))
       default:
         // Whatever the pin has drifted to, read through the input's threshold —
         // one wire's worth of analogue in the middle of a digital bus.
@@ -195,6 +247,10 @@ export class Bus {
     this.floating = -1
     this.last = -1
     this.driven = -1
+    this.tip = 0.5
+    this.drag = 0
+    this.touching = true
+    this.hand = mulberry32(this.seed ^ 0x9b0e)
     this.charge = 0
     this.rng = mulberry32(this.seed)
   }

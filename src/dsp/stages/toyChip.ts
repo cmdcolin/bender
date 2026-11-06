@@ -1142,6 +1142,11 @@ export class ToyChip implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const aged = io.n / ctx.sr
+    this.dataBus.age(aged)
+    this.addrBus.age(aged)
+    this.bankBus.age(aged)
+    this.divBus.age(aged)
     const level = p[IDX.chipLevel]!
     // The nineteenth tune is the one you played in. It is not in the bank —
     // the bank is what the chip shipped with — so it arrives as sixteen params

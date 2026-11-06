@@ -211,6 +211,7 @@ const FAULTS: [name: string, fault: number, depth: number][] = [
   ['one hole along', FAULT.along, 0],
   ['reversed', FAULT.reversed, 0],
   ['bounce', FAULT.bounce, 0],
+  ['probe drag', FAULT.probe, 0],
 ]
 
 const pad = (s: string, n: number) => s.padEnd(n)

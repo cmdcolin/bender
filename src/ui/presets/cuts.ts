@@ -130,6 +130,17 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'Plinky',
+    part: BUS,
+    name: 'a probe on the counter',
+    blurb:
+      'A probe tip wanders up and down the four low counter wires, bridging whichever two it rests between and now and then lifting off, so the song keeps taking different wrong turns',
+    patch: {
+      chipAddrLine: pick('chipAddrLine', 'A3'),
+      chipAddrFault: pick('chipAddrFault', 'probe drag'),
+    },
+  },
+  {
     group: 'Clatter',
     part: BUS,
     name: 'machine-gun',
@@ -259,6 +270,17 @@ export const CUTS: CutDef[] = [
     patch: {
       drumDataLine: pick('drumDataLine', 'D7'),
       drumDataFault: pick('drumDataFault', 'one hole along'),
+    },
+  },
+  {
+    group: 'Clatter',
+    part: BUS,
+    name: 'a probe across the kick, snare and hat',
+    blurb:
+      'A probe tip wanders across the kick, snare and hat wires. Where it bridges two of them, each fires only where both rows agree, so the beat thins out and fills back in as the hand moves',
+    patch: {
+      drumDataLine: pick('drumDataLine', 'D2'),
+      drumDataFault: pick('drumDataFault', 'probe drag'),
     },
   },
   {
@@ -473,6 +495,17 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'Glint',
+    part: BUS,
+    name: 'a probe on the register address',
+    blurb:
+      'A probe tip wanders up and down the low four register address wires, so writes slide into the wrong registers and back as the hand moves, and the pitch jumps around',
+    patch: {
+      fmAddrLine: pick('fmAddrLine', 'A3'),
+      fmAddrFault: pick('fmAddrFault', 'probe drag'),
+    },
+  },
+  {
     group: 'Parlor',
     part: BUS,
     name: 'the top bit sticks',
@@ -559,6 +592,17 @@ export const CUTS: CutDef[] = [
     patch: {
       pcmAddrLine: pick('pcmAddrLine', 'A9'),
       pcmAddrFault: pick('pcmAddrFault', 'reversed'),
+    },
+  },
+  {
+    group: 'Parlor',
+    part: BUS,
+    name: 'a probe up the address',
+    blurb:
+      'A probe tip wanders along the low twelve address wires. Low down it only roughens the voice, and as it drifts up it bridges wires that jump the read across the sample',
+    patch: {
+      pcmAddrLine: pick('pcmAddrLine', 'A11'),
+      pcmAddrFault: pick('pcmAddrFault', 'probe drag'),
     },
   },
   {

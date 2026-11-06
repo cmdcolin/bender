@@ -147,6 +147,9 @@ export class RackVerb implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const aged = io.n / ctx.sr
+    this.addr.age(aged)
+    this.data.age(aged)
     const mix = p[IDX.rackMix]!
     const freeze = Math.round(p[IDX.rackFreeze]!) === 1
     const clockMod = ctx.mod.read(DEST.rackClock)

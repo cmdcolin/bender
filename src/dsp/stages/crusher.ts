@@ -229,6 +229,8 @@ export class Crusher implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const aged = io.n / ctx.sr
+    this.bus.age(aged)
     const bay = ctx.mod
     const line =
       hop(

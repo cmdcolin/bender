@@ -384,6 +384,10 @@ export class Prattle implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const aged = io.n / ctx.sr
+    this.dataBus.age(aged)
+    this.addrBus.age(aged)
+    this.pitchBus.age(aged)
     const n = io.n
     const rail = this.power.pick(p[IDX.talkSupply]!)
     if (this.power.rebooted()) this.hush()

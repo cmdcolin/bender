@@ -263,6 +263,7 @@ const FAULTS: [name: string, fault: number, depth: number][] = [
   ['one hole along', FAULT.along, 1],
   ['reversed', FAULT.reversed, 1],
   ['bounce', FAULT.bounce, 1],
+  ['probe drag', FAULT.probe, 1],
 ]
 
 const SECONDS = 2

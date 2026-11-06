@@ -428,6 +428,9 @@ export class PcmKeys implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const aged = io.n / ctx.sr
+    this.addrBus.age(aged)
+    this.dataBus.age(aged)
     const level = p[IDX.pcmLevel]!
     const rail = this.power.pick(p[IDX.pcmSupply]!)
     if (this.power.rebooted()) {

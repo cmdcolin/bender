@@ -222,3 +222,33 @@ test('bounce lifts the quiet wires of the run only on a word where enough wires 
   bus.reset()
   expect(bus.read(0b000000, 2, FAULT.bounce, 1)).toBe(0b000000)
 })
+
+test('a dragged probe only ever bridges a neighbouring pair inside its run, and moves', () => {
+  const bus = new Bus(8)
+  const seen = new Set<number>()
+  let lifted = 0
+  for (let block = 0; block < 4000; block++) {
+    bus.age(128 / 48000)
+    const out = bus.read(0b0101_0101, 4, FAULT.probe, 1)
+    if (out === 0b0101_0101) lifted++
+    else {
+      const lost = 0b0101_0101 & ~out
+      expect(lost & ~0b1_1111).toBe(0)
+      seen.add(lost)
+    }
+  }
+  expect([...seen].toSorted((a, b) => a - b)).toEqual([0b1, 0b100, 0b1_0000])
+  expect(lifted).toBeGreaterThan(0)
+})
+
+test('the probe walks the same way after a reset', () => {
+  const walk = (bus: Bus) =>
+    Array.from({ length: 500 }, () => {
+      bus.age(0.01)
+      return bus.read(0b1010_1010, 7, FAULT.probe, 1)
+    })
+  const bus = new Bus(8, 3)
+  const first = walk(bus)
+  bus.reset()
+  expect(walk(bus)).toEqual(first)
+})

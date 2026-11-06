@@ -104,6 +104,7 @@ test.each([
   [FAULT.along, 'one hole along'],
   [FAULT.reversed, 'reversed'],
   [FAULT.bounce, 'bounce'],
+  [FAULT.probe, 'probe drag'],
 ])('a harness fault (%i) lights every trace from D0 up', (fault, name) => {
   set({ pcmDataLine: 4, pcmDataFault: fault })
   open('Parlor')

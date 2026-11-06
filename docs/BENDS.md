@@ -23,8 +23,9 @@ The drawing shows the two blocks each bus joins and its width; the source is
 - **Knives:** a knife is a fault on one bus wire, set by a line control and a
   fault control under _fault on the bus_, such as **Address line** and **Address
   fault**.
-- **Harness faults:** **one hole along**, **reversed** and **bounce** take every
-  wire from the lowest up to the chosen one, at least two wires.
+- **Harness faults:** **one hole along**, **reversed**, **bounce** and **probe
+  drag** take every wire from the lowest up to the chosen one, at least two
+  wires.
   - **One hole along:** each wire lands one pin up and the top one loops back to
     the bottom. Across a whole data bus every sample doubles and wraps round,
     and across an address bus the counter skips every other word.
@@ -34,8 +35,13 @@ The drawing shows the two blocks each bus joins and its width; the source is
   - **Bounce:** when several wires fall on the same word, the ground lifts and
     every low wire in the run reads high for that word. It follows the traffic,
     so a busy bus spits and a quiet one barely moves.
+  - **Probe drag:** a probe tip wanders up and down the run by itself, bridges
+    the pair it rests between, touches one pin at a time on the way, and now and
+    then lifts off. The fault keeps changing, so the sound does too. It bites
+    hardest on slow buses such as the counters and Glint's registers.
   - The drawing shows reversed as a crossed bundle, one hole along as a jog with
-    one wire looping back, and bounce as a sprung ground.
+    one wire looping back, bounce as a sprung ground, and probe drag as a probe
+    over a dotted track.
 - **Named cuts:** each cut under _fault on the bus_ saves one wire and fault
   worth keeping.
 - **Panel drawing:** each chip's bus box (**pattern** on the drum machine) draws

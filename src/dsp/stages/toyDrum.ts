@@ -1376,6 +1376,11 @@ export class ToyDrum implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const aged = io.n / ctx.sr
+    this.addrBus.age(aged)
+    this.dataBus.age(aged)
+    this.romAddrBus.age(aged)
+    this.romDataBus.age(aged)
     const level = p[IDX.drumLevel]!
     const rail = this.power.pick(p[IDX.drumSupply]!)
     // Same divider, same cells as the keyboard: flat batteries drag the tempo,

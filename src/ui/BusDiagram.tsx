@@ -308,6 +308,20 @@ function Trace({
         d={`M${gx} ${p.top} V${runY} ${spring} L${gx} ${runY + 9} V${low + 4} M${gx - 5} ${low + 4} H${gx + 5} M${gx - 3} ${low + 6.5} H${gx + 3} M${gx - 1} ${low + 9} H${gx + 1}`}
         className={styles.jumper}
       />
+    ) : fault === FAULT.probe ? (
+      <>
+        <path d={`M${gx} ${p.top} V${runY}`} className={styles.conduct} />
+        <path
+          d={`M${gx + 12} ${low + 10} L${gx + 1.5} ${(p.top + runY) / 2 + 1.5}`}
+          className={styles.jumper}
+        />
+        <circle
+          cx={gx}
+          cy={(p.top + runY) / 2}
+          r={1.5}
+          className={styles.solder}
+        />
+      </>
     ) : fault === FAULT.ground ? (
       <>
         <path

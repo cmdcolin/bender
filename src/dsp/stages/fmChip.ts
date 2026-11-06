@@ -1509,6 +1509,14 @@ export class FmChip implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const aged = io.n / ctx.sr
+    this.dataBus.age(aged)
+    this.addrBus.age(aged)
+    this.waveBus.age(aged)
+    this.waveDataBus.age(aged)
+    this.patchBus.age(aged)
+    this.patchDataBus.age(aged)
+    this.expBus.age(aged)
     const level = p[IDX.fmLevel]!
     const voice = Math.round(p[IDX.fmVoice]!)
     const brightKnob = p[IDX.fmBright]!
