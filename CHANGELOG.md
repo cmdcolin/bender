@@ -2,6 +2,81 @@
 
 All notable changes to bender are documented here.
 
+## [1.27.0](https://github.com/cmdcolin/bender/compare/v1.26.1...v1.27.0) - 2026-11-06
+
+### Features
+- *(ui)* [`8d1e15b`](https://github.com/cmdcolin/bender/commit/8d1e15bd4547420df1004d54c0f30e56303b2b05) the glitch buffer is shy — rolls and deals rarely wet it
+- *(engine)* [`bb4c273`](https://github.com/cmdcolin/bender/commit/bb4c2732006dd21f281abf117656bc9139bac4bd) window.bender gets the kit's clock, and queue lands writes on the bar
+- *(ui)* [`776bd00`](https://github.com/cmdcolin/bender/commit/776bd003774a3d26a9973217871a73fda8499855) an activity panel lists what a script on window.bender changes
+- *(dsp)* [`3681ef1`](https://github.com/cmdcolin/bender/commit/3681ef13d1389107065107b02a731e86655806a0) ghost steps on Clatter, struck soft through a resistor
+- *(engine)* [`21ac327`](https://github.com/cmdcolin/bender/commit/21ac327e5273e215695fadd3feedbdaba1f39c29) Glint, Parlor and Growler can each follow one lane of Plinky's memory
+- *(dsp)* [`fc2f11e`](https://github.com/cmdcolin/bender/commit/fc2f11e09ce19644c792b59d086cde70a9a0de39) hiss into kick and kick on bias on Clatter
+- *(ui)* [`0343f19`](https://github.com/cmdcolin/bender/commit/0343f1917f2cae9b7806311f02576c9acb21d0cc) the scope leaves its last six traces fading behind the newest, each started on a rising zero crossing
+- *(dsp)* [`144c480`](https://github.com/cmdcolin/bender/commit/144c480eecbd056cd78725c16ac5a40257a0280c) VCA thump and folding pair on Growler's voice card
+- *(dsp)* [`e3fbbc2`](https://github.com/cmdcolin/bender/commit/e3fbbc2c02d22614191e82129cb652e7ec0f3df6) rebuild the comb as a bucket brigade on an RC clock
+- *(dsp)* [`84d8c4e`](https://github.com/cmdcolin/bender/commit/84d8c4e8578666f3174528e895b7589a28039e89) rebuild the frequency shifter as an analog Bode box with its own faults
+- *(dsp)* [`6180bb4`](https://github.com/cmdcolin/bender/commit/6180bb4ef74fae94431a332d3fc734418a3a5e88) a fault on Glint's exp table address
+- *(dsp)* [`6690948`](https://github.com/cmdcolin/bender/commit/6690948813dfa1c15621631d4e2ed1893d7de9dc) Glint's rhythm bank at full width
+- *(ui)* [`dc7428f`](https://github.com/cmdcolin/bender/commit/dc7428f6fd5e697d8953114c32f5e657cd2e2ec5) presets for the exp line on a clock and the tune on the hi-hats
+- *(ui)* [`c94976c`](https://github.com/cmdcolin/bender/commit/c94976c9b60f03846a5ab912b2324d5e0edb3f60) trace the script's bends and flash them on their controls
+- *(ui)* [`09c7bc2`](https://github.com/cmdcolin/bender/commit/09c7bc2ebecee750733b37cb798895eecd905fb1) bends cascade down the chain map, and say() lands as a banner
+- *(dsp)* [`1c4969f`](https://github.com/cmdcolin/bender/commit/1c4969fc4a5c7b4c97a9be7a45054970b72acbb2) a steel sheet bend that clangs, hums along and rattles
+- *(ui)* [`04cd1e4`](https://github.com/cmdcolin/bender/commit/04cd1e48d8c002024fdffde6cbea9aadcafbf9bc) keep the bend effects in and around the activity panel
+- *(ui)* [`78cd284`](https://github.com/cmdcolin/bender/commit/78cd2848e28c22dc9ee064b49d3c25a1bde12264) the steel sheet is an instrument you hit, not a bend
+- *(dsp)* [`cffb4bd`](https://github.com/cmdcolin/bender/commit/cffb4bdaf7fac79b5aa6ff1409942c1906976e5a) a glass bottle instrument beside the sheet
+- *(ui)* [`8083334`](https://github.com/cmdcolin/bender/commit/80833344844d9d0673e5fb17abe6d85fc30325b5) window.bender hits the sheet, the bottle and the kit
+- *(ui)* [`bde6ff1`](https://github.com/cmdcolin/bender/commit/bde6ff1e0e86c3a32d9e736acb7fb777adef6157) bender.hit inside a queue lands with it
+
+### Fixes
+- *(ui)* [`1dcf70a`](https://github.com/cmdcolin/bender/commit/1dcf70ad8049762529d008983c0ebae283063ff9) an empty string or off sets event every and a voice's bars back to every bar
+- [`9dffaf5`](https://github.com/cmdcolin/bender/commit/9dffaf5980a414eec4475298b0edee39eb73e9c9) describe the ada script in features.ts so the features test passes
+- *(dsp)* [`2e8b130`](https://github.com/cmdcolin/bender/commit/2e8b130f93c42878170bd496c2383e696f7af7c5) the shifter's warmth flushes its decay before it goes subnormal
+- *(dsp)* [`d735d12`](https://github.com/cmdcolin/bender/commit/d735d12b073726b97cd4a3051470b1aa9e5acdb9) stopping the song lets go of the keys it struck on Parlor
+- *(dsp)* [`6aa3cfc`](https://github.com/cmdcolin/bender/commit/6aa3cfc071d3960745765cd44f5b00c5d1a7268b) the sheet and the bottle rest at level 0, and are the same on every boot
+- *(dsp)* [`45dc414`](https://github.com/cmdcolin/bender/commit/45dc414d263bb4bbd07c19e47602988c43658d5e) a panic cools Glint after heat trips it
+- *(dsp)* [`05cf755`](https://github.com/cmdcolin/bender/commit/05cf7557722a7ad486b7dc4ada0496f735111325) Parlor's die heats and leaks at the same pace at any sample rate
+- *(dsp)* [`2b7625c`](https://github.com/cmdcolin/bender/commit/2b7625cff862f2585b5f7433da03c772d0ee3e02) comb chips start clean, and a slowed brigade reaches its full delay
+- *(dsp)* [`af990bf`](https://github.com/cmdcolin/bender/commit/af990bfad40b5953f0ea0b03627b25990cf21dde) a ghost step stays a ghost on Clatter's loop
+- *(dsp)* [`b53182a`](https://github.com/cmdcolin/bender/commit/b53182af36c2e076397ad1f9e70b282fe8d30a8b) pattern rot eats Wander's rows instead of playing over them
+- *(dsp)* [`7b1ba7d`](https://github.com/cmdcolin/bender/commit/7b1ba7de4fdef6b71ad50fbf4f2731bda1694785) the sheet and the bottle are ring mod carrier choices
+- *(dsp)* [`63fb9ba`](https://github.com/cmdcolin/bender/commit/63fb9ba51e435ed54563bcd4f09d9e0c2c0199f5) a kit voice strikes the sheet and the bottle on its own sample
+- *(dsp)* [`c941ad4`](https://github.com/cmdcolin/bender/commit/c941ad4cfe8166aef4c57d00d8c14172a7ece478) the bucket brigade follows its pitch lane inside a block
+- *(dsp)* [`112b19a`](https://github.com/cmdcolin/bender/commit/112b19a8946dcde094b69c70e4344a9d5b1d7a22) Clatter's loop loads Wander's rows instead of playing over them
+
+### Performance
+- *(dsp)* [`a299674`](https://github.com/cmdcolin/bender/commit/a299674885ac873cca3be0964fa6ee2fc78dc615) the kit's tanks, metal bank and rails take and give doubles in fields
+- *(dsp)* [`b9accc4`](https://github.com/cmdcolin/bender/commit/b9accc4edd13953ea90a03b22dd4b7ac785276eb) the kit's filter coefficients and the desk loops' tilt are worked out once
+- *(engine)* [`7ddaaa0`](https://github.com/cmdcolin/bender/commit/7ddaaa0be863297078f1efb1356afe92b93656fc) read boards in key order instead of by computed name
+- *(dsp)* [`2be55be`](https://github.com/cmdcolin/bender/commit/2be55be9ae838a4171c6668cb3ee0235f7c344ab) the reel's gestures no longer block the audio thread
+- *(dsp)* [`7b1ae91`](https://github.com/cmdcolin/bender/commit/7b1ae91c6b93a8e7cf0d03c56f8011114fee9d8a) an idle sheet or bottle skips its resonators
+
+### Refactor
+- *(dsp)* [`9fefb8b`](https://github.com/cmdcolin/bender/commit/9fefb8b3dce6ae0332ae4bbc151d501f6dd15868) the Bode shifter works out its quadrature trim in locals, not a method
+- *(engine)* [`3b2de4b`](https://github.com/cmdcolin/bender/commit/3b2de4bd674d47540b45c2476383b4b2a3825647) struckHit sits above drumHit's comment, not under it
+
+### Documentation
+- [`3667dad`](https://github.com/cmdcolin/bender/commit/3667dad50b2c1a2b2b43a44f9f48e50b168df10c) options for independent note memories, recommending per-lane gate taps
+- [`4b3d7c4`](https://github.com/cmdcolin/bender/commit/4b3d7c49927ca7eb6f6a9ccfe42bd41695534037) agent-docs/reference/taste.md records what Colin likes in bender's sound
+- [`c5de487`](https://github.com/cmdcolin/bender/commit/c5de487cb5eaf66e2cbb8075e87122bbf0a4033c) the lofi sound is a sometimes, not a dislike
+- [`c918e20`](https://github.com/cmdcolin/bender/commit/c918e205b18c76d9abb11e7fa3c91d3343b0e256) describe the lane jumpers and lane lift, and file the note-memories idea as reference
+- [`b5b2a7e`](https://github.com/cmdcolin/bender/commit/b5b2a7e61c154472f0dc5754fc72bb79511c6d03) optimizations.md records the reel, key-order and kit-field work, and corrects stale numbers
+- [`4afe1b9`](https://github.com/cmdcolin/bender/commit/4afe1b9d3909e8003f9646502788ea6e1b27e78c) deep-bends.md item 3 ranks the comb's bucket brigade faults and marks it built
+- [`2efd866`](https://github.com/cmdcolin/bender/commit/2efd866b029d3032e55aa8df6811f2e876b8a173) deep-bends item 5 ranks the Bode shifter's faults by measurement and marks it built
+- [`3a3deda`](https://github.com/cmdcolin/bender/commit/3a3deda16e47b96faed1be25435e5f1f02055b03) fm-bends.md records full width, the exp bus and the two presets
+- [`7c0f49a`](https://github.com/cmdcolin/bender/commit/7c0f49a2b2aaf7ac9ba9b3ba140c9d2b618f599c) features.md lists the two new Glint presets
+- [`76aeba2`](https://github.com/cmdcolin/bender/commit/76aeba2231ee58e527490f4f5cb47235a3e78c61) taste.md is for songs and showcases, not for which bends get built
+- [`a6f7d57`](https://github.com/cmdcolin/bender/commit/a6f7d57b1837a4d4748467b11f590d0cd4256f22) park the contact-mic metal sheet prototype with its sources and targets
+- [`7f6f538`](https://github.com/cmdcolin/bender/commit/7f6f53889f9619d8bfafe6cacd4e117dbf10405c) taste.md records sad-listening piano, the tonic comb, and what reads as epic
+- [`9d1b8c9`](https://github.com/cmdcolin/bender/commit/9d1b8c9872964b75cc75939f2a5c482c0ed6c7f6) taste.md keeps note-inventing bends away from a locked-in melody
+- [`58e3221`](https://github.com/cmdcolin/bender/commit/58e322110f271fa3c0906a44b6473fd68e32ab25) the metal sheet note moves to reference now the Sheet bend is built
+- [`e046075`](https://github.com/cmdcolin/bender/commit/e04607596ad5310c5686f2073d2d5e5555a97cfc) features.md pads the ring mod table to its new widest row
+
+### Tests
+- [`7594f44`](https://github.com/cmdcolin/bender/commit/7594f441530ce1119d2c7cf1a14291098b59dbcb) pnpm agent's stop check asks the chord lane to go quiet, not every machine
+
+### Chores
+- [`a6e1871`](https://github.com/cmdcolin/bender/commit/a6e18711b421f9094a1c1b7b9b49ade1d96cdf91) scripts/ada.sh runs pnpm test and typecheck on ada
+
 ## [1.26.1](https://github.com/cmdcolin/bender/compare/v1.26.0...v1.26.1) - 2026-11-05
 
 ### Fixes
