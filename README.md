@@ -14,61 +14,48 @@ A circuit bender in the browser, built on Web Audio's
 Watch Claude Code play it:
 [Letting an AI agent drive bender](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
 
-Bold names are the app's own.
-
 ## Machines
 
-Circuit bending means opening up an electronic toy and rewiring it so it makes
-sounds it was never meant to. bender does it in software. Each machine is
-simulated down to its circuit, so a bend glitches it the way it would glitch the
-real toy: slow the clock and the tune drops in pitch and tempo at once.
-
-- **Plinky** — a toy keyboard's square-wave chip, with ROM tunes and auto bass
-  chords
-- **Clatter** — a drum box whose step rows each run their own length
-- **Glint** — a four-voice FM chip that plays along with Plinky
-- **Parlor** — an eight-bit sampling keyboard of pads, strings, choirs and bells
-- **Prattle** — a talking toy's speech chip that says what you type
-- **Growler** — a Model D-style monosynth that plays Plinky's tune as a bassline
-- **Howler** — a second Growler voiced as a lead, with its own melody
+- **Plinky** — a toy keyboard
+- **Clatter** — a drum machine
+- **Glint** — an FM synth
+- **Parlor** — a sampling keyboard
+- **Prattle** — a speech chip that says what you type
+- **Growler** — a bass synth
+- **Howler** — a lead synth
 
 ## Other sources
 
-- **Sheet** — a struck steel sheet that rattles on the floor or swings from a
-  corner
-- **Bottle** — a glass bottle you tap and fill with water
-- **Chaos osc** — two cross-modulated oscillators that motorboat on their own
-- **Mic** — a live mic you can patch into a clock pin, a bus or Prattle's mouth
+- **Sheet** — a steel sheet you hit
+- **Bottle** — a glass bottle you tap
+- **Chaos osc** — an oscillator that runs wild on its own
+- **Mic** — your microphone
 
 ## Pedals
 
-- **Gnash** — a distortion pedal, one circuit per mode: screamer, rat, muff and
-  more
-- **Wraith** — a three-head tape echo on a spliced five-second loop
-- **Ricochet** — a delay that can play backwards or beat-repeat
-- **Boing** — a spring reverb you can kick
-- **Chorale** — a bucket-brigade chorus, ensemble and flanger
-- **Ember** — a tube amp and speaker whose tone knobs load each other as in the
-  real circuit
+- **Gnash** — distortion
+- **Wraith** — tape echo
+- **Ricochet** — delay
+- **Boing** — spring reverb
+- **Chorale** — chorus
+- **Ember** — tube amp
 
 Ten more, among them **Ring mod**, **Crusher**, **Comb**, **Octave** and
 **Codec**.
 
 ## Tape and samples
 
-- **Spool** — a tape loop that plays a sample and records the board over it
-- **Layercake** — a cassette four-track: four loops of different lengths behind
-  a mixing desk
-- Samples — any audio file, or 78s, numbers stations, NASA comms and old-time
-  radio off archive.org
+- **Spool** — a tape loop you can record onto
+- **Layercake** — a cassette four-track
+- Samples — any audio file, or old records and radio from archive.org
 
 ## Playing
 
 - Sequencer — a piano roll and drum steps
-- Patch bay — four wires modulating 183 destinations, each other included
-- MIDI — plays the keys and turns the knobs
+- Patch bay — wire modulation onto the controls
+- MIDI — plug in a controller
 - Share — a link holds the whole board
-- Presets — 190 boards, plus random, morph, hunt and drift
+- Presets — 190 ready-made boards
 - Agent — Claude Code plays it
   ([blog post](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/))
 
