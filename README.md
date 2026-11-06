@@ -60,14 +60,36 @@ Also **Ring mod**, **Crusher**, **Comb**, **Octave**, **Codec** and others.
 
 ## Gallery
 
-Each picture opens that part in the app.
+Each picture opens its board in the app.
+
+### Signal path
+
+<a href="https://cmdcolin.github.io/bender/app/#p=UHhdZPoBeKYByAE&v=3"><img src="public/readme/signal-path.jpg" alt="The whole app, with a zoom of the signal path map: power supply, the machines, mix bus, pedals and output." width="100%"></a>
+
+Every sound runs through one signal path, drawn at the top right. Click a box on
+it to open that part.
+
+### Instruments
 
 <table>
-<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=UHgzZKQCeA&v=3"><img src="public/guide/guide-map.jpg" alt="The signal path map: power supply, the machines, mix bus, a pedal and output." width="100%"></a><br>The signal path; click a box to open it</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/"><img src="public/guide/guide-die.jpg" alt="Plinky's chip: keyboard, key matrix, tune ROM, bus, voices, envelope, output pin and clock." width="100%"></a><br><b>Plinky</b>'s chip, keys to output pin</td></tr>
-<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/"><img src="public/guide/guide-drum-voices.jpg" alt="Clatter's drum voices: triggers, one-shots, tanks, metal bank, noise, amps, DAC and sample ROM." width="100%"></a><br><b>Clatter</b>'s drum voices</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=UHg&v=3"><img src="public/guide/guide-glint-path.jpg" alt="Glint's chip: key, processor, bus, modulator, carrier and output." width="100%"></a><br><b>Glint</b>'s FM chip</td></tr>
-<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=mgN4&v=3"><img src="public/guide/guide-parlor-path.jpg" alt="Parlor's chip: keys, counter, ROM, envelope, tone and mix, with its address and data buses." width="100%"></a><br><b>Parlor</b>'s sample ROM and buses</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=qQN4&v=3"><img src="public/guide/guide-growler-card.jpg" alt="Growler's voice card: three oscillators, mixer, filter and loudness, with feedback paths." width="100%"></a><br><b>Growler</b>'s voice card</td></tr>
-<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=rgFk&v=3"><img src="public/guide/guide-wraith-path.jpg" alt="Wraith's tape loop: send, record and play heads, feedback and tone." width="100%"></a><br><b>Wraith</b>'s tape loop and heads</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=0ATIAQ&v=3"><img src="public/guide/guide-ember-path.jpg" alt="Ember's path: preamp, tone stack, power amp and speaker, with the tone stack's and speaker's curves." width="100%"></a><br><b>Ember</b>'s amp and tone curves</td></tr>
-<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=bsgBBvQDAPgK&v=3"><img src="public/guide/guide-spool.jpg" alt="Spool's deck: load, rec, undo and the reel with its loop markers." width="100%"></a><br><b>Spool</b>'s deck</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=igR4&v=3"><img src="public/guide/guide-fourtrack.jpg" alt="Layercake's desk: four channel strips above four tape loops." width="100%"></a><br><b>Layercake</b>'s desk</td></tr>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/"><img src="public/readme/plinky.jpg" alt="The app with Plinky open; a zoom shows its chip from keyboard to output pin." width="100%"></a><br><b>Plinky</b> — keys to output pin</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/"><img src="public/readme/clatter.jpg" alt="The app with Clatter open; a zoom shows its drum voices, from triggers to DAC." width="100%"></a><br><b>Clatter</b> — the drum voices</td></tr>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=UHg&v=3"><img src="public/readme/glint.jpg" alt="The app with Glint open; a zoom shows its path from key through modulator and carrier." width="100%"></a><br><b>Glint</b> — the FM signal path</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=mgN4&v=3"><img src="public/readme/parlor.jpg" alt="The app with Parlor open; a zoom shows its counter stepping through the sample ROM." width="100%"></a><br><b>Parlor</b> — sample playback</td></tr>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=qQN4&v=3"><img src="public/readme/growler.jpg" alt="The app with Growler open; a zoom shows its voice card of oscillators, mixer, filter and loudness." width="100%"></a><br><b>Growler</b> — the voice card</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=igSMAQ&v=3"><img src="public/readme/layercake.jpg" alt="The app with Layercake open; a zoom shows one track's channel strip." width="100%"></a><br><b>Layercake</b> — one track's channel strip</td></tr>
+</table>
+
+### Pedals
+
+<table>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=rgFk&v=3"><img src="public/readme/wraith.jpg" alt="The app with Wraith open; a zoom shows its tape loop, heads and feedback." width="100%"></a><br><b>Wraith</b> — the tape loop and heads</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=0ATIAQ&v=3"><img src="public/readme/ember.jpg" alt="The app with Ember open; a zoom shows preamp, tone stack, power amp and speaker with their curves." width="100%"></a><br><b>Ember</b> — the amp and its tone curves</td></tr>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=igFk&v=3"><img src="public/readme/clipper.jpg" alt="The app with Clipper open; a zoom shows the LM386 amp with its coupling cap and speaker." width="100%"></a><br><b>Clipper</b> — the LM386 amp</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=4gFk&v=3"><img src="public/readme/tape-machine.jpg" alt="The app with the tape machine open; a zoom shows its record and replay heads." width="100%"></a><br><b>Tape machine</b> — record and replay heads</td></tr>
+</table>
+
+### Chips
+
+<table>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/"><img src="public/readme/plinky-bus.jpg" alt="The app with Plinky's bus open; a zoom shows song select, counter, ROM, note table and divider wired by their lines." width="100%"></a><br><b>Plinky</b> — the tune ROM's bus</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=UHg&v=3"><img src="public/readme/glint-die.jpg" alt="The app with Glint's die open; a zoom shows its allocator, registers and voices." width="100%"></a><br><b>Glint</b> — the die</td></tr>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=mgN4&v=3"><img src="public/readme/parlor-bus.jpg" alt="The app with Parlor's bus open; a zoom shows the counter, sample ROM and DAC." width="100%"></a><br><b>Parlor</b> — the sample ROM's bus</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=qQN4&v=3"><img src="public/readme/growler-memory.jpg" alt="The app with Growler open; a zoom shows its counter, RAM and voice on the memory bus." width="100%"></a><br><b>Growler</b> — the sequence memory</td></tr>
+<tr><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=vQh4&v=3"><img src="public/readme/prattle-bus.jpg" alt="The app with Prattle's bus open; a zoom shows its frame ROM, coefficient ROM and lattice." width="100%"></a><br><b>Prattle</b> — the speech ROMs</td><td width="50%" valign="top"><a href="https://cmdcolin.github.io/bender/app/#p=hAFk&v=3"><img src="public/readme/crusher-bus.jpg" alt="The app with Crusher open; a zoom shows its converter and DAC on the data bus." width="100%"></a><br><b>Crusher</b> — the converter's bus</td></tr>
 </table>
 
 ## Run

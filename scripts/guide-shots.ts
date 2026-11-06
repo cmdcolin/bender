@@ -171,26 +171,12 @@ const SHOTS: Shot[] = [
       { monoLevel: 0.6 },
     ],
     [
-      'guide-ember-path.jpg',
-      'Ember',
-      'ember signal path and tone',
-      { ampMix: 1 },
-      0,
-    ],
-    [
-      'guide-wraith-path.jpg',
-      'Wraith',
-      'wraith signal path',
-      { dlyMix: 0.5 },
-      0,
-    ],
-    [
       'guide-power.jpg',
       'Power supply',
       'power supply',
       { drumSupply: 1, fmSupply: 1 },
     ],
-  ].map(([file, door, drawing, board, pad = 10]): Shot => ({
+  ].map(([file, door, drawing, board]): Shot => ({
     file: file as string,
     board: board as Partial<Controls>,
     act: page =>
@@ -200,7 +186,7 @@ const SHOTS: Shot[] = [
         2000,
       ).catch(() => click(page, `[data-door="${door}"]`)),
     select: [`aside svg[aria-label="${drawing}" i]`],
-    pad: pad as number,
+    pad: 10,
   })),
   {
     file: 'guide-trigger.jpg',
