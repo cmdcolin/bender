@@ -616,6 +616,14 @@ tuned so that no two share a harmonic.
   - Wound up, a step stacking four voices gives each less than a step stacking
     one.
 
+## The sheet and the bottle
+
+- **Room:** a second mic across a bare concrete room, which hears only the sheet
+  or only the bottle.
+  - At 0 there is no room mic.
+  - Up, each hit hangs about three seconds, dark, while the rest of the board
+    stays dry.
+
 ## Parlor's sample bus
 
 A counter walks a ROM of one attack and loop per voice into a DAC. A fault

@@ -10,6 +10,7 @@ import { buildBender } from './build.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
 import { ENS_MODE } from './stages/ensemble.ts'
 import { subnormals } from './testSubnormals.ts'
+import { ANY_CHOICE } from './trigbus.ts'
 
 // Nothing on the board may come to rest in denormal range.
 //
@@ -74,6 +75,14 @@ const RINGING: Partial<Controls> = {
   monoLoop: 0.5,
   monoThump: 0.5,
   monoFold: 0.5,
+  sheetLevel: 0.4,
+  sheetStrikes: 0,
+  sheetStruckBy: ANY_CHOICE,
+  sheetRoom: 0.5,
+  bottleLevel: 0.4,
+  bottleStrikes: 0,
+  bottleStruckBy: ANY_CHOICE,
+  bottleRoom: 0.5,
 }
 
 // Minutes of simulated board per run, and every stage added to the path adds to

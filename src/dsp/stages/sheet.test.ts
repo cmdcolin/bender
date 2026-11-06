@@ -174,3 +174,14 @@ test('a kick strikes it on the sample the kit fires, not a block later', () => {
   expect(first).toBeGreaterThanOrEqual(2 * BLOCK)
   expect(first).toBeLessThan(2 * BLOCK + 8)
 })
+
+test('the room carries a strike on after the sheet has stopped', () => {
+  const strike = { sheetHold: 0, sheetRattle: 0 }
+  const dry = run(strike, 3, { hand: 2 })
+  const roomy = run({ ...strike, sheetRoom: 1 }, 3, { hand: 2 })
+  expect(rms(span(roomy, 2, 3))).toBeGreaterThan(rms(span(dry, 2, 3)) * 10)
+})
+
+test('with no room the sheet sounds as it did', () => {
+  expect(run({ sheetRoom: 0 }, 1, { hand: 2 })).toEqual(run({}, 1, { hand: 2 }))
+})

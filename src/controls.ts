@@ -595,6 +595,7 @@ export const DEFAULT_CONTROLS = {
   sheetHold: 0.3,
   sheetShake: 0.2,
   sheetRattle: 0.5,
+  sheetRoom: 0,
 
   bottleLevel: 0,
   bottleStrikes: 0.5,
@@ -605,6 +606,7 @@ export const DEFAULT_CONTROLS = {
   bottleHold: 0.3,
   bottleShake: 0.2,
   bottleRattle: 0.5,
+  bottleRoom: 0,
 
   micLevel: 0,
   micPatch: 0,

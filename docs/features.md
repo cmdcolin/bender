@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-676 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 182
+678 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 182
 presets, 23 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -668,18 +668,19 @@ turned well up it hears itself and howls. A loud sheet rattles against what it
 lies on. Hold runs from lying on a floor to hung from a corner.
 
 <details>
-<summary>8 controls</summary>
+<summary>9 controls</summary>
 
-| control   | range                                                                  | what it does                                                      |
-| --------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Level     | 0 to 4, normal 0 to 1                                                  | How loud the sheet is in the source mix                           |
-| Strikes   | 0 to 8 per second                                                      | How often something hits the sheet, at random                     |
-| Struck by | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key | A kit voice or a key that hits the sheet too                      |
-| Hardness  | off to full                                                            | A soft mallet at the bottom, a steel pipe at the top              |
-| Size      | 0.25× to 4×                                                            | Bigger sheets ring lower                                          |
-| Hold      | off to full                                                            | Lying on a floor at the bottom, hung from a corner at the top     |
-| Shake     | off to full                                                            | How hard the board’s own sound shakes the sheet, so it hums along |
-| Rattle    | off to full                                                            | How much a loud sheet buzzes against what it lies on              |
+| control   | range                                                                  | what it does                                                                             |
+| --------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Level     | 0 to 4, normal 0 to 1                                                  | How loud the sheet is in the source mix                                                  |
+| Strikes   | 0 to 8 per second                                                      | How often something hits the sheet, at random                                            |
+| Struck by | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key | A kit voice or a key that hits the sheet too                                             |
+| Hardness  | off to full                                                            | A soft mallet at the bottom, a steel pipe at the top                                     |
+| Size      | 0.25× to 4×                                                            | Bigger sheets ring lower                                                                 |
+| Hold      | off to full                                                            | Lying on a floor at the bottom, hung from a corner at the top                            |
+| Shake     | off to full                                                            | How hard the board’s own sound shakes the sheet, so it hums along                        |
+| Rattle    | off to full                                                            | How much a loud sheet buzzes against what it lies on                                     |
+| Room      | off to full                                                            | A second mic across a bare concrete room from the sheet, mixed in under the contact mics |
 
 </details>
 
@@ -692,19 +693,20 @@ and duller the fuller it is. Shake lets the board’s own sound sing in the glas
 and turned well up it howls.
 
 <details>
-<summary>9 controls</summary>
+<summary>10 controls</summary>
 
-| control   | range                                                                  | what it does                                                        |
-| --------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Level     | 0 to 4, normal 0 to 1                                                  | How loud the bottle is in the source mix                            |
-| Strikes   | 0 to 8 per second                                                      | How often something taps the bottle, at random                      |
-| Struck by | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key | A kit voice or a key that taps the bottle too                       |
-| Hardness  | off to full                                                            | A fingertip at the bottom, a spoon at the top                       |
-| Size      | 0.25× to 4×                                                            | Bigger bottles ring lower                                           |
-| Fill      | off to full                                                            | Water in the bottle: lower and duller the fuller it is              |
-| Hold      | off to full                                                            | Standing on a table at the bottom, hung by the neck at the top      |
-| Shake     | off to full                                                            | How hard the board’s own sound shakes the bottle, so it sings along |
-| Rattle    | off to full                                                            | How much a loud bottle rocks and clinks on the table                |
+| control   | range                                                                  | what it does                                                                              |
+| --------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Level     | 0 to 4, normal 0 to 1                                                  | How loud the bottle is in the source mix                                                  |
+| Strikes   | 0 to 8 per second                                                      | How often something taps the bottle, at random                                            |
+| Struck by | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key | A kit voice or a key that taps the bottle too                                             |
+| Hardness  | off to full                                                            | A fingertip at the bottom, a spoon at the top                                             |
+| Size      | 0.25× to 4×                                                            | Bigger bottles ring lower                                                                 |
+| Fill      | off to full                                                            | Water in the bottle: lower and duller the fuller it is                                    |
+| Hold      | off to full                                                            | Standing on a table at the bottom, hung by the neck at the top                            |
+| Shake     | off to full                                                            | How hard the board’s own sound shakes the bottle, so it sings along                       |
+| Rattle    | off to full                                                            | How much a loud bottle rocks and clinks on the table                                      |
+| Room      | off to full                                                            | A second mic across a bare concrete room from the bottle, mixed in under the contact mics |
 
 </details>
 

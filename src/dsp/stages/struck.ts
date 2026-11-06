@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
+import { Room } from '../util/room.ts'
 
 // Something hard with contact mics on it, struck at random, by a kit voice, a
 // key or a hand, shaken by the board's own output and rattling when loud. A
@@ -24,6 +25,7 @@ const RATTLE_KICK = 0.05
 const STRIKE_GAIN = 1
 const FOLLOW_HZ = 20
 const EDGE = 0.04
+const ROOM_GAIN = 0.6
 
 export interface Couplings {
   readonly hz: Float64Array
@@ -59,6 +61,7 @@ const keysOf = (name: 'sheet' | 'bottle') => ({
   hold: IDX[`${name}Hold`],
   shake: IDX[`${name}Shake`],
   rattle: IDX[`${name}Rattle`],
+  room: IDX[`${name}Room`],
 })
 
 export class Struck implements Stage {
@@ -80,6 +83,8 @@ export class Struck implements Stage {
   private readonly wetL = new Float64Array(BLOCK)
   private readonly wetR = new Float64Array(BLOCK)
   private readonly lows = new Float64Array(BLOCK)
+  private readonly toRoom = new Float64Array(BLOCK)
+  private readonly room: Room
   private rng: Rng
   private readonly seed: number
   private pulseLeft = 0
@@ -104,6 +109,7 @@ export class Struck implements Stage {
     this.seed = seed
     this.body = body
     this.keys = keysOf(label)
+    this.room = new Room(sr)
     this.rng = mulberry32(seed)
     const m = body.modes
     this.modes = m
@@ -229,6 +235,12 @@ export class Struck implements Stage {
       this.loud += follow * (Math.abs(lows[i]!) - this.loud)
       io.l[i]! += wetL[i]! * gain
       io.r[i]! += wetR[i]! * gain
+    }
+    const send = Math.min(Math.max(p[k.room]!, 0), 1) * gain * 0.5
+    if (send > 0 || !this.room.quiet) {
+      const { toRoom } = this
+      for (let i = 0; i < n; i++) toRoom[i] = (wetL[i]! + wetR[i]!) * send
+      this.room.run(toRoom, ROOM_GAIN, io.l, io.r, n)
     }
     this.loud = this.loud < 1e-15 ? 0 : this.loud
     this.reservoir = this.reservoir < 1e-15 ? 0 : this.reservoir
@@ -383,6 +395,7 @@ export class Struck implements Stage {
   }
 
   private hush() {
+    this.room.clear()
     this.y1.fill(0)
     this.y2.fill(0)
     this.ringing = false

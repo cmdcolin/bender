@@ -155,3 +155,16 @@ test('water lowers the ring', () => {
   }
   expect(pitch(1)).toBeLessThan(pitch(0))
 })
+
+test('the room carries a tap on after the glass has stopped', () => {
+  const tap = { bottleHold: 0, bottleRattle: 0 }
+  const dry = run(tap, 3, { hand: 2 })
+  const roomy = run({ ...tap, bottleRoom: 1 }, 3, { hand: 2 })
+  expect(rms(span(roomy, 2, 3))).toBeGreaterThan(rms(span(dry, 2, 3)) * 10)
+})
+
+test('with no room the bottle sounds as it did', () => {
+  expect(run({ bottleRoom: 0 }, 1, { hand: 2 })).toEqual(
+    run({}, 1, { hand: 2 }),
+  )
+})

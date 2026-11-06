@@ -572,6 +572,7 @@ export const PARAM_DEFS = [
   ['sheetHold', 'slew'],
   ['sheetShake', 'slew'],
   ['sheetRattle', 'slew'],
+  ['sheetRoom', 'slew'],
   ['bottleLevel', 'slew'],
   ['bottleStrikes', 'slew'],
   ['bottleStruckBy', 'step'],
@@ -581,6 +582,7 @@ export const PARAM_DEFS = [
   ['bottleHold', 'slew'],
   ['bottleShake', 'slew'],
   ['bottleRattle', 'slew'],
+  ['bottleRoom', 'slew'],
 
   ['micLevel', 'slew'],
   ['micPatch', 'step'],
