@@ -1,4 +1,4 @@
-import { DATA_LINES, DRUM_ROMS } from '../../drums.ts'
+import { DATA_LINES, DRUM_ROMS, VOICE_LABELS } from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
 import { DEST, LFO_SYNC_MODES } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
@@ -39,6 +39,7 @@ import {
   SHELLAC,
 } from '../../engine/archive.ts'
 import { jackFor } from '../../jacks.ts'
+import { phraseControls } from '../../prattle.ts'
 import { RAVE_STAB } from './rigs.ts'
 import { kit, lead, line } from './write.ts'
 
@@ -296,6 +297,37 @@ export const PRESETS: PresetDef[] = [
       leadSweep: 28,
       leadEmph: 1,
       leadLevel: 1,
+    },
+  },
+  {
+    name: 'robot chant',
+    blurb:
+      'Prattle chants kill the bass a syllable on each offbeat hat over the 150 kick, a grounded pitch wire dropping it to a growl and its frame counter looping and slipping through the words',
+    patch: {
+      ...HARD_KIT,
+      ...phraseControls('kill the bass'),
+      talkLevel: 1.6,
+      talkStruck: VOICE_LABELS.indexOf('hat') + 1,
+      talkLoopBit: 2,
+      talkLoopSlip: 0.25,
+      talkPitchLine: 5,
+      talkPitchFault: FAULT.ground,
+    },
+  },
+  {
+    name: 'lattice howl',
+    blurb:
+      'Each clap strikes the next word of machine error reboot with the sign wire of Prattle’s coefficient ROM grounded, so the lattice tips past one and screeches, a different pitch each word, starved low and smeared across the bar',
+    patch: {
+      ...HARD_KIT,
+      ...phraseControls('machine error reboot'),
+      talkLevel: 0.7,
+      talkStruck: VOICE_LABELS.indexOf('clap') + 1,
+      talkClock: 0.55,
+      talkFrameDiv: 2,
+      talkDataLine: 12,
+      talkDataFault: FAULT.ground,
+      talkLeak: 0.3,
     },
   },
   {
