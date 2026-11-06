@@ -1,6 +1,9 @@
 import { useState } from 'react'
 
+import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
+import { TAP_MIC } from '../engine/params.ts'
+import { jackOf } from '../jacks.ts'
 import { CHANNELS } from './controls/index.ts'
 import {
   intoOf,
@@ -12,6 +15,7 @@ import {
 import { useBoardValue } from './ControlsContext.ts'
 import styles from './JackCap.module.css'
 import { Menu } from './Menu.tsx'
+import { wireOn } from './micWiring.ts'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey, Controls } from '../controls.ts'
@@ -25,6 +29,14 @@ const JACK_GLYPH = (
 
 const MACHINES = new Set(CHANNELS.map(c => c.name))
 
+const MIC_JACK = JACK_NAMES[jackOf(TAP_MIC)]
+
+/** Whether units patched onto the mic hear nothing, with no mic wire on the
+    mix to hand them a line. */
+const micDeaf = (c: Controls) => wireOn(c, MIC.mix) === 0
+
+const DEAF = 'the mic isn’t wired to the mix, so it hears nothing'
+
 const plug = (key: ControlKey, machine: string) => {
   engine.armStep()
   engine.set(key, Math.max(JACK_NAMES.indexOf(machine), 0))
@@ -37,6 +49,7 @@ const unitsOn = (c: Controls, machine: string) =>
 
 function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
   const machine = useBoardValue(c => patchedInto(c[into]))
+  const deaf = useBoardValue(micDeaf)
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const close = () => setOpen(false)
@@ -44,9 +57,11 @@ function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
     <>
       <Tip
         text={
-          machine
-            ? `${stage} is patched into ${machine} and processes it alone. Press to move the cable.`
-            : `Patch ${stage} into one machine’s output instead of the whole mix.`
+          machine === MIC_JACK && deaf
+            ? `${stage} is patched into the Mic, but ${DEAF}. Press to move the cable.`
+            : machine
+              ? `${stage} is patched into ${machine} and processes it alone. Press to move the cable.`
+              : `Patch ${stage} into one machine’s output instead of the whole mix.`
         }
       >
         <button
@@ -84,6 +99,11 @@ function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
                   }}
                 >
                   {name === MASTER ? 'master (the whole mix)' : name}
+                  {name === MIC_JACK && deaf && (
+                    <span className={styles.on}>
+                      hears nothing: not on the mix
+                    </span>
+                  )}
                 </button>
               )
             })}
@@ -96,6 +116,7 @@ function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
 
 function MachineJack({ stage }: { stage: string }) {
   const here = useBoardValue(c => unitsOn(c, stage))
+  const deaf = useBoardValue(c => stage === MIC_JACK && micDeaf(c))
   const elsewhere = useBoardValue(c =>
     UNITS.map(u => patchedInto(c[u.into]) ?? '').join('|'),
   ).split('|')
@@ -106,9 +127,12 @@ function MachineJack({ stage }: { stage: string }) {
     <>
       <Tip
         text={
-          here
+          (here
             ? `${here} ${here.includes(',') ? 'are' : 'is'} patched into ${stage}’s output. Press to patch or unplug units.`
-            : `Patch a pedal or bend into ${stage}’s output alone.`
+            : `Patch a pedal or bend into ${stage}’s output alone.`) +
+          (deaf
+            ? ' The mic isn’t wired to the mix, so units patched here hear nothing.'
+            : '')
         }
       >
         <button
