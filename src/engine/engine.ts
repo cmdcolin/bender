@@ -803,7 +803,7 @@ export class Engine {
     this.node = node
     this.post({ kind: 'params', pack: this.packLive() })
     this.post({ kind: 'wild', wild: this.wild })
-    this.post({ kind: 'bands', on: this.bandsOn })
+    this.post({ kind: 'bands', on: this.bandWatchers > 0 })
     this.postTransport()
   }
 
@@ -840,13 +840,14 @@ export class Engine {
     this.post({ kind: 'wild', wild })
   }
 
-  private bandsOn = false
+  private bandWatchers = 0
 
   /** Whether the audio thread splits each source into octave bands for the
-      meter: off unless something is drawing them. */
+      meter: off unless something is drawing or listening to them. Each true
+      wants a false of its own, so the tiles and a listen can overlap. */
   watchBands(on: boolean) {
-    this.bandsOn = on
-    this.post({ kind: 'bands', on })
+    this.bandWatchers = Math.max(this.bandWatchers + (on ? 1 : -1), 0)
+    this.post({ kind: 'bands', on: this.bandWatchers > 0 })
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {
