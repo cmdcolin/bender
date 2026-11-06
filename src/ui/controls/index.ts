@@ -6,6 +6,7 @@ import {
 import { PEDALS } from '../../pedals.ts'
 import { BEND_GROUPS, BENDS } from './bends.ts'
 import { FEEDBACK_GROUPS } from './feedback.ts'
+import { withJack } from './jacks.ts'
 import { MASTER_GROUPS } from './master.ts'
 import { MIX_GROUPS } from './mix.ts'
 import { ORDER_GROUPS } from './order.ts'
@@ -33,8 +34,8 @@ export const GROUPS: Group[] = [
   ...SOURCE_GROUPS,
   ...SUPPLY_GROUPS,
   ...MIX_GROUPS,
-  ...BEND_GROUPS,
-  ...PEDAL_GROUPS,
+  ...BEND_GROUPS.map(withJack),
+  ...PEDAL_GROUPS.map(withJack),
   ...PATCH_GROUPS,
   ...FEEDBACK_GROUPS,
   ...TAPE_GROUPS,

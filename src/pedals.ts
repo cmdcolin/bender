@@ -5,15 +5,52 @@ interface Pedal {
   label: string
   mute: ControlKey
   mix: ControlKey
+  into: ControlKey
 }
 
 export const PEDALS = [
-  { group: 'Gnash', label: 'stomp', mute: 'stompMute', mix: 'stompMix' },
-  { group: 'Wraith', label: 'tape', mute: 'dlyMute', mix: 'dlyMix' },
-  { group: 'Ricochet', label: 'echo', mute: 'echoMute', mix: 'echoLevel' },
-  { group: 'Boing', label: 'verb', mute: 'revMute', mix: 'revMix' },
-  { group: 'Chorale', label: 'ens', mute: 'ensMute', mix: 'ensMix' },
-  { group: 'Ember', label: 'amp', mute: 'ampMute', mix: 'ampMix' },
+  {
+    group: 'Gnash',
+    label: 'stomp',
+    mute: 'stompMute',
+    mix: 'stompMix',
+    into: 'stompInto',
+  },
+  {
+    group: 'Wraith',
+    label: 'tape',
+    mute: 'dlyMute',
+    mix: 'dlyMix',
+    into: 'dlyInto',
+  },
+  {
+    group: 'Ricochet',
+    label: 'echo',
+    mute: 'echoMute',
+    mix: 'echoLevel',
+    into: 'echoInto',
+  },
+  {
+    group: 'Boing',
+    label: 'verb',
+    mute: 'revMute',
+    mix: 'revMix',
+    into: 'revInto',
+  },
+  {
+    group: 'Chorale',
+    label: 'ens',
+    mute: 'ensMute',
+    mix: 'ensMix',
+    into: 'ensInto',
+  },
+  {
+    group: 'Ember',
+    label: 'amp',
+    mute: 'ampMute',
+    mix: 'ampMix',
+    into: 'ampInto',
+  },
 ] as const satisfies readonly Pedal[]
 
 export const pedalNamed = (stage: string): Pedal | undefined =>

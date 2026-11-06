@@ -7,6 +7,7 @@ import {
   TAP_BUS,
   TAP_MIC,
 } from '../engine/params.ts'
+import { BEND_INTO_KEYS, jackTap } from '../jacks.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { MIC, micInto } from './micJacks.ts'
 import { DELAY_ON_FIRST, DELAY_ON_SECOND, MicLine } from './micLine.ts'
@@ -72,6 +73,8 @@ const MUTE_IDX = [
 ]
 
 const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])
+const PEDAL_INTO_IDX = PEDALS.map(p => IDX[p.into])
+const BEND_INTO_IDX = BEND_INTO_KEYS.map(k => IDX[k])
 
 const BEND_BYPASS_IDX = [
   IDX.ringMute,
@@ -390,6 +393,21 @@ export class Chain {
   private readonly dryL = new Float32Array(BLOCK)
   private readonly dryR = new Float32Array(BLOCK)
 
+  /** Each machine's own line, the mic's last, for the units cabled onto it. */
+  private readonly inserts: StereoBlock[] = Array.from(
+    { length: TAP_MIC + 1 },
+    () => ({
+      l: new Float32Array(BLOCK),
+      r: new Float32Array(BLOCK),
+      n: BLOCK,
+    }),
+  )
+  /** The tap each bend (by id − 1) and each pedal is cabled onto this block,
+      −1 for the master run, and one bit per tap that has anything on it. */
+  private readonly bendAt = new Int8Array(BEND_INTO_IDX.length).fill(-1)
+  private readonly pedalAt = new Int8Array(PEDAL_INTO_IDX.length).fill(-1)
+  private jacked = 0
+
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
   pedals: Stage[] = []
@@ -552,6 +570,7 @@ export class Chain {
     ctx.send.fill(0, 0, n)
 
     const cluster = p[IDX.faultCluster]!
+    this.routeJacks(p, n)
     this.updateHeat(p, n)
     this.updateRelay(p, n, cluster)
 
@@ -572,6 +591,10 @@ export class Chain {
       for (let i = 0; i < n; i++) {
         io.l[i]! += micMix[i]!
         io.r[i]! += micMix[i]!
+      }
+      if (this.jacked & (1 << TAP_MIC)) {
+        this.inserts[TAP_MIC]!.l.set(micMix)
+        this.inserts[TAP_MIC]!.r.set(micMix)
       }
     }
 
@@ -640,7 +663,8 @@ export class Chain {
         const muteTo = k < MUTE_IDX.length ? 1 - p[MUTE_IDX[k]!]! : 1
         const muteFrom = k < MUTE_IDX.length ? this.muteGain[k]! : 1
         const muting = muteTo < 1 || muteFrom < 1
-        if ((vca || muting) && !cap)
+        const jacked = k < MAX_SOURCES && (this.jacked & (1 << k)) !== 0
+        if ((vca || muting || jacked) && !cap)
           for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
         // The bus before this source ran, so what the source put there is what
         // the meter loop leaves behind minus it — a subtract afterwards rather
@@ -673,6 +697,13 @@ export class Chain {
             io.r[i] = prevR[i]! + (io.r[i]! - prevR[i]!) * g
           }
           this.muteGain[k] = muteTo
+        }
+        if (jacked) {
+          const ins = this.inserts[k]!
+          for (let i = 0; i < n; i++) {
+            ins.l[i] = io.l[i]! - prev[i]!
+            ins.r[i] = io.r[i]! - prevR[i]!
+          }
         }
         if (toyRef && k === TOY_TAP)
           for (let i = 0; i < n; i++) ctx.toy[i] = io.l[i]! - prev[i]!
@@ -711,7 +742,8 @@ export class Chain {
         }
         // A source past `MAX_SOURCES` would still sound, but its meter would
         // land on the mic's; a test holds the two numbers together.
-        if (k < MAX_SOURCES && peak > this.taps[k]!) this.taps[k] = peak
+        if (!jacked && k < MAX_SOURCES && peak > this.taps[k]!)
+          this.taps[k] = peak
       }
     }
     if (this.bands.on) {
@@ -725,6 +757,7 @@ export class Chain {
     if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
     if (logicFrom >= 0 && !logicRan) ctx.logic.fill(0, 0, n)
     if (fmTap && !fmRan) ctx.fm.fill(0, 0, n)
+    if (this.jacked) this.runInserts(io, p, n)
 
     // The summing amp the sources meet in. Every desk has one and it is
     // never a wire: at unity it is skipped outright, because a soft clipper
@@ -787,15 +820,8 @@ export class Chain {
     this.runBends(io, p, n, cluster)
     if (tapeAt === TAPE_AT_PEDALS) this.runTape(io, p)
 
-    for (const i of pedalOrderAt(p[IDX.pedalOrder]!)) {
-      const s = this.pedals[i]
-      if (s) {
-        const to = 1 - p[BYPASS_IDX[i]!]!
-        if (!s.when || s.when(p, ctx))
-          this.faded(s, io, p, n, this.bypassGain[i]!, to)
-        this.bypassGain[i] = to
-      }
-    }
+    for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
+      if (this.pedalAt[i]! < 0) this.runPedal(i, io, p, n)
     for (const s of this.post) {
       if (s === this.tape && tapeAt !== TAPE_AT_END) continue
       if (!s.when || s.when(p, ctx)) {
@@ -818,6 +844,93 @@ export class Chain {
       this.panic()
       io.l.fill(0, 0, n)
       io.r.fill(0, 0, n)
+    }
+  }
+
+  private runPedal(i: number, io: StereoBlock, p: Float32Array, n: number) {
+    const s = this.pedals[i]
+    if (s) {
+      const to = 1 - p[BYPASS_IDX[i]!]!
+      if (!s.when || s.when(p, this.ctx))
+        this.faded(s, io, p, n, this.bypassGain[i]!, to)
+      this.bypassGain[i] = to
+    }
+  }
+
+  private runBend(id: number, io: StereoBlock, p: Float32Array, n: number) {
+    const s = this.bendById[id]
+    if (s && (!s.when || s.when(p, this.ctx)))
+      this.faded(
+        s,
+        io,
+        p,
+        n,
+        this.bendGain[id - 1]!,
+        1 - p[BEND_BYPASS_IDX[id - 1]!]!,
+      )
+  }
+
+  // Which machine each unit is cabled onto this block. A machine with anything
+  // on it starts the block with a clean line, so a source whose `when` said no
+  // hands its units silence and their tails still ring out.
+  private routeJacks(p: Float32Array, n: number) {
+    let jacked = 0
+    for (let i = 0; i < BEND_INTO_IDX.length; i++) {
+      const t = jackTap(p[BEND_INTO_IDX[i]!]!)
+      this.bendAt[i] = t
+      if (t >= 0) jacked |= 1 << t
+    }
+    for (let i = 0; i < PEDAL_INTO_IDX.length; i++) {
+      const t = jackTap(p[PEDAL_INTO_IDX[i]!]!)
+      this.pedalAt[i] = t
+      if (t >= 0) jacked |= 1 << t
+    }
+    this.jacked = jacked
+    for (let t = 0; t < this.inserts.length; t++) {
+      if (jacked & (1 << t)) {
+        const ins = this.inserts[t]!
+        ins.n = n
+        ins.l.fill(0, 0, n)
+        ins.r.fill(0, 0, n)
+      }
+    }
+  }
+
+  // Each machine's line through the units cabled onto it, before the summing
+  // amp: the dry line comes off the bus and the wet one goes back on. They run
+  // in the racks' order — the bends as the sockets walk them, then any patched
+  // bend no socket holds, then the pedals — and the meter reads the wet line.
+  private runInserts(io: StereoBlock, p: Float32Array, n: number) {
+    for (let t = 0; t < this.inserts.length; t++) {
+      if (this.jacked & (1 << t)) {
+        const ins = this.inserts[t]!
+        for (let i = 0; i < n; i++) {
+          io.l[i]! -= ins.l[i]!
+          io.r[i]! -= ins.r[i]!
+        }
+        let seen = 0
+        for (let k = 0; k < SLOT_IDX.length; k++) {
+          const id = Math.round(p[SLOT_IDX[this.order[k]!]!]!)
+          if (id > 0 && !(seen & (1 << id))) {
+            seen |= 1 << id
+            if (this.bendAt[id - 1] === t) this.runBend(id, ins, p, n)
+          }
+        }
+        for (let id = 1; id <= this.bendAt.length; id++)
+          if (!(seen & (1 << id)) && this.bendAt[id - 1] === t)
+            this.runBend(id, ins, p, n)
+        for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
+          if (this.pedalAt[i] === t) this.runPedal(i, ins, p, n)
+        let peak = 0
+        for (let i = 0; i < n; i++) {
+          const l = ins.l[i]!
+          io.l[i]! += l
+          io.r[i]! += ins.r[i]!
+          const a = l < 0 ? -l : l
+          if (a > peak) peak = a
+        }
+        if (t < MAX_SOURCES && peak > this.taps[t]!) this.taps[t] = peak
+      }
     }
   }
 
@@ -1011,7 +1124,8 @@ export class Chain {
       const first = id > 0 && !(seen & (1 << id))
       if (id > 0) seen |= 1 << id
       const joint = this.joints[k]!
-      const s = first ? this.bendById[id] : undefined
+      const s =
+        first && this.bendAt[id - 1]! < 0 ? this.bendById[id] : undefined
       // A position with nothing soldered into it has no joint to break, so its
       // joint comes back at rest. Leaving it standing would freeze it mid-break
       // instead: a socket emptied while its contact was open used to hold that
@@ -1031,15 +1145,7 @@ export class Chain {
         dropped |= 1 << k
         continue
       }
-      if (!s.when || s.when(p, this.ctx))
-        this.faded(
-          s,
-          io,
-          p,
-          n,
-          this.bendGain[id - 1]!,
-          1 - p[BEND_BYPASS_IDX[id - 1]!]!,
-        )
+      this.runBend(id, io, p, n)
     }
     for (let i = 0; i < BEND_BYPASS_IDX.length; i++)
       this.bendGain[i] = 1 - p[BEND_BYPASS_IDX[i]!]!

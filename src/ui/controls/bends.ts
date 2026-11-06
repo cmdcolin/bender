@@ -31,26 +31,82 @@ import type { Group } from './types.ts'
 // n−1, so the order here is the order the slots count in. The map reads it to
 // lay the path out; a roll reads it to put one bend on the board on its own.
 export const BENDS = [
-  { group: 'Ring mod', label: 'ring', mix: 'ringMix', mute: 'ringMute' },
-  { group: 'Crusher', label: 'crush', mix: 'crushMix', mute: 'crushMute' },
-  { group: 'Clipper', label: 'dist', mix: 'distMix', mute: 'distMute' },
-  { group: 'Comb', label: 'comb', mix: 'combMix', mute: 'combMute' },
+  {
+    group: 'Ring mod',
+    label: 'ring',
+    mix: 'ringMix',
+    mute: 'ringMute',
+    into: 'ringInto',
+  },
+  {
+    group: 'Crusher',
+    label: 'crush',
+    mix: 'crushMix',
+    mute: 'crushMute',
+    into: 'crushInto',
+  },
+  {
+    group: 'Clipper',
+    label: 'dist',
+    mix: 'distMix',
+    mute: 'distMute',
+    into: 'distInto',
+  },
+  {
+    group: 'Comb',
+    label: 'comb',
+    mix: 'combMix',
+    mute: 'combMute',
+    into: 'combInto',
+  },
   {
     group: 'Glitch buffer',
     label: 'glitch',
     mix: 'glitchMix',
     mute: 'glitchMute',
+    into: 'glitchInto',
   },
-  { group: 'Screech filter', label: 'filt', mix: 'filtMix', mute: 'filtMute' },
-  { group: 'Freq shifter', label: 'shift', mix: 'shiftMix', mute: 'shiftMute' },
-  { group: 'Octave', label: 'oct', mix: 'octMix', mute: 'octMute' },
-  { group: 'Codec', label: 'codec', mix: 'codecMix', mute: 'codecMute' },
-  { group: 'Rack verb', label: 'verb', mix: 'rackMix', mute: 'rackMute' },
+  {
+    group: 'Screech filter',
+    label: 'filt',
+    mix: 'filtMix',
+    mute: 'filtMute',
+    into: 'filtInto',
+  },
+  {
+    group: 'Freq shifter',
+    label: 'shift',
+    mix: 'shiftMix',
+    mute: 'shiftMute',
+    into: 'shiftInto',
+  },
+  {
+    group: 'Octave',
+    label: 'oct',
+    mix: 'octMix',
+    mute: 'octMute',
+    into: 'octInto',
+  },
+  {
+    group: 'Codec',
+    label: 'codec',
+    mix: 'codecMix',
+    mute: 'codecMute',
+    into: 'codecInto',
+  },
+  {
+    group: 'Rack verb',
+    label: 'verb',
+    mix: 'rackMix',
+    mute: 'rackMute',
+    into: 'rackInto',
+  },
 ] as const satisfies readonly {
   group: string
   label: string
   mix: ControlKey
   mute: ControlKey
+  into: ControlKey
 }[]
 
 /** The bend a slot value names — nothing, for the empty slot at zero. */

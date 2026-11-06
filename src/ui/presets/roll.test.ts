@@ -3,6 +3,7 @@ import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls.ts'
 import { hasStep } from '../../drums.ts'
 import { mulberry32 } from '../../dsp/util/rng.ts'
+import { JACK_KEYS } from '../../jacks.ts'
 import {
   ALL_SLIDERS,
   BENDS,
@@ -398,4 +399,16 @@ test('random rarely sags the shared supply', () => {
   for (let seed = 1; seed <= 600; seed++)
     if (sharedLoads(randomLook(before, mulberry32(seed))).length) sagged++
   expect(sagged / 600).toBeLessThan(0.2)
+})
+
+test('neither a mutate nor a stage roll moves a jack', () => {
+  const rand = mulberry32(7)
+  const patched = { ...DEFAULT_CONTROLS, ampInto: 3, combInto: 4 }
+  const ember = GROUPS.find(g => g.name === 'Ember')!
+  for (let i = 0; i < 40; i++)
+    for (const next of [
+      mutate(patched, 1, rand),
+      rollGroup(ember, patched, rand),
+    ])
+      for (const key of JACK_KEYS) expect(next[key], key).toBe(patched[key])
 })

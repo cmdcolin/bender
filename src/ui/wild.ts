@@ -6,6 +6,7 @@ import {
   type WildPack,
 } from '../dsp/arc.ts'
 import { PARAM_DEFS } from '../engine/params.ts'
+import { JACK_KEYS } from '../jacks.ts'
 import { ALL_SLIDERS, OWNER_BY_KEY, snapToStep } from './controls/index.ts'
 import { CLOCK_KEYS, PART_KEYS, YOURS } from './presets/yours.ts'
 import { fromPos, toPos } from './slider-scale.ts'
@@ -57,6 +58,7 @@ const wildable = (def: SliderDef, calm: Controls, shown: Set<string>) => {
     !YOURS.has(def.key) &&
     !CLOCK_KEYS.has(def.key) &&
     !PART_KEYS.has(def.key) &&
+    !JACK_KEYS.has(def.key) &&
     def.key !== 'drumWander' &&
     PARAM_AT.has(def.key) &&
     (!def.needs || def.needs(calm))

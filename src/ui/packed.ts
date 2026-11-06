@@ -1059,6 +1059,22 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumSnareSweep',
   'drumSnareSwoop',
   'fmStack',
+  'ringInto',
+  'crushInto',
+  'distInto',
+  'combInto',
+  'glitchInto',
+  'filtInto',
+  'shiftInto',
+  'octInto',
+  'codecInto',
+  'rackInto',
+  'stompInto',
+  'dlyInto',
+  'echoInto',
+  'revInto',
+  'ensInto',
+  'ampInto',
 ]
 
 // Retired controls that old links still carry, each read into the control that

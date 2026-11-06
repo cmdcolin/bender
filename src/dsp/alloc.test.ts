@@ -2,7 +2,8 @@ import { afterAll, expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { ROCK } from '../drums.ts'
-import { packParams } from '../engine/params.ts'
+import { packParams, TAP_MIC } from '../engine/params.ts'
+import { jackFor, jackOf } from '../jacks.ts'
 import { OWNER_BY_KEY } from '../ui/controls/index.ts'
 import { wildBoard } from '../ui/wild.ts'
 import { buildBender } from './build.ts'
@@ -540,6 +541,18 @@ test('a board with everything on allocates nothing from its first block', () => 
 
 test('nor with the other four bends in the slots', () => {
   const { found } = playing(make, LAST_BENDS)
+  expect(report(found).unexplained).toEqual([])
+})
+
+test('nor with units patched into machines', () => {
+  const { found } = playing(make, {
+    ...FIRST_BENDS,
+    ampInto: jackFor('toyDrum'),
+    combInto: jackFor('toyDrum'),
+    crushInto: jackFor('fmChip'),
+    rackInto: jackFor('pcmKeys'),
+    dlyInto: jackOf(TAP_MIC),
+  })
   expect(report(found).unexplained).toEqual([])
 })
 

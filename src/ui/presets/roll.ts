@@ -17,6 +17,7 @@ import {
   RATCHETS,
   STEPS,
 } from '../../drums.ts'
+import { JACK_KEYS } from '../../jacks.ts'
 import {
   ALL_SLIDERS,
   BENDS,
@@ -125,7 +126,12 @@ export function nudgeSliders(
   const next = { ...controls }
   const share = shakeShare(amount)
   for (const def of sliders) {
-    if (YOURS.has(def.key) || CLOCK_KEYS.has(def.key) || PART_KEYS.has(def.key))
+    if (
+      YOURS.has(def.key) ||
+      CLOCK_KEYS.has(def.key) ||
+      PART_KEYS.has(def.key) ||
+      JACK_KEYS.has(def.key)
+    )
       continue
     if (def.role === 'level') continue
     if (def.choices) {
@@ -283,7 +289,7 @@ export function rollKeys(
     const next = { ...current }
     const moved = new Set<ControlKey>()
     for (const key of keys) {
-      if (YOURS.has(key) || CLOCK_KEYS.has(key)) continue
+      if (YOURS.has(key) || CLOCK_KEYS.has(key) || JACK_KEYS.has(key)) continue
       const def = SLIDER_BY_KEY.get(key)
       if (!def) continue
       next[key] = keepsLevel(def, current)
