@@ -25,8 +25,6 @@ const INTO_OF = new Map(UNITS.map(u => [u.group, u.into]))
 export const intoOf = (stage: string): ControlKey | undefined =>
   INTO_OF.get(stage)
 
-export const isJack = (key: ControlKey) => UNITS.some(u => u.into === key)
-
 /** The machine a unit is patched into, or undefined on the master run. */
 export const patchedInto = (value: number): string | undefined => {
   const name = JACK_NAMES[Math.round(value)]

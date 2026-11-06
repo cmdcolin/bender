@@ -9,6 +9,7 @@ import {
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { JACK_KEYS } from '../jacks.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
 import { bench, setBench, stageKit } from './bench.ts'
@@ -20,7 +21,6 @@ import {
   type Group,
   type SliderDef,
 } from './controls/index.ts'
-import { isJack } from './controls/jacks.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { MuteCap } from './DeviceVerbs.tsx'
 import { foldDrawing, zoomFor } from './drawingFor.tsx'
@@ -105,7 +105,7 @@ function parts(group: Group): Part[] {
   for (const def of group.sliders) {
     if ((group.lead ?? []).includes(def.key)) continue
     if ((group.handled ?? []).includes(def.key)) continue
-    if (isMute(def.key) || isJack(def.key)) continue
+    if (isMute(def.key) || JACK_KEYS.has(def.key)) continue
     const name = def.part ?? null
     const last = out[out.length - 1]
     if (last?.name === name) last.sliders.push(def)
