@@ -122,6 +122,12 @@ export interface RecordMsg {
   stems?: boolean
 }
 
+/** Writes the panel's line back over whatever a fault left in a memory's RAM. */
+export interface LineRestoreMsg {
+  kind: 'lineRestore'
+  card: 'mono' | 'lead'
+}
+
 export interface PanicMsg {
   kind: 'panic'
 }
@@ -168,6 +174,7 @@ export type ToWorklet =
   | TransportMsg
   | RecordMsg
   | PanicMsg
+  | LineRestoreMsg
   | RetroFlushMsg
   | WildMsg
   | BandsMsg
@@ -205,6 +212,15 @@ export interface MeterMsg {
   leadSeqPos: number
   leadSeqFrac: number
   leadSeqStepMs: number
+  /** What each memory's RAM holds, its accent and slide bits, and the steps
+      whose cell differs from the panel's. The memories' own buffers, posted
+      untransferred like the scope. */
+  monoSeqRam: Float32Array
+  monoSeqFlags: Uint8Array
+  monoSeqDamage: number
+  leadSeqRam: Float32Array
+  leadSeqFlags: Uint8Array
+  leadSeqDamage: number
   tuneStepMs: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number

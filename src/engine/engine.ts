@@ -44,6 +44,7 @@ import {
   MONO_SEQ_STEP_KEYS,
   REST,
   TUNE_LANE_KEYS,
+  TUNE_STEPS,
   laneForNote,
 } from '../tune.ts'
 import {
@@ -174,6 +175,13 @@ export interface Meter {
   leadSeqPos: number
   leadSeqFrac: number
   leadSeqStepMs: number
+  /** Each memory's RAM, accent and slide bits, and the steps a fault changed. */
+  monoSeqRam: Float32Array
+  monoSeqFlags: Uint8Array
+  monoSeqDamage: number
+  leadSeqRam: Float32Array
+  leadSeqFlags: Uint8Array
+  leadSeqDamage: number
   tuneStepMs: number
   duck: number
   rail: number
@@ -411,6 +419,12 @@ export class Engine {
       leadSeqPos: 0,
       leadSeqFrac: 0,
       leadSeqStepMs: 0,
+      monoSeqRam: new Float32Array(TUNE_STEPS),
+      monoSeqFlags: new Uint8Array(TUNE_STEPS),
+      monoSeqDamage: 0,
+      leadSeqRam: new Float32Array(TUNE_STEPS),
+      leadSeqFlags: new Uint8Array(TUNE_STEPS),
+      leadSeqDamage: 0,
       tuneStepMs: 0,
       duck: 0,
       rail: 1,
@@ -740,6 +754,12 @@ export class Engine {
           leadSeqPos: msg.leadSeqPos,
           leadSeqFrac: msg.leadSeqFrac,
           leadSeqStepMs: msg.leadSeqStepMs,
+          monoSeqRam: msg.monoSeqRam,
+          monoSeqFlags: msg.monoSeqFlags,
+          monoSeqDamage: msg.monoSeqDamage,
+          leadSeqRam: msg.leadSeqRam,
+          leadSeqFlags: msg.leadSeqFlags,
+          leadSeqDamage: msg.leadSeqDamage,
           tuneStepMs: msg.tuneStepMs,
           duck: msg.duck,
           rail: msg.rail,
@@ -1608,6 +1628,11 @@ export class Engine {
       which makes a second press a redo. */
   undoTake() {
     this.post({ kind: 'undoTake' })
+  }
+
+  /** The panel's line written back over a memory's damaged RAM. */
+  restoreLine(card: 'mono' | 'lead') {
+    this.post({ kind: 'lineRestore', card })
   }
 
   /** A blank cassette in the four-track: every loop wiped, its wear gone. */

@@ -1,5 +1,13 @@
 import { N_DRUM_VOICES, VOICE_LABELS } from '../../drums.ts'
-import { MEMORY_SYNC_MODES } from '../../dsp/melodyMemory.ts'
+import { crossNames, FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
+import {
+  MEMORY_ADDR_LINES,
+  MEMORY_CARRY_NAMES,
+  MEMORY_DATA_LINES,
+  MEMORY_DATA_NAMES,
+  MEMORY_ROT_NAMES,
+  MEMORY_SYNC_MODES,
+} from '../../dsp/melodyMemory.ts'
 import {
   MONO_OSC3_NAMES,
   MONO_RANGE_NAMES,
@@ -73,6 +81,130 @@ export const HOWLER_CARD: Card = {
     'Plays Howler’s own steps while the song runs, or with the kit under Kit sync. Growler’s memory keeps playing the bass.',
   playsOn: [],
   editor: { kind: 'leadPath' },
+}
+
+export const MEMORY_FAULTS = 'memory faults'
+
+function memoryFaults(prefix: CardPrefix): SliderDef[] {
+  const k = <S extends CardSuffix>(suffix: S) => cardKey(prefix, suffix)
+  const part = MEMORY_FAULTS
+  const restore =
+    ' Clearing it leaves the damage; restore on the roll writes your line back.'
+  return [
+    {
+      key: k('SeqAddrLine'),
+      part,
+      label: 'Address line',
+      min: 0,
+      max: MEMORY_ADDR_LINES,
+      step: 1,
+      unit: '',
+      choices: lineNames('A', MEMORY_ADDR_LINES),
+      ordered: true,
+      shy: true,
+      help: 'Which of the five wires carrying the step number from the counter to the memory has the fault. The counter keeps counting and another step answers: A0 to ground plays every step twice, A3 to +V plays the back half of a 16-step line.',
+    },
+    {
+      key: k('SeqAddrFault'),
+      part,
+      label: 'Address fault',
+      min: 0,
+      max: FAULT_NAMES.length - 1,
+      step: 1,
+      unit: '',
+      choices: FAULT_NAMES,
+      needs: c => c[k('SeqAddrLine')] > 0,
+      help: 'What happened to that address wire. A cut floats and follows the wire beside it; bridged collapses the steps onto a lattice.',
+    },
+    {
+      key: k('SeqAddrCross'),
+      part,
+      label: 'Crossed address',
+      min: 0,
+      max: MEMORY_ADDR_LINES - 1,
+      step: 1,
+      unit: '',
+      choices: crossNames('A', MEMORY_ADDR_LINES),
+      ordered: true,
+      shy: true,
+      help: 'Two address wires swapped on their way to the memory, so the line plays its own steps out of order, the same order every lap.',
+    },
+    {
+      key: k('SeqCarry'),
+      part,
+      label: 'Carry cut',
+      min: 0,
+      max: MEMORY_CARRY_NAMES.length - 1,
+      step: 1,
+      unit: '',
+      choices: MEMORY_CARRY_NAMES,
+      ordered: true,
+      shy: true,
+      help: 'The carry between two of the counter’s stages cut, so it wraps early and the line folds into a loop of its first 16, 8, 4 or 2 steps.',
+    },
+    {
+      key: k('SeqDataLine'),
+      part,
+      label: 'Data line',
+      min: 0,
+      max: MEMORY_DATA_LINES,
+      step: 1,
+      unit: '',
+      choices: MEMORY_DATA_NAMES,
+      ordered: true,
+      shy: true,
+      help: 'Which of the wires carrying each step out of the memory has the fault. D0 to D5 are the note word, so a stuck bit moves notes by its weight in semitones and the line plays the same wrong notes every lap. D6 is the accent and D7 the slide.',
+    },
+    {
+      key: k('SeqDataFault'),
+      part,
+      label: 'Data fault',
+      min: 0,
+      max: FAULT_NAMES.length - 1,
+      step: 1,
+      unit: '',
+      choices: FAULT_NAMES,
+      needs: c => c[k('SeqDataLine')] > 0,
+      help: 'What happened to that data wire. To +V on a note bit fills the rests in; to ground on the accent takes every accent out.',
+    },
+    {
+      key: k('SeqBusCut'),
+      part,
+      label: 'Cut depth',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      unit: '',
+      needs: c =>
+        (c[k('SeqAddrLine')] > 0 && c[k('SeqAddrFault')] === FAULT.cut) ||
+        (c[k('SeqDataLine')] > 0 && c[k('SeqDataFault')] === FAULT.cut),
+      help: 'How far through the trace the cut goes. Short of all the way, most reads arrive and the rest come off the wire next door, so the line flickers between two versions of itself.',
+    },
+    {
+      key: k('SeqLeak'),
+      part,
+      label: 'Write leak',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      unit: '',
+      shy: true,
+      help: `A leaking write enable: as the counter moves on, the note it just read is written into the next step. The line smears into repeated notes over the laps, and drifts as the leak keeps writing. At full the line is one note.${restore}`,
+    },
+    {
+      key: k('SeqRot'),
+      part,
+      label: 'Bit rot',
+      min: 0,
+      max: MEMORY_ROT_NAMES.length - 1,
+      step: 1,
+      unit: '',
+      choices: MEMORY_ROT_NAMES,
+      ordered: true,
+      shy: true,
+      help: `The memory’s refresh starved, so one bit somewhere in the line leaks away so often, on the kit’s clock: notes sink by the bit’s weight, rests turn into notes, and accents and slides drop out one at a time.${restore}`,
+    },
+  ]
 }
 
 /** A voice card's controls, the same for each build of it. */
@@ -242,6 +374,7 @@ export function monoCardGroup(card: Card): Group {
         needs: c => c[k('SeqOn')] > 0,
         help: 'A wire from the drum machine’s step clock to the memory’s counter, which steps on every kit step, every second, every third or every fourth. It steps when the kit’s counter steps, so swing, a slipping clock and a cleared counter all reach the melody. The kit has to be running.',
       },
+      ...memoryFaults(card.prefix),
       {
         key: k('Wave1'),
         part: 'oscillators',

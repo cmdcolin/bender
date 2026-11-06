@@ -101,6 +101,12 @@ class BenderProcessor extends AudioWorkletProcessor {
       leadSeqPos: 0,
       leadSeqFrac: 0,
       leadSeqStepMs: 0,
+      monoSeqRam: this.built.melody.notes,
+      monoSeqFlags: this.built.melody.flags,
+      monoSeqDamage: 0,
+      leadSeqRam: this.built.leadMelody.notes,
+      leadSeqFlags: this.built.leadMelody.flags,
+      leadSeqDamage: 0,
       tuneStepMs: 0,
       duck: 0,
       rail: 1,
@@ -224,6 +230,12 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'panic':
           this.built.chain.panic()
           this.deck.panic()
+          break
+        case 'lineRestore':
+          ;(msg.card === 'lead'
+            ? this.built.leadMelody
+            : this.built.melody
+          ).restore()
           break
         case 'retroFlush':
           this.postRetro(true)
@@ -386,6 +398,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.leadSeqPos = this.built.leadMelody.at
       m.leadSeqFrac = this.built.leadMelody.frac
       m.leadSeqStepMs = this.built.leadMelody.stepMs
+      m.monoSeqDamage = this.built.melody.damage
+      m.leadSeqDamage = this.built.leadMelody.damage
       m.tuneStepMs = this.built.toyChip.tuneStepMs
       m.duck = this.duck
       m.rail = rail.v
