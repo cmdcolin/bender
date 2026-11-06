@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
+import { MACHINES } from '../machines.ts'
 import { noteName } from '../notes.ts'
 import { bendDeal, bendName } from './bendKeys.ts'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls/index.ts'
@@ -12,9 +13,11 @@ import {
 import {
   AUTOMAP_KEYS,
   DEVICE_PROFILES,
-  isSplit,
   midi,
   parseRoute,
+  ROUTE_MENU,
+  SPLITS,
+  splitOf,
   type DeviceProfile,
 } from './midi.ts'
 import styles from './MidiPanel.module.css'
@@ -567,6 +570,14 @@ export function Wired() {
   )
 }
 
+const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
+const ROUTE_TIP = `Which keybed the controller plays: ${MACHINES.flatMap(m =>
+  'midi' in m ? [m.keybed === 'toy' ? 'the toy' : m.name] : [],
+).join(', ')}, all of them at once, or the keybed cut in half. ${cap(
+  SPLITS.map(s => `${s.label} ${s.says}`).join('; '),
+)}. Each chip has to be up in the mix to be heard.`
+
 // Which of the three beds the wire plays. A controller is one keybed and the
 // panel has three, so this is the same question a workstation with more than one
 // sound in it has always asked: one of them, all of them at once, or the keybed
@@ -575,36 +586,29 @@ function KeyRouting() {
   const route = useStoreValue(midi.keyRoute)
   const split = useStoreValue(midi.split)
   const learning = useStoreValue(midi.splitLearn)
+  const cut = splitOf(route)
 
   return (
     <>
-      <Tip text="Which keybed the controller plays: the toy, Glint, Parlor, Growler, Howler, all of them at once, or the keybed cut in half. Split puts the toy below the split and Glint from it up; bass split puts Growler below and the toy from it up; lead split puts Growler below and Howler from it up. Each chip has to be up in the mix to be heard.">
+      <Tip text={ROUTE_TIP}>
         <select
           className={styles.select}
           value={route}
           onChange={e => midi.setKeyRoute(parseRoute(e.target.value))}
         >
-          <option value="toy">→ toy keys</option>
-          <option value="fm">→ fm keys</option>
-          <option value="pcm">→ home keys</option>
-          <option value="mono">→ Growler</option>
-          <option value="lead">→ Howler</option>
-          <option value="layer">→ all</option>
-          <option value="split">→ split</option>
-          <option value="bassSplit">→ bass split</option>
-          <option value="leadSplit">→ lead split</option>
+          {ROUTE_MENU.map(r => (
+            <option key={r.route} value={r.route}>
+              {`→ ${r.label}`}
+            </option>
+          ))}
         </select>
       </Tip>
-      {isSplit(route) && (
+      {cut && (
         <Tip
           text={
             learning
               ? 'press the key to cut the board at — it sets the split rather than sounding'
-              : route === 'bassSplit'
-                ? 'set the split by playing the key to cut the board at. Everything under it plays Growler; from that key up is the toy'
-                : route === 'leadSplit'
-                  ? 'set the split by playing the key to cut the board at. Everything under it plays Growler; from that key up is Howler'
-                  : 'set the split by playing the key to cut the board at. From that key up plays Glint; everything under it is the toy'
+              : `set the split by playing the key to cut the board at. ${cut.learn}`
           }
         >
           <button

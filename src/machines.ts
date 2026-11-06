@@ -46,6 +46,10 @@ interface MachineSpec {
   supply?: ControlKey
   /** The keybed its notes arrive on, as a note message names it. */
   keybed?: string
+  /** What the MIDI menu calls the route that plays its keybed, and the channel
+      its notes go out on, fixed because whatever is on the far end of the wire
+      wants a stable set. */
+  midi?: { route: string; out?: number }
   /** Its jumper on Plinky's gate line. */
   keyGate?: ControlKey
   /** The kit trigger line that strikes it. */
@@ -73,6 +77,7 @@ export const MACHINES = [
     mute: 'chipMute',
     supply: 'chipSupply',
     keybed: 'toy',
+    midi: { route: 'toy keys', out: 0 },
     cv: 'chipClock',
     mic: [
       {
@@ -136,6 +141,7 @@ export const MACHINES = [
     mute: 'fmMute',
     supply: 'fmSupply',
     keybed: 'fm',
+    midi: { route: 'fm keys', out: 1 },
     keyGate: 'fmKeyGate',
     struck: 'fmStruck',
     cv: 'fmClock',
@@ -161,6 +167,7 @@ export const MACHINES = [
     mute: 'pcmMute',
     supply: 'pcmSupply',
     keybed: 'pcm',
+    midi: { route: 'home keys', out: 2 },
     keyGate: 'pcmKeyGate',
     struck: 'pcmStruck',
     cv: 'pcmLevel',
@@ -178,6 +185,7 @@ export const MACHINES = [
     mute: 'monoMute',
     supply: 'monoSupply',
     keybed: 'mono',
+    midi: { route: 'Growler', out: 3 },
     keyGate: 'monoKeyGate',
     struck: 'monoStruck',
     cv: 'monoPitch',
@@ -291,6 +299,7 @@ export const MACHINES = [
     mute: 'leadMute',
     supply: 'leadSupply',
     keybed: 'lead',
+    midi: { route: 'Howler' },
     keyGate: 'leadKeyGate',
     struck: 'leadStruck',
     cv: 'leadPitch',

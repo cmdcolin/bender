@@ -13,6 +13,7 @@ import { CONTROL_KEYS, isControlKey, type ControlKey } from '../controls.ts'
 import { VOICE_LABELS, type DrumVoiceKey } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
+import { KEYBEDS, MACHINES } from '../machines.ts'
 import { noteName, toMidiNote, toSemitone } from '../notes.ts'
 import {
   ALL_SLIDERS,
@@ -166,37 +167,56 @@ const VELOCITY_FLOOR = 0.3
 // Which keybed the wire plays. There are several on the panel and one
 // controller in front of them, the same problem every workstation with more
 // than one sound in it has: play one, play the lot, or cut the keybed in half.
-// A bass split puts the mono synth under the split and the toy above it.
-export type KeyRoute =
-  | 'toy'
-  | 'fm'
-  | 'pcm'
-  | 'mono'
-  | 'lead'
-  | 'layer'
-  | 'split'
-  | 'bassSplit'
-  | 'leadSplit'
+// A split puts one keybed under the cut and another from it up.
+export const SPLITS = [
+  {
+    route: 'split',
+    label: 'split',
+    below: 'toy',
+    above: 'fm',
+    says: 'puts the toy below the split and Glint from it up',
+    learn: 'From that key up plays Glint; everything under it is the toy',
+  },
+  {
+    route: 'bassSplit',
+    label: 'bass split',
+    below: 'mono',
+    above: 'toy',
+    says: 'puts Growler below and the toy from it up',
+    learn: 'Everything under it plays Growler; from that key up is the toy',
+  },
+  {
+    route: 'leadSplit',
+    label: 'lead split',
+    below: 'mono',
+    above: 'lead',
+    says: 'puts Growler below and Howler from it up',
+    learn: 'Everything under it plays Growler; from that key up is Howler',
+  },
+] as const satisfies readonly {
+  route: string
+  label: string
+  below: NoteDest
+  above: NoteDest
+  says: string
+  learn: string
+}[]
 
-const ROUTES: KeyRoute[] = [
-  'toy',
-  'fm',
-  'pcm',
-  'mono',
-  'lead',
-  'layer',
-  'split',
-  'bassSplit',
-  'leadSplit',
+export type KeyRoute = NoteDest | 'layer' | (typeof SPLITS)[number]['route']
+
+/** The routes in menu order: each keybed, all of them, then the splits. */
+export const ROUTE_MENU: readonly { route: KeyRoute; label: string }[] = [
+  ...MACHINES.flatMap(m =>
+    'midi' in m ? [{ route: m.keybed, label: m.midi.route }] : [],
+  ),
+  { route: 'layer', label: 'all' },
+  ...SPLITS,
 ]
 
-const ALL_BEDS: NoteDest[] = ['toy', 'fm', 'pcm', 'mono', 'lead']
-
-export const isSplit = (route: KeyRoute) =>
-  route === 'split' || route === 'bassSplit' || route === 'leadSplit'
+export const splitOf = (route: KeyRoute) => SPLITS.find(s => s.route === route)
 
 export const parseRoute = (raw: string | null): KeyRoute =>
-  ROUTES.find(r => r === raw) ?? 'toy'
+  ROUTE_MENU.find(r => r.route === raw)?.route ?? 'toy'
 
 /** Where the keybed is cut, as a MIDI note. Middle C, until you set it. */
 const DEFAULT_SPLIT = 60
@@ -211,16 +231,12 @@ const routeDests = (
   route: KeyRoute,
   split: number,
   midiNote: number,
-): NoteDest[] =>
-  route === 'layer'
-    ? ALL_BEDS
-    : route === 'split'
-      ? [midiNote < split ? 'toy' : 'fm']
-      : route === 'bassSplit'
-        ? [midiNote < split ? 'mono' : 'toy']
-        : route === 'leadSplit'
-          ? [midiNote < split ? 'mono' : 'lead']
-          : [route]
+): NoteDest[] => {
+  const cut = splitOf(route)
+  return cut
+    ? [midiNote < split ? cut.below : cut.above]
+    : KEYBEDS.filter(d => route === 'layer' || d === route)
+}
 
 export const velocity = (v: number) =>
   VELOCITY_FLOOR + (1 - VELOCITY_FLOOR) * (v / 127)
@@ -344,13 +360,12 @@ const PULSES_PER_STEP = 6
 // past this the clock resyncs silently rather than paying the debt off.
 const MAX_CATCHUP_STEPS = 8
 
-// Each chip gets a channel — the toy on 1, the FM chip on 2, the home keyboard
-// on 3, the mono synth on 4. Fixed: whatever is on the far end wants a stable
-// set.
-const TOY_OUT_CHANNEL = 0
-const FM_OUT_CHANNEL = 1
-const PCM_OUT_CHANNEL = 2
-const MONO_OUT_CHANNEL = 3
+// Each chip with an out channel in its record sends its notes on it.
+const OUT_CHANNELS = MACHINES.flatMap(m =>
+  'midi' in m && 'out' in m.midi
+    ? [{ channel: m.midi.out, notes: engine.notesOn[m.keybed] }]
+    : [],
+)
 
 // The chips report what they are sounding, never how hard it was struck, so
 // everything leaves at one velocity.
@@ -546,7 +561,7 @@ class Midi {
     this.allNotesOff()
     this.keyRoute.set(route)
     write(ROUTE_KEY, route)
-    if (!isSplit(route)) this.splitLearn.set(false)
+    if (!splitOf(route)) this.splitLearn.set(false)
   }
 
   setSplit(midiNote: number) {
@@ -911,18 +926,8 @@ class Midi {
       else this.stopClockOut()
     })
     engine.meter.subscribe(() => this.sendPulses())
-    engine.chipNotes.subscribe(() =>
-      this.mirror(TOY_OUT_CHANNEL, engine.chipNotes.get()),
-    )
-    engine.fmNotes.subscribe(() =>
-      this.mirror(FM_OUT_CHANNEL, engine.fmNotes.get()),
-    )
-    engine.pcmNotes.subscribe(() =>
-      this.mirror(PCM_OUT_CHANNEL, engine.pcmNotes.get()),
-    )
-    engine.monoNotes.subscribe(() =>
-      this.mirror(MONO_OUT_CHANNEL, engine.monoNotes.get()),
-    )
+    for (const { channel, notes } of OUT_CHANNELS)
+      notes.subscribe(() => this.mirror(channel, notes.get()))
   }
 
   private startClockOut() {
@@ -1113,7 +1118,7 @@ class Midi {
     // from before the route moved — so it goes to every bed rather than
     // nowhere. The chips ignore a note they are not holding.
     const hand = this.hand(port)
-    const dests = hand.down.get(semitone) ?? ALL_BEDS
+    const dests = hand.down.get(semitone) ?? KEYBEDS
     if (hand.pedal) {
       hand.sustained.set(semitone, dests)
       return
