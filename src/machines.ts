@@ -335,6 +335,7 @@ export const MACHINES = [
       },
     ],
     map: 'under',
+    face: true,
     blurb:
       "A talking toy's speech chip: a ten-stage lattice filter excited by a glottal pulse off a pitch divider or by a noise register, reading 54 allophones from ROM, each a run of frames of energy, pitch and ten quantised reflection coefficients worked out from formant targets. One RC clock runs the samples, the pitch and the frames. Type a phrase or click words into its box; numbers and techno words come from a dictionary and the rest is sounded out. *Struck by* speaks a syllable per kit hit, so words land on the grid, and *Frame clock from* can run the frames off the kit's counter. Faults: the RC clock, a frame divider that smears or stops on one vowel, a cut carry that loops the frame counter into a stutter, the coefficient ROM's address and data wires (D10 and D11 push a coefficient past one and the lattice howls into its saturating adders), the pitch latch, a stuck voicing gate and the board leaking onto the excitation. *Prattle in* puts the mic in place of the buzz. `bender.speak('kill the bass')` sets the words.",
   },

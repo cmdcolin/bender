@@ -24,6 +24,7 @@ import { wireOn } from './micWiring.ts'
 import { LeadKeys, MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal } from './Pedals.tsx'
+import { PhraseBox } from './PhraseBox.tsx'
 import { SheetFace } from './SheetFace.tsx'
 import { SourceMeters, SourceMetersSwitch } from './SourceMeters.tsx'
 import { levelOf } from './stageLevels.ts'
@@ -54,6 +55,20 @@ function FourTrackFace({
   )
 }
 
+function PrattleFace({
+  seconds,
+  onClose,
+}: {
+  seconds?: number
+  onClose?: () => void
+}) {
+  return (
+    <Faceplate stage="Prattle" seconds={seconds} onClose={onClose}>
+      <PhraseBox />
+    </Faceplate>
+  )
+}
+
 const FACES = {
   Plinky: Keys,
   Clatter: DrumKit,
@@ -61,6 +76,7 @@ const FACES = {
   Parlor: PcmKeys,
   Growler: MonoKeys,
   Howler: LeadKeys,
+  Prattle: PrattleFace,
   Spool: TapeLoopFace,
   Layercake: FourTrackFace,
   Sheet: SheetFace,
@@ -70,12 +86,13 @@ const FACES = {
 const row = (machines: typeof BENCH_MACHINES): Row =>
   machines.map(m => [m.name, FACES[m.name]])
 
-// The keyboards, the kit, and the machines off the toy board.
+// The keyboards, the kit, and the rest.
+const KIT_NAME = 'Clatter'
 const KEYBOARDS = row(BENCH_MACHINES.filter(m => 'keybed' in m))
-const KIT = row(
-  BENCH_MACHINES.filter(m => m.map !== 'line' && !('keybed' in m)),
+const KIT = row(BENCH_MACHINES.filter(m => m.name === KIT_NAME))
+const OTHERS = row(
+  BENCH_MACHINES.filter(m => !('keybed' in m) && m.name !== KIT_NAME),
 )
-const OFF_BOARD = row(BENCH_MACHINES.filter(m => m.map === 'line'))
 
 const ADDED_LEVEL = 0.6
 
@@ -131,7 +148,7 @@ export function Instruments({
   const { grid: staged, pedals, bends } = useStoreValue(bench)
   const kit = staged ? [] : faces(KIT)
   const stagedKit = staged ? faces(KIT) : []
-  const tapes = faces(OFF_BOARD)
+  const tapes = faces(OTHERS)
 
   const bringUp = (stage: string) => {
     bring(stage)
