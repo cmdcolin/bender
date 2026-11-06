@@ -16,6 +16,7 @@ import { DcBlocker, lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { mulberry32 } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 import {
+  BASE_PITCH,
   BLOCK_WORDS,
   CHIP_HZ,
   CHIRP_BLOCK,
@@ -190,7 +191,8 @@ export class Prattle implements Stage {
   // Past the allophone just spoken to the next one in the phrase, stopping at a
   // split when a hit is what moves it on.
   private next() {
-    for (let guard = 0; guard <= PHRASE_LEN; guard++) {
+    let settled = false
+    for (let guard = 0; !settled && guard <= PHRASE_LEN; guard++) {
       this.pos++
       const c = this.pos < PHRASE_LEN ? this.phrase[this.pos]! : PH_EMPTY
       if (c === PH_EMPTY) {
@@ -199,23 +201,17 @@ export class Prattle implements Stage {
           this.pos = -1
           this.allophone(LONG_PAUSE)
         } else this.speaking = false
-        return
-      }
-      if (c === PH_WORD || c === PH_SYL) {
-        if (this.struck) {
-          this.speaking = false
-          return
-        }
-        if (c === PH_WORD) {
-          this.allophone(PAUSE)
-          return
-        }
+        settled = true
+      } else if (c === PH_WORD || c === PH_SYL) {
+        if (this.struck) this.speaking = false
+        else if (c === PH_WORD) this.allophone(PAUSE)
+        settled = this.struck || c === PH_WORD
       } else {
         this.allophone(c - 1)
-        return
+        settled = true
       }
     }
-    this.speaking = false
+    if (!settled) this.speaking = false
   }
 
   private begin(from: number) {
@@ -232,23 +228,24 @@ export class Prattle implements Stage {
     // the voicing latch takes a voiced frame, and the chip holds it.
     for (
       let g = 0;
-      this.div === 0 && this.speaking && g < PHRASE_LEN * 8;
+      this.div === 0 &&
+      this.speaking &&
+      ROM.framePitch[this.addr] === 0 &&
+      g < PHRASE_LEN * 8;
       g++
-    ) {
-      if (ROM.framePitch[this.addr]! > 0) break
+    )
       this.advance()
-    }
     this.frame()
   }
 
   // Where the next hit picks up: past the split that ends this segment.
   private segmentEnd() {
-    for (let i = Math.max(this.pos, 0); i < PHRASE_LEN; i++) {
+    let end = PHRASE_LEN
+    for (let i = Math.max(this.pos, 0); i < end; i++) {
       const c = this.phrase[i]!
-      if (c === PH_EMPTY) return 0
-      if (c === PH_WORD || c === PH_SYL) return i + 1
+      if (c === PH_EMPTY || c === PH_WORD || c === PH_SYL) end = i
     }
-    return 0
+    return end < PHRASE_LEN && this.phrase[end] !== PH_EMPTY ? end + 1 : 0
   }
 
   private advance() {
@@ -267,10 +264,11 @@ export class Prattle implements Stage {
     for (let s = 0; s < N_K; s++) this.fromK[s] = this.k[s]!
     this.fromE = this.energy
     this.fromP = this.period
-    if (!this.speaking) {
-      this.tgtE = 0
-      return
-    }
+    if (this.speaking) this.latch()
+    else this.tgtE = 0
+  }
+
+  private latch() {
     const f = this.addr
     const pCode = ROM.framePitch[f]!
     const eCode = ROM.frameEnergy[f]!
@@ -293,7 +291,7 @@ export class Prattle implements Stage {
       this.voicing === VOICING.whisper
         ? 0
         : period === 0 && this.voicing === VOICING.voiced
-          ? this.lastVoiced || ROM.coef[PITCH_BLOCK * BLOCK_WORDS + 20]!
+          ? this.lastVoiced || ROM.coef[PITCH_BLOCK * BLOCK_WORDS + BASE_PITCH]!
           : period
     if (this.tgtP > 0) this.lastVoiced = this.tgtP
     // No glide out of silence or across a change of source, so a burst lands
@@ -307,8 +305,7 @@ export class Prattle implements Stage {
   }
 
   private tick() {
-    if (this.div === 0) return
-    if (++this.divCount >= this.div) {
+    if (this.div !== 0 && ++this.divCount >= this.div) {
       this.divCount = 0
       this.frame()
     }
@@ -316,13 +313,14 @@ export class Prattle implements Stage {
 
   private interpolate() {
     const step = Math.min(Math.floor(this.fp * INTERP_STEPS), INTERP_STEPS - 1)
-    if (step === this.step) return
-    this.step = step
-    const t = (step + 1) / INTERP_STEPS
-    for (let s = 0; s < N_K; s++)
-      this.k[s] = this.fromK[s]! + (this.tgtK[s]! - this.fromK[s]!) * t
-    this.energy = this.fromE + (this.tgtE - this.fromE) * t
-    this.period = Math.round(this.fromP + (this.tgtP - this.fromP) * t)
+    if (step !== this.step) {
+      this.step = step
+      const t = (step + 1) / INTERP_STEPS
+      for (let s = 0; s < N_K; s++)
+        this.k[s] = this.fromK[s]! + (this.tgtK[s]! - this.fromK[s]!) * t
+      this.energy = this.fromE + (this.tgtE - this.fromE) * t
+      this.period = Math.round(this.fromP + (this.tgtP - this.fromP) * t)
+    }
   }
 
   private chipSample(ownClock: boolean) {
