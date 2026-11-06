@@ -783,11 +783,11 @@ Eight bends sit inside the die, between the counter and the DAC.
   - High notes bend furthest, since their dividers are smallest.
 - **Refresh:** the memory goes unrefreshed, so its bits leak to zero one at a
   time.
-  - A held note crackles as the top bits go, then fades to silence: in about
-    4 s at the top and 10 s at half.
+  - A held note crackles as the top bits go, then fades to silence: in about 4 s
+    at the top and 10 s at half.
   - It works on _sampled_ too, and stacks with Write strobe.
-  - The memory reads clean again when this and Write strobe are both at zero,
-    or the rail reboots.
+  - The memory reads clean again when this and Write strobe are both at zero, or
+    the rail reboots.
 
 ## Growler's voice card
 
