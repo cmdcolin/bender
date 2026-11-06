@@ -48,6 +48,5 @@
 }
 
 .clear {
-  composes: chipQuiet from './button.module.css';
-  color: var(--fg3);
+  composes: chipDanger from './button.module.css';
 }
