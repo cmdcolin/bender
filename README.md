@@ -59,6 +59,8 @@ Plus a ring mod, crusher, comb, octave, codec and more.
 - Patch bay — LFOs and other modulation on any control
 - MIDI — plays the keys and turns the knobs
 - Share — a link holds the whole board
+- Agentic — Claude Code plays it, see the
+  [blog post](https://cmdcolin.github.io/bender/blog/agent-drives-the-app/)
 
 ## Run
 
