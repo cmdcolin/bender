@@ -1,21 +1,12 @@
+import { MACHINES } from '../machines.ts'
 import { PEDALS } from '../pedals.ts'
 import { BENDS } from './controls/bends.ts'
 
 import type { ControlKey } from '../controls.ts'
 
-const LEVEL_OF: Record<string, ControlKey> = {
-  Plinky: 'chipLevel',
-  Clatter: 'drumLevel',
-  Glint: 'fmLevel',
-  Parlor: 'pcmLevel',
-  Growler: 'monoLevel',
-  Howler: 'leadLevel',
-  Prattle: 'talkLevel',
-  Spool: 'sampleLevel',
-  Layercake: 'fourLevel',
-  Sheet: 'sheetLevel',
-  Bottle: 'bottleLevel',
-}
+const LEVEL_OF: Record<string, ControlKey> = Object.fromEntries(
+  MACHINES.map(m => [m.name, m.levels[0]] as const),
+)
 
 const BYPASS_OF: Record<string, ControlKey> = Object.fromEntries([
   ...PEDALS.map(p => [p.group, p.mute]),
@@ -23,13 +14,9 @@ const BYPASS_OF: Record<string, ControlKey> = Object.fromEntries([
 ])
 
 const MUTE_OF: Record<string, ControlKey> = {
-  Plinky: 'chipMute',
-  Clatter: 'drumMute',
-  Glint: 'fmMute',
-  Parlor: 'pcmMute',
-  Growler: 'monoMute',
-  Howler: 'leadMute',
-  Prattle: 'talkMute',
+  ...Object.fromEntries(
+    MACHINES.flatMap(m => ('mute' in m ? [[m.name, m.mute] as const] : [])),
+  ),
   ...BYPASS_OF,
 }
 

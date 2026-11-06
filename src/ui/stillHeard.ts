@@ -2,41 +2,36 @@ import { followsGate } from '../dsp/trigbus.ts'
 import { SOUND_FLOOR, engine } from '../engine/engine.ts'
 import { SOURCE_TAPS, type SourceTap } from '../engine/params.ts'
 import { createStore } from '../listeners.ts'
+import { MACHINES } from '../machines.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { levelOf, muteOf } from './stageLevels.ts'
 
 import type { Controls } from '../controls.ts'
 
-const TAP_OF: Record<string, SourceTap> = {
-  Plinky: 'toyChip',
-  Clatter: 'toyDrum',
-  Glint: 'fmChip',
-  Parlor: 'pcmKeys',
-  Growler: 'monoSynth',
-  Howler: 'leadSynth',
-  Prattle: 'prattle',
-}
+// The machines on the toy board, each with the meter tap that says it sounds.
+const TAP_OF: Record<string, SourceTap> = Object.fromEntries(
+  MACHINES.flatMap(m => (m.map === 'line' ? [] : [[m.name, m.tap] as const])),
+)
+
+type Player = [string, (c: Controls) => boolean]
 
 const struck = (key: keyof Controls) => (c: Controls) => Math.round(c[key]) > 0
 const soldered = (key: keyof Controls) => (c: Controls) => followsGate(c[key])
 
 // The machines that play a stage's part: the key line out of the toy keyboard,
 // and the trigger patch's bridges out of either toy.
-const PLAYED_ON: Record<string, [string, (c: Controls) => boolean][]> = {
+const PLAYED_ON: Record<string, Player[]> = {
   Plinky: [
-    ['Glint', soldered('fmKeyGate')],
-    ['Parlor', soldered('pcmKeyGate')],
-    ['Growler', soldered('monoKeyGate')],
-    ['Howler', soldered('leadKeyGate')],
+    ...MACHINES.flatMap((m): Player[] =>
+      'keyGate' in m ? [[m.name, soldered(m.keyGate)]] : [],
+    ),
     ['Clatter', struck('trigToDrum')],
   ],
   Clatter: [
     ['Plinky', struck('trigToKeys')],
-    ['Glint', struck('fmStruck')],
-    ['Parlor', struck('pcmStruck')],
-    ['Growler', struck('monoStruck')],
-    ['Howler', struck('leadStruck')],
-    ['Prattle', struck('talkStruck')],
+    ...MACHINES.flatMap((m): Player[] =>
+      'struck' in m ? [[m.name, struck(m.struck)]] : [],
+    ),
   ],
 }
 

@@ -1,4 +1,5 @@
-import { SOURCE_TAPS, TAP_MIC, type SourceTap } from '../../engine/params.ts'
+import { TAP_MIC } from '../../engine/params.ts'
+import { MACHINES } from '../../machines.ts'
 
 import type { ControlKey } from '../../controls.ts'
 import type { Group } from './types.ts'
@@ -22,10 +23,9 @@ import type { Group } from './types.ts'
 // where seven rows all reading *Level* would be a mixer nobody can use — and which
 // tap on the bus reads it back.
 //
-// The first seven are in the order the chain sums them, taken off the same list
-// the audio thread lays its taps out in; the mic is the eighth because it is a
-// wire rather than a channel, and only one of its seven settings reaches the
-// bus at all.
+// The machines are in the order the chain sums them, taken off the same list
+// the audio thread lays its taps out in; the mic is last because it is a wire
+// rather than a channel, and only one of its settings reaches the bus at all.
 export interface Channel {
   key: ControlKey
   name: string
@@ -36,32 +36,13 @@ export interface Channel {
   yours?: true
 }
 
-const sourceTap = (label: SourceTap) => SOURCE_TAPS.indexOf(label)
-
 export const CHANNELS: readonly Channel[] = [
-  { key: 'chipLevel', name: 'Plinky', tap: sourceTap('toyChip') },
-  { key: 'drumLevel', name: 'Clatter', tap: sourceTap('toyDrum') },
-  { key: 'fmLevel', name: 'Glint', tap: sourceTap('fmChip') },
-  { key: 'pcmLevel', name: 'Parlor', tap: sourceTap('pcmKeys') },
-  { key: 'monoLevel', name: 'Growler', tap: sourceTap('monoSynth') },
-  { key: 'oscLevel', name: 'Chaos osc', tap: sourceTap('chaosOsc') },
-  { key: 'noiseLevel', name: 'Noise & crackle', tap: sourceTap('noise') },
-  {
-    key: 'sampleLevel',
-    name: 'Spool',
-    tap: sourceTap('sampler'),
-    yours: true,
-  },
-  {
-    key: 'fourLevel',
-    name: 'Layercake',
-    tap: sourceTap('fourTrack'),
-    yours: true,
-  },
-  { key: 'sheetLevel', name: 'Sheet', tap: sourceTap('sheet') },
-  { key: 'bottleLevel', name: 'Bottle', tap: sourceTap('bottle') },
-  { key: 'leadLevel', name: 'Howler', tap: sourceTap('leadSynth') },
-  { key: 'talkLevel', name: 'Prattle', tap: sourceTap('prattle') },
+  ...MACHINES.map((m, tap) => ({
+    key: m.levels[0],
+    name: m.name,
+    tap,
+    ...('yours' in m && { yours: m.yours }),
+  })),
   { key: 'micLevel', name: 'Mic', tap: TAP_MIC, yours: true },
 ]
 

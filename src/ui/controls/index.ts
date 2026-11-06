@@ -3,6 +3,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../../controls.ts'
+import { MACHINES } from '../../machines.ts'
 import { PEDALS } from '../../pedals.ts'
 import { BEND_GROUPS, BENDS } from './bends.ts'
 import { FEEDBACK_GROUPS } from './feedback.ts'
@@ -111,12 +112,7 @@ export const CUT_KEYS = new Set<ControlKey>([
 export const HOLD_KEYS = new Set<ControlKey>([
   'outGain',
   'micLevel',
-  'chipMute',
-  'drumMute',
-  'fmMute',
-  'pcmMute',
-  'monoMute',
-  'talkMute',
+  ...MACHINES.flatMap(m => ('mute' in m ? [m.mute] : [])),
   ...PEDALS.map(p => p.mute),
   ...BENDS.map(b => b.mute),
   'bodyX',

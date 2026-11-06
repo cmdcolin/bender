@@ -10,6 +10,7 @@ import {
 } from '../dsp/stages/tape.ts'
 import { SUPPLY as ON, SUPPLY_KEYS } from '../dsp/supplies.ts'
 import { followsGate } from '../dsp/trigbus.ts'
+import { MACHINES } from '../machines.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { cableName, TRIGGER_CABLES, type Signal } from './connections.ts'
 import {
@@ -263,33 +264,15 @@ const MIC_TARGET = MIC_JACKS.map(j => j.stage)
 
 // What each source is turned up to, which is also whether it is in the mix at
 // all: the loudest of its levels, as a share of the top of its normal stretch.
-const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
-  Plinky: ['chipLevel'],
-  Glint: ['fmLevel'],
-  Parlor: ['pcmLevel'],
-  Growler: ['monoLevel'],
-  Howler: ['leadLevel'],
-  Prattle: ['talkLevel'],
-  Clatter: ['drumLevel'],
-  'Chaos osc': ['oscLevel'],
-  'Noise & crackle': ['noiseLevel', 'crackleAmp'],
-  Spool: ['sampleLevel'],
-  Layercake: ['fourLevel'],
-  Sheet: ['sheetLevel'],
-  Bottle: ['bottleLevel'],
-}
+const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = Object.fromEntries(
+  MACHINES.map(m => [m.name, m.levels] as const),
+)
 
 const levelKey = (n: MapNode) => SOURCE_LEVELS[n.label]?.[0]
 
-const SOURCE_MUTE: Record<string, ControlKey> = {
-  Plinky: 'chipMute',
-  Clatter: 'drumMute',
-  Glint: 'fmMute',
-  Parlor: 'pcmMute',
-  Growler: 'monoMute',
-  Howler: 'leadMute',
-  Prattle: 'talkMute',
-}
+const SOURCE_MUTE: Record<string, ControlKey> = Object.fromEntries(
+  MACHINES.flatMap(m => ('mute' in m ? [[m.name, m.mute] as const] : [])),
+)
 
 // The two you play, side by side across the head of the toy board. They are the
 // pair: two machines with a run switch, a pattern and a set of keys each.
