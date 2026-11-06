@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-683 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 182
-presets, 23 stage settings and 58 named cuts. The generator reads everything
+683 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 183
+presets, 24 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 182 presets, and a roll button on every heading as well as
+- **Whole boards.** 183 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -346,6 +346,9 @@ result:
 - **bird on fast-forward**: The processor’s crystal at sixteen times: the bird
   script writes faster than the envelopes can follow, and the call turns to
   static over a chip still in tune
+- **rave stab**: The allocator keys all four channels a minor chord apart on a
+  bright brass driven hard, and the crystal at four times cuts every envelope to
+  a quarter: one key is a stab
 
 Named cuts, one press each under _fault on the bus_, as in the panel. A press
 puts the fault on, and the rows under it show the controls it set:
@@ -1754,7 +1757,7 @@ result:
 
 ### Presets
 
-182 presets. Each name is a link that opens the app with that board loaded, and
+183 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1834,6 +1837,10 @@ the board waits until you press play.
   — Glint’s rhythm bank runs at full width with the allocator stuck on the
   hi-hat’s channel, so every note strikes the hat and snare at its own pitch and
   drags the cymbal’s metal along with it
+- [**rave stab**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqTo:1,monoSeqStep0:-16,monoSeqStep2:-16,monoSeqStep3:-16,monoSeqStep5:-16,monoSeqStep7:-16,monoSeqStep9:-16,monoSeqStep11:-16,monoSeqStep12:-9,monoSeqStep14:-16,drumLevel:0.9,drumBpm:150,drumTune:0.91,drumSweep:6,drumSwoopCap:10,drumKick:34952,drumHat:8738,drumClap:2056,fmLevel:1.2,fmVoice:1,fmBright:1.3,fmFeedback:6,fmModRatio:1,fmCarRatio:1,fmLength:0.06,fmKeyGate:1,fmDrive:18,fmClockX:4,fmAlloc:5,fmStack:2,monoKeyGate:1)
+  — Glint’s allocator keys all four channels a minor chord apart, so a one-note
+  F minor riff off Growler’s memory comes out as a driven stab over a hard
+  techno kit at 150
 - [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9,drumKick:32912,drumSnare:2056,drumHat:8738)
   — The kit’s converter is built from resistors off an unmeasured reel
 - [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,drumKick:32912,drumSnare:2056,drumHat:8738,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)

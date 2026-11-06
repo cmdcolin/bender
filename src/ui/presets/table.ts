@@ -24,7 +24,7 @@ import {
   DICE_NAMES,
 } from '../../dsp/stages/toyDrum.ts'
 import { SUPPLY } from '../../dsp/supplies.ts'
-import { ANY_CHOICE } from '../../dsp/trigbus.ts'
+import { ANY_CHOICE, GATE_CHOICES, SEQ_TO_FM } from '../../dsp/trigbus.ts'
 import {
   NASA_AUDIO,
   NUMBERS_STATIONS,
@@ -32,7 +32,8 @@ import {
   PIANO_78S,
   SHELLAC,
 } from '../../engine/archive.ts'
-import { line } from './write.ts'
+import { RAVE_STAB } from './rigs.ts'
+import { kit, line } from './write.ts'
 
 import type { Controls } from '../../controls.ts'
 import type { Pool } from '../../engine/archive.ts'
@@ -514,6 +515,29 @@ export const PRESETS: PresetDef[] = [
       fmRhythm: 2,
       fmStruck: ANY_CHOICE,
       fmAlloc: 3,
+    },
+  },
+  {
+    name: 'rave stab',
+    blurb:
+      'Glint’s allocator keys all four channels a minor chord apart, so a one-note F minor riff off Growler’s memory comes out as a driven stab over a hard techno kit at 150',
+    patch: {
+      ...kit({
+        kick: 'x...x...x...x...',
+        hat: '..x...x...x...x.',
+        clap: '....x.......x...',
+      }),
+      ...line('F2 . F2 F2 . F2 . F2 | . F2 . F2 C3 . F2 .'),
+      monoSeqTo: SEQ_TO_FM,
+      ...RAVE_STAB,
+      fmKeyGate: GATE_CHOICES.indexOf('no, cut'),
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 150,
+      drumSwing: 0,
+      drumTune: 0.91,
+      drumSweep: 6,
+      drumSwoopCap: 10,
     },
   },
   {

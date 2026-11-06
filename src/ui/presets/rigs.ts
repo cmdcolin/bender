@@ -54,6 +54,20 @@ const GLITCH = {
 /** An effect script by name, off the effect button's own list. */
 const fmEffect = (name: string) => choiceValue('fmEffect', name)
 
+export const RAVE_STAB: Partial<Controls> = {
+  fmLevel: 1.2,
+  fmAlloc: choiceValue('fmAlloc', 'all four'),
+  fmStack: choiceValue('fmStack', 'minor'),
+  fmVoice: choiceValue('fmVoice', 'brass'),
+  fmBright: 1.3,
+  fmFeedback: 6,
+  fmModRatio: choiceValue('fmModRatio', '0.5×'),
+  fmCarRatio: choiceValue('fmCarRatio', '0.5×'),
+  fmClockX: 4,
+  fmDrive: 18,
+  fmLength: 0.06,
+}
+
 export const RIGS: RigDef[] = [
   {
     group: 'Feedback bus',
@@ -312,6 +326,13 @@ export const RIGS: RigDef[] = [
     blurb:
       'The processor’s crystal at sixteen times: the bird script writes faster than the envelopes can follow, and the call turns to static over a chip still in tune',
     patch: { fmLevel: 0.8, fmEffect: fmEffect('bird'), fmCpuClockX: 16 },
+  },
+  {
+    group: 'Glint',
+    name: 'rave stab',
+    blurb:
+      'The allocator keys all four channels a minor chord apart on a bright brass driven hard, and the crystal at four times cuts every envelope to a quarter: one key is a stab',
+    patch: RAVE_STAB,
   },
   {
     group: 'Layercake',
