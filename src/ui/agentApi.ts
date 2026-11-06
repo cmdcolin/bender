@@ -75,7 +75,7 @@ const GUIDE = {
   line: `The bassline. bender.line('. A3 A3 A4 . A3 A3 A3', { accent: '...x', slide: '' }) writes a second 32-step memory, one token a step as in tune, and turns it on. It steps with the kit's sixteenths while the kit runs; sync: 'eighths' or 'off' changes that, and off runs with the toy's song at monoSeqRate. It plays on Growler, whose stock 32′ range sounds each note two octaves down: write A3 for a 55 Hz A1, as sounds in the result shows. on: 'Glint' or 'Parlor' moves it. accent and slide take x and . a step: an accent hits harder and opens the filter, a slide glides into the next note. Left out, they keep theirs. The target's KeyGate jumper also plays the tune: 'no, cut' drops it, 'lane 1' keeps one lane. The result warns about anything keeping it silent. Growler's sound is monoCutoff, monoEmph, monoContour, monoFD and monoGate. The techno and acid techno presets load a groove to riff on.`,
   hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once; inside bender.queue it waits for the queue's bar and lands within about 20 ms of it. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
-  sound: `Sound. Audio stays suspended until the page gets a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the drums, the bassline and a melody written with tune; the toy's demo songs start only with bender.play('song'), bender.play('drums') starts the kit alone, and bender.stop() stops all. A screenshot measures nothing of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due (short means missed audio blocks), the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), the watchdog reboots, the sources with signal, the notes each audible machine played, the drum hits. bender.link() returns a URL that loads this board.`,
+  sound: `Sound. Audio stays suspended until the page gets a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the drums, the bassline and a melody written with tune; the toy's demo songs start only with bender.play('song'), bender.play('drums') starts the kit alone, and bender.stop() stops all. A screenshot measures nothing of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the meters that arrived against those due (short means missed audio blocks), the peak in dBFS, the largest limiter gain reduction, the lowest toy supply rail (1 is full batteries), watchdog reboots, the sources with signal and their sourcePeaks, each audible machine's notes, drum hits. bender.link() returns a URL that loads this board.`,
 }
 
 type Topic = keyof typeof GUIDE
@@ -565,6 +565,7 @@ async function listen(ms = 1500) {
   let arc = 0
   let hits = 0
   let sounding = 0
+  const loudest = CHANNELS.map(() => 0)
   const strays = new Set<string>()
   const played = PLAYERS.map(() => new Set<number>())
   // Each meter message carries peaks since the previous one, so the first
@@ -583,8 +584,11 @@ async function listen(ms = 1500) {
     arc = Math.max(arc, m.arc)
     hits |= m.hits
     for (const name of strayNames(m.strays)) strays.add(name)
-    for (const [i, channel] of CHANNELS.entries())
-      if ((m.taps[channel.tap] ?? 0) > SOUND_FLOOR) sounding |= 1 << i
+    for (const [i, channel] of CHANNELS.entries()) {
+      const tap = m.taps[channel.tap] ?? 0
+      if (tap > SOUND_FLOOR) sounding |= 1 << i
+      loudest[i] = Math.max(loudest[i]!, tap)
+    }
     for (const [i, player] of PLAYERS.entries())
       for (const n of player.notes.get()) played[i]!.add(n)
   })
@@ -595,9 +599,10 @@ async function listen(ms = 1500) {
       audio: audioState(),
       meters: 'no meter messages arrived from the audio worklet',
     }
-  const sources = CHANNELS.filter((_, i) => sounding & (1 << i)).map(
-    c => c.name,
+  const heard = CHANNELS.flatMap((c, i) =>
+    sounding & (1 << i) ? [{ name: c.name, peak: loudest[i]! }] : [],
   )
+  const sources = heard.map(c => c.name)
   // A machine at level 0 still runs its tune, and its notes would read as
   // music nobody can hear.
   const notes = Object.fromEntries(
@@ -622,6 +627,7 @@ async function listen(ms = 1500) {
     rail: Number(rail.toFixed(2)),
     reboots: engine.meter.get().reboots - start.reboots,
     sources,
+    sourcePeaks: Object.fromEntries(heard.map(c => [c.name, decibels(c.peak)])),
     notes,
     drumHits: DRUM_VOICES.filter((_, v) => hits & (1 << v)).map(v => v.label),
     wander: [...strays],

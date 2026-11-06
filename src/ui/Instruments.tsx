@@ -25,6 +25,7 @@ import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal } from './Pedals.tsx'
 import { SheetFace } from './SheetFace.tsx'
+import { SourceMeters, SourceMetersSwitch } from './SourceMeters.tsx'
 import { levelOf } from './stageLevels.ts'
 import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
@@ -166,7 +167,9 @@ export function Instruments({
         <AddPedal />
         <MicMenu className={styles.add} />
         <BendKeysSwitch />
+        <SourceMetersSwitch />
       </div>
+      <SourceMeters />
       <BendKeys morphSeconds={seconds} />
       <GateBench>
         {stagedKit.length > 0 && (

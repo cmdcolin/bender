@@ -70,6 +70,9 @@ Drop an audio file on the page, or press **load** for a tape off archive.org.
 
 **bend keys** puts a bend on each letter. Hold one down.
 
+**meters** shows each machine's level and ten octave bands, to see which one is
+doing what.
+
 ![Two pedals, Ricochet and Boing, joined by a cord.](../public/guide/guide-pedals.jpg)
 
 **add pedal** adds effects. Drag a cord's jack to reorder them.

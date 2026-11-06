@@ -365,6 +365,7 @@ test('listen ignores the meter message that covers audio from before the call', 
     expect(await heard).toMatchObject({
       peak: '-26.0 dBFS',
       sources: ['Plinky'],
+      sourcePeaks: { Plinky: '-26.0 dBFS' },
       drumHits: [],
     })
   } finally {
