@@ -75,9 +75,9 @@ function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
               return (
                 <button
                   key={name}
-                  role="menuitem"
+                  role="menuitemradio"
                   className={here ? styles.itemOn : styles.item}
-                  aria-current={here || undefined}
+                  aria-checked={here}
                   onClick={() => {
                     close()
                     plug(into, name)
