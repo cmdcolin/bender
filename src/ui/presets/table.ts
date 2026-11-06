@@ -1,5 +1,6 @@
 import { DATA_LINES, DRUM_ROMS, VOICE_LABELS } from '../../drums.ts'
 import { FAULT } from '../../dsp/bus.ts'
+import { MEMORY_ROT_NAMES } from '../../dsp/melodyMemory.ts'
 import { DEST, LFO_SYNC_MODES } from '../../dsp/modbus.ts'
 import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
 import { COMB_CHIP } from '../../dsp/stages/comb.ts'
@@ -328,6 +329,32 @@ export const PRESETS: PresetDef[] = [
       talkDataLine: 12,
       talkDataFault: FAULT.ground,
       talkLeak: 0.3,
+    },
+  },
+  {
+    name: 'acid rot',
+    blurb:
+      'The hard kick at 150 under an acid line on Growler whose memory has lost its refresh: a bit leaks every bar and the write enable leaks now and then, so the line sinks, smears and fills its rests while Howler’s lead holds steady. Restore on the roll writes the line back',
+    patch: {
+      ...HARD_KIT,
+      ...ACID,
+      ...line(
+        'C3 C3 C4 C3 . C3 D#3 C3 | C3 . C4 A#2 C3 C3 . C3',
+        'x..x..x...x..x..',
+        '..x....x...x....',
+      ),
+      ...lead(
+        '. . C5 ~ . C5 . D#5 | . . C5 ~ G4 . A#4 ~ | . . C5 ~ . C5 . D#5 | . F5 . D#5 . C5 . G4',
+        '..x....x..x.....|.....x.x..x...x.',
+        '...............x|...........x....',
+      ),
+      monoSeqRot: MEMORY_ROT_NAMES.indexOf('every bar'),
+      monoSeqLeak: 0.04,
+      monoCutoff: 420,
+      monoAccent: 0.9,
+      monoEmph: 0.92,
+      monoLevel: 1.2,
+      leadLevel: 0.75,
     },
   },
   {
