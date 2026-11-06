@@ -38,7 +38,7 @@ const KEYS = [
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
-  allocator: ['fmAlloc'],
+  allocator: ['fmAlloc', 'fmStack'],
   registers: ['fmColdBoot', 'fmRot', 'fmHeat'],
   voices: ['fmAdder', 'fmRing'],
   DAC: ['fmDacSlot', 'fmDacSlip'],
@@ -62,7 +62,7 @@ const voiceTop = (i: number) => TOP + HEAD + i * (VOICE_H + VOICE_GAP)
 const voiceMid = (i: number) => voiceTop(i) + VOICE_H / 2
 
 const stuckLook = (stuck: number, flow: WireLook, i: number): WireLook =>
-  stuck === 0 ? flow : stuck - 1 === i ? 'alarm' : 'dash'
+  stuck === 0 ? flow : stuck > VOICES || stuck - 1 === i ? 'alarm' : 'dash'
 
 const stuckLast = (stuck: number) =>
   [...Array(VOICES).keys()].toSorted(
@@ -239,7 +239,7 @@ export function FmDieDiagram() {
             <Chip
               box={allocBox}
               lit={alloc > 0}
-              help="The driver’s note allocator. Stuck, it hands every note to one channel."
+              help="The driver’s note allocator. Stuck, it hands every note to one channel; on all four, to every channel at its own pitch."
               pick={pick}
               keys={OPENS.allocator}
             />

@@ -106,6 +106,13 @@ test('a stuck allocator draws its channel in red and the other three dashed', ()
   expect(dashes()).toBe(0)
 })
 
+test('all four draws every channel in red', () => {
+  open()
+  set({ fmAlloc: 5 })
+  expect(alarms()).toBe(4)
+  expect(dashes()).toBe(0)
+})
+
 test('a stuck slot draws its channel in red beside the allocator’s', () => {
   open()
   set({ fmAlloc: 2, fmDacSlot: 3 })
