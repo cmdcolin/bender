@@ -24,7 +24,12 @@ import {
   DICE_NAMES,
 } from '../../dsp/stages/toyDrum.ts'
 import { SUPPLY } from '../../dsp/supplies.ts'
-import { ANY_CHOICE, GATE_CHOICES, SEQ_TO_FM } from '../../dsp/trigbus.ts'
+import {
+  ANY_CHOICE,
+  GATE_CHOICES,
+  SEQ_TO_FM,
+  SEQ_TO_PCM,
+} from '../../dsp/trigbus.ts'
 import {
   NASA_AUDIO,
   NUMBERS_STATIONS,
@@ -32,6 +37,7 @@ import {
   PIANO_78S,
   SHELLAC,
 } from '../../engine/archive.ts'
+import { jackFor } from '../../jacks.ts'
 import { RAVE_STAB } from './rigs.ts'
 import { kit, line } from './write.ts'
 
@@ -538,6 +544,71 @@ export const PRESETS: PresetDef[] = [
       drumTune: 0.91,
       drumSweep: 6,
       drumSwoopCap: 10,
+    },
+  },
+  {
+    name: 'kit in the fire',
+    blurb:
+      'Ember is patched into Clatter alone, so the kick and hats burn through a cranked Marshall while Growler’s acid line stays clean on top',
+    patch: {
+      ...kit({
+        kick: 'x...x...x...x...',
+        hat: '..x...x...x...x.',
+        clap: '....x.......x...',
+        tom: '......x.......x.',
+      }),
+      ...line(
+        'A2 . A2 A3 . A2 . C3 | A2 . A2 . G2 . A2 A3',
+        '..x...x.',
+        '...x',
+      ),
+      chipLevel: 0,
+      drumLevel: 0.85,
+      drumBpm: 146,
+      drumSwing: 0,
+      drumTune: 0.85,
+      drumSweep: 5,
+      monoLevel: 0.55,
+      ampVoice: AMP_VOICE.marshall,
+      ampGain: 0.95,
+      ampMaster: 0.8,
+      ampBass: 0.7,
+      ampMid: 0.35,
+      ampTreble: 0.65,
+      ampSag: 0.7,
+      ampCab: AMP_CAB.closed,
+      ampLevel: -6,
+      ampMix: 1,
+      ampInto: jackFor('toyDrum'),
+    },
+  },
+  {
+    name: 'crushed parlor, rung kit',
+    blurb:
+      'The crusher eats only Parlor’s brass stabs and the comb rings only the kit, tuned to the riff, so the bus never meets either',
+    patch: {
+      ...kit({
+        kick: 'x...x...x...x...',
+        hat: 'x.xxx.xxx.xxx.xx',
+        snare: '....x.......x...',
+      }),
+      ...line('D2 . . D3 . . D2 . | . F2 . . D2 . C3 .'),
+      monoSeqTo: SEQ_TO_PCM,
+      chipLevel: 0,
+      drumLevel: 0.85,
+      drumBpm: 142,
+      drumSwing: 0,
+      pcmLevel: 0.75,
+      pcmVoice: keys('brass'),
+      bits: 4,
+      srHz: 3500,
+      crushMix: 1,
+      crushInto: jackFor('pcmKeys'),
+      combHz: 73.4,
+      combFb: 0.93,
+      combDampHz: 3500,
+      combMix: 0.8,
+      combInto: jackFor('toyDrum'),
     },
   },
   {

@@ -457,6 +457,7 @@ names it still sets it. ${
     if (place === 'Pedals') {
       out.push(
         `${cap(num(BENDS.length))} pedals compete for ${num(slots)} ordered sockets. Each has a mix, and a mix at zero takes the stage out of the path. The other ${num(groups.length - BENDS.length)} follow the sockets: all of them are always on the board, their order is one control, and a pedal at zero mix leaves the path.\n`,
+        `Every one of them has an insert jack. _Patched into_ cables it onto one machine’s output instead of the master run: it leaves the master chain and processes that machine alone, before the mix bus, so Ember can burn the kit while a lead stays clean. Units on one machine run in the racks’ order, and the map draws them under it.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))

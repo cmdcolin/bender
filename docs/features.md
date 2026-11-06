@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-699 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 183
+699 knobs and switches in 40 groups, ten bends for six slots, 18 ROM tunes, 185
 presets, 24 stage settings and 58 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 183 presets, and a roll button on every heading as well as
+- **Whole boards.** 185 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -914,6 +914,12 @@ Ten pedals compete for six ordered sockets. Each has a mix, and a mix at zero
 takes the stage out of the path. The other six follow the sockets: all of them
 are always on the board, their order is one control, and a pedal at zero mix
 leaves the path.
+
+Every one of them has an insert jack. _Patched into_ cables it onto one
+machine’s output instead of the master run: it leaves the master chain and
+processes that machine alone, before the mix bus, so Ember can burn the kit
+while a lead stays clean. Units on one machine run in the racks’ order, and the
+map draws them under it.
 
 ### Ring mod
 
@@ -1773,7 +1779,7 @@ result:
 
 ### Presets
 
-183 presets. Each name is a link that opens the app with that board loaded, and
+185 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1857,6 +1863,12 @@ the board waits until you press play.
   — Glint’s allocator keys all four channels a minor chord apart, so a one-note
   F minor riff off Growler’s memory comes out as a driven stab over a hard
   techno kit at 150
+- [**kit in the fire**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep0:-12,monoSeqStep2:-12,monoSeqStep3:0,monoSeqStep5:-12,monoSeqStep7:-9,monoSeqStep8:-12,monoSeqStep10:-12,monoSeqStep12:-14,monoSeqStep14:-12,monoSeqStep15:0,monoSeqAccentLo:8704,monoSeqSlideLo:4096,drumLevel:0.85,drumBpm:146,drumTune:0.85,drumSweep:5,drumKick:34952,drumHat:8738,drumClap:2056,drumTom:514,monoLevel:0.55,monoKeyGate:1,ampVoice:1,ampGain:0.95,ampBass:0.7,ampMid:0.35,ampTreble:0.65,ampMaster:0.8,ampMix:1,ampSag:0.7,ampCab:2,ampLevel:-6,ampInto:3)
+  — Ember is patched into Clatter alone, so the kick and hats burn through a
+  cranked Marshall while Growler’s acid line stays clean on top
+- [**crushed parlor, rung kit**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqTo:2,monoSeqStep0:-19,monoSeqStep3:-7,monoSeqStep6:-19,monoSeqStep9:-16,monoSeqStep12:-19,monoSeqStep14:-9,drumLevel:0.85,drumBpm:142,drumKick:34952,drumSnare:2056,drumHat:48059,pcmLevel:0.75,pcmVoice:5,monoKeyGate:1,bits:4,srHz:3500,crushMix:1,combHz:73.4,combFb:0.93,combDampHz:3500,combMix:0.8,crushInto:5,combInto:3)
+  — The crusher eats only Parlor’s brass stabs and the comb rings only the kit,
+  tuned to the riff, so the bus never meets either
 - [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9,drumKick:32912,drumSnare:2056,drumHat:8738)
   — The kit’s converter is built from resistors off an unmeasured reel
 - [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,drumKick:32912,drumSnare:2056,drumHat:8738,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)
