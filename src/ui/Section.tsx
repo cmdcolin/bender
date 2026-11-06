@@ -404,7 +404,7 @@ export function OpenGroup({
         )}
         {kind === 'mic' && <MicSwitch />}
         <MicCap stage={group.name} />
-        <JackCap stage={group.name} />
+        <JackCap stage={group.name} compact />
         {(kind === 'roll' || group.memory) && !rollBoxed && (
           <EditorToggle which="roll" />
         )}

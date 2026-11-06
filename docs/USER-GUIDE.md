@@ -101,8 +101,8 @@ doing what.
 
 [![Clatter's jack menu, with Ember patched onto Clatter alone.](../public/guide/guide-jacks.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvqgEApAIB1AIOkKIEAcSIAQCQIACECOICbgACP-gHXwIAvgEAjAEARgCCAQCgAQDIAQGMAQEEABcaAgIXARcAAAEXAREAFwEXARsBFwAAOgICgIgBAYBAmwIG&v=3 'open this in the app')
 
-The **⦿** jack on a machine, pedal or bend patches the pedal onto one machine
-instead of the whole mix.
+The **insert** cap on a machine, pedal or bend patches the pedal onto one
+machine instead of the whole mix.
 
 [![Growler's piano roll after bit rot: red steps the memory rewrote, restore, and the memory faults.](../public/guide/guide-rot.jpg)](https://cmdcolin.github.io/bender/app/#p=AAAvtAEArAIB7AIOkKIEAcSIAQCQIGF8A5gCAm4LEAECAJgBADybAYQIL5CiBAEAHPABAAIAZAEYAwEIyAEAAAAAAsgGALgBAIAFAGQAuAMBrAIAAACgAQHYBACMAQA8HrAJXwIAWgTIAQMAABAaAgIRABEABgARAREACwARABEBBgAVABEAEQEROgIBAgDIyAQBoIQBAbQBggIoGAICQAIeAP0BAR4BJAIeAP0BABQBGgD9AQIeAP0BAR4BJAEoASQBHgEUAMCEAQDEFAACACAAlgEBAm0IAAw&v=3 'open this in the app')
 

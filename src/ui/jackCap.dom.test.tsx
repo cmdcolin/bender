@@ -61,3 +61,27 @@ test('the mic on the mix hands its units a line', () => {
   const cap = screen.getByRole('button', { name: 'patch Comb into' })
   expect(tipOf(cap)).not.toMatch(/hears nothing/)
 })
+
+test('the cap reads insert until something is patched through it', () => {
+  render(
+    <>
+      <JackCap stage="Growler" />
+      <JackCap stage="Comb" />
+    </>,
+  )
+  const machine = screen.getByRole('button', { name: 'patch into Growler' })
+  const unit = screen.getByRole('button', { name: 'patch Comb into' })
+  expect(machine.textContent).toBe('insert')
+  expect(unit.textContent).toBe('insert')
+  act(() => engine.set('combInto', jackFor('monoSynth')))
+  expect(machine.textContent).toBe('Comb')
+  expect(unit.textContent).toBe('Growler')
+})
+
+test('the panel’s compact cap is named only once something is patched', () => {
+  render(<JackCap stage="Growler" compact />)
+  const cap = screen.getByRole('button', { name: 'patch into Growler' })
+  expect(cap.textContent).toBe('')
+  act(() => engine.set('combInto', jackFor('monoSynth')))
+  expect(cap.textContent).toBe('Comb')
+})

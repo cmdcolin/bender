@@ -20,10 +20,12 @@ import { Tip } from './Tip.tsx'
 
 import type { ControlKey, Controls } from '../controls.ts'
 
-const JACK_GLYPH = (
+const PLUG_GLYPH = (
   <svg className={styles.glyph} viewBox="0 0 12 12" aria-hidden="true">
-    <circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" />
-    <circle cx="6" cy="6" r="1.8" />
+    <path d="M0 6h3" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    <rect x="3" y="3.5" width="4.5" height="5" rx="1" />
+    <rect x="7.5" y="5" width="2.5" height="2" />
+    <path d="M10 5.2h1.1l.9.8-.9.8H10z" />
   </svg>
 )
 
@@ -47,7 +49,15 @@ const unitsOn = (c: Controls, machine: string) =>
     .map(u => u.group)
     .join(', ')
 
-function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
+function UnitJack({
+  stage,
+  into,
+  idle,
+}: {
+  stage: string
+  into: ControlKey
+  idle: string
+}) {
   const machine = useBoardValue(c => patchedInto(c[into]))
   const deaf = useBoardValue(micDeaf)
   const [open, setOpen] = useState(false)
@@ -72,8 +82,10 @@ function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
           aria-expanded={open}
           onClick={() => setOpen(o => !o)}
         >
-          {JACK_GLYPH}
-          {machine && <span className={styles.name}>{machine}</span>}
+          {PLUG_GLYPH}
+          {(machine ?? idle) && (
+            <span className={styles.name}>{machine ?? idle}</span>
+          )}
         </button>
       </Tip>
       {open && (
@@ -114,7 +126,7 @@ function UnitJack({ stage, into }: { stage: string; into: ControlKey }) {
   )
 }
 
-function MachineJack({ stage }: { stage: string }) {
+function MachineJack({ stage, idle }: { stage: string; idle: string }) {
   const here = useBoardValue(c => unitsOn(c, stage))
   const deaf = useBoardValue(c => stage === MIC_JACK && micDeaf(c))
   const elsewhere = useBoardValue(c =>
@@ -142,8 +154,10 @@ function MachineJack({ stage }: { stage: string }) {
           aria-expanded={open}
           onClick={() => setOpen(o => !o)}
         >
-          {JACK_GLYPH}
-          {here && <span className={styles.name}>{here}</span>}
+          {PLUG_GLYPH}
+          {(here || idle) && (
+            <span className={styles.name}>{here || idle}</span>
+          )}
         </button>
       </Tip>
       {open && (
@@ -183,11 +197,19 @@ function MachineJack({ stage }: { stage: string }) {
 
 /** The jack on a pedal or bend, naming the machine it is patched into, and on
     a machine, naming what is patched into it. */
-export function JackCap({ stage }: { stage: string }) {
+export function JackCap({
+  stage,
+  compact = false,
+}: {
+  stage: string
+  /** Names the cap only once something is patched through it. */
+  compact?: boolean
+}) {
   const into = intoOf(stage)
+  const idle = compact ? '' : 'insert'
   return into ? (
-    <UnitJack stage={stage} into={into} />
+    <UnitJack stage={stage} into={into} idle={idle} />
   ) : MACHINES.has(stage) ? (
-    <MachineJack stage={stage} />
+    <MachineJack stage={stage} idle={idle} />
   ) : null
 }
