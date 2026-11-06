@@ -1,5 +1,6 @@
 import config from '../astro.config.ts'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
+import { PRESETS } from '../src/ui/presets/table.ts'
 import { boardHash } from '../src/ui/share.ts'
 import {
   attach,
@@ -42,6 +43,17 @@ interface Shot {
   pad?: number
   phone?: boolean
   width?: number
+  live?: boolean
+}
+
+const preset = (name: string) => PRESETS.find(p => p.name === name)?.patch
+
+const open = async (page: Page, door: string, ...boxes: string[]) => {
+  await click(page, `[data-door="${door}"]`)
+  for (const box of boxes) {
+    await sleep(600)
+    await click(page, `g[aria-label="${box} controls"]`)
+  }
 }
 
 const PHONE = { width: 390, height: 844 }
@@ -219,6 +231,52 @@ const SHOTS: Shot[] = [
     select: ['aside [class*="section"]'],
     pad: 8,
   },
+  {
+    file: 'guide-howler.jpg',
+    board: preset('hard techno howl'),
+    select: ['[aria-label="howler"]'],
+  },
+  {
+    file: 'guide-prattle.jpg',
+    board: preset('robot chant'),
+    act: page => open(page, 'Prattle'),
+    select: [
+      'aside [class*="section"] > [class*="_header_"]',
+      'aside [class*="_row_"]:has([aria-label="pin Repeat"])',
+    ],
+    pad: 8,
+  },
+  {
+    file: 'guide-jacks.jpg',
+    board: preset('kit in the fire'),
+    act: page => click(page, '[aria-label="patch into Clatter"]'),
+    select: ['[aria-label="clatter"]', '[role="menu"]'],
+  },
+  {
+    file: 'guide-rot.jpg',
+    board: preset('acid rot'),
+    live: true,
+    act: async page => {
+      await ask(page, `bender.start()`)
+      await sleep(500)
+      await ask(page, `bender.play()`)
+      await open(page, 'Growler', 'piano roll')
+      await sleep(14_000)
+      await ask(page, `bender.stop()`)
+    },
+    select: [
+      'aside [class*="_wrap_"]:has([aria-label="slide step 1"])',
+      'aside details:has([aria-label="growler memory bus wiring"])',
+    ],
+    pad: 3,
+  },
+  {
+    file: 'guide-allocator.jpg',
+    board: preset('rave stab'),
+    act: page => open(page, 'Glint', 'die', 'allocator'),
+    select: ['aside [class*="section"]'],
+    pad: 8,
+  },
 ]
 
 function which(cmd: string) {
@@ -353,6 +411,7 @@ async function shoot(url: string, shot: Shot, into: string) {
       '--enable-automation',
       '--disable-gpu',
       '--hide-scrollbars',
+      ...(shot.live ? ['--autoplay-policy=no-user-gesture-required'] : []),
       `--window-size=${view.width},${view.height}`,
       `--force-device-scale-factor=${DPR}`,
       `--remote-debugging-port=${DEBUG_PORT}`,
