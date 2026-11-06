@@ -125,7 +125,7 @@ test('help and every guide topic fit in one browser tool result', () => {
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, line, lead, hit, clock, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, line, lead, hit, speak, clock, sound",
   )
 })
 
@@ -470,6 +470,28 @@ test('hit strikes the sheet, the bottle and kit voices, and warns at level 0', (
       ]),
     )
     expect(() => bender.hit('gong')).toThrow(/sheet, bottle or a kit voice/)
+  } finally {
+    engine.running.set(false)
+  }
+})
+
+test('speak loads the phrase, brings Prattle up and says it', () => {
+  const posted: ToWorklet[] = []
+  Object.assign(engine, {
+    node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
+  })
+  engine.running.set(true)
+  try {
+    bender.set({ talkLevel: 0 })
+    expect(bender.speak('kill the bass', { struck: 'Open Hat' })).toEqual({
+      phrase: 'kill the bass',
+      warnings: [],
+    })
+    const c = engine.controls.get()
+    expect(c.talkLevel).toBe(0.8)
+    expect(c.talkStruck).toBe(7)
+    expect(posted).toContainEqual({ kind: 'talk' })
+    expect(() => bender.speak('hi', { struck: 'gong' })).toThrow(/kit voice/)
   } finally {
     engine.running.set(false)
   }

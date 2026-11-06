@@ -182,6 +182,8 @@ export function recorded(api: RawBenderApi) {
         `hit ${typeof what === 'string' ? what : what.join(', ')}`,
     ),
 
+    speak: after(api.speak.bind(api), ({ phrase }) => `speak ${short(phrase)}`),
+
     queue: after(
       api.queue.bind(api),
       (_landing, _write, when = 1) =>
