@@ -11,6 +11,7 @@ import { mulberry32 } from '../../dsp/util/rng.ts'
 import { jackFor } from '../../jacks.ts'
 import { LANE_KEYS } from '../../lanes.ts'
 import { BENDS, GROUPS, choiceValue } from '../controls/index.ts'
+import { DEST_CHOICES } from '../controls/patch.ts'
 import { applyPreset } from './apply.ts'
 import {
   bayFaults,
@@ -18,6 +19,7 @@ import {
   cohereVoices,
   coherePatch,
   cohereTriggers,
+  landsOnStage,
   solderBay,
   solderCascade,
 } from './patch.ts'
@@ -57,6 +59,15 @@ const deadBay = (): Controls => ({
   mod3Src: choiceValue('mod0Src', 'heat'),
   mod3Dest: DEPTH_OF[0]!,
   mod3Depth: 0.5,
+})
+
+test('every lane a wire can land on is a stage, a wire depth or retired', () => {
+  const unlanded = DEST_CHOICES.filter(
+    name =>
+      !/^wire \d depth$|^retired \d$/.test(name) &&
+      !landsOnStage(choiceValue('mod0Dest', name)),
+  )
+  expect(unlanded).toEqual([])
 })
 
 test('a dead bay comes back a patch, wire for wire', () => {
