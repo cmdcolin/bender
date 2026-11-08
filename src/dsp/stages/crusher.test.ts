@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
-import { packParams } from '../../engine/params.ts'
+import { IDX, packParams } from '../../engine/params.ts'
 import { FAULT } from '../bus.ts'
 import { MIC } from '../micJacks.ts'
 import { ModBus } from '../modbus.ts'
@@ -250,4 +250,27 @@ test('the mic clocks the crusher on the board', () => {
   })
   const silent = renderBender(board, 1, play, mic => mic.fill(0))
   expect(rms(silent)).toBeLessThan(0.1 * rms(sung))
+})
+
+test('switching between the stock and circuit paths carries the held sample across', () => {
+  const crusher = new Crusher(SR)
+  const p = packParams({ ...DEFAULT_CONTROLS, ...WET, srHz: 100 })
+  const ctx = blank()
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const run = (level: number, ladder: number, blocks: number) => {
+    p[IDX.crushLadder] = ladder
+    for (let b = 0; b < blocks; b++) {
+      io.l.fill(level)
+      io.r.fill(level)
+      crusher.process(io, p, ctx)
+    }
+    return io.l[0]!
+  }
+  run(0.5, 0.01, 40)
+  run(-0.5, 0, 40)
+  expect(run(-0.5, 0.01, 1)).toBeCloseTo(-0.5, 1)
 })

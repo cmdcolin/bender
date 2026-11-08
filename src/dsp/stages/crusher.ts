@@ -182,6 +182,7 @@ export class Crusher implements Stage {
   private holdR = 0
   private countL = 0
   private countR = 0
+  private wasDeep = false
   private rng: Rng
 
   private left = new Side(0)
@@ -247,8 +248,25 @@ export class Crusher implements Stage {
       p[IDX.crushLadder]! > 0 ||
       bay.read(DEST.crushLadder) !== null ||
       micInto(p, ctx, MIC.crushClock) !== null
+    if (deep !== this.wasDeep) this.handOver(deep)
     if (deep) this.circuit(io, p, ctx, line)
     else this.stock(io, p, ctx)
+  }
+
+  private handOver(deep: boolean) {
+    const { left, right } = this
+    if (deep) {
+      left.hold = this.holdL
+      left.count = this.countL
+      right.hold = this.holdR
+      right.count = this.countR
+    } else {
+      this.holdL = left.hold
+      this.countL = left.count
+      this.holdR = right.hold
+      this.countR = right.count
+    }
+    this.wasDeep = deep
   }
 
   private stock(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -500,5 +518,6 @@ export class Crusher implements Stage {
     this.bus.reset()
     this.sar = MSB
     this.micHigh = false
+    this.wasDeep = false
   }
 }
