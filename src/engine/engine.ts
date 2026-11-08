@@ -107,6 +107,7 @@ interface Queued {
   tick: number
   after?: (landed: number) => void
   past?: number
+  leg?: true
 }
 
 interface Cued {
@@ -1176,6 +1177,7 @@ export class Engine {
         seconds,
         after: carryOn,
         past,
+        leg: true,
       })
     }
     const leg = () => {
@@ -1194,7 +1196,9 @@ export class Engine {
 
   stopDrift() {
     if (this.driftTimer !== undefined) clearTimeout(this.driftTimer)
-    if (this.queued.get('board')?.after) this.cancelQueue('board')
+    const waiting = this.queued.get('board')
+    if (waiting?.leg) this.cancelQueue('board')
+    else if (waiting) delete waiting.after
     if (this.driftTap !== undefined) clearInterval(this.driftTap)
     this.driftTimer = undefined
     this.driftTap = undefined
