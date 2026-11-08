@@ -217,9 +217,9 @@ export function randomLook(current: Controls, rand: () => number): Controls {
   // happening. It moves that end of the wire onto something the board is
   // running — and only that, since turning the stage back on would undo what
   // dried it.
-  return keepYours(
-    cohereVoices(coherePatch(rolled, rand, { wake: false }), rand),
-    current,
+  return cohereVoices(
+    coherePatch(keepYours(rolled, current), rand, { wake: false }),
+    rand,
   )
 }
 
