@@ -3,7 +3,8 @@
 // still half full. Forty-eight decibels of travel puts a channel you can only
 // just hear at the left-hand end rather than off the scale.
 const FLOOR_DB = 48
-export const HOT = 0.7
+const HOT_DB = 3
+export const HOT = 1 - HOT_DB / FLOOR_DB
 
 // Where a falling bar stops, 120 dB down, so the fall ends in a finite number
 // of frames.
