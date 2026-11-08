@@ -256,7 +256,7 @@ const LANDED = {
   'kit touch': { up: ['drumLevel'] },
   'kit swoop leak': { up: ['drumLevel'] },
   'kit self fire': { up: ['drumLevel'] },
-  'kit trigger bias': { up: ['drumLevel'] },
+  'kit trigger bias': { up: ['drumLevel', 'drumTrigBias'] },
   'kit step tap': { up: ['drumLevel'] },
   'toy kit on addr': { up: ['chipLevel', 'drumLevel'] },
   'ground bounce': { up: [], oneOf: ['chipLevel', 'drumLevel'] },
@@ -389,6 +389,7 @@ const WAKE_POS: Partial<Record<ControlKey, [number, number]>> = {
   fbAmt: [0.2, 0.45],
   drumRetrigHz: [0.25, 0.6],
   heatAmt: [0.4, 0.8],
+  drumTrigBias: [0.3, 0.45],
 }
 
 const WAKE_CHOICE: Partial<Record<ControlKey, string>> = {
