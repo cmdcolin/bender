@@ -159,7 +159,7 @@ export function MicPatch() {
                   onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      press(moving, i, wire === 2)
+                      if (!e.repeat) press(moving, i, wire === 2)
                     }
                   }}
                 >

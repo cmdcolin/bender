@@ -2,6 +2,7 @@ import styles from './BottleFace.module.css'
 import { useBoardValue } from './ControlsContext.ts'
 import { Faceplate } from './Faceplate.tsx'
 import { faceSpot } from './faceSpot.ts'
+import { claimPress } from './keyPress.ts'
 import { StrikeRings } from './StrikeRings.tsx'
 import { strike } from './strikes.ts'
 
@@ -22,10 +23,7 @@ function onPointerDown(e: PointerEvent<SVGPathElement>) {
 }
 
 function onKeyDown(e: KeyboardEvent<SVGSVGElement>) {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault()
-    strike('bottle')
-  }
+  if (claimPress(e)) strike('bottle')
 }
 
 export function BottleFace({

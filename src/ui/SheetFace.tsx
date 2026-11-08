@@ -1,6 +1,7 @@
 import { PICKUPS } from '../dsp/stages/sheet.ts'
 import { Faceplate } from './Faceplate.tsx'
 import { faceSpot } from './faceSpot.ts'
+import { claimPress } from './keyPress.ts'
 import styles from './SheetFace.module.css'
 import { StrikeRings } from './StrikeRings.tsx'
 import { strike } from './strikes.ts'
@@ -16,10 +17,7 @@ function onPointerDown(e: PointerEvent<SVGSVGElement>) {
 }
 
 function onKeyDown(e: KeyboardEvent<SVGSVGElement>) {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault()
-    strike('sheet')
-  }
+  if (claimPress(e)) strike('sheet')
 }
 
 export function SheetFace({

@@ -175,7 +175,7 @@ export function PatchBay() {
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
-                    pick.toggle(String(i))
+                    if (!e.repeat) pick.toggle(String(i))
                   }
                 }}
               >
