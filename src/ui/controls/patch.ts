@@ -240,6 +240,11 @@ export const DEST_CHOICES = [
   'kit into kick',
   'kit kick on amps',
   'kit mix drive',
+  'kit snare metal',
+  'kit bank on tanks',
+  'kit hiss on tuning',
+  'kit tank fold',
+  'kit hiss latch',
 ] as const
 
 export const ENV_KEYS = [
@@ -525,6 +530,11 @@ export const PATCH_GROUPS: Group[] = [
                 'kit into kick',
                 'kit kick on amps',
                 'kit mix drive',
+                'kit snare metal',
+                'kit bank on tanks',
+                'kit hiss on tuning',
+                'kit tank fold',
+                'kit hiss latch',
               ],
             },
             {

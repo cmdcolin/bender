@@ -263,6 +263,11 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   drumKickFeed: 'Clatter',
   drumKickVca: 'Clatter',
   drumMixDrive: 'Clatter',
+  drumSnareMetal: 'Clatter',
+  drumTankBank: 'Clatter',
+  drumTankHiss: 'Clatter',
+  drumTankFold: 'Clatter',
+  drumHissLatch: 'Clatter',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

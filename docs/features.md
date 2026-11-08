@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-856 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
+861 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 223 destinations, among
+- **A patch bay that modulates itself.** Four wires, 228 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -257,7 +257,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>101 controls</summary>
+<summary>106 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -303,6 +303,9 @@ puts the fault on, and the rows under it show the controls it set:
 | Into kick from   | the kit, the bus, the mic                                                                                          | Where the other end of that wire goes: the kit’s own output, the bus with everything ahead of the kit on it, or the mic                                 |
 | Tank tap         | off, ÷2, ÷4, ÷8, ÷16                                                                                               | Tunes the kick’s and the tom’s networks off a stage of Plinky’s melody divider in place of their own trimmers                                           |
 | Kick on amps     | off to full                                                                                                        | A wire from the kick’s network onto the control pin of every amplifier on the board                                                                     |
+| Bank on tanks    | off to full                                                                                                        | A wire from the metal bank’s squarer onto the outputs of the kick, tom and snare networks, so the six squares ring-modulate the drums                   |
+| Hiss on tuning   | off to full                                                                                                        | The noise transistor’s hiss on the bias of the kick, tom and snare networks, up to three octaves either way at full                                     |
+| Tank fold        | off to full                                                                                                        | A folding stage on the outputs of the kick, tom and snare networks                                                                                      |
 | Trigger pulse    | 0.05 to 8 ms                                                                                                       | How long the one-shot holds the trigger line down                                                                                                       |
 | Pulse sharing    | off to full                                                                                                        | How much charge a one-shot fired alongside others loses to them, since the one-shots all charge off one timing rail                                     |
 | Trigger load †   | off to full                                                                                                        | How much the one-shots’ charge costs the supply                                                                                                         |
@@ -313,6 +316,8 @@ puts the fault on, and the rows under it show the controls it set:
 | Kick on bias     | off to full                                                                                                        | A wire from the kick’s network onto the noise transistor’s bias                                                                                         |
 | Dice             | free or on the junction                                                                                            | What the kit’s dice is a comparator on                                                                                                                  |
 | Metal            | off to full                                                                                                        | What the hat and the open hat are fed from                                                                                                              |
+| Snare metal      | off to full                                                                                                        | What the snare and the clap are fed from                                                                                                                |
+| Hiss latch       | off to full                                                                                                        | A latch on the noise transistor, clocked by the metal bank                                                                                              |
 | Cymbal tone      | off to full                                                                                                        | Where the bottom of the cymbal’s band sits                                                                                                              |
 | Bank spread      | off to full                                                                                                        | Moves the ends of the one resistor chain that sets all six oscillators and leaves the middle, so the bank widens where Tune transposes it               |
 | Squarer bias     | off to full                                                                                                        | A resistor across the gate that sums the bank                                                                                                           |
@@ -1815,7 +1820,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 223 of them, filt cut through kit mix drive                                                                            | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 228 of them, filt cut through kit hiss latch                                                                           | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

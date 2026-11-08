@@ -334,6 +334,11 @@ export const BEND_ENDS: Partial<
   drumLeak: [1, -6],
   drumSelfFire: [-5, 4],
   revHowl: [null, 0],
+  drumTankBank: [null, -1],
+  drumTankHiss: [0, -0.5],
+  drumTankFold: [null, -2.5],
+  drumSnareMetal: [null, 0],
+  drumHissLatch: [0, 0],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

@@ -642,6 +642,21 @@ tempo, swing, chance, tune, decay and mute.
 - **Kick on amps:** the kick's swing on every amplifier's control pin. The
   snare, clap, hats, cowbell and cymbal growl at the kick's pitch while it
   rings, and at full they drop out between kicks.
+- **Bank on tanks:** the metal bank's squarer ring-modulates the kick, tom and
+  snare networks on their way out.
+  - The kick and tom turn to clang, with energy moving from under 100 Hz up to
+    400 Hz–1.5 kHz.
+  - The bank keeps turning between hits, so consecutive kicks differ more than
+    consecutive metal hats.
+- **Hiss on tuning:** the noise transistor's hiss on the kick, tom and snare
+  tuning, up to three octaves either way.
+  - The drums keep their band and turn to gravel, and each hit grinds
+    differently.
+  - Noise bias near the knee chops the gravel in and out.
+- **Tank fold:** a folding stage on the networks' outputs.
+  - Overtones sweep down through each hit as it dies away, at about the stock
+    level.
+  - At the top the kick is a buzzing zap.
 - **Trigger pulse:** how long the one-shot holds the trigger down.
   - Narrow gives a click and a clean shock.
   - Wide gives no click and less body.
@@ -684,6 +699,17 @@ tempo, swing, chance, tune, decay and mute.
 The cowbell, two hats and cymbal share six free-running square oscillators,
 tuned so that no two share a harmonic.
 
+- **Snare metal:** feeds the snare and the clap from the metal bank in place of
+  the noise transistor.
+  - The snare takes the two ringing bands the hats hear, the clap the six
+    squares summed.
+  - Bank spread, starve, squarer, sync and FM then move the snare and clap with
+    the hats.
+- **Hiss latch:** a latch on the noise transistor, clocked by every move of the
+  bank's sum.
+  - The snare, the clap and the noise half of the hats turn to stepped grit at
+    the bank's rate, coarser up the travel.
+  - Bank starve slows the clock; Bank gate stops it between hits.
 - **Squarer bias:** stock, the six sum like the 808's. Winding it up parks the
   summing gate at its trip point, and the hats and cymbal turn to a spray of
   needles. The cowbell is unaffected.

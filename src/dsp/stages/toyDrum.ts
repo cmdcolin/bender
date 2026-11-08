@@ -447,6 +447,25 @@ const LEAK_LIFT = 3
 
 const SELF_TOP = 0.3
 
+const SNARE_BANK = 5
+const CLAP_BANK = 0.9
+const LATCH_MAKEUP = 2.5
+const BANK_RING = 2
+const TANK_HISS_OCT = 3
+const TANK_FOLD = 11
+const FOLD_REF = 1
+const LATCH_DIV_MAX = 15
+
+const fold = (x: number) => {
+  const u = (x / FOLD_REF + 1) * 0.25
+  return FOLD_REF * (1 - 4 * Math.abs(u - Math.floor(u) - 0.5))
+}
+
+const laned = (p: Float32Array, ctx: Ctx, key: number, dest: number) => {
+  const lane = ctx.mod.read(dest)
+  return Math.min(Math.max(p[key]! + (lane ? lane[0]! : 0), 0), 1)
+}
+
 const BIAS_FIRE = 0.5
 const BIAS_REARM = 0.4
 const SELF_LAST = 0.02
@@ -958,6 +977,9 @@ export class ToyDrum implements Stage {
   private motorOff = false
   private hissLeak = 0
   private kitOut = 0
+  private latchEdge = 0
+  private latchLeft = 0
+  private latchHeld = 0
   private tankBase = new Float32Array(N_TANKS)
   private rushHeat = 0
   private fuseHeat = 0
@@ -1876,6 +1898,20 @@ export class ToyDrum implements Stage {
       1,
     )
     const mixGain = mixDrive > 0 ? octaves(MIX_DRIVE_OCT * mixDrive) : 1
+    const snareMetal = laned(p, ctx, IDX.drumSnareMetal, DEST.drumSnareMetal)
+    const snareBank = Math.sqrt(snareMetal) * SNARE_BANK
+    const clapBank = Math.sqrt(snareMetal) * CLAP_BANK
+    const snareTrans = Math.sqrt(1 - snareMetal)
+    const tankBank = laned(p, ctx, IDX.drumTankBank, DEST.drumTankBank)
+    const tankHiss =
+      TANK_HISS_OCT * laned(p, ctx, IDX.drumTankHiss, DEST.drumTankHiss)
+    const foldGain =
+      1 + TANK_FOLD * laned(p, ctx, IDX.drumTankFold, DEST.drumTankFold)
+    const foldLevel = 1 / Math.sqrt(foldGain)
+    const latch = laned(p, ctx, IDX.drumHissLatch, DEST.drumHissLatch)
+    const latchGain = 1 + LATCH_MAKEUP * latch * Math.sqrt(latch)
+    const latchDiv =
+      latch > 0 ? 1 + Math.floor(latch * latch * LATCH_DIV_MAX) : 0
     const bankPf = octaves(
       -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
     )
@@ -2175,6 +2211,11 @@ export class ToyDrum implements Stage {
           // so past the crossing these three stop running down and the pattern
           // starts retuning a note instead of restriking a drum.
           const bankFm = fmDepth > 0 ? 1 + fmDepth * this.metal.clash : 1
+          const hissF = tankHiss > 0 ? octaves(tankHiss * this.noiseLp) : 1
+          const bankRing =
+            tankBank > 0
+              ? 1 - tankBank + tankBank * BANK_RING * this.metal.clash
+              : 1
           let synced = 0
           let tankDraw = 0
           let motorKick = 0
@@ -2231,7 +2272,8 @@ export class ToyDrum implements Stage {
               bankFm *
               motorF *
               leakLift *
-              (v === SNARE ? 1 : tapF)
+              (v === SNARE ? 1 : tapF) *
+              hissF
             tank.rate =
               motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!
             tank.sweep = this.tankSweep[t]!
@@ -2242,7 +2284,10 @@ export class ToyDrum implements Stage {
             const ringing = tank.out
             if (v === KICK) kickRing = ringing
             tankDraw += Math.abs(ringing)
-            const y = ringing * this.tankGain[t]!
+            const y =
+              (foldGain > 1 ? fold(ringing * foldGain) * foldLevel : ringing) *
+              bankRing *
+              this.tankGain[t]!
             if (t === syncTank) synced = y
             out += y * trim[v]!
             if (v === this.ringSrc) heard += y
@@ -2345,17 +2390,42 @@ export class ToyDrum implements Stage {
           const clapOn = amp[CLAP]! > AUDIBLE
           const hats = amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE
           const cymOn = amp[CYM]! > AUDIBLE
+          this.metalHi.x = this.metal.clash
+          this.metalHi.run(this.metalHiBand)
+          const hi = this.metalHi.y
+          this.metalLo.x = this.metal.clash
+          this.metalLo.run(this.metalLoBand)
+          const lo = this.metalLo.y
           let hatHiss = 0
           let leak = 0
-          if (snareOn || clapOn || hats) {
+          if (snareOn || clapOn || hats || tankHiss > 0) {
             const breath =
               kickBias > 0
                 ? Math.min(Math.max(1 + kickBias * kickRing, 0), BIAS_CEILING)
                 : 1
-            const noise = this.noiseLid.process(
+            let noise = this.noiseLid.process(
               (this.rng() * 2 - 1) * this.noiseGate * breath,
               noiseLidCoef,
             )
+            if (latchDiv > 0) {
+              const edge = this.metal.clash
+              if (edge !== this.latchEdge) {
+                this.latchEdge = edge
+                if (--this.latchLeft <= 0) {
+                  this.latchLeft = latchDiv
+                  this.latchHeld = noise
+                }
+              }
+              noise = this.latchHeld * latchGain
+            }
+            const voiced =
+              snareMetal > 0
+                ? noise * snareTrans + (lo + hi) * snareBank
+                : noise
+            const clapped =
+              snareMetal > 0
+                ? noise * snareTrans + this.metal.clash * clapBank
+                : noise
             if (hissKick > 0)
               leak =
                 hissKick *
@@ -2368,7 +2438,7 @@ export class ToyDrum implements Stage {
             hatHiss = noise - this.noiseLp
             if (snareOn) {
               const band = this.snareLid.process(
-                this.snareBand.process(noise, snareHpCoef),
+                this.snareBand.process(voiced, snareHpCoef),
                 snareLpCoef,
               )
               const y =
@@ -2383,10 +2453,10 @@ export class ToyDrum implements Stage {
             }
             if (clapOn) {
               this.clapFast = flushDenormal(
-                this.clapFast + clapLpCoef * (noise - this.clapFast),
+                this.clapFast + clapLpCoef * (clapped - this.clapFast),
               )
               this.clapSlow = flushDenormal(
-                this.clapSlow + clapHpCoef * (noise - this.clapSlow),
+                this.clapSlow + clapHpCoef * (clapped - this.clapSlow),
               )
               const y =
                 (this.clapFast - this.clapSlow) *
@@ -2410,12 +2480,6 @@ export class ToyDrum implements Stage {
           // in a few tens of milliseconds over a tail that hangs on. One
           // envelope raised to a power is the strike, and the envelope itself
           // is the tail.
-          this.metalHi.x = this.metal.clash
-          this.metalHi.run(this.metalHiBand)
-          const hi = this.metalHi.y
-          this.metalLo.x = this.metal.clash
-          this.metalLo.run(this.metalLoBand)
-          const lo = this.metalLo.y
           if (hats || cymOn) {
             if (hats) {
               const hat = this.hatLp.process(
@@ -2729,6 +2793,9 @@ export class ToyDrum implements Stage {
     this.motorV = 1
     this.motorOff = false
     this.hissLeak = 0
+    this.latchEdge = 0
+    this.latchLeft = 0
+    this.latchHeld = 0
     this.rushHeat = 0
     this.fuseHeat = 0
     this.fuseOpen = false

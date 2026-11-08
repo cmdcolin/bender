@@ -2759,3 +2759,83 @@ test('a voice level and decay work on the sampled kit', () => {
     soloVoice({ ...kick, drumDecay: 0.2 }, 1.2),
   )
 })
+
+const ON_BEATS = stepMask(1, 5, 9, 13)
+const hitPair = (x: Float32Array) => {
+  const at = onsets(x)[0]! / SR
+  return [slice(x, at, at + 0.2), slice(x, at + 0.5, at + 0.7)] as const
+}
+const hitChange = (x: Float32Array) => {
+  const [a, b] = hitPair(x)
+  return deviation(b, a)
+}
+const above = (x: Float32Array, hz: number) => highEnergy(x, hz) / rms(x)
+const toms = (over: Partial<Controls>) =>
+  soloVoice({ drumBpm: 120, drumTom: ON_BEATS, ...over }, 2)
+
+test('bank on tanks lands each tom on a different chord of the bank', () => {
+  const stock = toms({})
+  const rung = toms({ drumTankBank: 1 })
+  expect(hitChange(stock)).toBeLessThan(0.01)
+  expect(hitChange(rung)).toBeGreaterThan(0.5)
+  expect(above(rung, 400)).toBeGreaterThan(2 * above(stock, 400))
+})
+
+test('hiss on tuning grinds each tom differently at its own pitch', () => {
+  const stock = toms({})
+  const gritty = toms({ drumTankHiss: 1 })
+  expect(hitChange(gritty)).toBeGreaterThan(0.3)
+  expect(above(gritty, 1500)).toBeLessThan(0.15)
+  expect(rms(gritty)).toBeGreaterThan(0.7 * rms(stock))
+})
+
+test('tank fold buzzes the kick at about its stock level', () => {
+  const kicks = (over: Partial<Controls>) =>
+    soloVoice({ drumBpm: 120, drumKick: ON_BEATS, ...over }, 2)
+  const stock = kicks({})
+  const folded = kicks({ drumTankFold: 1 })
+  expect(above(folded, 400)).toBeGreaterThan(2 * above(stock, 400))
+  expect(rms(folded)).toBeGreaterThan(0.7 * rms(stock))
+  expect(rms(folded)).toBeLessThan(1.4 * rms(stock))
+})
+
+const claps = (over: Partial<Controls>) =>
+  soloVoice({ drumBpm: 120, drumClap: ON_BEATS, ...over }, 2)
+
+test('snare metal hangs the clap on the bank, so bank starve reaches it', () => {
+  expect(claps({ drumBankStarve: 1 })).toEqual(claps({}))
+  const metal = claps({ drumSnareMetal: 1 })
+  const starved = claps({ drumSnareMetal: 1, drumBankStarve: 1 })
+  expect(deviation(starved, metal)).toBeGreaterThan(0.5)
+  expect(rms(metal)).toBeGreaterThan(0.7 * rms(claps({})))
+})
+
+test('hiss latch steps the snare’s noise at the bank’s rate', () => {
+  const snares = (over: Partial<Controls>) =>
+    soloVoice({ drumBpm: 120, drumSnare: ON_BEATS, drumSnappy: 1, ...over }, 2)
+  const stock = above(snares({}), 5000)
+  const latched = above(snares({ drumHissLatch: 1 }), 5000)
+  const starved = above(snares({ drumHissLatch: 1, drumBankStarve: 1 }), 5000)
+  expect(latched).toBeLessThan(0.8 * stock)
+  expect(starved).toBeLessThan(0.8 * latched)
+})
+
+test('the five voice bends play together without going non-finite', () => {
+  const all = soloVoice(
+    {
+      drumBpm: 120,
+      drumKick: ON_BEATS,
+      drumSnare: stepMask(5, 13),
+      drumClap: stepMask(13),
+      drumTom: stepMask(3, 11),
+      drumRing: 1,
+      drumSnareMetal: 1,
+      drumTankBank: 1,
+      drumTankHiss: 1,
+      drumTankFold: 1,
+      drumHissLatch: 1,
+    },
+    3,
+  )
+  expect(rms(all)).toBeGreaterThan(0.01)
+})

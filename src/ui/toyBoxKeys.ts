@@ -67,6 +67,9 @@ export const VOICE_BOXES = {
     'drumKickFeedFrom',
     'drumTankTap',
     'drumBankSync',
+    'drumTankBank',
+    'drumTankHiss',
+    'drumTankFold',
   ],
   'metal bank': [
     'drumCymTone',
@@ -84,5 +87,7 @@ export const VOICE_BOXES = {
     'drumClapCount',
     'drumDice',
     'drumMetal',
+    'drumSnareMetal',
+    'drumHissLatch',
   ],
 } as const satisfies Record<string, readonly ControlKey[]>
