@@ -44,7 +44,7 @@
 }
 
 .also {
-  composes: chipQuiet from './button.module.css';
+  composes: chip from './button.module.css';
   flex: none;
   margin-right: var(--space-sm);
 }

@@ -5,7 +5,7 @@
 }
 
 .roll {
-  composes: chipQuiet square from './button.module.css';
+  composes: chip square from './button.module.css';
 }
 
 .reset {

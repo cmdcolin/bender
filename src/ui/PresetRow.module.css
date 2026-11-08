@@ -108,5 +108,5 @@
    of boards and named none of them. Quiet, the way every verb on a heading in
    this panel is: the heading is a label first. */
 .more {
-  composes: chipQuiet from './button.module.css';
+  composes: chip from './button.module.css';
 }

@@ -1,5 +1,5 @@
 .verb {
-  composes: chipQuiet square from './button.module.css';
+  composes: chip square from './button.module.css';
 }
 
 .reset {
@@ -34,7 +34,7 @@
 }
 
 .cutMore {
-  composes: chipQuiet from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .rigs {

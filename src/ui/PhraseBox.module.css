@@ -55,7 +55,7 @@
 }
 
 .word {
-  composes: chipQuiet from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .clear {

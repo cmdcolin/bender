@@ -6,7 +6,7 @@
 }
 
 .wire {
-  composes: chipQuiet square from './button.module.css';
+  composes: chip square from './button.module.css';
 }
 
 .wireOn {
@@ -32,7 +32,7 @@
 }
 
 .switch {
-  composes: chipQuiet square from './button.module.css';
+  composes: chip square from './button.module.css';
 }
 
 .switchOn {

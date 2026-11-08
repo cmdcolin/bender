@@ -1,10 +1,13 @@
 # Design system
 
-- **Tokens:** `src/tokens.css`, shared with videoskillet (neutrals, borders,
-  type, spacing, corners), and `src/theme.css` (bender's accent, control
-  heights, row gaps, focus ring)
+- **Tokens:** `skillet-shared/tokens.css`, shared with videoskillet (neutrals,
+  borders, type, spacing, corners), and `src/theme.css` (bender's accent,
+  control heights, row gaps, card corners, shadows, scrim, focus ring)
 - **Buttons and dropdowns:** `src/ui/button.module.css`, where every look and
   state a control can take is a class
+- **Dialogs:** `src/ui/components/Dialog.tsx` opens a native `<dialog>` as a
+  modal; `src/ui/components/dialog.module.css` holds the card, its head, title,
+  close chip, prose line and link
 - **Check:** `pnpm controls` lists every button and select on the panel by
   rendered height; `src/ui/buttonKinds.test.ts` fails on a module that restyles
   a kind it composes
@@ -13,12 +16,13 @@
 
 | Token           | Mouse | Touch | Used by                         | Defined in |
 | --------------- | ----- | ----- | ------------------------------- | ---------- |
-| `--ctl-h`       | 22px  | 32px  | action, cap, select, menu items | theme.css  |
+| `--ctl-h`       | 22px  | 32px  | action, outline, cap, select    | theme.css  |
 | `--ctl-h-sm`    | 18px  | 32px  | chip, pick, selectSm            | theme.css  |
 | `--gap-ctl`     | 6px   | 8px   | a row of action-height controls | theme.css  |
 | `--gap-ctl-sm`  | 4px   | 6px   | a row of chips or picks         | theme.css  |
 | `--ctl-radius`  | 3px   | 3px   | controls and panels             | tokens.css |
 | `--pill-radius` | 999px | 999px | chips                           | tokens.css |
+| `--card-radius` | 6px   | 6px   | dialogs                         | theme.css  |
 
 ## Spacing
 
@@ -35,21 +39,33 @@
 The kinds set `line-height: 1.2` and no vertical padding, so the token alone
 sets a control's height whatever font the system supplies.
 
+## Depth
+
+- `--shadow-modal` under a dialog, `--shadow-pop` under a floating card or menu
+- `--scrim` behind a modal
+- `--caps-track` spaces a dialog or card title
+
 ## Kinds
 
 - **action:** a filled verb (random, mutate, record wav). Variants: `actionOn`
-  (running), `actionHeld` (under a hand), `actionOff`, `actionDanger`,
-  `actionLive`, `actionQuiet`, `actionLoud(On)`, `actionWaiting`,
-  `actionPicked`, and the split pair `splitMain` / `splitCaret(On)`
+  (running), `actionQuiet`, `actionPicked`, and the bend board's two-row keys
+  `actionKey`, `actionKeyHeld`, `actionKeyFixed`, `actionKeyQuiet`
+- **outline:** header chrome in a faint outline at the body size. Variants:
+  `outlineOn`, `outlineWaiting`, `outlineDanger`, `outlineIcon`,
+  `outlineSelect`, and the split pair `splitMain` / `splitCaret(On)`
 - **chip:** one quiet item among many, pill-shaped (cuts, rolls). Variants:
-  `chipOn`, `chipQuiet`, `chipOff`, `chipDanger`; `.square` squares the corners
+  `chipOn`, `chipOff`, `chipDanger`; `.square` squares the corners
 - **pick:** one of a set where exactly one is on (ROMs, slider choices).
-  Variants: `pickOn`, `pickLg(On)` for presets, `pickEmpty`, `pickRecOn` /
-  `pickRecIdle` for a pattern's record switch
+  Variants: `pickOn`, `pickLg(On)` for presets, `pickJoined(On)` for a
+  ToggleButtonGroup, `pickEmpty`, `pickRecOn` / `pickRecIdle` for a pattern's
+  record switch
 - **cap:** a switch on an instrument's case. The case sets `--switch`,
-  `--case-edge` and `--cap-lit`. Variants: `capOn`, `capIdle`
+  `--switch-hover`, `--case-edge` and `--cap-lit`. Variants: `capOn`,
+  `capSnug(On)` for a glyph, `capJoined(On)`, `capIdle`
 - **select / selectSm:** a dropdown at the action or chip height. Variant:
   `selectSmOn`
+- **deck:** a fixed-size tape-deck key, glyph over legend. Variants: `deckOn`,
+  `deckRed(On)`, `deckWord(On)`, `deckRow(On)`
 
 ## Rules
 
@@ -59,8 +75,12 @@ sets a control's height whatever font the system supplies.
   comes later in the bundle.
 - A new look goes in `button.module.css` as a variant, next to the kind it
   extends.
+- Hover looks sit under `@media (hover: hover)`, so a tapped control on a phone
+  does not stay lit.
 - Colours come from tokens. A literal colour belongs to an instrument's case
   (the toy's plastic, the FM board's green), set as a variable on that case.
 - The `:focus-visible` rule in theme.css outlines every focused control. A
   module that sets a different focus style must turn that outline off in its
   rule.
+- A keyboard case is the size container named `case`, and its decorations query
+  `@container case`. The deck inside it is an unnamed container of its own.

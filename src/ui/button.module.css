@@ -1,27 +1,3 @@
-/* Every button on the board is one of four kinds, and there is no fifth. A
-   module composes the kind it means and adds only structure — where the thing
-   sits, how it is laid out — so no padding, colour or radius is written down
-   twice in two files that then drift a pixel apart.
-
-   The states each kind can be in live here too, next to it. A module that
-   spelled out its own lit or greyed colours would be racing this file for which
-   rule the bundler happens to emit last; composing the state means the answer
-   is settled here, where both rules are in view.
-
-   Nothing here sets a width. A button is as wide as its label, always: a row
-   that stretched its buttons to fill the line would hand whichever two happened
-   to wrap the look of a different, more important kind of button.
-
-   Each kind takes one of the two heights in theme.css, and so does every
-   dropdown, so a select sits level with the buttons beside it.
-
-   Every hover skips a disabled button: greyed-out undo lighting up under the
-   pointer would promise a step back that isn't there. Every kind also drops to
-   40% opacity when disabled, since a colour step alone vanishes wherever a
-   module remaps the ink tiers, as the pedals do. */
-
-/* The panel's loud verbs — random, drift, panic. Filled and square, and the
-   only kind at fs-sm, because these are what you came here to press. */
 .action {
   min-height: var(--ctl-h);
   font-size: var(--fs-sm);
@@ -34,11 +10,6 @@
   cursor: pointer;
 }
 
-.action:hover:not(:disabled) {
-  color: var(--fg);
-  border-color: var(--border-hover);
-}
-
 .action:disabled {
   opacity: 0.4;
   color: var(--fg4);
@@ -46,17 +17,12 @@
   cursor: not-allowed;
 }
 
-/* A verb that is still running: lit, and the ones that use it say so in the
-   label too, because a border alone is a thing you notice only once you are
-   looking for it. */
 .actionOn {
   composes: action;
   color: var(--fg);
   border-color: var(--accent);
 }
 
-/* A key on the bend board's map of the letter keys: an action two rows tall,
-   with the letter over what the key does. */
 .actionKey {
   composes: action;
   display: flex;
@@ -75,60 +41,23 @@
   border-color: var(--cool);
 }
 
-/* One of the six throws somebody chose, set apart from the dealt keys by ink
-   alone so the map keeps one shape. */
 .actionKeyFixed {
   composes: actionKey;
   color: var(--fg);
   font-weight: 600;
 }
 
-/* A key that does something to the other keys — let go, redeal. */
 .actionKeyQuiet {
   composes: actionKey;
   color: var(--fg3);
   background: none;
 }
 
-/* Greyed rather than hidden: an empty walk is the honest answer to "can I take
-   that back", and a button that came and went would move the whole row. */
-.actionOff {
-  composes: action;
-  color: var(--fg4);
-  cursor: not-allowed;
-}
-
-/* The one that takes something away. Red at rest, and it deepens rather than
-   brightening under the pointer: nothing about it should read as encouraging. */
-.actionDanger {
-  composes: action;
-  color: var(--alarm);
-  border-color: var(--alarm-edge);
-}
-
-.actionDanger:hover:not(:disabled) {
-  background: var(--alarm-wash);
-  color: var(--alarm);
-  border-color: var(--alarm-edge);
-}
-
-/* Chrome beside the verbs, such as the menu button, in the same shape with
-   quieter ink. */
 .actionQuiet {
   composes: action;
   color: var(--fg3);
 }
 
-/* Waiting on a knob or a key, in the amber a waiting control wears everywhere
-   else on the board. */
-.actionWaiting {
-  composes: action;
-  color: var(--accent2);
-  border-color: var(--accent2);
-}
-
-/* The chosen one of a short row of candidates at an action's size, filled with
-   the accent. */
 .actionPicked {
   composes: action;
   color: var(--accent-ink);
@@ -136,14 +65,6 @@
   border-color: var(--accent);
 }
 
-.actionPicked:hover:not(:disabled) {
-  color: var(--accent-ink);
-  border-color: var(--accent);
-}
-
-/* The header bar's button, drawn as videoskillet's masthead and look bar draw
-   theirs: quiet ink in a faint outline, at the body size, as wide as its
-   label. */
 .outline {
   display: inline-flex;
   align-items: center;
@@ -161,11 +82,6 @@
   cursor: pointer;
 }
 
-.outline:hover:not(:disabled) {
-  color: var(--fg);
-  border-color: var(--fg4);
-}
-
 .outline:disabled {
   color: #55555f;
   border-color: var(--border-faint);
@@ -174,11 +90,6 @@
 
 .outlineOn {
   composes: outline;
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.outlineOn:hover:not(:disabled) {
   color: var(--accent);
   border-color: var(--accent);
 }
@@ -195,16 +106,12 @@
   border-color: var(--alarm-edge);
 }
 
-/* Squared for a glyph: the menu, undo and redo. */
 .outlineIcon {
   composes: outline;
   width: var(--ctl-h);
   padding: 0;
 }
 
-/* A dropdown in the header, the same box as the buttons beside it. Firefox
-   pads a native select past the button's padding, so the select drops its
-   own arrow and draws a chevron in its place. */
 .outlineSelect {
   composes: outline;
   appearance: none;
@@ -219,8 +126,6 @@
   background-repeat: no-repeat;
 }
 
-/* A split button. The verb and its caret share a border, and the caret opens
-   the verb's options. Its padding keeps it narrower than any label. */
 .splitMain {
   composes: outline;
   border-top-right-radius: 0;
@@ -241,9 +146,6 @@
   border-color: var(--fg4);
 }
 
-/* One quiet thing among many of its kind: a preset, a MIDI switch, a stage's
-   own verbs. Outlined rather than filled, so a row of forty reads as a list,
-   and the accent on hover is what says it is pressable at all. */
 .chip {
   min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
@@ -254,11 +156,6 @@
   border: 1px solid var(--border-quiet);
   border-radius: var(--pill-radius);
   cursor: pointer;
-}
-
-.chip:hover:not(:disabled) {
-  color: var(--accent);
-  border-color: var(--accent);
 }
 
 .chip:disabled {
@@ -272,16 +169,6 @@
   border-color: var(--accent);
 }
 
-/* For a chip sitting in a header, where the header is a label first and a row
-   of shouting buttons would fight the controls under it. The quiet is in the
-   shape now rather than in the ink: it was --fg4, which is 2.8:1 on this panel,
-   and `roll` is the stage's own verb on every one of thirty-four headings — the
-   last word here to make somebody lean in. --fg4 is for things whose message is
-   that they are dim, and a verb's message is the verb. */
-.chipQuiet {
-  composes: chip;
-}
-
 .chipOff {
   composes: chip;
   color: var(--fg4);
@@ -289,29 +176,14 @@
   cursor: not-allowed;
 }
 
-/* A chip that undoes an afternoon of turning. Quiet at rest like the chips
-   beside it, and red only under the pointer: recoverable off ctrl+z and still
-   not a thing to press by accident. */
 .chipDanger {
   composes: chip;
 }
 
-.chipDanger:hover:not(:disabled) {
-  color: var(--alarm);
-  border-color: var(--alarm);
-}
-
-/* Squares a chip's corners. Every verb in a stage heading uses it, so the
-   heading reads as one row of switches above the pill-shaped cuts, which each
-   name a board. */
 .square {
   border-radius: var(--ctl-radius);
 }
 
-/* One of a set where exactly one is on: a kit ROM, a part. Square, because a
-   pill reads as a tag you filter by rather than a switch you throw — and the
-   chosen one fills in rather than lighting up, since what it marks is where you
-   are, not something running. */
 .pick {
   min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
@@ -322,11 +194,6 @@
   border: 1px solid var(--border-quiet);
   border-radius: var(--ctl-radius);
   cursor: pointer;
-}
-
-.pick:hover:not(:disabled) {
-  color: var(--fg);
-  border-color: var(--border-hover);
 }
 
 .pick:disabled {
@@ -342,8 +209,6 @@
   border-color: var(--fg4);
 }
 
-/* A pick a step up the type scale, for the presets, the one row of picks that
-   loads a whole board. */
 .pickLg {
   composes: pick;
   font-size: var(--fs-sm);
@@ -354,8 +219,6 @@
   font-size: var(--fs-sm);
 }
 
-/* A pick butted against its neighbours in a ToggleButtonGroup, which rounds
-   the two outer corners. */
 .pickJoined {
   composes: pick;
   flex: 1;
@@ -368,25 +231,16 @@
   border-radius: 0;
 }
 
-/* Nothing saved here yet. Dashed, because a click on an empty slot does
-   something different from a click on a full one. */
 .pickEmpty {
   composes: pick;
   color: var(--fg4);
   border-style: dashed;
 }
 
-/* A pattern's record switch, on the kit and the tune alike. It fills amber while
-   writing, and shows dashed amber while armed and waiting for the transport. */
 .pickRecOn {
   composes: pick;
   color: var(--bg);
   background: var(--accent2);
-  border-color: var(--accent2);
-}
-
-.pickRecOn:hover:not(:disabled) {
-  color: var(--bg);
   border-color: var(--accent2);
 }
 
@@ -397,11 +251,6 @@
   border-color: var(--accent2);
 }
 
-/* The machine's own switches rather than the app's verbs: the stamped caps on a
-   keyboard deck — hold, rec, the octave steppers, the FM board's jumper. The
-   colours come from whichever case the cap is screwed to, so the toy's grey and
-   the bare board's green are the same rule seen twice, and it goes down a pixel
-   when pressed the way a cap does. */
 .cap {
   display: inline-flex;
   align-items: center;
@@ -417,43 +266,25 @@
   cursor: pointer;
 }
 
-/* A cap holding a single glyph, such as an octave arrow, on a crowded deck. */
 .capSnug {
   composes: cap;
   padding: 0 var(--space-xs);
-}
-
-.cap:hover:not(:disabled) {
-  background: var(--switch-hover);
-  color: var(--fg);
 }
 
 .cap:active {
   transform: translateY(1px);
 }
 
-/* The stepper at the end of its travel. A switch that has nowhere left to go
-   stays where it is and goes dead, because a board that is two octaves down
-   should not have to grow a button back to come up again. */
 .cap:disabled {
   opacity: 0.4;
   color: var(--fg4);
   cursor: not-allowed;
 }
 
-/* Thrown. Which colour it lights in belongs to the case rather than to the
-   kind — hold latches in the panel's accent, the toy's memory arms in the
-   deck's amber — so it arrives as a variable the module sets on the button
-   itself, where nothing can race it. */
 .capOn {
   composes: cap;
   background: var(--cap-lit, var(--accent));
   border-color: var(--cap-lit, var(--accent));
-  color: var(--accent-ink);
-}
-
-.capOn:hover:not(:disabled) {
-  background: var(--cap-lit, var(--accent));
   color: var(--accent-ink);
 }
 
@@ -472,9 +303,6 @@
   border-radius: 0;
 }
 
-/* Thrown, and waiting on something else before it does anything: record armed
-   with the tune stopped, a jumper cut. The same colour, outlined and dashed,
-   which is the promise rather than the lamp. */
 .capIdle {
   composes: cap;
   color: var(--cap-lit, var(--accent));
@@ -482,8 +310,6 @@
   border-style: dashed;
 }
 
-/* A dropdown among the verbs, filled and square like an action and at its
-   height. */
 .select {
   height: var(--ctl-h);
   font-size: var(--fs-sm);
@@ -495,19 +321,12 @@
   cursor: pointer;
 }
 
-.select:hover:not(:disabled) {
-  color: var(--fg);
-  border-color: var(--border-hover);
-}
-
 .select:disabled {
   opacity: 0.4;
   color: var(--fg4);
   cursor: not-allowed;
 }
 
-/* A dropdown in a row of chips or picks, outlined like a pick and at its
-   height. */
 .selectSm {
   composes: select;
   height: var(--ctl-h-sm);
@@ -517,17 +336,12 @@
   border-color: var(--border-quiet);
 }
 
-/* Set to something other than its resting choice, lit the way a chip is. */
 .selectSmOn {
   composes: selectSm;
   color: var(--fg);
   border-color: var(--accent);
 }
 
-/* A key on the front of a tape deck: a glyph over its engraved legend. Every
-   deck key is the same size, so a transport reads as one row of keys whatever
-   is printed on them; this is the one kind with a fixed width, and the legends
-   are written to fit it. A key shows it is down by lighting, not by moving. */
 .deck {
   display: inline-flex;
   flex-direction: column;
@@ -546,11 +360,6 @@
   cursor: pointer;
 }
 
-.deck:hover:not(:disabled) {
-  color: var(--fg);
-  border-color: var(--border-hover);
-}
-
 .deck:disabled {
   opacity: 0.4;
   color: var(--fg4);
@@ -558,8 +367,6 @@
   cursor: not-allowed;
 }
 
-/* Down, the way play stays in until stop pops it: ringed and lit in the
-   accent. */
 .deckOn {
   composes: deck;
   background: var(--surface);
@@ -567,19 +374,8 @@
   border-color: var(--accent);
 }
 
-.deckOn:hover:not(:disabled) {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-/* Record, and anything live that has to read as dangerous: red at rest, and
-   washed in the alarm colour while it runs. */
 .deckRed {
   composes: deck;
-  color: var(--alarm);
-}
-
-.deckRed:hover:not(:disabled) {
   color: var(--alarm);
 }
 
@@ -590,12 +386,6 @@
   border-color: var(--alarm);
 }
 
-.deckRedOn:hover:not(:disabled) {
-  color: var(--alarm);
-  border-color: var(--alarm);
-}
-
-/* A deck key with a word on it where the glyph goes, such as a speed. */
 .deckWord {
   composes: deck;
   font-size: var(--fs-sm);
@@ -605,8 +395,6 @@
   composes: deckOn deckWord;
 }
 
-/* A deck key laid out as a row, for a short list of what a key can do: the
-   glyph beside a sentence, full width, as tall as the keys beside it. */
 .deckRow {
   composes: deck;
   flex-direction: row;
@@ -622,14 +410,85 @@
   composes: deckOn deckRow;
 }
 
-/* Under a finger, theme.css raises both heights to 32px and the padding grows
-   to match. A tablet is as wide as a laptop, so the query asks about the
-   pointer and leaves the window width alone. */
 @media (pointer: coarse) {
-  .action,
   .chip,
-  .pick,
-  .cap {
+  .pick {
     padding: 0 var(--space-md);
+  }
+}
+
+@media (hover: hover) {
+  .action:hover:not(:disabled) {
+    color: var(--fg);
+    border-color: var(--border-hover);
+  }
+
+  .actionPicked:hover:not(:disabled) {
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+
+  .outline:hover:not(:disabled) {
+    color: var(--fg);
+    border-color: var(--fg4);
+  }
+
+  .outlineOn:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .chip:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .chipDanger:hover:not(:disabled) {
+    color: var(--alarm);
+    border-color: var(--alarm);
+  }
+
+  .pick:hover:not(:disabled) {
+    color: var(--fg);
+    border-color: var(--border-hover);
+  }
+
+  .pickRecOn:hover:not(:disabled) {
+    color: var(--bg);
+    border-color: var(--accent2);
+  }
+
+  .cap:hover:not(:disabled) {
+    background: var(--switch-hover);
+    color: var(--fg);
+  }
+
+  .capOn:hover:not(:disabled) {
+    background: var(--cap-lit, var(--accent));
+    color: var(--accent-ink);
+  }
+
+  .select:hover:not(:disabled) {
+    color: var(--fg);
+    border-color: var(--border-hover);
+  }
+
+  .deck:hover:not(:disabled) {
+    color: var(--fg);
+    border-color: var(--border-hover);
+  }
+
+  .deckOn:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .deckRed:hover:not(:disabled) {
+    color: var(--alarm);
+  }
+
+  .deckRedOn:hover:not(:disabled) {
+    color: var(--alarm);
+    border-color: var(--alarm);
   }
 }
