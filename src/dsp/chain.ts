@@ -146,7 +146,7 @@ class Joint {
     if (this.openFor > 0) this.openFor -= n
     else if (chatter > 0) {
       const perBlock = ((0.4 + chatter * 9) * n) / this.sr
-      if (this.burst.roll(perBlock, cluster, this.rng)) {
+      if (this.burst.roll(perBlock, cluster, this.rng, n)) {
         this.openFor = Math.floor(
           (0.002 + this.rng() * 0.09 * chatter) * this.sr,
         )
@@ -1493,7 +1493,7 @@ export class Chain {
     this.relayBurst.coolFor(n)
     if (rate <= 0) return
     const perBlock = ((0.02 + rate * 1.2) * n) / this.sr
-    if (!this.relayBurst.roll(perBlock, cluster, this.rng)) return
+    if (!this.relayBurst.roll(perBlock, cluster, this.rng, n)) return
     if (this.rng() < 0.7) {
       const a = Math.floor(this.rng() * this.order.length)
       const b = Math.floor(this.rng() * this.order.length)

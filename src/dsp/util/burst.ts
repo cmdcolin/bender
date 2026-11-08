@@ -47,10 +47,11 @@ export class Burst {
     this.excite = flushDenormal(this.excite * Math.pow(this.cool, n))
   }
 
-  roll(prob: number, cluster: number, rng: Rng): boolean {
+  roll(prob: number, cluster: number, rng: Rng, interval = 1): boolean {
     if (prob <= 0) return false
     const n = Math.min(Math.max(cluster, 0), 1) * MAX_BRANCH
-    const p = n > 0 ? prob * (1 - n) + n * this.kick * this.excite : prob
+    const kick = interval === 1 ? this.kick : 1 - this.cool ** interval
+    const p = n > 0 ? prob * (1 - n) + n * kick * this.excite : prob
     if (rng() >= Math.min(p, 1)) return false
     this.excite = Math.min(this.excite + 1, MAX_EXCITE)
     return true

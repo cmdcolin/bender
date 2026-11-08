@@ -1503,7 +1503,12 @@ export class ToyChip implements Stage {
         // counter bend: program counter corruption
         if (
           spot === 2 &&
-          this.counterFault.roll(pot * 0.7, cluster, this.rng)
+          this.counterFault.roll(
+            pot * 0.7,
+            cluster,
+            this.rng,
+            Math.max(this.sr / this.stepHzNow, 1),
+          )
         ) {
           next = this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * this.len)
         }

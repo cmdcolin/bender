@@ -198,7 +198,7 @@ export class Codec implements Stage {
     allocate(mid, side, size.edges, cut, budget, penalty)
 
     this.loss.coolFor(n)
-    const lost = this.loss.roll(p[IDX.codecLoss]!, p[IDX.faultCluster]!, rng)
+    const lost = this.loss.roll(p[IDX.codecLoss]!, p[IDX.faultCluster]!, rng, n)
     const cpu = p[IDX.codecCpu]!
     const late =
       cpu > 0 && cpu * (1 + LATE_DROOP * droop) + LATE_JITTER * rng() > 1

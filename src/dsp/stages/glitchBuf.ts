@@ -85,7 +85,7 @@ export class GlitchBuf implements Stage {
           : baseProb
         if (
           !this.glitching &&
-          (freeze || this.fault.roll(prob, cluster, this.rng))
+          (freeze || this.fault.roll(prob, cluster, this.rng, sliceSamples))
         ) {
           this.beginEvent(p, sliceSamples)
         }
