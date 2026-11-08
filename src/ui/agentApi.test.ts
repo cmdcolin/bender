@@ -2,6 +2,7 @@
 import { expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
+import { DEST } from '../dsp/modbus.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { N_BANDS } from '../dsp/util/bandMeter.ts'
 import { engine } from '../engine/engine.ts'
@@ -130,11 +131,12 @@ test('help and every guide topic fit in one browser tool result', () => {
     'speak',
     'clock',
     'route',
+    'bay',
     'sound',
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, perform, line, lead, rot, hit, speak, clock, route, tape, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, perform, line, lead, rot, hit, speak, clock, bay, route, tape, sound",
   )
 })
 
@@ -1049,5 +1051,68 @@ test('tape rolls a shelf by name, searches other words and lists the shelves', a
   } finally {
     roll.mockRestore()
     search.mockRestore()
+  }
+})
+
+test('wire patches a free wire in the unit its destination moves in', () => {
+  bender.reset()
+  try {
+    const first = bender.wire('lfo', 'filtHz', { octaves: 1 })
+    expect(first).toMatchObject({
+      wire: 1,
+      from: 'LFO',
+      depth: '0.25 straight',
+    })
+    expect(first.law).toMatch(/octave up/)
+    expect(engine.controls.get()).toMatchObject({
+      mod0Src: 1,
+      mod0Dest: DEST.filtHz,
+      mod0Depth: 0.25,
+    })
+    expect(bender.wire('lfo', 'filtHz', { octaves: -0.5 })).toMatchObject({
+      wire: 1,
+      depth: '0.12 flipped',
+      adjusted: 'asked depth -0.125, set 0.12 flipped',
+    })
+    expect(
+      bender.wire('drum hit', 'chipDataLine', { settings: 2 }),
+    ).toMatchObject({
+      wire: 2,
+      depth: '0.29 straight',
+    })
+    expect(bender.wire('mic', 'srHz', { octaves: 2 })).toMatchObject({
+      wire: 3,
+      depth: '0.50 straight',
+    })
+    expect(engine.controls.get().mod2Dest).toBe(DEST.crushHz)
+    expect(bender.wire('heat', 'filt res', 0.4)).toMatchObject({ wire: 4 })
+  } finally {
+    bender.reset()
+  }
+})
+
+test('wire says why it refuses, and unwire frees a wire', () => {
+  bender.reset()
+  try {
+    expect(() => bender.wire('lfo', 'filtHz', { settings: 1 })).toThrow(
+      /filtHz does not move in settings\. A bay wire at depth d multiplies/,
+    )
+    expect(() => bender.wire('lfo', 'nowhere')).toThrow(
+      /no bay destination 'nowhere'/,
+    )
+    expect(() => bender.wire('lfo', 'filtHz', 0.5, { wire: 5 })).toThrow(
+      'wire is 1 to 4, not 5',
+    )
+    for (const dest of ['filtHz', 'ringHz', 'combHz', 'srHz'])
+      bender.wire('lfo', dest)
+    expect(() => bender.wire('lfo', 'echoMs')).toThrow(/all 4 wires are in use/)
+    expect(bender.unwire('ringHz')).toEqual({ unwired: 2 })
+    expect(engine.controls.get().mod1Src).toBe(0)
+    expect(bender.wire('lfo', 'echoMs')).toMatchObject({ wire: 2 })
+    expect(() => bender.unwire('drumTune')).toThrow(
+      /no wire is patched into 'drumTune'/,
+    )
+  } finally {
+    bender.reset()
   }
 })

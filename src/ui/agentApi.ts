@@ -29,7 +29,16 @@ import {
   voiceBit,
   type CellRow,
 } from '../drums.ts'
-import { wireLaw } from '../dsp/destLaw.ts'
+import {
+  DEST_LAW,
+  destAt,
+  destFor,
+  lawText,
+  wireLaw,
+  type Law,
+  type LiveDest,
+} from '../dsp/destLaw.ts'
+import { DEST } from '../dsp/modbus.ts'
 import { BLOCK, METER_EVERY } from '../dsp/stage.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { followsGate, gateLane, SEQ_TO_LEAD } from '../dsp/trigbus.ts'
@@ -95,12 +104,13 @@ const GUIDE = {
   hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once; inside bender.queue it waits for the queue's bar and lands within about 20 ms of it. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
   speak: `Prattle, a talking toy's speech chip. bender.speak('kill the bass') loads the phrase and says it once; speak('kill the bass', { struck: 'open hat' }) speaks the next syllable on each open hat hit, so words land on the grid, and { repeat: true } says it round and round. It knows numbers and techno words (bass, kick, drop, noise, acid, machine, error, reboot, again…) and sounds out the rest. Level starts at 0, so speak brings talkLevel up to 0.8. Bends: talkClock, talkFrameDiv ('stopped' drones), talkLock (frame clock off the kit), talkLoopBit and talkLoopSlip (a stuttering loop), talkDataLine/talkDataFault (D10 'to +V' howls), talkPitchLine/Fault, talkVoicing and talkLeak. The mic jack 'Prattle in' talks through its mouth. Presets: robot chant, lattice howl.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
+  bay: `The patch bay: four wires, each from a source onto a destination. bender.wire('lfo', 'filtHz', { octaves: 1 }) patches a free wire so a full swing of the LFO moves the cutoff an octave; { settings: 2 } steps a selector two settings, { by: 0.3 } adds 0.3 of the knob, and a number is the raw depth, -2 to 2. The destination is a control key or a bay label such as 'filt cut', and describe(key).wire says how a wire moves it. Wiring a destination again reuses its wire; { wire: 2 } picks one. Sources: LFO, supply, envelope, mic, body X and Y, fb bus, ROM step, drum hit, key hit, heat, lane A and B, phrase and ADSR. The LFO is modLfoHz, modLfoShape and modLfoSync, the lanes modLaneA0 to A15, the phrase modPhraseBars and modPhraseShape. bender.unwire(1) or unwire('filtHz') frees a wire, and await bender.heard() reads what each one pushes.`,
   route: `Routing effects. Each bend and pedal runs on master, the whole mix after the summing amp, or on a set of lines, machines and the mic, before the mix bus. bender.route({ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }) puts the echo on the kit and the toy and the reverb on Sheet; 'master' or [] puts a unit back. Names ignore case. Units on the same set run in rack order. A set inside a wider one runs first and the wider set hears its output, so echo on Clatter + Plinky then reverb on Clatter + Plinky + Sheet reverbs the echo; sets that only overlap run side by side. route() reads back each unit's lines, its place in the chain, bypass, mix and heard (its return in the last meter), and each machine's own units and the shared ones on its line. listen(ms) lists each heard effect's return peak as effects, and set({ echoLines: 'Clatter+Plinky' }) also works.`,
   tape: `Spool, the tape loop. await bender.tape('78s') rolls a random tape off a shelf; bender.tape() lists the shelves and says whether links work. Any other words search archive.org and load the first of the top hits that has an mp3: tape('moon landing'). A link, tape('https://youtube.com/watch?v=…'), is fetched with yt-dlp, but only on a dev server with yt-dlp installed. It resolves once the tape is on the reel, with its name as tape, or with problem saying what went wrong. Spool keeps the front of a long recording. Loading brings sampleLevel to 0.7 if it was 0. find('spool') lists its controls: sampleSpeed, sampleMode, loopIn, loopOut, loopWear and more.`,
   sound: `Sound. Audio waits for a click: await bender.start() returns running or says to click an empty area. bender.play() starts the kit, bassline and tune; play('song') a demo song, play('drums') the kit alone; stop() stops all. A screenshot measures no sound. await bender.listen(1500) reads the meters that many ms, at most 20000: meters arrived against due, peak dBFS, limiter reduction, lowest toy rail (1 is full), reboots, sources, sourcePeaks, notes, drumHits. bands is each source's dBFS in sub <90 Hz, low, mid 350-1.4k, presence 1.4-5.6k and air; owners is each band's share by source. masked gives each lead the share of its energy under the rest by ${MASK_DB} dB, its top masker and band. Over 0.3 the lead is buried: raise it, cut the masker, patch a unit onto it alone (filtLines, ampLines), or duck it to the kick: set({ noiseDuck: 0.8 }), any machine's …Duck. link() returns a URL to this board.`,
 }
 
-const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before using it. Return arrays and objects as they are: the browser tool cuts a returned string at 1000 characters. Start with bender.summary(). The rest is in ${Object.keys(GUIDE).length} topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'route' effects; 'music' covers tune and drums, 'drums' the rest of the kit, 'perform' its mutes, fills, echo row and pattern moves, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things; 'speak' gives Prattle words; 'tape' loads Spool; 'clock' lands changes on the bar with position, next and queue.`
+const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between your calls, so read it again before using it. Return arrays and objects as they are: the browser tool cuts a returned string at 1000 characters. Start with bender.summary(). The rest is in ${Object.keys(GUIDE).length} topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'route' effects; 'bay' wires; 'music' covers tune and drums, 'drums' the rest of the kit, 'perform' its mutes, fills, echo row and pattern moves, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things; 'speak' gives Prattle words; 'tape' loads Spool; 'clock' lands changes on the bar with position, next and queue.`
 
 type Topic = keyof typeof GUIDE
 
@@ -113,11 +123,77 @@ const isStruck = (name: string): name is Struck =>
 
 const MAX_LISTEN_MS = 20000
 const WIRE_KEYS = [
-  ['mod0Src', 'mod0Dest'],
-  ['mod1Src', 'mod1Dest'],
-  ['mod2Src', 'mod2Dest'],
-  ['mod3Src', 'mod3Dest'],
-] as const satisfies readonly (readonly [ControlKey, ControlKey])[]
+  ['mod0Src', 'mod0Dest', 'mod0Depth'],
+  ['mod1Src', 'mod1Dest', 'mod1Depth'],
+  ['mod2Src', 'mod2Dest', 'mod2Depth'],
+  ['mod3Src', 'mod3Dest', 'mod3Depth'],
+] as const satisfies readonly (readonly [ControlKey, ControlKey, ControlKey])[]
+
+type Amount =
+  | number
+  | { octaves: number }
+  | { settings: number }
+  | { by: number }
+
+const refuse = (message: string): never => {
+  throw new Error(message)
+}
+
+function destNamed(into: string) {
+  const byKey = destFor(into)
+  const lower = into.toLowerCase()
+  const label = SLIDER_BY_KEY.get('mod0Dest')?.choices?.findIndex(
+    c => c.toLowerCase() === lower,
+  )
+  return (
+    byKey ??
+    (label !== undefined && label >= 0 ? destAt(label) : undefined) ??
+    refuse(
+      `no bay destination '${into}'; give a control key such as filtHz or srHz, or a bay label such as 'filt cut'`,
+    )
+  )
+}
+
+function depthFor(dest: LiveDest, amount: Amount) {
+  const law: Law = DEST_LAW[dest]
+  const wrong = (unit: string) =>
+    refuse(`${dest} does not move in ${unit}. ${lawText(dest)}`)
+  return typeof amount === 'number'
+    ? amount
+    : 'octaves' in amount
+      ? law.law === 'oct'
+        ? amount.octaves / law.span
+        : wrong('octaves')
+      : 'settings' in amount
+        ? law.law === 'hop'
+          ? amount.settings / law.choices
+          : wrong('settings')
+        : law.law === 'add'
+          ? amount.by / (law.scale ?? 1)
+          : wrong('knob amounts')
+}
+
+const slotIndex = (slot: number) =>
+  Number.isInteger(slot) && slot >= 1 && slot <= WIRE_KEYS.length
+    ? slot - 1
+    : refuse(`wire is 1 to ${WIRE_KEYS.length}, not ${slot}`)
+
+function wireOn(c: Controls, dest: LiveDest, slot?: number) {
+  const id = DEST[dest]
+  const taken = WIRE_KEYS.findIndex(
+    ([src, to]) => c[src] !== 0 && Math.round(c[to]) === id,
+  )
+  const free = WIRE_KEYS.findIndex(([src]) => c[src] === 0)
+  return slot !== undefined
+    ? slotIndex(slot)
+    : taken >= 0
+      ? taken
+      : free >= 0
+        ? free
+        : refuse(
+            `all ${WIRE_KEYS.length} wires are in use; pass { wire: 1 } to ${WIRE_KEYS.length} to repatch one, or bender.unwire(n) first`,
+          )
+}
 const SPEAK_LEVEL = 0.8
 
 const talk = () => engine.talk()
@@ -1000,6 +1076,53 @@ function rawBenderApi() {
         def =>
           `${def.key} = ${formatValue(def, c[def.key])}  ${groupOf(def.key)}: ${def.label}${def.role ? ` (${def.role})` : ''}, ${range(def)}. ${firstSentence(def.help)}`,
       )
+    },
+
+    wire(
+      from: string,
+      into: string,
+      amount: Amount = 0.5,
+      { wire: slot }: { wire?: number } = {},
+    ) {
+      const src = numberFor('mod0Src', from)
+      const dest = destNamed(into)
+      const at = wireOn(engine.controls.get(), dest, slot)
+      const [srcKey, destKey, depthKey] = WIRE_KEYS[at]!
+      const depth = depthFor(dest, amount)
+      const got = coerceControl(depthKey, depth)
+      const patch: Partial<Controls> = {}
+      patch[srcKey] = src
+      patch[destKey] = DEST[dest]
+      patch[depthKey] = got
+      land(patch, 0, new Set([srcKey, destKey, depthKey]))
+      return {
+        wire: at + 1,
+        from: show(srcKey, src),
+        into: show(destKey, DEST[dest]),
+        depth: show(depthKey, got),
+        ...(Math.abs(got - depth) > 1e-9 && {
+          adjusted: `asked depth ${Math.round(depth * 1000) / 1000}, set ${show(depthKey, got)}`,
+        }),
+        law: lawText(dest),
+      }
+    },
+
+    unwire(which: number | string) {
+      const c = engine.controls.get()
+      const at =
+        typeof which === 'number'
+          ? slotIndex(which)
+          : WIRE_KEYS.findIndex(
+              ([src, to]) =>
+                c[src] !== 0 && Math.round(c[to]) === DEST[destNamed(which)],
+            )
+      const [srcKey, , depthKey] =
+        WIRE_KEYS[at] ?? refuse(`no wire is patched into '${which}'`)
+      const patch: Partial<Controls> = {}
+      patch[srcKey] = 0
+      patch[depthKey] = DEFAULT_CONTROLS[depthKey]
+      land(patch, 0, new Set([srcKey, depthKey]))
+      return { unwired: at + 1 }
     },
 
     describe(key: string) {

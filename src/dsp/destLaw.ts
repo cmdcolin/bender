@@ -1,9 +1,8 @@
 import { isControlKey, type ControlKey } from '../controls.ts'
-
-import type { DEST } from './modbus.ts'
+import { DEST } from './modbus.ts'
 
 export type DestKey = keyof typeof DEST
-type LiveDest = Exclude<DestKey, `gone${number}`>
+export type LiveDest = Exclude<DestKey, `gone${number}`>
 
 interface Shared {
   knob?: ControlKey
@@ -637,7 +636,7 @@ export const WIRE_IS_KNOB = new Set<LiveDest>([
   'drumKickBank',
 ])
 
-const isLive = (key: string): key is keyof typeof DEST_LAW =>
+export const isLive = (key: string): key is keyof typeof DEST_LAW =>
   Object.hasOwn(DEST_LAW, key)
 
 export const LIVE_DESTS = Object.keys(DEST_LAW).filter(isLive)
@@ -677,10 +676,25 @@ function sentence(dest: keyof typeof DEST_LAW) {
             : ''
 }
 
+const DEST_AT = new Map<number, keyof typeof DEST_LAW>(
+  LIVE_DESTS.map(d => [DEST[d], d]),
+)
+
+export const destAt = (id: number) => DEST_AT.get(id)
+
+export const destFor = (key: string) =>
+  isControlKey(key) && destOfKnob(key)
+    ? destOfKnob(key)
+    : isLive(key)
+      ? key
+      : undefined
+
+export function lawText(dest: keyof typeof DEST_LAW) {
+  const law: Law = DEST_LAW[dest]
+  return [sentence(dest), law.note].filter(Boolean).join(' ')
+}
+
 export function wireLaw(key: string) {
   const dest = isControlKey(key) ? destOfKnob(key) : undefined
-  const law: Law | undefined = dest ? DEST_LAW[dest] : undefined
-  return dest && law
-    ? [sentence(dest), law.note].filter(Boolean).join(' ')
-    : undefined
+  return dest ? lawText(dest) : undefined
 }
