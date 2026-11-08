@@ -5,7 +5,7 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { jackFor } from '../jacks.ts'
 import { sounds, switchOn } from './bendChain.ts'
-import { BEND_SLOT_KEYS } from './controls/index.ts'
+import { BEND_SLOT_KEYS, bendAt } from './controls/index.ts'
 
 beforeEach(() => engine.writeBoard({ ...DEFAULT_CONTROLS }))
 
@@ -31,6 +31,30 @@ test('a full chain of sounding bends trades out the last', () => {
   expect(sounds(board, 'Octave')).toBe(true)
   expect(sounds(board, 'Glitch buffer')).toBe(false)
   expect(sounds(board, 'Screech filter')).toBe(true)
+})
+
+test('a full chain trades out a socket patched onto a machine before a sounding bend', () => {
+  engine.writeBoard({
+    ...DEFAULT_CONTROLS,
+    ringMix: 1,
+    crushMix: 1,
+    distMix: 1,
+    combMix: 1,
+    glitchMix: 1,
+    filtMix: 1,
+    crushInto: jackFor('toyChip'),
+  })
+  const before = BEND_SLOT_KEYS.map(k => engine.controls.get()[k])
+  const crusher = BEND_SLOT_KEYS.findIndex(
+    k => bendAt(engine.controls.get()[k])?.group === 'Crusher',
+  )
+  switchOn('Octave')
+  const board = engine.controls.get()
+  expect(bendAt(board[BEND_SLOT_KEYS[crusher]!])?.group).toBe('Octave')
+  expect(
+    BEND_SLOT_KEYS.filter((k, i) => i !== crusher && board[k] !== before[i]),
+  ).toEqual([])
+  expect(sounds(board, 'Crusher')).toBe(true)
 })
 
 // A bend patched onto a machine runs there with no socket holding it, so

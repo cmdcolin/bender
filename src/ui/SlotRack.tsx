@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
+import { passesMaster } from './bendChain.ts'
 import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls/index.ts'
 import { patchedInto } from './controls/jacks.ts'
 import { useBoardValue, useMeterValue } from './ControlsContext.ts'
@@ -40,6 +41,9 @@ export function SlotRack() {
   const onRaw = useBoardValue(c =>
     BENDS.map(b => patchedInto(c[b.into]) ?? '').join('|'),
   ).split('|')
+  const throughRaw = useBoardValue(c =>
+    BEND_SLOT_KEYS.map((_, i) => (passesMaster(c, i) ? '1' : '0')).join(''),
+  )
   // Which box is under the hand and which row it is over, so the rack shows
   // where a drop would land while the hand is still moving. Not on the board:
   // a drag that never finishes has to leave the chain exactly as it was.
@@ -136,23 +140,17 @@ export function SlotRack() {
     writeSlots(next)
   }
 
-  // Pressing a loose bend instead of dragging it. Somewhere empty if there is
-  // anywhere empty, and the last position if there is not, because the trade a
-  // full rack makes has to be one you can see: the bend that leaves is the one
-  // the signal was about to stop at anyway. A bend patched onto a machine
-  // already runs there, and a position only orders it among that machine's
-  // units, so it takes none a bend on the master run is using: an empty one,
-  // else one passing the master run through, else none.
-  const passes = (i: number) =>
-    slots[i] === 0 || !runs.has(i) || onRaw[slots[i]! - 1] !== ''
+  const passes = (i: number) => !runs.has(i) || throughRaw[i] === '1'
   const pressTo = (id: number) => {
     const empty = slots.findIndex(v => v === 0)
     const through = slots.findIndex((_, i) => passes(i))
     return empty !== -1
       ? empty
-      : onRaw[id - 1] === ''
-        ? slots.length - 1
-        : through
+      : through !== -1
+        ? through
+        : onRaw[id - 1] === ''
+          ? slots.length - 1
+          : -1
   }
   const takeLoose = (id: number) => {
     const to = pressTo(id)

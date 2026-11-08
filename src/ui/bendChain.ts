@@ -39,13 +39,22 @@ const silent = (c: Controls, slot: number) => {
   return !bend || c[bend.mix] === 0 || c[bend.mute] > 0.5
 }
 
-/** The first empty position, else the last one holding a silent bend, else the
-    last position. */
+export const passesMaster = (c: Controls, slot: number) => {
+  const bend = bendAt(c[BEND_SLOT_KEYS[slot]!])
+  return !bend || patchedInto(c[bend.into]) !== undefined
+}
+
 const freeSlot = (c: Controls) => {
   const empty = BEND_SLOT_KEYS.findIndex(k => Math.round(c[k]) === 0)
-  if (empty !== -1) return empty
+  const through = BEND_SLOT_KEYS.findIndex((_, i) => passesMaster(c, i))
   const quiet = BEND_SLOT_KEYS.findLastIndex((_, i) => silent(c, i))
-  return quiet === -1 ? BEND_SLOT_KEYS.length - 1 : quiet
+  return empty !== -1
+    ? empty
+    : through !== -1
+      ? through
+      : quiet !== -1
+        ? quiet
+        : BEND_SLOT_KEYS.length - 1
 }
 
 export function switchOn(stage: string) {

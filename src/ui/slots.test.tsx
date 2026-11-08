@@ -225,6 +225,17 @@ test('pressing a loose patched bend takes a position the master run passes', () 
   expect(bendAt(after.bendSlot0)?.group).toBe('Ring mod')
 })
 
+test('pressing a loose master bend takes the socket of a bend patched onto a machine', () => {
+  engine.controls.set({ ...audible(), crushInto: jackFor('toyChip') })
+  openRack()
+  const before = engine.controls.get()
+  fireEvent.click(screen.getByTitle(/Octave is in no position/))
+  const after = engine.controls.get()
+  expect(bendAt(before.bendSlot1)?.group).toBe('Crusher')
+  expect(bendAt(after.bendSlot1)?.group).toBe('Octave')
+  expect(after.bendSlot5).toBe(before.bendSlot5)
+})
+
 test('a patched bend’s row says where it runs and that it is bypassed', () => {
   engine.controls.set({
     ...DEFAULT_CONTROLS,
