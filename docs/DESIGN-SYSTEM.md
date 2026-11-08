@@ -1,8 +1,10 @@
 # Design system
 
 - **Tokens:** `skillet-shared/tokens.css`, shared with videoskillet (neutrals,
-  borders, type, spacing, corners), and `src/theme.css` (bender's accent,
-  control heights, row gaps, card corners, shadows, scrim, focus ring)
+  borders, type, spacing, corners, shadows, scrim), and `src/theme.css`
+  (bender's accent, control heights, row gaps, card corners)
+- **Element defaults:** `skillet-shared/base.css`, shared with videoskillet
+  (border-box, reduced motion, control fonts, pointer cursor, focus ring)
 - **Buttons and dropdowns:** `src/ui/button.module.css`, where every look and
   state a control can take is a class
 - **Dialogs:** `src/ui/components/Dialog.tsx` opens a native `<dialog>` as a
@@ -79,8 +81,7 @@ sets a control's height whatever font the system supplies.
   does not stay lit.
 - Colours come from tokens. A literal colour belongs to an instrument's case
   (the toy's plastic, the FM board's green), set as a variable on that case.
-- The `:focus-visible` rule in theme.css outlines every focused control. A
-  module that sets a different focus style must turn that outline off in its
-  rule.
+- The `:focus-visible` rule in base.css outlines every focused control. A module
+  that sets a different focus style must turn that outline off in its rule.
 - A keyboard case is the size container named `case`, and its decorations query
   `@container case`. The deck inside it is an unnamed container of its own.

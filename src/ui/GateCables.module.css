@@ -233,7 +233,7 @@
 .plateName {
   font-size: 7px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--caps-track);
   line-height: 1;
   text-transform: uppercase;
   color: var(--fg3);

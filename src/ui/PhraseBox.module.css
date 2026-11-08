@@ -11,7 +11,7 @@
   padding: var(--space-xs) var(--space-sm);
   font-family: var(--mono);
   font-size: var(--fs-sm);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--caps-track);
   background: #0b0b0e;
   border: 1px solid #000;
   border-radius: 2px;

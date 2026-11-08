@@ -3,6 +3,7 @@
    The neutrals, borders, type, spacing and corners come from tokens.css, which
    videoskillet shares. */
 @import 'skillet-shared/tokens.css';
+@import 'skillet-shared/base.css';
 
 :root {
   --accent: #ff5d3b;
@@ -36,10 +37,6 @@
   --gap-ctl: var(--space-sm);
   --gap-ctl-sm: var(--space-xs);
   --card-radius: 6px;
-  --shadow-modal: 0 10px 30px #000b;
-  --shadow-pop: 0 8px 28px #000a;
-  --scrim: #000a;
-  --caps-track: 0.04em;
 }
 
 /* A fingertip covers a third of an inch, so both heights grow to 32px, and the
@@ -50,20 +47,6 @@
     --ctl-h-sm: 32px;
     --gap-ctl: var(--space-md);
     --gap-ctl-sm: var(--space-sm);
-  }
-}
-
-* {
-  box-sizing: border-box;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
   }
 }
 
@@ -79,17 +62,4 @@ body {
   color: var(--fg);
   font-family: var(--font);
   font-size: var(--fs);
-}
-
-button,
-select,
-input {
-  font-family: inherit;
-}
-
-/* One focus ring for every control, in place of each browser's own. Where a
-   module styles focus another way, its rule sets the outline to none. */
-:focus-visible {
-  outline: 2px solid var(--fg2);
-  outline-offset: 1px;
 }

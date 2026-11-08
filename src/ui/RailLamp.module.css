@@ -29,7 +29,6 @@
 @container case (max-width: 600px) {
   .lamp {
     justify-content: center;
-    box-sizing: border-box;
     width: var(--ctl-h);
     height: var(--ctl-h);
     padding: 0;
