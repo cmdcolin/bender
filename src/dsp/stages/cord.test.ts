@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
 import { pitchHz, sine, SR } from '../testRender.ts'
-import { ToyCord } from './toyCord.ts'
+import { Cord } from './cord.ts'
 
 function through(stages: number, x: Float32Array) {
-  const cord = new ToyCord(SR)
+  const cord = new Cord(SR)
   const out = new Float32Array(x.length)
   for (let i = 0; i < x.length; i += 128) {
     const n = Math.min(128, x.length - i)

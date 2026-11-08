@@ -114,7 +114,7 @@ test('an AUDIO cable runs from Plinky while a synth takes its pin', () => {
   expect(cablesOn(board).filter(x => x.line === 'audio')).toEqual([])
   expect(
     cablesOn({ ...board, monoToyIn: 0.4 }).filter(x => x.line === 'audio'),
-  ).toEqual([{ line: 'audio', id: 'mono', out: 'plinky', in: 'mono' }])
+  ).toEqual([{ line: 'audio', id: 'mono', out: 'Plinky', in: 'mono' }])
 })
 
 test('pressing a synth’s AUDIO jack plugs Plinky in, then pulls it', () => {
@@ -128,7 +128,7 @@ test('an AUDIO cable dragged to the other synth keeps its level', () => {
   const cable = lastInto(fed, end('audio:in:mono'))!
   const moved = dropped(
     fed,
-    end('audio:out:plinky'),
+    end('audio:out:Plinky'),
     cable,
     end('audio:in:lead'),
   )
@@ -147,9 +147,28 @@ test('an AUDIO cable carries its flip-flop to the other synth', () => {
   expect(KINDS.audio.says(fed, cable)).toContain('÷4')
   const moved = dropped(
     fed,
-    end('audio:out:plinky'),
+    end('audio:out:Plinky'),
     cable,
     end('audio:in:lead'),
   )
   expect(moved.leadToyDiv).toBe(2)
+})
+
+test('a cable from the kit’s AUDIO out into Growler takes the kit', () => {
+  const fed = dropped(
+    board,
+    end('audio:out:Clatter'),
+    null,
+    end('audio:in:mono'),
+  )
+  expect([fed.monoToyIn, fed.monoCordFrom]).toEqual([1, 1])
+  const cable = lastInto(fed, end('audio:in:mono'))!
+  expect(cable.out).toBe('Clatter')
+  expect(KINDS.audio.says(fed, cable)).toContain('Clatter’s output')
+})
+
+test('replugging a cord from another machine keeps its level', () => {
+  const fed = { ...board, monoToyIn: 0.3 }
+  const moved = dropped(fed, end('audio:out:Glint'), null, end('audio:in:mono'))
+  expect([moved.monoToyIn, moved.monoCordFrom]).toEqual([0.3, 2])
 })

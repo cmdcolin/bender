@@ -293,6 +293,12 @@
   cursor: grab;
 }
 
+/* A synth's AUDIO out, under its AUDIO in. */
+.audioOutLow {
+  composes: audioOut;
+  top: 124px;
+}
+
 .kitCv {
   composes: trigOut;
   margin-right: 2px;

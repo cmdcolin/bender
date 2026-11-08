@@ -73,3 +73,50 @@ test('a divided cord puts most of Growler’s power under 120 Hz', () => {
   expect(low(divided(0))).toBeLessThan(0.45)
   expect(low(divided(2))).toBeGreaterThan(0.65)
 })
+
+const KIT_MUTED: Partial<Controls> = {
+  ...GROWLER,
+  drumLevel: 0.7,
+  drumMute: 1,
+}
+
+test('the kit’s cord runs it through Growler with the kit muted', () => {
+  expect(rms(render(KIT_MUTED, 3))).toBeLessThan(1e-4)
+  const fed = render({ ...KIT_MUTED, monoToyIn: 1, monoCordFrom: 1 }, 3)
+  expect(rms(fed)).toBeGreaterThan(0.03)
+})
+
+test('Growler’s cord into Howler carries Growler with Growler muted', () => {
+  const lead: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0,
+    monoLevel: 1,
+    monoMute: 1,
+    leadLevel: 1,
+    leadMix1: 0,
+    leadMix2: 0,
+    leadMix3: 0,
+    leadFold: 0,
+  }
+  expect(
+    rms(render({ ...lead, leadToyIn: 1, leadCordFrom: 4 }, 3)),
+  ).toBeGreaterThan(0.04)
+})
+
+test('a cord from a machine that stops running falls silent', () => {
+  const fromHowler = (leadLevel: number) =>
+    rms(
+      render(
+        {
+          ...GROWLER,
+          leadLevel,
+          leadMute: 1,
+          monoToyIn: 1,
+          monoCordFrom: 5,
+        },
+        3,
+      ),
+    )
+  expect(fromHowler(1)).toBeGreaterThan(0.03)
+  expect(fromHowler(0)).toBeLessThan(1e-4)
+})

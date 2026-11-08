@@ -2,7 +2,7 @@ import { EFFECTS } from '../dsp/stages/fmEffects.ts'
 import { engine } from '../engine/engine.ts'
 import { EffectPads } from './EffectPads.tsx'
 import styles from './FmKeys.module.css'
-import { GateJumper, TrigJack } from './GateCables.tsx'
+import { AudioOut, GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import { CvJack } from './ModJacks.tsx'
 import { RailLamp } from './RailLamp.tsx'
@@ -53,6 +53,7 @@ export function FmKeys({
           />
           <TrigJack taker="fm" />
           <CvJack machine="Glint" />
+          <AudioOut source="Glint" />
         </>
       }
       extras={

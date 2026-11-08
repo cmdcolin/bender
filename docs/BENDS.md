@@ -922,27 +922,35 @@ Two more cables run from the output jack, under the **mixer** box beside
   close the gate at a lower level. A key struck while the gate is closed waits
   for it to open.
 
-One cable comes in from Plinky. It sits under the **mixer** box, and on the
-bench it is the grey AUDIO cord from Plinky's AUDIO jack to Growler's.
+One AUDIO cord comes into the mixer. It sits under the **mixer** box, and on the
+bench it is the grey cord from a machine's AUDIO out to the synth's AUDIO in.
+Plinky, Glint, Parlor, Growler and Howler have an AUDIO out under their CV
+jack, and Clatter has one on its plate.
 
-- **Plinky in:** Plinky's output pin wired into the mixer, taken ahead of
-  Plinky's volume and mute. The ladder and the contours shape Plinky's square
-  waves, and with the gate line soldered the contours fire on Plinky's notes.
-  - With the three oscillators down, Plinky plays through the filter alone, and
-    each of its notes gets the filter sweep.
-  - With them up, Growler's bass follows Plinky's tune under Plinky's buzz, and
-    the two drive the ladder together.
-  - Past 1 the pin overdrives the ladder.
-  - Mute Plinky to hear it only through the synth.
-  - Howler has the same input and its own AUDIO jack.
-- **Plinky divider:** a flip-flop chain on the cord. ÷2, ÷4 and ÷8 square up
-  Plinky's output through a trigger and divide it one, two or three octaves
-  down, through a coupling cap into the mixer, so the tune plays as a bass line.
-  The jack's legend shows the division.
-  - A note that decays under the trigger stops the count, and the cap drains the
-    cord to silence.
-  - Stacked notes cross zero out of step, so a chord or the accompaniment counts
-    into ragged subharmonics.
+- **Cord in:** how much of the cord goes into the mixer. The ladder and the
+  contours shape whatever it carries, and with the gate line soldered the
+  contours fire on Plinky's notes.
+  - With the three oscillators down, the source plays through the filter alone.
+    With them up, Growler's bass follows Plinky's tune under it, and the two
+    drive the ladder together.
+  - Past 1 the cord overdrives the ladder.
+- **Cord from:** which AUDIO out the cord is in.
+  - Plinky's cord comes off its output pin, ahead of its volume and mute.
+  - Every other machine's comes off its output, ahead of the desk's mute, so a
+    muted source is heard only through the synth.
+  - Clatter through the ladder opens on Plinky's notes, or on the kit's own hits
+    with a TRIG cable from the kit into the synth.
+  - A machine the board runs after the synth arrives a block late, so Howler
+    into Growler is a block behind. A synth's cord from its own output is a
+    feedback patch.
+- **Cord divider:** a flip-flop chain on the cord. ÷2, ÷4 and ÷8 square up the
+  source through a trigger and divide it one, two or three octaves down, through
+  a coupling cap into the mixer, so Plinky's tune plays as a bass line. The
+  jack's legend shows the division.
+  - A sound that decays under the trigger stops the count, and the cap drains
+    the cord to silence.
+  - Chords and drums cross zero out of step, so they count into ragged
+    subharmonics.
 
 ## The drum machine's pattern bus
 

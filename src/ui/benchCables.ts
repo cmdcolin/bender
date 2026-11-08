@@ -1,10 +1,11 @@
 import { VOICE_LABELS } from '../drums.ts'
-import { TOY_DIV_NAMES } from '../dsp/stages/toyCord.ts'
+import { CORD_DIV_NAMES, CORD_FROM } from '../dsp/stages/cord.ts'
 import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { KEYBEDS } from '../machines.ts'
 import {
   AUDIO_TAKERS,
   audioDiv,
+  audioFrom,
   audioLevel,
   audioTaker,
   connectionInto,
@@ -125,6 +126,20 @@ function setAudio(c: Controls, id: string, level: number): Controls {
   return t ? { ...c, [t.key]: level } : c
 }
 
+function plugAudio(c: Controls, id: string, source: string): Controls {
+  const t = audioTaker(id)
+  const from = CORD_FROM.findIndex(name => name === source)
+  if (!t || from < 0) return c
+  return {
+    ...c,
+    [t.key]: c[t.key] > 0 ? c[t.key] : AUDIO_PLUGGED,
+    [t.from]: from,
+  }
+}
+
+const sourceSays = (source: string) =>
+  source === 'Plinky' ? 'Plinky’s output pin' : `${source}’s output`
+
 const asTaker = (id: string) => GATE_TAKERS.find(t => t === id)
 const asTrigTaker = (id: string) => TRIG_TAKERS.find(t => t === id)
 const asMachine = (id: string) => CV_MACHINES.find(m => m === id)
@@ -230,10 +245,10 @@ const audio: Kind = {
     AUDIO_TAKERS.filter(t => audioLevel(c, t.id) > 0).map(t => ({
       line: 'audio',
       id: t.id,
-      out: 'plinky',
+      out: audioFrom(c, t.id),
       in: t.id,
     })),
-  plug: (c, input) => setAudio(c, input, AUDIO_PLUGGED),
+  plug: plugAudio,
   pull: (c, x) => setAudio(c, x.in, 0),
   move: (c, x, input) => {
     const from = audioTaker(x.in)
@@ -242,14 +257,15 @@ const audio: Kind = {
       ? {
           ...setAudio(setAudio(c, x.in, 0), input, c[from.key]),
           [to.div]: c[from.div],
+          [to.from]: c[from.from],
         }
       : c
   },
-  fresh: 'plinky',
-  facing: () => 'right',
+  fresh: 'Plinky',
+  facing: (side, id) => (side === 'out' && id === 'Clatter' ? 'up' : 'right'),
   says: (c, x) => {
     const div = audioDiv(c, x.in)
-    return `Plinky’s output pin runs into ${NAMED[x.in]}’s mixer${div > 0 ? ` through a ${TOY_DIV_NAMES[div]} flip-flop` : ''}`
+    return `${sourceSays(x.out)} runs into ${NAMED[x.in]}’s mixer${div > 0 ? ` through a ${CORD_DIV_NAMES[div]} flip-flop` : ''}`
   },
 }
 

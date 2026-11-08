@@ -49,6 +49,14 @@
   border-radius: var(--case-round);
 }
 
+:where(.body:has([data-jack^='audio:'])) {
+  min-height: 124px;
+}
+
+:where(.body:has([data-jack^='audio:in:'])) {
+  min-height: 152px;
+}
+
 /* What holds the thing together, where it went: bottom corners, under the
    keybed. Two screws on the toy's shell, two mounting holes on the bare board —
    flat dots either way, because a drawn slot and a highlight at this size is

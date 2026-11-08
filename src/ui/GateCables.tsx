@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 
-import { TOY_DIV_NAMES } from '../dsp/stages/toyCord.ts'
+import { CORD_DIV_NAMES, type CordSource } from '../dsp/stages/cord.ts'
 import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
@@ -28,7 +28,7 @@ import {
   type Point,
   type Route,
 } from './cablePaths.ts'
-import { audioDiv, audioLevel, MACHINE_OF } from './connections.ts'
+import { audioDiv, audioFrom, audioLevel, MACHINE_OF } from './connections.ts'
 import {
   useBoardValue,
   useStoreSelect,
@@ -51,7 +51,7 @@ import type { GatedDest } from '../machines.ts'
 //   keyboard's TRIG jack, or to the ADSR's gate on the MOD plate.
 // - MOD (blue) carries a patch bay source from the MOD plate to a machine's CV
 //   jack, one of the bay's four wires.
-// - AUDIO (grey) carries Plinky's output pin from its AUDIO jack into Growler's
+// - AUDIO (grey) carries a machine's output from its AUDIO out into Growler's
 //   or Howler's mixer.
 
 type Keyboard = GatedDest
@@ -133,22 +133,43 @@ export function GateOut() {
   )
 }
 
-/** Plinky's output pin, under its CV jack, ahead of its volume and mute. */
-export function AudioOut() {
+const OUT_TIP: Record<CordSource, string> = {
+  Plinky:
+    'Plinky’s output pin, ahead of its volume and mute. Drag a cable from here to Growler’s or Howler’s AUDIO in and the synth’s filter shapes Plinky’s square waves',
+  Clatter:
+    'The kit’s output, ahead of the desk’s mute. Drag a cable from here to Growler’s or Howler’s AUDIO in and the drums run through the synth’s filter',
+  Glint:
+    'Glint’s output, ahead of the desk’s mute. Drag a cable from here to Growler’s or Howler’s AUDIO in and the FM chip runs through the synth’s filter',
+  Parlor:
+    'Parlor’s output, ahead of the desk’s mute. Drag a cable from here to Growler’s or Howler’s AUDIO in and the sampled keys run through the synth’s filter',
+  Growler:
+    'Growler’s output, ahead of the desk’s mute. Drag a cable from here to Howler’s AUDIO in, or to Growler’s own for a feedback patch',
+  Howler:
+    'Howler’s output, ahead of the desk’s mute. Drag a cable from here to Growler’s AUDIO in, or to Howler’s own for a feedback patch',
+}
+
+/** A machine's AUDIO out, under its CV jack, or on the kit's plate. */
+export function AudioOut({ source }: { source: CordSource }) {
+  const plate = source === 'Clatter'
+  const synth = source === 'Growler' || source === 'Howler'
   return (
-    <Tip text="Plinky’s output pin, ahead of its volume and mute. Drag a cable from here to Growler’s or Howler’s AUDIO jack and the synth’s filter shapes Plinky’s square waves">
+    <Tip text={OUT_TIP[source]}>
       <Jack
-        end={{ line: 'audio', side: 'out', id: 'plinky' }}
-        className={styles.audioOut}
-        label="Plinky audio out"
+        end={{ line: 'audio', side: 'out', id: source }}
+        className={
+          plate ? styles.trigOut : synth ? styles.audioOutLow : styles.audioOut
+        }
+        label={`${source} audio out`}
       >
-        <span className={styles.legend}>audio</span>
+        <span className={plate ? styles.plateName : styles.legend}>
+          {plate ? 'audio' : 'audio out'}
+        </span>
       </Jack>
     </Tip>
   )
 }
 
-/** A synth's mixer input for Plinky's output pin, under its CV jack. */
+/** A synth's mixer input for an AUDIO cord, under its CV jack. */
 export function AudioIn({
   taker,
   notes,
@@ -158,13 +179,14 @@ export function AudioIn({
 }) {
   const on = useBoardValue(c => audioLevel(c, taker) > 0)
   const div = useBoardValue(c => audioDiv(c, taker))
+  const from = useBoardValue(c => audioFrom(c, taker))
   const name = MACHINE_OF[taker]
   return (
     <Tip
       text={
         on
-          ? `Plinky’s output pin runs into ${name}’s mixer, and ${name}’s filter and amp shape it. Plinky in on the mixer sets how much. Press to pull the cable`
-          : `${name}’s mixer input for Plinky’s output pin. Press to plug it in, then turn ${name}’s oscillators down to hear Plinky through the filter alone`
+          ? `${from === 'Plinky' ? 'Plinky’s output pin' : `${from}’s output`} runs into ${name}’s mixer, and ${name}’s filter and amp shape it. Cord in on the mixer sets how much. Press to pull the cable, or drag it to another AUDIO in`
+          : `${name}’s mixer input for an AUDIO cord. Press to plug Plinky in, or drag a cable here from another machine’s AUDIO out, then turn ${name}’s oscillators down to hear it through the filter alone`
       }
     >
       <Jack
@@ -174,7 +196,7 @@ export function AudioIn({
         label={`${name} audio in`}
       >
         <span className={on && div > 0 ? styles.divided : styles.legend}>
-          {on && div > 0 ? `audio ${TOY_DIV_NAMES[div]}` : 'audio'}
+          {on && div > 0 ? `audio in ${CORD_DIV_NAMES[div]}` : 'audio in'}
         </span>
       </Jack>
     </Tip>
@@ -233,6 +255,7 @@ export function TrigPlate() {
     <div className={styles.plate} data-trig-plate="">
       <CvJack machine="Clatter" />
       <KitGate />
+      <AudioOut source="Clatter" />
       {TRIG_VOICES.map(v => (
         <TrigOut key={v} voice={v} />
       ))}

@@ -43,7 +43,7 @@ export function Keys({
           <GateOut />
           <TrigJack taker="toy" />
           <CvJack machine="Plinky" />
-          <AudioOut />
+          <AudioOut source="Plinky" />
         </>
       }
       extras={

@@ -1,10 +1,34 @@
-export const TOY_DIV_NAMES = ['pin', '÷2', '÷4', '÷8']
+import { MACHINES } from '../../machines.ts'
+import { hop } from '../modbus.ts'
+
+export const CORD_DIV_NAMES = ['÷1', '÷2', '÷4', '÷8']
+
+export const CORD_FROM = [
+  'Plinky',
+  'Clatter',
+  'Glint',
+  'Parlor',
+  'Growler',
+  'Howler',
+] as const
+
+export type CordSource = (typeof CORD_FROM)[number]
+
+export const PIN = -1
+
+const TAP_OF = CORD_FROM.map(name =>
+  name === 'Plinky' ? PIN : MACHINES.findIndex(m => m.name === name),
+)
+
+/** The source tap a cord takes its signal from, or PIN for Plinky's output pin. */
+export const cordTap = (from: number, lane: Float32Array | null) =>
+  TAP_OF[hop(from, CORD_FROM.length, lane)] ?? PIN
 
 const HYST = 0.05
 const SQUARE = 0.7
 const COUPLE_HZ = 20
 
-export class ToyCord {
+export class Cord {
   private high = false
   private count = 0
   private dc = -SQUARE

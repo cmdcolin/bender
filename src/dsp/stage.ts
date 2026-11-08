@@ -95,6 +95,8 @@ export interface Stage {
   label: string
   writes?: readonly WrittenBus[]
   needs?(p: Float32Array, ctx: Ctx): number
+  /** The sources, by tap, whose output this stage reads off `trig.outs`. */
+  cords?(p: Float32Array, ctx: Ctx): number
   when?(p: Float32Array, ctx: Ctx): boolean
   process(io: StereoBlock, p: Float32Array, ctx: Ctx): void
   sleep?(p: Float32Array): void

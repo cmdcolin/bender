@@ -13,8 +13,8 @@ import {
   type SeqLine,
 } from '../trigbus.ts'
 import { removeAt } from '../util/list.ts'
+import { Cord, CORD_DIV_NAMES, cordTap, PIN } from './cord.ts'
 import { MonoVoice } from './monoVoice.ts'
-import { ToyCord, TOY_DIV_NAMES } from './toyCord.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -29,7 +29,8 @@ const QUEUE_MAX = 32
 const SLIDE_HOLD = 1.5
 // The mic on the mixer's external input, level with a full oscillator.
 const MIC_IN_GAIN = 1.5
-const TOY_IN_GAIN = 1
+const PIN_GAIN = 1
+const OUT_GAIN = 4
 const TOY_IN_TOP = 2
 
 function withLane(base: number, lane: Float32Array | null) {
@@ -66,6 +67,7 @@ function cardIdx(prefix: CardPrefix) {
     loop: at('Loop'),
     toyIn: at('ToyIn'),
     toyDiv: at('ToyDiv'),
+    cordFrom: at('CordFrom'),
     cutoff: at('Cutoff'),
     emph: at('Emph'),
     contour: at('Contour'),
@@ -112,6 +114,7 @@ export const GROWLER = {
     cutoff: DEST.monoCutoff,
     toyIn: DEST.monoToyIn,
     toyDiv: DEST.monoToyDiv,
+    cordFrom: DEST.monoCordFrom,
   },
   mic: MIC.growlerIn,
   line: 'seq',
@@ -130,6 +133,7 @@ export const HOWLER = {
     cutoff: DEST.leadCutoff,
     toyIn: DEST.leadToyIn,
     toyDiv: DEST.leadToyDiv,
+    cordFrom: DEST.leadCordFrom,
   },
   mic: MIC.howlerIn,
   line: 'leadSeq',
@@ -164,7 +168,7 @@ export class MonoSynth implements Stage {
   private cutLane: Float32Array | null = null
   private ext: Float32Array | null = null
   private readonly extBuf = new Float32Array(BLOCK)
-  private readonly cord: ToyCord
+  private readonly cord: Cord
 
   private readonly sr: number
   private readonly power: SupplyTap
@@ -175,13 +179,34 @@ export class MonoSynth implements Stage {
     this.card = card
     this.label = card.label
     this.power = new SupplyTap(supplies)
-    this.cord = new ToyCord(sr)
+    this.cord = new Cord(sr)
     this.voice = new MonoVoice(sr)
     this.stepSamples = FALLBACK_STEP_S * sr
   }
 
   when(p: Float32Array) {
     return p[this.card.k.level]! > 0
+  }
+
+  cords(p: Float32Array, ctx: Ctx) {
+    if (this.cordIn(p, ctx) <= 0) return 0
+    const tap = this.cordSource(p, ctx)
+    return tap === PIN ? 0 : 1 << tap
+  }
+
+  private cordIn(p: Float32Array, ctx: Ctx) {
+    const lane = ctx.mod.read(this.card.dest.toyIn)
+    return Math.min(
+      Math.max(p[this.card.k.toyIn]! + (lane ? lane[0]! : 0), 0),
+      TOY_IN_TOP,
+    )
+  }
+
+  private cordSource(p: Float32Array, ctx: Ctx) {
+    return cordTap(
+      p[this.card.k.cordFrom]!,
+      ctx.mod.read(this.card.dest.cordFrom),
+    )
   }
 
   noteOn(semitone: number, gain = 1) {
@@ -284,23 +309,20 @@ export class MonoSynth implements Stage {
     v.thump = p[k.thump]!
     v.fold = p[k.fold]!
     const micIn = micInto(p, ctx, mic)
-    const toyLane = ctx.mod.read(dest.toyIn)
-    const toyIn = Math.min(
-      Math.max(p[k.toyIn]! + (toyLane ? toyLane[0]! : 0), 0),
-      TOY_IN_TOP,
-    )
+    const toyIn = this.cordIn(p, ctx)
     if (toyIn > 0) {
       const stages = hop(
         p[k.toyDiv]!,
-        TOY_DIV_NAMES.length,
+        CORD_DIV_NAMES.length,
         ctx.mod.read(dest.toyDiv),
       )
+      const tap = this.cordSource(p, ctx)
       this.cord.run(
-        ctx.trig.pin,
+        tap === PIN ? ctx.trig.pin : ctx.trig.outs[tap]!,
         this.extBuf,
         BLOCK,
         stages,
-        toyIn * TOY_IN_GAIN,
+        toyIn * (tap === PIN ? PIN_GAIN : OUT_GAIN),
       )
       if (micIn)
         for (let i = 0; i < BLOCK; i++)

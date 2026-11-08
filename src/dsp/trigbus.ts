@@ -1,4 +1,5 @@
 import { N_DRUM_VOICES, STEPS } from '../drums.ts'
+import { MACHINES } from '../machines.ts'
 import { TUNE_LANES } from '../tune.ts'
 import { BLOCK } from './stage.ts'
 
@@ -104,6 +105,9 @@ export class TriggerBus {
   readonly melodyHz = new Float32Array(BLOCK)
   /** Plinky's output pin, ahead of its volume pot and its mute. */
   readonly pin = new Float32Array(BLOCK)
+  /** Each source's output as an AUDIO cord takes it, ahead of the desk's mute,
+      written by the chain only for a source a cord is plugged into. */
+  readonly outs = MACHINES.map(() => new Float32Array(BLOCK))
   /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
   readonly key = new Float32Array(BLOCK)
   /** Whether a hand is still on that key. A gate line carries a level and not
@@ -249,6 +253,7 @@ export class TriggerBus {
     this.pendStepLen = 0
     this.melodyHz.fill(0)
     this.pin.fill(0)
+    for (const out of this.outs) out.fill(0)
     this.key.fill(0)
     this.keyHeld.fill(0)
     for (const lane of this.laneKey) lane.fill(0)

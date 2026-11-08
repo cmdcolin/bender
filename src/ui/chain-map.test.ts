@@ -377,6 +377,20 @@ test('Plinky’s AUDIO cord runs as a grey bridge that opens the synth', () => {
   expect(cordOf(buildMap(DEFAULT_CONTROLS))).toBeUndefined()
 })
 
+test('a cord leaves the machine it is plugged into, and a synth’s own cord draws no bridge', () => {
+  const cordOf = (m: ChainMap) => m.wires.find(w => w.key === 'monoToyIn')
+  const kit = {
+    ...DEFAULT_CONTROLS,
+    monoLevel: 1,
+    monoToyIn: 1,
+    monoCordFrom: 1,
+  }
+  const map = buildMap(kit, { wrap: true, loop: true, shown: onBoard(kit) })
+  checkLayout(map)
+  expect([cordOf(map)?.from, cordOf(map)?.to]).toEqual(['Clatter', 'Growler'])
+  expect(cordOf(buildMap({ ...kit, monoCordFrom: 4 }))).toBeUndefined()
+})
+
 test('a source box carries how far up its fader is, on its own travel', () => {
   const level = (c: Controls, id: string) => box(buildMap(c), id)!.level
   expect(level(DEFAULT_CONTROLS, 'Plinky')).toBeCloseTo(

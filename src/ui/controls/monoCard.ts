@@ -8,12 +8,12 @@ import {
   MEMORY_ROT_NAMES,
   MEMORY_SYNC_MODES,
 } from '../../dsp/melodyMemory.ts'
+import { CORD_DIV_NAMES, CORD_FROM } from '../../dsp/stages/cord.ts'
 import {
   MONO_OSC3_NAMES,
   MONO_RANGE_NAMES,
   MONO_WAVE_NAMES,
 } from '../../dsp/stages/monoVoice.ts'
-import { TOY_DIV_NAMES } from '../../dsp/stages/toyCord.ts'
 import { GATE_CHOICES } from '../../dsp/trigbus.ts'
 import { cardKey, type CardPrefix, type CardSuffix } from '../../monoCard.ts'
 import {
@@ -244,6 +244,7 @@ export function monoCardGroup(card: Card): Group {
       k('Loop'),
       k('ToyIn'),
       k('ToyDiv'),
+      k('CordFrom'),
       k('FA'),
       k('FD'),
       k('FS'),
@@ -573,26 +574,38 @@ export function monoCardGroup(card: Card): Group {
       },
       {
         key: k('ToyIn'),
-        lane: `${card.lane} Plinky in`,
+        lane: `${card.lane} cord in`,
         part: 'mixer',
-        label: 'Plinky in',
+        label: 'Cord in',
         min: 0,
         max: 2,
         step: 0.01,
         unit: '',
-        help: `Plinky’s output pin wired into the mixer, taken ahead of Plinky’s volume and mute, so the ladder and the contours shape Plinky’s square waves. With the gate line soldered the contours fire on Plinky’s notes. Turn the three oscillators down to hear Plinky through the filter alone, or leave them up for ${card.name}’s bass under Plinky’s buzz. Past 1 it overdrives the ladder. The AUDIO cable on the bench shows while it is up.`,
+        help: `The AUDIO cord into the mixer, so the ladder and the contours shape another machine. Plinky’s cord comes off its output pin, ahead of its volume and mute; every other machine’s comes off its output, ahead of the desk’s mute, so muting the source leaves it heard only through ${card.name}. Turn the three oscillators down to hear the source through the filter alone. Past 1 it overdrives the ladder.`,
+      },
+      {
+        key: k('CordFrom'),
+        lane: `${card.lane} cord from`,
+        part: 'mixer',
+        label: 'Cord from',
+        min: 0,
+        max: CORD_FROM.length - 1,
+        step: 1,
+        unit: '',
+        choices: [...CORD_FROM],
+        help: `Which machine’s AUDIO jack the cord is in. With Plinky’s gate line soldered, the contours fire on Plinky’s notes whatever the cord carries, so Clatter through the ladder opens on the tune. A machine the board runs after ${card.name} arrives a block late. ${card.name}’s own output is a feedback patch.`,
       },
       {
         key: k('ToyDiv'),
-        lane: `${card.lane} Plinky divider`,
+        lane: `${card.lane} cord divider`,
         part: 'mixer',
-        label: 'Plinky divider',
+        label: 'Cord divider',
         min: 0,
-        max: TOY_DIV_NAMES.length - 1,
+        max: CORD_DIV_NAMES.length - 1,
         step: 1,
         unit: '',
-        choices: TOY_DIV_NAMES,
-        help: 'A flip-flop chain on the AUDIO cord. Pin passes Plinky’s output as it is. ÷2, ÷4 and ÷8 square it up through a trigger and divide it, one, two or three octaves under Plinky’s note, through a coupling cap into the mixer. A note that decays below the trigger stops the count, and the cap drains to silence. Stacked notes cross zero out of step, so a chord counts into ragged subharmonics.',
+        choices: CORD_DIV_NAMES,
+        help: 'A flip-flop chain on the AUDIO cord. ÷1 passes the source as it is. ÷2, ÷4 and ÷8 square it up through a trigger and divide it one, two or three octaves down, through a coupling cap into the mixer. A sound that decays below the trigger stops the count, and the cap drains to silence. Chords and drums cross zero out of step, so they count into ragged subharmonics.',
       },
       {
         key: k('LoopPitch'),

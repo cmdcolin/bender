@@ -1,5 +1,5 @@
 import { engine } from '../engine/engine.ts'
-import { GateJumper, TrigJack } from './GateCables.tsx'
+import { AudioOut, GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import { CvJack } from './ModJacks.tsx'
 import styles from './PcmKeys.module.css'
@@ -39,6 +39,7 @@ export function PcmKeys({
           />
           <TrigJack taker="pcm" />
           <CvJack machine="Parlor" />
+          <AudioOut source="Parlor" />
         </>
       }
       extras={

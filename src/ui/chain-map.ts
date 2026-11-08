@@ -3,12 +3,12 @@ import { arrowhead, route, type Point } from 'skillet-shared/wire-route'
 import { type ControlKey, type Controls } from '../controls.ts'
 import { MIC } from '../dsp/micJacks.ts'
 import { DEST } from '../dsp/modbus.ts'
+import { CORD_DIV_NAMES } from '../dsp/stages/cord.ts'
 import {
   TAPE_AT_BENDS,
   TAPE_AT_END,
   TAPE_AT_PEDALS,
 } from '../dsp/stages/tape.ts'
-import { TOY_DIV_NAMES } from '../dsp/stages/toyCord.ts'
 import { SUPPLIED, SUPPLY as ON } from '../dsp/supplies.ts'
 import { followsGate } from '../dsp/trigbus.ts'
 import { MACHINES } from '../machines.ts'
@@ -16,6 +16,7 @@ import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import {
   AUDIO_TAKERS,
   audioDiv,
+  audioFrom,
   audioLevel,
   cableName,
   KEY_RUNS,
@@ -275,6 +276,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   drumKickBank: 'Clatter',
   monoToyDiv: 'Growler',
   leadToyDiv: 'Howler',
+  monoCordFrom: 'Growler',
+  leadCordFrom: 'Howler',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -682,13 +685,15 @@ interface Bridge {
 }
 
 function audioBridges(c: Controls): Bridge[] {
-  return AUDIO_TAKERS.filter(t => audioLevel(c, t.id) > 0).map(t => {
+  return AUDIO_TAKERS.filter(
+    t => audioLevel(c, t.id) > 0 && audioFrom(c, t.id) !== t.machine,
+  ).map(t => {
     const div = audioDiv(c, t.id)
     return {
       id: t.key,
-      from: 'Plinky',
+      from: audioFrom(c, t.id),
       to: t.machine,
-      label: `audio${div > 0 ? ` ${TOY_DIV_NAMES[div]}` : ''} → ${t.machine}`,
+      label: `audio${div > 0 ? ` ${CORD_DIV_NAMES[div]}` : ''} → ${t.machine}`,
       signal: 'audio',
       door: t.machine,
     }

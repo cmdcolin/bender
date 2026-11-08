@@ -346,7 +346,7 @@ export function MonoPathDiagram({
                 noise
               </Label>
             </Bend>
-            <Bend name="plinky in" opens="mixer" pick={pick} hit={toyWire}>
+            <Bend name="audio in" opens="mixer" pick={pick} hit={toyWire}>
               <Wire arrow={arrow} d={toyWire} look={wire(up(k('ToyIn')))} />
               <Label
                 x={toyX + 4}
@@ -354,7 +354,7 @@ export function MonoPathDiagram({
                 anchor="start"
                 on={up(k('ToyIn'))}
               >
-                plinky
+                audio in
               </Label>
             </Bend>
             <Bend name="osc 3 tap" opens="modulation" pick={pick} hit={tapWire}>

@@ -723,6 +723,9 @@ export class Chain {
     if (toyRef && !toyLate) ctx.toy.fill(0, 0, n)
     const fmTap = (needs & NEEDS_FM) !== 0
     let fmRan = false
+    let cords = 0
+    for (const s of this.sources) cords |= s.cords?.(p, ctx) ?? 0
+    let cordsRan = 0
     const prev = this.tapPrev
     const cap = this.capturing || this.bands.on
     const prevR = this.tapPrevR
@@ -764,6 +767,11 @@ export class Chain {
         }
         if (carrying) carRan = true
         if (gating) logicRan = true
+        if (cords & (1 << k)) {
+          const out = ctx.trig.outs[k]!
+          for (let i = 0; i < n; i++) out[i] = io.l[i]! - prev[i]!
+          cordsRan |= 1 << k
+        }
         if (vca) {
           for (let i = 0; i < n; i++) {
             const g = Math.min(Math.max(1 + vca[i]!, 0), 2)
@@ -833,6 +841,8 @@ export class Chain {
     if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
     if (logicFrom >= 0 && !logicRan) ctx.logic.fill(0, 0, n)
     if (fmTap && !fmRan) ctx.fm.fill(0, 0, n)
+    for (let k = 0; k < ctx.trig.outs.length; k++)
+      if (cords & ~cordsRan & (1 << k)) ctx.trig.outs[k]!.fill(0, 0, n)
     if (this.jacked) {
       const feeds = this.feeds
       feeds.fill(0)
