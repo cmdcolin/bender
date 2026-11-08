@@ -2496,7 +2496,7 @@ export class ToyDrum implements Stage {
         out +=
           HUM_OUT * touch * (wave + 0.5 * (Math.abs(wave) - 2 / Math.PI)) +
           this.grit * (2 * this.touchRng() - 1)
-        this.grit *= gritFall
+        this.grit = flushDenormal(this.grit * gritFall)
       }
       out *= level * KIT_GAIN
       if (send !== 0) ctx.send[i]! += send * level * KIT_GAIN

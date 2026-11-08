@@ -161,6 +161,11 @@ const WAKE: Rig[] = [
     cold: {},
   },
   {
+    name: 'skin grit off a kit played by touch',
+    hot: { drumTouch: 1, drumRetrigHz: 8 },
+    cold: {},
+  },
+  {
     name: 'mod envelope onto a sustain of nothing',
     hot: {
       mod0Src: 15,
