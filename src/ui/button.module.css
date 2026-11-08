@@ -65,21 +65,26 @@
   border-color: var(--accent);
 }
 
+/* CROSS_REPO_SYNC(outline-kind) */
 .outline {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
   min-height: var(--ctl-h);
   padding: 0 7px;
+  font: inherit;
   font-size: var(--fs);
+  font-weight: 400;
   line-height: 1.2;
+  letter-spacing: normal;
+  text-transform: none;
   white-space: nowrap;
-  background: color-mix(in srgb, var(--surface-raised) 50%, var(--surface));
+  background: var(--surface);
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
   border-radius: var(--ctl-radius);
-  cursor: pointer;
 }
 
 .outline:disabled {
@@ -88,11 +93,40 @@
   cursor: default;
 }
 
+@media (hover: hover) {
+  .outline:hover:not(:disabled) {
+    color: var(--fg);
+    border-color: var(--fg4);
+  }
+}
+
+@media (pointer: coarse) {
+  .outline {
+    padding: 0 9px;
+  }
+}
+/* CROSS_REPO_SYNC_END(outline-kind) */
+
+/* CROSS_REPO_SYNC(outline-states) */
 .outlineOn {
   composes: outline;
   color: var(--accent);
   border-color: var(--accent);
 }
+
+@media (hover: hover) {
+  .outlineOn:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.outlineIcon {
+  composes: outline;
+  width: var(--ctl-h);
+  padding: 0;
+}
+/* CROSS_REPO_SYNC_END(outline-states) */
 
 .outlineWaiting {
   composes: outline;
@@ -104,12 +138,6 @@
   composes: outline;
   color: var(--alarm);
   border-color: var(--alarm-edge);
-}
-
-.outlineIcon {
-  composes: outline;
-  width: var(--ctl-h);
-  padding: 0;
 }
 
 .outlineSelect {
@@ -425,16 +453,6 @@
 
   .actionPicked:hover:not(:disabled) {
     color: var(--accent-ink);
-    border-color: var(--accent);
-  }
-
-  .outline:hover:not(:disabled) {
-    color: var(--fg);
-    border-color: var(--fg4);
-  }
-
-  .outlineOn:hover:not(:disabled) {
-    color: var(--accent);
     border-color: var(--accent);
   }
 

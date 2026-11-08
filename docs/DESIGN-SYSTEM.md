@@ -54,7 +54,9 @@ sets a control's height whatever font the system supplies.
   `actionKey`, `actionKeyHeld`, `actionKeyFixed`, `actionKeyQuiet`
 - **outline:** header chrome in a faint outline at the body size. Variants:
   `outlineOn`, `outlineWaiting`, `outlineDanger`, `outlineIcon`,
-  `outlineSelect`, and the split pair `splitMain` / `splitCaret(On)`
+  `outlineSelect`, and the split pair `splitMain` / `splitCaret(On)`. `outline`,
+  `outlineOn` and `outlineIcon` are shared with videoskillet's `ui.module.css`
+  through the `outline-kind` and `outline-states` sync regions
 - **chip:** one quiet item among many, pill-shaped (cuts, rolls). Variants:
   `chipOn`, `chipOff`, `chipDanger`; `.square` squares the corners
 - **pick:** one of a set where exactly one is on (ROMs, slider choices).
