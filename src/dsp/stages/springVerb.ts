@@ -7,6 +7,7 @@ import { Transient } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { DcBlocker, lpCoef } from '../util/onepole.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
 const AP_MS = [1.7, 2.9, 4.7, 6.3, 8.3, 11.9]
 const COMB_MS = [31, 37, 41, 43]
@@ -104,7 +105,7 @@ class Tank {
         pos[k] = (pos[k]! + 1) & m
         x = d - boing * w
       }
-      mid[i] = x
+      mid[i] = flushDenormal(x)
     }
 
     for (let s = 0; s < CHIRP_STAGES; s++) {
@@ -117,7 +118,7 @@ class Tank {
           mid[i] = held - chirp * w
           held = w
         }
-        chain[slot] = held
+        chain[slot] = flushDenormal(held)
       }
     }
 
@@ -147,7 +148,7 @@ class Tank {
         for (let s = 0; s < LAP_STAGES; s++) {
           const slot = first + s * stretch
           const held = chain[slot]!
-          const w = v + chirp * held
+          const w = flushDenormal(v + chirp * held)
           chain[slot] = w
           v = held - chirp * w
         }

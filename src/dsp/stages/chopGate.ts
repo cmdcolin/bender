@@ -41,6 +41,7 @@ const HOLD_MIN_HZ = 150
 const HOLD_SPAN_HZ = 2500
 const MAX_BITS = 4
 const PEAK_DECAY = 0.99995
+const PEAK_FLOOR = 1e-15
 const SNAP = 1e-6
 const OPEN_AT = 0.3
 const SHUT_AT = 0.05
@@ -257,7 +258,7 @@ export class ChopGate {
   }
 
   private lane(lane: Lane, x: number, open: boolean) {
-    lane.peak = Math.max(Math.abs(x), lane.peak * PEAK_DECAY)
+    lane.peak = Math.max(Math.abs(x), lane.peak * PEAK_DECAY, PEAK_FLOOR)
     const target = open ? 1 : 0
     lane.gain += (target - lane.gain) * this.edgeCoef
     if (Math.abs(target - lane.gain) < SNAP) lane.gain = target
