@@ -1,3 +1,4 @@
+import { JACK_KEYS } from '../../jacks.ts'
 import {
   bendAt,
   BEND_SLOT_KEYS,
@@ -183,6 +184,7 @@ export const drivable = (c: Controls) =>
   ALL_SLIDERS.filter(
     d =>
       !d.choices &&
+      !JACK_KEYS.has(d.key) &&
       !YOURS.has(d.key) &&
       !CLOCK_KEYS.has(d.key) &&
       !PART_KEYS.has(d.key) &&
