@@ -4,7 +4,7 @@ bender publishes `window.bender`, a JavaScript API for the page. A browsing
 agent such as Claude in Chrome calls it to read and change the board, write
 melodies and drum patterns, and measure the sound. The app page carries a
 `<meta name="ai-instructions">` tag and logs a console message, and each says to
-read `bender.help` first. `bender.help` returns an overview and lists eight
+read `bender.help` first. `bender.help` returns an overview and lists the
 topics, and `bender.guide(topic)` documents the calls in each.
 
 ![bender in Chrome with the Claude side panel open on the right. The panel shows the request "This page is bender, a circuit-bent toy keyboard, and it has a scripting API on window.bender. Load the dying toy preset, write a C minor arpeggio into the melody memory with a kick on every beat, play both, and tell me what bender.listen hears", followed by the steps Claude took: capturing the page, clicking, reading page text. On the left, the Toy keyboard section is open with its tune set to yours and the notes of the arpeggio in the piano roll.](img/claude-in-chrome.jpg)
@@ -65,12 +65,13 @@ Then ask Claude Code to open the public URL, or
 
 | Call                                   | Effect                                                                                                                                                            |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bender.guide(topic)`                  | the calls for `read`, `change`, `music`, `drums`, `line`, `hit`, `clock` or `sound`                                                                               |
+| `bender.guide(topic)`                  | the calls for one topic, such as `read`, `change`, `music`, `route` or `sound`; `bender.help` lists them all                                                      |
 | `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                                                                                                       |
 | `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text                                                                                        |
 | `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                                                     |
 | `bender.describe(key)`                 | one control's range, unit, choices and help                                                                                                                       |
 | `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                                                                                                |
+| `bender.route(lines?)`                 | puts effects on sets of machines, as `{ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }`, and reads back each unit and machine                                |
 | `bender.presets(search?)`              | lists presets                                                                                                                                                     |
 | `bender.load(name, seconds?)`          | loads a preset                                                                                                                                                    |
 | `bender.reset(seconds?)`               | restores the defaults                                                                                                                                             |
@@ -84,13 +85,30 @@ Then ask Claude Code to open the public URL, or
 | `bender.restore(on?)`                  | writes Growler's line, or Howler's with `'Howler'`, back over what a leaking write enable or bit rot did to the memory                                            |
 | `bender.start()`                       | starts audio, or reports that the page needs a click first                                                                                                        |
 | `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                                                   |
-| `bender.listen(ms)`                    | peak, limiter, rail, reboots, the machines heard, their peaks and notes, drum hits, five-band levels and shares, and buried leads                                 |
+| `bender.listen(ms)`                    | peak, limiter, rail, reboots, the machines heard, their peaks and notes, drum hits, five-band levels and shares, buried leads and each effect's return peak       |
 | `bender.hit(what, spot?)`              | strikes the Sheet or the Bottle, at `{ x, y }` on its face, or kit voices such as `['kick', 'open hat']`, by hand                                                 |
 | `bender.link()`                        | a `#set=` URL for the current board                                                                                                                               |
 | `bender.position()`                    | the kit's counter as bar, beat and step, its bpm, and the bars queued writes wait for                                                                             |
 | `bender.next(bars?)`                   | resolves just after the next downbeat, or after the next bar divisible by `bars`; `'beat'` waits for a beat                                                       |
 | `bender.queue(write, when?)`           | lands the writes made inside `write` on the kit's step at the next bar, the next bar divisible by `when`, or `{ bar: 32 }`                                        |
 | `bender.unqueue()`                     | drops queued writes                                                                                                                                               |
+
+## Effects on some machines
+
+Each bend and pedal runs on master, the whole mix, or on a set of machines and
+the mic before the mix bus. This call puts the echo on the kit and the toy and
+the springs on the kit, the toy and the sheet, so the springs ring the echo:
+
+```js
+bender.route({
+  Ricochet: ['Clatter', 'Plinky'],
+  Boing: ['Clatter', 'Plinky', 'Sheet'],
+})
+```
+
+The readback gives each unit its lines, its place in the chain, bypass, mix and
+whether its return reached the last meter, and gives each machine its own units
+and the shared ones on its line. `'master'` or `[]` puts a unit back on master.
 
 ## Limitations
 

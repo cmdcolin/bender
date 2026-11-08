@@ -15,11 +15,12 @@ The panel owns a `Controls` object. `packParams` flattens it to a `Float32Array`
 and posts it across; the worklet keeps the newest one as a target and glides
 toward it a block at a time, so a knob dragged at frame rate produces no steps
 in the audio. Every block then builds its buses, sums the sources, runs each
-machine with a unit patched onto it through its insert line before the summing
-amp, then runs the bend slots in whatever order the board is wired in, the
-pedals, the post stages and the safety tail — and hands one 128-frame buffer
-back. Every sixth block the worklet posts a meter message the other way, and the
-panel draws its scope, meters and rail lamp from it.
+machine with a unit patched onto it through its insert line and then each set of
+lines with a unit on it, all before the summing amp, then runs the bend slots in
+whatever order the board is wired in, the pedals, the post stages and the safety
+tail — and hands one 128-frame buffer back. Every sixth block the worklet posts
+a meter message the other way, and the panel draws its scope, meters and rail
+lamp from it.
 
 Apart from the params, the diagram is the main path only. The mic arrives as an
 input to the same callback and is mixed into `ctx.mic`; the sampler's audio, the
@@ -27,6 +28,31 @@ keyboard's note on and off, the transport's run switches, panic and record all
 come through the same port as the params and are handled in the same
 `onmessage`. The main thread handles MIDI and sends the worklet those same
 messages.
+
+## Effects on sets of lines
+
+Each bend and pedal has a Lines control: 0 for master, or a mask of the lines it
+runs on, with the mic at bit 0 and source k at bit 1 + k. The chain turns the
+mask into tap bits through a table and keeps tap numbering from there on.
+
+- A unit on one line runs inside that machine's insert line.
+- Units with the same mask of two or more lines form a bundle and run one after
+  another in rack order: the sockets as the relay walks them, the loose bends,
+  then the pedals.
+- Bundles run after every insert line, ordered by how many lines they hold, so a
+  mask inside another runs first; ties go by rack order.
+- A bundle's input is the sum of its lines plus the returns of the earlier
+  bundles whose masks are subsets of its own. It adds its output minus its input
+  to the bus, since a pedal mixes its wet signal into the dry.
+- When two masks overlap and neither holds the other, the two bundles run side
+  by side on the dry lines.
+- A unit whose new mask shares a line with the old one keeps running and
+  crossfades its input over one block. A move to a disjoint mask, or to or from
+  master, fades out, flushes the unit and fades in on the new lines.
+- The carrier, logic, toy and FM side buses carry a line after its one-line
+  units. Units on master pass through the solder joints, and no other unit does.
+- Wraith on a bundle still takes the kit's echo row through `ctx.send`, and its
+  Send knob trims the bundle's sum.
 
 ## Where the buses sit
 
