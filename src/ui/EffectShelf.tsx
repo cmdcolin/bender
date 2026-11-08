@@ -32,7 +32,7 @@ import cables from './GateCables.module.css'
 import { PedalFace } from './Pedals.tsx'
 import { Tip } from './Tip.tsx'
 
-const CORD_COLOUR = '#8b929c'
+const CORD_COLOUR = 'var(--audio)'
 const DROP = 13
 const ORDER_PANEL = 'Signal order'
 

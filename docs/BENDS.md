@@ -879,6 +879,20 @@ Two more cables run from the output jack, under the **mixer** box beside
   close the gate at a lower level. A key struck while the gate is closed waits
   for it to open.
 
+One cable comes in from Plinky. It sits under the **mixer** box, and on the
+bench it is the grey AUDIO cord from Plinky's AUDIO jack to Growler's.
+
+- **Plinky in:** Plinky's output pin wired into the mixer, taken ahead of
+  Plinky's volume and mute. The ladder and the contours shape Plinky's square
+  waves, and with the gate line soldered the contours fire on Plinky's notes.
+  - With the three oscillators down, Plinky plays through the filter alone, and
+    each of its notes gets the filter sweep.
+  - With them up, Growler's bass follows Plinky's tune under Plinky's buzz, and
+    the two drive the ladder together.
+  - Past 1 the pin overdrives the ladder.
+  - Mute Plinky to hear it only through the synth.
+  - Howler has the same input and its own AUDIO jack.
+
 ## The drum machine's pattern bus
 
 The bus runs between the step counter and the pattern memory. The four wire

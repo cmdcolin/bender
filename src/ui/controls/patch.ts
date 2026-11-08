@@ -235,6 +235,8 @@ export const DEST_CHOICES = [
   'bell decay',
   'open hat decay',
   'cymbal decay',
+  'mono Plinky in',
+  'lead Plinky in',
 ] as const
 
 export const ENV_KEYS = [
@@ -589,6 +591,7 @@ export const PATCH_GROUPS: Group[] = [
                 'mono pitch',
                 'mono out to pitch',
                 'mono out to gate',
+                'mono Plinky in',
                 'mono regulator trip',
               ],
             },
@@ -601,6 +604,7 @@ export const PATCH_GROUPS: Group[] = [
                 'lead pitch',
                 'lead out to pitch',
                 'lead out to gate',
+                'lead Plinky in',
                 'lead regulator trip',
               ],
             },

@@ -26,11 +26,11 @@ import type { ControlKey, Controls } from '../controls.ts'
 import type { NoteDest } from '../engine/messages.ts'
 import type { Facing } from './cablePaths.ts'
 
-// Every cable on the bench is one of three lines, and each line is the same
+// Every cable on the bench is one of four lines, and each line is the same
 // machine: outputs any number of cables stack on, inputs that hold theirs, and
 // a control on the board that says which output each input holds.
 
-export const LINES = ['gate', 'trig', 'mod'] as const
+export const LINES = ['gate', 'trig', 'mod', 'audio'] as const
 export type Line = (typeof LINES)[number]
 export type Side = 'in' | 'out'
 
@@ -111,6 +111,26 @@ const NAMED: Record<string, string> = {
   ...MACHINE_OF,
   kit: 'the kit',
   adsr: 'the ADSR',
+}
+
+/** A synth whose mixer takes Plinky's output pin, and the level it takes it at. */
+export const AUDIO_TAKERS = [
+  { id: 'mono', machine: 'Growler', key: 'monoToyIn' },
+  { id: 'lead', machine: 'Howler', key: 'leadToyIn' },
+] as const
+
+const AUDIO_PLUGGED = 1
+
+const audioTaker = (id: string) => AUDIO_TAKERS.find(t => t.id === id)
+
+export const audioLevel = (c: Controls, id: string) => {
+  const t = audioTaker(id)
+  return t ? c[t.key] : 0
+}
+
+function setAudio(c: Controls, id: string, level: number): Controls {
+  const t = audioTaker(id)
+  return t ? { ...c, [t.key]: level } : c
 }
 
 const asTaker = (id: string) => GATE_TAKERS.find(t => t === id)
@@ -211,7 +231,28 @@ const mod: Kind = {
   },
 }
 
-export const KINDS: Record<Line, Kind> = { gate, trig, mod }
+const audio: Kind = {
+  colour: 'var(--audio)',
+  jack: 'AUDIO',
+  cables: c =>
+    AUDIO_TAKERS.filter(t => audioLevel(c, t.id) > 0).map(t => ({
+      line: 'audio',
+      id: t.id,
+      out: 'plinky',
+      in: t.id,
+    })),
+  plug: (c, input) => setAudio(c, input, AUDIO_PLUGGED),
+  pull: (c, x) => setAudio(c, x.in, 0),
+  move: (c, x, input) => {
+    const from = audioTaker(x.in)
+    return from ? setAudio(setAudio(c, x.in, 0), input, c[from.key]) : c
+  },
+  fresh: 'plinky',
+  facing: () => 'right',
+  says: (_, x) => `Plinky’s output pin runs into ${NAMED[x.in]}’s mixer`,
+}
+
+export const KINDS: Record<Line, Kind> = { gate, trig, mod, audio }
 
 /** Every cable the bench draws. */
 export const cablesOn = (c: Controls) => LINES.flatMap(l => KINDS[l].cables(c))

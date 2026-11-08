@@ -102,6 +102,8 @@ export class TriggerBus {
   wanderBar = -1
   readonly wanderEvents = new Uint8Array(STEPS)
   readonly melodyHz = new Float32Array(BLOCK)
+  /** Plinky's output pin, ahead of its volume pot and its mute. */
+  readonly pin = new Float32Array(BLOCK)
   /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
   readonly key = new Float32Array(BLOCK)
   /** Whether a hand is still on that key. A gate line carries a level and not
@@ -212,6 +214,7 @@ export class TriggerBus {
     this.pendStepHz = 0
     this.drumStepLen = this.pendStepLen
     this.melodyHz.fill(0, 0, n)
+    this.pin.fill(0, 0, n)
     this.key.fill(0, 0, n)
     this.keyHeld.fill(0, 0, n)
     for (const lane of this.laneKey) lane.fill(0, 0, n)
@@ -241,6 +244,7 @@ export class TriggerBus {
     this.drumStepLen = 0
     this.pendStepLen = 0
     this.melodyHz.fill(0)
+    this.pin.fill(0)
     this.key.fill(0)
     this.keyHeld.fill(0)
     for (const lane of this.laneKey) lane.fill(0)

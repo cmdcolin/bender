@@ -277,6 +277,17 @@
   top: 68px;
 }
 
+/* Plinky's output pin, or a synth's mixer input for it, under the CV jack. */
+.audio {
+  composes: jack;
+  top: 96px;
+}
+
+.audioOut {
+  composes: audio;
+  cursor: grab;
+}
+
 .kitCv {
   composes: trigOut;
   margin-right: 2px;

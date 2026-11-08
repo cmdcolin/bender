@@ -110,6 +110,32 @@ test('MOD runs out of cables once all four wires are in use', () => {
   ).toBe(true)
 })
 
+test('an AUDIO cable runs from Plinky while a synth takes its pin', () => {
+  expect(cablesOn(board).filter(x => x.line === 'audio')).toEqual([])
+  expect(
+    cablesOn({ ...board, monoToyIn: 0.4 }).filter(x => x.line === 'audio'),
+  ).toEqual([{ line: 'audio', id: 'mono', out: 'plinky', in: 'mono' }])
+})
+
+test('pressing a synth’s AUDIO jack plugs Plinky in, then pulls it', () => {
+  const plugged = pressed(board, end('audio:in:lead'))
+  expect(plugged.leadToyIn).toBe(1)
+  expect(pressed(plugged, end('audio:in:lead')).leadToyIn).toBe(0)
+})
+
+test('an AUDIO cable dragged to the other synth keeps its level', () => {
+  const fed = { ...board, monoToyIn: 0.4 }
+  const cable = lastInto(fed, end('audio:in:mono'))!
+  const moved = dropped(
+    fed,
+    end('audio:out:plinky'),
+    cable,
+    end('audio:in:lead'),
+  )
+  expect(moved.monoToyIn).toBe(0)
+  expect(moved.leadToyIn).toBe(0.4)
+})
+
 test('the cable list survives its string form', () => {
   const c = { ...board, fmStruck: 1, mod1Src: LFO, mod1Dest: CV_DEST.Glint }
   expect(parseCables(writeCables(cablesOn(c)))).toEqual(cablesOn(c))

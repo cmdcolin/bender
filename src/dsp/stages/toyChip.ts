@@ -1675,6 +1675,7 @@ export class ToyChip implements Stage {
           }
         }
       }
+      ctx.trig.pin[i] = out
       out *= level * 0.4
       const lifted = feed.lift * level * 0.4
       const liftedR = feed.liftR * level * 0.4

@@ -3,7 +3,7 @@ import { SFX_NAMES } from '../dsp/stages/toySfx.ts'
 import { engine } from '../engine/engine.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { EffectPads } from './EffectPads.tsx'
-import { GateOut, TrigJack } from './GateCables.tsx'
+import { AudioOut, GateOut, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './Keys.module.css'
 import { CvJack } from './ModJacks.tsx'
@@ -43,6 +43,7 @@ export function Keys({
           <GateOut />
           <TrigJack taker="toy" />
           <CvJack machine="Plinky" />
+          <AudioOut />
         </>
       }
       extras={

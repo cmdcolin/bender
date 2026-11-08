@@ -28,6 +28,8 @@ const QUEUE_MAX = 32
 const SLIDE_HOLD = 1.5
 // The mic on the mixer's external input, level with a full oscillator.
 const MIC_IN_GAIN = 1.5
+const TOY_IN_GAIN = 1
+const TOY_IN_TOP = 2
 
 function withLane(base: number, lane: Float32Array | null) {
   return Math.min(Math.max(base + (lane ? lane[0]! : 0), 0), 1)
@@ -61,6 +63,7 @@ function cardIdx(prefix: CardPrefix) {
     mix3: at('Mix3'),
     noise: at('Noise'),
     loop: at('Loop'),
+    toyIn: at('ToyIn'),
     cutoff: at('Cutoff'),
     emph: at('Emph'),
     contour: at('Contour'),
@@ -105,6 +108,7 @@ export const GROWLER = {
     regTrip: DEST.monoRegTrip,
     pitch: DEST.monoPitch,
     cutoff: DEST.monoCutoff,
+    toyIn: DEST.monoToyIn,
   },
   mic: MIC.growlerIn,
   line: 'seq',
@@ -121,6 +125,7 @@ export const HOWLER = {
     regTrip: DEST.leadRegTrip,
     pitch: DEST.leadPitch,
     cutoff: DEST.leadCutoff,
+    toyIn: DEST.leadToyIn,
   },
   mic: MIC.howlerIn,
   line: 'leadSeq',
@@ -154,6 +159,7 @@ export class MonoSynth implements Stage {
   private pitchLane: Float32Array | null = null
   private cutLane: Float32Array | null = null
   private ext: Float32Array | null = null
+  private readonly extBuf = new Float32Array(BLOCK)
 
   private readonly sr: number
   private readonly power: SupplyTap
@@ -271,8 +277,25 @@ export class MonoSynth implements Stage {
     v.regTrip = withLane(p[k.regTrip]!, ctx.mod.read(dest.regTrip))
     v.thump = p[k.thump]!
     v.fold = p[k.fold]!
-    this.ext = micInto(p, ctx, mic)
-    v.ext = this.ext ? MIC_IN_GAIN : 0
+    const micIn = micInto(p, ctx, mic)
+    const toyLane = ctx.mod.read(dest.toyIn)
+    const toyIn = Math.min(
+      Math.max(p[k.toyIn]! + (toyLane ? toyLane[0]! : 0), 0),
+      TOY_IN_TOP,
+    )
+    if (toyIn > 0) {
+      const pin = ctx.trig.pin
+      const toyGain = toyIn * TOY_IN_GAIN
+      for (let i = 0; i < BLOCK; i++) this.extBuf[i] = pin[i]! * toyGain
+      if (micIn)
+        for (let i = 0; i < BLOCK; i++)
+          this.extBuf[i]! += micIn[i]! * MIC_IN_GAIN
+      this.ext = this.extBuf
+      v.ext = 1
+    } else {
+      this.ext = micIn
+      v.ext = micIn ? MIC_IN_GAIN : 0
+    }
   }
 
   private strike(

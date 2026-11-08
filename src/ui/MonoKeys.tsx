@@ -1,5 +1,5 @@
 import { engine } from '../engine/engine.ts'
-import { GateJumper, TrigJack } from './GateCables.tsx'
+import { AudioIn, GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import { CvJack } from './ModJacks.tsx'
 import styles from './MonoKeys.module.css'
@@ -65,6 +65,7 @@ export function MonoKeys({
           />
           <TrigJack taker={bed.dest} />
           <CvJack machine={stage} />
+          <AudioIn taker={bed.dest} notes={bed.notes} />
         </>
       }
       extras={

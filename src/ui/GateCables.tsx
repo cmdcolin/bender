@@ -4,6 +4,7 @@ import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
 import {
+  audioLevel,
   cableKey,
   cablesOn,
   gateInto,
@@ -50,6 +51,8 @@ import type { GatedDest } from '../machines.ts'
 //   keyboard's TRIG jack, or to the ADSR's gate on the MOD plate.
 // - MOD (blue) carries a patch bay source from the MOD plate to a machine's CV
 //   jack, one of the bay's four wires.
+// - AUDIO (grey) carries Plinky's output pin from its AUDIO jack into Growler's
+//   or Howler's mixer.
 
 type Keyboard = GatedDest
 
@@ -125,6 +128,51 @@ export function GateOut() {
         label="Plinky gate out"
       >
         <span className={styles.legend}>gate</span>
+      </Jack>
+    </Tip>
+  )
+}
+
+/** Plinky's output pin, under its CV jack, ahead of its volume and mute. */
+export function AudioOut() {
+  return (
+    <Tip text="Plinky’s output pin, ahead of its volume and mute. Drag a cable from here to Growler’s or Howler’s AUDIO jack and the synth’s filter shapes Plinky’s square waves">
+      <Jack
+        end={{ line: 'audio', side: 'out', id: 'plinky' }}
+        className={styles.audioOut}
+        label="Plinky audio out"
+      >
+        <span className={styles.legend}>audio</span>
+      </Jack>
+    </Tip>
+  )
+}
+
+/** A synth's mixer input for Plinky's output pin, under its CV jack. */
+export function AudioIn({
+  taker,
+  notes,
+}: {
+  taker: 'mono' | 'lead'
+  notes: Store<ReadonlySet<number>>
+}) {
+  const on = useBoardValue(c => audioLevel(c, taker) > 0)
+  const name = MACHINE_OF[taker]
+  return (
+    <Tip
+      text={
+        on
+          ? `Plinky’s output pin runs into ${name}’s mixer, and ${name}’s filter and amp shape it. Plinky in on the mixer sets how much. Press to pull the cable`
+          : `${name}’s mixer input for Plinky’s output pin. Press to plug it in, then turn ${name}’s oscillators down to hear Plinky through the filter alone`
+      }
+    >
+      <Jack
+        end={{ line: 'audio', side: 'in', id: taker }}
+        notes={notes}
+        className={styles.audio}
+        label={`${name} audio in`}
+      >
+        <span className={styles.legend}>audio</span>
       </Jack>
     </Tip>
   )

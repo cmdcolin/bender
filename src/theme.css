@@ -18,6 +18,8 @@
   --hits: #a184e8;
   /* The patch bay's wires, from a source on the MOD plate to a CV jack. */
   --mod: #5ea9d8;
+  /* An audio cord: Plinky's output pin into a synth, and the effect shelf's. */
+  --audio: #8b929c;
   /* A fill, where tokens.css's --danger is text: panic, a live recording. */
   --alarm: #ff3355;
   /* The alarm's border and its hover wash, for a button that removes. */

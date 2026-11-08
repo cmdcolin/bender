@@ -236,6 +236,8 @@ export function MonoPathDiagram({
   const filterWire = `M${mod.x + mod.w} ${modMid} H${filter.x + filter.w / 2} V${top + BOX_H}`
   const loopWire = `M${back} ${MID} V${over} H${loopX} V${top}`
   const noiseWire = `M${noiseX} ${over - 12} V${top}`
+  const toyX = mixer.x + mixer.w - 8
+  const toyWire = `M${toyX} ${FRAME_BOTTOM - 5} V${top + BOX_H}`
   const outPitchWire = `M${pitchX} ${MID} V${pitchLane} H${frameX + FRAME_W}`
   const outGateWire = `M${gateX} ${MID} V${gateLane} H${keysBox.x + keysBox.w / 2} V${top}`
   const tapWire = `M${tap} ${oscMid(2)} V${modMid} H${mod.x}`
@@ -342,6 +344,17 @@ export function MonoPathDiagram({
                 on={up(k('Noise'))}
               >
                 noise
+              </Label>
+            </Bend>
+            <Bend name="plinky in" opens="mixer" pick={pick} hit={toyWire}>
+              <Wire arrow={arrow} d={toyWire} look={wire(up(k('ToyIn')))} />
+              <Label
+                x={toyX + 4}
+                y={FRAME_BOTTOM - 8}
+                anchor="start"
+                on={up(k('ToyIn'))}
+              >
+                plinky
               </Label>
             </Bend>
             <Bend name="osc 3 tap" opens="modulation" pick={pick} hit={tapWire}>
