@@ -39,13 +39,11 @@ export const INPUT_AUX = 3
 export const MAX_LOOP_S = 60
 /** How a loop grows when a longer one is asked for: whole chunks of tape. */
 const GROW_S = 5
-/** One cell of the wear map, in frames: about 10 ms of tape at 1⅞. */
-const CELL = 480
+const CELLS_PER_S = 100
 /** How far behind the play head the record head writes, in frames. The play
     head reads a few frames either side of where it stands, and none of them
     may be ones this lap has already written over. */
 const HEAD_GAP = 4
-const PER_CELL = 1 / CELL
 /** Samples between updates of the corners that follow the level or the wear,
     both of which move over tens of milliseconds. */
 const CONTROL = 16
@@ -221,14 +219,18 @@ class Loop {
   private readonly rng: Rng
 
   private readonly maxFrames: number
+  readonly cell: number
+  private readonly perCell: number
 
   constructor(sr: number, gauss: Rng, rng: Rng) {
     this.gauss = gauss
     this.rng = rng
     this.maxFrames = MAX_LOOP_S * sr
+    this.cell = Math.round(sr / CELLS_PER_S)
+    this.perCell = 1 / this.cell
     this.smooth = lpCoef(120, sr)
     this.tape = new Float32Array(this.maxFrames)
-    this.wear = new Float32Array(Math.ceil(this.maxFrames / CELL))
+    this.wear = new Float32Array(Math.ceil(this.maxFrames / this.cell))
     this.enc = new Dbx(sr, false)
     this.dec = new Dbx(sr, true)
   }
@@ -267,7 +269,7 @@ class Loop {
       edge is a slope rather than a step. */
   oxide() {
     const wear = this.wear
-    const want = this.len > 0 ? (wear[(this.pos * PER_CELL) | 0] ?? 0) : 0
+    const want = this.len > 0 ? (wear[(this.pos * this.perCell) | 0] ?? 0) : 0
     this.worn = flushDenormal(this.worn + this.smooth * (want - this.worn))
   }
 
@@ -358,7 +360,7 @@ class Loop {
       const old = tape[at]!
       this.biasLp = flushDenormal(this.biasLp + s.biasC * (old - this.biasLp))
       const kept = keep * (this.biasLp + BIAS_KEEP * (old - this.biasLp))
-      const bare = 1 - wear[(at * PER_CELL) | 0]!
+      const bare = 1 - wear[(at * this.perCell) | 0]!
       tape[at] = softclip(kept + take * bare)
     }
     this.prevRec = u
@@ -370,11 +372,11 @@ class Loop {
   // lap.
   scuff(amount: number) {
     const wear = this.wear
-    if (amount <= 0 || this.len < CELL) return
-    const cell = (this.pos * PER_CELL) | 0
+    if (amount <= 0 || this.len < this.cell) return
+    const cell = (this.pos * this.perCell) | 0
     if (cell === this.wearAt) return
     this.wearAt = cell
-    const cells = Math.ceil(this.len / CELL)
+    const cells = Math.ceil(this.len / this.cell)
     const d = wear[cell]!
     if (d > 0) {
       this.wearDirty = true
@@ -428,12 +430,12 @@ class Loop {
     if (!this.wearDirty || this.len === 0) return
     this.wearDirty = false
     this.shed.fill(0)
-    const cells = Math.ceil(this.len / CELL)
+    const cells = Math.ceil(this.len / this.cell)
     for (let c = 0; c < cells; c++) {
       const d = wear[c]!
       if (d === 0) continue
       const bin = Math.min(
-        ((c * CELL * PEAK_BINS) / this.len) | 0,
+        ((c * this.cell * PEAK_BINS) / this.len) | 0,
         PEAK_BINS - 1,
       )
       if (d > this.shed[bin]!) this.shed[bin] = d
@@ -444,7 +446,7 @@ class Loop {
       threaded as long as it was. */
   blank() {
     this.tape.fill(0, 0, this.threaded)
-    this.wear.fill(0, 0, Math.ceil(this.threaded / CELL))
+    this.wear.fill(0, 0, Math.ceil(this.threaded / this.cell))
     this.peaks.fill(0)
     this.shed.fill(0)
     this.pos = 0
@@ -738,7 +740,7 @@ export class FourTrack implements Stage {
           ),
         )
       if (loop.threaded > 0) {
-        loop.len = Math.min(Math.max(frames, CELL), loop.threaded)
+        loop.len = Math.min(Math.max(frames, loop.cell), loop.threaded)
         if (loop.pos >= loop.len) loop.pos %= loop.len
       }
     }
