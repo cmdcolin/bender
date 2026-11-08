@@ -113,7 +113,7 @@ const SCRIPTS: Record<string, string> = {
   audible:
     'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',
   contract:
-    'renders every bay destination named a knob in src/dsp/destLaw.ts both ways, outside the suite',
+    'renders the add and step laws of src/dsp/destLaw.ts both ways, outside the suite',
   denormal: 'the DSP sweep for denormals, run on demand and outside the suite',
   golden:
     '`write` keeps every preset and board as rendered now, `check` renders them again and compares sample for sample',

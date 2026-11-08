@@ -2,9 +2,9 @@
 name: architecture-review
 description:
   What is left of the 2026-11-08 architecture reviews after stage sleep, tap
-  needs, one kit rate and the heard() probe landed — a measured destination
-  contract, worklet ramps, the PARAM_DEFS cut and four small bugs; waits on
-  Colin picking where to start.
+  needs, one kit rate, the heard() probe and the destination law table landed —
+  normalising wire depth, worklet ramps, the PARAM_DEFS cut and four small bugs;
+  waits on Colin picking where to start.
 ---
 
 # Architecture review
@@ -16,16 +16,17 @@ bugs they exposed landed in 0a369ac2..997f2d34.
 
 ## Proposals
 
-- **Destination contract, the rest.** `src/dsp/destLaw.ts` names the 56
-  destinations where a wire plays bit-exactly as the knob and the machine
-  levels, where it is gain; `pnpm contract` holds the first set to the DSP and
-  `describe()` reads both. Left: octave and selector laws with their spans and
-  bounds, and an `engaged(p, bay, dest)` helper for about seven hand-written
-  gates. The contract renders 1.5 s, which misses slow random bends such as
-  Wander. Applying the laws in the bus was declined: float32 lane rounding,
-  about 35% of the laws custom, and bounds that stay in the stages. The open
-  call is whether depth units should ever be normalised, which changes the
-  sound.
+- **Depth units.** `DEST_LAW` in `src/dsp/destLaw.ts` gives every live
+  destination its law (add, octaves, steps, gain or custom) and `describe()`
+  words it; `pnpm contract` holds the add and step laws to the DSP sample for
+  sample, and a unit test holds each step count to its control's settings. A
+  full push is a different amount on each law: the whole knob on an add, 1 to 4
+  octaves on an octave law, one lap of the settings on a step law. Normalising
+  that changes the sound of every patched board and shared link, so it waits on
+  Colin. The octave spans were read off the code, not measured. An
+  `engaged(p, bay, dest)` helper was dropped: the 2026-11-08 sweep of all 222
+  read destinations found no knob-only gate left that a wire would be heard
+  through, and the gates use different thresholds.
 - **Worklet ramps.** Cue with seconds, so queued glides start on the step the
   cue lands on rather than a meter period later, and the bend row on the step
   strobe. Drift-leg choice and bend envelopes stay on the main thread. Mid-ramp
