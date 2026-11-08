@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { lineFor } from '../jacks.ts'
 import { bench, sanitizeBench } from './bench.ts'
 import { buildMap, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY } from './controls/index.ts'
@@ -147,6 +148,17 @@ test('taking a gated stage off turns it down and keeps its other knobs', () => {
 test('taking the toy keyboard off pulls its fader down', () => {
   const off = takeOff(group('Plinky'), stock())
   expect(onBoard(off).has('Plinky')).toBe(false)
+})
+
+test('taking a machine off unplugs its line from every unit and leaves their other lines', () => {
+  const board = {
+    ...stock(),
+    echoLines: lineFor('toyDrum', 'toyChip'),
+    revLines: lineFor('toyChip'),
+  }
+  const off = takeOff(group('Plinky'), board)
+  expect(off.echoLines).toBe(lineFor('toyDrum'))
+  expect(off.revLines).toBe(0)
 })
 
 test('taking an ungated group off puts it back where it booted', () => {

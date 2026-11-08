@@ -4,6 +4,7 @@ import { bench, INSTRUMENTS, setBench, type Bench } from './bench.ts'
 import { FIXED, GATES, gateOff, onBoard } from './chain-map.ts'
 import { BENDS } from './controls/bends.ts'
 import { GROUPS, OWNER_BY_KEY, type Group } from './controls/index.ts'
+import { lineNamed, UNITS } from './controls/jacks.ts'
 import { readSession, writeSession } from './persist.ts'
 import { coherePatch, cohereVoices } from './presets/patch.ts'
 import { resetGroup } from './presets/roll.ts'
@@ -88,15 +89,22 @@ function putAway(name: string) {
 /** The board with the stage closed off: a gated stage's level or mix down and
     its other knobs left as you set them, any other group back to stock. The
     stage's face leaves the bench too. */
+function unplugged(c: Controls, machine: string): Controls {
+  const bit = lineNamed(machine)
+  const out = { ...c }
+  if (bit !== 0)
+    for (const u of UNITS) out[u.into] = Math.round(c[u.into]) & ~bit
+  return out
+}
+
 export function takeOff(group: Group, c: Controls): Controls {
   const next = new Set(added.get())
   next.delete(group.name)
   added.set(next)
   putAway(group.name)
   const gate = GATES[group.name]
-  if (!gate) return resetGroup(group, c)
-  const out = { ...c }
-  for (const key of gate) out[key] = gateOff(key)
+  const out = unplugged(gate ? c : resetGroup(group, c), group.name)
+  for (const key of gate ?? []) out[key] = gateOff(key)
   return out
 }
 
