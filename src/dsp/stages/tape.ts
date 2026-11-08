@@ -474,8 +474,16 @@ class TapeHead {
     return -Math.log(1 - this.rng())
   }
 
+  listen(x: number) {
+    this.line.write(x)
+  }
+
   reset() {
     this.line.reset()
+    this.settle()
+  }
+
+  settle() {
     this.pre = 0
     this.de = 0
     this.tiltY = 0
@@ -561,6 +569,8 @@ export class Tape implements Stage {
   // in the same places and the machine going off at the same moment. The heads
   // take a seed each and split it again, since a head owns both its hiss and
   // its own shed oxide.
+  private live = false
+  private heard = false
   private readonly sr: number
 
   constructor(sr: number, seed = 1) {
@@ -596,12 +606,32 @@ export class Tape implements Stage {
     return pair
   }
 
-  when(p: Float32Array) {
-    return p[IDX.tapeMix]! > 0
-  }
-
   process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
     const mix = p[IDX.tapeMix]!
+    if (this.live || mix > 0) this.roll(io, p, mix)
+    else this.listen(io)
+  }
+
+  private listen(io: StereoBlock) {
+    this.heard = true
+    for (let i = 0; i < io.n; i++) {
+      const l = io.l[i]!
+      const r = io.r[i]!
+      this.dryL.write(l)
+      this.dryR.write(r)
+      this.headL.listen(l)
+      this.headR.listen(r)
+    }
+  }
+
+  private roll(io: StereoBlock, p: Float32Array, mix: number) {
+    const entering = !this.live && this.heard
+    const leaving = mix <= 0
+    this.live = !leaving
+    if (entering) {
+      this.headL.settle()
+      this.headR.settle()
+    }
     const sp =
       SPEED[
         Math.min(
@@ -787,14 +817,24 @@ export class Tape implements Stage {
       // And the other way out is the room: a machine doing this is audible
       // across a studio, so it arrives past the heads rather than through them.
       const scream = span * sqBleed
-      io.l[i] =
+      const outL =
         this.dryL.readAt(this.nominal, 0) * (1 - mix) + (wetL + scream) * mix
-      io.r[i] =
+      const outR =
         this.dryR.readAt(this.nominal, 0) * (1 - mix) + (wetR + scream) * mix
+      if (entering || leaving) {
+        const fade = entering ? (i + 1) / io.n : 1 - (i + 1) / io.n
+        io.l[i] = inL + (outL - inL) * fade
+        io.r[i] = inR + (outR - inR) * fade
+      } else {
+        io.l[i] = outL
+        io.r[i] = outR
+      }
     }
   }
 
   panic() {
+    this.live = false
+    this.heard = false
     this.headL.reset()
     this.headR.reset()
     this.dryL.reset()

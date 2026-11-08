@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
-import { packParams } from '../engine/params.ts'
+import { IDX, packParams } from '../engine/params.ts'
 import { buildChain, type BuiltChain } from './build.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
 import { bin, renderBender, sine } from './testRender.ts'
@@ -900,6 +900,43 @@ test('a squeal comes and goes until the knob stops letting it', () => {
   }
   expect(spread(0.25)).toBeGreaterThan(25)
   expect(spread(1)).toBeLessThan(15)
+})
+
+test('bringing the tape back up from nothing plays what came in since', () => {
+  const chain = buildChain(SR, 1)
+  const io: StereoBlock = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const run = (board: Partial<Controls>, seconds: number) => {
+    const p = packParams({ ...DEFAULT_CONTROLS, ...STEADY, ...board })
+    let peak = 0
+    for (let b = 0; b < (seconds * SR) / BLOCK; b++) {
+      chain.process(io, p)
+      for (let i = 0; i < BLOCK; i++) peak = Math.max(peak, Math.abs(io.l[i]!))
+    }
+    return peak
+  }
+  expect(run({ ...TONE, tapeMix: 0.5 }, 1)).toBeGreaterThan(0.1)
+  run({ ...SILENT, tapeMix: 0 }, 0.5)
+  expect(run({ ...SILENT, tapeMix: 0.01 }, 0.05)).toBeLessThan(1e-3)
+})
+
+test('turning the tape to and from nothing fades rather than clicks', () => {
+  const out = renderBender(
+    { ...SILENT, ...STEADY, sampleLevel: 1, tapeMix: 1e-3 },
+    1.5,
+    b => b.sampler.setBuffer(sine(220, 1.5, 0.5)),
+    undefined,
+    (_, secs, p) => {
+      p[IDX.tapeMix] = secs < 0.5 || secs >= 1 ? 1e-3 : 0
+    },
+  )
+  let jump = 0
+  for (let t = SR / 4; t < out.length; t++)
+    jump = Math.max(jump, Math.abs(out[t]! - out[t - 1]!))
+  expect(jump).toBeLessThan(0.03)
 })
 
 test('tape off leaves the board bit-identical', () => {
