@@ -10,7 +10,7 @@ import {
   stepMask,
   tail,
 } from './testRender.ts'
-import { ANY_CHOICE, STEP_CHOICE } from './trigbus.ts'
+import { ANY_CHOICE, GATE_LANE_1, STEP_CHOICE } from './trigbus.ts'
 
 import type { Controls } from '../controls.ts'
 import type { BuiltChain } from './build.ts'
@@ -89,6 +89,21 @@ test('the whole band walks with a drum-clocked step', () => {
   const bare = bridge({ ...walked, chipAccomp: 0 })
   const band = bridge({ ...walked, chipAccomp: 1 })
   expect(bin(band, 110)).toBeGreaterThan(4 * bin(bare, 110))
+})
+
+test('a drum-clocked step plays down the melody lane', () => {
+  const lane = {
+    chipTune: 3,
+    chipLevel: 0.001,
+    drumLevel: 0.001,
+    pcmLevel: 0.8,
+    pcmKeyGate: GATE_LANE_1,
+    trigToKeys: 1,
+  }
+  const walked = bridge({ ...lane, trigKeysNote: 1 })
+  const still = bridge({ ...lane, trigKeysNote: 0 })
+  expect(rms(walked)).toBeGreaterThan(0.01)
+  expect(rms(walked)).toBeGreaterThan(20 * rms(still))
 })
 
 test('the keys fire the kit, with the pattern stopped', () => {

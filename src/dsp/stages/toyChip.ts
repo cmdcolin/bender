@@ -1032,9 +1032,12 @@ export class ToyChip implements Stage {
       // pattern plays the melody and the kick decides where the beat is.
       case 1: {
         this.pos = this.nextPos(this.pos)
-        const step = this.readRom(tune, this.pos)
+        const addr = this.romAddr(this.pos)
+        const step = this.readAt(tune, addr)
+        this.strikeStacks(addr)
         if (isNote(step)) {
           this.note = step
+          this.laneNotes[0] = step + KEY_BIAS
           this.harmonize(step)
           hit(step)
         }
@@ -1491,16 +1494,8 @@ export class ToyChip implements Stage {
         // A hold keeps whatever is ringing; a rest drops the voice; a note strikes
         const step = this.readAt(tune, addr)
         this.strikeStacks(addr)
-        if (isNote(step)) {
-          this.note = step
-          this.env = 1
-          this.keyNote = step
-          this.keyPending = true
-          this.laneNotes[0] = step + KEY_BIAS
-          this.harmonize(step)
-        } else if (step === REST) {
-          this.note = REST
-        }
+        if (isNote(step)) this.land(step)
+        else if (step === REST) this.note = REST
 
         this.oomPah()
       }
@@ -1987,13 +1982,17 @@ export class ToyChip implements Stage {
     const step = this.readAt(tune, addr)
     if (step === REST) this.note = REST
     if (!isNote(step) || step === this.note) return
+    this.land(step)
+    this.strikeStacks(addr)
+  }
+
+  private land(step: number) {
     this.note = step
     this.env = 1
     this.keyNote = step
     this.keyPending = true
     this.laneNotes[0] = step + KEY_BIAS
     this.harmonize(step)
-    this.strikeStacks(addr)
   }
 
   private micOnBus(tune: number[], x: number, jack: number) {
