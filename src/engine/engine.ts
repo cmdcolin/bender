@@ -90,6 +90,7 @@ import type { Take, WavSink } from './takeSink.ts'
 
 export const RETRO_S = 30
 const noop = () => {}
+const blockUnload = (e: BeforeUnloadEvent) => e.preventDefault()
 const DRIFT_TAP_S = 2.5
 // How far ahead of its downbeat a waiting change is written, to cover the hop
 // to the worklet, and how near the downbeat the meter has to come before the
@@ -1861,6 +1862,20 @@ export class Engine {
     if (!this.node) return
     this.retroWant = to
     this.post({ kind: 'retroFlush' })
+  }
+
+  holdTabWhileRecording() {
+    const sync = () => {
+      if (this.recording.get())
+        window.addEventListener('beforeunload', blockUnload)
+      else window.removeEventListener('beforeunload', blockUnload)
+    }
+    sync()
+    const off = this.recording.subscribe(sync)
+    return () => {
+      off()
+      window.removeEventListener('beforeunload', blockUnload)
+    }
   }
 
   startRecording() {

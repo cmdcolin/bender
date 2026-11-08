@@ -34,6 +34,7 @@ import { listView, setStageDrawings, stageDrawings } from './listView.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
+import { midi } from './midi.ts'
 import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
 import {
   MORPH_LABELS,
@@ -551,6 +552,8 @@ export function App(props: { openedFromLink?: boolean }) {
   }
 
   useEffect(() => engine.autostart(), [])
+  useEffect(() => engine.holdTabWhileRecording(), [])
+  useEffect(() => midi.letGoOnPageHide(), [])
   useEffect(linkArc, [])
   useBoardUrl()
   useCurrentSession(libUid)

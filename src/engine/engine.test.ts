@@ -1528,3 +1528,24 @@ test('uncue drops every cue waiting and tells the worklet', async () => {
   counter(engine, 16)
   expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
 })
+
+test('closing the tab asks first while a take is recording', () => {
+  const page = new EventTarget()
+  vi.stubGlobal('window', page)
+  const engine = new Engine()
+  const off = engine.holdTabWhileRecording()
+  const close = () => {
+    const e = new Event('beforeunload', { cancelable: true })
+    page.dispatchEvent(e)
+    return e.defaultPrevented
+  }
+  expect(close()).toBe(false)
+  engine.recording.set(true)
+  expect(close()).toBe(true)
+  engine.recording.set(false)
+  expect(close()).toBe(false)
+  engine.recording.set(true)
+  off()
+  expect(close()).toBe(false)
+  vi.unstubAllGlobals()
+})

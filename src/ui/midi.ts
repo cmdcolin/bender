@@ -754,6 +754,15 @@ class Midi {
     this.replace({})
   }
 
+  letGoOnPageHide() {
+    const hide = () => {
+      this.releaseOut()
+      this.stopClockOut()
+    }
+    window.addEventListener('pagehide', hide)
+    return () => window.removeEventListener('pagehide', hide)
+  }
+
   destroy() {
     this.releaseOut()
     this.stopClockOut()

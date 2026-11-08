@@ -894,6 +894,20 @@ test('switching the notes off lets go of what is still out there', () => {
   ])
 })
 
+test('closing the tab lets go of the notes and stops the clock', () => {
+  const page = new EventTarget()
+  vi.stubGlobal('window', page)
+  const off = midi.letGoOnPageHide()
+  midi.setNoteOut(true)
+  midi.setClockOut(true)
+  engine.setDrumsPlaying(true)
+  engine.chipNotes.set(new Set([3]))
+  sent.length = 0
+  page.dispatchEvent(new Event('pagehide'))
+  expect(sent).toEqual([[0x80, 60, 0], [0xfc]])
+  off()
+})
+
 test('the chips stay off the wire until the notes are switched on', () => {
   engine.chipNotes.set(new Set([3]))
   engine.fmNotes.set(new Set([5]))
