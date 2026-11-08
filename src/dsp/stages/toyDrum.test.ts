@@ -1685,6 +1685,70 @@ test('mix drive squashes the kit denser and no louder at the peak, and wrap fold
   )
 })
 
+const hitSteps = (x: Float32Array, stepS: number, gap = 0.08, floor = 0.05) => {
+  const hits: number[] = []
+  let quiet = x.length
+  for (let i = 0; i < x.length; i++) {
+    if (Math.abs(x[i]!) > floor) {
+      if (quiet > gap * SR) hits.push(Math.round(i / SR / stepS))
+      quiet = 0
+    } else quiet++
+  }
+  return hits
+}
+
+test('a kick on the counter’s up/down pin bounces the bar across the downbeat', () => {
+  const kit: Partial<Controls> = {
+    drumBpm: 240,
+    drumKick: stepMask(1),
+    drumKickLevel: 0,
+    drumSnare: stepMask(3),
+  }
+  const spacing = (o: Partial<Controls>) => {
+    const at = hitSteps(soloVoice(o, 5), 1 / 16)
+    return at.slice(1).map((s, k) => s - at[k]!)
+  }
+  expect(spacing(kit)).toEqual([16, 16, 16, 16])
+  expect(spacing({ ...kit, drumCountDir: 1 })).toEqual([4, 28, 4, 28])
+})
+
+test('a row on the second counter plays its steps at the row rate', () => {
+  const hats: Partial<Controls> = { drumBpm: 60, drumHat: 0xffff }
+  const count = (o: Partial<Controls>) =>
+    hitSteps(slice(soloVoice(o, 4), 1, 4), 1, 0.03, 0.02).length
+  expect(count(hats)).toBe(12)
+  expect(count({ ...hats, drumRowClock: 3, drumRowRatio: 0 })).toBe(9)
+  expect(count({ ...hats, drumRowClock: 3, drumRowRatio: 3 })).toBe(4)
+})
+
+test('the kick on the bank’s supply warbles the cymbal under each kick', () => {
+  const crossings = (x: Float32Array) => {
+    const win = Math.round(0.003 * SR)
+    const rates: number[] = []
+    for (let a = 2 * SR; a + win < 2.15 * SR; a += win) {
+      let z = 0
+      for (let i = a + 1; i < a + win; i++)
+        if (x[i - 1]! <= 0 !== x[i]! <= 0) z++
+      rates.push(z)
+    }
+    const mean = rates.reduce((a, v) => a + v, 0) / rates.length
+    return Math.sqrt(
+      rates.reduce((a, v) => a + (v - mean) ** 2, 0) / rates.length,
+    )
+  }
+  const kit: Partial<Controls> = {
+    drumBpm: 120,
+    drumCym: 0x8888,
+    drumKick: 0x8888,
+    drumKickLevel: 0,
+  }
+  expect(crossings(soloVoice({ ...kit, drumKickBank: 1 }, 3))).toBeGreaterThan(
+    2 * crossings(soloVoice(kit, 3)),
+  )
+  const hats: Partial<Controls> = { drumBpm: 120, drumHat: 0xffff }
+  expect(soloVoice({ ...hats, drumKickBank: 1 })).toEqual(soloVoice(hats))
+})
+
 test('a bowed kick runs down to silence once the noise voices stop', () => {
   const x = soloVoice(
     {

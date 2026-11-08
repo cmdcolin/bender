@@ -250,6 +250,18 @@ export const TANK_TAP_NAMES = ['off', '÷2', '÷4', '÷8', '÷16']
 export const RETRIG_TAP_NAMES = ['off', '×1', '÷2', '÷4', '÷8', '÷16']
 const MIX_DRIVE_OCT = 4
 const MIX_RAIL = 1.5
+const KICK_BANK_OCT = 12
+export const TURN_NAMES = ['off', ...VOICE_LABELS.map(l => `on the ${l}`)]
+export const ROW_CLOCK_NAMES = ['off', ...VOICE_LABELS.map(l => `the ${l} row`)]
+export const ROW_RATIO_NAMES = [
+  'triplet eighths',
+  'triplet sixteenths',
+  'fives',
+  'dotted eighths',
+  'half time',
+  'double time',
+]
+const ROW_RATIOS = [3 / 4, 3 / 2, 5 / 4, 1 / 3, 1 / 2, 2]
 
 /** What the kit's dice is a comparator on. Free, it rolls on every arrival;
     on the junction, it rolls only while the noise transistor conducts and
@@ -980,6 +992,13 @@ export class ToyDrum implements Stage {
   private latchEdge = 0
   private latchLeft = 0
   private latchHeld = 0
+  private kickWas = 0
+  private dir = 1
+  private turnBit = 0
+  private rowBit = 0
+  private rowVoice = -1
+  private rowTick = -1
+  private rowPhase = 0
   private tankBase = new Float32Array(N_TANKS)
   private rushHeat = 0
   private fuseHeat = 0
@@ -1281,6 +1300,15 @@ export class ToyDrum implements Stage {
     }
   }
 
+  private rowFire(p: Float32Array, ctx: Ctx, i: number) {
+    this.rowTick = (this.rowTick + 1) % CYCLE
+    const v = this.rowVoice
+    const at = STEPS - 1 - this.stepAt(this.rowTick, v)
+    const muted = Math.round(p[IDX.drumRowMute]!) & this.rowBit
+    if (!muted && (this.gridRow(p, v) >> at) & 1)
+      this.hit(this.rowBit, 1, ctx, i)
+  }
+
   private gridRow(p: Float32Array, v: number) {
     return this.wander.straying
       ? this.wander.rows[v]!
@@ -1383,6 +1411,7 @@ export class ToyDrum implements Stage {
     const w = 1 / (1 + PULSE_SHARE * this.pulseShare * (n - 1))
     for (let v = 0; v < N_VOICES; v++) if (struck & (1 << v)) this.narrow(v, w)
     if (struck & this.resetBit) this.clearing = true
+    if (struck & this.turnBit) this.dir = -this.dir
     this.firedSince |= struck
     this.thrown = this.throwing ? this.thrown | struck : this.thrown & ~struck
     ctx.trig.drumFired(i, struck, struck & ~soft ? gain : gain * GHOST_GAIN)
@@ -1548,6 +1577,7 @@ export class ToyDrum implements Stage {
       word &
       VOICE_BITS &
       ~Math.round(p[IDX.drumRowMute]!) &
+      ~this.rowBit &
       this.condBits(p, Math.floor(this.tick / STEPS))
     if (!fallback && !this.colPlays) named = 0
     if (!fallback && this.tick === this.skipTick) {
@@ -1722,6 +1752,14 @@ export class ToyDrum implements Stage {
     this.busCut = p[IDX.drumBusCut]!
     const reset = Math.round(p[IDX.drumReset]!)
     this.resetBit = reset > 0 && reset <= N_VOICES ? 1 << (reset - 1) : 0
+    const turn = Math.round(p[IDX.drumCountDir]!)
+    this.turnBit = turn > 0 && turn <= N_VOICES ? 1 << (turn - 1) : 0
+    if (!this.turnBit) this.dir = 1
+    const rowPick = Math.round(p[IDX.drumRowClock]!)
+    this.rowVoice = rowPick - 1
+    this.rowBit = rowPick > 0 && rowPick <= N_VOICES ? 1 << (rowPick - 1) : 0
+    const rowRatio =
+      ROW_RATIOS[Math.round(p[IDX.drumRowRatio]!)] ?? ROW_RATIOS[0]!
     if (!this.resetBit) this.clearing = false
     const [ringSrc, ringBits] =
       RING_TRIG_WIRING[Math.round(p[IDX.drumRingTrig]!)] ?? RING_TRIG_WIRING[0]!
@@ -1791,6 +1829,9 @@ export class ToyDrum implements Stage {
       this.tick = CYCLE - 1
       this.stepClock = 0
       this.repeats = 0
+      this.dir = 1
+      this.rowTick = -1
+      this.rowPhase = 0
       this.rolledAt = -1
       this.clearing = false
       this.loop = 0
@@ -1916,6 +1957,17 @@ export class ToyDrum implements Stage {
       -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
     )
     const bankGate = Math.round(p[IDX.drumBankGate]!) - 1
+    const kickBankLane = ctx.mod.read(DEST.drumKickBank)
+    const kickBank =
+      KICK_BANK_OCT *
+      Math.min(
+        Math.max(
+          p[IDX.drumKickBank]! + (kickBankLane ? kickBankLane[0]! : 0),
+          0,
+        ),
+        1,
+      )
+    if (kickBank === 0) this.kickWas = 0
     const ownCharge = 1 - Math.exp(-1 / (OWN_CHARGE_S * this.sr))
     const leakLane = ctx.mod.read(DEST.drumLeak)
     this.leakDepth = Math.min(
@@ -2020,7 +2072,9 @@ export class ToyDrum implements Stage {
           // gets over the threshold at all and the machine stands on one step.
           const missed = slip > 0 && this.slipRng() < slip
           if (!missed) {
-            this.tick = this.clearing ? 0 : (this.tick + 1) % CYCLE
+            this.tick = this.clearing
+              ? 0
+              : (this.tick + this.dir + CYCLE) % CYCLE
             if (this.clearing) {
               this.clearing = false
               this.rolledAt = -1
@@ -2035,6 +2089,10 @@ export class ToyDrum implements Stage {
           const stepS = (next * this.sr) / Math.max(rate, MIN_STEP_HZ)
           if (!missed) ctx.trig.stepClocked(i, this.tick, stepS)
           if (!missed && col === 0) this.planBar(p, ctx)
+          if (!missed && col === 0 && this.rowBit) {
+            this.rowTick = -1
+            this.rowPhase = 1
+          }
           this.repeats = Math.max(
             RATCHETS[asRatchet(p[RATCHET_IDX[col]!]!)]!,
             this.wander.ratchets[col]!,
@@ -2063,6 +2121,13 @@ export class ToyDrum implements Stage {
           this.due += this.gap
         }
         this.span = span
+        if (this.rowBit) {
+          this.rowPhase += (rate * rowRatio) / this.sr
+          if (this.rowPhase >= 1) {
+            this.rowPhase -= 1
+            this.rowFire(p, ctx, i)
+          }
+        }
       } else {
         this.repeats = 0
       }
@@ -2182,7 +2247,12 @@ export class ToyDrum implements Stage {
                     (1 + this.trigSag),
                 )
               : 1
-          this.metal.pf = powered ? pf * bankPf * flick : 0
+          this.metal.pf = powered
+            ? pf *
+              bankPf *
+              flick *
+              (kickBank > 0 ? octaves(kickBank * this.kickWas) : 1)
+            : 0
           this.metal.step()
           // And the noise transistor, for the same reason and in the same place:
           // nothing on the board gates a junction either. Biased past the knee it
@@ -2293,6 +2363,7 @@ export class ToyDrum implements Stage {
             if (v === this.ringSrc) heard += y
             if (th & (1 << v)) send += y * trim[v]!
           }
+          if (kickBank > 0) this.kickWas = kickRing
           if (motor > 0)
             this.motorV = Math.min(
               Math.max(
@@ -2789,6 +2860,10 @@ export class ToyDrum implements Stage {
     this.rotSeen.fill(-1)
     this.sumHeld = 0
     this.kitOut = 0
+    this.kickWas = 0
+    this.dir = 1
+    this.rowTick = -1
+    this.rowPhase = 0
     this.outAddr = 0
     this.motorV = 1
     this.motorOff = false

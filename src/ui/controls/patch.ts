@@ -245,6 +245,7 @@ export const DEST_CHOICES = [
   'kit hiss on tuning',
   'kit tank fold',
   'kit hiss latch',
+  'kit kick on bank',
 ] as const
 
 export const ENV_KEYS = [
@@ -535,6 +536,7 @@ export const PATCH_GROUPS: Group[] = [
                 'kit hiss on tuning',
                 'kit tank fold',
                 'kit hiss latch',
+                'kit kick on bank',
               ],
             },
             {

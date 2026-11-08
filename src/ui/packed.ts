@@ -1341,6 +1341,10 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumTankHiss',
   'drumTankFold',
   'drumHissLatch',
+  'drumKickBank',
+  'drumCountDir',
+  'drumRowClock',
+  'drumRowRatio',
 ]
 
 // Retired controls that old links still carry, each read into the control that

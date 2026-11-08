@@ -283,6 +283,7 @@ const LANDED = {
   'kit hiss on tuning': { up: ['drumLevel'] },
   'kit tank fold': { up: ['drumLevel'] },
   'kit hiss latch': { up: ['drumLevel'] },
+  'kit kick on bank': { up: ['drumLevel'] },
   'kit step tap': { up: ['drumLevel'] },
   'toy kit on addr': { up: ['chipLevel', 'drumLevel'] },
   'ground bounce': { up: [], oneOf: ['chipLevel', 'drumLevel'] },

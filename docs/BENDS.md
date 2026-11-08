@@ -639,6 +639,9 @@ tempo, swing, chance, tune, decay and mute.
 - **Tank tap:** tunes the kick's and the tom's networks off a stage of Plinky's
   melody divider, so the kick plays the tune as a bass line. ÷8 sits near the
   stock pitch and ÷16 is a sub.
+- **Kick on bank:** the kick's swing on the metal bank's supply, octaves either
+  way at the front of a hit, so the hats, cowbell and cymbal under a kick warble
+  at its pitch and fall with its swoop.
 - **Kick on amps:** the kick's swing on every amplifier's control pin. The
   snare, clap, hats, cowbell and cymbal growl at the kick's pitch while it
   rings, and at full they drop out between kicks.
@@ -982,6 +985,12 @@ with.
     of the time.
   - Below zero, loud hits slow the clock, so the pattern stumbles after every
     loud step.
+- **Counter turn:** a voice's trigger line on the counter's up/down pin. Each
+  strike turns the pattern round, so a kick on step one bounces the bar across
+  the downbeat.
+- **Row clock** and **Row rate:** one row on a second counter, stepping in
+  triplet eighths, triplet sixteenths, fives, dotted eighths, half or double
+  time against the kit, restarted every downbeat.
 - **Counter reset:** a voice's trigger line soldered to the counter's
   synchronous clear. After that voice strikes, the next clock edge loads step
   one.

@@ -78,6 +78,7 @@ export const VOICE_BOXES = {
     'drumBankStarve',
     'drumBankGate',
     'drumBankFm',
+    'drumKickBank',
   ],
   noise: [
     'drumSnappy',
