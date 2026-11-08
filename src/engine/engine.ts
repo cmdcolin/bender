@@ -395,7 +395,7 @@ export function nextFrame(run: () => void): () => void {
     run()
   }
   frame = requestAnimationFrame(go)
-  if (!done) timer = setTimeout(go, FRAME_FALLBACK_MS)
+  timer = setTimeout(go, FRAME_FALLBACK_MS)
   return cancel
 }
 
@@ -802,7 +802,7 @@ export class Engine {
         if (lit !== this.sounding.get()) this.sounding.set(lit)
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
       else if (msg.kind === 'retro') this.onRetro(msg)
-      else if (msg.kind === 'probed') {
+      else {
         this.probes.get(msg.id)?.(msg)
         this.probes.delete(msg.id)
       }
@@ -1727,10 +1727,9 @@ export class Engine {
         const got = await fetchLink(url, ctl.signal)
         if (!ctl.signal.aborted) {
           await this.decodeOnto(got.data, got.title, ctl.signal)
-          if (!ctl.signal.aborted) {
-            this.archiveSource.set(null)
-            this.archiveStep.set(null)
-          }
+          ctl.signal.throwIfAborted()
+          this.archiveSource.set(null)
+          this.archiveStep.set(null)
         }
       } catch (e) {
         if (!ctl.signal.aborted) {
@@ -1774,7 +1773,7 @@ export class Engine {
         return
       }
       await this.decodeOnto(got.data, got.title, ctl.signal)
-      if (ctl.signal.aborted) return
+      ctl.signal.throwIfAborted()
       this.archiveSource.set({ id: got.id, title: got.title, shelf })
       this.archiveStep.set(null)
     } catch {

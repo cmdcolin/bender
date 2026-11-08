@@ -9,7 +9,7 @@ import { SupplyDiagram } from './SupplyDiagram.tsx'
 import { ToyDieDiagram } from './ToyDieDiagram.tsx'
 import { ToyDrumDiagram } from './ToyDrumDiagram.tsx'
 
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactElement, ReactNode } from 'react'
 
 export interface DrawingProps {
   verbs?: Verbs
@@ -34,7 +34,7 @@ export function foldDrawing(
   group: string,
   part: string,
   { verbs, editor }: DrawingProps = {},
-): ReactNode {
+): ReactElement | null {
   const key = `${group}|${part}`
   const Drawing = DRAWINGS[key]
   if (Drawing)

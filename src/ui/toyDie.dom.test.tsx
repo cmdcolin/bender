@@ -127,7 +127,7 @@ test('a bend draws no wire, tag or pot on the die', () => {
 test('no chip text carries a number or a percentage', () => {
   open()
   set({ chipGhost: 2, chipEnvCap: 2, chipOutAddr: 3, chipOutData: 4 })
-  expect(words().filter(w => /[\d%]/.test(w ?? ''))).toEqual([])
+  expect(words().filter(w => /[\d%]/.test(w))).toEqual([])
 })
 
 test('pressing a part opens its rows, and a second press puts them away', () => {

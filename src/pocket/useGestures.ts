@@ -56,7 +56,7 @@ export function useGestures(opts: {
     const at = place(e)
     const timer = window.setTimeout(() => {
       const g = gesture.current
-      if (g === null || g.kind !== 'pending') return
+      if (g?.kind !== 'pending') return
       g.kind = 'bend'
       latest.current.onBend(at)
     }, HOLD_MS)

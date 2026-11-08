@@ -27,7 +27,7 @@ const cloud = vi.hoisted(() => {
     failSdk: false,
     holdPopup: false,
     popups: [] as { land: () => void; fail: (e: unknown) => void }[],
-    failWrite: null as { code: string } | null,
+    failWrite: null as (Error & { code: string }) | null,
   }
 })
 
@@ -140,7 +140,9 @@ test('a board over the length limit is refused with its length', async () => {
 
 test('a refused write says why', async () => {
   const { result } = await signedIn()
-  cloud.failWrite = { code: 'permission-denied' }
+  cloud.failWrite = Object.assign(new Error('refused'), {
+    code: 'permission-denied',
+  })
   act(() => {
     result.current.saveVoice('first', 'p=AAAA')
   })

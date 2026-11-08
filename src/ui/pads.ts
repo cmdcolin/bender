@@ -230,7 +230,9 @@ export class PadKit {
 
   private reindex() {
     this.voiceByPad.clear()
-    for (const [key, p] of Object.entries(this.bindings.get()))
+    for (const [key, p] of Object.entries<PadBinding | undefined>(
+      this.bindings.get(),
+    ))
       if (p !== undefined && isVoiceKey(key))
         this.voiceByPad.set(padId(p), voiceIndex(key))
   }

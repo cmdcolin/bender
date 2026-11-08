@@ -809,13 +809,15 @@ class Midi {
 
   private reindex() {
     this.keyBySource.clear()
-    for (const [key, b] of Object.entries(this.bindings.get()))
+    for (const [key, b] of Object.entries<Binding | undefined>(
+      this.bindings.get(),
+    ))
       if (b !== undefined && isControlKey(key))
         this.keyBySource.set(sourceId(b), key)
   }
 
   private persist(next: BindingMap) {
-    const pedalTaken = Object.values(next).some(
+    const pedalTaken = Object.values<Binding | undefined>(next).some(
       b => b?.controller === SUSTAIN && !this.keyBySource.has(sourceId(b)),
     )
     this.bindings.set(next)
@@ -910,7 +912,9 @@ class Midi {
   private lightAll() {
     if (!this.lights.get() || this.access === null) return
     const controls = engine.controls.get()
-    for (const [key, b] of Object.entries(this.bindings.get())) {
+    for (const [key, b] of Object.entries<Binding | undefined>(
+      this.bindings.get(),
+    )) {
       if (!isControlKey(key)) continue
       const def = SLIDER_BY_KEY.get(key)
       if (b === undefined || def === undefined) continue

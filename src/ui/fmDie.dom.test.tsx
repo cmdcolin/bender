@@ -53,7 +53,7 @@ test('the stock die names its parts, lights none and shows no value', () => {
       'adder',
     ]),
   )
-  expect(words().filter(w => /%|stuck|garbage|bits/.test(w ?? ''))).toEqual([])
+  expect(words().filter(w => /%|stuck|garbage|bits/.test(w))).toEqual([])
   for (const name of ['allocator', 'registers', 'voices', 'DAC'])
     expect(lit(name), name).toBe(false)
   expect(alarms()).toBe(0)
@@ -69,9 +69,7 @@ test('each fault lights the part it bends', () => {
   expect(lit('voices')).toBe(true)
   set({ fmDacSlot: 3 })
   expect(lit('DAC')).toBe(true)
-  expect(words().filter(w => /\d%|stuck|garbage|bits/.test(w ?? ''))).toEqual(
-    [],
-  )
+  expect(words().filter(w => /\d%|stuck|garbage|bits/.test(w))).toEqual([])
 })
 
 test('slip lights the converter without a number', () => {

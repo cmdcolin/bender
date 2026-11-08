@@ -214,15 +214,15 @@ export class Prattle implements Stage {
     if (!settled) this.speaking = false
   }
 
-  private begin(from: number) {
-    this.pos = from - 1
+  private speakFrom(pos: number) {
+    this.pos = pos
     this.speaking = true
     this.next()
-    if (!this.speaking && from > 0) {
-      this.pos = -1
-      this.speaking = true
-      this.next()
-    }
+  }
+
+  private begin(from: number) {
+    this.speakFrom(from - 1)
+    if (!this.speaking && from > 0) this.speakFrom(-1)
     this.segNext = this.segmentEnd()
     // With the frame clock stopped, the start pulse runs the counter on until
     // the voicing latch takes a voiced frame, and the chip holds it.

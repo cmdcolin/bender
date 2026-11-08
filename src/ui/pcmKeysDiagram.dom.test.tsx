@@ -50,7 +50,7 @@ test('the mix box opens the fader and leaves the mute to the header', () => {
 
 const accent = (name: string) =>
   [box(name).querySelector('rect')!, box(name).querySelector('text')!].map(e =>
-    /On/.test(e.getAttribute('class') ?? ''),
+    (e.getAttribute('class') ?? '').includes('On'),
   )
 
 test('a box goes accent, frame and name, when a knob inside is off stock', () => {

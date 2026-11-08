@@ -131,7 +131,7 @@ function PresetChip(props: {
         onPointerUp={() => {
           const d = drag.current
           drag.current = null
-          if (d !== null && d.lastX === null) apply()
+          if (d?.lastX === null) apply()
         }}
         onPointerCancel={() => {
           drag.current = null

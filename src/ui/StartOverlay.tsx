@@ -27,7 +27,7 @@ export function StartOverlay(props: { onClose: () => void }) {
       onCancel={onClose}
       className={styles.card}
     >
-      <button className={styles.start} autoFocus onClick={start}>
+      <button className={styles.start} autoFocus onClick={() => void start()}>
         ▶ click to start
       </button>
       {fault !== '' && (

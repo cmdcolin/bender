@@ -80,8 +80,10 @@ function watchMeter(
   const quiet = CHANNELS.map(() => true)
   const drawn = CHANNELS.map(() => false)
   const css = canvases[0] ? getComputedStyle(canvases[0]) : null
-  const accent = css?.getPropertyValue('--accent').trim() || 'orangered'
-  const alarm = css?.getPropertyValue('--alarm').trim() || 'red'
+  const colour = (name: string, fallback: string) =>
+    (css ? css.getPropertyValue(name).trim() : '') || fallback
+  const accent = colour('--accent', 'orangered')
+  const alarm = colour('--alarm', 'red')
   let raf = 0
 
   const draw = () => {

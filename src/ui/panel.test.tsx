@@ -45,7 +45,7 @@ const countRows = (head: HTMLElement) => {
 // A fold is a <details>, so its heading is the summary rather than a button.
 const line = () => {
   const head = [...document.querySelectorAll('summary')].find(s =>
-    /the line/.test(s.textContent ?? ''),
+    s.textContent.includes('the line'),
   )
   if (!head) throw new Error('no line fold')
   return head

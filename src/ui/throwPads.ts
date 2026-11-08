@@ -183,7 +183,9 @@ export class ThrowPads {
     this.targetByPad.clear()
     for (const [name, p] of Object.entries(this.bindings.get()))
       if (p !== undefined) this.targetByPad.set(padId(p), { throw: name })
-    for (const [control, p] of Object.entries(this.effects.get()))
+    for (const [control, p] of Object.entries<EffectPad | undefined>(
+      this.effects.get(),
+    ))
       if (p !== undefined && isControlKey(control))
         this.targetByPad.set(padId(p), { effect: control })
   }

@@ -132,9 +132,7 @@ test('the ⋯ menu picks a kind of roll, rolls it and keeps it on the face', () 
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
   fireEvent.click(screen.getByRole('button', { name: 'more for Clatter' }))
-  const names = screen
-    .getAllByRole('menuitem')
-    .map(item => item.textContent ?? '')
+  const names = screen.getAllByRole('menuitem').map(item => item.textContent)
   expect(names).toEqual([
     'sound',
     'nudge',

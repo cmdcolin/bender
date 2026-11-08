@@ -16,8 +16,7 @@ import { sharedLoads } from '../controls/supply.ts'
 import { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll.ts'
 import { mine, yours } from './testBoard.ts'
 
-const groupNamed = (name: string): Group =>
-  GROUPS.find(g => g.name === name) as Group
+const groupNamed = (name: string): Group => GROUPS.find(g => g.name === name)!
 
 // How many beats a length of time or a rate works out to at the given tempo.
 const beats = (bpm: number, seconds: number) => seconds / (60 / bpm)

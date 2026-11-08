@@ -46,14 +46,19 @@ export const blobForced = (
   search = typeof location === 'undefined' ? '' : location.search,
 ): boolean => new URLSearchParams(search).get('takesink') === 'blob'
 
-const root = (): Promise<FileSystemDirectoryHandle | null> =>
-  typeof navigator.storage?.getDirectory === 'function'
-    ? navigator.storage.getDirectory().catch(() => null)
+const browser = (): Partial<Navigator> => navigator
+
+const root = (): Promise<FileSystemDirectoryHandle | null> => {
+  const storage = browser().storage
+  return typeof storage?.getDirectory === 'function'
+    ? storage.getDirectory().catch(() => null)
     : Promise.resolve(null)
+}
 
 async function granted(): Promise<number> {
-  if (typeof navigator.storage?.estimate !== 'function') return STREAM_UNKNOWN
-  const { quota, usage } = await navigator.storage
+  const storage = browser().storage
+  if (typeof storage?.estimate !== 'function') return STREAM_UNKNOWN
+  const { quota, usage } = await storage
     .estimate()
     .catch(() => ({ quota: undefined, usage: undefined }))
   if (quota === undefined) return STREAM_UNKNOWN
@@ -67,11 +72,12 @@ const hasWritable = () =>
 const noop = () => {}
 
 function holdLock(id: string): { held: Promise<void>; release: () => void } {
-  if (typeof navigator.locks?.request !== 'function')
+  const locks = browser().locks
+  if (typeof locks?.request !== 'function')
     return { held: Promise.resolve(), release: noop }
   let release = noop
   const held = new Promise<void>(acquired => {
-    void navigator.locks
+    void locks
       .request(
         lockName(id),
         () =>
@@ -213,10 +219,11 @@ export function openTake(sr: number): Take {
 
 export async function sweepTakes(now = Date.now()): Promise<number> {
   const base = await root()
-  if (base === null || typeof navigator.locks?.query !== 'function') return 0
+  const locks = browser().locks
+  if (base === null || typeof locks?.query !== 'function') return 0
   try {
     const takes = await base.getDirectoryHandle(DIR, { create: false })
-    const { held = [] } = await navigator.locks.query()
+    const { held = [] } = await locks.query()
     const live = new Set(held.map(lock => lock.name))
     const stale: string[] = []
     for await (const [id, entry] of takes.entries()) {

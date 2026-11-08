@@ -1363,7 +1363,7 @@ const PARAM_INDEX = new Map<string, number>(PARAM_KEYS.map((k, i) => [k, i]))
 
 export function paramMask(patch: Partial<Controls>) {
   const mask = new Uint8Array(N_PARAMS)
-  for (const [key, value] of Object.entries(patch)) {
+  for (const [key, value] of Object.entries<number | undefined>(patch)) {
     const i = PARAM_INDEX.get(key)
     if (i !== undefined && value !== undefined) mask[i] = 1
   }

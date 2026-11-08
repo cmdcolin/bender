@@ -68,7 +68,7 @@ function Mute({
   const [lastUp, setLastUp] = useState(
     levelAt > AUDIBLE_LEVEL
       ? levelAt
-      : (level && sliderFor(level).normal?.[1]) || 1,
+      : ((level ? sliderFor(level).normal?.[1] : undefined) ?? 1),
   )
   if (levelAt > AUDIBLE_LEVEL && levelAt !== lastUp) setLastUp(levelAt)
   const atZero = levelAt <= 0

@@ -626,7 +626,7 @@ export function App(props: { openedFromLink?: boolean }) {
         )
           dragging.set(false)
       }}
-      onDrop={onDrop}
+      onDrop={e => void onDrop(e)}
     >
       <button className={styles.skip} onClick={() => board.current?.focus()}>
         skip to the board

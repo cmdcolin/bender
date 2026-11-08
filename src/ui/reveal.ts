@@ -36,7 +36,8 @@ function pinnedAbove(el: HTMLElement): number {
 // tab at the top.
 export function scrollIntoPanel(el: HTMLElement) {
   const panel = scrollParent(el)
-  if (!panel && !navigator.userActivation?.hasBeenActive) return
+  const browser: Partial<Navigator> = navigator
+  if (!panel && !browser.userActivation?.hasBeenActive) return
   const box = el.getBoundingClientRect()
   const view = panel
     ? panel.getBoundingClientRect()

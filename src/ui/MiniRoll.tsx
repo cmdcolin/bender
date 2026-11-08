@@ -42,7 +42,7 @@ function spans(steps: readonly number[]): Span[] {
   voicing(steps).forEach(({ note, head }, s) => {
     if (!isNote(note)) return
     const last = out.at(-1)
-    if (!head && last && last.note === note && last.to === s) last.to = s + 1
+    if (!head && last?.note === note && last.to === s) last.to = s + 1
     else out.push({ note, from: s, to: s + 1 })
   })
   return out

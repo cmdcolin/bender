@@ -439,8 +439,8 @@ test('a box edge follows whether the stage is doing anything, and a moved stage 
     { live: true },
   )
   const edgeOf = (id: string) =>
-    serialize(drawNode(box(map, id)!, PANEL, true)).match(
-      /class="box"[^>]*stroke="([^"]+)"/,
+    /class="box"[^>]*stroke="([^"]+)"/.exec(
+      serialize(drawNode(box(map, id)!, PANEL, true)),
     )?.[1]
   const dotted = (id: string) =>
     serialize(drawNode(box(map, id)!, PANEL, true)).includes('data-touched')
@@ -1003,7 +1003,7 @@ test('the panel palette matches the tokens it copies', () => {
     .map(f => readFileSync(f, 'utf8'))
     .join('\n')
   const token = (name: string) =>
-    css.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`))?.[1]
+    new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`).exec(css)?.[1]
   expect({
     bg: PANEL.bg,
     fg: PANEL.fg,

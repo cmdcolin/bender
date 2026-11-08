@@ -125,7 +125,7 @@ test('a bridge lights the faulted trace and its neighbour', () => {
 
 const titles = (svg: Element) =>
   [...svg.querySelectorAll('title')].map(t =>
-    t.textContent?.replace(/: press .*$/, ''),
+    t.textContent.replace(/: press .*$/, ''),
   )
 
 test('the loop wire is labelled the same whatever it joins, a reset pin included', () => {
@@ -134,7 +134,7 @@ test('the loop wire is labelled the same whatever it joins, a reset pin included
   press('bus')
   const svg = drawing('plinky bus wiring')
   expect(texts(svg)).toContain('loop wire')
-  expect(texts(svg).some(t => t?.includes('→'))).toBe(false)
+  expect(texts(svg).some(t => t.includes('→'))).toBe(false)
   expect(titles(svg)).toContain('loop wire D1 → A1')
   set({ chipLoopTo: 5 })
   expect(texts(svg)).toContain('reset')
@@ -150,7 +150,7 @@ test('the drum reset wire and the clock keep their labels as the knobs move', ()
   set({ drumReset: 2, drumSlip: 0.3 })
   expect(texts(svg)).toContain('reset')
   expect(texts(svg)).toContain('clock')
-  expect(texts(svg).some(t => t?.includes('snare'))).toBe(false)
+  expect(texts(svg).some(t => t.includes('snare'))).toBe(false)
   expect(titles(svg)).toContain('reset on the snare')
   expect(titles(svg)).toContain('clock slips')
 })
@@ -172,7 +172,7 @@ test('pressing a trace faults it, and pressing it again walks the faults', () =>
   const svg = drawing('plinky bus wiring')
   const line = (name: string) =>
     [...svg.querySelectorAll('title')].find(t =>
-      t.textContent?.startsWith(`${name}:`),
+      t.textContent.startsWith(`${name}:`),
     )!.parentElement!
   fireEvent.click(line('A2'))
   expect(engine.controls.get().chipAddrLine).toBe(3)

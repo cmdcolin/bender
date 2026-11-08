@@ -7,7 +7,8 @@ import { readSession, writeSession } from './persist.ts'
 
 const KEY = 'bender.openStage'
 
-export const openStage = createStore<string | null>(readSession(KEY) || null)
+const saved = readSession(KEY)
+export const openStage = createStore<string | null>(saved === '' ? null : saved)
 openStage.subscribe(() => writeSession(KEY, openStage.get() ?? ''))
 
 export function forgetStaleStage() {

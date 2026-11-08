@@ -65,13 +65,13 @@ export function Dial({
     engine.armStep()
     drag.current = { y: e.clientY, pos }
     setHeld(true)
-    e.currentTarget.setPointerCapture?.(e.pointerId)
+    e.currentTarget.setPointerCapture(e.pointerId)
   }
   const move = (e: PointerEvent<HTMLDivElement>) => {
     const from = drag.current
     if (!from) return
     const travel = fader
-      ? groove.current?.clientHeight || FADER_TRAVEL_PX
+      ? (groove.current?.clientHeight ?? 0) || FADER_TRAVEL_PX
       : KNOB_TRAVEL_PX
     const next = Math.min(
       Math.max(from.pos + (from.y - e.clientY) / travel, 0),

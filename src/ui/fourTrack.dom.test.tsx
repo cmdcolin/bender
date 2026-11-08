@@ -15,7 +15,7 @@ const openFourTrack = () => {
 
 const fold = (name: string) =>
   [...document.querySelectorAll('details')].find(d =>
-    d.querySelector('summary')?.textContent?.startsWith(name),
+    d.querySelector('summary')?.textContent.startsWith(name),
   )
 
 test('each track gets a lane with its input, record arm and fader, drawn once', () => {

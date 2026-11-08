@@ -375,7 +375,7 @@ export function soundOut(word: string): string[] {
     const ch = body[i]!
     const soft = ch === 'c' && 'eiy'.includes(body[i + 1] ?? '')
     const lead = ch === 'y' && i === 0
-    const long = magic && i === body.length - 2 && LONG[ch]
+    const long = magic && i === body.length - 2 ? LONG[ch] : undefined
     const doubled = ch === body[i - 1] && !isVowelLetter(ch)
     const spelt = SPELLINGS.find(([s]) => body.startsWith(s, i))!
     const phones = soft
@@ -383,7 +383,7 @@ export function soundOut(word: string): string[] {
       : lead
         ? 'Y'
         : long || (ch === 'y' && i > 0 && i === body.length - 1)
-          ? long || 'IY'
+          ? (long ?? 'IY')
           : spelt[1]
     if (!doubled) out.push(...phones.split(' '))
     i += soft || lead || long ? 1 : spelt[0].length

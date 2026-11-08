@@ -35,7 +35,7 @@ const words = () => [...card().querySelectorAll('text')].map(t => t.textContent)
 
 const group = (title: string) =>
   [...card().querySelectorAll('g')].find(g =>
-    g.querySelector('title')?.textContent?.startsWith(`${title} —`),
+    g.querySelector('title')?.textContent.startsWith(`${title} —`),
   )!
 
 const lit = (title: string) =>
@@ -55,7 +55,7 @@ test('the stock card names its parts, lights none and shows no value', () => {
       'contours',
     ]),
   )
-  expect(words().filter(w => /\d|%|\/s|×|\+/.test(w ?? ''))).toEqual([])
+  expect(words().filter(w => /\d|%|\/s|×|\+/.test(w))).toEqual([])
   for (const part of words())
     if (part !== 'out') expect(lit(part), part).toBe(false)
 })
@@ -82,7 +82,7 @@ test('each fault lights the part it bends and writes no number', () => {
   ])
     expect(lit(part), part).toBe(true)
   expect(lit('oscs')).toBe(false)
-  expect(words().filter(w => /\d|%|\/s|×|\+/.test(w ?? ''))).toEqual([])
+  expect(words().filter(w => /\d|%|\/s|×|\+/.test(w))).toEqual([])
 })
 
 const centre = (title: string) => {

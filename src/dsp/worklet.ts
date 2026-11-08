@@ -288,7 +288,7 @@ class BenderProcessor extends AudioWorkletProcessor {
 
   process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean {
     const out = outputs[0]
-    if (!out || !out[0]) return true
+    if (!out?.[0]) return true
     const n = out[0].length
     const io = this.io
     io.n = n

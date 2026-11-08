@@ -156,23 +156,21 @@ export function MoreMenu({
           role="menu"
           onClose={() => setOpen(false)}
         >
-          {canTakeOff && (
-            <Tip
-              text={`Take ${group.name} off the board and the map. A stage with a level or mix gets it turned off and keeps its other knobs; any other goes back to where it booted. Rolls leave it alone until you add it again.`}
+          <Tip
+            text={`Take ${group.name} off the board and the map. A stage with a level or mix gets it turned off and keeps its other knobs; any other goes back to where it booted. Rolls leave it alone until you add it again.`}
+          >
+            <button
+              role="menuitem"
+              className={menuItem(false)}
+              onClick={() => {
+                setOpen(false)
+                engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+                onClose()
+              }}
             >
-              <button
-                role="menuitem"
-                className={menuItem(false)}
-                onClick={() => {
-                  setOpen(false)
-                  engine.morphTo(takeOff(group, engine.controls.get()), seconds)
-                  onClose()
-                }}
-              >
-                take off
-              </button>
-            </Tip>
-          )}
+              take off
+            </button>
+          </Tip>
         </Menu>
       )}
     </>

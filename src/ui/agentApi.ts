@@ -912,6 +912,9 @@ async function listen(ms: Value = 1500) {
   }
 }
 
+const isPlainObject = (v: unknown) =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
 function rawBenderApi() {
   return {
     help: HELP,
@@ -928,11 +931,7 @@ function rawBenderApi() {
 
     route(changes?: Record<string, Lines>) {
       if (changes !== undefined) {
-        if (
-          typeof changes !== 'object' ||
-          changes === null ||
-          Array.isArray(changes)
-        )
+        if (!isPlainObject(changes))
           throw new Error(
             "route takes an object of effects and their lines, as route({ Boing: ['Sheet'] })",
           )

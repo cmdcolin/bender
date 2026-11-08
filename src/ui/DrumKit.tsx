@@ -152,7 +152,7 @@ export function DrumKit({
 }
 
 const showStage = (el: HTMLDivElement | null) =>
-  el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+  el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
 
 // The pattern in miniature, a row of lights per voice, so the kit shows what it
 // plays when folded, and a recorded hit flashes on the step it went to.
