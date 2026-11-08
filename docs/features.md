@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-830 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 196
+830 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 196 presets, and a roll button on every heading as well as
+- **Whole boards.** 197 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -1254,7 +1254,7 @@ bell.
 | Carrier from  | 16 of them, knob through prattle                                                              | Takes the carrier off another machine on the board instead of the stage’s own oscillator, so the Carrier knob and Track have no effect |
 | Bypass        | on or bypassed                                                                                | Takes Ring mod out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                  |
 | Mix           | off to full                                                                                   | Dry/wet, which on a ring modulator sets the depth of the modulation                                                                    |
-| Patched into  | 15 of them, master through Prattle                                                            | Cables Ring mod onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus             |
+| Patched into  | master, or any set of the 14 lines, Mic through Prattle                                       | The machines and the mic Ring mod runs on                                                                                              |
 
 </details>
 
@@ -1288,24 +1288,24 @@ puts the fault on, and the rows under it show the controls it set:
 <details>
 <summary>16 controls</summary>
 
-| control         | range                                                                                | what it does                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| Bits            | 1 to 16 bits                                                                         | Word length of the virtual DAC                                                                                            |
-| Rate            | 100 Hz to 48 kHz                                                                     | Sample-and-hold rate                                                                                                      |
-| Jitter          | off to full                                                                          | Re-rolls each hold length                                                                                                 |
-| Bypass          | on or bypassed                                                                       | Takes Crusher out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Mix             | off to full                                                                          | Dry/wet                                                                                                                   |
-| Converter       | stock, SAR, μ-law, ADPCM, delta                                                      | What turns the input into a code word                                                                                     |
-| Sample clock    | crystal or toy RC                                                                    | Its own crystal, or the toy’s RC oscillator, which runs off the toy’s rail                                                |
-| Logic gate      | off, XOR, AND, OR                                                                    | A gate chip between the converter and the bus that combines each code word with another machine’s word, bit by bit        |
-| Gate with       | the toy, the kit, glint, chaos osc, noise, sampler, keys, growler, layercake, howler | The machine whose words go into the gate’s other input                                                                    |
-| Ladder mismatch | off to full                                                                          | How far out the R-2R ladder’s resistors are                                                                               |
-| DAC reference   | fixed, the rail, the toy chip, the mic, the bus                                      | What the DAC’s reference pin is wired to                                                                                  |
-| Reference depth | off to full                                                                          | How much of the reference pin is that signal and how much the fixed voltage                                               |
-| Data line †     | 17 of them, off through D15                                                          | Which of the sixteen wires from the converter to the DAC the fault is on, D15 the top                                     |
-| Data fault      | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag         | What happened to the wire                                                                                                 |
-| Cut depth       | off to full                                                                          | How far through the trace the cut went                                                                                    |
-| Patched into    | 15 of them, master through Prattle                                                   | Cables Crusher onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control         | range                                                                                | what it does                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Bits            | 1 to 16 bits                                                                         | Word length of the virtual DAC                                                                                       |
+| Rate            | 100 Hz to 48 kHz                                                                     | Sample-and-hold rate                                                                                                 |
+| Jitter          | off to full                                                                          | Re-rolls each hold length                                                                                            |
+| Bypass          | on or bypassed                                                                       | Takes Crusher out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix             | off to full                                                                          | Dry/wet                                                                                                              |
+| Converter       | stock, SAR, μ-law, ADPCM, delta                                                      | What turns the input into a code word                                                                                |
+| Sample clock    | crystal or toy RC                                                                    | Its own crystal, or the toy’s RC oscillator, which runs off the toy’s rail                                           |
+| Logic gate      | off, XOR, AND, OR                                                                    | A gate chip between the converter and the bus that combines each code word with another machine’s word, bit by bit   |
+| Gate with       | the toy, the kit, glint, chaos osc, noise, sampler, keys, growler, layercake, howler | The machine whose words go into the gate’s other input                                                               |
+| Ladder mismatch | off to full                                                                          | How far out the R-2R ladder’s resistors are                                                                          |
+| DAC reference   | fixed, the rail, the toy chip, the mic, the bus                                      | What the DAC’s reference pin is wired to                                                                             |
+| Reference depth | off to full                                                                          | How much of the reference pin is that signal and how much the fixed voltage                                          |
+| Data line †     | 17 of them, off through D15                                                          | Which of the sixteen wires from the converter to the DAC the fault is on, D15 the top                                |
+| Data fault      | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag         | What happened to the wire                                                                                            |
+| Cut depth       | off to full                                                                          | How far through the trace the cut went                                                                               |
+| Patched into    | master, or any set of the 14 lines, Mic through Prattle                              | The machines and the mic Crusher runs on                                                                             |
 
 </details>
 
@@ -1336,23 +1336,23 @@ fault on, and the rows under it show the controls it set:
 <details>
 <summary>15 controls</summary>
 
-| control        | range                                    | what it does                                                                                                                    |
-| -------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Drive          | 0 to 60 dB                               | Gain into the shaping stage                                                                                                     |
-| Circuit        | soft, hard, fuzz, fold, rect             | Soft saturation, hard clip, asymmetric fuzz, wavefolder, or full rectifier                                                      |
-| Bias           | −1 to +1                                 | DC offset into the clipper                                                                                                      |
-| Tone           | 200 Hz to 20 kHz                         | Low-pass after the shaping — the tone knob on the pedal                                                                         |
-| Sub octave     | off to full                              | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
-| Bypass         | on or bypassed                           | Takes Clipper out of the path and leaves its knobs where you set them, so switching it back on brings the same sound            |
-| Mix            | off to full                              | Dry/wet                                                                                                                         |
-| Supply         | shared cells, second cells, bench supply | Which supply the toy’s LM386 runs off                                                                                           |
-| Draw           | off to full                              | How much current the amp pulls into its speaker, more when it clips                                                             |
-| Pins 1–8 gain  | 20× to 600×                              | A cap across pins 1 and 8 takes the gain from 20 to 200 and past it                                                             |
-| Pin 5 to pin 1 | off to full                              | A pot and a 0.033 µF cap from the output back to the gain pin, the bass boost from the LM386 datasheet                          |
-| Bypass pin     | off to full                              | Lifts the decoupling cap off pin 7                                                                                              |
-| Blocking       | off to full                              | How much the output coupling cap charges on hard clipping                                                                       |
-| Speaker        | off to full                              | Plays the amp through a cone instead of a line out, smaller as it goes up                                                       |
-| Patched into   | 15 of them, master through Prattle       | Cables Clipper onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus       |
+| control        | range                                                   | what it does                                                                                                                    |
+| -------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Drive          | 0 to 60 dB                                              | Gain into the shaping stage                                                                                                     |
+| Circuit        | soft, hard, fuzz, fold, rect                            | Soft saturation, hard clip, asymmetric fuzz, wavefolder, or full rectifier                                                      |
+| Bias           | −1 to +1                                                | DC offset into the clipper                                                                                                      |
+| Tone           | 200 Hz to 20 kHz                                        | Low-pass after the shaping — the tone knob on the pedal                                                                         |
+| Sub octave     | off to full                                             | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
+| Bypass         | on or bypassed                                          | Takes Clipper out of the path and leaves its knobs where you set them, so switching it back on brings the same sound            |
+| Mix            | off to full                                             | Dry/wet                                                                                                                         |
+| Supply         | shared cells, second cells, bench supply                | Which supply the toy’s LM386 runs off                                                                                           |
+| Draw           | off to full                                             | How much current the amp pulls into its speaker, more when it clips                                                             |
+| Pins 1–8 gain  | 20× to 600×                                             | A cap across pins 1 and 8 takes the gain from 20 to 200 and past it                                                             |
+| Pin 5 to pin 1 | off to full                                             | A pot and a 0.033 µF cap from the output back to the gain pin, the bass boost from the LM386 datasheet                          |
+| Bypass pin     | off to full                                             | Lifts the decoupling cap off pin 7                                                                                              |
+| Blocking       | off to full                                             | How much the output coupling cap charges on hard clipping                                                                       |
+| Speaker        | off to full                                             | Plays the amp through a cone instead of a line out, smaller as it goes up                                                       |
+| Patched into   | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Clipper runs on                                                                                        |
 
 </details>
 
@@ -1363,21 +1363,21 @@ A tuned delay with feedback past unity — a pitch you can drive into oscillatio
 <details>
 <summary>13 controls</summary>
 
-| control           | range                                          | what it does                                                                                                                                                   |
-| ----------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pitch             | 20 Hz to 4 kHz                                 | The comb’s resonant pitch — it plays like a string                                                                                                             |
-| Feedback          | 0 to 2, normal 0 to 1                          | Past 1.0 it self-oscillates, and the saturation limits the scream                                                                                              |
-| Damping           | 500 Hz to 15 kHz                               | In-loop low-pass                                                                                                                                               |
-| Bypass            | on or bypassed                                 | Takes Comb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                              |
-| Mix               | off to full                                    | Dry/wet                                                                                                                                                        |
-| Chip              | Karplus, 1024 buckets, 256 buckets, 64 buckets | Karplus is a clean digital line                                                                                                                                |
-| Kit pluck         | off to full                                    | The kit’s trigger line runs past the chip’s input, and every hit couples in as a pulse, so the kit plays the comb like a string even with the kit’s fader down |
-| Loop amp          | off to full                                    | Gain into the op-amp that closes the loop, which squares off at lopsided rails                                                                                 |
-| Compander pump    | off to full                                    | A cap too big on the compressor’s rectifier, so it no longer agrees with the expander                                                                          |
-| Clock whistle     | off to full                                    | The clock bleeds onto the output pin and around the loop, rung by what is in the buckets                                                                       |
-| Clock pull        | off to full                                    | The comb’s output leaks onto the RC clock’s timing cap, so the clock runs fast on every upswing and slow on every downswing                                    |
-| Clock on the rail | off to full                                    | How much of the RC clock runs off the shared cells                                                                                                             |
-| Patched into      | 15 of them, master through Prattle             | Cables Comb onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus                                         |
+| control           | range                                                   | what it does                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pitch             | 20 Hz to 4 kHz                                          | The comb’s resonant pitch — it plays like a string                                                                                                             |
+| Feedback          | 0 to 2, normal 0 to 1                                   | Past 1.0 it self-oscillates, and the saturation limits the scream                                                                                              |
+| Damping           | 500 Hz to 15 kHz                                        | In-loop low-pass                                                                                                                                               |
+| Bypass            | on or bypassed                                          | Takes Comb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                              |
+| Mix               | off to full                                             | Dry/wet                                                                                                                                                        |
+| Chip              | Karplus, 1024 buckets, 256 buckets, 64 buckets          | Karplus is a clean digital line                                                                                                                                |
+| Kit pluck         | off to full                                             | The kit’s trigger line runs past the chip’s input, and every hit couples in as a pulse, so the kit plays the comb like a string even with the kit’s fader down |
+| Loop amp          | off to full                                             | Gain into the op-amp that closes the loop, which squares off at lopsided rails                                                                                 |
+| Compander pump    | off to full                                             | A cap too big on the compressor’s rectifier, so it no longer agrees with the expander                                                                          |
+| Clock whistle     | off to full                                             | The clock bleeds onto the output pin and around the loop, rung by what is in the buckets                                                                       |
+| Clock pull        | off to full                                             | The comb’s output leaks onto the RC clock’s timing cap, so the clock runs fast on every upswing and slow on every downswing                                    |
+| Clock on the rail | off to full                                             | How much of the RC clock runs off the shared cells                                                                                                             |
+| Patched into      | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Comb runs on                                                                                                                          |
 
 </details>
 
@@ -1397,18 +1397,18 @@ result:
 <details>
 <summary>10 controls</summary>
 
-| control      | range                              | what it does                                                                                                                     |
-| ------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Cutoff       | 30 Hz to 12 kHz                    | Where the filter bites — and the pitch it screams at when resonance passes 1                                                     |
-| Resonance    | 0 to 2, normal 0 to 1              | Past 1.0 the filter self-oscillates at the cutoff, and saturation limits the amplitude                                           |
-| Mode         | LP, BP, HP                         | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle                                                        |
-| Drive        | 0 to 36 dB                         | Gain into the filter — overdriving the input fights the resonance                                                                |
-| Bypass       | on or bypassed                     | Takes Screech filter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Mix          | off to full                        | Dry/wet                                                                                                                          |
-| Popcorn †    | off to full                        | A bad junction inside the filter                                                                                                 |
-| Arcing cap   | off to full                        | The cap shorts when its swing gets too big                                                                                       |
-| Dirty pot    | off to full                        | The cutoff pot loses contact while it moves                                                                                      |
-| Patched into | 15 of them, master through Prattle | Cables Screech filter onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control      | range                                                   | what it does                                                                                                                |
+| ------------ | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Cutoff       | 30 Hz to 12 kHz                                         | Where the filter bites — and the pitch it screams at when resonance passes 1                                                |
+| Resonance    | 0 to 2, normal 0 to 1                                   | Past 1.0 the filter self-oscillates at the cutoff, and saturation limits the amplitude                                      |
+| Mode         | LP, BP, HP                                              | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle                                                   |
+| Drive        | 0 to 36 dB                                              | Gain into the filter — overdriving the input fights the resonance                                                           |
+| Bypass       | on or bypassed                                          | Takes Screech filter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix          | off to full                                             | Dry/wet                                                                                                                     |
+| Popcorn †    | off to full                                             | A bad junction inside the filter                                                                                            |
+| Arcing cap   | off to full                                             | The cap shorts when its swing gets too big                                                                                  |
+| Dirty pot    | off to full                                             | The cutoff pot loses contact while it moves                                                                                 |
+| Patched into | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Screech filter runs on                                                                             |
 
 </details>
 
@@ -1420,17 +1420,17 @@ sometimes held.
 <details>
 <summary>9 controls</summary>
 
-| control      | range                              | what it does                                                                                                                    |
-| ------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Chance       | off to full                        | Probability that each slice boundary fires a glitch event                                                                       |
-| Slice        | 10 ms to 1 s                       | Slice length                                                                                                                    |
-| Repeats      | 1× to 8×                           | Maximum stutter count per event; each event picks a random count up to it                                                       |
-| Reverse      | off to full                        | Chance a stutter plays backwards                                                                                                |
-| Pitch        | norm, down, up, rand               | Replay stutters at pitch, an octave away, or a random pick each event                                                           |
-| Freeze       | off or hold                        | Holds the current slice forever — the CD stuck on a note                                                                        |
-| Bypass       | on or bypassed                     | Takes Glitch buffer out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Mix †        | off to full                        | Dry/wet                                                                                                                         |
-| Patched into | 15 of them, master through Prattle | Cables Glitch buffer onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control      | range                                                   | what it does                                                                                                               |
+| ------------ | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Chance       | off to full                                             | Probability that each slice boundary fires a glitch event                                                                  |
+| Slice        | 10 ms to 1 s                                            | Slice length                                                                                                               |
+| Repeats      | 1× to 8×                                                | Maximum stutter count per event; each event picks a random count up to it                                                  |
+| Reverse      | off to full                                             | Chance a stutter plays backwards                                                                                           |
+| Pitch        | norm, down, up, rand                                    | Replay stutters at pitch, an octave away, or a random pick each event                                                      |
+| Freeze       | off or hold                                             | Holds the current slice forever — the CD stuck on a note                                                                   |
+| Bypass       | on or bypassed                                          | Takes Glitch buffer out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix †        | off to full                                             | Dry/wet                                                                                                                    |
+| Patched into | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Glitch buffer runs on                                                                             |
 
 </details>
 
@@ -1443,21 +1443,21 @@ again and partials climb forever.
 <details>
 <summary>13 controls</summary>
 
-| control      | range                               | what it does                                                                                                                              |
-| ------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Shift        | 0.1 Hz to 2 kHz                     | Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic                            |
-| Direction    | up or down                          | Which sideband survives                                                                                                                   |
-| Feedback     | 0 to 2, normal 0 to 1               | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                                              |
-| Drift        | off to full                         | How far the parts in the two allpass chains can walk off value                                                                            |
-| Quadrature   | off to full                         | Trims the oscillator’s sine off 90° from its cosine                                                                                       |
-| Kit knock    | off to full                         | The kit’s trigger line couples into the oscillator, so every hit knocks it out of quadrature and it settles back over a tenth of a second |
-| Rail         | off to full                         | Runs the oscillator off the board’s shared rail instead of its own regulator                                                              |
-| Carrier leak | off to full                         | Unbalances the multiplier, so the carrier itself comes through at the shift frequency                                                     |
-| Outputs      | one sideband or up left, down right | Takes both of the box’s outputs at once                                                                                                   |
-| Loop clip    | off to full                         | Runs the input amp, where the feedback comes back in, hot on a lopsided rail                                                              |
-| Bypass       | on or bypassed                      | Takes Freq shifter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                 |
-| Mix          | off to full                         | Dry/wet                                                                                                                                   |
-| Patched into | 15 of them, master through Prattle  | Cables Freq shifter onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus            |
+| control      | range                                                   | what it does                                                                                                                              |
+| ------------ | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Shift        | 0.1 Hz to 2 kHz                                         | Moves every partial by the same number of Hz instead of the same ratio, so harmonic input comes out inharmonic                            |
+| Direction    | up or down                                              | Which sideband survives                                                                                                                   |
+| Feedback     | 0 to 2, normal 0 to 1                                   | Each lap shifts again, so partials climb (or fall) forever — the barber pole                                                              |
+| Drift        | off to full                                             | How far the parts in the two allpass chains can walk off value                                                                            |
+| Quadrature   | off to full                                             | Trims the oscillator’s sine off 90° from its cosine                                                                                       |
+| Kit knock    | off to full                                             | The kit’s trigger line couples into the oscillator, so every hit knocks it out of quadrature and it settles back over a tenth of a second |
+| Rail         | off to full                                             | Runs the oscillator off the board’s shared rail instead of its own regulator                                                              |
+| Carrier leak | off to full                                             | Unbalances the multiplier, so the carrier itself comes through at the shift frequency                                                     |
+| Outputs      | one sideband or up left, down right                     | Takes both of the box’s outputs at once                                                                                                   |
+| Loop clip    | off to full                                             | Runs the input amp, where the feedback comes back in, hot on a lopsided rail                                                              |
+| Bypass       | on or bypassed                                          | Takes Freq shifter out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                 |
+| Mix          | off to full                                             | Dry/wet                                                                                                                                   |
+| Patched into | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Freq shifter runs on                                                                                             |
 
 </details>
 
@@ -1473,23 +1473,23 @@ swaps the octave and the sub on a clock, up to audio rate.
 <details>
 <summary>15 controls</summary>
 
-| control       | range                              | what it does                                                                                                                                                                                           |
-| ------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Gain          | 1× to 10×                          | Preamp into the detector                                                                                                                                                                               |
-| Detector tone | 20 Hz to 10 kHz                    | Low-pass ahead of the comparator                                                                                                                                                                       |
-| Track         | off to full                        | Toward zero, harmonic residue and the divider’s own output reach the comparator, and the comparator ignores new edges for a recovery time after each one, so it fires on extra edges and misses others |
-| Breakup       | 40 Hz to 4 kHz                     | Where the retrigger recovery sits                                                                                                                                                                      |
-| Division      | ÷1, ÷2, ÷4, ÷8                     | How many detector cycles make one cycle of the sub, from unison (÷1) to three octaves down (÷8)                                                                                                        |
-| Octave up     | off to full                        | The detector XORed against itself 0.33 ms late                                                                                                                                                         |
-| Sub           | off to full                        | Level of the sub voice                                                                                                                                                                                 |
-| Sub voice     | divider or hold                    | Divider is the divided square, gated by how hard you play                                                                                                                                              |
-| Bounce        | off, hard, smooth                  | Off mixes the octave and the sub together                                                                                                                                                              |
-| Bounce clock  | free, note, step                   | Free swaps at Rate, note on every new attack, and step on every sequencer step                                                                                                                         |
-| Rate          | 0.2 Hz to 1 kHz                    | Changes per second on the free clock                                                                                                                                                                   |
-| Freeze        | off or on                          | Stops the divider where it is, or on the hold voice, stops sampling and lets the cap leak                                                                                                              |
-| Bypass        | on or bypassed                     | Takes Octave out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                                                                    |
-| Mix           | off to full                        | Dry/wet                                                                                                                                                                                                |
-| Patched into  | 15 of them, master through Prattle | Cables Octave onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus                                                                               |
+| control       | range                                                   | what it does                                                                                                                                                                                           |
+| ------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Gain          | 1× to 10×                                               | Preamp into the detector                                                                                                                                                                               |
+| Detector tone | 20 Hz to 10 kHz                                         | Low-pass ahead of the comparator                                                                                                                                                                       |
+| Track         | off to full                                             | Toward zero, harmonic residue and the divider’s own output reach the comparator, and the comparator ignores new edges for a recovery time after each one, so it fires on extra edges and misses others |
+| Breakup       | 40 Hz to 4 kHz                                          | Where the retrigger recovery sits                                                                                                                                                                      |
+| Division      | ÷1, ÷2, ÷4, ÷8                                          | How many detector cycles make one cycle of the sub, from unison (÷1) to three octaves down (÷8)                                                                                                        |
+| Octave up     | off to full                                             | The detector XORed against itself 0.33 ms late                                                                                                                                                         |
+| Sub           | off to full                                             | Level of the sub voice                                                                                                                                                                                 |
+| Sub voice     | divider or hold                                         | Divider is the divided square, gated by how hard you play                                                                                                                                              |
+| Bounce        | off, hard, smooth                                       | Off mixes the octave and the sub together                                                                                                                                                              |
+| Bounce clock  | free, note, step                                        | Free swaps at Rate, note on every new attack, and step on every sequencer step                                                                                                                         |
+| Rate          | 0.2 Hz to 1 kHz                                         | Changes per second on the free clock                                                                                                                                                                   |
+| Freeze        | off or on                                               | Stops the divider where it is, or on the hold voice, stops sampling and lets the cap leak                                                                                                              |
+| Bypass        | on or bypassed                                          | Takes Octave out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                                                                    |
+| Mix           | off to full                                             | Dry/wet                                                                                                                                                                                                |
+| Patched into  | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Octave runs on                                                                                                                                                                |
 
 </details>
 
@@ -1505,21 +1505,21 @@ own artefacts until they ring.
 <details>
 <summary>13 controls</summary>
 
-| control      | range                              | what it does                                                                                                                                                  |
-| ------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bitrate      | 1 to 320 kbps                      | Bits per second for both channels                                                                                                                             |
-| Frame        | short, normal, long, huge, giant   | Transform length: 128 to 2048 samples a hop                                                                                                                   |
-| Packet loss  | off to full                        | Chance each frame never arrives                                                                                                                               |
-| Conceal      | repeat, mute, noise                | What the decoder plays for a lost or late frame                                                                                                               |
-| Bit errors   | off to full                        | Corrupts the stream                                                                                                                                           |
-| Decoder load | off to full                        | How close the decoder runs to its deadline                                                                                                                    |
-| Generations  | 0 to 1.5, normal 0 to 1            | Feeds the decoded output back into the encoder, so the codec re-encodes its own artefacts every two frames, like a file uploaded and downloaded over and over |
-| Alias        | off to full                        | Leaves the time aliasing uncancelled, so every frame plays with a reversed copy of itself on top                                                              |
-| Scramble     | off to full                        | Chance per frame that the decoder files each band under another band, so the tune jumps between registers and the bass turns up in the treble                 |
-| Freeze       | off or hold                        | Holds the last decoded spectrum and scrambles its signs every frame, a drone made from whatever was playing                                                   |
-| Bypass       | on or bypassed                     | Takes Codec out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                            |
-| Mix          | off to full                        | Dry/wet                                                                                                                                                       |
-| Patched into | 15 of them, master through Prattle | Cables Codec onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus                                       |
+| control      | range                                                   | what it does                                                                                                                                                  |
+| ------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bitrate      | 1 to 320 kbps                                           | Bits per second for both channels                                                                                                                             |
+| Frame        | short, normal, long, huge, giant                        | Transform length: 128 to 2048 samples a hop                                                                                                                   |
+| Packet loss  | off to full                                             | Chance each frame never arrives                                                                                                                               |
+| Conceal      | repeat, mute, noise                                     | What the decoder plays for a lost or late frame                                                                                                               |
+| Bit errors   | off to full                                             | Corrupts the stream                                                                                                                                           |
+| Decoder load | off to full                                             | How close the decoder runs to its deadline                                                                                                                    |
+| Generations  | 0 to 1.5, normal 0 to 1                                 | Feeds the decoded output back into the encoder, so the codec re-encodes its own artefacts every two frames, like a file uploaded and downloaded over and over |
+| Alias        | off to full                                             | Leaves the time aliasing uncancelled, so every frame plays with a reversed copy of itself on top                                                              |
+| Scramble     | off to full                                             | Chance per frame that the decoder files each band under another band, so the tune jumps between registers and the bass turns up in the treble                 |
+| Freeze       | off or hold                                             | Holds the last decoded spectrum and scrambles its signs every frame, a drone made from whatever was playing                                                   |
+| Bypass       | on or bypassed                                          | Takes Codec out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                                            |
+| Mix          | off to full                                             | Dry/wet                                                                                                                                                       |
+| Patched into | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Codec runs on                                                                                                                        |
 
 </details>
 
@@ -1535,26 +1535,26 @@ seconds ago into the room. Freeze holds the tank indefinitely.
 <details>
 <summary>18 controls</summary>
 
-| control        | range                                                                        | what it does                                                                                                                |
-| -------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Decay          | 0 to 1.1, normal 0 to 0.98                                                   | How much of the tank goes round again                                                                                       |
-| Size           | 0.05× to 2.9×                                                                | Scales every delay in the program                                                                                           |
-| Pre-delay      | 0 to 500 ms                                                                  | The gap before the room answers, counted in the unit’s own clock ticks, so a slow clock lengthens it                        |
-| Damping        | 0 to 0.95                                                                    | A low-pass inside the tank, so the top end dies first and each lap comes back darker                                        |
-| Wander         | off to full                                                                  | Two slow sines swing a read tap in each half of the tank, so the tail detunes against itself and never settles on a ring    |
-| Clock          | 0.1× to 1.5×                                                                 | The sample clock, 29.8 kHz at 1×                                                                                            |
-| Supply drag    | off to full                                                                  | Runs the clock off the board’s sagging supply, so a starve or a brownout slows the clock and drags the tail’s pitch down    |
-| Word           | 4 to 16 bits                                                                 | How many bits of each memory word the unit keeps, 12 as shipped                                                             |
-| Refresh fail   | off to full                                                                  | The memory chips lose charge between refreshes, and bits leak out of words at random                                        |
-| Address line † | 17 of them, off through A15                                                  | Which of the sixteen address wires to the memory the fault is on                                                            |
-| Address fault  | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to the address wire                                                                                           |
-| Data line †    | 17 of them, off through D15                                                  | Which of the sixteen data wires from the memory the fault is on, D15 the sign                                               |
-| Data fault     | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to the data wire                                                                                              |
-| Cut depth      | off to full                                                                  | How far through the trace the cut went, on either wire                                                                      |
-| Freeze         | off or hold                                                                  | Shuts the input and holds the tank at full decay with no damping, so the room keeps whatever it held                        |
-| Bypass         | on or bypassed                                                               | Takes Rack verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Mix            | off to full                                                                  | Dry/wet                                                                                                                     |
-| Patched into   | 15 of them, master through Prattle                                           | Cables Rack verb onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control        | range                                                                        | what it does                                                                                                             |
+| -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Decay          | 0 to 1.1, normal 0 to 0.98                                                   | How much of the tank goes round again                                                                                    |
+| Size           | 0.05× to 2.9×                                                                | Scales every delay in the program                                                                                        |
+| Pre-delay      | 0 to 500 ms                                                                  | The gap before the room answers, counted in the unit’s own clock ticks, so a slow clock lengthens it                     |
+| Damping        | 0 to 0.95                                                                    | A low-pass inside the tank, so the top end dies first and each lap comes back darker                                     |
+| Wander         | off to full                                                                  | Two slow sines swing a read tap in each half of the tank, so the tail detunes against itself and never settles on a ring |
+| Clock          | 0.1× to 1.5×                                                                 | The sample clock, 29.8 kHz at 1×                                                                                         |
+| Supply drag    | off to full                                                                  | Runs the clock off the board’s sagging supply, so a starve or a brownout slows the clock and drags the tail’s pitch down |
+| Word           | 4 to 16 bits                                                                 | How many bits of each memory word the unit keeps, 12 as shipped                                                          |
+| Refresh fail   | off to full                                                                  | The memory chips lose charge between refreshes, and bits leak out of words at random                                     |
+| Address line † | 17 of them, off through A15                                                  | Which of the sixteen address wires to the memory the fault is on                                                         |
+| Address fault  | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to the address wire                                                                                        |
+| Data line †    | 17 of them, off through D15                                                  | Which of the sixteen data wires from the memory the fault is on, D15 the sign                                            |
+| Data fault     | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to the data wire                                                                                           |
+| Cut depth      | off to full                                                                  | How far through the trace the cut went, on either wire                                                                   |
+| Freeze         | off or hold                                                                  | Shuts the input and holds the tank at full decay with no damping, so the room keeps whatever it held                     |
+| Bypass         | on or bypassed                                                               | Takes Rack verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound   |
+| Mix            | off to full                                                                  | Dry/wet                                                                                                                  |
+| Patched into   | master, or any set of the 14 lines, Mic through Prattle                      | The machines and the mic Rack verb runs on                                                                               |
 
 </details>
 
@@ -1569,17 +1569,17 @@ rectifies into a ringing transformer; _gate_ is misbiased to the edge of cutoff.
 <details>
 <summary>9 controls</summary>
 
-| control      | range                                        | what it does                                                                                                            |
-| ------------ | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Circuit      | screamer, rat, muff, germanium, octave, gate | Which dirt box is on the board                                                                                          |
-| Drive        | 0 to 60 dB                                   | Gain into the clipping stage — and how hard the pedal loads its battery                                                 |
-| Tone         | off to full                                  | Each circuit’s tone control is a different network, so the knob does something different on each                        |
-| Bias         | −1 to +1                                     | Shifts the clipper off centre — the starve mod                                                                          |
-| Battery      | off to full                                  | How dead the 9V is                                                                                                      |
-| Level        | −24 to +12 dB                                | Makeup gain out of the pedal                                                                                            |
-| Bypass       | on or bypassed                               | Takes Gnash out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Mix          | off to full                                  | Dry/wet                                                                                                                 |
-| Patched into | 15 of them, master through Prattle           | Cables Gnash onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control      | range                                                   | what it does                                                                                                       |
+| ------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Circuit      | screamer, rat, muff, germanium, octave, gate            | Which dirt box is on the board                                                                                     |
+| Drive        | 0 to 60 dB                                              | Gain into the clipping stage — and how hard the pedal loads its battery                                            |
+| Tone         | off to full                                             | Each circuit’s tone control is a different network, so the knob does something different on each                   |
+| Bias         | −1 to +1                                                | Shifts the clipper off centre — the starve mod                                                                     |
+| Battery      | off to full                                             | How dead the 9V is                                                                                                 |
+| Level        | −24 to +12 dB                                           | Makeup gain out of the pedal                                                                                       |
+| Bypass       | on or bypassed                                          | Takes Gnash out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix          | off to full                                             | Dry/wet                                                                                                            |
+| Patched into | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Gnash runs on                                                                             |
 
 </details>
 
@@ -1620,7 +1620,7 @@ of the last lap the erase head lets through under the new one.
 | Filament       | 0.02 to 3 s                                                                                        | How slowly the bulb heats and cools                                                                                              |
 | Ring           | 0.1 Hz to 8 kHz                                                                                    | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice |
 | Ring depth     | off to full                                                                                        | How much of the tap goes through the carrier                                                                                     |
-| Patched into   | 15 of them, master through Prattle                                                                 | Cables Wraith onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus         |
+| Patched into   | master, or any set of the 14 lines, Mic through Prattle                                            | The machines and the mic Wraith runs on                                                                                          |
 
 </details>
 
@@ -1639,19 +1639,19 @@ the kit running is a beat repeat.
 <details>
 <summary>11 controls</summary>
 
-| control           | range                                            | what it does                                                                                                               |
-| ----------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| Mode              | standard, analog, reverse, modulate, hold, shift | Which delay the box is being                                                                                               |
-| Time              | 20 ms to 2 s                                     | Delay time                                                                                                                 |
-| Feedback          | 0 to 2, normal 0 to 1                            | How much of the repeat goes back in                                                                                        |
-| Tone              | 800 Hz to 16 kHz                                 | High cut in the loop, so each lap comes back darker than the last                                                          |
-| Mod depth         | off to full                                      | How far the read head swings, up to six milliseconds at 0.7 Hz                                                             |
-| Shift             | −24 to +24 st                                    | How far each repeat moves in pitch, and each lap moves again because the repeat goes back round                            |
-| Clock pull        | off to full                                      | The rectified swing of what goes into the bucket brigade loads its clock’s timing cap                                      |
-| Clock on the rail | off to full                                      | How much of the bucket brigade’s clock runs off the shared cells                                                           |
-| Bypass            | on or bypassed                                   | Takes Ricochet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| E. level          | off to full                                      | Volume of the repeats, added on top of the dry signal                                                                      |
-| Patched into      | 15 of them, master through Prattle               | Cables Ricochet onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control           | range                                                   | what it does                                                                                                          |
+| ----------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Mode              | standard, analog, reverse, modulate, hold, shift        | Which delay the box is being                                                                                          |
+| Time              | 20 ms to 2 s                                            | Delay time                                                                                                            |
+| Feedback          | 0 to 2, normal 0 to 1                                   | How much of the repeat goes back in                                                                                   |
+| Tone              | 800 Hz to 16 kHz                                        | High cut in the loop, so each lap comes back darker than the last                                                     |
+| Mod depth         | off to full                                             | How far the read head swings, up to six milliseconds at 0.7 Hz                                                        |
+| Shift             | −24 to +24 st                                           | How far each repeat moves in pitch, and each lap moves again because the repeat goes back round                       |
+| Clock pull        | off to full                                             | The rectified swing of what goes into the bucket brigade loads its clock’s timing cap                                 |
+| Clock on the rail | off to full                                             | How much of the bucket brigade’s clock runs off the shared cells                                                      |
+| Bypass            | on or bypassed                                          | Takes Ricochet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| E. level          | off to full                                             | Volume of the repeats, added on top of the dry signal                                                                 |
+| Patched into      | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Ricochet runs on                                                                             |
 
 </details>
 
@@ -1665,18 +1665,18 @@ against it. That crashes the tank, the sound of kicking the amp.
 <details>
 <summary>10 controls</summary>
 
-| control      | range                              | what it does                                                                                                            |
-| ------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Decay        | 0.1 to 30 s                        | How long the springs ring                                                                                               |
-| Warble       | off to full                        | Swings the length of each spring on a slow sine, so a long tail stops ringing on the same few notes                     |
-| Tone         | 500 Hz to 12 kHz                   | Damping inside the tank                                                                                                 |
-| Boing        | off to full                        | Spring dispersion — the drip and chirp on transients                                                                    |
-| Kick         | off to full                        | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp                      |
-| Howl †       | off to full                        | The pickup amp leaks into the driver beside it, and the driver runs off the shared cells                                |
-| Bypass       | on or bypassed                     | Takes Boing out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Reverb level | off to full                        | Level of the spring tank, added on top of the dry signal                                                                |
-| Dry level †  | off to full                        | Level of the dry signal, set separately from Reverb level                                                               |
-| Patched into | 15 of them, master through Prattle | Cables Boing onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control      | range                                                   | what it does                                                                                                       |
+| ------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Decay        | 0.1 to 30 s                                             | How long the springs ring                                                                                          |
+| Warble       | off to full                                             | Swings the length of each spring on a slow sine, so a long tail stops ringing on the same few notes                |
+| Tone         | 500 Hz to 12 kHz                                        | Damping inside the tank                                                                                            |
+| Boing        | off to full                                             | Spring dispersion — the drip and chirp on transients                                                               |
+| Kick         | off to full                                             | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp                 |
+| Howl †       | off to full                                             | The pickup amp leaks into the driver beside it, and the driver runs off the shared cells                           |
+| Bypass       | on or bypassed                                          | Takes Boing out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Reverb level | off to full                                             | Level of the spring tank, added on top of the dry signal                                                           |
+| Dry level †  | off to full                                             | Level of the dry signal, set separately from Reverb level                                                          |
+| Patched into | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Boing runs on                                                                             |
 
 </details>
 
@@ -1696,18 +1696,18 @@ feedback around it.
 <details>
 <summary>10 controls</summary>
 
-| control      | range                                        | what it does                                                                                                              |
-| ------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Mode         | chorus, ensemble, dimension, vibrato, flange | How many heads are on the line and where they sit                                                                         |
-| Rate         | 0.05 to 12 Hz                                | How fast the clock sweeps                                                                                                 |
-| Depth        | off to full                                  | How far the sweep pushes the clock either side of where Delay leaves it                                                   |
-| Bypass       | on or bypassed                               | Takes Chorale out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| Mix          | off to full                                  | Dry/wet                                                                                                                   |
-| Delay        | 0.3 to 25 ms                                 | How long the line runs, which on a bucket brigade also sets how much top end survives it                                  |
-| Feedback     | 0 to 0.95                                    | How much of the line goes back into it, which turns a short delay into a flanger                                          |
-| Tone         | 800 Hz to 16 kHz                             | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken                           |
-| Width        | off to full                                  | How far the lines spread across the stereo field                                                                          |
-| Patched into | 15 of them, master through Prattle           | Cables Chorale onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control      | range                                                   | what it does                                                                                                         |
+| ------------ | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Mode         | chorus, ensemble, dimension, vibrato, flange            | How many heads are on the line and where they sit                                                                    |
+| Rate         | 0.05 to 12 Hz                                           | How fast the clock sweeps                                                                                            |
+| Depth        | off to full                                             | How far the sweep pushes the clock either side of where Delay leaves it                                              |
+| Bypass       | on or bypassed                                          | Takes Chorale out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix          | off to full                                             | Dry/wet                                                                                                              |
+| Delay        | 0.3 to 25 ms                                            | How long the line runs, which on a bucket brigade also sets how much top end survives it                             |
+| Feedback     | 0 to 0.95                                               | How much of the line goes back into it, which turns a short delay into a flanger                                     |
+| Tone         | 800 Hz to 16 kHz                                        | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken                      |
+| Width        | off to full                                             | How far the lines spread across the stereo field                                                                     |
+| Patched into | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Chorale runs on                                                                             |
 
 </details>
 
@@ -1742,25 +1742,25 @@ result:
 <details>
 <summary>17 controls</summary>
 
-| control           | range                              | what it does                                                                                                            |
-| ----------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Amp               | fender or marshall                 | Which amp the circuit is                                                                                                |
-| Gain              | off to full                        | How hard the first stage is driven                                                                                      |
-| Bass              | off to full                        | The bass pot of the tone stack                                                                                          |
-| Mid               | off to full                        | The mid pot                                                                                                             |
-| Treble            | off to full                        | The treble pot, whose wiper is the output of the stack                                                                  |
-| Master            | off to full                        | How hard the power stage is driven                                                                                      |
-| Bypass            | on or bypassed                     | Takes the amp out of the path and leaves its knobs where you set them, so switching it back on brings the same sound    |
-| Mix               | off to full                        | Dry/wet                                                                                                                 |
-| Presence          | off to full                        | Boosts the highs going into the power stage                                                                             |
-| Sag               | off to full                        | How far the supply falls under load                                                                                     |
-| Bias              | off to full                        | Where the output tubes idle                                                                                             |
-| Speaker           | direct, open 1×12, closed 4×12     | What the output transformer drives                                                                                      |
-| Level             | −24 to +12 dB                      | Makeup gain out of the amp                                                                                              |
-| Dry cathode cap † | off to full                        | The cathode caps lose their value                                                                                       |
-| Weak tube †       | off to full                        | One of the two output tubes goes weak                                                                                   |
-| Microphonic †     | off to full                        | The first tube picks up the cabinet’s sound through its mechanical resonance, near 900 Hz                               |
-| Patched into      | 15 of them, master through Prattle | Cables Ember onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control           | range                                                   | what it does                                                                                                         |
+| ----------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Amp               | fender or marshall                                      | Which amp the circuit is                                                                                             |
+| Gain              | off to full                                             | How hard the first stage is driven                                                                                   |
+| Bass              | off to full                                             | The bass pot of the tone stack                                                                                       |
+| Mid               | off to full                                             | The mid pot                                                                                                          |
+| Treble            | off to full                                             | The treble pot, whose wiper is the output of the stack                                                               |
+| Master            | off to full                                             | How hard the power stage is driven                                                                                   |
+| Bypass            | on or bypassed                                          | Takes the amp out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix               | off to full                                             | Dry/wet                                                                                                              |
+| Presence          | off to full                                             | Boosts the highs going into the power stage                                                                          |
+| Sag               | off to full                                             | How far the supply falls under load                                                                                  |
+| Bias              | off to full                                             | Where the output tubes idle                                                                                          |
+| Speaker           | direct, open 1×12, closed 4×12                          | What the output transformer drives                                                                                   |
+| Level             | −24 to +12 dB                                           | Makeup gain out of the amp                                                                                           |
+| Dry cathode cap † | off to full                                             | The cathode caps lose their value                                                                                    |
+| Weak tube †       | off to full                                             | One of the two output tubes goes weak                                                                                |
+| Microphonic †     | off to full                                             | The first tube picks up the cabinet’s sound through its mechanical resonance, near 900 Hz                            |
+| Patched into      | master, or any set of the 14 lines, Mic through Prattle | The machines and the mic Ember runs on                                                                               |
 
 </details>
 
@@ -2100,7 +2100,7 @@ result:
 
 ### Presets
 
-196 presets. Each name is a link that opens the app with that board loaded, and
+197 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2218,12 +2218,15 @@ the board waits until you press play.
   — Glint’s allocator keys all four channels a minor chord apart, so a one-note
   F minor riff off Growler’s memory comes out as a driven stab over a hard
   techno kit at 150
-- [**kit in the fire**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep0:-12,monoSeqStep2:-12,monoSeqStep3:0,monoSeqStep5:-12,monoSeqStep7:-9,monoSeqStep8:-12,monoSeqStep10:-12,monoSeqStep12:-14,monoSeqStep14:-12,monoSeqStep15:0,monoSeqAccentLo:8704,monoSeqSlideLo:4096,drumLevel:0.85,drumBpm:146,drumTune:0.85,drumSweep:5,drumKick:34952,drumHat:8738,drumClap:2056,drumTom:514,monoLevel:0.55,monoKeyGate:1,ampVoice:1,ampGain:0.95,ampBass:0.7,ampMid:0.35,ampTreble:0.65,ampMaster:0.8,ampMix:1,ampSag:0.7,ampCab:2,ampLevel:-6,ampInto:3)
+- [**kit in the fire**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep0:-12,monoSeqStep2:-12,monoSeqStep3:0,monoSeqStep5:-12,monoSeqStep7:-9,monoSeqStep8:-12,monoSeqStep10:-12,monoSeqStep12:-14,monoSeqStep14:-12,monoSeqStep15:0,monoSeqAccentLo:8704,monoSeqSlideLo:4096,drumLevel:0.85,drumBpm:146,drumTune:0.85,drumSweep:5,drumKick:34952,drumHat:8738,drumClap:2056,drumTom:514,monoLevel:0.55,monoKeyGate:1,ampVoice:1,ampGain:0.95,ampBass:0.7,ampMid:0.35,ampTreble:0.65,ampMaster:0.8,ampMix:1,ampSag:0.7,ampCab:2,ampLevel:-6,ampLines:4)
   — Ember is patched into Clatter alone, so the kick and hats burn through a
   cranked Marshall while Growler’s acid line stays clean on top
-- [**crushed parlor, rung kit**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqTo:2,monoSeqStep0:-19,monoSeqStep3:-7,monoSeqStep6:-19,monoSeqStep9:-16,monoSeqStep12:-19,monoSeqStep14:-9,drumLevel:0.85,drumBpm:142,drumKick:34952,drumSnare:2056,drumHat:48059,pcmLevel:0.75,pcmVoice:5,monoKeyGate:1,bits:4,srHz:3500,crushMix:1,combHz:73.4,combFb:0.93,combDampHz:3500,combMix:0.8,crushInto:5,combInto:3)
+- [**crushed parlor, rung kit**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqTo:2,monoSeqStep0:-19,monoSeqStep3:-7,monoSeqStep6:-19,monoSeqStep9:-16,monoSeqStep12:-19,monoSeqStep14:-9,drumLevel:0.85,drumBpm:142,drumKick:34952,drumSnare:2056,drumHat:48059,pcmLevel:0.75,pcmVoice:5,monoKeyGate:1,bits:4,srHz:3500,crushMix:1,combHz:73.4,combFb:0.93,combDampHz:3500,combMix:0.8,crushLines:16,combLines:4)
   — The crusher eats only Parlor’s brass stabs and the comb rings only the kit,
   tuned to the riff, so the bus never meets either
+- [**springs on the sheet**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumBpm:96,drumKick:32896,drumHat:8738,sheetLevel:0.6,revDecayS:5,revBoing:0.6,revMix:0.8,revLines:1024)
+  — Boing’s springs are patched onto the struck steel sheet alone, so the sheet
+  rings in the tank while the kit under it stays dry
 - [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9,drumKick:32912,drumSnare:2056,drumHat:8738)
   — The kit’s converter is built from resistors off an unmeasured reel
 - [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,drumKick:32912,drumSnare:2056,drumHat:8738,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)

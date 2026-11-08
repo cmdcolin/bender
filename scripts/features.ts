@@ -5,10 +5,12 @@ import { DEFAULT_CONTROLS } from '../src/controls.ts'
 import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums.ts'
 import { ROMS } from '../src/dsp/stages/roms.ts'
 import { SUPPLIED } from '../src/dsp/supplies.ts'
+import { JACK_KEYS } from '../src/jacks.ts'
 import { machineNamed } from '../src/machines.ts'
 import { PEDAL_ORDERS } from '../src/pedals.ts'
 import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends.ts'
 import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls/index.ts'
+import { LINE_NAMES } from '../src/ui/controls/jacks.ts'
 import { STAGE_ORDER } from '../src/ui/controls/types.ts'
 import { MIC_JACKS } from '../src/ui/micWiring.ts'
 import { CUTS } from '../src/ui/presets/cuts.ts'
@@ -205,6 +207,8 @@ const SPELLED: Record<string, string> = {
 const MANY = 12
 
 function range(s: SliderDef): string {
+  if (JACK_KEYS.has(s.key))
+    return `master, or any set of the ${LINE_NAMES.length} lines, ${LINE_NAMES[0]} through ${LINE_NAMES.at(-1)}`
   if (s.choices)
     return s.choices.length === 2
       ? s.choices.join(' or ')
