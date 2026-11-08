@@ -88,9 +88,13 @@ export interface Ctx {
     that stage runs so a non-finite sample there is blamed on its writer. */
 export type WrittenBus = 'sag' | 'step' | 'send'
 
+export const NEEDS_TOY = 1
+export const NEEDS_FM = 2
+
 export interface Stage {
   label: string
   writes?: readonly WrittenBus[]
+  needs?(p: Float32Array, ctx: Ctx): number
   when?(p: Float32Array, ctx: Ctx): boolean
   process(io: StereoBlock, p: Float32Array, ctx: Ctx): void
   sleep?(p: Float32Array): void

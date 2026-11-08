@@ -4,7 +4,13 @@ import { snap } from '../../scale.ts'
 import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
-import { GLINT_REGS, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
+import {
+  GLINT_REGS,
+  NEEDS_TOY,
+  type Ctx,
+  type Stage,
+  type StereoBlock,
+} from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, N_DRUM_VOICES, SEQ_TO_FM, voiceMask } from '../trigbus.ts'
 import { clamp01 } from '../util/clamp.ts'
@@ -654,6 +660,12 @@ export class FmChip implements Stage {
   constructor(sr: number, supplies: Supplies) {
     this.sr = sr
     this.power = new SupplyTap(supplies)
+  }
+
+  needs(p: Float32Array, ctx: Ctx) {
+    return p[IDX.fmToyBus]! > 0 || ctx.mod.read(DEST.fmToyBus) !== null
+      ? NEEDS_TOY
+      : 0
   }
 
   when(p: Float32Array) {

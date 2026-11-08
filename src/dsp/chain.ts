@@ -17,15 +17,16 @@ import { Sleep } from './sleep.ts'
 import {
   BLOCK,
   GLINT_REGS,
+  NEEDS_FM,
+  NEEDS_TOY,
   type Ctx,
   type Stage,
   type StereoBlock,
   type WrittenBus,
 } from './stage.ts'
-import { CRUSH_REF_TOY, CRUSH_WITH_TAP } from './stages/crusher.ts'
+import { CRUSH_WITH_TAP } from './stages/crusher.ts'
 import { RING_FROM_TAP } from './stages/ringmod.ts'
 import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
-import { DAC_REF_TOY } from './stages/toyDrum.ts'
 import { Thermal } from './thermal.ts'
 import { TriggerBus, voiceMask } from './trigbus.ts'
 import { BandMeter } from './util/bandMeter.ts'
@@ -710,17 +711,13 @@ export class Chain {
         ? (CRUSH_WITH_TAP[Math.round(p[IDX.crushWith]!)] ?? -1)
         : -1
     let logicRan = false
-    const toyRef =
-      Math.round(p[IDX.drumRef]!) === DAC_REF_TOY ||
-      p[IDX.fmToyBus]! > 0 ||
-      ctx.mod.read(DEST.fmToyBus) !== null ||
-      (crushing && Math.round(p[IDX.crushRef]!) === CRUSH_REF_TOY)
+    const needs = this.needs(p)
+    const toyRef = (needs & NEEDS_TOY) !== 0
     // A toy with units on it hands the kit and the FM chip its wet line, which
     // is ready only once the sources have run: they hear last block's.
     const toyLate = toyRef && (this.inline & (1 << TOY_TAP)) !== 0
     if (toyRef && !toyLate) ctx.toy.fill(0, 0, n)
-    const fmTap =
-      p[IDX.chipFmClock]! > 0 || ctx.mod.read(DEST.chipFmClock) !== null
+    const fmTap = (needs & NEEDS_FM) !== 0
     let fmRan = false
     const prev = this.tapPrev
     const cap = this.capturing || this.bands.on
@@ -936,6 +933,15 @@ export class Chain {
       io.l.fill(0, 0, n)
       io.r.fill(0, 0, n)
     }
+  }
+
+  private needs(p: Float32Array) {
+    let needs = 0
+    for (const s of this.sources) needs |= s.needs?.(p, this.ctx) ?? 0
+    for (const s of this.bendById) needs |= s?.needs?.(p, this.ctx) ?? 0
+    for (const s of this.pedals) needs |= s.needs?.(p, this.ctx) ?? 0
+    for (const s of this.post) needs |= s.needs?.(p, this.ctx) ?? 0
+    return needs
   }
 
   private heard(u: number, io: StereoBlock, n: number) {

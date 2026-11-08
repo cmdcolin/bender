@@ -30,7 +30,7 @@ import { IDX, packParams } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop, ModBus } from '../modbus.ts'
-import { BLOCK, GLINT_REGS } from '../stage.ts'
+import { BLOCK, GLINT_REGS, NEEDS_TOY } from '../stage.ts'
 import { Supplies, SupplyTap } from '../supplies.ts'
 import { ToyRail } from '../toyRail.ts'
 import { Transport } from '../transport.ts'
@@ -1105,6 +1105,10 @@ export class ToyDrum implements Stage {
 
   // A running kit keeps running with its fader down, since its counter is
   // the clock everything synced to it steps on.
+  needs(p: Float32Array) {
+    return Math.round(p[IDX.drumRef]!) === DAC_REF_TOY ? NEEDS_TOY : 0
+  }
+
   when(p: Float32Array) {
     return p[IDX.drumLevel]! > 0 || this.transport.drums
   }

@@ -20,9 +20,8 @@ import {
 import { PEDALS } from '../pedals.ts'
 import { BENDS } from '../ui/controls/bends.ts'
 import { Chain } from './chain.ts'
-import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
+import { BLOCK, NEEDS_TOY, type Stage, type StereoBlock } from './stage.ts'
 import { Amp } from './stages/amp.ts'
-import { DAC_REF_TOY } from './stages/toyDrum.ts'
 import { makeIo, renderBender, rms, SR } from './testRender.ts'
 
 const writer = (label: string, v: number): Stage => ({
@@ -403,6 +402,7 @@ test('the kit’s DAC hears the toy’s patched line a block on, as off a cable'
   const heard: number[] = []
   const kit: Stage = {
     label: 'kit',
+    needs: () => NEEDS_TOY,
     process(_io, _p, ctx) {
       heard.push(ctx.toy[BLOCK - 1]!)
     },
@@ -412,7 +412,7 @@ test('the kit’s DAC hears the toy’s patched line a block on, as off a cable'
   chain.sources = [writer('toy', 0.5), kit]
   chain.pedals = [spy('pedal').stage]
   const run = (c: Partial<Controls>) => {
-    const p = packParams({ ...DEFAULT_CONTROLS, drumRef: DAC_REF_TOY, ...c })
+    const p = packParams({ ...DEFAULT_CONTROLS, ...c })
     for (let b = 0; b < SETTLE; b++) chain.process(makeIo(), p)
     return heard.at(-1)
   }

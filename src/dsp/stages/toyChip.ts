@@ -14,6 +14,7 @@ import {
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop, type ModBus } from '../modbus.ts'
+import { NEEDS_FM, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { SupplyTap, poweredUp, type Supplies } from '../supplies.ts'
 import { KEY_BIAS, voiceMask } from '../trigbus.ts'
 import { GroundEdge } from '../util/bounce.ts'
@@ -47,7 +48,6 @@ import {
   type SfxFrame,
 } from './toySfx.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { ToyRail } from '../toyRail.ts'
 import type { Transport } from '../transport.ts'
 
@@ -892,6 +892,12 @@ export class ToyChip implements Stage {
   // Also true when only another machine plays: this stage owns the key line
   // the FM chip is soldered onto, so the demo song has to keep clocking even
   // with the toy itself turned down.
+  needs(p: Float32Array, ctx: Ctx) {
+    return p[IDX.chipFmClock]! > 0 || ctx.mod.read(DEST.chipFmClock) !== null
+      ? NEEDS_FM
+      : 0
+  }
+
   when(p: Float32Array) {
     return poweredUp(p)
   }

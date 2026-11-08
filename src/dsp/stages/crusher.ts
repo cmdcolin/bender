@@ -2,12 +2,11 @@ import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
+import { NEEDS_TOY, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { DEAD_V } from '../toyRail.ts'
 import { clamp01 } from '../util/clamp.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
-
-import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 export const CRUSH_ADC = ['stock', 'SAR', 'μ-law', 'ADPCM', 'delta']
 const ADC_SAR = 1
@@ -223,6 +222,13 @@ export class Crusher implements Stage {
       }
     }
     this.ladderMid = (this.ladderHi[255]! + this.ladderLo[255]!) / 2
+  }
+
+  needs(p: Float32Array) {
+    return p[IDX.crushMix]! > 0 &&
+      Math.round(p[IDX.crushRef]!) === CRUSH_REF_TOY
+      ? NEEDS_TOY
+      : 0
   }
 
   when(p: Float32Array) {
