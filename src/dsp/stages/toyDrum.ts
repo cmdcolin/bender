@@ -436,6 +436,9 @@ const LEAK_S = 1.2
 const LEAK_LIFT = 3
 
 const SELF_TOP = 0.3
+
+const BIAS_FIRE = 0.5
+const BIAS_REARM = 0.4
 const SELF_LAST = 0.02
 
 // Where the ring knob crosses over. Below it the transistor hands back less
@@ -844,6 +847,7 @@ export class ToyDrum implements Stage {
   readonly wander: Wander
   private wanderAmt = 0
   private micTrig: Transient
+  private biasHigh = false
   // The wires between the step counter and the pattern memory, and what a fault
   // has done to one of them. Read once a block: which trace you cut is not a
   // thing that moves inside one.
@@ -1618,6 +1622,8 @@ export class ToyDrum implements Stage {
     const ramp = Math.min(Math.max(p[IDX.drumRatchetRamp]!, -1), 1)
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = micInto(p, ctx, MIC.drumTrig)
+    const biasBase = p[IDX.drumTrigBias]!
+    const biasLane = ctx.mod.read(DEST.drumTrigBias)
     const keyTrig = Math.round(p[IDX.trigToDrum]!)
     const cross = Math.round(p[IDX.drumCross]!)
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
@@ -2007,6 +2013,13 @@ export class ToyDrum implements Stage {
       // mic soldered onto the trigger line: clap at it and the kit fires
       if (micTrig && this.micTrig.process(micTrig[i]!, 0.05)) {
         this.fire(p, ctx, i, true)
+      }
+      if (biasBase > 0 || biasLane) {
+        const line = biasBase + (biasLane ? biasLane[i]! : 0)
+        if (!this.biasHigh && line > BIAS_FIRE) {
+          this.biasHigh = true
+          this.fire(p, ctx, i, true)
+        } else if (this.biasHigh && line < BIAS_REARM) this.biasHigh = false
       }
       // The keyboard's gate, reaching across: every note the chip strikes hits
       // the kit, whether the pattern is running or not. 'the step' hands the
@@ -2651,6 +2664,7 @@ export class ToyDrum implements Stage {
     this.clapSlow = 0
     this.clapsLeft = 0
     this.micTrig.reset()
+    this.biasHigh = false
     this.addrBus.reset()
     this.dataBus.reset()
     this.wander.reset()

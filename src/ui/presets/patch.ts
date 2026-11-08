@@ -256,6 +256,7 @@ const LANDED = {
   'kit touch': { up: ['drumLevel'] },
   'kit swoop leak': { up: ['drumLevel'] },
   'kit self fire': { up: ['drumLevel'] },
+  'kit trigger bias': { up: ['drumLevel'] },
   'kit step tap': { up: ['drumLevel'] },
   'toy kit on addr': { up: ['chipLevel', 'drumLevel'] },
   'ground bounce': { up: [], oneOf: ['chipLevel', 'drumLevel'] },

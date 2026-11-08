@@ -4,9 +4,10 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { packParams } from '../engine/params.ts'
 import { buildBender } from './build.ts'
 import { FAULT_NAMES } from './bus.ts'
-import { DEST, hop } from './modbus.ts'
+import { DEST, hop, ModBus, SH_CLOCKS, SRC } from './modbus.ts'
 import { BLOCK } from './stage.ts'
 import { makeIo, pitchHz, render, rms, SR, tail } from './testRender.ts'
+import { TriggerBus } from './trigbus.ts'
 
 // How many times the watchdog tripped over `seconds` of a board — the supply is
 // the one thing a wire can reach that has a counter on it.
@@ -366,4 +367,48 @@ test('an S&H on a line cuts a different wire as it goes', () => {
   for (let line = 0; line <= 8; line++) {
     expect(hopping).not.toEqual(render({ ...fm, fmDataLine: line }, 2))
   }
+})
+
+const shLane = (clock: string, hits: number[]) => {
+  const bus = new ModBus(SR, 1)
+  const trig = new TriggerBus()
+  for (const at of hits) trig.drumBits[at] = 1
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    modLfoHz: 0.05,
+    modLfoShape: 3,
+    modShClock: SH_CLOCKS.indexOf(clock),
+    mod0Src: SRC.lfo,
+    mod0Dest: DEST.filtHz,
+    mod0Depth: 1,
+  })
+  const quiet = () => new Float32Array(BLOCK)
+  bus.build(BLOCK, p, {
+    mic: quiet(),
+    droop: quiet(),
+    env: quiet(),
+    fb: quiet(),
+    step: quiet(),
+    trig,
+    heat: 0,
+  })
+  return bus.read(DEST.filtHz)!
+}
+
+test('an S&H clocked off the kit picks a fresh value on each hit and holds it', () => {
+  const lane = shLane('any hit', [30, 80])
+  expect(lane[29]).toBe(lane[0])
+  expect(lane[30]).not.toBe(lane[29])
+  expect(lane[79]).toBe(lane[30])
+  expect(lane[80]).not.toBe(lane[79])
+})
+
+test('an S&H clocked off one voice ignores the others', () => {
+  const lane = shLane('snare', [30])
+  expect(lane[BLOCK - 1]).toBe(lane[0])
+})
+
+test('an S&H on the LFO holds through kit hits', () => {
+  const lane = shLane('the LFO', [30, 80])
+  expect(lane[BLOCK - 1]).toBe(lane[0])
 })

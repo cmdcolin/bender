@@ -1628,6 +1628,18 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'A wire from each voice’s envelope back onto its own trigger line, through a comparator that trips when the voice has drained to the trigger floor. Every hit strikes again when it runs down, each repeat this much as hard as the one before. A low setting trails a few ghost hits after each step; near the top every voice loops on its own decay, so the hats loop fast, the kick slowly, and the loops drift apart as Decay, the rail and the trigger load move them. A step on the grid restarts a voice’s loop. Trigger floor sets how far a voice drains before it fires again.',
       },
       {
+        key: 'drumTrigBias',
+        lane: 'kit trigger bias',
+        part: 'triggers and cross-patch',
+        label: 'Trigger bias',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'A trimmer on the kit’s trigger input, and the place a patch bay wire lands on it. Halfway up is the one-shot’s threshold: each time the bias and the wire together rise through it, the kit fires the step it is on, and the line has to fall back a little below before it fires again. Set just under halfway, a small wobble on the wire plays the kit; past halfway the line sits high and fires on every dip and recovery. An LFO plays a pulse at its rate, the mic or the feedback bus plays the kit off what the board is doing, and the chaos shape plays a beat that never repeats.',
+      },
+      {
         key: 'drumScan',
         part: 'triggers and cross-patch',
         label: 'Scan',

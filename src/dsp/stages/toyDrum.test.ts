@@ -2589,3 +2589,33 @@ test('self fire at full with the floor up fills the gaps between steps', () => {
   expect(quietShare(looped)).toBeLessThan(quietShare(stock) - 0.2)
   expect(loudest(looped)).toBeLessThanOrEqual(1)
 })
+
+const silentKit: Partial<Controls> = {
+  chipLevel: 0,
+  drumLevel: 1,
+  drumKick: 0,
+  drumSnare: 0,
+  drumHat: 0,
+}
+
+const biased = (over: Partial<Controls>) =>
+  onsets(renderBender({ ...silentKit, drumDecay: 0.25, ...over }, 4.5))
+
+test('a trigger bias under the threshold leaves a stopped kit silent', () => {
+  expect(biased({ drumTrigBias: 0.45 })).toHaveLength(0)
+})
+
+test('turning the trigger bias through the threshold fires the kit once', () => {
+  expect(biased({ drumTrigBias: 0.6 })).toHaveLength(1)
+})
+
+test('an LFO wired onto the trigger bias plays the kit at its rate', () => {
+  const pulses = biased({
+    modLfoHz: 1,
+    mod0Src: SRC.lfo,
+    mod0Dest: DEST.drumTrigBias,
+    mod0Depth: 1,
+  })
+  expect(pulses.length).toBeGreaterThanOrEqual(4)
+  expect(pulses.length).toBeLessThanOrEqual(5)
+})

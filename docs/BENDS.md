@@ -1008,6 +1008,12 @@ See [the trigger patch](features.md#trigger-patch) for wiring.
     slowly. Decay, the rail and the trigger load move the loops apart.
   - A step on the grid restarts a voice's loop, and every repeat lands on the
     trigger bus, so the bay's ADSR and the TRIG cables follow it.
+- **Trigger bias:** a trimmer on the kit's trigger input, where a bay wire
+  lands. Each time the bias and the wire together rise through the one-shot's
+  threshold, halfway up, the kit fires the step it is on.
+  - Just under halfway, a small wobble on the wire plays the kit.
+  - An LFO plays a pulse at its rate; the mic, the feedback bus or the chaos
+    shape play the kit off what the board is doing.
 - **Cross-patch:** bridges two voices' envelope pins, so one amplifier follows
   another voice's envelope.
 - **Rotate:** cycles the cross-patch through the original three voices.
@@ -1064,6 +1070,9 @@ The patch bay is four free wires.
 
 - **Kit lanes:** **tempo**, **swing**, **chance**, **decay** and **ring**. Drum
   hit onto chance lets fills feed themselves.
+- **S&H clock:** what strobes the S&H shape's latch, the end of each LFO cycle
+  or a wire from the kit's trigger lines, every hit or one voice's. On a voice,
+  a wire off the S&H jumps on that drum and holds between its hits.
 - **chaos:** bay oscillator shape that folds along a Rössler-style band and
   never repeats a point.
 - **drunk:** bay oscillator shape, a bounded random walk that reflects off the

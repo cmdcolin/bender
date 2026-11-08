@@ -1,5 +1,5 @@
 import { VOICE_LABELS } from '../../drums.ts'
-import { ENV_GATES } from '../../dsp/modbus.ts'
+import { ENV_GATES, SH_CLOCKS } from '../../dsp/modbus.ts'
 import {
   LFO_SYNC_MODES,
   N_DEST,
@@ -218,6 +218,7 @@ export const DEST_CHOICES = [
   'verb howl',
   'FM bodge right',
   'toy bodge right',
+  'kit trigger bias',
 ] as const
 
 export const ENV_KEYS = [
@@ -279,6 +280,16 @@ export const PATCH_GROUPS: Group[] = [
         unit: '',
         choices: LFO_SYNC_MODES,
         help: 'Runs one LFO cycle per division of the kit’s tempo instead of LFO rate. Each kit step that lands on a cycle boundary restarts the cycle, so a bars sweep starts on the one and S&H on sixteenths picks a fresh value every step.',
+      },
+      {
+        key: 'modShClock',
+        label: 'S&H clock',
+        min: 0,
+        max: SH_CLOCKS.length - 1,
+        step: 1,
+        unit: '',
+        choices: SH_CLOCKS,
+        help: 'What strobes the S&H shape’s latch: the end of each LFO cycle, or a wire from the kit’s trigger lines, either every hit or one voice’s. On a voice, every snare or every hat picks a fresh random value and holds it to the next, so a wire off the S&H jumps in time with that drum and stands still between its hits.',
       },
       {
         key: 'modPhraseBars',
@@ -473,6 +484,7 @@ export const PATCH_GROUPS: Group[] = [
                 'kit touch',
                 'kit swoop leak',
                 'kit self fire',
+                'kit trigger bias',
               ],
             },
             {

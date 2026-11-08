@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-830 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
+832 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 201 destinations, among
+- **A patch bay that modulates itself.** Four wires, 202 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 114 controls are shy, mostly the ones that act on the
+names it still sets it. 115 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -257,7 +257,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>78 controls</summary>
+<summary>79 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -320,6 +320,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Ratchet ramp     | −1 to +1                                                                                                           | How the repeats of a ratcheted step land                                                                                                                |
 | Trigger floor    | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                                                    |
 | Self fire †      | off to full                                                                                                        | A wire from each voice’s envelope back onto its own trigger line, through a comparator that trips when the voice has drained to the trigger floor       |
+| Trigger bias †   | off to full                                                                                                        | A trimmer on the kit’s trigger input, and the place a patch bay wire lands on it                                                                        |
 | Scan             | 0 to 40 ms                                                                                                         | The chip strikes one voice per scan                                                                                                                     |
 | Accent           | 1× to 4×                                                                                                           | How far the accent bus swings when it is rested                                                                                                         |
 | Accent sag       | off to full                                                                                                        | How much each accented step takes off the accent cap, which feeds every voice                                                                           |
@@ -1773,13 +1774,14 @@ wire can connect to the toy’s supply rail, the tape loop’s capstan and loop
 markers, or another wire’s depth, so the bay can modulate itself.
 
 <details>
-<summary>23 controls</summary>
+<summary>24 controls</summary>
 
 | control        | range                                                                                                                  | what it does                                                                                        |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | LFO rate       | 0.02 to 400 Hz                                                                                                         | The bay’s oscillator, free-running                                                                  |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                  | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle                      |
 | LFO sync       | off, four bars, two bars, bars, halves, quarters, dotted eighths, eighths, eighth triplets, sixteenths, thirty-seconds | Runs one LFO cycle per division of the kit’s tempo instead of LFO rate                              |
+| S&H clock      | the LFO, any hit, kick, snare, hat, clap, tom, bell, open hat, cymbal                                                  | What strobes the S&H shape’s latch                                                                  |
 | Phrase bars    | 1, 2, 4, 8, 16, 32                                                                                                     | How many bars of the kit the phrase source takes to come round                                      |
 | Phrase shape   | rise, build, fall, swell, stairs, wave                                                                                 | Rise climbs the whole phrase and drops back on the one                                              |
 | ADSR gate      | keys, any hit, kick, snare, hat, clap, tom, bell, open hat, cymbal                                                     | What opens the ADSR: a key held on any keyboard, or a hit from the kit — any voice, or one          |
@@ -1789,7 +1791,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 201 of them, filt cut through toy bodge right                                                                          | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 202 of them, filt cut through kit trigger bias                                                                         | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

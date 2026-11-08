@@ -257,8 +257,9 @@ export const DEST = {
   revHowl: 198,
   fmBodgeR: 199,
   chipBodgeR: 200,
+  drumTrigBias: 201,
 } as const
-export const N_DEST = 201
+export const N_DEST = 202
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
@@ -361,6 +362,8 @@ const LFO_SYNC_SIXTHS = [0, 384, 192, 96, 48, 24, 18, 12, 8, 6, 3]
 
 /** What opens the bay's ADSR: a held key, any hit of the kit, or one voice. */
 export const ENV_GATES = ['keys', 'any hit', ...VOICE_LABELS]
+
+export const SH_CLOCKS = ['the LFO', 'any hit', ...VOICE_LABELS]
 
 export const PHRASE_BARS = [1, 2, 4, 8, 16, 32]
 export const PHRASE_SHAPES = [
@@ -490,6 +493,9 @@ export class ModBus {
     const hz = cycle ? (6 * kitHz) / cycle : p[IDX.modLfoHz]!
     const strobe = src.trig.drumStep
     const shape = Math.round(p[IDX.modLfoShape]!)
+    const shClock = Math.round(p[IDX.modShClock]!)
+    const shMask =
+      shClock === 0 ? 0 : shClock === 1 ? -1 : voiceBit(shClock - 2)
     const attack = coef(0.005, this.sr)
     const release = coef(0.12, this.sr)
     const fall = Math.exp(-1 / (0.12 * this.sr))
@@ -520,7 +526,8 @@ export class ModBus {
         wrapped ||= this.lfoPhase > 0.5
         this.lfoPhase = 0
       }
-      if (wrapped) this.shValue = this.rng() * 2 - 1
+      if (shMask === 0 ? wrapped : (src.trig.drumBits[i]! & shMask) !== 0)
+        this.shValue = this.rng() * 2 - 1
       if (shape === 4) this.lfo[i] = this.chaos.step(hz, this.sr)
       else if (shape === 5) this.lfo[i] = this.drunk.step(hz, this.sr, this.rng)
       else if (wired) this.lfo[i] = lfoShape(this.lfoPhase, shape, this.shValue)
