@@ -1,3 +1,4 @@
+import { DRUM_VOICES } from '../../drums.ts'
 import { JACK_KEYS } from '../../jacks.ts'
 import {
   bendAt,
@@ -200,9 +201,40 @@ const NEEDS_UNSEEN = new Set<ControlKey>([
   'drumSwing',
 ])
 
+type Voice = (typeof DRUM_VOICES)[number]['label']
+
+const TANK_VOICES: readonly Voice[] = ['kick', 'tom', 'snare']
+const NEEDS_VOICE = new Map<ControlKey, readonly Voice[]>([
+  ...DRUM_VOICES.flatMap(v => [
+    [v.level, [v.label]] as const,
+    [v.decay, [v.label]] as const,
+  ]),
+  ['drumTomSweep', ['tom']],
+  ['drumTomSwoop', ['tom']],
+  ['drumSnareSweep', ['snare']],
+  ['drumSnareSwoop', ['snare']],
+  ['drumTankBank', TANK_VOICES],
+  ['drumTankHiss', TANK_VOICES],
+  ['drumTankFold', TANK_VOICES],
+  ['drumSnareMetal', ['snare', 'clap']],
+  ['drumHissLatch', ['snare', 'clap', 'hat', 'open hat']],
+])
+
+const struck = (c: Controls, label: Voice) =>
+  DRUM_VOICES.some(
+    v =>
+      v.label === label &&
+      (c[v.key] !== 0 || c[v.maybe] !== 0 || c[v.ghost] !== 0),
+  )
+
+const voiceHeard = (c: Controls, key: ControlKey) =>
+  NEEDS_VOICE.get(key)?.some(label => struck(c, label)) ?? true
+
 // The drivable controls on a stage you can hear.
 const slammable = (c: Controls) =>
-  drivable(c).filter(d => heard(c, d.key) && !NEEDS_UNSEEN.has(d.key))
+  drivable(c).filter(
+    d => heard(c, d.key) && !NEEDS_UNSEEN.has(d.key) && voiceHeard(c, d.key),
+  )
 
 // One, two or three controls all the way to an end, and nothing else touched.
 // It is how a hand actually finds a sound — all the way up, listen, all the way
