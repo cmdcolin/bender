@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { packParams, TAP_MIC } from '../engine/params.ts'
-import { lineOf } from '../jacks.ts'
+import { BEND_LINE_KEYS, lineOf } from '../jacks.ts'
 import { Chain } from './chain.ts'
 import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
 import { makeIo, SR } from './testRender.ts'
@@ -183,4 +183,16 @@ test('a line fading in during the crossfade passes the rest of itself dry', () =
   const g = 1 / BLOCK
   expect(seen[0]).toBeCloseTo(0.25 + 0.2 * (1 - g) + 0.1 * g + 0.1, 6)
   expect(seen[1]).toBeCloseTo(0.35 + 0.1, 6)
+})
+
+test('each unit posts the peak of what it added to its input, so a muted share reads 0', () => {
+  const { run, chain } = rig()
+  const STOMP = BEND_LINE_KEYS.length
+  chain.returns.fill(0)
+  run({ stompLines: A | B })
+  expect(chain.returns[STOMP]).toBeCloseTo(0.35, 6)
+  run({ stompLines: A | B, stompMute: 1 })
+  chain.returns.fill(0)
+  run({ stompLines: A | B, stompMute: 1 }, 1)
+  expect(chain.returns[STOMP]).toBeCloseTo(0, 6)
 })

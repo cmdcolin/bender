@@ -116,6 +116,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       keyNoteCounts: this.keyNoteCounts,
       taps: chain.taps,
       ldr: chain.ldr,
+      returns: chain.returns,
       bands: chain.bands.levels,
       walk: chain.walk,
       dropped: 0,
@@ -402,6 +403,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       this.duck = 0
       this.built.chain.taps.fill(0)
       this.built.chain.ldr.fill(0)
+      this.built.chain.returns.fill(0)
     }
     return true
   }

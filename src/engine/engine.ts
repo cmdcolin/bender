@@ -35,6 +35,7 @@ import { PEAK_BINS, peaksOf, undoTape } from '../dsp/stages/sampler.ts'
 import { N_BANDS } from '../dsp/util/bandMeter.ts'
 import workletUrl from '../dsp/worklet.ts?worker&url'
 import { errorText } from '../errorText.ts'
+import { UNIT_LINE_KEYS } from '../jacks.ts'
 import { createStore, type Store } from '../listeners.ts'
 import { KEYBEDS, recordOf } from '../machines.ts'
 import { snap } from '../scale.ts'
@@ -200,6 +201,7 @@ export interface Meter {
   taps: Float32Array
   /** How far each channel's duck has darkened it, for the desk's lamps. */
   ldr: Float32Array
+  returns: Float32Array
   /** Each source's and the mic's octave bands, while `watchBands` is on. */
   bands: Float32Array
   /** Which position the chain is running at each step of its walk, and which
@@ -448,6 +450,7 @@ export class Engine {
       faultStage: '',
       taps: new Float32Array(N_TAPS),
       ldr: new Float32Array(MAX_SOURCES),
+      returns: new Float32Array(UNIT_LINE_KEYS.length),
       bands: new Float32Array(BAND_ROWS * N_BANDS),
       walk: Uint8Array.from([0, 1, 2, 3, 4, 5]),
       dropped: 0,
@@ -775,6 +778,7 @@ export class Engine {
           faultStage: msg.faultStage,
           taps: msg.taps,
           ldr: msg.ldr,
+          returns: msg.returns,
           bands: msg.bands,
           walk: msg.walk,
           dropped: msg.dropped,

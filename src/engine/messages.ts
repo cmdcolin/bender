@@ -259,6 +259,7 @@ export interface MeterMsg {
       meter, 0 to 1, in `SOURCE_TAPS` order. The chain's own buffer, cleared
       once posted like `taps`. */
   ldr: Float32Array
+  returns: Float32Array
   /** Each source's and the mic's octave bands over the last meter, in tap
       order, `BAND_HZ` wide: see the chain's `bands`. Zero unless the live view
       asked for them. */

@@ -450,6 +450,8 @@ export class Chain {
     n: BLOCK,
   }
   private readonly bundleInL = new Float32Array(BLOCK)
+  private readonly unitIn = new Float32Array(BLOCK)
+  readonly returns = new Float32Array(MAX_BUNDLES)
   private readonly bundleInR = new Float32Array(BLOCK)
   /** Each unit's wet share on the line it is cabled onto, as this block began
       and as it ends: a unit moving lines fades out on one and in on the next. */
@@ -933,11 +935,22 @@ export class Chain {
     }
   }
 
+  private heard(u: number, io: StereoBlock, n: number) {
+    let peak = 0
+    for (let k = 0; k < n; k++) {
+      const d = io.l[k]! - this.unitIn[k]!
+      const a = d < 0 ? -d : d
+      if (a > peak) peak = a
+    }
+    if (peak > this.returns[u]!) this.returns[u] = peak
+  }
+
   private runPedal(i: number, io: StereoBlock, p: Float32Array, n: number) {
     const s = this.pedals[i]
     if (s) {
       const to = 1 - p[BYPASS_IDX[i]!]!
-      if (!s.when || s.when(p, this.ctx))
+      if (!s.when || s.when(p, this.ctx)) {
+        this.unitIn.set(io.l)
         this.faded(
           s,
           io,
@@ -946,13 +959,16 @@ export class Chain {
           this.bypassGain[i]! * this.pedalSeatFrom[i]!,
           to * this.pedalSeat[i]!,
         )
+        this.heard(this.bendAt.length + i, io, n)
+      }
       this.bypassGain[i] = to
     }
   }
 
   private runBend(id: number, io: StereoBlock, p: Float32Array, n: number) {
     const s = this.bendById[id]
-    if (s && (!s.when || s.when(p, this.ctx)))
+    if (s && (!s.when || s.when(p, this.ctx))) {
+      this.unitIn.set(io.l)
       this.faded(
         s,
         io,
@@ -961,6 +977,8 @@ export class Chain {
         this.bendGain[id - 1]! * this.bendSeatFrom[id - 1]!,
         (1 - p[BEND_BYPASS_IDX[id - 1]!]!) * this.bendSeat[id - 1]!,
       )
+      this.heard(id - 1, io, n)
+    }
   }
 
   private reseat(
