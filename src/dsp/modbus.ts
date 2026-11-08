@@ -372,6 +372,7 @@ const WIRES = [
   [IDX.mod2Src, IDX.mod2Dest, IDX.mod2Depth],
   [IDX.mod3Src, IDX.mod3Dest, IDX.mod3Depth],
 ] as const
+export const N_WIRES = WIRES.length
 
 export const LFO_SYNC_MODES = [
   'off',
@@ -489,6 +490,7 @@ export class ModBus {
     release: 0,
   }
   private keysWere = 0
+  private lastN = 0
   private pressesWere = 0
   private holdLeft = 0
   private lfoPhase = 0
@@ -508,6 +510,19 @@ export class ModBus {
     this.rng = mulberry32(seed)
   }
 
+  wireLevels(p: Float32Array, out: Float32Array) {
+    for (let w = 0; w < WIRES.length; w++) {
+      const [srcIdx, destIdx] = WIRES[w]!
+      const dest = Math.round(p[destIdx]!)
+      const lane =
+        Math.round(p[srcIdx]!) === SRC.off || dest < 0 || dest >= N_DEST
+          ? null
+          : this.read(dest)
+      out[w] = lane ? lane[Math.max(this.lastN - 1, 0)]! : Number.NaN
+    }
+    return out
+  }
+
   read(dest: number): Float32Array | null {
     return this.live[dest] ? this.lanes[dest]! : null
   }
@@ -516,6 +531,7 @@ export class ModBus {
   // envelope and the feedback bus are a block old, the LFO, mic and body pad
   // are current. A block is 2.7 ms — under the resolution of every wire here.
   build(n: number, p: Float32Array, src: ModSources) {
+    this.lastN = n
     this.live.fill(0)
     const cycle = LFO_SYNC_SIXTHS[Math.round(p[IDX.modLfoSync]!)] ?? 0
     const kitHz = src.trig.stepHzOr(p[IDX.drumBpm]!)

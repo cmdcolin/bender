@@ -82,6 +82,7 @@ import type { WildPack } from '../dsp/arc.ts'
 import type {
   FromWorklet,
   NoteDest,
+  ProbedMsg,
   RecMsg,
   RetroMsg,
   SeqDest,
@@ -98,6 +99,7 @@ const DRIFT_TAP_S = 2.5
 // timer is set rather than waiting on the next report.
 const QUEUE_LEAD_MS = 6
 const QUEUE_WAKE_MS = 40
+const PROBE_WAIT_MS = 500
 
 const QUEUE_SLOTS = ['board', 'pattern'] as const
 type QueueSlot = (typeof QUEUE_SLOTS)[number]
@@ -376,7 +378,7 @@ const FRAME_FALLBACK_MS = 50
 // Runs `run` on the next animation frame, or after FRAME_FALLBACK_MS when no
 // frame comes: a hidden tab pauses animation frames, and MIDI, drift and a hunt
 // still have to reach the worklet. Returns a cancel.
-function nextFrame(run: () => void): () => void {
+export function nextFrame(run: () => void): () => void {
   let done = false
   let frame = 0
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -799,6 +801,10 @@ export class Engine {
         if (lit !== this.sounding.get()) this.sounding.set(lit)
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
       else if (msg.kind === 'retro') this.onRetro(msg)
+      else if (msg.kind === 'probed') {
+        this.probes.get(msg.id)?.(msg)
+        this.probes.delete(msg.id)
+      }
     }
     const masterGain = ctx.createGain()
     node.connect(masterGain).connect(ctx.destination)
@@ -851,6 +857,25 @@ export class Engine {
   }
 
   private bandWatchers = 0
+  private probes = new Map<number, (msg: ProbedMsg) => void>()
+  private probeId = 0
+
+  probe(): Promise<ProbedMsg | null> {
+    const node = this.node
+    if (!node) return Promise.resolve(null)
+    const id = ++this.probeId
+    return new Promise(resolve => {
+      const timer = setTimeout(() => {
+        this.probes.delete(id)
+        resolve(null)
+      }, PROBE_WAIT_MS)
+      this.probes.set(id, msg => {
+        clearTimeout(timer)
+        resolve(msg)
+      })
+      this.post({ kind: 'probe', id })
+    })
+  }
 
   /** Whether the audio thread splits each source into octave bands for the
       meter: off unless something is drawing or listening to them. Each true

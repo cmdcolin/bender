@@ -35,7 +35,7 @@ import { followsGate, gateLane, SEQ_TO_LEAD } from '../dsp/trigbus.ts'
 import { mulberry32 } from '../dsp/util/rng.ts'
 import { strayNames } from '../dsp/wander.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
-import { BAND_ROWS } from '../engine/params.ts'
+import { BAND_ROWS, IDX } from '../engine/params.ts'
 import { errorText } from '../errorText.ts'
 import { JACK_KEYS, linesFromJack, UNIT_LINE_KEYS } from '../jacks.ts'
 import { MACHINES } from '../machines.ts'
@@ -81,8 +81,8 @@ import { STRUCK_HOME, strike, type Struck } from './strikes.ts'
 export const GUIDE_MAX_CHARS = 900
 
 const GUIDE = {
-  read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. bender.guide('route') puts effects on machines.`,
-  change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of them, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists unknown keys with the closest real ones, and failed lists values set could not read; set leaves those controls unchanged. Seconds as a second argument glide the controls there on animation frames, which the browser pauses in a hidden tab; set returns at once, so listen in a later call. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds. bender.say('the kick drops') labels the changes the page lists for a listener.`,
+  read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing keys. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with ranges; find('tape delay', 20) returns more, and find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. await bender.heard() lists what the arc or a cue holds off the board and each bay wire's push. bender.guide('route') puts effects on machines.`,
+  change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of them, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists unknown keys with the closest real ones, and failed lists values set could not read; set leaves those controls unchanged. Seconds as a second argument glide the controls there; set returns at once, so listen in a later call. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds. bender.say('the kick drops') labels the changes the page lists for a listener.`,
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory, one token a step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold. It also switches the chip to the memory, at tuneRate steps a second. An array of up to three strings writes one lane each. Glint, Parlor, Growler and Howler follow it on fm-, pcm-, mono- and leadKeyGate; 'lane 1' to 'lane 3' follow one lane, and tuneLift keeps lanes off Plinky. bender.drums({ kick: 'x...x...', hat: '..x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. x is a hit, ? a hit with probability drumChance, . a rest. Each character is a sixteenth, so a beat is four. A row's length sets its loop, an empty string clears it, and rows left out keep theirs. bpm: 130 sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...'), retrig (1 to 9: roll, growl, scream, 20 to 960 Hz: '....3...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
   perform: `Performing the kit. bender.drums({ mute: 'kick, open hat' }) silences rows and keeps their steps; mute: '' brings them back. set({ drumHatLevel: 0.5, drumKickDecay: 2 }) trims one voice; a bay wire on 'hat level' rides it. echo: '............x...' is the echo row: hits on its steps also go into Wraith, the tape delay, which it turns up if it is off. fill: 'on' holds the fill key down. 'step bars' gives each column a condition, one token a column: '. . . . . . . . . . . . fill fill fill fill' plays the last beat only while fill is on. A dot plays every bar; the rest are ${STEP_CONDS.slice(1).join(', ')}, and pre plays when the last column with an A:B before it played. bender.move('vary') rewrites the pattern as the panel's buttons do: ${DRUM_MOVES.map(m => m.name).join(', ')}. { back: true } shifts backwards and { seed: 7 } repeats a roll. Inside bender.queue all of these land on the bar.`,
@@ -108,6 +108,12 @@ const isStruck = (name: string): name is Struck =>
   Object.hasOwn(STRUCK_HOME, name)
 
 const MAX_LISTEN_MS = 20000
+const WIRE_KEYS = [
+  ['mod0Src', 'mod0Dest'],
+  ['mod1Src', 'mod1Dest'],
+  ['mod2Src', 'mod2Dest'],
+  ['mod3Src', 'mod3Dest'],
+] as const satisfies readonly (readonly [ControlKey, ControlKey])[]
 const SPEAK_LEVEL = 0.8
 
 const talk = () => engine.talk()
@@ -899,6 +905,37 @@ function rawBenderApi() {
         land(patch, 0)
       }
       return routeOf(engine.controls.get())
+    },
+
+    async heard() {
+      if (!engine.running.get()) return { audio: audioState() }
+      const probed = await engine.probe()
+      if (!probed)
+        return {
+          audio: audioState(),
+          heard: 'the audio worklet did not answer',
+        }
+      const c = engine.controls.get()
+      const moved = ALL_SLIDERS.flatMap(def => {
+        const at = probed.heard[IDX[def.key]]!
+        return EDITOR_KEYS.has(def.key) ||
+          Math.abs(at - c[def.key]) <= Math.max(def.step, 1e-6) / 2
+          ? []
+          : [
+              `${def.key} = ${formatValue(def, at)}  (written ${formatValue(def, c[def.key])})`,
+            ]
+      })
+      const wires = WIRE_KEYS.flatMap(([src, dest], w) => {
+        const push = probed.wires[w]!
+        const srcDef = SLIDER_BY_KEY.get(src)
+        const destDef = SLIDER_BY_KEY.get(dest)
+        return Number.isNaN(push) || !srcDef || !destDef
+          ? []
+          : [
+              `wire ${w + 1}: ${formatValue(srcDef, c[src])} into ${formatValue(destDef, c[dest])}, pushing ${push.toFixed(2)}`,
+            ]
+      })
+      return { moved, wires }
     },
 
     board() {

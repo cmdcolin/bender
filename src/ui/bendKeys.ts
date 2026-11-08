@@ -1,6 +1,6 @@
 import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls.ts'
 import { STEPS, stepBit } from '../drums.ts'
-import { engine } from '../engine/engine.ts'
+import { engine, nextFrame } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
 import { dealBendKeys, isHeat, type BendKey, type Heat } from './bendDeal.ts'
 import {
@@ -124,7 +124,7 @@ export function shuffleBendRow(rand: () => number = Math.random) {
 // the envelope says, and a choice control flips while the envelope is above
 // zero. A new loop takes over from the level the old one had reached.
 interface Hold {
-  frame: number
+  stop: (() => void) | null
   level: number
   to: Partial<Controls>
 }
@@ -150,10 +150,10 @@ function run(
   cancelRamp(name)
   const start = performance.now()
   const keys = patchKeys(to)
-  const hold: Hold = { frame: -1, level: 0, to }
+  const hold: Hold = { stop: null, level: 0, to }
   holds.set(name, hold)
-  const step = (now: number) => {
-    const t = (now - start) / 1000
+  const step = () => {
+    const t = (performance.now() - start) / 1000
     const v = level(t)
     if (v === null) {
       holds.delete(name)
@@ -165,14 +165,14 @@ function run(
     for (const key of keys) patch[key] = eased(key, live[key], to[key]!, v)
     engine.holdThrow(name, patch)
     hold.level = v
-    hold.frame = t < settle ? requestAnimationFrame(step) : -1
+    hold.stop = t < settle ? nextFrame(step) : null
   }
-  step(start)
+  step()
 }
 
 function cancelRamp(name: string) {
   const hold = holds.get(name)
-  if (hold && hold.frame >= 0) cancelAnimationFrame(hold.frame)
+  hold?.stop?.()
   holds.delete(name)
 }
 

@@ -5,6 +5,7 @@ import { Arc } from './arc.ts'
 import { buildBender, type BuiltChain, type KeyedChip } from './build.ts'
 import { Cue } from './cue.ts'
 import { Deck } from './deck.ts'
+import { N_WIRES } from './modbus.ts'
 import { ScopeTrace, SCOPE_RING_MASK } from './scopeTrace.ts'
 import { pour, slab, type Tracks } from './slab.ts'
 import { Smoother } from './smoother.ts'
@@ -228,6 +229,17 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'bands':
           this.built.chain.bands.on = msg.on
           if (!msg.on) this.built.chain.bands.reset()
+          break
+        case 'probe':
+          this.port.postMessage({
+            kind: 'probed',
+            id: msg.id,
+            heard: this.smoother.cur.slice(),
+            wires: this.built.chain.wireLevels(
+              this.smoother.cur,
+              new Float32Array(N_WIRES),
+            ),
+          })
           break
       }
     }

@@ -5,7 +5,7 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { N_BANDS } from '../dsp/util/bandMeter.ts'
 import { engine } from '../engine/engine.ts'
-import { BAND_ROWS, N_TAPS, SOURCE_TAPS } from '../engine/params.ts'
+import { BAND_ROWS, N_TAPS, packParams, SOURCE_TAPS } from '../engine/params.ts'
 import { lineFor } from '../jacks.ts'
 import { HOLD, REST, TUNE_LANE_KEYS } from '../tune.ts'
 import { activity, ACTIVITY_LINES } from './activity.ts'
@@ -1000,4 +1000,29 @@ test('route reports a unit heard while its return is over the floor', () => {
   expect(bender.route().units.Boing!.heard).toBe(true)
   expect(bender.route().units.Gnash!.heard).toBe(false)
   engine.meter.set(was)
+})
+
+test('heard reads back what the audio thread plays and what each wire pushes', async () => {
+  bender.reset()
+  bender.set({ chipStarve: 0.2, mod0Src: 'lfo', mod0Dest: 'filt cut' })
+  const playing = packParams({ ...engine.controls.get(), chipStarve: 0.6 })
+  const probe = vi.spyOn(engine, 'probe').mockResolvedValue({
+    kind: 'probed',
+    id: 1,
+    heard: playing,
+    wires: Float32Array.of(0.25, Number.NaN, Number.NaN, Number.NaN),
+  })
+  engine.running.set(true)
+  try {
+    expect(await bender.heard()).toEqual({
+      moved: ['chipStarve = 0.60  (written 0.20)'],
+      wires: [
+        expect.stringMatching(/^wire 1: .* into filt cut, pushing 0\.25$/),
+      ],
+    })
+  } finally {
+    engine.running.set(false)
+    probe.mockRestore()
+    bender.reset()
+  }
 })

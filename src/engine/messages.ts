@@ -152,6 +152,11 @@ export interface UncueMsg {
   kind: 'uncue'
 }
 
+export interface ProbeMsg {
+  kind: 'probe'
+  id: number
+}
+
 /** Whether the live view is watching each source's bands. */
 export interface BandsMsg {
   kind: 'bands'
@@ -179,6 +184,7 @@ export type ToWorklet =
   | RetroFlushMsg
   | WildMsg
   | BandsMsg
+  | ProbeMsg
 
 export interface MeterMsg {
   kind: 'meter'
@@ -323,4 +329,11 @@ export interface RetroMsg {
   done: boolean
 }
 
-export type FromWorklet = MeterMsg | RecMsg | RetroMsg
+export interface ProbedMsg {
+  kind: 'probed'
+  id: number
+  heard: Float32Array
+  wires: Float32Array
+}
+
+export type FromWorklet = MeterMsg | RecMsg | RetroMsg | ProbedMsg

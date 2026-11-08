@@ -296,6 +296,10 @@ export class Chain {
   private readonly ctx: Ctx
 
   /** A key going down or coming up on any keyboard, for the bay's ADSR gate. */
+  wireLevels(p: Float32Array, out: Float32Array) {
+    return this.ctx.mod.wireLevels(p, out)
+  }
+
   keyGate(semitone: number, down: boolean) {
     this.ctx.trig.keyGate(semitone, down)
   }
