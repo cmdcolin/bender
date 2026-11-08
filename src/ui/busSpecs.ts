@@ -249,6 +249,12 @@ export const BUS_SPECS: Record<string, BusSpec> = {
             name: 'toy out',
             says: v => `toy out on D0–D${v - 1}`,
           },
+          {
+            key: 'fmSelfBus',
+            link: 0,
+            name: 'Glint out',
+            says: v => `Glint out on D0–D${v - 1}`,
+          },
         ],
       },
       {

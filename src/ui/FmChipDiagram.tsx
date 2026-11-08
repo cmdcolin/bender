@@ -40,6 +40,7 @@ const BUS_KEYS = [
   'fmBusCut',
   'fmStrobe',
   'fmToyBus',
+  'fmSelfBus',
 ] as const
 
 const DIE = [
@@ -55,6 +56,8 @@ const DIE = [
   'fmRing',
   'fmSkew',
   'fmPitchWire',
+  'fmSign',
+  'fmGroundLoop',
 ] as const
 
 const KEYS = [
@@ -172,7 +175,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       TOP + ROW * 2,
       span,
       DIE,
-      'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot, the log adder, register rot, heat, the operator ring, slot skew and the wire from modulator to pitch.',
+      'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot, the log adder, register rot, heat, the operator ring, slot skew, the wire from modulator to pitch, the sign line and the ground loop.',
     ),
   ]
   useOpensOnAim(pick, boxes)

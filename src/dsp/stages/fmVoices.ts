@@ -468,6 +468,19 @@ export const PATCH_ADDR_LINES = PATCH_BYTE_BITS + 4
 export const PATCH_DATA_LINES = 8
 export const PHASE_BITS = 19
 export const CARRY_LINES = PHASE_BITS - 1
+/** Where the wave table's sign line is soldered: the phase's own half bit, a
+    stage of a divider counting each operator's wraps, or the sign of the
+    carrier that went through the table one slot earlier. */
+export const SIGN_TAPS = [
+  'phase',
+  '÷2',
+  '÷4',
+  '÷8',
+  '÷16',
+  '÷32',
+  'slot before',
+] as const
+export const SIGN_DIVIDERS = SIGN_TAPS.length - 2
 
 // The kit the die keeps in ROM. The bass drum is the only one of the three
 // still running off the sine table, so it is the only one that needs a patch —

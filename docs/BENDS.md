@@ -500,6 +500,14 @@ write touches that register again.
     rate, four throw the note between octaves and five key it on and off.
   - At eight bits the register follows the toy's waveform and Glint comes out
     close to noise.
+- **Glint on bus:** the same solder joint carrying Glint's own output, so the
+  waveform writes the register that decides the waveform.
+  - A low note changes the low bits slowly and a high one fast, so the loop
+    spends its time in the bottom octaves. On the sakura tune the share of the
+    stem under 120 Hz goes from 0.12 to 0.39 at one bit and 0.91 at four.
+  - From five bits the output keys its own notes on and off, and the loop gets
+    louder and grittier: flatness 0.07 at five bits, 0.10 at eight.
+  - With nothing sounding the chip stays silent.
 - **Register rot:** the register file's cells leak, and bits flip at random.
   - A register flips more often the longer it goes without a write. The
     processor rewrites the patch bytes only when a voice or tone knob moves, so
@@ -562,6 +570,28 @@ write touches that register again.
   - A modulator on half a sine pushes one way only, so the clarinet and other
     half-sine patches slide off pitch, and the pitch follows the modulator's
     envelope.
+  - Its patch-bay lane moves every sample.
+- **Sign line:** moves the wave table's sign wire off the phase.
+  - On ÷2 to ÷32 a divider counting each operator's wraps sets the sign, so a
+    sine flips polarity once every 2 to 32 cycles and the note drops one to five
+    octaves into a square-edged sub. The modulators divide too, and the FM swing
+    lands the flips mid-wave, so the sub growls.
+  - On the sakura tune the share of the stem under 120 Hz goes from 0.12 to 0.35
+    at ÷2 and 0.83 at ÷32, at the same level.
+  - On slot before, each operator takes the sign of the operator ahead of it on
+    the table: each carrier is ring-modulated by its modulator's square, and
+    each modulator by the carrier on the channel before.
+  - Half-sine patches read silence on the half the new sign marks.
+- **Ground loop:** the output stage shares a ground with the wave table. The
+  output, low-passed at 80 Hz by the coupling capacitor, lifts every operator's
+  phase, and the result goes back out through the output.
+  - Low on the knob the bass thickens. From about 0.3 the loop oscillates under
+    120 Hz by itself, and every note bends around the rumble: on the sakura tune
+    0.79 of the stem sits under 120 Hz at 0.3 and 0.92 at the top, with flatness
+    near 0.2.
+  - Unfiltered, the same loop measured 0.98 flat, white noise, so the capacitor
+    stays in.
+  - With no note sounding the loop stays silent.
   - Its patch-bay lane moves every sample.
 
 ## Inside the drum voices
@@ -924,8 +954,8 @@ Two more cables run from the output jack, under the **mixer** box beside
 
 One AUDIO cord comes into the mixer. It sits under the **mixer** box, and on the
 bench it is the grey cord from a machine's AUDIO out to the synth's AUDIO in.
-Plinky, Glint, Parlor, Growler and Howler have an AUDIO out under their CV
-jack, and Clatter has one on its plate.
+Plinky, Glint, Parlor, Growler and Howler have an AUDIO out under their CV jack,
+and Clatter has one on its plate.
 
 - **Cord in:** how much of the cord goes into the mixer. The ladder and the
   contours shape whatever it carries, and with the gate line soldered the

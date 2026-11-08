@@ -576,6 +576,9 @@ export const DEST_LAW = {
     choices: 6,
     note: 'Heard only while the toy-in cord is up.',
   },
+  fmSign: { law: 'hop', choices: 7 },
+  fmGroundLoop: { law: 'add', lo: 0, hi: 1 },
+  fmSelfBus: { law: 'hop', choices: 9 },
 } as const satisfies Record<LiveDest, Law>
 
 export const WIRE_IS_KNOB = new Set<LiveDest>([
@@ -618,6 +621,7 @@ export const WIRE_IS_KNOB = new Set<LiveDest>([
   'pcmRot',
   'fmSkew',
   'fmPitchWire',
+  'fmGroundLoop',
   'drumTouch',
   'drumLeak',
   'drumSelfFire',

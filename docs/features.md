@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-869 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
-presets, 24 stage settings and 112 named cuts. The generator reads everything
+872 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
+presets, 24 stage settings and 115 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 233 destinations, among
+- **A patch bay that modulates itself.** Four wires, 236 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 134 controls are shy, mostly the ones that act on the
+names it still sets it. 136 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -473,6 +473,11 @@ puts the fault on, and the rows under it show the controls it set:
   the low eleven bits of every step wrap on their own and only the part above
   them turns the phase. Every note snaps down onto the overtones of one low
   pitch, and the tune comes out as a bugle call
+- **the chip writing its own octave**: The chip’s output is soldered onto the
+  low four wires of its own data bus, so its waveform lands in the key register
+  the processor last wrote and sets the octave the note plays in. Low notes
+  change the wires slowly, so the loop sinks into the bottom octaves and churns
+  there
 - **one write late**: The latch misses often enough that every byte commits to
   the register the write before it named
 - **one voice, four times over**: The converter’s slot counter is stuck on the
@@ -501,9 +506,17 @@ puts the fault on, and the rows under it show the controls it set:
   its carrier’s frequency rather than its phase. The swing is the same in hertz
   on every note, so low notes run through zero and backwards while high ones
   only buzz
+- **the tune five octaves down**: The wave table’s sign wire comes off the fifth
+  stage of a divider that counts each operator’s wraps, so every sine flips
+  polarity once in 32 cycles. Each note drops five octaves into a square-edged
+  sub, and the FM swing lands the flips mid-wave, so the sub growls
+- **a rumble the chip feeds itself**: The output shares a ground with the wave
+  table, so the output under 80 Hz lifts every operator’s phase. The loop
+  oscillates below 120 Hz as soon as a note sounds, and every note of the tune
+  bends around the rumble
 
 <details>
-<summary>55 controls</summary>
+<summary>58 controls</summary>
 
 | control                        | range                                                                                    | what it does                                                                                                                                                                             |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -561,7 +574,10 @@ puts the fault on, and the rows under it show the controls it set:
 | Operator ring †                | off to full                                                                              | The latch between operator slots stops clearing                                                                                                                                          |
 | Slot skew †                    | off to full                                                                              | The latch between the phase generator and the accumulator runs a slot late                                                                                                               |
 | Mod into pitch †               | off to full                                                                              | A wire from each modulator’s output onto the carrier’s step, so the modulator moves the carrier’s frequency rather than its phase, up to 16 kHz either way at the modulator’s full swing |
+| Sign line †                    | phase, ÷2, ÷4, ÷8, ÷16, ÷32, slot before                                                 | Moves the wave table’s sign wire off the phase                                                                                                                                           |
+| Ground loop †                  | off to full                                                                              | The output stage’s return current shares a ground with the wave table                                                                                                                    |
 | Toy on bus                     | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders Plinky’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire                                                                                        |
+| Glint on bus                   | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders this chip’s output onto the low bits of its data bus, loudest bit on the lowest wire, the way Toy on bus does with Plinky                                                        |
 
 </details>
 
@@ -1828,7 +1844,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 233 of them, filt cut through lead cord from                                                                           | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 236 of them, filt cut through FM Glint on bus                                                                          | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

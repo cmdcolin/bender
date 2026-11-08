@@ -525,6 +525,14 @@ export const CUTS: CutDef[] = [
     patch: { fmCarry: pick('fmCarry', 'C10') },
   },
   {
+    group: 'Glint',
+    part: BUS,
+    name: 'the chip writing its own octave',
+    blurb:
+      'The chip’s output is soldered onto the low four wires of its own data bus, so its waveform lands in the key register the processor last wrote and sets the octave the note plays in. Low notes change the wires slowly, so the loop sinks into the bottom octaves and churns there',
+    patch: { fmSelfBus: 4 },
+  },
+  {
     group: 'Parlor',
     part: BUS,
     name: 'the top bit sticks',
@@ -841,6 +849,22 @@ export const CUTS: CutDef[] = [
     blurb:
       'A wire puts each modulator’s output on its carrier’s frequency rather than its phase. The swing is the same in hertz on every note, so low notes run through zero and backwards while high ones only buzz',
     patch: { fmPitchWire: 1 },
+  },
+  {
+    group: 'Glint',
+    part: DIE,
+    name: 'the tune five octaves down',
+    blurb:
+      'The wave table’s sign wire comes off the fifth stage of a divider that counts each operator’s wraps, so every sine flips polarity once in 32 cycles. Each note drops five octaves into a square-edged sub, and the FM swing lands the flips mid-wave, so the sub growls',
+    patch: { fmSign: pick('fmSign', '÷32') },
+  },
+  {
+    group: 'Glint',
+    part: DIE,
+    name: 'a rumble the chip feeds itself',
+    blurb:
+      'The output shares a ground with the wave table, so the output under 80 Hz lifts every operator’s phase. The loop oscillates below 120 Hz as soon as a note sounds, and every note of the tune bends around the rumble',
+    patch: { fmGroundLoop: 1 },
   },
   {
     group: 'Crusher',

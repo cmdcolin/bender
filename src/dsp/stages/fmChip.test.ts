@@ -1551,3 +1551,54 @@ test('two bodges on two slots split the chip across both jacks', () => {
   const split = sides({ ...FM_ONLY, fmBodge: 1, fmBodgeR: 2 })
   expect(split.side).toBeGreaterThan(left.side)
 })
+
+const subShare = (x: Float32Array) => lowEnergy(x) / rms(x)
+
+test.each([
+  [1, 0.3],
+  [5, 0.75],
+])('the sign line on tap %i puts the tune under 120 Hz', (fmSign, share) => {
+  expect(subShare(sakuraStem({}, 4))).toBeLessThan(0.15)
+  expect(subShare(sakuraStem({ fmSign }, 4))).toBeGreaterThan(share)
+})
+
+test('the sign line on ÷2 drops a held note an octave', () => {
+  const divided = (fmSign: number) =>
+    heldOn({ fmVoice: voice('organ'), fmSign }, [0])
+  expect(bin(divided(1), A3 / 2)).toBeGreaterThan(10 * bin(divided(0), A3 / 2))
+})
+
+test('the sign line on the slot before changes a held bell', () => {
+  const bell = (fmSign: number) =>
+    heldOn({ fmVoice: voice('bell'), fmSign }, [0])
+  expect(deviation(bell(6), bell(0))).toBeGreaterThan(0.5)
+})
+
+test('a wire on the sign line lane picks the tap the knob does', () => {
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmSign,
+    mod0Depth: 3 / 7,
+  }
+  expect(sine(wire)).toEqual(sine({ fmSign: 3 }))
+})
+
+test.each([
+  ['fmGroundLoop', 1],
+  ['fmSelfBus', 4],
+] as const)('%s at %d turns the tune into a rumble under 120 Hz', (key, v) => {
+  const bent = sakuraStem({ [key]: v }, 4)
+  expect(subShare(bent)).toBeGreaterThan(0.8)
+  expect(peak(bent)).toBeLessThanOrEqual(peak(sakuraStem({}, 4)) * 1.5)
+})
+
+test.each([
+  ['fmGroundLoop', 1],
+  ['fmSelfBus', 8],
+] as const)('%s at %d stays silent with no note sounding', (key, v) => {
+  const x = renderStems({ ...FM_ONLY, fmKeyGate: 1, [key]: v }, 1).stems[
+    FM_TAP
+  ]!
+  expect(rms(x)).toBe(0)
+})

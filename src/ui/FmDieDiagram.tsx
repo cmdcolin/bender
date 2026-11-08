@@ -39,12 +39,21 @@ const KEYS = [
   'fmRing',
   'fmSkew',
   'fmPitchWire',
+  'fmSign',
+  'fmGroundLoop',
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
   allocator: ['fmAlloc', 'fmStack'],
   registers: ['fmColdBoot', 'fmRot', 'fmHeat'],
-  voices: ['fmAdder', 'fmRing', 'fmSkew', 'fmPitchWire'],
+  voices: [
+    'fmAdder',
+    'fmRing',
+    'fmSkew',
+    'fmPitchWire',
+    'fmSign',
+    'fmGroundLoop',
+  ],
   DAC: ['fmDacSlot', 'fmDacSlip', 'fmBodge', 'fmBodgeR'],
   'register rot': ['fmRot'],
   heat: ['fmHeat'],
@@ -87,7 +96,11 @@ export function FmDieDiagram() {
   const rot = r.value('fmRot') > 0
   const heat = r.value('fmHeat') > 0
   const ringing =
-    r.value('fmRing') > 0 || r.value('fmSkew') > 0 || r.value('fmPitchWire') > 0
+    r.value('fmRing') > 0 ||
+    r.value('fmSkew') > 0 ||
+    r.value('fmPitchWire') > 0 ||
+    r.value('fmSign') > 0 ||
+    r.value('fmGroundLoop') > 0
 
   const frameW = boxWidth('voice 4') + 16
   const widths = [
@@ -146,7 +159,9 @@ export function FmDieDiagram() {
                 the arithmetic every operator uses. The operator ring feeds each
                 carrier into the next modulator, slot skew hands each operator
                 the step of the slot before it, and a wire puts each modulator
-                on its carrier’s pitch.
+                on its carrier’s pitch. The sign line sets where each sine takes
+                its polarity, and the ground loop feeds the output back onto
+                every operator’s phase.
               </title>
               <Plate
                 x={frameX}

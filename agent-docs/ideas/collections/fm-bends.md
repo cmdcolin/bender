@@ -4,8 +4,9 @@ description:
   Further bends for the FM chip with hook points and measurements. Items 1–8,
   the exp table's bus, the allocator, cold boot and five effect scripts have
   landed with named cuts, and so has the phase generator (increment bus, carry,
-  slot skew, mod into pitch); mono, the spare register bits, a feedback tap and
-  the envelope state bits are what is left.
+  slot skew, mod into pitch) and three bass loops (sign line, ground loop, Glint
+  on bus); a busy flag, the spare register bits, the envelope state bits and a
+  kit-strobed latch are what is left.
 ---
 
 # Further bends for the FM chip
@@ -509,6 +510,30 @@ Still open from the same survey:
 - **Envelope state bits.** A fault on the two-bit stage register would trap
   operators in attack or send decay straight to release.
 
+## Three loops toward the bass — landed
+
+Asked for bends heavy in the bass, every one built to move the stem's share
+under 120 Hz (`lowEnergy` over rms, 0.12 on the clean sakura stem):
+
+- **Sign line** (`fmSign`): the wave table's sign wire off a divider counting
+  each operator's wraps (÷2 to ÷32), or off the operator ahead on the table
+  (slot before). 0.35 at ÷2, 0.83 at ÷32, level unchanged. Slot before is a ring
+  modulator and reads 0.19.
+- **Ground loop** (`fmGroundLoop`): the output, low-passed at 80 Hz, onto every
+  melody operator's phase. 0.79 at 0.3, 0.92 at 1, flatness near 0.2. Unfiltered
+  it read 0.98 flat, white noise, so the 80 Hz pole stays.
+- **Glint on bus** (`fmSelfBus`): **Toy on bus** carrying Glint's own output
+  latch. 0.39 at one bit, 0.91 at four. Low notes change the bits slowly, so the
+  loop sinks to the bottom octaves without anything biasing it there.
+
+Stacked, the sign line on ÷8 with Glint on bus at four bits reads 0.95, centroid
+83 Hz. Two candidates were built and dropped; the comments in `fmChip.ts` give
+the numbers: a wire from the envelope's floor back to key-on, and the envelope
+dropping the block an octave per halving.
+
+Named cuts: _the tune five octaves down_ (÷32), _a rumble the chip feeds itself_
+(ground loop 1), _the chip writing its own octave_ (four bits).
+
 ## Named and measured
 
 Every bend from the last two rounds has a name on the panel. Numbers are
@@ -555,10 +580,22 @@ Design calls:
 Items 7 and the exp table's bus landed in this order; the numbers below are kept
 so the doc can still be cited by them.
 
-3. **Mono.** A bodge wire putting one channel hard left would also make the slot
-   counter's slips audible as movement, not just as level. At full width it
-   would also put the kit and the tune's one voice on opposite sides.
+Mono landed as the two bodge wires.
+
 4. **The test register's 0xf0 and the key register's sustain bit**, as above.
+   Three proposals for 0xf0: the LFO's divider skipped (tremolo at 3.7 kHz,
+   vibrato at 6.4 kHz), the phase held still, and the shift register on every
+   accumulator's bottom bit. Cold boot, rot and data faults reach the register,
+   so these would come and go.
+5. **The busy flag ignored.** Writes inside the chip's wait window are lost. The
+   window counts off the chip's crystal and the writes off the CPU's, so the two
+   **Clock** knobs would start to interact, and **Glint on bus** would flood the
+   bus and lock the driver out.
+6. **The address latch strobed off a kit line.** Writes land only on hits, so
+   the tune is sampled and held by the pattern.
+7. **Envelope skew.** **Slot skew** for levels: a carrier takes its neighbour's
+   envelope, and in rhythm mode the tune is articulated by the hi-hat.
+8. **A sync wire.** One channel's wrap resets the others' phases.
 
 ## Compositions to try
 

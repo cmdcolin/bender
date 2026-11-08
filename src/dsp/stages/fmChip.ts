@@ -47,6 +47,8 @@ import {
   PATCH_DATA_LINES,
   PHASE_BITS,
   CARRY_LINES,
+  SIGN_DIVIDERS,
+  SIGN_TAPS,
   REG,
   RHY,
   ROM_PATCH_BYTES,
@@ -348,6 +350,8 @@ const PHASE_TOP = PHASE_FULL - 1
 const INC_SEED = 0x35
 const SKEW_SEED = 0x6d
 const PITCH_WIRE_HZ = 16000
+const BOUNCE_HZ = 80
+const BOUNCE_DEPTH = 8
 const HEAT_PER_SEC = 0.12
 const HEAT_IDLE = 0.5
 const HEAT_ROT = 0.3
@@ -388,9 +392,18 @@ interface Op {
   /** last two outputs, for the modulator's feedback into itself */
   fb1: number
   fb2: number
+  /** how many times the accumulator has wrapped, for the sign line's divider */
+  wraps: number
 }
 
-const newOp = (): Op => ({ phase: 0, env: 0, stage: IDLE, fb1: 0, fb2: 0 })
+const newOp = (): Op => ({
+  phase: 0,
+  env: 0,
+  stage: IDLE,
+  fb1: 0,
+  fb2: 0,
+  wraps: 0,
+})
 
 const newPanel = (): Panel => ({
   bright: -1,
@@ -416,6 +429,7 @@ function kitEdge(before: number, now: number, bit: number, op: Op) {
 }
 
 function clear(op: Op) {
+  op.wraps = 0
   op.phase = 0
   op.env = 0
   op.stage = IDLE
@@ -649,6 +663,15 @@ export class FmChip implements Stage {
   private slotInc = new Float64Array(2 * N_CH)
   private lastSlotInc = 0
   private skewRng = mulberry32(SKEW_SEED)
+  /** the sign line's tap: -1 on the phase, a divider stage, or the slot before */
+  private signTap = -1
+  /** the sign the table puts on this operator's word, or -1 for the phase's */
+  private signNeg = -1
+  private lastHalf = 0
+  private selfBits = 0
+  private selfHeld = 0
+  private ground = 0
+  private readonly groundLp: number
   private temp = 0
   private tripped = false
   private tripAt = TRIP_LOW + TRIP_SPAN / 2
@@ -660,6 +683,7 @@ export class FmChip implements Stage {
   constructor(sr: number, supplies: Supplies) {
     this.sr = sr
     this.power = new SupplyTap(supplies)
+    this.groundLp = 1 - Math.exp((-2 * Math.PI * BOUNCE_HZ) / sr)
   }
 
   needs(p: Float32Array, ctx: Ctx) {
@@ -702,6 +726,15 @@ export class FmChip implements Stage {
       Math.round(clamp01(0.5 + x * TOY_BUS_GAIN) * 0xff) >> (8 - MIC_BUS_BITS)
     if (level === this.micHeld) return
     this.micHeld = level
+    this.commit(this.busAddr, (this.busData & ~mask) | level)
+  }
+
+  private selfOnBus(x: number) {
+    const mask = (1 << this.selfBits) - 1
+    const level =
+      Math.round(clamp01(0.5 + x * TOY_BUS_GAIN) * 0xff) >> (8 - this.selfBits)
+    if (level === this.selfHeld) return
+    this.selfHeld = level
     this.commit(this.busAddr, (this.busData & ~mask) | level)
   }
 
@@ -1267,9 +1300,12 @@ export class FmChip implements Stage {
     let addr = Math.floor(this.wavePhase * SINE_STEPS) & (SINE_STEPS - 1)
     if (this.waveLine >= 0)
       addr = this.waveBus.read(addr, this.waveLine, this.waveFault, this.busCut)
-    if (half && addr & SIGN) this.waveOut = 0
+    const neg = this.signNeg < 0 ? addr & SIGN : this.signNeg
+    this.lastHalf = addr & SIGN
+    if (half && neg) this.waveOut = 0
     else if (this.waveDataLine < 0 && this.blob <= 0)
-      this.waveOut = sineAt(addr)
+      this.waveOut =
+        this.signNeg < 0 ? sineAt(addr) : neg ? -sineMag(addr) : sineMag(addr)
     else {
       let word = Math.round(sineMag(addr) * WAVE_DATA_FULL)
       // The blob first and the fault after, because a pin the fault has taken
@@ -1284,7 +1320,7 @@ export class FmChip implements Stage {
           this.busCut,
         )
       const s = word / WAVE_DATA_FULL
-      this.waveOut = addr & SIGN ? -s : s
+      this.waveOut = neg ? -s : s
     }
   }
 
@@ -1517,6 +1553,9 @@ export class FmChip implements Stage {
     }
   }
 
+  // A wire from the floor comparator back to key-on was tried as a bass bend:
+  // patches that sustain at 0 dB never fall to the trip, and the sakura stem
+  // kept 0.12 of its level under 120 Hz at every setting.
   private stepEnv(op: Op, r: Rates) {
     switch (op.stage) {
       case ATTACK:
@@ -1679,6 +1718,11 @@ export class FmChip implements Stage {
     const modSkew = bay.read(DEST.fmSkew)
     const baseWire = p[IDX.fmPitchWire]!
     const modWire = bay.read(DEST.fmPitchWire)
+    this.signTap =
+      hop(p[IDX.fmSign]!, SIGN_TAPS.length, bay.read(DEST.fmSign)) - 1
+    const baseBounce = p[IDX.fmGroundLoop]!
+    const modBounce = bay.read(DEST.fmGroundLoop)
+    this.selfBits = hop(p[IDX.fmSelfBus]!, 9, bay.read(DEST.fmSelfBus))
     this.blob = baseBlob
     const rail = this.power.pick(p[IDX.fmSupply]!)
     const railAmp = rail.ampFactor
@@ -1814,6 +1858,7 @@ export class FmChip implements Stage {
       this.stepLfo()
       if (this.toyBits > 0) this.toyOnBus(toy[i]!)
       if (micOnBus) this.micOnBus(micOnBus[i]!)
+      if (this.selfBits > 0) this.selfOnBus(this.held)
       if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
       if (this.blob > 0 && !kit) this.stepNoise()
 
@@ -1926,6 +1971,12 @@ export class FmChip implements Stage {
         this.sr
       if (skew > 0) this.fillSlots(pitch)
       const slip = modSlip ? clamp01(baseSlip + modSlip[i]!) : baseSlip
+      const bounceDepth = modBounce
+        ? clamp01(baseBounce + modBounce[i]!)
+        : baseBounce
+      if (bounceDepth > 0)
+        this.ground += this.groundLp * (this.held - this.ground)
+      const bounce = bounceDepth * BOUNCE_DEPTH * this.ground
       const slotted = this.dacSlot >= 0 || slip > 0
       if (slotted) this.slotOut.fill(0)
       for (let n = 0; n < N_CH; n++) {
@@ -1948,6 +1999,9 @@ export class FmChip implements Stage {
         const key = this.regs[REG.keyBlock + n]!
         const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
         const block = (key >> 1) & 7
+        // Dropping the block an octave per halving of the envelope was tried:
+        // the drops land in the quiet tail, and a bell kept 0.46 of its level
+        // under 120 Hz against 0.39 clean.
         const hz =
           (fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[block]! * pitch * this.taps[n]!
 
@@ -1981,10 +2035,13 @@ export class FmChip implements Stage {
           if (this.skewRng() < skew)
             modStep = n === 0 ? this.lastSlotInc : this.slotInc[2 * n - 1]!
         }
+        const modWas = c.mod.phase
         if (this.phaseFault) this.advance(c.mod, modStep, 0)
         else c.mod.phase = (c.mod.phase + modStep) % 1
+        if (c.mod.phase < modWas) c.mod.wraps++
         const self = (c.mod.fb1 + c.mod.fb2) * mod.fb * fbBoost
-        this.wavePhase = c.mod.phase + self + ringIn * this.ringLatch
+        this.wavePhase = c.mod.phase + self + ringIn * this.ringLatch + bounce
+        if (this.signTap >= 0) this.signNeg = this.signOf(c.mod)
         this.wave(mod.half)
         const ms = this.waveOut
         const m = this.adderMask
@@ -1993,12 +2050,16 @@ export class FmChip implements Stage {
         c.mod.fb2 = c.mod.fb1
         c.mod.fb1 = m
 
+        const carWas = c.car.phase
         if (this.phaseFault || wire > 0) this.advance(c.car, carStep, wire * m)
         else c.car.phase = (c.car.phase + carStep) % 1
+        if (c.car.phase < carWas) c.car.wraps++
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
-        this.wavePhase = c.car.phase + m * 2 * indexBoost
+        this.wavePhase = c.car.phase + m * 2 * indexBoost + bounce
+        if (this.signTap >= 0) this.signNeg = this.signOf(c.car)
         this.wave(car.half)
+        this.signNeg = -1
         const cs = this.waveOut
         const v = this.adderMask
           ? this.logMul(cs, carEnv * this.volume(n))
@@ -2058,6 +2119,14 @@ export class FmChip implements Stage {
           (((acc & ~below) + (word & ~below)) & PHASE_TOP)) /
         PHASE_FULL
     }
+  }
+
+  private signOf(op: Op) {
+    return this.signTap < SIGN_DIVIDERS
+      ? (op.wraps >> this.signTap) & 1
+      : this.lastHalf
+        ? 1
+        : 0
   }
 
   private fillSlots(pitch: number) {
@@ -2217,6 +2286,9 @@ export class FmChip implements Stage {
     this.ringLatch = 0
     this.incBus.reset()
     this.lastSlotInc = 0
+    this.lastHalf = 0
+    this.selfHeld = 0
+    this.ground = 0
     if (!this.cold) return
     for (let r = 0; r < N_REGS; r++)
       this.regs[r] = Math.floor(this.bootRng() * 256)

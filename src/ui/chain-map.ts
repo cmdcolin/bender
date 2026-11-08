@@ -278,6 +278,9 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   leadToyDiv: 'Howler',
   monoCordFrom: 'Growler',
   leadCordFrom: 'Howler',
+  fmSign: 'Glint',
+  fmGroundLoop: 'Glint',
+  fmSelfBus: 'Glint',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

@@ -179,6 +179,9 @@ const LANDED = {
   'FM carry': { up: ['fmLevel'] },
   'FM slot skew': { up: ['fmLevel'] },
   'FM mod into pitch': { up: ['fmLevel'] },
+  'FM sign line': { up: ['fmLevel'] },
+  'FM ground loop': { up: ['fmLevel'] },
+  'FM Glint on bus': { up: ['fmLevel'] },
   'sheet level': { up: ['sheetLevel'] },
   'bottle level': { up: ['bottleLevel'] },
   'FM cut depth': {

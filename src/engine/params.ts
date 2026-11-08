@@ -599,6 +599,9 @@ export const PARAM_DEFS = [
   ['fmCarry', 'step'],
   ['fmSkew', 'slew'],
   ['fmPitchWire', 'slew'],
+  ['fmSign', 'step'],
+  ['fmGroundLoop', 'slew'],
+  ['fmSelfBus', 'step'],
 
   ['pcmLevel', 'slew'],
   ['pcmMute', 'ramp'],

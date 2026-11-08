@@ -250,6 +250,9 @@ export const DEST_CHOICES = [
   'lead cord divider',
   'mono cord from',
   'lead cord from',
+  'FM sign line',
+  'FM ground loop',
+  'FM Glint on bus',
 ] as const
 
 export const ENV_KEYS = [
@@ -582,6 +585,9 @@ export const PATCH_GROUPS: Group[] = [
                 'FM carry',
                 'FM slot skew',
                 'FM mod into pitch',
+                'FM sign line',
+                'FM ground loop',
+                'FM Glint on bus',
               ],
             },
             {
