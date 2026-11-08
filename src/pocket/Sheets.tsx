@@ -4,9 +4,9 @@ import { POOLS } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
 import { CHANNELS, sliderFor, snapToStep } from '../ui/controls/index.ts'
 import { useControlValue, useStoreValue } from '../ui/ControlsContext.ts'
-import { SHUFFLE } from '../ui/DeviceVerbs.tsx'
 import { mutate } from '../ui/presets/index.ts'
 import rangeStyles from '../ui/range.module.css'
+import { ShuffleMark } from '../ui/ShuffleMark.tsx'
 import { fromPos, toPos } from '../ui/slider-scale.ts'
 import styles from './pocket.module.css'
 
@@ -209,7 +209,13 @@ export function MixSheet(props: { onClose: () => void }) {
           {micOn ? '● mic live' : 'mic'}
         </button>
         <button className={styles.chip} onClick={roll}>
-          {step ? '✕ cancel' : <>{SHUFFLE} load a tape</>}
+          {step ? (
+            '✕ cancel'
+          ) : (
+            <>
+              <ShuffleMark /> load a tape
+            </>
+          )}
         </button>
         <select
           className={styles.pool}

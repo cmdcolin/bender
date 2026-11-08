@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { useBoardValue } from './ControlsContext.ts'
-import { SHUFFLE } from './DeviceVerbs.tsx'
 import { removable, takeOff } from './fitted.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
@@ -29,6 +28,7 @@ import {
   useStanding,
   useTouchedCount,
 } from './rollBack.ts'
+import { ShuffleMark } from './ShuffleMark.tsx'
 import styles from './StageVerbs.module.css'
 import { Tip } from './Tip.tsx'
 
@@ -98,7 +98,7 @@ export function ScopeVerbs({
     <>
       <Tip text={rollTip}>
         <button className={styles.verb} aria-label="randomize" onClick={onRoll}>
-          {SHUFFLE}
+          <ShuffleMark />
         </button>
       </Tip>
       {canUndo && (

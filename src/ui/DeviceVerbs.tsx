@@ -13,6 +13,7 @@ import { menuCheck, menuItem } from './menuItems.ts'
 import { MicCap } from './MicJacks.tsx'
 import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
+import { ShuffleMark } from './ShuffleMark.tsx'
 import { ControlSlider } from './Slider.tsx'
 import { levelOf, muteOf } from './stageLevels.ts'
 import { useHeardThrough, viaOf } from './stillHeard.ts'
@@ -44,12 +45,6 @@ const SPEAKER = (muted: boolean) => (
         stroke="currentColor"
       />
     )}
-  </svg>
-)
-
-export const SHUFFLE = (
-  <svg className={styles.shuffle} viewBox="0 0 12 12" aria-hidden="true">
-    <path d="M1 3h2c3 0 3 6 6 6h2M1 9h2c3 0 3-6 6-6h2M9.5 1.5 11 3 9.5 4.5M9.5 7.5 11 9 9.5 10.5" />
   </svg>
 )
 
@@ -213,7 +208,7 @@ function Rolls({
           aria-label={face.label}
           onClick={() => roll(face)}
         >
-          {face === kinds[0] ? SHUFFLE : face.label}
+          {face === kinds[0] ? <ShuffleMark /> : face.label}
         </button>
       </Tip>
       <Tip

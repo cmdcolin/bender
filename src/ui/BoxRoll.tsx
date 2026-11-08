@@ -2,7 +2,6 @@ import { engine } from '../engine/engine.ts'
 import styles from './BoxRoll.module.css'
 import { groupFor } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { SHUFFLE } from './DeviceVerbs.tsx'
 import { morphSetting } from './morph.ts'
 import { rollKeys } from './presets/index.ts'
 import {
@@ -12,6 +11,7 @@ import {
   useCanUndoRoll,
   useMovedCount,
 } from './rollBack.ts'
+import { ShuffleMark } from './ShuffleMark.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
@@ -44,7 +44,7 @@ export function BoxRoll({
             )
           }
         >
-          {SHUFFLE}
+          <ShuffleMark />
         </button>
       </Tip>
       {canUndo && (

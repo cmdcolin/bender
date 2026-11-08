@@ -61,10 +61,10 @@ import {
   useControlValue,
   useStoreValue,
 } from './ControlsContext.ts'
-import { SHUFFLE } from './DeviceVerbs.tsx'
 import styles from './DrumGrid.module.css'
 import { padKeyFor, toggleRowMute } from './drumKeys.ts'
 import { claimPress, claimRelease } from './keyPress.ts'
+import { ShuffleMark } from './ShuffleMark.tsx'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
 
@@ -766,7 +766,7 @@ function BendRow({ live }: { live: boolean }) {
             aria-label="shuffle bend steps"
             onClick={() => shuffleBendRow()}
           >
-            {SHUFFLE}
+            <ShuffleMark />
           </button>
         </Tip>
       </div>
