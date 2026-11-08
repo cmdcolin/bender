@@ -1,13 +1,14 @@
 import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
+import { DEAD_V } from '../toyRail.ts'
 import { rail } from '../util/bridged.ts'
 import { ringSize } from '../util/delayline.ts'
 import { Transient } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { DcBlocker, lpCoef } from '../util/onepole.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
-import { flushDenormal } from '../util/softclip.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 
 const AP_MS = [1.7, 2.9, 4.7, 6.3, 8.3, 11.9]
 const COMB_MS = [31, 37, 41, 43]
@@ -25,6 +26,9 @@ const CHIRP_STAGES = 32
 const LAP_STAGES = 4
 const CHIRP_HZ = 2500
 const DIFFUSE = 0.6
+
+const HOWL_GAIN = 0.15
+const HOWL_SUPPLY = 0.05
 
 class Tank {
   private readonly buf: Float32Array
@@ -247,9 +251,21 @@ export class SpringVerb implements Stage {
     const inL = this.inL
     const inR = this.inR
     const dcCoef = this.dcCoef
+    const howlMod = ctx.mod.read(DEST.revHowl)
+    const howl =
+      HOWL_GAIN *
+      Math.min(Math.max(p[IDX.revHowl]! + (howlMod ? howlMod[0]! : 0), 0), 1)
+    const wetL = this.wetL
+    const wetR = this.wetR
     for (let i = 0; i < n; i++) {
       let xl = this.dcL.process(l[i]!, dcCoef)
       let xr = this.dcR.process(r[i]!, dcCoef)
+      if (howl > 0) {
+        const swing =
+          HOWL_SUPPLY * Math.max((ctx.railV[i]! - DEAD_V) / (1 - DEAD_V), 0.05)
+        xl += swing * softclip((howl * wetL[i]!) / swing)
+        xr += swing * softclip((howl * wetR[i]!) / swing)
+      }
       const slammed = this.slam.process(0.5 * (xl + xr), slamAt)
       if (kick > 0) {
         const hit = trig.drumBits[i]! !== 0 && trig.drumGain[i]! >= hitAt

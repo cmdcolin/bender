@@ -249,6 +249,10 @@ Bends:
     staircase.
   - Step tap, the clock pot and Crosstalk move the strobe with the tune.
   - Output on address and Output on data flip at the strobe rate.
+- **Bodge wire:** lifts the melody's or the bass's resistor off the mixing
+  network and wires it to the left jack. That voice plays hard left and the rest
+  stay in the middle. The lifted voice skips the output pin, so the pin's faults
+  and Output hold reach only the middle.
 - **Hard sync:** a free oscillator, 30 Hz at the bottom of the knob and four and
   a half octaves up at the top, resets every voice's divider each cycle.
   - A note above the oscillator sounds at the oscillator's pitch with a
@@ -439,6 +443,13 @@ write touches that register again.
   - Slipping: the counter sometimes reads a channel twice and skips the next. A
     touch is a flutter, the middle a buzz pitched by the slip rate, and the top
     folds notes into images a quarter of the sample rate apart.
+- **Bodge wire:** a second latch on the converter, strobed in one slot and wired
+  to the left jack. The voice in that slot plays hard left.
+  - Notes land on whichever channel is free, so a chord spreads across the field
+    as it is struck.
+  - With **Slot slip** up the latch catches whichever channel the counter lands
+    on, so voices jump sides.
+  - **FM bodge** walks the latch through the slots.
 - **Allocator:** the driver's channel picker. Stuck, every note goes to one
   channel, each note cuts off the last one's tail, and a chord comes out as its
   last note.
@@ -1267,6 +1278,13 @@ where the feedback comes back in. Every control rests off.
 - **Warble:** swings each spring-tank comb's length on a slow sine. At the top
   the combs swing a third of their length and the tail wobbles. The bay's **verb
   warble** lane rides the knob.
+- **Howl:** the spring tank's pickup amp leaks into its driver, and the driver
+  runs off the shared cells.
+  - Low on the knob the tail rings on longer at the springs' pitches.
+  - Up the travel the tank feeds itself and holds a drone after the input stops.
+    Warble swings it and Boing smears it.
+  - A starve or a loud board drags the cells down and chokes the drone.
+  - The bay's **verb howl** lane rides the knob.
 - **Shift** (delay pedal's shift mode): moves every repeat by the **Shift**
   interval, so each lap moves again.
   - Up a fifth: a staircase of fifths, ten times the pitch by the sixth lap.

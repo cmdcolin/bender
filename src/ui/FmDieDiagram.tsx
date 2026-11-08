@@ -29,6 +29,7 @@ import type { ControlKey } from '../controls.ts'
 const KEYS = [
   'fmDacSlot',
   'fmDacSlip',
+  'fmBodge',
   'fmAlloc',
   'fmColdBoot',
   'fmAdder',
@@ -43,7 +44,7 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   allocator: ['fmAlloc', 'fmStack'],
   registers: ['fmColdBoot', 'fmRot', 'fmHeat'],
   voices: ['fmAdder', 'fmRing', 'fmSkew', 'fmPitchWire'],
-  DAC: ['fmDacSlot', 'fmDacSlip'],
+  DAC: ['fmDacSlot', 'fmDacSlip', 'fmBodge'],
   'register rot': ['fmRot'],
   heat: ['fmHeat'],
 }

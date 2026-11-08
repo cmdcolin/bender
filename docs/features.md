@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-825 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 196
+828 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 196
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 196 destinations, among
+- **A patch bay that modulates itself.** Four wires, 199 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 109 controls are shy, mostly the ones that act on the
+names it still sets it. 112 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -126,7 +126,7 @@ puts the fault on, and the rows under it show the controls it set:
   lifting off, so the song keeps taking different wrong turns
 
 <details>
-<summary>57 controls</summary>
+<summary>58 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -167,6 +167,7 @@ puts the fault on, and the rows under it show the controls it set:
 | PWM tap             | off to full                                                                                                                    | Takes the volume PWM carrier off the melody’s pitch divider in place of the master clock, so it runs a whole number of octaves under each note: one at the bottom of the knob, six at the top |
 | FM on clock         | off to full                                                                                                                    | Wires Glint’s output onto this chip’s timing pin, so Glint’s sound bends the toy’s pitch, tempo and envelopes together, by up to four octaves                                                 |
 | Output hold         | off to full                                                                                                                    | Puts a latch between the voices and the output pin and strobes it off the melody’s pitch divider, so the output holds each level until the next strobe                                        |
+| Bodge wire †        | off, melody, bass                                                                                                              | Lifts one voice’s resistor off the mixing network and wires it to the left jack, so that voice plays hard left and the rest stay in the middle                                                |
 | Hard sync           | off to full                                                                                                                    | Runs a free oscillator from 40 Hz up five octaves of the knob and resets every voice’s divider on each of its cycles                                                                          |
 | Voice XOR           | off to full                                                                                                                    | Replaces the voice mix with an XOR of the voices’ squares: the first voice flips each time another voice is low                                                                               |
 | Envelope bits       | off to full                                                                                                                    | Shortens the envelope counter so every fade runs in steps                                                                                                                                     |
@@ -469,7 +470,7 @@ puts the fault on, and the rows under it show the controls it set:
   only buzz
 
 <details>
-<summary>53 controls</summary>
+<summary>54 controls</summary>
 
 | control                        | range                                                                                    | what it does                                                                                                                                                                             |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -516,6 +517,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Strobe slip †                  | off to full                                                                              | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught                                                                     |
 | DAC slot †                     | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4                                 | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot                                                                               |
 | Slot slip †                    | off to full                                                                              | The slot counter running slow against the converter, so now and then it reads one channel twice and skips the next                                                                       |
+| Bodge wire †                   | off, slot 1, slot 2, slot 3, slot 4                                                      | A second latch on the converter, strobed in one slot of the four and wired to the left jack                                                                                              |
 | Allocator                      | free, stuck on 1, stuck on 2, stuck on 3, stuck on 4, all four                           | The driver’s note allocator, stuck handing every note to one channel                                                                                                                     |
 | Divider taps                   | fifths, octaves, minor, wrong divider                                                    | With the allocator on all four, which tap of the divider chain each channel’s frequency counter runs off, so each sounds the key at its own fixed pitch                                  |
 | Cold boot †                    | clean or garbage                                                                         | What the register file holds at power-on                                                                                                                                                 |
@@ -1659,7 +1661,7 @@ and _Kick_ sets how easily a slam at the input or a hit from the kit throws them
 against it. That crashes the tank, the sound of kicking the amp.
 
 <details>
-<summary>9 controls</summary>
+<summary>10 controls</summary>
 
 | control      | range                              | what it does                                                                                                            |
 | ------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -1668,6 +1670,7 @@ against it. That crashes the tank, the sound of kicking the amp.
 | Tone         | 500 Hz to 12 kHz                   | Damping inside the tank                                                                                                 |
 | Boing        | off to full                        | Spring dispersion — the drip and chirp on transients                                                                    |
 | Kick         | off to full                        | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp                      |
+| Howl †       | off to full                        | The pickup amp leaks into the driver beside it, and the driver runs off the shared cells                                |
 | Bypass       | on or bypassed                     | Takes Boing out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
 | Reverb level | off to full                        | Level of the spring tank, added on top of the dry signal                                                                |
 | Dry level †  | off to full                        | Level of the dry signal, set separately from Reverb level                                                               |
@@ -1784,7 +1787,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 196 of them, filt cut through kit self fire                                                                            | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 199 of them, filt cut through verb howl                                                                                | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

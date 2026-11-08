@@ -213,6 +213,9 @@ export const DEST_CHOICES = [
   'echo sag',
   'kit swoop leak',
   'kit self fire',
+  'FM bodge',
+  'toy bodge',
+  'verb howl',
 ] as const
 
 export const ENV_KEYS = [
@@ -429,6 +432,7 @@ export const PATCH_GROUPS: Group[] = [
                 'toy PWM tap',
                 'toy FM on clock',
                 'toy hold',
+                'toy bodge',
                 'toy hard sync',
                 'toy voice XOR',
                 'toy envelope bits',
@@ -491,6 +495,7 @@ export const PATCH_GROUPS: Group[] = [
                 'FM patch data fault',
                 'FM DAC slot',
                 'FM slot slip',
+                'FM bodge',
                 'FM allocator',
                 'FM cold boot',
                 'FM log adder',
@@ -622,6 +627,7 @@ export const PATCH_GROUPS: Group[] = [
                 'echo sag',
                 'verb decay',
                 'verb warble',
+                'verb howl',
                 'ens rate',
               ],
             },

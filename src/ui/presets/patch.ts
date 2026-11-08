@@ -70,8 +70,7 @@ const RAILED: { level: ControlKey; supply: ControlKey }[] = [
 const onRail = (c: Controls, rail: number) =>
   RAILED.filter(m => Math.round(c[m.supply]) === rail).map(m => m.level)
 
-const echoAnalog = (c: Controls) =>
-  Math.round(c.echoMode) === ECHO_MODE.analog
+const echoAnalog = (c: Controls) => Math.round(c.echoMode) === ECHO_MODE.analog
 
 const hasMaybes = (c: Controls) => DRUM_VOICES.some(v => c[v.maybe] !== 0)
 
@@ -161,9 +160,11 @@ const LANDED = {
   'FM clock': { up: ['fmLevel'] },
   'FM CPU clock': { up: ['fmLevel'] },
   'verb warble': { up: ['revMix'] },
+  'verb howl': { up: ['revMix'] },
   'kit DAC ref': { up: ['drumLevel', 'drumRef'] },
   'FM DAC slot': { up: ['fmLevel'] },
   'FM slot slip': { up: ['fmLevel'] },
+  'FM bodge': { up: ['fmLevel'] },
   'FM allocator': { up: ['fmLevel'] },
   'FM cold boot': { up: ['fmLevel'] },
   'FM log adder': { up: ['fmLevel'] },
@@ -192,6 +193,7 @@ const LANDED = {
   'FM toy on bus': { up: ['fmLevel', 'chipLevel'] },
   'toy FM on clock': { up: ['chipLevel', 'fmLevel'] },
   'toy hold': { up: ['chipLevel'] },
+  'toy bodge': { up: ['chipLevel'] },
   'toy hard sync': { up: ['chipLevel'] },
   'toy voice XOR': { up: ['chipLevel'] },
   'toy envelope bits': { up: ['chipLevel'] },

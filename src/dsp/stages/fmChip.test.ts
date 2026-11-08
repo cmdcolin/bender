@@ -23,6 +23,7 @@ import {
   render,
   renderBender,
   renderStems,
+  renderStereo,
   rms,
   SR,
   tail,
@@ -1504,4 +1505,37 @@ test('the pitch wire brightens a note as far as the modulator swings', () => {
       SR,
     ).centroid
   expect(centroidAt(1)).toBeGreaterThan(5 * centroidAt(0))
+})
+
+const playing = (b: BuiltChain) => {
+  b.transport.tune = true
+  b.transport.drums = true
+}
+
+const sides = (over: Partial<Controls>) => {
+  const { l, r } = renderStereo(over, 3, playing)
+  const d = new Float32Array(l.length)
+  for (let i = 0; i < l.length; i++) d[i] = l[i]! - r[i]!
+  return { l: rms(l), r: rms(r), side: rms(d) }
+}
+
+test('the chip leaves both jacks the same with nothing bodged', () => {
+  expect(sides(FM_ONLY).side).toBe(0)
+})
+
+test.each([1, 2, 3, 4])(
+  'the bodge wire on slot %i puts a voice hard left',
+  slot => {
+    const stock = sides(FM_ONLY)
+    const bodged = sides({ ...FM_ONLY, fmBodge: slot })
+    expect(bodged.side).toBeGreaterThan(0.25 * stock.l)
+    expect(bodged.r).toBeLessThan(stock.r)
+  },
+)
+
+test('a slipping slot counter moves what the bodge latch catches', () => {
+  const steady = sides({ ...FM_ONLY, fmBodge: 1 })
+  const slipping = sides({ ...FM_ONLY, fmBodge: 1, fmDacSlip: 0.5 })
+  expect(Math.abs(slipping.side - steady.side)).toBeGreaterThan(0.005)
+  expect(slipping.side).toBeGreaterThan(0.25 * steady.l)
 })

@@ -16,6 +16,7 @@ import {
   render,
   renderBender,
   renderStems,
+  renderStereo,
   rms,
   SR,
   tail,
@@ -1096,4 +1097,33 @@ test('the noise divider at the bottom buzzes under the note', () => {
     renderBender({ ...CHIP_ONLY, chipLfsr }, 1, b => b.toyChip.noteOn(12))
   expect(pitchHz(held(0))).toBeGreaterThan(420)
   expect(pitchHz(held(0.01))).toBeLessThan(350)
+})
+
+const playing = (b: BuiltChain) => {
+  b.transport.tune = true
+  b.transport.drums = true
+}
+
+const sides = (over: Partial<Controls>) => {
+  const { l, r } = renderStereo(over, 3, playing)
+  const d = new Float32Array(l.length)
+  for (let i = 0; i < l.length; i++) d[i] = l[i]! - r[i]!
+  return { l: rms(l), r: rms(r), side: rms(d) }
+}
+
+const BACKED: Partial<Controls> = { ...CHIP_ONLY, chipAccomp: 1 }
+
+test('the bodge wire lifts the melody to the left jack', () => {
+  const stock = sides(BACKED)
+  const lifted = sides({ ...BACKED, chipBodge: 1 })
+  expect(stock.side).toBe(0)
+  expect(lifted.side).toBeGreaterThan(0.4 * stock.l)
+  expect(lifted.r).toBeLessThan(0.85 * stock.r)
+})
+
+test('the bodge wire on the bass leaves the melody in the middle', () => {
+  const stock = sides(BACKED)
+  const lifted = sides({ ...BACKED, chipBodge: 2 })
+  expect(lifted.side).toBeGreaterThan(0.25 * stock.l)
+  expect(lifted.r).toBeGreaterThan(0.85 * stock.r)
 })

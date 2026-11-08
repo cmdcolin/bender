@@ -236,6 +236,9 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   echoSag: 'Ricochet',
   drumLeak: 'Clatter',
   drumSelfFire: 'Clatter',
+  fmBodge: 'Glint',
+  chipBodge: 'Plinky',
+  revHowl: 'Boing',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

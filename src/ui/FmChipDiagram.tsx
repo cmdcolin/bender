@@ -45,6 +45,7 @@ const BUS_KEYS = [
 const DIE = [
   'fmDacSlot',
   'fmDacSlip',
+  'fmBodge',
   'fmAlloc',
   'fmColdBoot',
   'fmAdder',

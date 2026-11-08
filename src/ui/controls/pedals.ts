@@ -506,6 +506,17 @@ export const PEDAL_GROUPS: Group[] = [
         help: 'How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp. A hard hit at the input does it, and so does the kit, down its trigger line rather than through the mix. Up the travel every attack sets the springs clattering; low down only an accent gets through.',
       },
       {
+        key: 'revHowl',
+        lane: 'verb howl',
+        label: 'Howl',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'The pickup amp leaks into the driver beside it, and the driver runs off the shared cells. Low down the tail rings longer at the springs’ own pitches; up the travel the tank feeds itself and holds a drone at those pitches, which Warble swings and Boing smears. A starve or a loud board drags the cells down and chokes the drone, and it swells back when they recover.',
+      },
+      {
         key: 'revMute',
         label: 'Bypass',
         min: 0,

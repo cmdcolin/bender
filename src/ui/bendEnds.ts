@@ -333,6 +333,7 @@ export const BEND_ENDS: Partial<
   fmPitchWire: [0, 0.5],
   drumLeak: [1, -6],
   drumSelfFire: [-5, 4],
+  revHowl: [null, 0],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

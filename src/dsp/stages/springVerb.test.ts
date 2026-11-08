@@ -300,3 +300,51 @@ test('Boing makes each echo a chirp that falls', () => {
   expect(stiff).toBeLessThan(8)
   expect(boingy).toBeGreaterThan(15)
 })
+
+function howled(revHowl: number, rail = 1, seconds = 4) {
+  const verb = new SpringVerb(SR)
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    revMix: 1,
+    revDry: 0,
+    revDecayS: 1,
+    revHowl,
+  })
+  const ctx = blank()
+  ctx.railV.fill(rail)
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const burst = noiseBurst(7)
+  const blocks = Math.ceil((seconds * SR) / BLOCK)
+  const out = new Float32Array(blocks * BLOCK)
+  for (let b = 0; b < blocks; b++) {
+    for (let i = 0; i < BLOCK; i++) io.l[i] = io.r[i] = burst(b * BLOCK + i)
+    verb.process(io, p, ctx)
+    out.set(io.l, b * BLOCK)
+  }
+  return out
+}
+
+const afterBurst = (x: Float32Array) => rms(x.subarray(1.5 * SR, 2.5 * SR))
+const late = (x: Float32Array) => rms(x.subarray(3 * SR))
+
+test('a little howl rings the tail on past where it stopped', () => {
+  expect(afterBurst(howled(0.6))).toBeGreaterThan(
+    10 * afterBurst(howled(0)) + 1e-4,
+  )
+})
+
+test('howl near the top holds a drone after the input stops', () => {
+  const drone = howled(0.9)
+  expect(late(drone)).toBeGreaterThan(0.05)
+  let peak = 0
+  for (const v of drone) peak = Math.max(peak, Math.abs(v))
+  expect(peak).toBeLessThan(1)
+})
+
+test('a sagging rail chokes the howl', () => {
+  expect(late(howled(1, 0.3))).toBeLessThan(0.5 * late(howled(1)))
+})
