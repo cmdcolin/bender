@@ -521,6 +521,19 @@ test('a key held across steps comes out as one long note', () => {
 // not how many times it has been round, so letting go on the step you struck on
 // reads the same as holding one for exactly a bar — and filling every step with
 // holds off a tap is the wrong half of that to guess.
+test('a key let go after a panic writes no tail onto the note it struck', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.tuneRecord.set(true)
+  atTuneStep(engine, 2)
+  engine.noteOn(5)
+  engine.panic()
+  atTuneStep(engine, 5)
+  engine.noteOff(5)
+  expect(engine.controls.get().tuneStep2).toBe(5)
+  expect(engine.controls.get().tuneStep3).toBe(REST)
+})
+
 test('a note struck and let go inside one step is one step long', () => {
   const engine = new Engine()
   engine.setSongPlaying(true)

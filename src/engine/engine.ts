@@ -2331,6 +2331,7 @@ export class Engine {
     this.flush()
     this.post({ kind: 'panic' })
     for (const struck of Object.values(this.struck)) struck.clear()
+    for (const at of Object.values(this.struckAt)) at.clear()
     for (const down of Object.values(this.keysDownOn))
       if (down.get().size > 0) down.set(new Set())
   }
