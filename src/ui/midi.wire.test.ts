@@ -225,6 +225,20 @@ test('the sustain pedal holds notes past the key coming up', () => {
   expect(engine.keysDown.get().has(3)).toBe(false)
 })
 
+test('binding the sustain pedal to a control lets go of what it held', () => {
+  midi.setNotes(true)
+  cc(64, 127)
+  send(0x90, 60, 100)
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(true)
+  midi.arm('drumBpm')
+  cc(64, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+  send(0x90, 60, 100)
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
 test('a key struck under the pedal and let go with it ends once', () => {
   midi.setNotes(true)
   send(0xb0, 64, 127)

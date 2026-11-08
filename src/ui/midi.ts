@@ -39,6 +39,8 @@ export interface Binding {
   relative?: boolean
 }
 
+const SUSTAIN = 64
+
 export type BindingMap = Partial<Record<ControlKey, Binding>>
 
 // Where a knob sits for a control it hasn't caught yet, in control units. Soft
@@ -802,9 +804,14 @@ class Midi {
   }
 
   private persist(next: BindingMap) {
+    const pedalTaken = Object.values(next).some(
+      b => b?.controller === SUSTAIN && !this.keyBySource.has(sourceId(b)),
+    )
     this.bindings.set(next)
     this.reindex()
     write(BINDINGS_KEY, JSON.stringify(next))
+    if (pedalTaken)
+      for (const port of this.hands.keys()) this.setPedal(port, false)
   }
 
   private replace(next: BindingMap) {
@@ -1284,7 +1291,7 @@ class Midi {
     // 64 is the sustain pedal, and 120 and 123 are the two spellings of "let go
     // of everything" — which is what a controller sends when it loses its own
     // place, and the standard cure for a note left ringing.
-    if (first === 64) this.setPedal(port, second >= 64)
+    if (first === SUSTAIN) this.setPedal(port, second >= 64)
     else if (first === 120 || first === 123) this.dropHand(port)
   }
 }
