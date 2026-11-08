@@ -251,3 +251,16 @@ test('turning the mix to and from nothing fades rather than clicks', () => {
     jump = Math.max(jump, Math.abs(out[t]! - out[t - 1]!))
   expect(jump).toBeLessThan(0.03)
 })
+
+test('a frame change keeps the dry signal sounding', () => {
+  const sine = (t: number) => 0.5 * Math.sin((2 * Math.PI * 220 * t) / SR)
+  const out = sweep(
+    sine,
+    t => ({ codecMix: 0.3, codecFrame: t < SR / 2 ? 1 : 4 }),
+    1,
+  )
+  let quietest = Infinity
+  for (let t = SR / 2; t + BLOCK <= out.length; t += BLOCK)
+    quietest = Math.min(quietest, rms(out.subarray(t, t + BLOCK)))
+  expect(quietest).toBeGreaterThan(0.2)
+})

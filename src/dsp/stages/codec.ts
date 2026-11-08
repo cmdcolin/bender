@@ -112,14 +112,8 @@ export class Codec implements Stage {
         this.listen(io)
         return
       }
-      this.sizeIdx = pick
-      this.mid.reset()
-      this.side.reset()
-      this.pos = 0
-    } else if (pick !== this.sizeIdx) {
-      this.sizeIdx = pick
-      this.clear()
-    }
+      this.restart(pick)
+    } else if (pick !== this.sizeIdx) this.restart(pick)
     const leaving = mix <= 0
     this.live = !leaving
     const size = this.sizes[pick]!
@@ -233,16 +227,17 @@ export class Codec implements Stage {
     }
   }
 
-  private clear() {
+  private restart(pick: number) {
+    this.sizeIdx = pick
     this.mid.reset()
     this.side.reset()
-    this.dryL.fill(0)
-    this.dryR.fill(0)
     this.pos = 0
   }
 
   panic() {
-    this.clear()
+    this.restart(-1)
+    this.dryL.fill(0)
+    this.dryR.fill(0)
     this.live = false
     this.heard = false
     this.loss.reset()
