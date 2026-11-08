@@ -118,8 +118,7 @@ test('nothing playable and no metadata are both simply nothing', () => {
 // cost that item and not the roll.
 test('a roll walks past items with nothing on them', async () => {
   const seen: string[] = []
-  const fake = (async (url: string | URL) => {
-    const u = String(url)
+  const fake = fakeFetch(u => {
     seen.push(u)
     if (u.includes('advancedsearch')) {
       return json({
@@ -136,7 +135,7 @@ test('a roll walks past items with nothing on them', async () => {
     if (u.includes('/metadata/good'))
       return json(files({ name: 'g.mp3', size: '1000', length: '30' }))
     return new Response(new Uint8Array([1, 2, 3]).buffer, { status: 200 })
-  }) as unknown as typeof globalThis.fetch
+  })
 
   const got = await roll({ pool: POOLS[0]!, rng: () => 0.5, fetch: fake })
   expect(got?.id).toBe('good')
@@ -146,15 +145,14 @@ test('a roll walks past items with nothing on them', async () => {
 })
 
 test('a search that answers with nothing is a roll that came back empty', async () => {
-  const fake = (async () =>
-    json({ response: { docs: [] } })) as unknown as typeof fetch
+  const fake = fakeFetch(() => json({ response: { docs: [] } }))
   expect(await roll({ pool: POOLS[0]!, rng: () => 0, fetch: fake })).toBeNull()
 })
 
 test('a network that refuses throughout is null rather than a throw', async () => {
-  const fake = (async () => {
+  const fake = fakeFetch(() => {
     throw new Error('offline')
-  }) as unknown as typeof fetch
+  })
   await expect(
     roll({ pool: POOLS[0]!, rng: () => 0, fetch: fake }),
   ).resolves.toBeNull()
@@ -164,12 +162,12 @@ test('a roll already called off does not go and fetch anything', async () => {
   const ctl = new AbortController()
   ctl.abort()
   let calls = 0
-  const fake = (async (url: string | URL) => {
+  const fake = fakeFetch(u => {
     calls++
-    return String(url).includes('advancedsearch')
+    return u.includes('advancedsearch')
       ? json({ response: { docs: [{ identifier: 'a' }] } })
       : json(files({ name: 'a.mp3', size: '10', length: '10' }))
-  }) as unknown as typeof globalThis.fetch
+  })
   expect(
     await roll({
       pool: POOLS[0]!,
@@ -208,21 +206,22 @@ test('a typed search asks for audio, most downloaded first', () => {
 
 test('a search with no words never reaches the network', async () => {
   let calls = 0
-  const fake = (async () => {
+  const fake = fakeFetch(() => {
     calls++
     return json({ response: { docs: [{ identifier: 'a' }] } })
-  }) as unknown as typeof fetch
+  })
   expect(await searchText('  "" ', { fetch: fake })).toEqual([])
   expect(calls).toBe(0)
 })
 
 test('a typed search lists what the archive found', async () => {
-  const fake = (async () =>
+  const fake = fakeFetch(() =>
     json({
       response: {
         docs: [{ identifier: 'a', title: 'A' }, { identifier: 'b' }],
       },
-    })) as unknown as typeof fetch
+    }),
+  )
   expect(await searchText('goose', { fetch: fake })).toEqual([
     { id: 'a', title: 'A' },
     { id: 'b', title: 'b' },
@@ -230,8 +229,7 @@ test('a typed search lists what the archive found', async () => {
 })
 
 test('an item with no mp3 is null rather than a throw', async () => {
-  const fake = (async () =>
-    json(files({ name: 'a.flac', size: '10' }))) as unknown as typeof fetch
+  const fake = fakeFetch(() => json(files({ name: 'a.flac', size: '10' })))
   expect(await fetchItem('x', 'X', { fetch: fake })).toBeNull()
 })
 
@@ -254,14 +252,13 @@ test('without AbortSignal.any the clock and the caller both still call a read of
 test('a roll still lands where AbortSignal.any is missing', async () => {
   const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any')
   Reflect.deleteProperty(AbortSignal, 'any')
-  const fake = (async (url: string | URL) => {
-    const u = String(url)
-    return u.includes('advancedsearch')
+  const fake = fakeFetch(u =>
+    u.includes('advancedsearch')
       ? json({ response: { docs: [{ identifier: 'a', title: 'A' }] } })
       : u.includes('/metadata/')
         ? json(files({ name: 'a.mp3', size: '3', length: '1' }))
-        : new Response(new Uint8Array([7]).buffer, { status: 200 })
-  }) as unknown as typeof globalThis.fetch
+        : new Response(new Uint8Array([7]).buffer, { status: 200 }),
+  )
   try {
     const got = await roll({ pool: POOLS[0]!, rng: () => 0, fetch: fake })
     expect(got?.id).toBe('a')
@@ -269,6 +266,13 @@ test('a roll still lands where AbortSignal.any is missing', async () => {
     if (any) Object.defineProperty(AbortSignal, 'any', any)
   }
 })
+
+function fakeFetch(reply: (url: string) => Response): typeof fetch {
+  return (input: RequestInfo | URL) =>
+    new Promise<Response>(resolve =>
+      resolve(reply(input instanceof Request ? input.url : String(input))),
+    )
+}
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), {

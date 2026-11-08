@@ -26,56 +26,65 @@ class Writable {
     this.target = target
     this.swap = new Uint8Array()
   }
-  async write(
+  write(
     chunk:
       | ArrayBufferView
       | { type: 'write'; position: number; data: Uint8Array },
   ) {
-    if (
+    const poisoned =
       !('type' in chunk) &&
       chunk.byteLength >= 2 &&
       new DataView(chunk.buffer, chunk.byteOffset).getInt16(0, true) === POISON
-    )
-      throw new Error('disk error')
-    const [at, bytes] =
-      'type' in chunk
-        ? [chunk.position, chunk.data]
-        : [
-            this.swap.length,
-            new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength),
-          ]
-    const next = new Uint8Array(Math.max(this.swap.length, at + bytes.length))
-    next.set(this.swap)
-    next.set(bytes, at)
-    this.swap = next
+    if (!poisoned) {
+      const [at, bytes] =
+        'type' in chunk
+          ? [chunk.position, chunk.data]
+          : [
+              this.swap.length,
+              new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength),
+            ]
+      const next = new Uint8Array(Math.max(this.swap.length, at + bytes.length))
+      next.set(this.swap)
+      next.set(bytes, at)
+      this.swap = next
+    }
+    return poisoned
+      ? Promise.reject(new Error('disk error'))
+      : Promise.resolve()
   }
-  async close() {
+  close() {
     this.target.data = this.swap
     this.target.modified = Date.now()
+    return Promise.resolve()
   }
   abort() {
     return Promise.resolve()
   }
 }
 
+const settle = <T>(make: () => T) => new Promise<T>(resolve => resolve(make()))
+
 const handle = (name: string, node: Entry): unknown => {
   const self = {
     kind: node.kind,
     name,
-    createWritable: async () => new Writable(node),
-    getFile: async () =>
-      new File([node.data], name, { lastModified: node.modified }),
-    getDirectoryHandle: async (child: string, o?: { create?: boolean }) =>
-      open(node, child, 'directory', o?.create),
-    getFileHandle: async (child: string, o?: { create?: boolean }) =>
-      open(node, child, 'file', o?.create),
-    removeEntry: async (child: string) => {
-      if (!node.children.delete(child)) throw new Error('not found')
-    },
-    entries: async function* () {
+    createWritable: () => Promise.resolve(new Writable(node)),
+    getFile: () =>
+      Promise.resolve(
+        new File([node.data], name, { lastModified: node.modified }),
+      ),
+    getDirectoryHandle: (child: string, o?: { create?: boolean }) =>
+      settle(() => open(node, child, 'directory', o?.create)),
+    getFileHandle: (child: string, o?: { create?: boolean }) =>
+      settle(() => open(node, child, 'file', o?.create)),
+    removeEntry: (child: string) =>
+      node.children.delete(child)
+        ? Promise.resolve()
+        : Promise.reject(new Error('not found')),
+    entries: function* () {
       for (const [n, e] of node.children) yield [n, handle(n, e)]
     },
-    values: async function* () {
+    values: function* () {
       for (const [n, e] of node.children) yield handle(n, e)
     },
   }
@@ -109,8 +118,8 @@ const stubBrowser = (opts: { opfs: boolean; quota?: number }) => {
   vi.stubGlobal('navigator', {
     storage: opts.opfs
       ? {
-          getDirectory: async () => handle('', root),
-          estimate: async () => ({ ...space }),
+          getDirectory: () => Promise.resolve(handle('', root)),
+          estimate: () => Promise.resolve({ ...space }),
         }
       : undefined,
     locks: {
@@ -118,7 +127,7 @@ const stubBrowser = (opts: { opfs: boolean; quota?: number }) => {
         held.add(name)
         return run().finally(() => held.delete(name))
       },
-      query: async () => ({ held: [...held].map(name => ({ name })) }),
+      query: () => Promise.resolve({ held: [...held].map(name => ({ name })) }),
     },
   })
   return { root, held, space }

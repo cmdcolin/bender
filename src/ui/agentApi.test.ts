@@ -643,7 +643,7 @@ test('listen before audio starts returns how to start it', async () => {
 const atTick = (tick: number, cued = engine.meter.get().cued) =>
   engine.meter.set({ ...engine.meter.get(), tick, cued, drumStepMs: 125 })
 
-async function onTheClock(run: (posted: ToWorklet[]) => Promise<void>) {
+async function onTheClock(run: (posted: ToWorklet[]) => void | Promise<void>) {
   const posted: ToWorklet[] = []
   Object.assign(engine, {
     node: { port: { postMessage: (m: ToWorklet) => posted.push(m) } },
@@ -717,7 +717,8 @@ test('a hit inside a queue waits for the queue to land', async () => {
   const landing = bender.queue(() => {
     inside = bender.hit('sheet')
   })
-  expect(inside).toMatchObject({ lands: expect.stringMatching(/queue lands/) })
+  const lands: unknown = expect.stringMatching(/queue lands/)
+  expect(inside).toMatchObject({ lands })
   expect(posted.some(m => m.kind === 'struckHit')).toBe(false)
   await landing
   expect(posted.some(m => m.kind === 'struckHit')).toBe(true)
@@ -786,7 +787,7 @@ test('queue lands the writes made inside it on the next bar, through the worklet
 })
 
 test('queue aims at a named bar or a run of bars, and refuses one already begun', async () => {
-  await onTheClock(async () => {
+  await onTheClock(() => {
     atTick(40)
     void bender.queue(() => bender.set({ dlyFb: 0.9 }), 4)
     void bender.queue(() => bender.set({ dlyFb: 0.2 }), { bar: 9 })
@@ -795,8 +796,9 @@ test('queue aims at a named bar or a run of bars, and refuses one already begun'
       bender.queue(() => bender.set({ dlyFb: 0.5 }), { bar: 2 }),
     ).toThrow('bar 2 has begun or passed; the counter is on bar 2')
     expect(() =>
-      bender.queue(async () => {
+      bender.queue(() => {
         bender.set({ dlyFb: 0.5 })
+        return Promise.resolve()
       }),
     ).toThrow(/writes after an await are not queued/)
     expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)

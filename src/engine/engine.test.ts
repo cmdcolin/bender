@@ -754,7 +754,7 @@ test('a stem take saves the master and a file for each source that made a sound'
 
   await vi.waitFor(() => expect(files).toHaveLength(3))
   expect(suffixes(files)).toEqual(['-master.wav', '-drums.wav', '-fm.wav'])
-  expect(new Set(files.map(f => f.name.match(STAMP)![0])).size).toBe(1)
+  expect(new Set(files.map(f => STAMP.exec(f.name)![0])).size).toBe(1)
   const [master, drums, fm] = files
   expect(master!.size).toBe(44 + 2 * N * 4)
   expect(fm!.size).toBe(44 + 2 * N * 2)
@@ -1025,9 +1025,9 @@ test('turning the mic off stops its tracks and lets it open again', async () => 
   let unwired = 0
   vi.stubGlobal('navigator', {
     mediaDevices: {
-      getUserMedia: async () => {
+      getUserMedia: () => {
         asks++
-        return stream
+        return Promise.resolve(stream)
       },
     },
   })
@@ -1113,7 +1113,7 @@ const rolled = { id: 'x', title: 'rolled', data: new ArrayBuffer(8) }
 
 test('a roll cancelled while it decodes never reaches the tape', async () => {
   const { engine, decodes, bringTape, samples } = tapeDeck()
-  const done = bringTape(async () => rolled)
+  const done = bringTape(() => Promise.resolve(rolled))
   await vi.waitFor(() => expect(decodes).toHaveLength(1))
   engine.cancelRoll()
   decodes[0]!.resolve(decoded)
@@ -1141,7 +1141,7 @@ test('a roll that lands over a file still decoding keeps the tape and its credit
   const { engine, decodes, bringTape, samples } = tapeDeck()
   const dropped = engine.loadSample(new File([new Uint8Array(8)], 'mine.wav'))
   await vi.waitFor(() => expect(decodes).toHaveLength(1))
-  const done = bringTape(async () => rolled)
+  const done = bringTape(() => Promise.resolve(rolled))
   await vi.waitFor(() => expect(decodes).toHaveLength(2))
   decodes[1]!.resolve(decoded)
   await done
@@ -1154,7 +1154,7 @@ test('a roll that lands over a file still decoding keeps the tape and its credit
 
 test('a file that lands after a roll takes the credit down', async () => {
   const { engine, decodes, bringTape } = tapeDeck()
-  const done = bringTape(async () => rolled)
+  const done = bringTape(() => Promise.resolve(rolled))
   await vi.waitFor(() => expect(decodes).toHaveLength(1))
   decodes[0]!.resolve(decoded)
   await done
