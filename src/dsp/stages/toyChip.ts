@@ -1592,9 +1592,11 @@ export class ToyChip implements Stage {
         }
       }
       if (relax > 0) {
-        if (this.env < RELAX_AT) this.env = 1
-        if (this.bassEnv < RELAX_AT) this.bassEnv = 1
-        if (this.chordEnv < RELAX_AT) this.chordEnv = 1
+        if (this.env > ENV_FLOOR && this.env < RELAX_AT) this.env = 1
+        if (this.bassEnv > ENV_FLOOR && this.bassEnv < RELAX_AT)
+          this.bassEnv = 1
+        if (this.chordEnv > ENV_FLOOR && this.chordEnv < RELAX_AT)
+          this.chordEnv = 1
         for (let k = 0; k < voices.length; k++) {
           const v = voices[k]!
           if (v.env > ENV_FLOOR && v.env < RELAX_AT) v.env = 1

@@ -648,6 +648,14 @@ test('a relaxing envelope cap keeps a released key restriking', () => {
   expect(take(0.5)).toBeGreaterThan(0.01)
 })
 
+test('a relaxing envelope cap leaves a silent backing silent', () => {
+  const out = renderBender(
+    { ...CHIP_ONLY, chipAccomp: 1, chipEnvRelax: 0.5 },
+    1.5,
+  )
+  expect(rms(tail(out, 0.5))).toBeLessThan(0.001)
+})
+
 test('the envelope on the divider drops a note as it fades', () => {
   const pitches = (chipEnvDiv: number) => {
     const x = renderBender(
