@@ -88,6 +88,9 @@ export class SeqLine {
 // resolution of a trigger line and well under the resolution of a plastic
 // keyboard's gate, and it is also what keeps a trigger loop soldered both ways
 // from running away: the lap closes once a block rather than once a sample.
+export const stepHzOr = (kitStepHz: number, bpm: number) =>
+  kitStepHz > 0 ? kitStepHz : bpm / 15
+
 export class TriggerBus {
   /** Voices the kit fired last block, as the bit order of a step. */
   drumBits = new Float32Array(BLOCK)
@@ -178,7 +181,7 @@ export class TriggerBus {
   }
 
   stepHzOr(bpm: number) {
-    return this.kitStepHz > 0 ? this.kitStepHz : bpm / 15
+    return stepHzOr(this.kitStepHz, bpm)
   }
 
   keyStruck(i: number, semitone: number, held = false) {

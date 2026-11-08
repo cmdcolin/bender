@@ -1,5 +1,6 @@
 import { STEPS } from '../drums.ts'
 import { IDX, N_PARAMS } from '../engine/params.ts'
+import { stepHzOr } from './trigbus.ts'
 
 export const ARC_SHAPES = [
   'hold',
@@ -101,9 +102,7 @@ export class Arc {
     const depth = Math.min(Math.max(board[IDX.arcDepth]!, 0), 1)
     const kitRunning = kitStepHz > 0
     const bpm = Math.max(board[IDX.drumBpm]!, 1)
-    this.bars += kitRunning
-      ? (n / sr) * (kitStepHz / STEPS)
-      : (n / sr) * (bpm / (4 * 60))
+    this.bars += (n / sr) * (stepHzOr(kitStepHz, bpm) / STEPS)
     if (kitRunning && kitTick !== this.lastTick && kitTick % STEPS === 0)
       this.bars = Math.round(this.bars)
     this.lastTick = kitTick
