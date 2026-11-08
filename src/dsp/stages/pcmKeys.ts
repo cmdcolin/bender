@@ -178,6 +178,7 @@ export class PcmKeys implements Stage {
 
   private code = new Uint8Array(CODE_WORDS)
   private pc = 0
+  private pcPhase = 0
   private scanPhase = 0
   private busy = 0
   private busWord = DAC_STEPS
@@ -574,12 +575,16 @@ export class PcmKeys implements Stage {
       } else this.busy = 0
       if (this.busy > 0) {
         this.busy--
-        const op = this.code[this.pc]!
-        this.pc =
-          op >= 0xf0
-            ? (this.code[(this.pc + 1) & (CODE_WORDS - 1)]! << 3) &
-              (CODE_WORDS - 1)
-            : (this.pc + 1) & (CODE_WORDS - 1)
+        this.pcPhase += this.perSample
+        while (this.pcPhase >= 1) {
+          this.pcPhase -= 1
+          const op = this.code[this.pc]!
+          this.pc =
+            op >= 0xf0
+              ? (this.code[(this.pc + 1) & (CODE_WORDS - 1)]! << 3) &
+                (CODE_WORDS - 1)
+              : (this.pc + 1) & (CODE_WORDS - 1)
+        }
         this.faults += this.perSample
       }
 
@@ -763,6 +768,7 @@ export class PcmKeys implements Stage {
     this.slotPhase = 0
     this.rotDue = 0
     this.pc = 0
+    this.pcPhase = 0
     this.busWord = DAC_STEPS
   }
 }
