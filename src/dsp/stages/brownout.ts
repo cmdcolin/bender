@@ -72,7 +72,7 @@ export class Brownout implements Stage {
     const cluster = p[IDX.faultCluster]!
     const couple = p[IDX.couple]!
     const kickPump = p[IDX.brownKick]!
-    const beatS = ctx.trig.kitStepHz > 0 ? 4 / ctx.trig.kitStepHz : 0.5
+    const beatS = 4 / ctx.trig.stepHzOr(p[IDX.drumBpm]!)
     const pumpFall = Math.exp(-1 / (PUMP_RECOVER * beatS * this.sr))
     const pumpRise = coef(PUMP_ATTACK_S, this.sr)
 

@@ -612,8 +612,7 @@ export class Chain {
     }
     if (!micJacked && micPeak > this.taps[TAP_MIC]!)
       this.taps[TAP_MIC] = micPeak
-    const kitHz =
-      ctx.trig.kitStepHz > 0 ? ctx.trig.kitStepHz : p[IDX.drumBpm]! / 15
+    const kitHz = ctx.trig.stepHzOr(p[IDX.drumBpm]!)
     this.micLine.process(
       dry,
       this.micLate,

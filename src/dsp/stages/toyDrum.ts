@@ -750,6 +750,10 @@ export class ToyDrum implements Stage {
   private gndEdge = new GroundEdge(GND_TRIP)
   /** How long an unswung step lasts at the rate the counter is clocking now. */
   stepMs = 125
+
+  get stepHz() {
+    return this.transport.drums ? 1000 / this.stepMs : 0
+  }
   cue: Cue | null = null
   private repeats = 0
   // Whether the column the counter stands on passed its condition, and how the
@@ -1625,7 +1629,7 @@ export class ToyDrum implements Stage {
         stepRate(0, stepHz, modTempo, tapBase, modTap, melody),
         MIN_STEP_HZ,
       )
-    if (this.transport.drums) ctx.trig.kitClocking(1000 / this.stepMs)
+    if (this.transport.drums) ctx.trig.kitClocking(this.stepHz)
     const baseSwing = p[IDX.drumSwing]!
     const modSwing = ctx.mod.read(DEST.drumSwing)
     const slip = Math.min(Math.max(p[IDX.drumSlip]!, 0), 1)

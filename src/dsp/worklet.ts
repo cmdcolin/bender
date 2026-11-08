@@ -300,7 +300,7 @@ class BenderProcessor extends AudioWorkletProcessor {
         n,
         sampleRate,
         this.built.toyDrum.tick,
-        this.built.transport.drums ? 1000 / this.built.toyDrum.stepMs : 0,
+        this.built.toyDrum.stepHz,
       ),
     )
     this.deck.process(io, this.smoother.cur)

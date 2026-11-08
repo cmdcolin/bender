@@ -173,6 +173,10 @@ export class TriggerBus {
     this.pendStepHz = stepHz
   }
 
+  stepHzOr(bpm: number) {
+    return this.kitStepHz > 0 ? this.kitStepHz : bpm / 15
+  }
+
   keyStruck(i: number, semitone: number, held = false) {
     this.key[i] = semitone + KEY_BIAS
     this.keyHeld[i] = held ? 1 : 0

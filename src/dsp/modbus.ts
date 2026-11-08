@@ -518,7 +518,7 @@ export class ModBus {
   build(n: number, p: Float32Array, src: ModSources) {
     this.live.fill(0)
     const cycle = LFO_SYNC_SIXTHS[Math.round(p[IDX.modLfoSync]!)] ?? 0
-    const kitHz = src.trig.kitStepHz || p[IDX.drumBpm]! / 15
+    const kitHz = src.trig.stepHzOr(p[IDX.drumBpm]!)
     const hz = cycle ? (6 * kitHz) / cycle : p[IDX.modLfoHz]!
     const strobe = src.trig.drumStep
     const shape = Math.round(p[IDX.modLfoShape]!)
