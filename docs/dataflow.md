@@ -31,6 +31,12 @@ messages.
 
 ## Effects on sets of lines
 
+Hosting the chain in SuperCollider, libpd, Csound or Faust was declined: the
+bends are wired into the chips' internals across 30k lines of DSP, and the
+allocation test and the goldens would have to move with it. A free Pd-style
+patcher was declined too, because links, rolls and the hand-laid map all assume
+the fixed topology below.
+
 Each bend and pedal has a Lines control: 0 for master, or a mask of the lines it
 runs on, with the mic at bit 0 and source k at bit 1 + k. The chain turns the
 mask into tap bits through a table and keeps tap numbering from there on.

@@ -69,6 +69,10 @@ function presence(board: Controls) {
   return correlation(judged(source), judged(take(board)))
 }
 
+// Spool recording over its own phrase lays the wash back a block late each
+// lap, and lost the piano within three minutes even at erase 0.04, rec 0.12: it
+// scored 0.22 here, against 0.41 for the scene that walks loopSlide instead. A
+// reverb inside a regenerative loop builds a 12 to 40 Hz rumble lap on lap.
 const shelved = PRESETS.filter(p => p.shelf)
 
 test.each(shelved.map(p => [p.name, p] as const))(

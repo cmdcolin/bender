@@ -66,6 +66,9 @@ which bends get built: for the bends themselves "anything can go".
   the drum trigger line. Sheet and bottle smacks in rooms of their own, rare
   ("make that even more infrequent").
 - Growler's acid loud and near self-oscillation, not buried under the layers.
+- The toy chip's pin bends (crosstalk, scan, loop wires, PWM, envelope cap,
+  short, ghosts, bank and divider lines) as tuned in `toyChip.ts`: "these are
+  all amazing ... keep all". Leave those constants alone unasked.
 
 ## Dislikes
 
@@ -82,6 +85,11 @@ which bends get built: for the bends themselves "anything can go".
   that no one change can be judged. One machine re-rolling its own faults as a
   layer is a like.
 - Chiptune: a bright toy melody over a kick and snare grid.
+- Plinky's lullaby ROM (Twinkle Twinkle) under a beat: "legitimately silly bad",
+  said repeatedly. A demo, preset or board sets `chipLevel: 0` or picks a tune
+  on purpose, and the toy's demo songs start only when asked for. The jams in
+  `src/jam/jams.json` are what a good demo sounds like.
+- Granular: "so digital". Tape delays and circuit glitches over it.
 - Epic or cinematic in place of melancholy: strings and choir, long held notes,
   i–VI–III–VII, the harmonic minor's major V, a big room. A sparse arrangement
   reads the same way ("trying to create this false epicness"). Not "funeral".

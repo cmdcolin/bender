@@ -445,6 +445,14 @@ under the play head.
 
 ## Still open
 
+- **The buffer on battery.** Chrome gives `latencyHint: 'interactive'` a 10.7 ms
+  buffer (32 ms output latency) and `'playback'` 21 ms (72 ms). A bigger buffer
+  on battery, or a switch when `playbackStats` reports underruns, trades latency
+  for fewer clicks. Waiting on a call, since it changes latency.
+- **Suspending an idle context.** The stock board at rest costs 8 to 14% of a
+  core on the audio thread. Suspending after silence with both transports
+  stopped removes that, and starts the first note after a resume late. Waiting
+  on a call.
 - **The first five seconds.** The stock board settles at 0.0585 ms a block and
   takes about five seconds to get there. This once put 67 blocks over budget; on
   2026-11-05 `pnpm cold` counted 5 locally and 2 on ada, with a first block of

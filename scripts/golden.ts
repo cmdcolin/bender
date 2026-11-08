@@ -12,6 +12,10 @@ import { BOARDS } from './boards.ts'
 //   pnpm golden check heavy    only the boards whose name has this in it
 //
 // The takes go in node_modules/.cache/golden, so they belong to this checkout.
+//
+// It answers "nothing changed" and nothing finer. The boards are chaotic enough
+// that a 10 Hz DC blocker on one stage grew to a +12 dB sample difference by two
+// seconds, so judge an intended small change on one stage fed recorded input.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 const SR = 48000

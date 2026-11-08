@@ -1,6 +1,9 @@
 import { pileMeter } from './pileMeter.ts'
 
 const audio = new Audio()
+// The pile's meter reads this through an AnalyserNode, which needs CORS.
+// myloveydove.com sends access-control-allow-origin: *; without it the demos
+// stop playing.
 audio.crossOrigin = 'anonymous'
 const pile = document.querySelector<HTMLElement>('.pile')
 const meter = pile ? pileMeter(audio, pile) : undefined

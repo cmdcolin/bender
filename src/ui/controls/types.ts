@@ -147,7 +147,11 @@ export interface Group {
       but a second copy of the widget as a stack of dropdowns underneath is one
       way in too many, and reads as more board than there is.
 
-      Not `lead`, which moves a row above the widget. This removes it. */
+      Not `lead`, which moves a row above the widget. This removes it.
+
+      On a stage whose panel is a path drawing, a new key goes in its box's
+      opens, the drawing's KEYS and here, or the panel gives it a fold of its
+      own that draws the drawing a second time. */
   handled?: readonly ControlKey[]
   /** Sliders the panel draws above the editor rather than under it. A widget
       the size of a piano roll pushes the row naming which song the chip plays

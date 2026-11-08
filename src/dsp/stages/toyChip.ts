@@ -372,6 +372,11 @@ const addOnce = (out: number[], g: number, skip: number[]) => {
 const width = (duty: number, amount: number, env: number) =>
   amount > 0 ? duty + (DUTY_STRIKE - duty) * amount * env : duty
 
+// Naive, and it aliases on purpose. A 4x-oversampled pulse took the worst
+// inharmonic share at 7040 Hz from about 25% to 2% and the stock board from
+// 2.06% to 3.18% of a core, for a gain confined to the top octave and a half.
+// PolyBLEP made it worse (24.8% to 33.2%): a narrow pulse up there is about one
+// sample wide, so the two residuals overlap.
 const pulse = (phase: number, duty: number, inc: number) => {
   const d = Math.max(duty, inc)
   return phase < d ? 2 * (1 - d) : -2 * d
