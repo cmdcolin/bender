@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { SOURCE_TAPS, STEM_FILES, packParams } from '../engine/params.ts'
-import { jackOf } from '../jacks.ts'
+import { lineOf } from '../jacks.ts'
 import { buildBender } from './build.ts'
 import { Chain } from './chain.ts'
 import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
@@ -93,13 +93,13 @@ test('a stem carries the units patched onto its machine', () => {
     },
   ]
   chain.capturing = true
-  const stem = (stompInto: number) => {
-    const p = packParams({ ...DEFAULT_CONTROLS, stompInto })
+  const stem = (stompLines: number) => {
+    const p = packParams({ ...DEFAULT_CONTROLS, stompLines })
     for (let b = 0; b < 3; b++) chain.process(makeIo(), p)
     return [chain.stems[BLOCK - 1], chain.stems[2 * BLOCK - 1]]
   }
   expect(stem(0)).toEqual([expect.closeTo(0.5, 6), expect.closeTo(0.2, 6)])
-  expect(stem(jackOf(0))).toEqual([
+  expect(stem(lineOf(0))).toEqual([
     expect.closeTo(0.25, 6),
     expect.closeTo(0.2, 6),
   ])

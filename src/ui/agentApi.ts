@@ -37,6 +37,7 @@ import { strayNames } from '../dsp/wander.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
 import { BAND_ROWS } from '../engine/params.ts'
 import { errorText } from '../errorText.ts'
+import { JACK_KEYS, linesFromJack, UNIT_LINE_KEYS } from '../jacks.ts'
 import { MACHINES } from '../machines.ts'
 import { semitoneName } from '../notes.ts'
 import { phraseControls, phraseOf, phraseText } from '../prattle.ts'
@@ -64,6 +65,7 @@ import {
   SLIDER_BY_KEY,
   type SliderDef,
 } from './controls/index.ts'
+import { parseLines } from './controls/jacks.ts'
 import { BandTally, MASK_DB } from './masking.ts'
 import { applyPreset, PRESETS, presetNameFor } from './presets/index.ts'
 import { boardHash, coerceControl } from './share.ts'
@@ -78,7 +80,7 @@ export const GUIDE_MAX_CHARS = 900
 const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. Return arrays and objects as they are: the browser tool cuts a returned string at 1000 characters. Start with bender.summary(). The rest is in twelve topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'music' covers tune and drums, 'drums' the rest of the kit, 'perform' its mutes, fills, echo row and pattern moves, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things by hand; 'speak' gives Prattle words; 'clock' lands changes on the bar with position, next and queue.`
 
 const GUIDE = {
-  read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. Each bend and pedal has an Into key: set({ ampInto: 'clatter' }) patches Ember onto the kit alone.`,
+  read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with their ranges; bender.find('tape delay', 20) returns more, and bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. Each bend and pedal has a Lines key: set({ ampLines: 'clatter' }) patches Ember onto the kit alone.`,
   change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of them, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists unknown keys with the closest real ones, and failed lists values set could not read; set leaves those controls unchanged. Seconds as a second argument glide the controls there on animation frames, which the browser pauses in a hidden tab; set returns at once, so listen in a later call. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds. bender.say('the kick drops') labels the changes the page lists for a listener.`,
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory, one token a step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold. It also switches the chip to the memory, at tuneRate steps a second. An array of up to three strings writes one lane each. Glint, Parlor, Growler and Howler follow it on fm-, pcm-, mono- and leadKeyGate; 'lane 1' to 'lane 3' follow one lane, and tuneLift keeps lanes off Plinky. bender.drums({ kick: 'x...x...', hat: '..x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. x is a hit, ? a hit with probability drumChance, . a rest. Each character is a sixteenth, so a beat is four. A row's length sets its loop, an empty string clears it, and rows left out keep theirs. bpm: 130 sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...'), retrig (1 to 9: roll, growl, scream, 20 to 960 Hz: '....3...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
@@ -89,7 +91,7 @@ const GUIDE = {
   hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once; inside bender.queue it waits for the queue's bar and lands within about 20 ms of it. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
   speak: `Prattle, a talking toy's speech chip. bender.speak('kill the bass') loads the phrase and says it once; speak('kill the bass', { struck: 'open hat' }) speaks the next syllable on each open hat hit, so words land on the grid, and { repeat: true } says it round and round. It knows numbers and techno words (bass, kick, drop, noise, acid, machine, error, reboot, again…) and sounds out the rest. Level starts at 0, so speak brings talkLevel up to 0.8. Bends: talkClock, talkFrameDiv ('stopped' drones), talkLock (frame clock off the kit), talkLoopBit and talkLoopSlip (a stuttering loop), talkDataLine/talkDataFault (D10 'to +V' howls), talkPitchLine/Fault, talkVoicing and talkLeak. The mic jack 'Prattle in' talks through its mouth. Presets: robot chant, lattice howl.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
-  sound: `Sound. Audio waits for a click: await bender.start() returns running or says to click an empty area. bender.play() starts the kit, bassline and tune; play('song') a demo song, play('drums') the kit alone; stop() stops all. A screenshot measures no sound. await bender.listen(1500) reads the meters that many ms, at most 20000: meters arrived against due, peak dBFS, limiter reduction, lowest toy rail (1 is full), reboots, sources, sourcePeaks, notes, drumHits. bands is each source's dBFS in sub <90 Hz, low, mid 350-1.4k, presence 1.4-5.6k and air; owners is each band's share by source. masked gives each lead the share of its energy under the rest by ${MASK_DB} dB, its top masker and band. Over 0.3 the lead is buried: raise it, cut the masker, patch a unit onto it alone (filtInto, ampInto), or duck it to the kick: set({ noiseDuck: 0.8 }), any machine's …Duck. link() returns a URL to this board.`,
+  sound: `Sound. Audio waits for a click: await bender.start() returns running or says to click an empty area. bender.play() starts the kit, bassline and tune; play('song') a demo song, play('drums') the kit alone; stop() stops all. A screenshot measures no sound. await bender.listen(1500) reads the meters that many ms, at most 20000: meters arrived against due, peak dBFS, limiter reduction, lowest toy rail (1 is full), reboots, sources, sourcePeaks, notes, drumHits. bands is each source's dBFS in sub <90 Hz, low, mid 350-1.4k, presence 1.4-5.6k and air; owners is each band's share by source. masked gives each lead the share of its energy under the rest by ${MASK_DB} dB, its top masker and band. Over 0.3 the lead is buried: raise it, cut the masker, patch a unit onto it alone (filtLines, ampLines), or duck it to the kick: set({ noiseDuck: 0.8 }), any machine's …Duck. link() returns a URL to this board.`,
 }
 
 type Topic = keyof typeof GUIDE
@@ -124,6 +126,10 @@ interface SetReport {
   unknown: string[]
   failed: string[]
 }
+
+const INTO_ALIAS = new Map<string, ControlKey>(
+  UNIT_LINE_KEYS.map(k => [k.replace(/Lines$/, 'Into'), k]),
+)
 
 const groupOf = (key: ControlKey) => GROUP_BY_KEY.get(key) ?? 'board'
 
@@ -218,6 +224,7 @@ function numberFor(key: ControlKey, asked: Value): number {
     if (!Number.isFinite(asked)) throw new Error('not a finite number')
     return asked
   }
+  if (JACK_KEYS.has(key)) return parseLines(asked)
   const def = SLIDER_BY_KEY.get(key)
   if (!def?.choices) {
     const n = Number(asked)
@@ -851,13 +858,18 @@ function rawBenderApi() {
       const failed: string[] = []
       const patch: Partial<Controls> = {}
       const named = new Set<ControlKey>()
-      for (const [name, asked] of Object.entries(changes)) {
+      for (const [asName, asked] of Object.entries(changes)) {
+        const into = INTO_ALIAS.get(asName)
+        const name = into ?? asName
         if (!isControlKey(name)) {
           unknown.push(unknownKey(name))
           continue
         }
         try {
-          const want = numberFor(name, asked)
+          const want =
+            into && typeof asked === 'number'
+              ? linesFromJack(asked)
+              : numberFor(name, asked)
           const got = coerceControl(name, want)
           if (got !== want)
             adjusted.push(`${name}: asked ${asked}, set ${show(name, got)}`)

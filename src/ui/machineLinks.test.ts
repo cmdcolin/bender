@@ -4,7 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { MIC } from '../dsp/micJacks.ts'
 import { GATE_CUT } from '../dsp/trigbus.ts'
 import { SOURCE_TAPS } from '../engine/params.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { MACHINES } from '../machines.ts'
 import { UNITS } from './controls/jacks.ts'
 import { boardFromUrl, boardHash } from './share.ts'
@@ -32,21 +32,21 @@ function everyMachine() {
     c[k] = i + 1
   })
   UNITS.forEach((u, i) => {
-    c[u.into] = jackFor(SOURCE_TAPS[i % SOURCE_TAPS.length]!)
+    c[u.into] = lineFor(SOURCE_TAPS[i % SOURCE_TAPS.length]!)
   })
   c.micPatch = MIC.prattleIn
   c.micPatch2 = MIC.howlerIn + 1
   return c
 }
 
-test('a board touching every machine links as it did before the registry', () => {
-  const c = everyMachine()
-  expect(boardHash('', c)).toBe(PACKED)
-  expect(boardHash('#set=', c)).toBe(LONG)
-})
-
-test('both links read back as that board', () => {
+test('both links made before the registry and the Lines keys read back as that board', () => {
   const c = everyMachine()
   for (const hash of [PACKED, LONG])
+    expect({ ...DEFAULT_CONTROLS, ...boardFromUrl('', `#${hash}`) }).toEqual(c)
+})
+
+test('a board touching every machine reads back from both links it writes today', () => {
+  const c = everyMachine()
+  for (const hash of [boardHash('', c), boardHash('#set=', c)])
     expect({ ...DEFAULT_CONTROLS, ...boardFromUrl('', `#${hash}`) }).toEqual(c)
 })

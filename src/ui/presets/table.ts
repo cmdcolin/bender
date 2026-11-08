@@ -41,7 +41,7 @@ import {
   PIANO_78S,
   SHELLAC,
 } from '../../engine/archive.ts'
-import { jackFor } from '../../jacks.ts'
+import { lineFor } from '../../jacks.ts'
 import { phraseControls } from '../../prattle.ts'
 import { choiceValue } from '../controls/index.ts'
 import { RAVE_STAB } from './rigs.ts'
@@ -769,7 +769,7 @@ export const PRESETS: PresetDef[] = [
       ampCab: AMP_CAB.closed,
       ampLevel: -6,
       ampMix: 1,
-      ampInto: jackFor('toyDrum'),
+      ampLines: lineFor('toyDrum'),
     },
   },
   {
@@ -793,12 +793,12 @@ export const PRESETS: PresetDef[] = [
       bits: 4,
       srHz: 3500,
       crushMix: 1,
-      crushInto: jackFor('pcmKeys'),
+      crushLines: lineFor('pcmKeys'),
       combHz: 73.4,
       combFb: 0.93,
       combDampHz: 3500,
       combMix: 0.8,
-      combInto: jackFor('toyDrum'),
+      combLines: lineFor('toyDrum'),
     },
   },
   {
@@ -818,7 +818,7 @@ export const PRESETS: PresetDef[] = [
       revMix: 0.8,
       revDecayS: 5,
       revBoing: 0.6,
-      revInto: jackFor('sheet'),
+      revLines: lineFor('sheet'),
     },
   },
   {

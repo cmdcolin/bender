@@ -3,7 +3,7 @@ import { afterAll, expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { ROCK } from '../drums.ts'
 import { packParams, TAP_MIC } from '../engine/params.ts'
-import { jackFor, jackOf } from '../jacks.ts'
+import { lineFor, lineOf } from '../jacks.ts'
 import { OWNER_BY_KEY } from '../ui/controls/index.ts'
 import { wildBoard } from '../ui/wild.ts'
 import { buildBender } from './build.ts'
@@ -551,11 +551,11 @@ test('nor with the other four bends in the slots', () => {
 test('nor with units patched into machines', () => {
   const { found } = playing(make, {
     ...FIRST_BENDS,
-    ampInto: jackFor('toyDrum'),
-    combInto: jackFor('toyDrum'),
-    crushInto: jackFor('fmChip'),
-    rackInto: jackFor('pcmKeys'),
-    dlyInto: jackOf(TAP_MIC),
+    ampLines: lineFor('toyDrum'),
+    combLines: lineFor('toyDrum'),
+    crushLines: lineFor('fmChip'),
+    rackLines: lineFor('pcmKeys'),
+    dlyLines: lineOf(TAP_MIC),
   })
   expect(report(found).unexplained).toEqual([])
 })

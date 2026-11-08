@@ -4,7 +4,7 @@ import { expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { BendFace } from './BendFaces.tsx'
 import './testDom.ts'
 
@@ -25,7 +25,7 @@ const tipOf = (el: HTMLElement) => {
 test('a patched bend with no socket reads as running on its machine', () => {
   engine.writeBoard({
     ...DEFAULT_CONTROLS,
-    octInto: jackFor('toyDrum'),
+    octLines: lineFor('toyDrum'),
     octMix: 1,
   })
   face('Octave')
@@ -42,7 +42,7 @@ test('a patched bend with no socket reads as running on its machine', () => {
 test('a socketed patched bend’s badge says its joint rests', () => {
   engine.writeBoard({
     ...DEFAULT_CONTROLS,
-    ringInto: jackFor('toyDrum'),
+    ringLines: lineFor('toyDrum'),
     ringMix: 1,
   })
   face('Ring mod')

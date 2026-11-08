@@ -403,7 +403,7 @@ test('random rarely sags the shared supply', () => {
 
 test('neither a mutate nor a stage roll moves a jack', () => {
   const rand = mulberry32(7)
-  const patched = { ...DEFAULT_CONTROLS, ampInto: 3, combInto: 4 }
+  const patched = { ...DEFAULT_CONTROLS, ampLines: 3, combLines: 4 }
   const ember = GROUPS.find(g => g.name === 'Ember')!
   for (let i = 0; i < 40; i++)
     for (const next of [

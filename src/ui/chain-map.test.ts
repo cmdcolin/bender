@@ -6,7 +6,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { VOICE_LABELS } from '../drums.ts'
 import { N_DEST } from '../dsp/modbus.ts'
 import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import {
   buildMap,
@@ -1028,9 +1028,9 @@ test('a unit patched into a machine leaves the path and hangs under it', () => {
     ampMix: 0.8,
     combMix: 0.5,
     crushMix: 0.5,
-    ampInto: jackFor('toyDrum'),
-    combInto: jackFor('toyDrum'),
-    crushInto: jackFor('fmChip'),
+    ampLines: lineFor('toyDrum'),
+    combLines: lineFor('toyDrum'),
+    crushLines: lineFor('fmChip'),
   }
   for (const wrap of [true, false]) {
     const map = buildMap(board, { wrap, loop: wrap })

@@ -3,11 +3,12 @@ import { useState } from 'react'
 import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
 import { TAP_MIC } from '../engine/params.ts'
-import { jackOf } from '../jacks.ts'
+import { JACK_TAPS } from '../jacks.ts'
 import { CHANNELS } from './controls/index.ts'
 import {
   intoOf,
   JACK_NAMES,
+  lineNamed,
   MASTER,
   patchedInto,
   UNITS,
@@ -31,7 +32,7 @@ const PLUG_GLYPH = (
 
 const MACHINES = new Set(CHANNELS.map(c => c.name))
 
-const MIC_JACK = JACK_NAMES[jackOf(TAP_MIC)]
+const MIC_JACK = JACK_NAMES[JACK_TAPS.indexOf(TAP_MIC)]
 
 /** Whether units patched onto the mic hear nothing, with no mic wire on the
     mix to hand them a line. */
@@ -41,7 +42,7 @@ const DEAF = 'the mic isn’t wired to the mix, so it hears nothing'
 
 const plug = (key: ControlKey, machine: string) => {
   engine.armStep()
-  engine.set(key, Math.max(JACK_NAMES.indexOf(machine), 0))
+  engine.set(key, lineNamed(machine))
 }
 
 const unitsOn = (c: Controls, machine: string) =>

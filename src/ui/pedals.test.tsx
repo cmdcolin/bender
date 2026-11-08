@@ -4,7 +4,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { PEDALS, PEDAL_ORDERS, pedalOrderAt } from '../pedals.ts'
 import { PedalRack } from './PedalRack.tsx'
 import './testDom.ts'
@@ -186,7 +186,7 @@ test('a patched pedal says where it runs and that it is bypassed', () => {
     pedalOrder: 0,
     stompMix: 0.5,
     stompMute: 1,
-    stompInto: jackFor('toyDrum'),
+    stompLines: lineFor('toyDrum'),
   })
   openBoard()
   const row = screen.getAllByRole('listitem')[0]!

@@ -4,7 +4,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { BENDS, bendAt, GROUPS, groupKeys } from './controls/index.ts'
 import { applyRig, rigsFor } from './presets/index.ts'
 import { OpenGroup } from './Section.tsx'
@@ -200,7 +200,7 @@ const slotIds = () =>
 // Octave rides loose on Clatter. A socket would only order it among Clatter's
 // units, so pressing it trades out no bend the master run is using.
 test('pressing a loose patched bend on a full rack leaves the rack alone', () => {
-  engine.controls.set({ ...DEFAULT_CONTROLS, octInto: jackFor('toyDrum') })
+  engine.controls.set({ ...DEFAULT_CONTROLS, octLines: lineFor('toyDrum') })
   openRack()
   const before = slotIds()
   const chip = screen.getByTitle(/Octave is patched into Clatter/)
@@ -213,8 +213,8 @@ test('pressing a loose patched bend on a full rack leaves the rack alone', () =>
 test('pressing a loose patched bend takes a position the master run passes', () => {
   engine.controls.set({
     ...DEFAULT_CONTROLS,
-    crushInto: jackFor('toyDrum'),
-    octInto: jackFor('toyDrum'),
+    crushLines: lineFor('toyDrum'),
+    octLines: lineFor('toyDrum'),
   })
   openRack()
   const chip = screen.getByTitle(/Octave is patched into Clatter/)
@@ -226,7 +226,7 @@ test('pressing a loose patched bend takes a position the master run passes', () 
 })
 
 test('pressing a loose master bend takes the socket of a bend patched onto a machine', () => {
-  engine.controls.set({ ...audible(), crushInto: jackFor('toyChip') })
+  engine.controls.set({ ...audible(), crushLines: lineFor('toyChip') })
   openRack()
   const before = engine.controls.get()
   fireEvent.click(screen.getByTitle(/Octave is in no position/))
@@ -239,7 +239,7 @@ test('pressing a loose master bend takes the socket of a bend patched onto a mac
 test('a patched bend’s row says where it runs and that it is bypassed', () => {
   engine.controls.set({
     ...DEFAULT_CONTROLS,
-    ringInto: jackFor('toyDrum'),
+    ringLines: lineFor('toyDrum'),
     ringMix: 1,
     ringMute: 1,
   })

@@ -1,7 +1,7 @@
 import { ROCK } from '../src/drums.ts'
 import { DAC_REF_TOY } from '../src/dsp/stages/toyDrum.ts'
 import { TAP_MIC } from '../src/engine/params.ts'
-import { jackFor, jackOf } from '../src/jacks.ts'
+import { lineFor, lineOf } from '../src/jacks.ts'
 
 import type { Controls } from '../src/controls.ts'
 
@@ -116,24 +116,24 @@ const ROUTES: Record<string, Partial<Controls>> = {
     ...PLAYING,
     echoLevel: 0.6,
     echoFb: 0.5,
-    echoInto: jackFor('toyDrum'),
+    echoLines: lineFor('toyDrum'),
     crushMix: 0.7,
     bits: 5,
-    crushInto: jackFor('toyDrum'),
+    crushLines: lineFor('toyDrum'),
   },
   'route kit feeds the toy': {
     ...PLAYING,
     drumRef: DAC_REF_TOY,
     drumRefDepth: 0.8,
     stompMix: 0.8,
-    stompInto: jackFor('toyChip'),
+    stompLines: lineFor('toyChip'),
   },
   'route mic': {
     ...PLAYING,
     micLevel: 1,
     micPatch: 0,
     revMix: 0.7,
-    revInto: jackOf(TAP_MIC),
+    revLines: lineOf(TAP_MIC),
   },
 }
 

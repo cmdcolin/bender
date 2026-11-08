@@ -7,7 +7,7 @@ import {
   TAP_BUS,
   TAP_MIC,
 } from '../engine/params.ts'
-import { BEND_INTO_KEYS, jackTap } from '../jacks.ts'
+import { BEND_LINE_KEYS, tapMaskOf } from '../jacks.ts'
 import { MACHINES } from '../machines.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { MIC, micInto } from './micJacks.ts'
@@ -81,6 +81,9 @@ function reseat(
   return moving && seated
 }
 
+const lowestTap = (mask: number) =>
+  mask === 0 ? -1 : 31 - Math.clz32(mask & -mask)
+
 const SLOT_IDX = [
   IDX.bendSlot0,
   IDX.bendSlot1,
@@ -97,8 +100,8 @@ const MUTE_IDX = MACHINES.map(m => ('mute' in m ? IDX[m.mute] : NO_MUTE))
 const DUCK_IDX = MACHINES.map(m => IDX[m.duck])
 
 const BYPASS_IDX = PEDALS.map(p => IDX[p.mute])
-const PEDAL_INTO_IDX = PEDALS.map(p => IDX[p.into])
-const BEND_INTO_IDX = BEND_INTO_KEYS.map(k => IDX[k])
+const PEDAL_LINES_IDX = PEDALS.map(p => IDX[p.into])
+const BEND_LINES_IDX = BEND_LINE_KEYS.map(k => IDX[k])
 
 const BEND_BYPASS_IDX = [
   IDX.ringMute,
@@ -428,17 +431,19 @@ export class Chain {
   )
   /** The tap each bend (by id − 1) and each pedal is cabled onto this block,
       −1 for the master run, and one bit per tap that has anything on it. */
-  private readonly bendAt = new Int8Array(BEND_INTO_IDX.length).fill(-1)
-  private readonly pedalAt = new Int8Array(PEDAL_INTO_IDX.length).fill(-1)
+  private readonly bendAt = new Int8Array(BEND_LINES_IDX.length).fill(-1)
+  private readonly pedalAt = new Int8Array(PEDAL_LINES_IDX.length).fill(-1)
   private jacked = 0
   /** Each unit's wet share on the line it is cabled onto, as this block began
       and as it ends: a unit moving lines fades out on one and in on the next. */
-  private readonly bendSeatFrom = new Float32Array(BEND_INTO_IDX.length).fill(1)
-  private readonly bendSeat = new Float32Array(BEND_INTO_IDX.length).fill(1)
-  private readonly pedalSeatFrom = new Float32Array(PEDAL_INTO_IDX.length).fill(
+  private readonly bendSeatFrom = new Float32Array(BEND_LINES_IDX.length).fill(
     1,
   )
-  private readonly pedalSeat = new Float32Array(PEDAL_INTO_IDX.length).fill(1)
+  private readonly bendSeat = new Float32Array(BEND_LINES_IDX.length).fill(1)
+  private readonly pedalSeatFrom = new Float32Array(
+    PEDAL_LINES_IDX.length,
+  ).fill(1)
+  private readonly pedalSeat = new Float32Array(PEDAL_LINES_IDX.length).fill(1)
   private seated = false
   /** Which of the carrier, logic, toy and FM buses each machine's line feeds
       this block, so those buses carry the line its units leave. */
@@ -946,8 +951,8 @@ export class Chain {
   private routeJacks(p: Float32Array, n: number) {
     let jacked = 0
     const { seated } = this
-    for (let i = 0; i < BEND_INTO_IDX.length; i++) {
-      const want = jackTap(p[BEND_INTO_IDX[i]!]!)
+    for (let i = 0; i < BEND_LINES_IDX.length; i++) {
+      const want = lowestTap(tapMaskOf(p[BEND_LINES_IDX[i]!]!))
       if (
         reseat(this.bendAt, this.bendSeat, this.bendSeatFrom, i, want, seated)
       )
@@ -955,8 +960,8 @@ export class Chain {
       const t = this.bendAt[i]!
       if (t >= 0) jacked |= 1 << t
     }
-    for (let i = 0; i < PEDAL_INTO_IDX.length; i++) {
-      const want = jackTap(p[PEDAL_INTO_IDX[i]!]!)
+    for (let i = 0; i < PEDAL_LINES_IDX.length; i++) {
+      const want = lowestTap(tapMaskOf(p[PEDAL_LINES_IDX[i]!]!))
       if (
         reseat(
           this.pedalAt,

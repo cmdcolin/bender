@@ -8,6 +8,7 @@ import {
   type Controls,
 } from '../controls.ts'
 import { asKitSetting, asLen, asMask, LEN_KEYS } from '../drums.ts'
+import { linesFromJack, UNIT_LINE_KEYS } from '../jacks.ts'
 import {
   asLaneLen,
   asLaneValue,
@@ -1061,22 +1062,22 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumSnareSweep',
   'drumSnareSwoop',
   'fmStack',
-  'ringInto',
-  'crushInto',
-  'distInto',
-  'combInto',
-  'glitchInto',
-  'filtInto',
-  'shiftInto',
-  'octInto',
-  'codecInto',
-  'rackInto',
-  'stompInto',
-  'dlyInto',
-  'echoInto',
-  'revInto',
-  'ensInto',
-  'ampInto',
+  'gone:ringInto',
+  'gone:crushInto',
+  'gone:distInto',
+  'gone:combInto',
+  'gone:glitchInto',
+  'gone:filtInto',
+  'gone:shiftInto',
+  'gone:octInto',
+  'gone:codecInto',
+  'gone:rackInto',
+  'gone:stompInto',
+  'gone:dlyInto',
+  'gone:echoInto',
+  'gone:revInto',
+  'gone:ensInto',
+  'gone:ampInto',
   'leadSupply',
   'leadSeqOn',
   'leadSeqRate',
@@ -1293,14 +1294,39 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'revHowl',
   'fmBodgeR',
   'chipBodgeR',
+  'ringLines',
+  'crushLines',
+  'distLines',
+  'combLines',
+  'glitchLines',
+  'filtLines',
+  'shiftLines',
+  'octLines',
+  'codecLines',
+  'rackLines',
+  'stompLines',
+  'dlyLines',
+  'echoLines',
+  'revLines',
+  'ensLines',
+  'ampLines',
 ]
 
 // Retired controls that old links still carry, each read into the control that
 // replaced it. `step` is the retired control's step, which a packed value counts in.
-export const RENAMED = new Map<
-  string,
-  { key: ControlKey; step: number; value: (old: number) => number }
->([['revDryCut', { key: 'revDry', step: 0.01, value: v => 1 - v }]])
+interface Renamed {
+  key: ControlKey
+  step: number
+  value: (old: number) => number
+}
+
+export const RENAMED = new Map<string, Renamed>([
+  ['revDryCut', { key: 'revDry', step: 0.01, value: v => 1 - v }],
+  ...UNIT_LINE_KEYS.map((key): [string, Renamed] => [
+    key.replace(/Lines$/, 'Into'),
+    { key, step: 1, value: linesFromJack },
+  ]),
+])
 
 const TUNE = new Set<ControlKey>([
   ...TUNE_ALL_STEP_KEYS,

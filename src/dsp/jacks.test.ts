@@ -1,8 +1,22 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
-import { packParams, SOURCE_TAPS, TAP_MIC } from '../engine/params.ts'
-import { BEND_INTO_KEYS, JACK_KEYS, jackOf, jackTap } from '../jacks.ts'
+import {
+  MAX_SOURCES,
+  packParams,
+  SOURCE_TAPS,
+  TAP_MIC,
+} from '../engine/params.ts'
+import {
+  ALL_LINES,
+  BEND_LINE_KEYS,
+  JACK_KEYS,
+  LINE_COUNT,
+  lineOf,
+  linesFromJack,
+  linesOfTaps,
+  tapMaskOf,
+} from '../jacks.ts'
 import { PEDALS } from '../pedals.ts'
 import { BENDS } from '../ui/controls/bends.ts'
 import { Chain } from './chain.ts'
@@ -78,23 +92,23 @@ function rig() {
 test('a pedal patched into one machine processes only that machine', () => {
   const { run, pedal } = rig()
   expect(run({})).toBeCloseTo((0.5 + 0.2) * 0.5, 6)
-  expect(run({ stompInto: jackOf(0) })).toBeCloseTo(0.5 * 0.5 + 0.2, 6)
+  expect(run({ stompLines: lineOf(0) })).toBeCloseTo(0.5 * 0.5 + 0.2, 6)
   expect(pedal.at(-1)).toBeCloseTo(0.5, 6)
-  expect(run({ stompInto: jackOf(1) })).toBeCloseTo(0.5 + 0.2 * 0.5, 6)
+  expect(run({ stompLines: lineOf(1) })).toBeCloseTo(0.5 + 0.2 * 0.5, 6)
   expect(pedal.at(-1)).toBeCloseTo(0.2, 6)
 })
 
 test('a patched pedal leaves the master run', () => {
   const { run, pedal } = rig()
   run({})
-  run({ stompInto: jackOf(1) })
+  run({ stompLines: lineOf(1) })
   expect(pedal).toHaveLength(2 * SETTLE)
 })
 
 test('a bend patched into a machine leaves its socket and runs there', () => {
   const { run, bend } = rig()
   expect(run({ bendSlot0: 2 })).toBeCloseTo(0.7 * 0.25 * 0.5, 6)
-  expect(run({ bendSlot0: 2, crushInto: jackOf(0) })).toBeCloseTo(
+  expect(run({ bendSlot0: 2, crushLines: lineOf(0) })).toBeCloseTo(
     (0.5 * 0.25 + 0.2) * 0.5,
     6,
   )
@@ -104,13 +118,16 @@ test('a bend patched into a machine leaves its socket and runs there', () => {
 
 test('a patched bend runs on its machine without a socket', () => {
   const { run, bend } = rig()
-  expect(run({ crushInto: jackOf(1) })).toBeCloseTo((0.5 + 0.2 * 0.25) * 0.5, 6)
+  expect(run({ crushLines: lineOf(1) })).toBeCloseTo(
+    (0.5 + 0.2 * 0.25) * 0.5,
+    6,
+  )
   expect(bend).toHaveLength(SETTLE)
 })
 
 test('units on one machine run bends first, then pedals', () => {
   const { run, bend, pedal } = rig()
-  run({ crushInto: jackOf(0), stompInto: jackOf(0) })
+  run({ crushLines: lineOf(0), stompLines: lineOf(0) })
   expect(bend.at(-1)).toBeCloseTo(0.5, 6)
   expect(pedal.at(-1)).toBeCloseTo(0.5 * 0.25, 6)
 })
@@ -118,7 +135,7 @@ test('units on one machine run bends first, then pedals', () => {
 test('a machine’s meter reads its patched line', () => {
   const { run, chain } = rig()
   chain.taps.fill(0)
-  run({ stompInto: jackOf(0) })
+  run({ stompLines: lineOf(0) })
   expect(chain.taps[0]).toBeCloseTo(0.25, 6)
   expect(chain.taps[1]).toBeCloseTo(0.2, 6)
 })
@@ -135,7 +152,7 @@ test('a unit patched into the mic hears the mic alone', () => {
       ...DEFAULT_CONTROLS,
       micLevel: 1,
       micPatch: 0,
-      stompInto: jackOf(TAP_MIC),
+      stompLines: lineOf(TAP_MIC),
     }),
     mic,
   )
@@ -143,13 +160,36 @@ test('a unit patched into the mic hears the mic alone', () => {
 })
 
 test('every unit has a jack, and every machine and the mic is a target', () => {
-  expect(BENDS.map(b => b.into)).toEqual(BEND_INTO_KEYS)
+  expect(BENDS.map(b => b.into)).toEqual(BEND_LINE_KEYS)
   expect(JACK_KEYS.size).toBe(BENDS.length + PEDALS.length)
   for (const key of JACK_KEYS) expect(DEFAULT_CONTROLS[key]).toBe(0)
-  expect(jackTap(0)).toBe(-1)
+  expect(tapMaskOf(0)).toBe(0)
   for (let k = 0; k < SOURCE_TAPS.length; k++)
-    expect(jackTap(jackOf(k))).toBe(k)
-  expect(jackTap(jackOf(TAP_MIC))).toBe(TAP_MIC)
+    expect(tapMaskOf(lineOf(k))).toBe(1 << k)
+  expect(tapMaskOf(lineOf(TAP_MIC))).toBe(1 << TAP_MIC)
+})
+
+test('a lines mask keeps the mic at bit 0 and source k at bit 1 + k, and the chain reads it in tap bits', () => {
+  expect(lineOf(TAP_MIC)).toBe(1)
+  for (let k = 0; k < SOURCE_TAPS.length; k++)
+    expect(lineOf(k)).toBe(2 ** (1 + k))
+  const lines = lineOf(TAP_MIC) | lineOf(0) | lineOf(5)
+  expect(tapMaskOf(lines)).toBe((1 << TAP_MIC) | 1 | (1 << 5))
+  for (let mask = 0; mask <= ALL_LINES; mask += 37)
+    expect(linesOfTaps(tapMaskOf(mask))).toBe(mask)
+  expect(tapMaskOf(ALL_LINES)).toBe((1 << (TAP_MIC + 1)) - 1)
+})
+
+test('an old Into value moves to the one line it named', () => {
+  expect(linesFromJack(0)).toBe(0)
+  expect(linesFromJack(1)).toBe(lineOf(TAP_MIC))
+  for (let k = 0; k < SOURCE_TAPS.length; k++)
+    expect(linesFromJack(k + 2)).toBe(lineOf(k))
+})
+
+test('every line fits the sixteen bits a packed link and a mask hold', () => {
+  expect(MAX_SOURCES + 1).toBeLessThanOrEqual(16)
+  expect(LINE_COUNT).toBe(MAX_SOURCES + 1)
 })
 
 const KIT = SOURCE_TAPS.indexOf('toyDrum')
@@ -160,10 +200,10 @@ const play = (c: Partial<Controls>) =>
 test('Ember on Clatter leaves Plinky dry', () => {
   const toyAlone = { chipLevel: 0.8, drumLevel: 0 }
   const dry = play(toyAlone)
-  const jacked = play({ ...toyAlone, ...EMBER, ampInto: jackOf(KIT) })
+  const jacked = play({ ...toyAlone, ...EMBER, ampLines: lineOf(KIT) })
   expect(jacked).toEqual(dry)
   const both = { chipLevel: 0.8, drumLevel: 0.9 }
-  const onKit = play({ ...both, ...EMBER, ampInto: jackOf(KIT) })
+  const onKit = play({ ...both, ...EMBER, ampLines: lineOf(KIT) })
   const onMaster = play({ ...both, ...EMBER })
   expect(rms(dry)).toBeGreaterThan(0.01)
   expect(rms(onKit)).toBeGreaterThan(0.01)
@@ -224,8 +264,8 @@ function switchStep(change: Partial<Controls>) {
 
 test('moving a unit between lines mid-play fades like its footswitch', () => {
   const footswitch = switchStep({ ampMute: 1 })
-  expect(switchStep({ ampInto: jackOf(1) })).toBeLessThan(2 * footswitch)
-  expect(switchStep({ ampInto: jackOf(0) })).toBeLessThan(2 * footswitch)
+  expect(switchStep({ ampLines: lineOf(1) })).toBeLessThan(2 * footswitch)
+  expect(switchStep({ ampLines: lineOf(0) })).toBeLessThan(2 * footswitch)
 })
 
 // A unit that plays back the block before the one it is handed.
@@ -264,7 +304,7 @@ test('a unit moved onto a machine brings none of the master run with it', () => 
     for (let b = 0; b < 4; b++) chain.process(makeIo(), p)
   }
   hold({})
-  hold({ stompInto: jackOf(1) })
+  hold({ stompLines: lineOf(1) })
   for (const v of out.slice(2 * BLOCK)) expect(v).toBeCloseTo(0.5, 6)
 })
 
@@ -298,7 +338,7 @@ test('a machine going bad drops only what the bus held, patched lines too', () =
       panic: () => {},
     },
   ]
-  const p = packParams({ ...DEFAULT_CONTROLS, ...EMPTY, stompInto: jackOf(0) })
+  const p = packParams({ ...DEFAULT_CONTROLS, ...EMPTY, stompLines: lineOf(0) })
   chain.process(makeIo(), p)
   blow = true
   chain.process(makeIo(), p)
@@ -318,7 +358,7 @@ test('the mic’s meter reads its patched line', () => {
       ...DEFAULT_CONTROLS,
       micLevel: 1,
       micPatch: 0,
-      stompInto: jackOf(TAP_MIC),
+      stompLines: lineOf(TAP_MIC),
     }),
     mic,
   )
@@ -345,7 +385,7 @@ function carrierHeard(c: Partial<Controls>) {
     ...EMPTY,
     bendSlot0: 1,
     ringFrom: 1,
-    stompInto: jackOf(0),
+    stompLines: lineOf(0),
     ...c,
   })
   for (let b = 0; b < SETTLE; b++) chain.process(makeIo(), p)
@@ -353,10 +393,10 @@ function carrierHeard(c: Partial<Controls>) {
 }
 
 test('a carrier off a patched machine is its wet line, but dry to a unit on it', () => {
-  expect(carrierHeard({ stompInto: 0 })).toBeCloseTo(0.5, 6)
+  expect(carrierHeard({ stompLines: 0 })).toBeCloseTo(0.5, 6)
   expect(carrierHeard({})).toBeCloseTo(0.25, 6)
-  expect(carrierHeard({ ringInto: jackOf(1) })).toBeCloseTo(0.25, 6)
-  expect(carrierHeard({ ringInto: jackOf(0) })).toBeCloseTo(0.5, 6)
+  expect(carrierHeard({ ringLines: lineOf(1) })).toBeCloseTo(0.25, 6)
+  expect(carrierHeard({ ringLines: lineOf(0) })).toBeCloseTo(0.5, 6)
 })
 
 test('the kit’s DAC hears the toy’s patched line a block on, as off a cable', () => {
@@ -377,5 +417,5 @@ test('the kit’s DAC hears the toy’s patched line a block on, as off a cable'
     return heard.at(-1)
   }
   expect(run({})).toBeCloseTo(0.5, 6)
-  expect(run({ stompInto: jackOf(0) })).toBeCloseTo(0.25, 6)
+  expect(run({ stompLines: lineOf(0) })).toBeCloseTo(0.25, 6)
 })

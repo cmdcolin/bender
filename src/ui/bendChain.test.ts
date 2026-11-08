@@ -3,7 +3,7 @@ import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { sounds, switchOn } from './bendChain.ts'
 import { BEND_SLOT_KEYS, bendAt } from './controls/index.ts'
 
@@ -42,7 +42,7 @@ test('a full chain trades out a socket patched onto a machine before a sounding 
     combMix: 1,
     glitchMix: 1,
     filtMix: 1,
-    crushInto: jackFor('toyChip'),
+    crushLines: lineFor('toyChip'),
   })
   const before = BEND_SLOT_KEYS.map(k => engine.controls.get()[k])
   const crusher = BEND_SLOT_KEYS.findIndex(
@@ -62,7 +62,7 @@ test('a full chain trades out a socket patched onto a machine before a sounding 
 test('a patched bend sounds without a socket and switches on without one', () => {
   const board = {
     ...DEFAULT_CONTROLS,
-    octInto: jackFor('toyDrum'),
+    octLines: lineFor('toyDrum'),
     octMix: 1,
     octMute: 1,
   }

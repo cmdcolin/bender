@@ -3,6 +3,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../../controls.ts'
+import { JACK_KEYS } from '../../jacks.ts'
 import { MACHINES } from '../../machines.ts'
 import { PEDALS } from '../../pedals.ts'
 import { BEND_GROUPS, BENDS } from './bends.ts'
@@ -103,6 +104,7 @@ export function touchedCount(group: Group | string, c: Controls): number {
 export const CUT_KEYS = new Set<ControlKey>([
   ...ALL_SLIDERS.filter(s => s.choices).map(s => s.key),
   ...EDITOR_KEYS,
+  ...JACK_KEYS,
 ])
 
 // Yours, not the look's: how loud it comes out, which machines you have muted,

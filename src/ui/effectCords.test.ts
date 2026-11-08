@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { PEDAL_ORDERS, PEDALS, pedalOrderAt } from '../pedals.ts'
 import { BEND_SLOT_KEYS } from './controls/index.ts'
 import {
@@ -66,9 +66,9 @@ test('with no faces on the bench the one cord runs from the bus to the output', 
 test('a unit patched onto a machine leaves the master run for a run of its own from that machine to the mix bus', () => {
   const c = {
     ...board,
-    revInto: jackFor('sheet'),
-    octInto: jackFor('sheet'),
-    crushInto: jackFor('toyDrum'),
+    revLines: lineFor('sheet'),
+    octLines: lineFor('sheet'),
+    crushLines: lineFor('toyDrum'),
   }
   const runs = effectRuns(c)
   expect(runs[0]!.chain).toEqual([

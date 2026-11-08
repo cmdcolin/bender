@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
-import { jackFor } from '../jacks.ts'
+import { lineFor } from '../jacks.ts'
 import { BEND_SLOT_KEYS, bendAt } from '../ui/controls/index.ts'
 import { heard } from '../ui/presets/scenarios.ts'
 import { TOUCH_MODES, tiltPoint, touchMode, touchPush } from './touch.ts'
@@ -83,7 +83,7 @@ test('a bend patched onto a machine borrows no slot', () => {
   const patched = {
     ...DEFAULT_CONTROLS,
     bendSlot3: 0,
-    filtInto: jackFor('toyDrum'),
+    filtLines: lineFor('toyDrum'),
   }
   expect(touchPush(mode('dub'), 0.5, 0.5, patched)).not.toHaveProperty(
     LAST_SLOT,
