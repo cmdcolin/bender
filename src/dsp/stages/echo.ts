@@ -381,6 +381,10 @@ export class Echo implements Stage {
     return Math.min(Math.max(d * bend, 1), this.maxRead)
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     this.lineL.reset()
     this.lineR.reset()

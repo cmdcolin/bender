@@ -321,6 +321,10 @@ export class RackVerb implements Stage {
     this.mem[a] = (a >> 8) & 1 ? this.mem[a]! | bit : this.mem[a]! & ~bit
   }
 
+  sleep(p: Float32Array) {
+    if (Math.round(p[IDX.rackFreeze]!) !== 1) this.panic()
+  }
+
   panic() {
     this.mem.fill(MID)
     this.addr.reset()

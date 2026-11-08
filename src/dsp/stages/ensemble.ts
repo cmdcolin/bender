@@ -199,6 +199,10 @@ export class Ensemble implements Stage {
     }
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     for (const line of this.lines) line.reset()
     this.toneL.reset()

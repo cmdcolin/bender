@@ -383,6 +383,10 @@ export class Comb implements Stage {
     this.hzWired = hz
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     this.resetStock()
     this.resetBrigade()

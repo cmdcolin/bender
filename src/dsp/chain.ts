@@ -13,6 +13,7 @@ import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { MIC, micInto } from './micJacks.ts'
 import { DELAY_ON_FIRST, DELAY_ON_SECOND, MicLine } from './micLine.ts'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
+import { Sleep } from './sleep.ts'
 import {
   BLOCK,
   GLINT_REGS,
@@ -298,6 +299,7 @@ export class Chain {
     this.ctx.trig.keyGate(semitone, down)
   }
   private readonly micLine: MicLine
+  private readonly sleepers = new Sleep()
   private readonly micDry = new Float32Array(BLOCK)
   private readonly micLate = new Float32Array(BLOCK)
   private readonly fbRetL = new Float32Array(BLOCK)
@@ -554,6 +556,7 @@ export class Chain {
     this.outEnv.reset()
     this.ctx.mod.panic()
     this.ctx.trig.panic()
+    this.sleepers.reset()
     this.ctx.railV.fill(1)
     this.ctx.sag.fill(0)
     this.ctx.droop.fill(0)
@@ -735,7 +738,7 @@ export class Chain {
     this.supplies?.begin(n, p, ctx)
     for (let k = 0; k < this.sources.length; k++) {
       const s = this.sources[k]!
-      if (!s.when || s.when(p, ctx)) {
+      if (this.sleepers.awake(s, p, ctx)) {
         const vca = k < MAX_SOURCES ? ctx.mod.read(SOURCE_LEVEL_DEST[k]!) : null
         const mute = MUTE_IDX[k] ?? NO_MUTE
         const muteTo = mute === NO_MUTE ? 1 : 1 - p[mute]!
@@ -912,7 +915,7 @@ export class Chain {
       if (this.pedalAt[i] === ON_MASTER) this.runPedal(i, io, p, n)
     for (const s of this.post) {
       if (s === this.tape && tapeAt !== TAPE_AT_END) continue
-      if (!s.when || s.when(p, ctx)) {
+      if (this.sleepers.awake(s, p, ctx)) {
         s.process(io, p, ctx)
         this.contain(s, io, n)
       }
@@ -921,6 +924,7 @@ export class Chain {
     this.tail(io, p, n)
     this.computeFeedback(io, p)
     this.duck = this.limit(io, n)
+    this.sleepers.settle(p)
 
     const leaked =
       !Number.isFinite(io.l[0]!) ||
@@ -949,7 +953,7 @@ export class Chain {
     const s = this.pedals[i]
     if (s) {
       const to = 1 - p[BYPASS_IDX[i]!]!
-      if (!s.when || s.when(p, this.ctx)) {
+      if (this.sleepers.awake(s, p, this.ctx)) {
         this.unitIn.set(io.l)
         this.faded(
           s,
@@ -967,7 +971,7 @@ export class Chain {
 
   private runBend(id: number, io: StereoBlock, p: Float32Array, n: number) {
     const s = this.bendById[id]
-    if (s && (!s.when || s.when(p, this.ctx))) {
+    if (s && this.sleepers.awake(s, p, this.ctx)) {
       this.unitIn.set(io.l)
       this.faded(
         s,
@@ -1406,7 +1410,7 @@ export class Chain {
 
   private runTape(io: StereoBlock, p: Float32Array) {
     const t = this.tape
-    if (t && (!t.when || t.when(p, this.ctx))) {
+    if (t && this.sleepers.awake(t, p, this.ctx)) {
       t.process(io, p, this.ctx)
       this.contain(t, io, io.n)
     }
@@ -1551,6 +1555,7 @@ export class Chain {
       }
       if (!passing) {
         dropped |= 1 << k
+        this.sleepers.hold(s)
         continue
       }
       this.runBend(id, io, p, n)

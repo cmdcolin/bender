@@ -734,6 +734,10 @@ export class Amp implements Stage {
     }
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     this.left.reset()
     this.right.reset()

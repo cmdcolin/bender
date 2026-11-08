@@ -319,6 +319,10 @@ export class Shifter implements Stage {
     this.knock = flushDenormal(this.knock)
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     this.hL.reset()
     this.hR.reset()

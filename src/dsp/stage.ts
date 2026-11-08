@@ -93,6 +93,7 @@ export interface Stage {
   writes?: readonly WrittenBus[]
   when?(p: Float32Array, ctx: Ctx): boolean
   process(io: StereoBlock, p: Float32Array, ctx: Ctx): void
+  sleep?(p: Float32Array): void
   panic(): void
 }
 

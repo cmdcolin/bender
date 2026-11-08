@@ -191,6 +191,10 @@ export class StepFaults implements Stage {
     this.outR = (this.bufR[i0]! + (this.bufR[i1]! - this.bufR[i0]!) * f) * gain
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     this.bufL.fill(0)
     this.bufR.fill(0)

@@ -308,6 +308,10 @@ export class SpringVerb implements Stage {
     }
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     this.tankL.reset()
     this.tankR.reset()

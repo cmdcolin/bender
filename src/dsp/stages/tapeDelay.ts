@@ -335,6 +335,10 @@ export class TapeDelay implements Stage {
     }
   }
 
+  sleep() {
+    this.panic()
+  }
+
   panic() {
     this.lineL.reset()
     this.lineR.reset()
@@ -352,7 +356,7 @@ export class TapeDelay implements Stage {
     this.slide = 0
     this.spliceIn = 0
     this.gapLeft = 0
-    this.lift = [0, 0, 0]
+    this.lift.fill(0)
     this.clogged = 0
     for (const k of HEAD_IDS) this.wipeHead(k)
   }

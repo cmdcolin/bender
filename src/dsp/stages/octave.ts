@@ -240,6 +240,10 @@ export class Octave implements Stage {
     }
   }
 
+  sleep(p: Float32Array) {
+    if (p[IDX.octFreeze]! < 0.5) this.panic()
+  }
+
   panic() {
     this.sides[0].reset()
     this.sides[1].reset()

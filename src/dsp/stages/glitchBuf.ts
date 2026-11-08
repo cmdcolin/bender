@@ -125,6 +125,10 @@ export class GlitchBuf implements Stage {
     }
   }
 
+  sleep(p: Float32Array) {
+    if (Math.round(p[IDX.glitchFreeze]!) !== 1) this.panic()
+  }
+
   panic() {
     this.bufL.fill(0)
     this.bufR.fill(0)
