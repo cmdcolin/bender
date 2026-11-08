@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { detailsUrl } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
 import { hasYtdlp } from '../engine/ytdlp.ts'
 import { useStoreValue } from './ControlsContext.ts'
@@ -93,11 +92,11 @@ export function TapeLoopFace({
           {!archiveStep && archiveSource && (
             <a
               className={styles.credit}
-              href={detailsUrl(archiveSource.id)}
+              href={archiveSource.href}
               target="_blank"
               rel="noreferrer"
             >
-              archive.org/{archiveSource.id}
+              {archiveSource.credit}
             </a>
           )}
         </SampleReel>

@@ -52,6 +52,7 @@ import {
 } from '../tune.ts'
 import {
   LOAD_SECONDS,
+  detailsUrl,
   fetchItem,
   roll,
   searchText,
@@ -77,7 +78,7 @@ import {
 } from './phraseClock.ts'
 import { openTake, sweepTakes } from './takeSink.ts'
 import { encodeWav, pcmMono, pcmStereo } from './wav.ts'
-import { fetchLink } from './ytdlp.ts'
+import { fetchLink, linkCredit, watchLink } from './ytdlp.ts'
 
 import type { WildPack } from '../dsp/arc.ts'
 import type {
@@ -543,6 +544,8 @@ export class Engine {
     id: string
     title: string
     shelf: string | null
+    href: string
+    credit: string
   } | null>(null)
   // How far a morph has got, 0..1, or null when none is running. A store rather
   // than a value passed down because it moves at the frame rate: subscribed to
@@ -1723,12 +1726,22 @@ export class Engine {
       const ctl = this.claimTape()
       this.sampleError.set('')
       this.archiveStep.set('fetching with yt-dlp…')
+      const unwatch = watchLink(url, text => {
+        if (!ctl.signal.aborted) this.archiveStep.set(text)
+      })
       try {
         const got = await fetchLink(url, ctl.signal)
+        unwatch()
         if (!ctl.signal.aborted) {
           await this.decodeOnto(got.data, got.title, ctl.signal)
           ctl.signal.throwIfAborted()
-          this.archiveSource.set(null)
+          this.archiveSource.set({
+            id: url,
+            title: got.title,
+            shelf: null,
+            href: url,
+            credit: linkCredit(url),
+          })
           this.archiveStep.set(null)
         }
       } catch (e) {
@@ -1737,6 +1750,7 @@ export class Engine {
           this.sampleError.set(errorText(e))
         }
       } finally {
+        unwatch()
         if (this.tapeLoad === ctl) this.tapeLoad = null
       }
     }
@@ -1774,7 +1788,13 @@ export class Engine {
       }
       await this.decodeOnto(got.data, got.title, ctl.signal)
       ctl.signal.throwIfAborted()
-      this.archiveSource.set({ id: got.id, title: got.title, shelf })
+      this.archiveSource.set({
+        id: got.id,
+        title: got.title,
+        shelf,
+        href: detailsUrl(got.id),
+        credit: `archive.org/${got.id}`,
+      })
       this.archiveStep.set(null)
     } catch {
       if (!ctl.signal.aborted) this.archiveStep.set('that one would not decode')

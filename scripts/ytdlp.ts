@@ -87,6 +87,27 @@ export interface Fetched {
 
 const inflight = new Map<string, Promise<Fetched>>()
 
+const PROGRESS_MARK = 'bender'
+
+export interface Progress {
+  loaded: number
+  total: number
+}
+
+const fetching = new Map<string, Progress>()
+
+const bytes = (field: string | undefined) => {
+  const n = Number(field)
+  return Number.isFinite(n) && n > 0 ? n : 0
+}
+
+export const readProgress = (line: string): Progress | undefined => {
+  const [mark, loaded, total] = line.trim().split(' ')
+  return mark === PROGRESS_MARK && total !== undefined
+    ? { loaded: bytes(loaded), total: bytes(total) }
+    : undefined
+}
+
 const startFetch = (key: string, url: string) => {
   const p = new Promise<Fetched>((resolve, reject) => {
     mkdirSync(CACHE_DIR, { recursive: true })
@@ -98,7 +119,10 @@ const startFetch = (key: string, url: string) => {
         FORMAT,
         '--no-playlist',
         '--force-overwrites',
-        '--no-progress',
+        '--newline',
+        '--progress',
+        '--progress-template',
+        `${PROGRESS_MARK} %(progress.downloaded_bytes)s %(progress.total_bytes,progress.total_bytes_estimate)s`,
         '--no-simulate',
         '--print',
         'after_move:title',
@@ -109,22 +133,33 @@ const startFetch = (key: string, url: string) => {
       ],
       { stdio: ['ignore', 'pipe', 'pipe'] },
     )
-    let out = ''
+    fetching.set(key, { loaded: 0, total: 0 })
+    let pending = ''
+    let title = ''
     let err = ''
-    child.stdout.on('data', d => (out += String(d)))
+    child.stdout.on('data', d => {
+      const lines = (pending + String(d)).split('\n')
+      pending = lines.pop() ?? ''
+      for (const line of lines) {
+        const at = readProgress(line)
+        if (at) fetching.set(key, at)
+        else if (line.trim()) title = line.trim()
+      }
+    })
     child.stderr.on('data', d => (err += String(d)))
     child.on('error', reject)
     child.on('close', code => {
+      fetching.delete(key)
       const got = filesFor(key).find(
         n =>
           n.includes('.tmp.') && !n.endsWith('.part') && !n.endsWith('.ytdl'),
       )
       if (code === 0 && got !== undefined) {
         const file = join(CACHE_DIR, `${key}${extname(got)}`)
-        const title = out.trim().split('\n').at(-1)?.trim() || url
+        const named = title || pending.trim() || url
         renameSync(join(CACHE_DIR, got), file)
-        writeFileSync(join(CACHE_DIR, `${key}.title`), title)
-        resolve({ file, title })
+        writeFileSync(join(CACHE_DIR, `${key}.title`), named)
+        resolve({ file, title: named })
       } else {
         reject(
           new Error(
@@ -178,6 +213,23 @@ export function ytdlp(): Plugin {
         } else if (!isFetchable(target)) {
           res.statusCode = 400
           res.end('not an http(s) URL')
+        } else if (asked.pathname === '/progress') {
+          res.writeHead(200, {
+            'content-type': 'text/event-stream',
+            'cache-control': 'no-store',
+            connection: 'keep-alive',
+          })
+          const key = keyOf(target)
+          let last = ''
+          const timer = setInterval(() => {
+            const at = fetching.get(key)
+            const line = at === undefined ? '' : JSON.stringify(at)
+            if (line !== '' && line !== last) {
+              last = line
+              res.write(`data: ${line}\n\n`)
+            }
+          }, 250)
+          req.on('close', () => clearInterval(timer))
         } else {
           server.config.logger.info(`[yt-dlp] ${target}`)
           fetchAudio(target).then(
