@@ -35,8 +35,9 @@ Scope is optional; when used, pick from `dsp`, `engine`, `ui`, `home`, `midi` or
 
 ## Browsers
 
-Current Chrome, Firefox and Safari, down to Safari 16. `tsconfig.json` keeps
-`lib` at ES2022 plus `es2023.array` for that reason; anything newer, such as
+Current Chrome, Firefox and Safari, down to Safari 17, the first with the
+Popover API that every menu and tip opens through. `tsconfig.json` keeps `lib`
+at ES2022 plus `es2023.array` for that reason; anything newer, such as
 `Set.prototype.difference` or `AbortSignal.any`, needs a fallback.
 
 ## Hardware
