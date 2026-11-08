@@ -568,7 +568,8 @@ const stepCondText = (v: number) => {
 }
 
 function parseStepConds(text: string) {
-  const tokens = text.trim() === 'off' ? [] : text.trim().split(/\s+/)
+  const trimmed = text.trim()
+  const tokens = trimmed === 'off' || trimmed === '' ? [] : trimmed.split(/\s+/)
   if (tokens.length > STEPS)
     throw new Error(`${tokens.length} columns; the maximum is ${STEPS}`)
   return Array.from({ length: STEPS }, (_, s) => {
@@ -663,12 +664,14 @@ const PLAYERS = MACHINES.flatMap(m =>
   'keybed' in m ? [{ name: m.name, notes: engine.notesOn[m.keybed] }] : [],
 )
 
-async function listen(ms = 1500) {
+async function listen(ms: Value = 1500) {
+  const asked = typeof ms === 'string' && ms.trim() === '' ? NaN : Number(ms)
+  if (Number.isNaN(asked))
+    throw new Error(
+      `listen takes milliseconds, as listen(1500); '${ms}' is not a number`,
+    )
   if (!engine.running.get()) return { audio: audioState() }
-  const span = Math.min(
-    Math.max(Number.isNaN(ms) ? 1500 : ms, 100),
-    MAX_LISTEN_MS,
-  )
+  const span = Math.min(Math.max(asked, 100), MAX_LISTEN_MS)
   const start = engine.meter.get()
   const perSecond = engine.sampleRate() / BLOCK / METER_EVERY
   let meters = 0
@@ -969,9 +972,13 @@ function rawBenderApi() {
       }
       const c = engine.controls.get()
       const synced = opts.sync ?? (c[sync] === 0 ? 'sixteenths' : null)
-      if (synced !== null) patch[sync] = numberFor(sync, synced)
+      if (synced !== null)
+        patch[sync] = coerceControl(sync, numberFor(sync, synced))
       if (opts.on !== undefined && stage === 'Growler')
-        patch.monoSeqTo = numberFor('monoSeqTo', opts.on)
+        patch.monoSeqTo = coerceControl(
+          'monoSeqTo',
+          numberFor('monoSeqTo', opts.on),
+        )
       land(patch, 0)
       restoreLine(stage)
       const now = engine.controls.get()

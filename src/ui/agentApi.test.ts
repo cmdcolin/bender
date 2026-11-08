@@ -9,6 +9,7 @@ import { BAND_ROWS, N_TAPS, SOURCE_TAPS } from '../engine/params.ts'
 import { HOLD, REST, TUNE_LANE_KEYS } from '../tune.ts'
 import { activity, ACTIVITY_LINES } from './activity.ts'
 import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi.ts'
+import { sliderFor } from './controls/index.ts'
 import { boardFromUrl } from './share.ts'
 import './testDom.ts'
 
@@ -332,6 +333,9 @@ test('drums gives each column a condition with step bars', () => {
   )
   bender.drums({ 'step bars': 'off' })
   expect(bender.board().drums).not.toHaveProperty('step bars')
+  bender.drums({ 'step bars': '. . 1:2' })
+  bender.drums({ 'step bars': '' })
+  expect(bender.board().drums).not.toHaveProperty('step bars')
 })
 
 test('move rewrites the pattern with the panel’s moves, repeatably with a seed', () => {
@@ -407,6 +411,15 @@ test('a line on Howler writes its own memory and leaves the bassline alone', () 
   expect(bender.board().lead?.line).toBe('. C5 ~ D#5')
   expect(bender.board().line?.line).toBe('A2 A2')
   expect(bender.summary().lead).toBe('stopped on Howler')
+})
+
+test('line holds an out-of-range target and sync to the ends of their range', () => {
+  bender.line('A2 A2', { on: 9, sync: 99 })
+  const c = engine.controls.get()
+  expect(c.monoSeqTo).toBe(3)
+  expect(c.monoSeqSync).toBe(sliderFor('monoSeqSync').max)
+  bender.line('A2 A2', { on: -4 })
+  expect(engine.controls.get().monoSeqTo).toBe(0)
 })
 
 test('the bassline aimed at Howler reports Howler and its warnings', () => {
@@ -492,6 +505,12 @@ test('load finds a preset by name prefix and throws on an unknown name', () => {
   expect(bender.load('dying').loaded).toBe('dying toy')
   expect(bender.board().preset).toBe('dying toy')
   expect(() => bender.load('nope')).toThrow(/bender.presets\(\) lists all/)
+})
+
+test('listen names a length that is not a number', async () => {
+  await expect(bender.listen('abc')).rejects.toThrow(
+    /listen takes milliseconds, as listen\(1500\); 'abc' is not a number/,
+  )
 })
 
 test('listen says a burst of meters is a backlog from a lagging page', async () => {
