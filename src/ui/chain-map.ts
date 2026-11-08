@@ -242,6 +242,22 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmBodgeR: 'Glint',
   chipBodgeR: 'Plinky',
   drumTrigBias: 'Clatter',
+  drumKickLevel: 'Clatter',
+  drumSnareLevel: 'Clatter',
+  drumHatLevel: 'Clatter',
+  drumClapLevel: 'Clatter',
+  drumTomLevel: 'Clatter',
+  drumBellLevel: 'Clatter',
+  drumOpenLevel: 'Clatter',
+  drumCymLevel: 'Clatter',
+  drumKickDecay: 'Clatter',
+  drumSnareDecay: 'Clatter',
+  drumHatDecay: 'Clatter',
+  drumClapDecay: 'Clatter',
+  drumTomDecay: 'Clatter',
+  drumBellDecay: 'Clatter',
+  drumOpenDecay: 'Clatter',
+  drumCymDecay: 'Clatter',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

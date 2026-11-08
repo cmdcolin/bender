@@ -63,14 +63,14 @@ const BOXES: Record<BoxId, { part: string; keys: readonly ControlKey[] }> = {
 
 const HELP: Record<BoxId, string> = {
   'one-shots':
-    'Each voice has a one-shot that turns its trigger into a pulse. The rows set the pulse width, what a one-shot loses to the others fired with it, and what the spike costs the supply.',
+    'Each voice has a one-shot that turns its trigger into a pulse. The rows set the pulse width, what a one-shot loses to the others fired with it, what the spike costs the supply, and how long each voice rings on top of the kit’s Decay.',
   tanks:
     'The bridged-T networks the kick, tom and snare ring, the local supply their feedback runs off and the caps on their bias. Shocked by a trigger, they swoop down as they run down.',
   'metal bank':
     'Six oscillators behind one resistor chain and a squarer. The hats, the cowbell and the cymbal ring off it.',
   noise:
     'The one transistor run backwards until it avalanches. The snare, the clap and the dice all listen to it.',
-  DAC: 'The one converter every voice shares: its word length, its ladder, how it overflows and what its reference is wired to.',
+  DAC: 'The one converter every voice shares: a trimmer on each voice’s summing resistor in front of it, its word length, its ladder, how it overflows and what its reference is wired to.',
   triggers:
     'What the trigger lines do before a one-shot hears them: retriggers, the floor a voice must drain to, the scan, the accent bus, the choke and the cross-patches.',
   pattern:

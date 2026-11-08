@@ -742,6 +742,9 @@ export class ToyDrum implements Stage {
   private gain = new Float32Array(N_VOICES).fill(1)
   private weight = new Float32Array(N_VOICES).fill(1)
   private falls = new Float32Array(N_VOICES)
+  private voiceTrim = new Float32Array(N_VOICES).fill(1)
+  private voiceDecay = new Float32Array(N_VOICES).fill(1)
+  private romCuts = new Float32Array(N_VOICES).fill(1)
   // The trigger pulse on each voice's line, and what is left of it this sample.
   // Every voice has one — the noise voices use theirs to open a gate and the
   // tanked ones to charge a network — so a bridged pair swaps what shocks the
@@ -1574,6 +1577,24 @@ export class ToyDrum implements Stage {
       ),
       64,
     )
+    const trim = this.voiceTrim
+    const voiceDecay = this.voiceDecay
+    for (let v = 0; v < N_VOICES; v++) {
+      const spec = DRUM_VOICES[v]!
+      const levelLane = ctx.mod.read(DEST[spec.level])
+      const decayLane = ctx.mod.read(DEST[spec.decay])
+      trim[v] = Math.min(
+        Math.max(p[IDX[spec.level]]! + (levelLane ? levelLane[0]! : 0), 0),
+        2,
+      )
+      voiceDecay[v] = Math.min(
+        Math.max(
+          p[IDX[spec.decay]]! * (decayLane ? octaves(2 * decayLane[0]!) : 1),
+          0.05,
+        ),
+        16,
+      )
+    }
     const modRing = ctx.mod.read(DEST.drumRing)
     const ring = modRing
       ? Math.min(Math.max(p[IDX.drumRing]! + modRing[0]!, 0), 1)
@@ -1704,7 +1725,8 @@ export class ToyDrum implements Stage {
     const { romLpCoef } = this.coefs
     // Decay is truncation on a recording rather than a time constant: under 1x
     // the gate shuts part way in, and over it the slab plays whole.
-    const romCut = Math.min(decay, 1)
+    for (let v = 0; v < N_VOICES; v++)
+      this.romCuts[v] = Math.min(decay * voiceDecay[v]!, 1)
     const romFade = Math.max(ROM_FADE * romHz, 1)
     if (sampled) this.wireRom(p)
     this.accentAmt = p[IDX.drumAccentAmt]!
@@ -1756,14 +1778,14 @@ export class ToyDrum implements Stage {
     )
     this.clapCount = Math.max(Math.round(p[IDX.drumClapCount]!), 1)
     const falls = this.falls
-    falls[KICK] = Math.exp(9 * perSample)
-    falls[SNARE] = Math.exp(45 * perSample)
-    falls[HAT] = Math.exp(CHOKE_COUNT * perSample)
-    falls[CLAP] = Math.exp(30 * perSample)
-    falls[TOM] = Math.exp(11 * perSample)
-    falls[BELL] = Math.exp(9 * perSample)
-    falls[OHAT] = Math.exp(7 * perSample)
-    falls[CYM] = Math.exp(1.5 * perSample)
+    falls[KICK] = Math.exp((9 * perSample) / voiceDecay[KICK]!)
+    falls[SNARE] = Math.exp((45 * perSample) / voiceDecay[SNARE]!)
+    falls[HAT] = Math.exp((CHOKE_COUNT * perSample) / voiceDecay[HAT]!)
+    falls[CLAP] = Math.exp((30 * perSample) / voiceDecay[CLAP]!)
+    falls[TOM] = Math.exp((11 * perSample) / voiceDecay[TOM]!)
+    falls[BELL] = Math.exp((9 * perSample) / voiceDecay[BELL]!)
+    falls[OHAT] = Math.exp((7 * perSample) / voiceDecay[OHAT]!)
+    falls[CYM] = Math.exp((1.5 * perSample) / voiceDecay[CYM]!)
 
     const chokeFall = Math.exp(CHOKE_COUNT * perSample)
 
@@ -1847,8 +1869,9 @@ export class ToyDrum implements Stage {
         ownMs > 0 ? Math.exp(-1000 / (ownMs * this.sr)) : drain
       this.tankCharge[t] = ownMs > 0 ? ownCharge : 0
       this.tankF[t] = (TAU * spec.hz) / this.sr
-      this.tankBase[t] = (spec.count * clock) / (this.sr * decay)
-      this.tankRate[t] = (ringScale * spec.count * clock) / (this.sr * decay)
+      const stretch = decay * voiceDecay[spec.voice]!
+      this.tankBase[t] = (spec.count * clock) / (this.sr * stretch)
+      this.tankRate[t] = (ringScale * spec.count * clock) / (this.sr * stretch)
       this.tankGain[t] = spec.voice === SNARE ? spec.gain * tone : spec.gain
     }
 
@@ -2162,9 +2185,9 @@ export class ToyDrum implements Stage {
             tankDraw += Math.abs(ringing)
             const y = ringing * this.tankGain[t]!
             if (t === syncTank) synced = y
-            out += y
+            out += y * trim[v]!
             if (v === this.ringSrc) heard += y
-            if (th & (1 << v)) send += y
+            if (th & (1 << v)) send += y * trim[v]!
           }
           if (motor > 0)
             this.motorV = Math.min(
@@ -2187,7 +2210,7 @@ export class ToyDrum implements Stage {
           let clickThrown = 0
           for (let v = 0; v < N_VOICES; v++) {
             if (CLICK[v] === 0) continue
-            const c = shock[v]! * CLICK[v]!
+            const c = shock[v]! * CLICK[v]! * trim[v]!
             click += c
             if (th & (1 << v)) clickThrown += c
           }
@@ -2226,7 +2249,7 @@ export class ToyDrum implements Stage {
             // Where the truncation gate stands. Counted off the slab's own
             // length rather than off a clock, so winding Decay down shortens
             // every voice by the same fraction of itself.
-            const left = romCut * len - pos
+            const left = this.romCuts[v]! * len - pos
             if (left <= 0) {
               this.romPos[v] = Infinity
               continue
@@ -2240,9 +2263,9 @@ export class ToyDrum implements Stage {
               this.gain[v]! *
               gate *
               (left < romFade ? left / romFade : 1)
-            out += y
+            out += y * trim[v]!
             if (v === this.ringSrc) heard += y
-            if (th & (1 << v)) send += y
+            if (th & (1 << v)) send += y * trim[v]!
             this.romPos[v] = pos + step
             if (this.chokedBits & (1 << v)) this.romGate[v] = gate * chokeFall
           }
@@ -2287,7 +2310,13 @@ export class ToyDrum implements Stage {
                 this.snareBand.process(noise, snareHpCoef),
                 snareLpCoef,
               )
-              const y = band * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
+              const y =
+                band *
+                amp[SNARE]! *
+                weight[SNARE]! *
+                SNARE_NOISE *
+                hiss *
+                trim[SNARE]!
               out += y
               if (th & (1 << SNARE)) send += y
             }
@@ -2302,7 +2331,8 @@ export class ToyDrum implements Stage {
                 (this.clapFast - this.clapSlow) *
                 amp[CLAP]! *
                 weight[CLAP]! *
-                CLAP_GAIN
+                CLAP_GAIN *
+                trim[CLAP]!
               out += y
               if (th & (1 << CLAP)) send += y
             }
@@ -2335,14 +2365,14 @@ export class ToyDrum implements Stage {
                 hatLpCoef,
               )
               if (amp[HAT]! > AUDIBLE) {
-                const y = hat * amp[HAT]! * weight[HAT]!
+                const y = hat * amp[HAT]! * weight[HAT]! * trim[HAT]!
                 out += y
                 if (th & (1 << HAT)) send += y
               }
               if (amp[OHAT]! > AUDIBLE) {
                 const e =
                   Math.max(amp[OHAT]! - OHAT_FLOOR, 0) / (1 - OHAT_FLOOR)
-                const y = hat * e * weight[OHAT]!
+                const y = hat * e * weight[OHAT]! * trim[OHAT]!
                 out += y
                 if (th & (1 << OHAT)) send += y
               }
@@ -2353,7 +2383,8 @@ export class ToyDrum implements Stage {
                   this.cymSplash.process(hi, cymSplashCoef) * splashMix,
                 cymLpCoef,
               )
-              const y = cym * strike(amp[CYM]!, CYM_TAIL) * weight[CYM]!
+              const y =
+                cym * strike(amp[CYM]!, CYM_TAIL) * weight[CYM]! * trim[CYM]!
               out += y
               if (th & (1 << CYM)) send += y
             }
@@ -2366,7 +2397,11 @@ export class ToyDrum implements Stage {
               bellLpCoef,
             )
             const y =
-              bell * strike(amp[BELL]!, BELL_TAIL) * weight[BELL]! * BELL_GAIN
+              bell *
+              strike(amp[BELL]!, BELL_TAIL) *
+              weight[BELL]! *
+              BELL_GAIN *
+              trim[BELL]!
             out += y
             if (th & (1 << BELL)) send += y
           }

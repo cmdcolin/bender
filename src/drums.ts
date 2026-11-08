@@ -30,6 +30,8 @@ export const DRUM_VOICES = [
     maybe: 'drumKickMaybe',
     ghost: 'drumKickGhost',
     len: 'drumKickLen',
+    level: 'drumKickLevel',
+    decay: 'drumKickDecay',
     label: 'kick',
     help: 'A bridged-T network, shocked and left to ring. The trigger pulse snaps it at the front, and it pitches down as it runs down, so how hard you hit it is how far it swoops.',
   },
@@ -38,6 +40,8 @@ export const DRUM_VOICES = [
     maybe: 'drumSnareMaybe',
     ghost: 'drumSnareGhost',
     len: 'drumSnareLen',
+    level: 'drumSnareLevel',
+    decay: 'drumSnareDecay',
     label: 'snare',
     help: 'A noise transistor over two tuned networks at 185 and 330 Hz. Snappy is the pot between them.',
   },
@@ -46,6 +50,8 @@ export const DRUM_VOICES = [
     maybe: 'drumHatMaybe',
     ghost: 'drumHatGhost',
     len: 'drumHatLen',
+    level: 'drumHatLevel',
+    decay: 'drumHatDecay',
     label: 'hat',
     help: 'The metal bank’s upper band through a high-pass, gated short. Metal is the pot between the bank and the noise transistor.',
   },
@@ -54,6 +60,8 @@ export const DRUM_VOICES = [
     maybe: 'drumClapMaybe',
     ghost: 'drumClapGhost',
     len: 'drumClapLen',
+    level: 'drumClapLevel',
+    decay: 'drumClapDecay',
     label: 'clap',
     help: 'Three noise bursts nine milliseconds apart, then the tail.',
   },
@@ -62,6 +70,8 @@ export const DRUM_VOICES = [
     maybe: 'drumTomMaybe',
     ghost: 'drumTomGhost',
     len: 'drumTomLen',
+    level: 'drumTomLevel',
+    decay: 'drumTomDecay',
     label: 'tom',
     help: 'The same network as the kick, tuned higher and rung shorter — the fill voice.',
   },
@@ -70,6 +80,8 @@ export const DRUM_VOICES = [
     maybe: 'drumBellMaybe',
     ghost: 'drumBellGhost',
     len: 'drumBellLen',
+    level: 'drumBellLevel',
+    decay: 'drumBellDecay',
     label: 'bell',
     help: 'Two of the metal bank’s six oscillators through a band around the pair: the cowbell, a clank over a ring.',
   },
@@ -78,6 +90,8 @@ export const DRUM_VOICES = [
     maybe: 'drumOpenMaybe',
     ghost: 'drumOpenGhost',
     len: 'drumOpenLen',
+    level: 'drumOpenLevel',
+    decay: 'drumOpenDecay',
     label: 'open hat',
     help: 'The same bank and the same filter as the hat, held open instead of gated. A hat step cuts it short — the two share one cap.',
   },
@@ -86,6 +100,8 @@ export const DRUM_VOICES = [
     maybe: 'drumCymMaybe',
     ghost: 'drumCymGhost',
     len: 'drumCymLen',
+    level: 'drumCymLevel',
+    decay: 'drumCymDecay',
     label: 'cymbal',
     help: 'All six oscillators through a wider band, a crash over a long tail nothing chokes. Cymbal tone is where the band sits.',
   },
@@ -94,6 +110,8 @@ export const DRUM_VOICES = [
   maybe: ControlKey
   ghost: ControlKey
   len: ControlKey
+  level: ControlKey
+  decay: ControlKey
   label: string
   help: string
 }[]

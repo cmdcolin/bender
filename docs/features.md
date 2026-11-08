@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-832 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
+848 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 202 destinations, among
+- **A patch bay that modulates itself.** Four wires, 218 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 115 controls are shy, mostly the ones that act on the
+names it still sets it. 131 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -257,7 +257,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>79 controls</summary>
+<summary>95 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -270,6 +270,22 @@ puts the fault on, and the rows under it show the controls it set:
 | Wander           | off to full                                                                                                        | Now and then the kit plays a bar that strays from the grid, then goes back to it                                                                        |
 | Tune             | 0.125× to 8×                                                                                                       | The pitch trimmer inside the kit: every struck voice moves together                                                                                     |
 | Decay            | 0.25× to 16×                                                                                                       | Stretches or chokes every envelope at once                                                                                                              |
+| Kick level †     | 0× to 2×                                                                                                           | A trimmer on the kick’s summing resistor into the kit’s output                                                                                          |
+| Snare level †    | 0× to 2×                                                                                                           | A trimmer on the snare’s summing resistor into the kit’s output                                                                                         |
+| Hat level †      | 0× to 2×                                                                                                           | A trimmer on the hat’s summing resistor into the kit’s output                                                                                           |
+| Clap level †     | 0× to 2×                                                                                                           | A trimmer on the clap’s summing resistor into the kit’s output                                                                                          |
+| Tom level †      | 0× to 2×                                                                                                           | A trimmer on the tom’s summing resistor into the kit’s output                                                                                           |
+| Bell level †     | 0× to 2×                                                                                                           | A trimmer on the bell’s summing resistor into the kit’s output                                                                                          |
+| Open hat level † | 0× to 2×                                                                                                           | A trimmer on the open hat’s summing resistor into the kit’s output                                                                                      |
+| Cymbal level †   | 0× to 2×                                                                                                           | A trimmer on the cymbal’s summing resistor into the kit’s output                                                                                        |
+| Kick decay †     | 0.1× to 8×                                                                                                         | Stretches or shortens the kick’s envelope on top of Decay, which moves the whole kit                                                                    |
+| Snare decay †    | 0.1× to 8×                                                                                                         | Stretches or shortens the snare’s envelope on top of Decay, which moves the whole kit                                                                   |
+| Hat decay †      | 0.1× to 8×                                                                                                         | Stretches or shortens the hat’s envelope on top of Decay, which moves the whole kit                                                                     |
+| Clap decay †     | 0.1× to 8×                                                                                                         | Stretches or shortens the clap’s envelope on top of Decay, which moves the whole kit                                                                    |
+| Tom decay †      | 0.1× to 8×                                                                                                         | Stretches or shortens the tom’s envelope on top of Decay, which moves the whole kit                                                                     |
+| Bell decay †     | 0.1× to 8×                                                                                                         | Stretches or shortens the bell’s envelope on top of Decay, which moves the whole kit                                                                    |
+| Open hat decay † | 0.1× to 8×                                                                                                         | Stretches or shortens the open hat’s envelope on top of Decay, which moves the whole kit                                                                |
+| Cymbal decay †   | 0.1× to 8×                                                                                                         | Stretches or shortens the cymbal’s envelope on top of Decay, which moves the whole kit                                                                  |
 | Ring             | off to full                                                                                                        | How much of each swing the transistor around the kick, tom and snare feeds back                                                                         |
 | Motorboat †      | off to full                                                                                                        | Runs the feedback transistor around the kick, tom and snare off a small local supply behind a resistor                                                  |
 | Sweep            | −1× to +8×                                                                                                         | The bias trimmer behind the swoop: how far above their resting pitch the kick, tom and snare networks start on a hard hit                               |
@@ -1791,7 +1807,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 202 of them, filt cut through kit trigger bias                                                                         | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 218 of them, filt cut through cymbal decay                                                                             | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

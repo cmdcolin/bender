@@ -1312,6 +1312,22 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'ampLines',
   'drumTrigBias',
   'modShClock',
+  'drumKickLevel',
+  'drumSnareLevel',
+  'drumHatLevel',
+  'drumClapLevel',
+  'drumTomLevel',
+  'drumBellLevel',
+  'drumOpenLevel',
+  'drumCymLevel',
+  'drumKickDecay',
+  'drumSnareDecay',
+  'drumHatDecay',
+  'drumClapDecay',
+  'drumTomDecay',
+  'drumBellDecay',
+  'drumOpenDecay',
+  'drumCymDecay',
 ]
 
 // Retired controls that old links still carry, each read into the control that

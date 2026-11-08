@@ -1,3 +1,5 @@
+import { DRUM_VOICES } from '../drums.ts'
+
 import type { ControlKey } from '../controls.ts'
 
 // The knobs each box of a die drawing opens. The pot solders onto the clock,
@@ -43,7 +45,12 @@ export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
 }
 
 export const VOICE_BOXES = {
-  'one-shots': ['drumPulse', 'drumPulseShare', 'drumTrigLoad'],
+  'one-shots': [
+    'drumPulse',
+    'drumPulseShare',
+    'drumTrigLoad',
+    ...DRUM_VOICES.map(v => v.decay),
+  ],
   tanks: [
     'drumRing',
     'drumMotor',

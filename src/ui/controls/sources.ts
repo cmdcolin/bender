@@ -3,6 +3,7 @@ import {
   COND_KEYS,
   STEP_COND_KEYS,
   DATA_LINES,
+  DRUM_VOICES,
   EVENT_KEYS,
   GRID_ROWS,
   N_DRUM_VOICES,
@@ -172,6 +173,33 @@ const pcmCutSomewhere = cutOn(
 // other way round.
 const analogKit = (c: Controls) => c.drumRom === 0
 const sampledKit = (c: Controls) => c.drumRom === 1
+
+const voiceLevels: SliderDef[] = DRUM_VOICES.map(v => ({
+  key: v.level,
+  lane: `${v.label} level`,
+  part: 'the converter',
+  label: `${v.label[0]!.toUpperCase()}${v.label.slice(1)} level`,
+  min: 0,
+  max: 2,
+  step: 0.01,
+  unit: '×',
+  shy: true,
+  help: `A trimmer on the ${v.label}’s summing resistor into the kit’s output. At 0 the ${v.label} is silent and at 2 it is twice as loud; how it is struck stays the same, so its swoop, choke and bleed into the other voices keep working. A patch bay wire on it moves the ${v.label} alone.`,
+}))
+
+const voiceDecays: SliderDef[] = DRUM_VOICES.map(v => ({
+  key: v.decay,
+  lane: `${v.label} decay`,
+  part: 'inside the voices',
+  label: `${v.label[0]!.toUpperCase()}${v.label.slice(1)} decay`,
+  min: 0.1,
+  max: 8,
+  step: 0.01,
+  unit: '×',
+  curve: 'log',
+  shy: true,
+  help: `Stretches or shortens the ${v.label}’s envelope on top of Decay, which moves the whole kit. A wire on it from the bay LFO lets the ${v.label} breathe while the other voices keep their length. On the sampled kit it truncates the ${v.label}’s slab below 1×.`,
+}))
 
 export const SOURCE_GROUPS: Group[] = [
   {
@@ -1031,6 +1059,8 @@ export const SOURCE_GROUPS: Group[] = [
         curve: 'log',
         help: 'Stretches or chokes every envelope at once. Short is a click track; long lets the kick and toms run into each other. Past about eight the kick stops being a hit and becomes a note held under the pattern — and it leans on the supply for as long as it rings. On the sampled kit it is the other knob those boxes had: a recording cannot be stretched, so under 1× this truncates every slab to that fraction of itself and over it they play whole.',
       },
+      ...voiceLevels,
+      ...voiceDecays,
       {
         key: 'drumRing',
         needs: analogKit,

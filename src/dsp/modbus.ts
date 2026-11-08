@@ -258,8 +258,24 @@ export const DEST = {
   fmBodgeR: 199,
   chipBodgeR: 200,
   drumTrigBias: 201,
+  drumKickLevel: 202,
+  drumSnareLevel: 203,
+  drumHatLevel: 204,
+  drumClapLevel: 205,
+  drumTomLevel: 206,
+  drumBellLevel: 207,
+  drumOpenLevel: 208,
+  drumCymLevel: 209,
+  drumKickDecay: 210,
+  drumSnareDecay: 211,
+  drumHatDecay: 212,
+  drumClapDecay: 213,
+  drumTomDecay: 214,
+  drumBellDecay: 215,
+  drumOpenDecay: 216,
+  drumCymDecay: 217,
 } as const
-export const N_DEST = 202
+export const N_DEST = 218
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

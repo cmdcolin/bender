@@ -2619,3 +2619,59 @@ test('an LFO wired onto the trigger bias plays the kit at its rate', () => {
   expect(pulses.length).toBeGreaterThanOrEqual(4)
   expect(pulses.length).toBeLessThanOrEqual(5)
 })
+
+const kickAndHat: Partial<Controls> = {
+  drumKick: stepMask(1),
+  drumHat: stepMask(1),
+  drumBpm: 60,
+}
+
+test('a voice level at 0 takes that voice out and leaves the others', () => {
+  const noKick = soloVoice({ ...kickAndHat, drumKickLevel: 0 }, 1.2)
+  const hatAlone = soloVoice({ ...kickAndHat, drumKick: 0 }, 1.2)
+  expect(lowEnergy(noKick)).toBeLessThan(
+    lowEnergy(soloVoice(kickAndHat, 1.2)) * 0.01,
+  )
+  expect(noKick).toEqual(hatAlone)
+})
+
+test('a voice level scales that voice', () => {
+  const hat = { drumHat: stepMask(1), drumBpm: 60 }
+  const stock = rms(soloVoice(hat, 1.2))
+  const half = rms(soloVoice({ ...hat, drumHatLevel: 0.5 }, 1.2))
+  expect(half / stock).toBeGreaterThan(0.49)
+  expect(half / stock).toBeLessThan(0.52)
+})
+
+test('a voice decay stretches that voice alone', () => {
+  const kick = { drumKick: stepMask(1), drumBpm: 30 }
+  const late = (x: Float32Array) => rms(x.subarray(SR, Math.round(1.4 * SR)))
+  expect(late(soloVoice({ ...kick, drumKickDecay: 4 }, 1.5))).toBeGreaterThan(
+    late(soloVoice(kick, 1.5)) * 3,
+  )
+  expect(soloVoice({ ...kick, drumHatDecay: 4 }, 1.5)).toEqual(
+    soloVoice(kick, 1.5),
+  )
+})
+
+test('a wire on the hat decay leaves the kick sample for sample', () => {
+  const kick = { drumKick: stepMask(1), drumBpm: 60 }
+  expect(soloVoice({ ...kick, ...held(DEST.drumHatDecay) }, 1.2)).toEqual(
+    soloVoice(kick, 1.2),
+  )
+})
+
+test('a wire on a voice level rides that voice', () => {
+  const hat = { drumHat: stepMask(1), drumBpm: 60, drumHatLevel: 0.5 }
+  expect(soloVoice({ ...hat, ...held(DEST.drumHatLevel) }, 1.2)).toEqual(
+    soloVoice({ ...hat, drumHatLevel: 1.5 }, 1.2),
+  )
+})
+
+test('a voice level and decay work on the sampled kit', () => {
+  const kick = { drumKick: stepMask(1), drumBpm: 60, drumRom: 1 }
+  expect(rms(soloVoice({ ...kick, drumKickLevel: 0 }, 1.2))).toBe(0)
+  expect(soloVoice({ ...kick, drumKickDecay: 0.2 }, 1.2)).toEqual(
+    soloVoice({ ...kick, drumDecay: 0.2 }, 1.2),
+  )
+})
