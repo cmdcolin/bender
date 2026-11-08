@@ -5,6 +5,7 @@ import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
 import { coef, Follower, Transient } from '../util/follower.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
+import { stepAt } from '../util/rate.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { softclip } from '../util/softclip.ts'
 
@@ -136,6 +137,7 @@ export class Sampler implements Stage {
   private readonly motorRelease: number
   private readonly wear = new OnePoleLP()
   private readonly hissColor = new OnePoleLP()
+  private readonly hissCoef: number
   private envOld = 0
   private envLaid = 0
   // A first take is open from the moment the head threads a blank reel until
@@ -172,6 +174,7 @@ export class Sampler implements Stage {
 
   constructor(sr: number) {
     this.sr = sr
+    this.hissCoef = stepAt(HISS_COLOR, sr)
     this.micTrig = new Transient(sr)
     this.motorAttack = coef(0.03, sr)
     this.motorRelease = coef(0.25, sr)
@@ -468,7 +471,7 @@ export class Sampler implements Stage {
         }
         if (hiss > 0) {
           const white = this.hissRng() * 2 - 1
-          laid += hiss * this.hissColor.process(white, HISS_COLOR)
+          laid += hiss * this.hissColor.process(white, this.hissCoef)
         }
         if (this.undoLen > 0) this.keep(buf, idx)
         buf[idx] = softclip(laid)

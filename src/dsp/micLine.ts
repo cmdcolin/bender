@@ -1,5 +1,6 @@
 import { DelayLine } from './util/delayline.ts'
 import { DcBlocker } from './util/onepole.ts'
+import { poleAt } from './util/rate.ts'
 import { softclip } from './util/softclip.ts'
 
 export const MIC_DELAY_MAX_S = 2
@@ -31,8 +32,11 @@ export class MicLine {
 
   private readonly sr: number
 
+  private readonly dcCoef: number
+
   constructor(sr: number) {
     this.sr = sr
+    this.dcCoef = poleAt(DC_COEF, sr)
     this.line = new DelayLine(MIC_DELAY_MAX_S * sr + 4)
     this.glide = 1 - Math.exp(-1 / (GLIDE_S * sr))
     this.fade = 1 - Math.exp(-1 / (FADE_S * sr))
@@ -68,7 +72,7 @@ export class MicLine {
         this.line.write(
           frozen && on
             ? out
-            : x + this.loopDc.process(softclip(repeats * out), DC_COEF),
+            : x + this.loopDc.process(softclip(repeats * out), this.dcCoef),
         )
         late[i] = x + this.wet * (out - x)
       }

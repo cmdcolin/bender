@@ -12,6 +12,7 @@ import { DelayLine } from '../util/delayline.ts'
 import { coef } from '../util/follower.ts'
 import { Halfband, LATENCY, Upsampler } from '../util/halfband.ts'
 import { lpCoef } from '../util/onepole.ts'
+import { poleAt } from '../util/rate.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 
@@ -348,9 +349,11 @@ class Channel {
   private readonly down = new Halfband()
   private readonly seed: Int32Array
   private readonly tuned: Biquad
+  private readonly dcCoef: number
 
   constructor(detune: number, seed: number, osr: number) {
     this.seed = Int32Array.of(seed)
+    this.dcCoef = poleAt(DC_COEF, osr / OS)
     this.tuned = bandpass(RING_HZ * detune, RING_Q, osr)
   }
 
@@ -373,7 +376,7 @@ class Channel {
     s[SIG] = this.up.pair[1]!
     this.run(k)
     const y = this.down.process(a, s[OUT]!)
-    const dc = y - s[DC_X]! + DC_COEF * s[DC_Y]!
+    const dc = y - s[DC_X]! + this.dcCoef * s[DC_Y]!
     s[DC_X] = y
     s[DC_Y] = flushDenormal(dc)
     s[OUT] = dc

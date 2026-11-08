@@ -5,6 +5,7 @@ import { SUPPLY, SupplyTap, type Supplies } from '../supplies.ts'
 import { RATE_MASK } from '../util/lfo.ts'
 import { OnePoleLP, lpCoef } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
+import { perRef } from '../util/rate.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 
@@ -269,6 +270,8 @@ export class Clipper implements Stage {
     const mic = micInto(p, ctx, MIC.clipBypass)
     const block = p[IDX.distBlock]!
     const blockKeep = Math.exp(-1 / ((0.03 + 0.4 * block) * sr))
+    const scale = perRef(sr)
+    const charge = BLOCK_CHARGE * scale
     const speaker = p[IDX.distSpeaker]!
     const fb = p[IDX.distPinFb]!
     const shelf = fb > 0
@@ -295,7 +298,7 @@ export class Clipper implements Stage {
         ? Math.min(Math.max(drawBase + modDraw[i]!, 0), 1)
         : drawBase
       const src = railFrom + ((railTo - railFrom) * (i + 1)) / n
-      const out = this.current * (AMP_SELF + AMP_DRAW * draw)
+      const out = this.current * (AMP_SELF + AMP_DRAW * draw) * scale
       this.ampV = Math.max(this.ampV + fill * (src - this.ampV) - out, 0)
       pulled += this.current * draw
       const pin = this.ampV - this.current * (LEAD + LEAD_DRAW * draw)
@@ -351,10 +354,10 @@ export class Clipper implements Stage {
       let yr = this.stage(right, inR + bias, mode, head, block)
       if (block > 0) {
         left.blocked = flushDenormal(
-          left.blocked * blockKeep + BLOCK_CHARGE * block * left.over,
+          left.blocked * blockKeep + charge * block * left.over,
         )
         right.blocked = flushDenormal(
-          right.blocked * blockKeep + BLOCK_CHARGE * block * right.over,
+          right.blocked * blockKeep + charge * block * right.over,
         )
       }
       if (xover > 0) {

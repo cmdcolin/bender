@@ -1,8 +1,11 @@
 import { IDX } from '../../engine/params.ts'
+import { poleAt, REF_SR, stepAt } from '../util/rate.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
+
+const RING_W = 2 * Math.PI * 2800
 
 // White noise through a tilt, plus dirty-pot contact crackle: Poisson spikes
 // rung through a 2-pole resonator.
@@ -16,8 +19,15 @@ export class Noise implements Stage {
 
   private readonly sr: number
 
+  private readonly tiltCoef: number
+  private readonly ringPole: number
+  private readonly spikeGain: number
+
   constructor(sr: number, seed = 303) {
     this.sr = sr
+    this.tiltCoef = stepAt(0.1, sr)
+    this.ringPole = poleAt(0.995, sr)
+    this.spikeGain = Math.sin(RING_W / sr) / Math.sin(RING_W / REF_SR)
     this.rng = mulberry32(seed)
   }
 
@@ -30,9 +40,9 @@ export class Noise implements Stage {
     const color = p[IDX.noiseColor]!
     const crackleAmp = p[IDX.crackleAmp]!
     const spikeProb = p[IDX.crackleRate]! / this.sr
-    const tiltCoef = 0.1
-    const r = 0.995
-    const c = 2 * r * Math.cos((2 * Math.PI * 2800) / this.sr)
+    const tiltCoef = this.tiltCoef
+    const r = this.ringPole
+    const c = 2 * r * Math.cos(RING_W / this.sr)
 
     for (let i = 0; i < io.n; i++) {
       let outL = 0
@@ -46,7 +56,8 @@ export class Noise implements Stage {
         outR = tilt(nr, this.lpR, color) * level * 0.4
       }
       if (crackleAmp > 0) {
-        const spike = this.rng() < spikeProb ? (this.rng() * 2 - 1) * 3 : 0
+        const spike =
+          this.rng() < spikeProb ? (this.rng() * 2 - 1) * 3 * this.spikeGain : 0
         const y = c * this.ring1 - r * r * this.ring2 + spike
         this.ring2 = this.ring1
         this.ring1 = flushDenormal(y)

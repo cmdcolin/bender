@@ -47,6 +47,7 @@ import { coef, Transient } from '../util/follower.ts'
 import { MetalBank } from '../util/metal.ts'
 import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { octaves, tapDivisor } from '../util/pitch.ts'
+import { perRef } from '../util/rate.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 import { Wander } from '../wander.ts'
@@ -1915,9 +1916,14 @@ export class ToyDrum implements Stage {
     const fmDepth = BANK_FM * Math.min(Math.max(p[IDX.drumBankFm]!, 0), 1)
     const syncTank = BANK_SYNC_TANK[Math.round(p[IDX.drumBankSync]!)] ?? -1
     const couple =
-      TANK_COUPLE * Math.min(Math.max(p[IDX.drumTankCouple]!, 0), 1)
+      TANK_COUPLE *
+      perRef(this.sr) *
+      Math.min(Math.max(p[IDX.drumTankCouple]!, 0), 1)
     const kickBias = KICK_BIAS * Math.min(Math.max(p[IDX.drumKickBias]!, 0), 1)
-    const hissKick = HISS_KICK * Math.min(Math.max(p[IDX.drumHissKick]!, 0), 1)
+    const hissKick =
+      HISS_KICK *
+      Math.sqrt(perRef(this.sr)) *
+      Math.min(Math.max(p[IDX.drumHissKick]!, 0), 1)
     if (hissKick === 0) this.hissLeak = 0
     const feedLane = ctx.mod.read(DEST.drumKickFeed)
     const feedDepth = Math.min(
