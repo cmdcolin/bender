@@ -7,6 +7,8 @@ import { engine } from '../engine/engine.ts'
 import { useCurrentSession } from './useCurrentSession.ts'
 import './testDom.ts'
 
+import type * as Share from './share.ts'
+
 const { putSession, hashed } = vi.hoisted(() => ({
   putSession: vi.fn(() => Promise.resolve()),
   hashed: { count: 0 },
@@ -14,7 +16,7 @@ const { putSession, hashed } = vi.hoisted(() => ({
 
 vi.mock('./cloud.ts', () => ({ putSession }))
 vi.mock('./share.ts', async importActual => {
-  const actual = await importActual<typeof import('./share.ts')>()
+  const actual = await importActual<typeof Share>()
   return {
     ...actual,
     boardHash: (...args: Parameters<typeof actual.boardHash>) => {

@@ -201,7 +201,7 @@ describe('MonoVoice', () => {
       if (tail[i - 1]! < 0 !== tail[i]! < 0) crossings++
     expect(Math.abs(mean)).toBeLessThan(0.1)
     expect(crossings).toBeGreaterThan(20)
-    expect(Math.abs(Reflect.get(v, 'last'))).toBeLessThan(10)
+    expect(Math.abs(v['last'])).toBeLessThan(10)
   })
 
   it('keeps out to pitch and out to gate finite and under full scale at every extreme', () => {

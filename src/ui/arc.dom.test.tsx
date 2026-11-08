@@ -15,8 +15,9 @@ test('the arc button turns Crazy up, opens Output and reads the arc', () => {
   fireEvent.click(screen.getByRole('button', { name: 'arc' }))
   expect(engine.controls.get().arcDepth).toBe(0.7)
   expect(openStage.get()).toBe('Output')
+  const anyInt16: unknown = expect.any(Int16Array)
   expect(setWild).toHaveBeenLastCalledWith(
-    expect.objectContaining({ idx: expect.any(Int16Array) }),
+    expect.objectContaining({ idx: anyInt16 }),
   )
   act(() => engine.meter.set({ ...engine.meter.get(), arc: 0.42 }))
   expect(screen.getByRole('button', { name: 'arc 42%' })).toBeTruthy()

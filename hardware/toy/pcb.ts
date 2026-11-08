@@ -39,14 +39,38 @@ const py = (script: string, ...args: string[]) =>
 interface Item {
   description: string
 }
-interface Report {
-  unconnected_items: { items: Item[] }[]
+interface Gap {
+  items: Item[]
 }
+interface Report {
+  unconnected_items: Gap[]
+}
+
+const isItem = (v: unknown): v is Item =>
+  typeof v === 'object' &&
+  v !== null &&
+  'description' in v &&
+  typeof v.description === 'string'
+
+const isGap = (v: unknown): v is Gap =>
+  typeof v === 'object' &&
+  v !== null &&
+  'items' in v &&
+  Array.isArray(v.items) &&
+  v.items.every(isItem)
+
+const isReport = (v: unknown): v is Report =>
+  typeof v === 'object' &&
+  v !== null &&
+  'unconnected_items' in v &&
+  Array.isArray(v.unconnected_items) &&
+  v.unconnected_items.every(isGap)
 
 const signalGaps = (pcb: string) => {
   const out = join(work, 'drc.json')
   run('kicad-cli', 'pcb', 'drc', '--format', 'json', '--output', out, pcb)
-  const report: Report = JSON.parse(readFileSync(out, 'utf8'))
+  const report: unknown = JSON.parse(readFileSync(out, 'utf8'))
+  if (!isReport(report)) throw new Error(`${out} is not a DRC report`)
   return report.unconnected_items.filter(u =>
     u.items.some(i => !i.description.includes('[GND]')),
   ).length

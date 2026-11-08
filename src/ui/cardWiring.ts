@@ -6,6 +6,7 @@ import {
   wireId,
 } from './connections.ts'
 
+import type { ControlKey } from '../controls.ts'
 import type { Track } from './controls/index.ts'
 import type { Opens, Wiring } from './diagram.ts'
 
@@ -93,20 +94,20 @@ export const TRIGGER_CHIPS = KEY_LINE.map(jumper => ({
   gate: jumper,
 }))
 
-export const TRIGGER_OPENS: Opens = Object.fromEntries([
+export const TRIGGER_OPENS: Opens = Object.fromEntries<readonly ControlKey[]>([
   [wireId(KIT_TO_PLINKY), ['trigToKeys', 'trigKeysNote']],
   [wireId(PLINKY_TO_KIT), ['trigToDrum']],
-  ...TRIGGER_CHIPS.flatMap(c => [
+  ...TRIGGER_CHIPS.flatMap((c): [string, ControlKey[]][] => [
     [wireId(c.struck), [c.struck.key]],
     [wireId(c.gate), [c.gate.key]],
     [c.name, [c.struck.key, c.gate.key]],
   ]),
 ])
 
-export const TRIGGER_WIRED: Wiring = Object.fromEntries([
+export const TRIGGER_WIRED: Wiring = Object.fromEntries<readonly string[]>([
   [wireId(KIT_TO_PLINKY), [wireId(PLINKY_TO_KIT)]],
   [wireId(PLINKY_TO_KIT), [wireId(KIT_TO_PLINKY)]],
-  ...TRIGGER_CHIPS.flatMap(c => [
+  ...TRIGGER_CHIPS.flatMap((c): [string, string[]][] => [
     [wireId(c.struck), [c.name, wireId(PLINKY_TO_KIT)]],
     [wireId(c.gate), [c.name, wireId(KIT_TO_PLINKY)]],
     [c.name, [wireId(KIT_TO_PLINKY), wireId(PLINKY_TO_KIT)]],

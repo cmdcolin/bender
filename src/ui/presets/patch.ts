@@ -8,11 +8,11 @@ import { LANE_KEYS, LANE_MAX } from '../../lanes.ts'
 import { asTuneLen, isNote, laneSteps } from '../../tune.ts'
 import { BENDS, choiceValue, sliderFor, snapToStep } from '../controls/index.ts'
 import { bendRuns } from '../controls/jacks.ts'
-import { DEST_CHOICES } from '../controls/patch.ts'
 import { fromPos, ordinary } from '../slider-scale.ts'
 import { inTime } from './quantize.ts'
 
 import type { ControlKey, Controls } from '../../controls.ts'
+import type { DEST_CHOICES } from '../controls/patch.ts'
 
 // A patch bay rolled at random hands back four wires that read as a patch and
 // mostly aren't one: a wire onto a reverb that is dry, one off a mic nobody has

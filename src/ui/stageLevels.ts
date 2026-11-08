@@ -9,8 +9,8 @@ const LEVEL_OF: Record<string, ControlKey> = Object.fromEntries(
 )
 
 const BYPASS_OF: Record<string, ControlKey> = Object.fromEntries([
-  ...PEDALS.map(p => [p.group, p.mute]),
-  ...BENDS.map(b => [b.group, b.mute]),
+  ...PEDALS.map((p): [string, ControlKey] => [p.group, p.mute]),
+  ...BENDS.map((b): [string, ControlKey] => [b.group, b.mute]),
 ])
 
 const MUTE_OF: Record<string, ControlKey> = {

@@ -30,7 +30,7 @@ class SilentGainNode {
     setValueAtTime: () => {},
     linearRampToValueAtTime: () => {},
   }
-  connect(dest: any) {
+  connect<T>(dest: T) {
     return dest
   }
   disconnect = () => {}
@@ -51,7 +51,7 @@ class SilentContext {
 
 class SilentNode {
   port = { onmessage: null, postMessage: () => {} }
-  connect(dest: any) {
+  connect<T>(dest: T) {
     return dest
   }
   disconnect = () => {}
@@ -129,10 +129,9 @@ export function touch(on: boolean) {
 // body pad on canvas. jsdom has neither — and its own getContext warns, loudly
 // and once per canvas, on the way to handing back the null we want anyway.
 function stubLayout() {
-  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
-  Element.prototype.scrollIntoView ??= () => {}
-  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
-  Element.prototype.scrollTo ??= () => {}
+  const element: Partial<Element> = Element.prototype
+  element.scrollIntoView ??= () => {}
+  element.scrollTo ??= () => {}
   // jsdom has a scrollBy of its own, one that reports itself unimplemented on
   // every call, so this replaces rather than fills in.
   window.scrollBy = () => {}
@@ -140,10 +139,9 @@ function stubLayout() {
   // The drum grid hands a captured touch pointer straight back, so a finger
   // dragged across it reaches cells other than the one it landed on. jsdom has
   // pointer events and neither half of pointer capture.
-  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
-  Element.prototype.hasPointerCapture ??= () => false
-  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
-  Element.prototype.releasePointerCapture ??= () => {}
+  element.hasPointerCapture ??= () => false
+  element.releasePointerCapture ??= () => {}
+  element.setPointerCapture ??= () => {}
   const g = globalThis as Record<string, unknown>
   g.ResizeObserver ??= Tape
   // Anything the panel opens over the signal path — a tip, the roll menu — is a

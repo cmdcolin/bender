@@ -1,16 +1,12 @@
 import { asEvent, EVENT, EVENT_KEYS } from '../../drums.ts'
 import { MIC } from '../../dsp/micJacks.ts'
 import { DEST } from '../../dsp/modbus.ts'
-import {
-  SUPPLIED,
-  SUPPLY,
-  SUPPLY_KEYS,
-  SUPPLY_NAMES,
-} from '../../dsp/supplies.ts'
+import { SUPPLIED, SUPPLY, SUPPLY_NAMES } from '../../dsp/supplies.ts'
 import { recordOf } from '../../machines.ts'
 import { wireOn } from '../micWiring.ts'
 
 import type { ControlKey, Controls } from '../../controls.ts'
+import type { SUPPLY_KEYS } from '../../dsp/supplies.ts'
 import type { Group, SliderDef } from './types.ts'
 
 export type SupplyKey = (typeof SUPPLY_KEYS)[number]

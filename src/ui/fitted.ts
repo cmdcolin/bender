@@ -24,9 +24,10 @@ const NAMES = new Set(GROUPS.map(g => g.name))
 export function parseAdded(raw: string | null): Set<string> {
   try {
     const names: unknown = JSON.parse(raw ?? '[]')
-    return Array.isArray(names)
-      ? new Set(names.filter((n): n is string => NAMES.has(n)))
-      : new Set()
+    const listed: unknown[] = Array.isArray(names) ? names : []
+    return new Set(
+      listed.filter((n): n is string => typeof n === 'string' && NAMES.has(n)),
+    )
   } catch {
     return new Set()
   }

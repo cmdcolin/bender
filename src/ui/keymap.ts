@@ -32,7 +32,7 @@ export const isKeymap = (value: unknown): value is string[] =>
 function grown(parsed: unknown): unknown {
   if (!Array.isArray(parsed) || parsed.length >= DEFAULT_KEYMAP.length)
     return parsed
-  const out: unknown[] = [...parsed]
+  const out: unknown[] = parsed.slice()
   for (const k of DEFAULT_KEYMAP.slice(parsed.length))
     out.push(out.includes(k) ? CAPS.split('').find(c => !out.includes(c)) : k)
   return out

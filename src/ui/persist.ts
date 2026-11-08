@@ -78,7 +78,8 @@ export function parseMap<K extends string, V>(
   }
   if (typeof stored !== 'object' || stored === null) return {}
   const out: Partial<Record<K, V>> = {}
-  for (const [name, v] of Object.entries(stored)) {
+  const entries: [string, unknown][] = Object.entries(stored)
+  for (const [name, v] of entries) {
     const k = key(name)
     if (k === null || typeof v !== 'object' || v === null) continue
     const parsed = value(v)

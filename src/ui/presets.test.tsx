@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { beforeAll, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
 import { Presets } from './PresetRow.tsx'
@@ -11,16 +11,6 @@ import './testDom.ts'
 // arrives, drag it sideways and the board follows your hand part of the way
 // there. Which of the two you meant is decided by four pixels, so all of it is
 // written down in the component and none of it was written down here.
-
-// Capturing the pointer is what lets a drag carry on past the edge of the chip.
-// jsdom has the calls and no implementation, and a chip that threw on press
-// would fail every test below for the wrong reason.
-beforeAll(() => {
-  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
-  Element.prototype.setPointerCapture ??= () => {}
-  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
-  Element.prototype.releasePointerCapture ??= () => {}
-})
 
 const DRAG_FULL = 140 // the sideways travel of a whole trip, from Presets.tsx
 const first = PRESETS[0]!

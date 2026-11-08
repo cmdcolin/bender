@@ -19,6 +19,7 @@ import {
   useState,
   type ReactElement,
   type ReactNode,
+  type Ref,
 } from 'react'
 
 import styles from './Tip.module.css'
@@ -44,7 +45,7 @@ const DELAY_MS = 350
 // only chains them: their real event type is the child's business, and a
 // parameter of `never` accepts whichever one the child wrote.
 type Anchor = ReactElement<{
-  ref?: unknown
+  ref?: Ref<HTMLElement>
   'aria-describedby'?: string
   onPointerEnter?: (e: never) => void
   onPointerLeave?: (e: never) => void
@@ -231,14 +232,13 @@ function chain(theirs: ((e: never) => void) | undefined, mine: () => void) {
   }
 }
 
-// The child may have wanted its own ref, and taking one away to place a tip
-// would be a strange thing for a tip to do.
-function mergeRefs(theirs: unknown, mine: (el: HTMLElement | null) => void) {
+function mergeRefs(
+  theirs: Ref<HTMLElement> | undefined,
+  mine: (el: HTMLElement | null) => void,
+) {
   return (el: HTMLElement | null) => {
     mine(el)
     if (typeof theirs === 'function') theirs(el)
-    else if (theirs !== null && typeof theirs === 'object')
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a ref the child was given that is not a callback is a ref object
-      (theirs as { current: HTMLElement | null }).current = el
+    else if (theirs) theirs.current = el
   }
 }

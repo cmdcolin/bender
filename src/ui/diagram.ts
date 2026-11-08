@@ -69,17 +69,23 @@ export const boxHeight = (name: string) =>
 /** The height of a box with a one-line name. */
 export const ONE_LINE_H = boxHeight('')
 
+interface HeldBox {
+  id?: string
+  keys?: readonly ControlKey[]
+}
+
+const isBoxList = (
+  holds: readonly HeldBox[] | Opens,
+): holds is readonly HeldBox[] => Array.isArray(holds)
+
 export function useOpensOnAim(
   pick: BoxPick,
-  holds:
-    | readonly { id?: string; keys?: readonly ControlKey[] }[]
-    | Readonly<Record<string, readonly ControlKey[]>>,
+  holds: readonly HeldBox[] | Opens,
 ) {
   useOnAim(key => {
-    const boxes: readonly { id?: string; keys?: readonly ControlKey[] }[] =
-      Array.isArray(holds)
-        ? holds
-        : Object.entries(holds).map(([id, keys]) => ({ id, keys }))
+    const boxes = isBoxList(holds)
+      ? holds
+      : Object.entries(holds).map(([id, keys]) => ({ id, keys }))
     const box = boxes.find(b => b.id && b.keys?.some(k => k === key))
     if (box && pick.selected !== box.id) pick.toggle(box.id!)
   })

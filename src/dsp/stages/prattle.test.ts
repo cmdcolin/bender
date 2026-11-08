@@ -23,7 +23,12 @@ import {
 import { CHIP_HZ, N_K, ROM, stepUp } from './prattleRom.ts'
 
 const phrase = (text: string): Partial<Controls> =>
-  Object.fromEntries(textToPhrase(text).map((c, i) => [PHRASE_KEYS[i], c]))
+  Object.fromEntries(
+    textToPhrase(text).map((c, i): [string, number] => [
+      PHRASE_KEYS[i] ?? '',
+      c,
+    ]),
+  )
 
 const QUIET = { chipLevel: 0, drumLevel: 0 }
 

@@ -8,10 +8,14 @@ import { BLOCK } from './stage.ts'
 import { renderBender, stepMask } from './testRender.ts'
 
 const SILENT_KIT: Partial<Controls> = Object.fromEntries(
-  GRID_ROWS.flatMap(row => [
-    [row.key, 0],
-    ...(row.maybe ? [[row.maybe, 0]] : []),
-  ]),
+  GRID_ROWS.flatMap((row): [string, number][] =>
+    row.maybe
+      ? [
+          [row.key, 0],
+          [row.maybe, 0],
+        ]
+      : [[row.key, 0]],
+  ),
 )
 
 const KICKS = { drumKick: stepMask(0, 4, 8, 12) }

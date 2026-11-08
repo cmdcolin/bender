@@ -57,8 +57,15 @@ const GLOBAL_CONSTRUCTORS = [
   'Promise',
 ]
 
+const construct: (
+  target: Function,
+  args: unknown[],
+  newTarget: Function,
+) => object = Reflect.construct
+
 function copyingMethods(): [object, string, string[]][] {
-  const typedArray: object = Object.getPrototypeOf(Float32Array.prototype)
+  const typedArray = Reflect.getPrototypeOf(Float32Array.prototype)
+  if (!typedArray) throw new Error('Float32Array has no TypedArray prototype')
   return [
     [
       typedArray,
@@ -111,9 +118,9 @@ function allocationsDuring(run: () => void): Allocation[] {
       const counted = new Proxy(original, {
         construct(target, args, newTarget) {
           note(`new ${label}`)
-          return Reflect.construct(target, args, newTarget)
+          return construct(target, args, newTarget)
         },
-        apply(target, self, args) {
+        apply(target, self, args): unknown {
           note(label)
           return Reflect.apply(target, self, args)
         },
@@ -446,7 +453,6 @@ function garbagePerSecond(make: Make, overrides: Partial<Controls>) {
   render(GARBAGE_SECONDS)
   const endedAt = getHeapStatistics().used_heap_size
   const profiled = profiler.stop()
-  if (!profiled) throw new Error('the gc profiler never started')
   let bytes = 0
   let from = startedAt
   for (const gc of profiled.statistics) {
