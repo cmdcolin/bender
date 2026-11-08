@@ -1,7 +1,7 @@
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
 import { RING_SHAPES } from '../../dsp/stages/ringmod.ts'
 import { YOURS } from '../../dsp/stages/roms.ts'
-import { SUPPLY, SUPPLY_KEYS } from '../../dsp/supplies.ts'
+import { SUPPLIED, SUPPLY } from '../../dsp/supplies.ts'
 import { followsGate, GATE_ALL, gateLane } from '../../dsp/trigbus.ts'
 import { LANE_KEYS, LANE_MAX } from '../../lanes.ts'
 import { asTuneLen, isNote, laneSteps } from '../../tune.ts'
@@ -42,8 +42,8 @@ const runs = (c: Controls, label: string) =>
 
 // Where a wire can land, and what has to be up for landing there to be a sound
 // rather than a row of text. `up` is everything that must be off its bottom
-// stop; `oneOf` is a rail several machines share, where any one of them running
-// is enough. A bend also has to be in a slot or patched onto a machine — a
+// stop; `oneOf` is several machines, any one of which running is enough;
+// `rail` is a supply, heard while any machine on it is up. A bend also has to be in a slot or patched onto a machine — a
 // stage that isn't in the chain is not in the chain however wet its mix says
 // it is.
 //
@@ -54,11 +54,20 @@ interface Landing {
   dest: number
   up: ControlKey[]
   oneOf?: ControlKey[]
+  rail?: number
   bend?: string
   hands?: true
   played?: true
   needs?: (c: Controls) => boolean
 }
+
+const RAILED: { level: ControlKey; supply: ControlKey }[] = [
+  ...SUPPLIED.map(m => ({ level: m.levels[0], supply: m.supply })),
+  { level: 'distMix', supply: 'distSupply' },
+]
+
+const onRail = (c: Controls, rail: number) =>
+  RAILED.filter(m => Math.round(c[m.supply]) === rail).map(m => m.level)
 
 const hasMaybes = (c: Controls) => DRUM_VOICES.some(v => c[v.maybe] !== 0)
 
@@ -79,10 +88,7 @@ const LANDED = {
   glitch: { up: ['glitchMix'], bend: 'glitch' },
   'shift Hz': { up: ['shiftMix'], bend: 'shift' },
   'chip clock': { up: ['chipLevel'] },
-  starve: {
-    up: [],
-    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'monoLevel', 'leadLevel'],
-  },
+  starve: { up: [], rail: SUPPLY.shared },
   'drum tune': { up: ['drumLevel'] },
   'kit tempo': { up: ['drumLevel'] },
   'kit swing': { up: ['drumLevel'] },
@@ -211,13 +217,7 @@ const LANDED = {
   'comb sag': { up: ['combMix', 'combChip', 'chipStarve'], bend: 'comb' },
   'comb pull': { up: ['combMix', 'combChip'], bend: 'comb' },
   'crush DAC ref': { up: ['crushMix', 'crushRef'], bend: 'crush' },
-  'second cells starve': {
-    up: [],
-    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'pcmLevel', 'monoLevel'],
-    needs: c =>
-      SUPPLY_KEYS.some(k => Math.round(c[k]) === SUPPLY.second) ||
-      (c.distMix > 0 && Math.round(c.distSupply) === SUPPLY.second),
-  },
+  'second cells starve': { up: [], rail: SUPPLY.second },
   'dist draw': { up: ['distMix'], bend: 'dist' },
   'dist pin gain': { up: ['distMix'], bend: 'dist' },
   'oct rate': { up: ['octMix'], bend: 'oct' },
@@ -292,12 +292,16 @@ const FB_AMOUNT = choiceValue('mod0Dest', 'fb amount')
 const heard = (c: Controls, l: Landing) =>
   l.up.every(k => isUp(c, k)) &&
   (!l.oneOf || l.oneOf.some(k => isUp(c, k))) &&
+  (l.rail === undefined || onRail(c, l.rail).some(k => isUp(c, k))) &&
   (!l.bend || runs(c, l.bend)) &&
   (!l.needs || l.needs(c))
 
 /** True when a roll is allowed to turn this landing on. */
 const reachable = (c: Controls, l: Landing) =>
-  !l.hands && (!l.bend || runs(c, l.bend)) && (!l.needs || l.needs(c))
+  !l.hands &&
+  (l.rail === undefined || onRail(c, l.rail).length > 0) &&
+  (!l.bend || runs(c, l.bend)) &&
+  (!l.needs || l.needs(c))
 
 // Where a wire can pick up, and what has to be running for it to be carrying
 // anything.
@@ -407,6 +411,9 @@ function wakeLanding(
   for (const key of l.up) turnUp(next, key, rand, woke)
   if (l.oneOf && !l.oneOf.some(k => isUp(next, k)))
     turnUp(next, l.oneOf[0]!, rand, woke)
+  const railed = l.rail === undefined ? [] : onRail(next, l.rail)
+  if (railed[0] && !railed.some(k => isUp(next, k)))
+    turnUp(next, railed[0], rand, woke)
 }
 
 // How hard a wire pushes when the roll wants to hear it at all, and how hard it

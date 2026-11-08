@@ -70,6 +70,54 @@ test('every lane a wire can land on is a stage, a wire depth or retired', () => 
   expect(unlanded).toEqual([])
 })
 
+const SILENT = {
+  chipLevel: 0,
+  drumLevel: 0,
+  fmLevel: 0,
+  pcmLevel: 0,
+  monoLevel: 0,
+  leadLevel: 0,
+  talkLevel: 0,
+  distMix: 0,
+}
+
+const onLane = (lane: string, board: Partial<Controls>): Controls => ({
+  ...DEFAULT_CONTROLS,
+  ...SILENT,
+  mod0Src: choiceValue('mod0Src', 'LFO'),
+  mod0Dest: choiceValue('mod0Dest', lane),
+  mod0Depth: 0.5,
+  mod1Src: choiceValue('mod0Src', 'off'),
+  mod2Src: choiceValue('mod0Src', 'off'),
+  mod3Src: choiceValue('mod0Src', 'off'),
+  ...board,
+})
+
+test('a starve wire is heard through any machine on that rail', () => {
+  expect(bayFaults(onLane('starve', { pcmLevel: 0.8 }))).toEqual([])
+  expect(bayFaults(onLane('starve', { talkLevel: 0.8 }))).toEqual([])
+  expect(
+    bayFaults(onLane('second cells starve', { leadLevel: 0.8, leadSupply: 1 })),
+  ).toEqual([])
+  expect(
+    bayFaults(onLane('second cells starve', { talkLevel: 0.8, talkSupply: 1 })),
+  ).toEqual([])
+})
+
+test('a starve wire is dead when the machines up are on another rail', () => {
+  expect(
+    bayFaults(onLane('starve', { chipLevel: 0.8, chipSupply: 2 })),
+  ).toHaveLength(1)
+  expect(
+    bayFaults(
+      onLane('second cells starve', {
+        chipLevel: 0.8,
+        drumSupply: 1,
+      }),
+    ),
+  ).toHaveLength(1)
+})
+
 test('a dead bay comes back a patch, wire for wire', () => {
   const before = deadBay()
   expect(bayFaults(before).length).toBeGreaterThan(3)
