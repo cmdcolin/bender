@@ -25,7 +25,7 @@ import {
   topKey,
   whiteKeys,
 } from './keyboard.ts'
-import { keymap, noteKeys, octaveKeys, remapOpen } from './keymap.ts'
+import { keyHeld, keymap, noteKeys, octaveKeys, remapOpen } from './keymap.ts'
 import { claimPress, claimRelease } from './keyPress.ts'
 import { letterKeys } from './letters.ts'
 import { useCoarse, useWidth } from './measure.ts'
@@ -103,6 +103,7 @@ export function Keybed({
   // What was sent, not which key was pressed: the octave moves under your hand
   // and a note has to be let go at the pitch it went down at.
   const held = useRef(new Set<number>())
+  const struck = useRef(new Map<string, number>())
   // The part of that a pointer is holding, which is all a pointer leaving a key
   // can let go of: a note held by a letter or by Enter stays down under a mouse
   // passing over it.
@@ -229,6 +230,7 @@ export function Keybed({
   const releaseAll = () => {
     for (const semitone of held.current) engine.noteOff(semitone, dest)
     held.current.clear()
+    struck.current.clear()
     pointed.current.clear()
     latched.current.clear()
     setTouching(new Set())
@@ -239,6 +241,7 @@ export function Keybed({
   // note is held for ever by a key nobody is pressing any more. What was pinned
   // down on purpose stays down — that is what pinning it was for.
   const releaseLoose = () => {
+    struck.current.clear()
     for (const semitone of held.current) {
       if (sticky(semitone)) continue
       engine.noteOff(semitone, dest)
@@ -272,12 +275,17 @@ export function Keybed({
       return
     }
     const note = noteLetters.indexOf(pressed)
-    if (note >= 0) press(note)
+    if (note >= 0) {
+      struck.current.set(keyHeld(e), note)
+      press(note)
+    }
   }
   const onKeyUp = (e: KeyboardEvent) => {
-    if (!owns) return
-    const note = noteLetters.indexOf(e.key.toLowerCase())
-    if (note >= 0) release(note)
+    const note = struck.current.get(keyHeld(e))
+    if (owns && note !== undefined) {
+      struck.current.delete(keyHeld(e))
+      release(note)
+    }
   }
 
   const latest = useRef({ onKeyDown, onKeyUp, releaseLoose })

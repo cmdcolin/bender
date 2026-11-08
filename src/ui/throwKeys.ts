@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { isTyping } from './isTyping.ts'
-import { throwForKey } from './keymap.ts'
+import { keyHeld, throwForKey } from './keymap.ts'
 import { THROWS, type ThrowDef } from './throws.ts'
 
 export const pressThrow = (t: ThrowDef) =>
@@ -10,23 +10,28 @@ export const pressThrow = (t: ThrowDef) =>
 
 export const releaseThrow = (t: ThrowDef) => engine.letGoThrow(t.name)
 
-const releaseAll = () => {
-  for (const t of THROWS) releaseThrow(t)
-}
-
-/** The throws' letters hold their throws, whatever the rest of the
-    letters are doing. */
 export function useThrowKeys() {
   useEffect(() => {
+    const started = new Map<string, ThrowDef>()
+    const releaseAll = () => {
+      started.clear()
+      for (const t of THROWS) releaseThrow(t)
+    }
     const down = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
       if (isTyping(e.target)) return
       const t = throwForKey(e.key)
-      if (t) pressThrow(t)
+      if (t) {
+        started.set(keyHeld(e), t)
+        pressThrow(t)
+      }
     }
     const up = (e: KeyboardEvent) => {
-      const t = throwForKey(e.key)
-      if (t) releaseThrow(t)
+      const t = started.get(keyHeld(e))
+      if (t) {
+        started.delete(keyHeld(e))
+        releaseThrow(t)
+      }
     }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)

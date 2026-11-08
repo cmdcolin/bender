@@ -153,3 +153,13 @@ test('the bed is one tab stop, and arrows walk its keys', () => {
   fireEvent.keyDown(key('C3'), { key: 'ArrowLeft' })
   expect(document.activeElement).toBe(key('C3'))
 })
+
+test('a letter note lets go when its key-up reports another character', () => {
+  letterKeys.set('fm')
+  bed()
+  const [letter = ''] = noteKeys(keymap.get())
+  fireEvent.keyDown(window, { key: letter, code: 'KeyZ' })
+  expect(engine.fmKeysDown.get().size).toBe(1)
+  fireEvent.keyUp(window, { key: 'Ω', code: 'KeyZ', altKey: true })
+  expect(engine.fmKeysDown.get().size).toBe(0)
+})

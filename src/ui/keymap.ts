@@ -66,6 +66,9 @@ export const throwKeys = (map: readonly string[]) => map.slice(NOTE_COUNT + 2)
 export const throwForKey = (key: string) =>
   THROWS[throwKeys(keymap.get()).indexOf(key.toLowerCase())]
 
+export const keyHeld = (e: Pick<KeyboardEvent, 'code' | 'key'>) =>
+  e.code || e.key
+
 export type KeyRole =
   | { kind: 'note'; index: number }
   | { kind: 'octave'; step: -1 | 1 }
