@@ -7,6 +7,7 @@ import {
   STEPS,
 } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { TriggerBus } from '../trigbus.ts'
@@ -96,10 +97,11 @@ export class StepFaults implements Stage {
     this.seamLen = Math.max(1, Math.round(sr * SEAM_S))
   }
 
-  when(p: Float32Array) {
+  when(p: Float32Array, ctx: Ctx) {
     if (this.cur.event !== 0 || this.seam > 0) return true
     if (p[IDX.drumEventLive]! !== 0) return true
-    if (p[IDX.drumWander]! !== 0) return true
+    if (p[IDX.drumWander]! !== 0 || ctx.mod.read(DEST.drumWander) !== null)
+      return true
     for (const idx of EVENT_IDX) if (p[idx]! !== 0) return true
     return false
   }

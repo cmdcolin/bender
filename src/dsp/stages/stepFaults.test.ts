@@ -3,11 +3,13 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
 import { EVENT } from '../../drums.ts'
 import { packParams } from '../../engine/params.ts'
+import { DEST, ModBus, SRC } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { makeIo, renderBender, rms, SR } from '../testRender.ts'
 import { TriggerBus } from '../trigbus.ts'
 import { StepFaults } from './stepFaults.ts'
 
+import type { BuiltChain } from '../build.ts'
 import type { Ctx } from '../stage.ts'
 
 const STEP = 6000
@@ -22,7 +24,7 @@ function run(
 ) {
   const stage = new StepFaults(SR)
   const trig = new TriggerBus()
-  const ctx = { trig } as unknown as Ctx
+  const ctx = { trig, mod: new ModBus(SR) } as unknown as Ctx
   const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
   const io = makeIo()
   const input = new Float32Array(samples)
@@ -35,7 +37,7 @@ function run(
         trig.stepClocked(s.at - b, s.tick, STEP)
     io.l.set(input.subarray(b, b + BLOCK))
     io.r.set(input.subarray(b, b + BLOCK))
-    if (stage.when(p)) stage.process(io, p, ctx)
+    if (stage.when(p, ctx)) stage.process(io, p, ctx)
     out.set(io.l.subarray(0, BLOCK), b)
     trig.swap(BLOCK)
   }
@@ -182,4 +184,29 @@ test('a drop step lets the shared cells sag and recover', () => {
   const { v } = railRun({ drumBpm: 60, drumEvent0: EVENT.drop })
   expect(Math.min(...v)).toBeLessThan(0.7)
   expect(v.at(-1)).toBeGreaterThan(0.95)
+})
+
+test('a wire alone on Wander plays the faults its strays plan', () => {
+  const board = {
+    chipLevel: 0,
+    drumLevel: 1,
+    drumBpm: 480,
+    bodyX: 1,
+    mod0Src: SRC.bodyX,
+    mod0Dest: DEST.drumWander,
+    mod0Depth: 1,
+  }
+  const playing = (b: BuiltChain) => {
+    b.transport.drums = true
+    b.transport.tune = true
+  }
+  const forced = (b: BuiltChain) => {
+    playing(b)
+    const faults = b.chain.post.find(s => s.label === 'stepFaults')
+    if (faults) faults.when = () => true
+  }
+  const wired = renderBender(board, 8, playing)
+  const always = renderBender(board, 8, forced)
+  const differ = wired.filter((v, i) => v !== always[i]).length
+  expect(differ).toBe(0)
 })
