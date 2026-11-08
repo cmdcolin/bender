@@ -316,7 +316,16 @@
   font-weight: 600;
 }
 .home .resume .resumeCta {
+  align-items: center;
   margin: 0;
+}
+.freshLink {
+  color: var(--fg3);
+  font-size: 0.9rem;
+}
+.freshLink:hover,
+.freshLink:focus-visible {
+  color: var(--fg);
 }
 @media (max-width: 40rem) {
   .home .resume {

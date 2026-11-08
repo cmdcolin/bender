@@ -61,7 +61,7 @@ function resumeStrip(doc: HomeDoc, current: RecentSession, now: number) {
   go.addEventListener('click', () => {
     handOffSession(current.id)
   })
-  const fresh = el('a', 'btn', 'Start fresh')
+  const fresh = el('a', 'freshLink', 'Start fresh')
   fresh.href = appUrl
   const row = el('div', 'resumeCta')
   row.append(go, fresh)

@@ -5,7 +5,7 @@ import { jamUrl } from '../site/paths.ts'
 const waveOf = (peaks: number[]) =>
   peaks
     .map((v, i) => {
-      const h = Math.max(6, v)
+      const h = Math.max(6, 100 * (v / 100) ** 3)
       return `M${i * 3} ${(100 - h) / 2}h2v${h}h-2z`
     })
     .join('')
@@ -21,7 +21,12 @@ const waveOf = (peaks: number[]) =>
   <ul class="tracks">
     {jams.map(jam => (
       <li class="track">
-        <a class="play" href={jam.src} aria-label={`Play ${jam.title}`}>
+        <a
+          class="play"
+          href={jam.src}
+          aria-label={`Play ${jam.title}`}
+          aria-keyshortcuts="ArrowLeft ArrowRight"
+        >
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path class="iPlay" d="M4 2.5v11l9.5-5.5z" />
             <path class="iPause" d="M3.5 2.5h3.2v11H3.5zM9.3 2.5h3.2v11H9.3z" />

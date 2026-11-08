@@ -6,6 +6,8 @@ const pile = document.querySelector<HTMLElement>('.pile')
 const meter = pile ? pileMeter(audio, pile) : undefined
 let current: HTMLAnchorElement | undefined
 
+const SKIP_S = 10
+
 const nameOf = (play: HTMLAnchorElement) =>
   play.getAttribute('aria-label')!.replace(/^(Play|Pause) /, '')
 
@@ -43,6 +45,21 @@ for (const play of document.querySelectorAll<HTMLAnchorElement>('.play')) {
     event.preventDefault()
     if (current === play && !audio.paused) audio.pause()
     else start(play)
+  })
+  play.addEventListener('keydown', event => {
+    const step =
+      event.key === 'ArrowRight'
+        ? SKIP_S
+        : event.key === 'ArrowLeft'
+          ? -SKIP_S
+          : 0
+    if (step !== 0 && current === play && audio.duration) {
+      event.preventDefault()
+      audio.currentTime = Math.min(
+        audio.duration,
+        Math.max(0, audio.currentTime + step),
+      )
+    }
   })
   const wave = waveOf(play)
   wave.addEventListener('click', event => {
