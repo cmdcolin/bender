@@ -59,7 +59,9 @@ export function parseLines(text: string) {
     : words.reduce((mask, w) => mask | lineMatching(w), 0)
 }
 
-export const patchedInto = (value: number): string | undefined => {
+export const patchedInto = (value: number): string[] => linesNamed(value)
+
+export const patchedLabel = (value: number): string | undefined => {
   const names = linesNamed(value)
   return names.length > 0 ? names.join(' + ') : undefined
 }
@@ -68,7 +70,7 @@ export const bendRuns = (c: Controls, group: string) => {
   const bend = BENDS.find(b => b.group === group)
   return (
     bend !== undefined &&
-    (patchedInto(c[bend.into]) !== undefined ||
+    (patchedInto(c[bend.into]).length > 0 ||
       BEND_SLOT_KEYS.some(k => bendAt(c[k])?.group === group))
   )
 }

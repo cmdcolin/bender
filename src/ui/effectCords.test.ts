@@ -89,6 +89,23 @@ test('a unit patched onto a machine leaves the master run for a run of its own f
   expect(runsFrom(runText(runs))).toEqual(runs)
 })
 
+test('one cord run per set of lines, the narrower set first', () => {
+  const runs = effectRuns({
+    ...board,
+    revLines: lineFor('toyDrum', 'toyChip', 'sheet'),
+    echoLines: lineFor('toyDrum', 'toyChip'),
+    crushLines: lineFor('toyChip', 'toyDrum'),
+  })
+  expect(runs.slice(1)).toEqual([
+    {
+      from: 'Plinky + Clatter',
+      to: 'the mix bus',
+      chain: ['Crusher', 'Ricochet'],
+    },
+    { from: 'Plinky + Clatter + Sheet', to: 'the mix bus', chain: ['Boing'] },
+  ])
+})
+
 const slotsOf = (c: typeof board) => BEND_SLOT_KEYS.map(k => c[k])
 
 const pedalsIn = (c: typeof board) =>

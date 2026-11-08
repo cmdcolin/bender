@@ -21,15 +21,51 @@ const tipOf = (el: HTMLElement) => {
     ?.textContent
 }
 
-test('the unit menu checks the one line the unit is patched into', () => {
+test('the unit menu ticks the lines the unit is patched into', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, combLines: lineFor('toyDrum') })
   render(<JackCap stage="Comb" />)
   fireEvent.click(screen.getByRole('button', { name: 'patch Comb into' }))
-  const items = screen.getAllByRole('menuitemradio', { hidden: true })
+  const items = screen.getAllByRole('menuitemcheckbox', { hidden: true })
   expect(items.length).toBeGreaterThan(2)
   expect(items.filter(i => i.getAttribute('aria-checked') === 'true')).toEqual([
-    screen.getByRole('menuitemradio', { name: 'Clatter', hidden: true }),
+    screen.getByRole('menuitemcheckbox', { name: 'Clatter', hidden: true }),
   ])
+  expect(
+    screen
+      .getByRole('menuitemradio', { name: /^master/, hidden: true })
+      .getAttribute('aria-checked'),
+  ).toBe('false')
+})
+
+test('ticking a second machine keeps the menu open and the cap names both', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, combLines: lineFor('toyDrum') })
+  render(<JackCap stage="Comb" />)
+  const cap = screen.getByRole('button', { name: 'patch Comb into' })
+  fireEvent.click(cap)
+  fireEvent.click(
+    screen.getByRole('menuitemcheckbox', { name: 'Plinky', hidden: true }),
+  )
+  expect(engine.controls.get().combLines).toBe(lineFor('toyDrum', 'toyChip'))
+  expect(cap.textContent).toBe('Plinky + Clatter')
+  fireEvent.click(
+    screen.getByRole('menuitemradio', { name: /^master/, hidden: true }),
+  )
+  expect(engine.controls.get().combLines).toBe(0)
+})
+
+test('a machine’s jack toggles its own line on a unit and leaves the others', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, combLines: lineFor('toyDrum') })
+  render(<JackCap stage="Plinky" />)
+  fireEvent.click(screen.getByRole('button', { name: 'patch into Plinky' }))
+  const comb = screen.getByRole('menuitemcheckbox', {
+    name: /^Comb/,
+    hidden: true,
+  })
+  expect(comb.textContent).toBe('Combon Clatter')
+  fireEvent.click(comb)
+  expect(engine.controls.get().combLines).toBe(lineFor('toyDrum', 'toyChip'))
+  fireEvent.click(comb)
+  expect(engine.controls.get().combLines).toBe(lineFor('toyDrum'))
 })
 
 test('a unit on a mic wired off the mix is told it hears nothing', () => {
@@ -43,7 +79,7 @@ test('a unit on a mic wired off the mix is told it hears nothing', () => {
   expect(tipOf(cap)).toMatch(/hears nothing/)
   fireEvent.click(cap)
   expect(
-    screen.getByRole('menuitemradio', { name: /^Mic/, hidden: true })
+    screen.getByRole('menuitemcheckbox', { name: /^Mic/, hidden: true })
       .textContent,
   ).toMatch(/hears nothing/)
 })

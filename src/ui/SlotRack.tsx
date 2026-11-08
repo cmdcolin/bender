@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { engine } from '../engine/engine.ts'
 import { passesMaster } from './bendChain.ts'
 import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls/index.ts'
-import { patchedInto } from './controls/jacks.ts'
+import { patchedLabel } from './controls/jacks.ts'
 import { useBoardValue, useMeterValue } from './ControlsContext.ts'
 import { RackNudge } from './RackNudge.tsx'
 import { move } from './reorder.ts'
@@ -39,7 +39,7 @@ export function SlotRack() {
     BENDS.map(b => (c[b.mute] > 0.5 ? 1 : 0)).join(''),
   )
   const onRaw = useBoardValue(c =>
-    BENDS.map(b => patchedInto(c[b.into]) ?? '').join('|'),
+    BENDS.map(b => patchedLabel(c[b.into]) ?? '').join('|'),
   ).split('|')
   const throughRaw = useBoardValue(c =>
     BEND_SLOT_KEYS.map((_, i) => (passesMaster(c, i) ? '1' : '0')).join(''),

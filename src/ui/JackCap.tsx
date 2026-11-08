@@ -3,14 +3,13 @@ import { useState } from 'react'
 import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
 import { TAP_MIC } from '../engine/params.ts'
-import { JACK_TAPS } from '../jacks.ts'
+import { lineOf } from '../jacks.ts'
 import { CHANNELS } from './controls/index.ts'
 import {
   intoOf,
-  JACK_NAMES,
+  LINE_NAMES,
   lineNamed,
-  MASTER,
-  patchedInto,
+  patchedLabel,
   UNITS,
 } from './controls/jacks.ts'
 import { useBoardValue } from './ControlsContext.ts'
@@ -32,21 +31,19 @@ const PLUG_GLYPH = (
 
 const MACHINES = new Set(CHANNELS.map(c => c.name))
 
-const MIC_JACK = JACK_NAMES[JACK_TAPS.indexOf(TAP_MIC)]
+const MIC_LINE = lineOf(TAP_MIC)
 
-/** Whether units patched onto the mic hear nothing, with no mic wire on the
-    mix to hand them a line. */
 const micDeaf = (c: Controls) => wireOn(c, MIC.mix) === 0
 
 const DEAF = 'the mic isn’t wired to the mix, so it hears nothing'
 
-const plug = (key: ControlKey, machine: string) => {
+const patch = (key: ControlKey, lines: number) => {
   engine.armStep()
-  engine.set(key, lineNamed(machine))
+  engine.set(key, lines)
 }
 
-const unitsOn = (c: Controls, machine: string) =>
-  UNITS.filter(u => patchedInto(c[u.into]) === machine)
+const unitsOn = (c: Controls, bit: number) =>
+  UNITS.filter(u => (Math.round(c[u.into]) & bit) !== 0)
     .map(u => u.group)
     .join(', ')
 
@@ -59,7 +56,9 @@ function UnitJack({
   into: ControlKey
   idle: string
 }) {
-  const machine = useBoardValue(c => patchedInto(c[into]))
+  const lines = useBoardValue(c => Math.round(c[into]))
+  const label = patchedLabel(lines)
+  const onMic = (lines & MIC_LINE) !== 0
   const deaf = useBoardValue(micDeaf)
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
@@ -68,24 +67,24 @@ function UnitJack({
     <>
       <Tip
         text={
-          machine === MIC_JACK && deaf
-            ? `${stage} is patched into the Mic, but ${DEAF}. Press to move the cable.`
-            : machine
-              ? `${stage} is patched into ${machine} and processes it alone. Press to move the cable.`
-              : `Patch ${stage} into one machine’s output instead of the whole mix.`
+          onMic && deaf
+            ? `${stage} is patched into ${label}, but ${DEAF}. Press to change its lines.`
+            : label
+              ? `${stage} is patched into ${label} and processes those lines before the mix bus. Press to change its lines.`
+              : `Patch ${stage} into one or more machines’ outputs instead of the whole mix.`
         }
       >
         <button
           ref={setButton}
-          className={machine ? styles.capOn : styles.cap}
+          className={label ? styles.capOn : styles.cap}
           data-control={into}
           aria-label={`patch ${stage} into`}
           aria-expanded={open}
           onClick={() => setOpen(o => !o)}
         >
           {PLUG_GLYPH}
-          {(machine ?? idle) && (
-            <span className={styles.name}>{machine ?? idle}</span>
+          {(label ?? idle) && (
+            <span className={styles.name}>{label ?? idle}</span>
           )}
         </button>
       </Tip>
@@ -98,21 +97,30 @@ function UnitJack({
           onClose={close}
         >
           <div className={styles.list}>
-            {JACK_NAMES.map(name => {
-              const here = (machine ?? MASTER) === name
+            <button
+              role="menuitemradio"
+              className={lines === 0 ? styles.itemOn : styles.item}
+              aria-checked={lines === 0}
+              onClick={() => {
+                close()
+                patch(into, 0)
+              }}
+            >
+              master (the whole mix)
+            </button>
+            {LINE_NAMES.map(name => {
+              const bit = lineNamed(name)
+              const here = (lines & bit) !== 0
               return (
                 <button
                   key={name}
-                  role="menuitemradio"
+                  role="menuitemcheckbox"
                   className={here ? styles.itemOn : styles.item}
                   aria-checked={here}
-                  onClick={() => {
-                    close()
-                    plug(into, name)
-                  }}
+                  onClick={() => patch(into, lines ^ bit)}
                 >
-                  {name === MASTER ? 'master (the whole mix)' : name}
-                  {name === MIC_JACK && deaf && (
+                  {name}
+                  {bit === MIC_LINE && deaf && (
                     <span className={styles.on}>
                       hears nothing: not on the mix
                     </span>
@@ -128,11 +136,14 @@ function UnitJack({
 }
 
 function MachineJack({ stage, idle }: { stage: string; idle: string }) {
-  const here = useBoardValue(c => unitsOn(c, stage))
-  const deaf = useBoardValue(c => stage === MIC_JACK && micDeaf(c))
+  const bit = lineNamed(stage)
+  const here = useBoardValue(c => unitsOn(c, bit))
+  const deaf = useBoardValue(c => bit === MIC_LINE && micDeaf(c))
   const elsewhere = useBoardValue(c =>
-    UNITS.map(u => patchedInto(c[u.into]) ?? '').join('|'),
-  ).split('|')
+    UNITS.map(u => String(Math.round(c[u.into]))).join('|'),
+  )
+    .split('|')
+    .map(Number)
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const close = () => setOpen(false)
@@ -142,7 +153,7 @@ function MachineJack({ stage, idle }: { stage: string; idle: string }) {
         text={
           (here
             ? `${here} ${here.includes(',') ? 'are' : 'is'} patched into ${stage}’s output. Press to patch or unplug units.`
-            : `Patch a pedal or bend into ${stage}’s output alone.`) +
+            : `Patch a pedal or bend into ${stage}’s output.`) +
           (deaf
             ? ' The mic isn’t wired to the mix, so units patched here hear nothing.'
             : '')
@@ -171,21 +182,23 @@ function MachineJack({ stage, idle }: { stage: string; idle: string }) {
         >
           <div className={styles.list}>
             {UNITS.map((u, i) => {
-              const on = elsewhere[i]
-              const mine = on === stage
+              const lines = elsewhere[i] ?? 0
+              const mine = (lines & bit) !== 0
+              const others = patchedLabel(lines & ~bit)
               return (
                 <button
                   key={u.group}
                   role="menuitemcheckbox"
                   aria-checked={mine}
                   className={mine ? styles.itemOn : styles.item}
-                  onClick={() => {
-                    close()
-                    plug(u.into, mine ? MASTER : stage)
-                  }}
+                  onClick={() => patch(u.into, lines ^ bit)}
                 >
                   {u.group}
-                  {on && !mine && <span className={styles.on}>on {on}</span>}
+                  {others && (
+                    <span className={styles.on}>
+                      {mine ? `and ${others}` : `on ${others}`}
+                    </span>
+                  )}
                 </button>
               )
             })}

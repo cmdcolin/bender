@@ -1,6 +1,6 @@
 import { engine } from '../engine/engine.ts'
 import { BEND_SLOT_KEYS, BENDS, bendAt } from './controls/index.ts'
-import { bendRuns, patchedInto } from './controls/jacks.ts'
+import { bendRuns, patchedInto, patchedLabel } from './controls/jacks.ts'
 
 import type { Controls } from '../controls.ts'
 
@@ -29,7 +29,7 @@ export const bypassed = (c: Controls, stage: string) =>
 
 /** The machine the bend is patched onto, or undefined on the master run. */
 export const patchedOn = (c: Controls, stage: string) =>
-  patchedInto(c[bendNamed(stage).into])
+  patchedLabel(c[bendNamed(stage).into])
 
 export const sounds = (c: Controls, stage: string) =>
   bendRuns(c, stage) && c[bendNamed(stage).mix] > 0 && !bypassed(c, stage)
@@ -41,7 +41,7 @@ const silent = (c: Controls, slot: number) => {
 
 export const passesMaster = (c: Controls, slot: number) => {
   const bend = bendAt(c[BEND_SLOT_KEYS[slot]!])
-  return !bend || patchedInto(c[bend.into]) !== undefined
+  return !bend || patchedInto(c[bend.into]).length > 0
 }
 
 const freeSlot = (c: Controls) => {

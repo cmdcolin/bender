@@ -27,7 +27,7 @@ import {
   sliderFor,
   touchedCount,
 } from './controls/index.ts'
-import { intoOf, patchedInto, UNITS } from './controls/jacks.ts'
+import { intoOf, patchedInto, patchedLabel, UNITS } from './controls/jacks.ts'
 import { MIC_JACKS, wireLabel, wireOn, wiredJacks } from './micWiring.ts'
 import { el, textWidth, type El } from './svg.ts'
 
@@ -372,8 +372,9 @@ export function onBoard(c: Controls): Set<string> {
   }
   for (const t of triggerBridges(c)) on.add(t.from).add(t.to)
   for (const u of UNITS) {
-    const machine = patchedInto(c[u.into])
-    if (machine) on.add(u.group).add(machine)
+    const machines = patchedInto(c[u.into])
+    if (machines.length > 0) on.add(u.group)
+    for (const machine of machines) on.add(machine)
   }
   // A chip on the key line plays the toy keyboard's notes, so the keyboard is
   // its player even with its own fader down.
@@ -862,7 +863,7 @@ function pickParts(c: Controls, o: Options) {
   const slotted = bendOrder(c)
   const machineOf = (unit: string) => {
     const into = intoOf(unit)
-    return into ? patchedInto(c[into]) : undefined
+    return into ? patchedLabel(c[into]) : undefined
   }
   const bends = slotted.filter(n => has(n) && !machineOf(n))
   const loose = BENDS.filter(
@@ -906,12 +907,13 @@ function pickParts(c: Controls, o: Options) {
   }
   const inserts = [...new Set(runOrder.flatMap(n => machineOf(n) ?? []))].map(
     machine => {
-      doors.add(machine)
+      const first = machine.split(' + ')[0]!
+      doors.add(first)
       const units = runOrder.filter(n => machineOf(n) === machine)
       return {
-        machine,
+        machine: first,
         head: mapNode(`into_${nodeId(machine)}`, 'label', machine, {
-          door: machine,
+          door: first,
           active: units.some(unitWet),
           w: textWidth(machine, SMALL),
           h: LABEL_H,

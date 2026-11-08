@@ -1045,3 +1045,22 @@ test('a unit patched into a machine leaves the path and hangs under it', () => {
   }
   expect(onBoard(board)).toContain('Clatter')
 })
+
+test('a unit on several machines hangs under a head that names them all', () => {
+  const board = {
+    ...DEFAULT_CONTROLS,
+    drumLevel: 0.8,
+    echoLevel: 0.6,
+    echoLines: lineFor('toyDrum', 'toyChip'),
+  }
+  for (const wrap of [true, false]) {
+    const map = buildMap(board, { wrap, loop: wrap })
+    checkLayout(map)
+    const head = box(map, 'into_Plinky_Clatter')
+    expect(head?.label).toBe('Plinky + Clatter')
+    expect(head?.door).toBe('Plinky')
+    expect(hop(map, 'into_Plinky_Clatter', 'Ricochet')).toBeDefined()
+  }
+  expect(onBoard(board)).toContain('Clatter')
+  expect(onBoard(board)).toContain('Plinky')
+})

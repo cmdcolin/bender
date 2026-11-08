@@ -1,7 +1,7 @@
 import { isPedal, PEDALS, pedalOrderAt, pedalOrderOf } from '../pedals.ts'
-import { BEND_SLOT_KEYS, BENDS, bendAt } from './controls/index.ts'
-import { intoOf, JACK_NAMES, MASTER, patchedInto } from './controls/jacks.ts'
+import { BEND_SLOT_KEYS, BENDS } from './controls/index.ts'
 import { move } from './reorder.ts'
+import { bundlesOf, masterRun } from './routes.ts'
 
 import type { Controls } from '../controls.ts'
 
@@ -14,41 +14,14 @@ export interface Run {
   chain: string[]
 }
 
-function rackOrder(c: Controls) {
-  const slotted: string[] = [
-    ...new Set(
-      BEND_SLOT_KEYS.flatMap(k => {
-        const bend = bendAt(c[k])
-        return bend ? [bend.group] : []
-      }),
-    ),
-  ]
-  return {
-    slotted,
-    order: [
-      ...slotted,
-      ...BENDS.map(b => b.group).filter(g => !slotted.includes(g)),
-      ...pedalOrderAt(c.pedalOrder).map(i => PEDALS[i]!.group),
-    ],
-  }
-}
-
-const lineOf = (c: Controls, stage: string) => {
-  const into = intoOf(stage)
-  return into ? patchedInto(c[into]) : undefined
-}
-
-export function effectRuns(c: Controls): Run[] {
-  const { slotted, order } = rackOrder(c)
-  const master = order.filter(
-    s => lineOf(c, s) === undefined && (isPedal(s) || slotted.includes(s)),
-  )
-  const lines = JACK_NAMES.filter(name => name !== MASTER).flatMap(line => {
-    const chain = order.filter(s => lineOf(c, s) === line)
-    return chain.length > 0 ? [{ from: line, to: FROM_BUS, chain }] : []
-  })
-  return [{ from: FROM_BUS, to: TO_OUTPUT, chain: master }, ...lines]
-}
+export const effectRuns = (c: Controls): Run[] => [
+  { from: FROM_BUS, to: TO_OUTPUT, chain: masterRun(c) },
+  ...bundlesOf(c).map(b => ({
+    from: b.names.join(' + '),
+    to: FROM_BUS,
+    chain: b.units,
+  })),
+]
 
 export const runText = (runs: readonly Run[]) =>
   runs.map(r => [r.from, r.to, ...r.chain].join('|')).join('\n')

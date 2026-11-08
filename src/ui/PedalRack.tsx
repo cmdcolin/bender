@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { engine } from '../engine/engine.ts'
 import { PEDALS, pedalOrderAt, pedalOrderOf } from '../pedals.ts'
 import { pedalWet } from './chain-map.ts'
-import { patchedInto } from './controls/jacks.ts'
+import { patchedLabel } from './controls/jacks.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { RackNudge } from './RackNudge.tsx'
 import { move } from './reorder.ts'
@@ -26,7 +26,7 @@ const stateOf = (c: Controls, pedal: number) => {
 }
 
 const machineOf = (c: Controls, pedal: number) =>
-  patchedInto(c[PEDALS[pedal]!.into]) ?? ''
+  patchedLabel(c[PEDALS[pedal]!.into]) ?? ''
 
 const TITLE_TAIL: Record<string, string> = {
   bypassed:
