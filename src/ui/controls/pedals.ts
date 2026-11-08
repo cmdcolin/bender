@@ -97,6 +97,7 @@ export const PEDAL_GROUPS: Group[] = [
     lead: ['delayMs', 'dlySync', 'dlyFb', 'dlyMix'],
     handled: [
       'dlyHeads',
+      'dlyHeadDirt',
       'dlyToneHz',
       'dlySend',
       'wowDepthMs',

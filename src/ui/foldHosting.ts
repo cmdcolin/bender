@@ -14,9 +14,10 @@ export const STAGE_DRAWINGS: Record<string, string> = {
 }
 
 /** Folds whose drawing opens the rows itself, one box at a time. */
-export const DRAWN_ROWS = new Set(
-  Object.entries(STAGE_DRAWINGS).map(([group, part]) => `${group}|${part}`),
-)
+export const DRAWN_ROWS = new Set([
+  ...Object.entries(STAGE_DRAWINGS).map(([group, part]) => `${group}|${part}`),
+  'Clipper|the amp',
+])
 
 /** Folds a drawing has taken over, drawn as boxes in it, keyed by the stage
     and the fold or drawing that holds them. */

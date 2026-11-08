@@ -61,6 +61,13 @@ const shown = () =>
     r => r.getAttribute('data-control') as ControlKey,
   )
 
+const outsideCards = () =>
+  new Set(
+    [...document.querySelectorAll('[data-control]')]
+      .filter(r => !r.closest('section'))
+      .map(r => r.getAttribute('data-control') ?? ''),
+  )
+
 const press = (name: string, inCard: boolean) => {
   const el = boxes(document).find(
     b => label(b) === name && Boolean(b.closest('section')) === inCard,
@@ -83,6 +90,7 @@ function walk(group: Group) {
   const top = boxes(document)
     .filter(b => !b.closest('section'))
     .map(label)
+  const outside = outsideCards()
   const reached = new Set<ControlKey>()
   const empty: string[] = []
   for (const name of top) {
@@ -98,7 +106,7 @@ function walk(group: Group) {
     shut(name)
   }
   cleanup()
-  return { drawn: top.length > 0, reached, empty }
+  return { drawn: top.length > 0, reached, outside, empty }
 }
 
 const walks = new Map(GROUPS.map(g => [g.name, walk(g)]))
@@ -113,7 +121,7 @@ test('the walk finds the drawn stages', () => {
 })
 
 describe.each(drawn.map(g => [g.name, g] as const))('%s', (name, group) => {
-  const { reached, empty } = walks.get(name)!
+  const { reached, outside, empty } = walks.get(name)!
 
   test('opens only knobs of its own stage', () => {
     const own = new Set<ControlKey>([
@@ -128,6 +136,13 @@ describe.each(drawn.map(g => [g.name, g] as const))('%s', (name, group) => {
     expect(
       (group.handled ?? []).filter(k => !reached.has(k) && !inPlace(k)),
     ).toEqual([])
+  })
+
+  test('lists no knob its boxes open as a row under the drawing', () => {
+    const widget = new Set(group.handled ?? [])
+    expect([...reached].filter(k => outside.has(k) && !widget.has(k))).toEqual(
+      [],
+    )
   })
 
   test('has no box that opens an empty card', () => {
