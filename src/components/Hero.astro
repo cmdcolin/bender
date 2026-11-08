@@ -1,15 +1,9 @@
 ---
 import { appUrl, pocketUrl } from '../site/paths.ts'
 import { pile } from '../site/pile.ts'
-
-interface Props {
-  lede: string
-}
-const { lede } = Astro.props
 ---
 
 <h1 class="heroHead">Simulated circuit bending</h1>
-<p class="lede">{lede}</p>
 <figure class="pile" set:html={pile()} />
 <script>
   import { noiseTile } from '../site/grain.ts'

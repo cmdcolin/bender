@@ -1,6 +1,6 @@
 ---
 import { MARK_VIEW, markRects } from '../home/mark.ts'
-import { sceneGroups } from '../site/scenes.ts'
+import { scenes } from '../site/scenes.ts'
 ---
 
 <section id="scenes" aria-labelledby="scenesHead">
@@ -8,24 +8,19 @@ import { sceneGroups } from '../site/scenes.ts'
     Scenes
   </h2>
   <p>Each one opens the app with the board already set up.</p>
-  {sceneGroups.map(group => (
-    <>
-      <h3 class="sceneGroup">{group.head}</h3>
-      <ul class="grid scenes">
-        {group.scenes.map(scene => (
-          <li>
-            <a class="card" href={scene.href} title={scene.says}>
-              <svg class="mark" viewBox={MARK_VIEW} aria-hidden="true">
-                {markRects(scene.query).map(({ x, y, height }) => (
-                  <rect x={x} y={y} width="4" height={height} rx="1" />
-                ))}
-              </svg>
-              <span class="cardName">{scene.name}</span>
-              <span class="says">{scene.says}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </>
-  ))}
+  <ul class="grid scenes">
+    {scenes.map(scene => (
+      <li>
+        <a class="card" href={scene.href} title={scene.says}>
+          <svg class="mark" viewBox={MARK_VIEW} aria-hidden="true">
+            {markRects(scene.query).map(({ x, y, height }) => (
+              <rect x={x} y={y} width="4" height={height} rx="1" />
+            ))}
+          </svg>
+          <span class="cardName">{scene.name}</span>
+          <span class="says">{scene.says}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
 </section>

@@ -1,7 +1,5 @@
 import { DEST } from '../dsp/modbus.ts'
 import { FM_VOICE_NAMES } from '../dsp/stages/fmVoices.ts'
-import { PCM_VOICE_NAMES } from '../dsp/stages/pcmRom.ts'
-import { ENV_CAPS } from '../dsp/stages/toyChip.ts'
 import { choiceValue } from '../ui/controls/index.ts'
 import { kit, tune } from '../ui/presets/write.ts'
 
@@ -13,12 +11,8 @@ const SRC = {
   laneA: choiceValue('mod0Src', 'lane A'),
   phrase: choiceValue('mod0Src', 'phrase'),
 }
-const GROUND = choiceValue('pcmAddrFault', 'to ground')
 const SAW = choiceValue('oscShape', 'saw')
-const LEAKY = ENV_CAPS.indexOf('leaky')
 const FB_TO_OSC = choiceValue('fbDest', 'osc FM')
-const GARBAGE = choiceValue('fmColdBoot', 'garbage')
-const RACK_VERB = choiceValue('bendSlot0', 'verb')
 
 const phrase = (bars: number, shape: 'swell' | 'stairs') => ({
   modPhraseBars: choiceValue('modPhraseBars', String(bars)),
@@ -60,105 +54,6 @@ export const DEMO_SCENES: DemoScene[] = [
       outGain: 11,
       revMix: 0.25,
       revDecayS: 3,
-    },
-  },
-  {
-    name: 'two chips bend each other',
-    says: 'Glint’s output is wired onto the toy’s timing pin and the toy’s output onto Glint’s data bus, so each chip bends the other’s clock and registers, more tightly every bar, until the two lock into one sound neither would make alone',
-    board: {
-      ...CLUSTERS,
-      ...NO_PULSE,
-      drumBpm: 66,
-      chipLevel: 0.6,
-      chipEnvCap: LEAKY,
-      chipPwm: 0.4,
-      fmLevel: 0.8,
-      fmVoice: FM_VOICE_NAMES.indexOf('bell'),
-      fmToyBus: 2,
-      mod0Src: SRC.phrase,
-      mod0Dest: DEST.chipFmClock,
-      mod0Depth: 0.7,
-      ...phrase(4, 'stairs'),
-      revMix: 0.25,
-      revDecayS: 3,
-    },
-  },
-  {
-    name: 'the fm chip decays',
-    says: 'Glint boots into garbage, so channels drone at random pitches on random instruments, its registers leak a little more every bar, and a slow wave feeds its operators into one loop that breaks some notes into noise and leaves others clean',
-    board: {
-      ...CLUSTERS,
-      ...NO_PULSE,
-      drumBpm: 66,
-      chipLevel: 0,
-      fmLevel: 1,
-      fmVoice: FM_VOICE_NAMES.indexOf('strings'),
-      fmColdBoot: GARBAGE,
-      mod0Src: SRC.phrase,
-      mod0Dest: DEST.fmRot,
-      mod0Depth: 0.12,
-      ...phrase(4, 'stairs'),
-      mod1Src: SRC.lfo,
-      mod1Dest: DEST.fmRing,
-      mod1Depth: 0.3,
-      modLfoHz: 0.07,
-      outGain: 8,
-      revMix: 0.3,
-      revDecayS: 4,
-    },
-  },
-  {
-    name: 'the sampler eats the chord',
-    says: 'Parlor writes its own mix back into sample memory, so each lap plays what the last one wrote, and held chords sum themselves into noise faster every bar until the wire lets go and the memory reads clean',
-    board: {
-      ...tune(held('C5', 'B4'), held('E4', 'D4'), held('A3', 'G3')),
-      ...NO_PULSE,
-      drumBpm: 80,
-      chipLevel: 0,
-      pcmLevel: 3,
-      pcmVoice: PCM_VOICE_NAMES.indexOf('glass pad'),
-      mod0Src: SRC.phrase,
-      mod0Dest: DEST.pcmWrite,
-      mod0Depth: 0.2,
-      ...phrase(4, 'stairs'),
-      mod1Src: SRC.lfo,
-      mod1Dest: DEST.pcmSignDir,
-      mod1Depth: 0.4,
-      modLfoHz: 0.15,
-      revMix: 0.3,
-      revDecayS: 4,
-    },
-  },
-  {
-    name: 'choir on a cracked rom',
-    says: 'Parlor’s choir holds slow chords while a grounded address line climbs the sample ROM a wire a bar, and the keyboard’s processor bleeds its key scan into the voices, folding them in on themselves until they come back clean',
-    board: {
-      ...tune(
-        'E4 ~ ~ ~ ~ ~ ~ ~ D4 ~ ~ ~ ~ ~ ~ ~ C4 ~ ~ ~ ~ ~ ~ ~ B3 ~ ~ ~ ~ ~ ~ ~',
-        'A3 ~ ~ ~ ~ ~ ~ ~ G3 ~ ~ ~ ~ ~ ~ ~ F3 ~ ~ ~ ~ ~ ~ ~ E3 ~ ~ ~ ~ ~ ~ ~',
-        'C4 ~ ~ ~ ~ ~ ~ ~ B3 ~ ~ ~ ~ ~ ~ ~ A3 ~ ~ ~ ~ ~ ~ ~ G#3 ~ ~ ~ ~ ~ ~ ~',
-      ),
-      ...NO_PULSE,
-      drumBpm: 72,
-      chipLevel: 0,
-      pcmLevel: 1.4,
-      pcmVoice: PCM_VOICE_NAMES.indexOf('choir'),
-      pcmEnv: 2,
-      pcmRelease: 1.2,
-      pcmAddrFault: GROUND,
-      mod0Src: SRC.phrase,
-      mod0Dest: DEST.pcmAddrLine,
-      mod0Depth: 0.8,
-      ...phrase(4, 'stairs'),
-      mod1Src: SRC.lfo,
-      mod1Dest: DEST.pcmCpuBus,
-      mod1Depth: 0.25,
-      modLfoHz: 0.05,
-      bendSlot0: RACK_VERB,
-      rackMix: 0.3,
-      rackDecay: 0.92,
-      rackSize: 2.2,
-      rackWander: 0,
     },
   },
   {
