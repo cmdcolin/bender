@@ -5,7 +5,7 @@ import { beforeEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { bench, INSTRUMENTS, parseBench } from './bench.ts'
-import { GROUPS, sliderFor } from './controls/index.ts'
+import { BENDS, GROUPS, sliderFor } from './controls/index.ts'
 import { shownOn } from './fitted.ts'
 import { Instruments } from './Instruments.tsx'
 import { OpenGroup } from './Section.tsx'
@@ -331,20 +331,11 @@ test('every socketed pedal has a face', () => {
   fireEvent.click(screen.getByRole('button', { name: /^add pedal/ }))
   for (let item; (item = screen.queryAllByRole('menuitem')[0]);)
     fireEvent.click(item)
-  expect(bench.get().bends).toHaveLength(10)
-  for (const name of [
-    'ring mod',
-    'crusher',
-    'clipper',
-    'comb',
-    'glitch buffer',
-    'screech filter',
-    'freq shifter',
-    'octave',
-    'codec',
-    'rack verb',
-  ])
-    expect(group(name)).not.toBeNull()
+  expect(bench.get().bends.toSorted()).toEqual(
+    BENDS.map(b => b.group).toSorted(),
+  )
+  for (const { group: name } of BENDS)
+    expect(group(name.toLowerCase())).not.toBeNull()
 })
 
 test('a bend face bypasses its bend and back with the mix left where it was, opens its panel and puts itself away', () => {
