@@ -293,3 +293,17 @@ describe('a chip stuck on a non-finite count plays again after a panic', () => {
     expect(after).toBeGreaterThan(1)
   })
 })
+
+test('a panic starts every melody memory over', () => {
+  const { chain } = buildBender(SR, 3)
+  const panicked: number[] = []
+  chain.melodies.forEach((m, i) => {
+    const inner = m.panic.bind(m)
+    m.panic = () => {
+      panicked.push(i)
+      inner()
+    }
+  })
+  chain.panic()
+  expect(panicked).toEqual(chain.melodies.map((_, i) => i))
+})
