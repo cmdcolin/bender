@@ -3,7 +3,10 @@ import { useEffect, useRef } from 'react'
 import { engine } from '../engine/engine.ts'
 import { MACHINES } from '../machines.ts'
 import styles from './FaceMeter.module.css'
-import { FALL, HOT, position, SILENT } from './meterScale.ts'
+import { FALL, position, SILENT } from './meterScale.ts'
+
+const HOLD_MS = 1000
+const CLIP = 1
 
 export function FaceMeter({ stage }: { stage: string }) {
   const tap = MACHINES.findIndex(m => m.name === stage)
@@ -11,48 +14,79 @@ export function FaceMeter({ stage }: { stage: string }) {
 }
 
 function Bar({ stage, tap }: { stage: string; tap: number }) {
+  const track = useRef<HTMLSpanElement>(null)
   const fill = useRef<HTMLSpanElement>(null)
-  useEffect(() => watchLevel(tap, fill.current), [tap])
+  const tick = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    const [t, f, p] = [track.current, fill.current, tick.current]
+    return t && f && p ? watchLevel(tap, t, f, p) : undefined
+  }, [tap])
   return (
-    <span className={styles.meter} data-meter={stage} aria-hidden="true">
+    <span
+      ref={track}
+      className={styles.meter}
+      data-meter={stage}
+      aria-hidden="true"
+    >
       <span ref={fill} className={styles.fill} />
+      <span ref={tick} className={styles.peak} />
     </span>
   )
 }
 
-function watchLevel(tap: number, fill: HTMLSpanElement | null) {
+function watchLevel(
+  tap: number,
+  track: HTMLElement,
+  fill: HTMLElement,
+  tick: HTMLElement,
+) {
   let raf = 0
   let held = 0
-  let painted = ''
-  let lit = ''
+  let peak = 0
+  let peakAt = 0
+  let filled = ''
+  let ticked = ''
 
-  const draw = () => {
+  const draw = (now: number) => {
     raf = 0
+    const level = engine.meter.get().taps[tap] ?? 0
     const fell = held * FALL
-    held = Math.max(engine.meter.get().taps[tap] ?? 0, fell < SILENT ? 0 : fell)
-    const pos = position(held)
-    const height = `scaleY(${pos.toFixed(3)})`
-    const colour = pos > HOT ? 'var(--alarm)' : 'var(--accent)'
-    if (fill && painted !== height) {
-      painted = height
+    held = Math.max(level, fell < SILENT ? 0 : fell)
+    if (held >= peak) {
+      peak = held
+      peakAt = now
+    } else if (now - peakAt > HOLD_MS) {
+      const dropped = peak * FALL
+      peak = Math.max(held, dropped < SILENT ? 0 : dropped)
+    }
+    if (level >= CLIP) track.toggleAttribute('data-clipped', true)
+
+    const height = `scaleY(${position(held).toFixed(3)})`
+    if (filled !== height) {
+      filled = height
       fill.style.transform = height
     }
-    if (fill && lit !== colour) {
-      lit = colour
-      fill.style.background = colour
+    const at = `translateY(${((1 - position(peak)) * 100).toFixed(1)}%)`
+    if (ticked !== at) {
+      ticked = at
+      tick.style.transform = at
     }
-    if (held > 0) schedule()
+    if (peak > 0) schedule()
   }
 
   const schedule = () => {
     if (raf === 0) raf = requestAnimationFrame(draw)
   }
+  const clear = () => track.toggleAttribute('data-clipped', false)
+  const press = track.closest('button') ?? track
+  press.addEventListener('click', clear)
   const off = engine.meter.subscribe(() => {
     if ((engine.meter.get().taps[tap] ?? 0) > 0) schedule()
   })
   schedule()
   return () => {
     off()
+    press.removeEventListener('click', clear)
     cancelAnimationFrame(raf)
   }
 }

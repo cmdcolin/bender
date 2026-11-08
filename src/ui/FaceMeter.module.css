@@ -1,4 +1,5 @@
 .meter {
+  position: relative;
   display: inline-block;
   flex: none;
   align-self: stretch;
@@ -9,6 +10,15 @@
   overflow: hidden;
 }
 
+button > .meter {
+  margin: 3px var(--space-2xs) 3px 0;
+}
+
+.meter[data-clipped] {
+  border-color: var(--alarm);
+  box-shadow: 0 0 0 1px var(--alarm);
+}
+
 .fill {
   display: block;
   width: 100%;
@@ -16,4 +26,11 @@
   background: var(--accent);
   transform: scaleY(0);
   transform-origin: center bottom;
+}
+
+.peak {
+  position: absolute;
+  inset: 0;
+  border-top: 1px solid var(--fg);
+  transform: translateY(100%);
 }

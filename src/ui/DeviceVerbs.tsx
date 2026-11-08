@@ -101,7 +101,7 @@ function Mute({
       ? `${stage} is bypassed. Switching it back on brings the sound you left.`
       : `Takes ${stage} out of the path and leaves its knobs where they are.`
     : popover
-      ? `Opens ${stage}’s volume. Drag it to 0 to silence it, or mute it and keep the Level where it is.`
+      ? `Opens ${stage}’s volume. Drag it to 0 to silence it, or mute it and keep the Level where it is. The bar in the cap is how loud it plays, the line over it is the last second’s peak, and a red outline means it reached full scale since the last press.`
       : muted
         ? `${stage} is muted. Unmute brings it back.`
         : `Silences ${stage}.`
@@ -123,6 +123,7 @@ function Mute({
           aria-expanded={popover ? open : undefined}
           onClick={popover ? () => setOpen(o => !o) : flip}
         >
+          {popover && <FaceMeter stage={stage} />}
           {pedal ? POWER : SPEAKER(muted)}
           {heard && (
             <span className={styles.leak} role="img" aria-label="still heard" />
@@ -326,7 +327,7 @@ export function DeviceVerbs({
   const level = levelOf(stage)
   return (
     <span className={styles.verbs}>
-      <FaceMeter stage={stage} />
+      {!(mute && !noMute && level) && <FaceMeter stage={stage} />}
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !mute && <FaceLevel control={level} />}
       {!noMic && <MicCap stage={stage} />}
