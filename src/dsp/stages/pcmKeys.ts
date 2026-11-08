@@ -681,7 +681,7 @@ export class PcmKeys implements Stage {
       }
 
       if (this.mem && this.ramFor !== null) {
-        const chance = knob(writeBase, modWrite, i) ** 2
+        const chance = knob(writeBase, modWrite, i) ** 2 * this.perSample
         if (chance > 0) {
           const q =
             ((Math.round(raw * DAC_STEPS) + DAC_STEPS) & 0xff) - DAC_STEPS
