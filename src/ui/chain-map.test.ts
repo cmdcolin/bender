@@ -364,6 +364,19 @@ test('a patched trigger bridge deepens the board rather than crossing it', () =>
   expect(box(bridged, 'Glint')!.y).toBe(box(plain, 'Glint')!.y)
 })
 
+test('Plinky’s AUDIO cord runs as a grey bridge that opens the synth', () => {
+  const c = { ...DEFAULT_CONTROLS, monoLevel: 1, monoToyIn: 1, monoToyDiv: 2 }
+  const map = buildMap(c, { wrap: true, loop: true, shown: onBoard(c) })
+  checkLayout(map)
+  const cordOf = (m: ChainMap) => m.wires.find(w => w.key === 'monoToyIn')
+  const cord = cordOf(map)!
+  expect([cord.from, cord.to]).toEqual(['Plinky', 'Growler'])
+  expect(cord.color).toBe(PANEL.audio)
+  expect(cord.door).toBe('Growler')
+  expect(cord.label?.text).toBe('audio ÷4 → Growler')
+  expect(cordOf(buildMap(DEFAULT_CONTROLS))).toBeUndefined()
+})
+
 test('a source box carries how far up its fader is, on its own travel', () => {
   const level = (c: Controls, id: string) => box(buildMap(c), id)!.level
   expect(level(DEFAULT_CONTROLS, 'Plinky')).toBeCloseTo(
@@ -985,6 +998,7 @@ test('the panel palette matches the tokens it copies', () => {
     accent: PANEL.accent,
     accent2: PANEL.accent2,
     hits: PANEL.hits,
+    audio: PANEL.audio,
     mod: PANEL.mod,
     raise: PANEL.raise,
   }).toEqual({
@@ -995,6 +1009,7 @@ test('the panel palette matches the tokens it copies', () => {
     accent: token('accent'),
     accent2: token('accent2'),
     hits: token('hits'),
+    audio: token('audio'),
     mod: token('mod'),
     raise: token('surface-raised'),
   })

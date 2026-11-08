@@ -271,6 +271,11 @@
   color: var(--hits);
 }
 
+.divided {
+  composes: legend;
+  color: var(--fg);
+}
+
 /* A keyboard's CV input, under its TRIG jack. */
 .cv {
   composes: jack;

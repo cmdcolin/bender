@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { highEnergy, render, rms } from '../testRender.ts'
+import { highEnergy, lowEnergy, pitchHz, render, rms } from '../testRender.ts'
 
 import type { Controls } from '../../controls.ts'
 
@@ -56,4 +56,20 @@ test('Howler takes the pin on its own mixer', () => {
   const fed = rms(render({ ...lead, leadToyIn: 1 }, 3))
   expect(fed).toBeGreaterThan(0.03)
   expect(rms(render(lead, 3))).toBeLessThan(fed / 20)
+})
+
+const divided = (monoToyDiv: number) =>
+  render({ ...GROWLER, monoToyIn: 1, monoToyDiv }, 4)
+
+test('each flip-flop on the cord drops Plinky an octave', () => {
+  const pin = pitchHz(divided(0))
+  expect(pitchHz(divided(1))).toBeCloseTo(pin / 2, -1)
+  expect(pitchHz(divided(2))).toBeCloseTo(pin / 4, -1)
+  expect(pitchHz(divided(3))).toBeCloseTo(pin / 8, -1)
+})
+
+test('a divided cord puts most of Growler’s power under 120 Hz', () => {
+  const low = (x: Float32Array) => lowEnergy(x) / rms(x)
+  expect(low(divided(0))).toBeLessThan(0.45)
+  expect(low(divided(2))).toBeGreaterThan(0.65)
 })

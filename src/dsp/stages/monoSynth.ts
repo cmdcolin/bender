@@ -2,7 +2,7 @@ import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
 import { cardKey, type CardPrefix, type CardSuffix } from '../../monoCard.ts'
 import { MIC, micInto } from '../micJacks.ts'
-import { DEST } from '../modbus.ts'
+import { DEST, hop } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { SupplyTap, type Supplies } from '../supplies.ts'
 import {
@@ -14,6 +14,7 @@ import {
 } from '../trigbus.ts'
 import { removeAt } from '../util/list.ts'
 import { MonoVoice } from './monoVoice.ts'
+import { ToyCord, TOY_DIV_NAMES } from './toyCord.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -64,6 +65,7 @@ function cardIdx(prefix: CardPrefix) {
     noise: at('Noise'),
     loop: at('Loop'),
     toyIn: at('ToyIn'),
+    toyDiv: at('ToyDiv'),
     cutoff: at('Cutoff'),
     emph: at('Emph'),
     contour: at('Contour'),
@@ -109,6 +111,7 @@ export const GROWLER = {
     pitch: DEST.monoPitch,
     cutoff: DEST.monoCutoff,
     toyIn: DEST.monoToyIn,
+    toyDiv: DEST.monoToyDiv,
   },
   mic: MIC.growlerIn,
   line: 'seq',
@@ -126,6 +129,7 @@ export const HOWLER = {
     pitch: DEST.leadPitch,
     cutoff: DEST.leadCutoff,
     toyIn: DEST.leadToyIn,
+    toyDiv: DEST.leadToyDiv,
   },
   mic: MIC.howlerIn,
   line: 'leadSeq',
@@ -160,6 +164,7 @@ export class MonoSynth implements Stage {
   private cutLane: Float32Array | null = null
   private ext: Float32Array | null = null
   private readonly extBuf = new Float32Array(BLOCK)
+  private readonly cord: ToyCord
 
   private readonly sr: number
   private readonly power: SupplyTap
@@ -170,6 +175,7 @@ export class MonoSynth implements Stage {
     this.card = card
     this.label = card.label
     this.power = new SupplyTap(supplies)
+    this.cord = new ToyCord(sr)
     this.voice = new MonoVoice(sr)
     this.stepSamples = FALLBACK_STEP_S * sr
   }
@@ -284,9 +290,18 @@ export class MonoSynth implements Stage {
       TOY_IN_TOP,
     )
     if (toyIn > 0) {
-      const pin = ctx.trig.pin
-      const toyGain = toyIn * TOY_IN_GAIN
-      for (let i = 0; i < BLOCK; i++) this.extBuf[i] = pin[i]! * toyGain
+      const stages = hop(
+        p[k.toyDiv]!,
+        TOY_DIV_NAMES.length,
+        ctx.mod.read(dest.toyDiv),
+      )
+      this.cord.run(
+        ctx.trig.pin,
+        this.extBuf,
+        BLOCK,
+        stages,
+        toyIn * TOY_IN_GAIN,
+      )
       if (micIn)
         for (let i = 0; i < BLOCK; i++)
           this.extBuf[i]! += micIn[i]! * MIC_IN_GAIN
@@ -461,6 +476,7 @@ export class MonoSynth implements Stage {
 
   panic() {
     this.voice.panic()
+    this.cord.reset()
     this.queued.length = 0
     this.gateHeld.length = 0
     this.keysDown.length = 0

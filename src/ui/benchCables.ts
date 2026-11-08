@@ -1,7 +1,12 @@
 import { VOICE_LABELS } from '../drums.ts'
+import { TOY_DIV_NAMES } from '../dsp/stages/toyCord.ts'
 import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { KEYBEDS } from '../machines.ts'
 import {
+  AUDIO_TAKERS,
+  audioDiv,
+  audioLevel,
+  audioTaker,
   connectionInto,
   KEY_RUNS,
   MACHINE_OF,
@@ -113,20 +118,7 @@ const NAMED: Record<string, string> = {
   adsr: 'the ADSR',
 }
 
-/** A synth whose mixer takes Plinky's output pin, and the level it takes it at. */
-export const AUDIO_TAKERS = [
-  { id: 'mono', machine: 'Growler', key: 'monoToyIn' },
-  { id: 'lead', machine: 'Howler', key: 'leadToyIn' },
-] as const
-
 const AUDIO_PLUGGED = 1
-
-const audioTaker = (id: string) => AUDIO_TAKERS.find(t => t.id === id)
-
-export const audioLevel = (c: Controls, id: string) => {
-  const t = audioTaker(id)
-  return t ? c[t.key] : 0
-}
 
 function setAudio(c: Controls, id: string, level: number): Controls {
   const t = audioTaker(id)
@@ -245,11 +237,20 @@ const audio: Kind = {
   pull: (c, x) => setAudio(c, x.in, 0),
   move: (c, x, input) => {
     const from = audioTaker(x.in)
-    return from ? setAudio(setAudio(c, x.in, 0), input, c[from.key]) : c
+    const to = audioTaker(input)
+    return from && to
+      ? {
+          ...setAudio(setAudio(c, x.in, 0), input, c[from.key]),
+          [to.div]: c[from.div],
+        }
+      : c
   },
   fresh: 'plinky',
   facing: () => 'right',
-  says: (_, x) => `Plinky’s output pin runs into ${NAMED[x.in]}’s mixer`,
+  says: (c, x) => {
+    const div = audioDiv(c, x.in)
+    return `Plinky’s output pin runs into ${NAMED[x.in]}’s mixer${div > 0 ? ` through a ${TOY_DIV_NAMES[div]} flip-flop` : ''}`
+  },
 }
 
 export const KINDS: Record<Line, Kind> = { gate, trig, mod, audio }

@@ -8,11 +8,15 @@ import {
   TAPE_AT_END,
   TAPE_AT_PEDALS,
 } from '../dsp/stages/tape.ts'
+import { TOY_DIV_NAMES } from '../dsp/stages/toyCord.ts'
 import { SUPPLIED, SUPPLY as ON } from '../dsp/supplies.ts'
 import { followsGate } from '../dsp/trigbus.ts'
 import { MACHINES } from '../machines.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import {
+  AUDIO_TAKERS,
+  audioDiv,
+  audioLevel,
   cableName,
   KEY_RUNS,
   TRIGGER_CABLES,
@@ -269,6 +273,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   drumTankFold: 'Clatter',
   drumHissLatch: 'Clatter',
   drumKickBank: 'Clatter',
+  monoToyDiv: 'Growler',
+  leadToyDiv: 'Howler',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -434,6 +440,8 @@ export interface Palette {
   mod: string
   /** the kit's trigger lines, wherever a cable carries them */
   hits: string
+  /** an audio cord, Plinky's output pin into a synth */
+  audio: string
   /** fill behind the stage whose controls the panel is showing */
   open: string
   /** fill under the two toys, which sit in the rack rather than beside it */
@@ -451,6 +459,7 @@ export const PANEL: Palette = {
   accent2: '#ffb03b',
   mod: '#5ea9d8',
   hits: '#a184e8',
+  audio: '#8b929c',
   open: '#332622',
   raise: '#26262e',
 }
@@ -668,7 +677,22 @@ interface Bridge {
   from: string
   to: string
   label: string
-  signal: Signal
+  signal: Signal | 'audio'
+  door?: string
+}
+
+function audioBridges(c: Controls): Bridge[] {
+  return AUDIO_TAKERS.filter(t => audioLevel(c, t.id) > 0).map(t => {
+    const div = audioDiv(c, t.id)
+    return {
+      id: t.key,
+      from: 'Plinky',
+      to: t.machine,
+      label: `audio${div > 0 ? ` ${TOY_DIV_NAMES[div]}` : ''} → ${t.machine}`,
+      signal: 'audio',
+      door: t.machine,
+    }
+  })
 }
 
 function triggerBridges(c: Controls): Bridge[] {
@@ -1017,11 +1041,23 @@ function pickParts(c: Controls, o: Options) {
 
   // The trigger bridges are patch cables, so they are only in the way when one
   // is patched — and the board's frame is only as deep as what is inside it.
-  const trigs = triggerBridges(c).filter(t => has(t.from) && has(t.to))
+  const patchedTrigs = triggerBridges(c)
+  const trigs = [...patchedTrigs, ...audioBridges(c)].filter(
+    t => has(t.from) && has(t.to),
+  )
   doors.add('Trigger patch')
   // The key line runs from the keyboard through each chip clipped onto it.
   const keyed = drawn(kb) ? gateLine.filter(drawn) : []
-  const noTrig = hasBoard && has('Trigger patch') && trigs.length === 0
+  const noTrig =
+    hasBoard &&
+    has('Trigger patch') &&
+    !patchedTrigs.some(t => has(t.from) && has(t.to))
+  const cables = trigs.filter(t => t.signal !== 'audio').length
+  const cordsFrom = Math.max(cables, keyed.length > 0 ? 1 : 0)
+  const trigRows = trigs.map((t, i) =>
+    t.signal === 'audio' ? cordsFrom + i - cables : i,
+  )
+  const laneRows = Math.max(0, ...trigRows.map(r => r + 1))
   const laneUsed = keyed.length > 0 || trigs.length > 0 || noTrig
   const wiredInto = new Set(
     patched.map(i => WIRE_TARGET[Math.round(c[`mod${i}Dest`])]),
@@ -1093,6 +1129,8 @@ function pickParts(c: Controls, o: Options) {
     fittings,
     foot,
     trigs,
+    trigRows,
+    laneRows,
     keyed,
     laneUsed,
     topRow,
@@ -1237,7 +1275,7 @@ function measure(p: Parts) {
 
 // Every box's y, top to bottom.
 function layDown(m: Measured) {
-  const { board, chipRows, underRow, laneUsed, trigs, lower, hasBoard } = m
+  const { board, chipRows, underRow, laneUsed, laneRows, lower, hasBoard } = m
   const { lineRows, mix, loop, down, upCol, bus, busShown, foot, fittings } = m
   const { supply, rack, overUp } = m
 
@@ -1255,7 +1293,7 @@ function layDown(m: Measured) {
   const laneY = chipY + BOX_H + (underTop ? TRACK : 0)
   const trigY = laneY + TRIG_H
   const laneEnd =
-    laneY + (laneUsed ? Math.max(CHIP_H, trigs.length * TRIG_H) + 4 : 0)
+    laneY + (laneUsed ? Math.max(CHIP_H, laneRows * TRIG_H) + 4 : 0)
   const lowY = laneEnd + 4
   const lowTrackY = lowY + BOX_H + TRACK / 2
   const rail2Y = lowY + BOX_H + (underLow ? TRACK : 0) + RAIL_H / 2
@@ -1534,7 +1572,7 @@ const runOf = (n: MapNode) => KEY_RUNS.find(r => r.machine === n.label)!
 // board's frame.
 function boardWires(m: Laid) {
   const { k, wire, bar, doors, board, chips, lower, railY, rail2Y, chipY } = m
-  const { kb, keyed, laneY, trigs } = m
+  const { kb, keyed, laneY, trigs, trigRows } = m
   const { byId, trigY, noTrigChip } = m
   const { hasBoard } = m
 
@@ -1667,7 +1705,7 @@ function boardWires(m: Laid) {
   const keyW = textWidth(keyLabel.text, SMALL)
   for (const [i, t] of trigs.entries()) {
     const [from, to] = [byId.get(nodeId(t.from))!, byId.get(nodeId(t.to))!]
-    const y = trigY + i * TRIG_H
+    const y = trigY + trigRows[i]! * TRIG_H
     const x = drops[i]
     const label: NonNullable<MapWire['label']> =
       x === undefined
@@ -1683,7 +1721,7 @@ function boardWires(m: Laid) {
     const w = textWidth(label.text, SMALL)
     const left = label.anchor === 'start' ? label.x : label.x - w / 2
     if (
-      Math.abs(label.y - keyLabel.y) < LABEL_H &&
+      Math.abs(label.y - keyLabel.y) < LABEL_H / 2 &&
       left < keyLabel.x + keyW / 2 + 3 &&
       left + w > keyLabel.x - keyW / 2 - 3
     )
@@ -1704,9 +1742,14 @@ function boardWires(m: Laid) {
             [x, port(to)],
           ],
       {
-        color: t.signal === 'hits' ? k.hits : k.accent2,
+        color:
+          t.signal === 'hits'
+            ? k.hits
+            : t.signal === 'audio'
+              ? k.audio
+              : k.accent2,
         dash: '4 3',
-        door: 'Trigger patch',
+        door: t.door ?? 'Trigger patch',
         key: t.id,
         label,
       },

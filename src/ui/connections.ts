@@ -105,3 +105,22 @@ export function cableName(c: Controls, x: Connection): string {
   if (v === undefined) return wireId(x)
   return x.from === 'Clatter' ? `${v} → ${x.to}` : `${x.from} → ${v}`
 }
+
+/** A synth whose mixer takes Plinky's output pin, and the level it takes it at. */
+export const AUDIO_TAKERS = [
+  { id: 'mono', machine: 'Growler', key: 'monoToyIn', div: 'monoToyDiv' },
+  { id: 'lead', machine: 'Howler', key: 'leadToyIn', div: 'leadToyDiv' },
+] as const
+
+export const audioTaker = (id: string) => AUDIO_TAKERS.find(t => t.id === id)
+
+export const audioLevel = (c: Controls, id: string) => {
+  const t = audioTaker(id)
+  return t ? c[t.key] : 0
+}
+
+/** The flip-flop on the cord into this synth, as TOY_DIV_NAMES counts it. */
+export const audioDiv = (c: Controls, id: string) => {
+  const t = audioTaker(id)
+  return t ? Math.round(c[t.div]) : 0
+}

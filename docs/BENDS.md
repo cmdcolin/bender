@@ -935,6 +935,14 @@ bench it is the grey AUDIO cord from Plinky's AUDIO jack to Growler's.
   - Past 1 the pin overdrives the ladder.
   - Mute Plinky to hear it only through the synth.
   - Howler has the same input and its own AUDIO jack.
+- **Plinky divider:** a flip-flop chain on the cord. ÷2, ÷4 and ÷8 square up
+  Plinky's output through a trigger and divide it one, two or three octaves
+  down, through a coupling cap into the mixer, so the tune plays as a bass line.
+  The jack's legend shows the division.
+  - A note that decays under the trigger stops the count, and the cap drains the
+    cord to silence.
+  - Stacked notes cross zero out of step, so a chord or the accompaniment counts
+    into ragged subharmonics.
 
 ## The drum machine's pattern bus
 

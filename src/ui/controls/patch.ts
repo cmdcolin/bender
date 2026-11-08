@@ -246,6 +246,8 @@ export const DEST_CHOICES = [
   'kit tank fold',
   'kit hiss latch',
   'kit kick on bank',
+  'mono Plinky divider',
+  'lead Plinky divider',
 ] as const
 
 export const ENV_KEYS = [
@@ -610,6 +612,7 @@ export const PATCH_GROUPS: Group[] = [
                 'mono out to pitch',
                 'mono out to gate',
                 'mono Plinky in',
+                'mono Plinky divider',
                 'mono regulator trip',
               ],
             },
@@ -623,6 +626,7 @@ export const PATCH_GROUPS: Group[] = [
                 'lead out to pitch',
                 'lead out to gate',
                 'lead Plinky in',
+                'lead Plinky divider',
                 'lead regulator trip',
               ],
             },

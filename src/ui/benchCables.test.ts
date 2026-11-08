@@ -140,3 +140,16 @@ test('the cable list survives its string form', () => {
   const c = { ...board, fmStruck: 1, mod1Src: LFO, mod1Dest: CV_DEST.Glint }
   expect(parseCables(writeCables(cablesOn(c)))).toEqual(cablesOn(c))
 })
+
+test('an AUDIO cable carries its flip-flop to the other synth', () => {
+  const fed = { ...board, monoToyIn: 1, monoToyDiv: 2 }
+  const cable = lastInto(fed, end('audio:in:mono'))!
+  expect(KINDS.audio.says(fed, cable)).toContain('÷4')
+  const moved = dropped(
+    fed,
+    end('audio:out:plinky'),
+    cable,
+    end('audio:in:lead'),
+  )
+  expect(moved.leadToyDiv).toBe(2)
+})

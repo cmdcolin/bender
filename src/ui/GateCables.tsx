@@ -1,10 +1,10 @@
 import { useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 
+import { TOY_DIV_NAMES } from '../dsp/stages/toyCord.ts'
 import { ANY_CHOICE } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
 import {
-  audioLevel,
   cableKey,
   cablesOn,
   gateInto,
@@ -28,7 +28,7 @@ import {
   type Point,
   type Route,
 } from './cablePaths.ts'
-import { MACHINE_OF } from './connections.ts'
+import { audioDiv, audioLevel, MACHINE_OF } from './connections.ts'
 import {
   useBoardValue,
   useStoreSelect,
@@ -157,6 +157,7 @@ export function AudioIn({
   notes: Store<ReadonlySet<number>>
 }) {
   const on = useBoardValue(c => audioLevel(c, taker) > 0)
+  const div = useBoardValue(c => audioDiv(c, taker))
   const name = MACHINE_OF[taker]
   return (
     <Tip
@@ -172,7 +173,9 @@ export function AudioIn({
         className={styles.audio}
         label={`${name} audio in`}
       >
-        <span className={styles.legend}>audio</span>
+        <span className={on && div > 0 ? styles.divided : styles.legend}>
+          {on && div > 0 ? `audio ${TOY_DIV_NAMES[div]}` : 'audio'}
+        </span>
       </Jack>
     </Tip>
   )
