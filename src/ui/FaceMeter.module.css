@@ -1,0 +1,19 @@
+.meter {
+  display: inline-block;
+  flex: none;
+  align-self: stretch;
+  width: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-quiet);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: center bottom;
+}

@@ -6,6 +6,7 @@ import { isBend } from './bendChain.ts'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
+import { FaceMeter } from './FaceMeter.tsx'
 import { JackCap } from './JackCap.tsx'
 import { Menu } from './Menu.tsx'
 import { menuCheck, menuItem } from './menuItems.ts'
@@ -325,6 +326,7 @@ export function DeviceVerbs({
   const level = levelOf(stage)
   return (
     <span className={styles.verbs}>
+      <FaceMeter stage={stage} />
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !mute && <FaceLevel control={level} />}
       {!noMic && <MicCap stage={stage} />}
