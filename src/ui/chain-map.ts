@@ -495,7 +495,7 @@ type Side = 'left' | 'right'
 
 export interface MapNode {
   id: string
-  kind: 'stage' | 'inst' | 'frame' | 'label' | 'rack' | 'chip'
+  kind: 'stage' | 'inst' | 'frame' | 'label' | 'jack' | 'rack' | 'chip'
   label: string
   count: number
   /** the group this opens, where it opens one */
@@ -913,10 +913,10 @@ function pickParts(c: Controls, o: Options) {
       const units = runOrder.filter(n => machineOf(n) === machine)
       return {
         machine: first,
-        head: mapNode(`into_${nodeId(machine)}`, 'label', machine, {
+        head: mapNode(`into_${nodeId(machine)}`, 'jack', machine, {
           door: first,
           active: units.some(unitWet),
-          w: textWidth(machine, SMALL),
+          w: nameWidth(machine),
           h: LABEL_H,
         }),
         chips: units.map(name => {
@@ -1353,7 +1353,7 @@ function layAcross(d: LaidDown) {
     for (const [i, ins] of d.inserts.entries()) {
       const col = d.jackCols[i]!
       const mid = col.at + shift + col.w / 2
-      ins.head.x = mid
+      ins.head.x = mid - ins.head.w / 2
       for (const ch of ins.chips) ch.x = mid - ch.w / 2
     }
   }
@@ -1732,8 +1732,8 @@ function bandWires(m: Laid) {
   // Each machine's insert column: its name, cabled down through what is
   // patched into it, and on into the bus where the band's leads meet.
   for (const { machine, head, chips: units } of inserts) {
-    const x = head.x
-    const color = head.active ? k.accent : k.dim
+    const x = midX(head)
+    const color = head.active ? k.border : k.dim
     const stops = [head, ...units]
     for (let i = 1; i < stops.length; i++) {
       const [a, b] = [stops[i - 1]!, stops[i]!]
@@ -2703,6 +2703,25 @@ export function drawNode(
         : door([name, ...value], n.door, links, n.open, n.key),
     )
   }
+  if (n.kind === 'jack')
+    return el(
+      'g',
+      { className: 'node' },
+      door(
+        [
+          words(
+            caps(n.label),
+            midX(n),
+            baseline(n.y, n.h, FONT),
+            FONT,
+            n.active ? k.fg : k.dim,
+          ),
+        ],
+        n.door,
+        links,
+        n.open,
+      ),
+    )
   // The supply loop is the board's outline; the frame draws only its name, the
   // door onto the board's parts that have no box.
   if (n.kind === 'frame') {
