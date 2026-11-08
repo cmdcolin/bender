@@ -81,6 +81,16 @@ test('the bar rises with its own machine and falls back to empty', () => {
   expect(tickOf(container, 'Glint')?.style.transform).toBe('translateY(100%)')
 })
 
+test('the bar turns red above -3 dB, the same as the mixer', () => {
+  const { container } = render(<FaceMeter stage="Growler" />)
+  post(tapping('monoSynth', 0.3))
+  act(() => runFrames())
+  expect(fillOf(container, 'Growler')?.style.background).toBe('var(--accent)')
+  post(tapping('monoSynth', 0.8))
+  act(() => runFrames())
+  expect(fillOf(container, 'Growler')?.style.background).toBe('var(--alarm)')
+})
+
 test('the peak line holds for a second after the bar falls, then drops', () => {
   const { container } = render(<FaceMeter stage="Glint" />)
   post(tapping('fmChip', 0.5))

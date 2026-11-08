@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { engine } from '../engine/engine.ts'
 import { MACHINES } from '../machines.ts'
 import styles from './FaceMeter.module.css'
-import { FALL, position, SILENT } from './meterScale.ts'
+import { FALL, HOT, position, SILENT } from './meterScale.ts'
 
 const HOLD_MS = 1000
 const CLIP = 1
@@ -46,6 +46,7 @@ function watchLevel(
   let peakAt = 0
   let filled = ''
   let ticked = ''
+  let lit = ''
 
   const draw = (now: number) => {
     raf = 0
@@ -61,10 +62,16 @@ function watchLevel(
     }
     if (level >= CLIP) track.toggleAttribute('data-clipped', true)
 
-    const height = `scaleY(${position(held).toFixed(3)})`
+    const pos = position(held)
+    const height = `scaleY(${pos.toFixed(3)})`
     if (filled !== height) {
       filled = height
       fill.style.transform = height
+    }
+    const colour = pos > HOT ? 'var(--alarm)' : 'var(--accent)'
+    if (lit !== colour) {
+      lit = colour
+      fill.style.background = colour
     }
     const at = `translateY(${((1 - position(peak)) * 100).toFixed(1)}%)`
     if (ticked !== at) {
