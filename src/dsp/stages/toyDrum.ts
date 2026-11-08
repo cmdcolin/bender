@@ -2586,6 +2586,7 @@ export class ToyDrum implements Stage {
   }
 
   panic() {
+    this.stepClock = 0
     this.struckBits = 0
     this.gndEdge.reset()
     this.struckGain = 0

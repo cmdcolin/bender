@@ -515,6 +515,7 @@ export class Chain {
     for (const s of this.bendById) s?.panic()
     for (const s of this.pedals) s.panic()
     for (const s of this.post) s.panic()
+    for (const m of this.melodies) m.panic()
     this.supplies?.reset()
     this.fbRetL.fill(0)
     this.fbRetR.fill(0)

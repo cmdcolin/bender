@@ -254,3 +254,42 @@ describe('a non-finite sample on a shared bus is blamed on its writer', () => {
     expect([...panics]).toEqual([[label, 1]])
   })
 })
+
+const STUCK = [
+  ['toyDrum', 'noiseLp', { ...ROCK, drumLevel: 0.6 }],
+  ['toyChip', 'stepClock', { chipLevel: 0.6 }],
+  ['prattle', 'chipPhase', { talkLevel: 0.6 }],
+] as const
+
+describe('a chip stuck on a non-finite count plays again after a panic', () => {
+  test.each(STUCK)('%s %s', (stage, field, board) => {
+    const built = buildBender(SR, 3)
+    built.transport.tune = true
+    built.transport.drums = true
+    const chain = built.chain
+    const p = packParams({
+      ...DEFAULT_CONTROLS,
+      chipLevel: 0,
+      drumLevel: 0,
+      ...board,
+    })
+    const io: StereoBlock = {
+      l: new Float32Array(BLOCK),
+      r: new Float32Array(BLOCK),
+      n: BLOCK,
+    }
+    for (let b = 0; b < WARM_BLOCKS; b++) chain.process(io, p)
+    Reflect.set(built[stage], field, Number.NaN)
+    for (let b = 0; b < AFTER_BLOCKS; b++) chain.process(io, p)
+    chain.panic()
+    built.prattle.say()
+    const faults = chain.faults
+    let after = 0
+    for (let b = 0; b < WARM_BLOCKS; b++) {
+      chain.process(io, p)
+      after += energy(io)
+    }
+    expect(chain.faults).toBe(faults)
+    expect(after).toBeGreaterThan(1)
+  })
+})

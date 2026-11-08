@@ -466,6 +466,7 @@ export class Prattle implements Stage {
 
   panic() {
     this.hush()
+    this.chipPhase = 0
     this.b.fill(0)
     this.k.fill(0)
     this.fromK.fill(0)

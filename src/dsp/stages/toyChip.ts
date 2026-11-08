@@ -2215,6 +2215,13 @@ export class ToyChip implements Stage {
   }
 
   panic() {
+    this.stepClock = 0
+    this.melodyHz = A3_HZ
+    this.melodyRatio = 1
+    this.melodyLoaded = NaN
+    this.bassRatio = 1
+    this.bassLoaded = NaN
+    this.chordLoaded = undefined
     this.noiseReg.fill(1)
     this.noisePhase.fill(0)
     this.crashed = false
