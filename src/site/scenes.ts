@@ -28,19 +28,32 @@ const TAPE_SCENES = [
   },
 ]
 
-export const scenes = [
-  ...DEMO_SCENES.map(({ name, says, board }) => ({
-    name,
-    says,
-    href: boardUrl(sceneHash({ ...DEFAULT_CONTROLS, ...board })),
-  })),
-  ...TAPE_SCENES.map(({ preset, says }) => {
-    const def = PRESETS.find(p => p.name === preset)
-    if (def === undefined) throw new Error(`no preset named '${preset}'`)
-    return {
-      name: def.name,
-      says,
-      href: boardUrl(sceneHash(applyPreset(def, DEFAULT_CONTROLS), def.shelf)),
-    }
-  }),
+const scene = (name: string, says: string, query: string) => ({
+  name,
+  says,
+  query,
+  href: boardUrl(query),
+})
+
+export const sceneGroups = [
+  {
+    head: 'The chips',
+    scenes: DEMO_SCENES.map(({ name, says, board }) =>
+      scene(name, says, sceneHash({ ...DEFAULT_CONTROLS, ...board })),
+    ),
+  },
+  {
+    head: 'Old recordings on tape',
+    scenes: TAPE_SCENES.map(({ preset, says }) => {
+      const def = PRESETS.find(p => p.name === preset)
+      if (def === undefined) throw new Error(`no preset named '${preset}'`)
+      return scene(
+        def.name,
+        says,
+        sceneHash(applyPreset(def, DEFAULT_CONTROLS), def.shelf),
+      )
+    }),
+  },
 ]
+
+export const scenes = sceneGroups.flatMap(group => group.scenes)

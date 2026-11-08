@@ -1,6 +1,14 @@
 ---
 import { jams } from '../jam/jams.ts'
 import { jamUrl } from '../site/paths.ts'
+
+const waveOf = (peaks: number[]) =>
+  peaks
+    .map((v, i) => {
+      const h = Math.max(6, v)
+      return `M${i * 3} ${(100 - h) / 2}h2v${h}h-2z`
+    })
+    .join('')
 ---
 
 <section id="demos" aria-labelledby="listenHead">
@@ -21,8 +29,16 @@ import { jamUrl } from '../site/paths.ts'
         </a>
         <span class="trackText">
           <span class="cardName">{jam.title}</span>
-          <span class="bar">
-            <span class="fill" />
+          <span class="wave" aria-hidden="true">
+            {['waveBase', 'waveDone'].map(kind => (
+              <svg
+                class={kind}
+                viewBox={`0 0 ${jam.peaks.length * 3 - 1} 100`}
+                preserveAspectRatio="none"
+              >
+                <path d={waveOf(jam.peaks)} />
+              </svg>
+            ))}
           </span>
         </span>
       </li>

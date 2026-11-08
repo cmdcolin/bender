@@ -63,6 +63,7 @@ test('the landing page plays every jam of the day and links the jam page', () =>
   expect(jams.length).toBeGreaterThan(0)
   expect(landing.match(/class="track"/g)?.length).toBe(jams.length)
   expect(landing.match(/class="play"/g)?.length).toBe(jams.length)
+  expect(landing.match(/class="wave"/g)?.length).toBe(jams.length)
   for (const jam of jams) expect(landing).toContain(`href="${jam.src}"`)
   expect(landing).toContain(`href="${jamUrl}"`)
 })
@@ -161,4 +162,10 @@ test('every scene links into the app with its board', () => {
   expect(
     scenes.find(s => s.name === 'ballroom at the end of time')?.href,
   ).toContain('shelf=piano78s')
+})
+
+test('every scene card draws the mark of the board it opens', () => {
+  const cards = landing.match(/<a class="card"[\s\S]*?<\/a>/g) ?? []
+  expect(cards.length).toBe(scenes.length)
+  for (const card of cards) expect(card).toContain('class="mark"')
 })

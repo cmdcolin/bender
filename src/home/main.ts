@@ -8,7 +8,6 @@
 // that needs it, so the only loads that reach Google are the ones that already
 // know this browser signed in and the ones where somebody pressed the button.
 
-import { guideUrl, siteRoot } from '../site/paths.ts'
 import {
   fetchHome,
   signIn,
@@ -45,25 +44,11 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   for (const button of whyBtns) button.hidden = true
   acct.hidden = false
 
-  const rail = el('nav', 'rail')
-  rail.setAttribute('aria-label', 'Home')
-  const links: [string, string, boolean][] = [
-    [siteRoot, 'Home', true],
-    ['#saved', 'Saved sessions', false],
-    [guideUrl, 'User guide', false],
-  ]
-  for (const [href, label, on] of links) {
-    const link = el('a', on ? 'on' : undefined, label)
-    link.href = href
-    if (on) link.setAttribute('aria-current', 'page')
-    rail.append(link)
-  }
-
   const main = el('div', 'homeMain')
   main.append(...sections)
 
   const inner = el('div', 'homeIn')
-  inner.append(rail, main)
+  inner.append(main)
   home.textContent = ''
   home.append(inner)
   home.hidden = false

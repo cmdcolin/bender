@@ -5,11 +5,20 @@
 .landing {
   padding-block: 2.5rem 1rem;
 }
+.landing section {
+  padding-block: 1.75rem;
+}
 .heroHead {
-  margin: 0 0 1.5rem;
+  margin: 0 0 0.5rem;
   font-size: clamp(1.75rem, 5vw, 2.5rem);
   line-height: 1.15;
   letter-spacing: -0.01em;
+}
+.lede {
+  max-width: var(--measure);
+  margin: 0 0 1.5rem;
+  color: var(--fg3);
+  font-size: 1.08rem;
 }
 .pile {
   position: relative;
@@ -125,19 +134,24 @@
   flex: 1;
   min-width: 0;
 }
-.bar {
-  height: 3px;
-  margin-top: 0.25rem;
-  border-radius: 2px;
-  background: var(--border-faint);
-  overflow: hidden;
-}
-.fill {
+.wave {
+  position: relative;
   display: block;
+  height: 1.75rem;
+  cursor: pointer;
+}
+.wave svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
+}
+.waveBase {
+  fill: var(--border);
+}
+.waveDone {
+  fill: var(--accent);
+  clip-path: inset(0 calc(100% - var(--done, 0%)) 0 0);
 }
 
 /* The scene cards: a name and a blurb. */
@@ -172,6 +186,37 @@
   height: 1.5rem;
   fill: var(--fg4);
 }
+.sceneGroup {
+  margin: 1.5rem 0 0.6rem;
+  color: var(--fg3);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.grid.scenes {
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+}
+.scenes .mark {
+  width: 3rem;
+  height: 1rem;
+  margin-bottom: 0.15rem;
+}
+.scenes .card:hover .mark,
+.scenes .card:focus-visible .mark {
+  fill: var(--accent);
+}
+.scenes .says {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+@media (max-width: 40rem) {
+  .scenes .says {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+}
 .cardName {
   font-size: 0.94rem;
   font-weight: 600;
@@ -183,8 +228,17 @@
   line-height: 1.45;
 }
 
-/* The signed-in home: a narrower column than the landing page, a slim resume
-   strip, the saved boards, and the older autosaves folded under them. */
+/* The signed-in home: one column on the landing page's left edge, a slim
+   resume strip, the saved boards, and the older autosaves folded under them. */
+.home .homeIn,
+.homeWait .homeIn {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 72rem;
+  padding-inline: max(1.25rem, env(safe-area-inset-left));
+}
+.homeWait .rail {
+  display: none;
+}
 .home .homeMain,
 .homeWait .homeMain {
   max-width: 62rem;
@@ -311,6 +365,16 @@
 }
 .autosaves[open] summary {
   margin-bottom: 0.6rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .boardRow .cardActions {
+    opacity: 0;
+  }
+  .boardRow:hover .cardActions,
+  .boardRow:focus-within .cardActions,
+  .boardRow .cardActions:has(input, .cardAsk, .cardStatus:not(:empty)) {
+    opacity: 1;
+  }
 }
 @media (max-width: 40rem) {
   .boardRow .cardActions {

@@ -28,21 +28,26 @@ export function markBars(query: string): number[] {
   return bars
 }
 
+export const MARK_VIEW = `0 0 ${BARS * 6 - 2} 24`
+
+export const markRects = (query: string) =>
+  markBars(query).map((v, i) => ({ x: i * 6, y: 24 - v * 24, height: v * 24 }))
+
 const SVG = 'http://www.w3.org/2000/svg'
 
 export function markFor(query: string): SVGSVGElement {
   const svg = document.createElementNS(SVG, 'svg')
-  svg.setAttribute('viewBox', `0 0 ${BARS * 6 - 2} 24`)
+  svg.setAttribute('viewBox', MARK_VIEW)
   svg.setAttribute('class', 'mark')
   svg.setAttribute('aria-hidden', 'true')
-  markBars(query).forEach((v, i) => {
+  for (const { x, y, height } of markRects(query)) {
     const bar = document.createElementNS(SVG, 'rect')
-    bar.setAttribute('x', String(i * 6))
+    bar.setAttribute('x', String(x))
     bar.setAttribute('width', '4')
-    bar.setAttribute('y', String(24 - v * 24))
-    bar.setAttribute('height', String(v * 24))
+    bar.setAttribute('y', String(y))
+    bar.setAttribute('height', String(height))
     bar.setAttribute('rx', '1')
     svg.append(bar)
-  })
+  }
   return svg
 }
