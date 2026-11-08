@@ -796,6 +796,18 @@ test('queue aims at a named bar or a run of bars, and refuses one already begun'
   })
 })
 
+test('next and queue settle when the audio suspends', async () => {
+  await onTheClock(async () => {
+    atTick(5)
+    const next = bender.next()
+    const landed = bender.queue(() => bender.set({ dlyFb: 0.3 }))
+    engine.running.set(false)
+    await expect(next).rejects.toThrow(/^the audio stopped before the downbeat/)
+    expect((await landed).landed).toBe('on bar 0')
+    expect(engine.controls.get().dlyFb).toBe(0.3)
+  })
+})
+
 test('queue lands at once while the kit is stopped, and unqueue drops what waits', async () => {
   expect(await bender.queue(() => bender.set({ dlyFb: 0.9 }))).toMatchObject({
     landed: 'at once, as the kit is not running',

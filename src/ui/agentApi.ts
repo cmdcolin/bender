@@ -318,6 +318,7 @@ function nextDownbeat(bars: Bars = 1) {
     const done = () => {
       offMeter()
       offRun()
+      offAudio()
     }
     const offMeter = engine.meter.subscribe(() => {
       if (Math.floor(engine.meter.get().tick / run) !== from) {
@@ -329,6 +330,14 @@ function nextDownbeat(bars: Bars = 1) {
       if (!engine.drumsPlaying.get()) {
         done()
         reject(new Error('the kit stopped before the downbeat'))
+      }
+    })
+    const offAudio = engine.running.subscribe(() => {
+      if (!engine.running.get()) {
+        done()
+        reject(
+          new Error(`the audio stopped before the downbeat: ${audioState()}`),
+        )
       }
     })
   })

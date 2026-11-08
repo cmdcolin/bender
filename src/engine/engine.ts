@@ -653,6 +653,12 @@ export class Engine {
       this.checkQueue()
       this.checkCues()
     })
+    this.running.subscribe(() => {
+      if (!this.running.get()) {
+        this.checkQueue()
+        this.landCues()
+      }
+    })
   }
 
   private booted() {
@@ -1010,7 +1016,7 @@ export class Engine {
   // board replacing one still waiting keeps the drift chained to it, so a preset
   // pressed mid-drift lands and the drift carries on from there.
   private queue(slot: QueueSlot, q: Omit<Queued, 'tick'>): boolean {
-    if (!this.drumsPlaying.get()) return false
+    if (!this.drumsPlaying.get() || !this.running.get()) return false
     const tick = landingTick(
       this.counterReport(),
       this.phraseLock.get(),
@@ -1036,7 +1042,7 @@ export class Engine {
     for (const slot of QUEUE_SLOTS) {
       const q = this.queued.get(slot)
       if (!q || this.queueTimers.has(slot)) continue
-      if (!this.drumsPlaying.get()) {
+      if (!this.drumsPlaying.get() || !this.running.get()) {
         this.fireQueue(slot)
         continue
       }
