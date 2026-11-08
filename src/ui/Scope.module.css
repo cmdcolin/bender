@@ -10,7 +10,7 @@
   max-height: min(16vh, 96px);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
-  background: #0a0a0c;
+  background: var(--screen);
 }
 
 /* Last on the page under the narrow layout, and no more than a strip: a

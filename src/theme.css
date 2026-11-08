@@ -37,6 +37,7 @@
   --gap-ctl: var(--space-sm);
   --gap-ctl-sm: var(--space-xs);
   --card-radius: 6px;
+  --screen: #0a0a0c;
 }
 
 /* A fingertip covers a third of an inch, so both heights grow to 32px, and the

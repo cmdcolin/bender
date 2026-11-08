@@ -277,7 +277,7 @@
   position: absolute;
   top: 3px;
   left: 6px;
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   line-height: 1;
   color: #6f6f7c;
   pointer-events: none;

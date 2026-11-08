@@ -37,7 +37,7 @@
   display: block;
   width: 100%;
   margin-top: var(--space-xs);
-  background: #0a0a0c;
+  background: var(--screen);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
 }

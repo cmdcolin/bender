@@ -4,7 +4,7 @@
 
 .page {
   --pocket-ground: #000;
-  --pocket-glass: #0a0a0c;
+  --pocket-glass: var(--screen);
   --pocket-sheet: #111;
   --pocket-sheet-shadow: #000c;
   --pocket-ink: #fff;

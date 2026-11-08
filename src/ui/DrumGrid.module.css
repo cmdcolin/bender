@@ -316,7 +316,7 @@
 /* The letter of the key the step fires, printed on the contact the way the bend
    board prints it on its keys. */
 .bendLetter {
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   line-height: 1;
   color: var(--fg4);
   pointer-events: none;

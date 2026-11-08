@@ -35,21 +35,9 @@
 }
 
 .filter {
+  composes: fieldSm from './button.module.css';
   flex: 0 1 20rem;
   min-width: 10rem;
-  height: var(--ctl-h-sm);
-  padding: 0 var(--space-sm);
-  font: inherit;
-  font-size: var(--fs-xs);
-  color: var(--fg);
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--ctl-radius);
-}
-
-.filter:focus-visible {
-  border-color: var(--accent);
-  outline: none;
 }
 
 .presets {

@@ -24,20 +24,9 @@
 }
 
 .nameInput {
+  composes: field from './button.module.css';
   flex: 1;
   min-width: 0;
-  font: inherit;
-  font-size: var(--fs-sm);
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--bg);
-  color: var(--fg);
-  border: 1px solid var(--border);
-  border-radius: var(--ctl-radius);
-}
-
-.nameInput:focus {
-  border-color: var(--accent);
-  outline: none;
 }
 
 .save {

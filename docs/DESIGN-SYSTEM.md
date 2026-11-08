@@ -46,6 +46,8 @@ sets a control's height whatever font the system supplies.
 - `--shadow-modal` under a dialog, `--shadow-pop` under a floating card or menu
 - `--scrim` behind a modal
 - `--caps-track` spaces a dialog or card title
+- `--screen` fills a scope, meter or tape window; `--fs-2xs` sets a diagram
+  label
 
 ## Kinds
 
@@ -72,6 +74,8 @@ sets a control's height whatever font the system supplies.
   shuffle). Variants: `quietDotted` for an underlined word, `quietX` for a ×
   glyph, `quietXDanger` for a × that removes. On touch a pseudo-element
   stretches the target to `--ctl-h` without moving anything
+- **field:** a text input at the action height, on the page's black. Variants:
+  `fieldSm` at the chip height, `fieldDeck` level with a row of deck keys
 - **deck:** a fixed-size tape-deck key, glyph over legend. Variants: `deckOn`,
   `deckRed(On)`, `deckWord(On)`, `deckRow(On)`
 

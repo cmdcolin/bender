@@ -26,7 +26,7 @@
   line-height: 1.2;
   text-align: center;
   color: var(--accent);
-  background: #0a0a0c;
+  background: var(--screen);
   border: 1px solid var(--accent);
   border-radius: 4px;
 }

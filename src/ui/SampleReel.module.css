@@ -24,7 +24,7 @@
   padding: 0 var(--space-sm);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
-  background: #0a0a0c;
+  background: var(--screen);
 }
 
 .wheels {
@@ -57,7 +57,7 @@
   height: 40px;
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
-  background: #0a0a0c;
+  background: var(--screen);
   cursor: pointer;
   touch-action: none;
 }

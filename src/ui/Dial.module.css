@@ -53,7 +53,7 @@
 }
 
 .skirt {
-  fill: #0a0a0c;
+  fill: var(--screen);
   stroke: var(--border-quiet);
   stroke-width: 0.75;
 }
@@ -157,7 +157,7 @@
   align-items: flex-end;
   border: 1px solid #000;
   border-radius: 2px;
-  background: #0a0a0c;
+  background: var(--screen);
   overflow: hidden;
 }
 

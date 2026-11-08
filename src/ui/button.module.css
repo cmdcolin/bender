@@ -370,6 +370,35 @@
   border-color: var(--accent);
 }
 
+.field {
+  min-height: var(--ctl-h);
+  padding: 0 var(--space-sm);
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1.2;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+}
+
+.field:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.fieldSm {
+  composes: field;
+  min-height: var(--ctl-h-sm);
+  font-size: var(--fs-xs);
+}
+
+.fieldDeck {
+  composes: field;
+  min-height: 38px;
+  padding: 0 var(--space-md);
+}
+
 .deck {
   display: inline-flex;
   flex-direction: column;

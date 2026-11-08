@@ -1,5 +1,5 @@
 .tag {
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   text-transform: uppercase;
   letter-spacing: 0.02em;
   fill: var(--fg3);
