@@ -935,6 +935,43 @@ test('a throw pad wins over General MIDI and keeps the note off the chip', () =>
   note.mockRestore()
 })
 
+test('a key held while a throw pad is armed still lets go', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  midi.armThrow('crush')
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+  send(0x90, 62, 100)
+  send(0x80, 62, 0)
+  expect(midi.throwBindings.get().crush).toEqual({ channel: 0, note: 62 })
+  expect(engine.keysDown.get().size).toBe(0)
+  expect(engine.held.get().has('crush')).toBe(false)
+})
+
+test('a key held while the pads learn still lets go', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  midi.learnPads()
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+  midi.stopPadLearn()
+  send(0x90, 64, 100)
+  midi.armPad('drumSnare')
+  send(0x80, 64, 0)
+  expect(engine.keysDown.get().size).toBe(0)
+})
+
+test('binding a held throw pad elsewhere lets go of its throw', () => {
+  midi.armThrow('spin')
+  send(0x90, 60, 100)
+  send(0x80, 60, 0)
+  send(0x90, 60, 100)
+  expect(engine.held.get().has('spin')).toBe(true)
+  midi.armThrow('brake')
+  send(0x90, 60, 100)
+  expect(engine.held.get().has('spin')).toBe(false)
+})
+
 test('a pad holds one throw at a time', () => {
   midi.armThrow('spin')
   send(0x90, 60, 100)

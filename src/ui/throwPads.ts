@@ -73,6 +73,7 @@ export class ThrowPads {
   readonly armedEffect = createStore<EffectArm | null>(null)
 
   private targetByPad = new Map<string, Target>()
+  private lifting = new Set<string>()
 
   constructor() {
     this.reindex()
@@ -118,10 +119,12 @@ export class ThrowPads {
   /** True once a pad has dealt with the note: bound, held or let go. */
   play(channel: number, note: number, on: boolean): boolean {
     const pad = { channel, note }
+    const id = padId(pad)
+    const lifted = this.lifting.delete(id)
+    if (!on && lifted) return true
     const armed = this.armed.get()
     const armedEffect = this.armedEffect.get()
-    if (armed !== null || armedEffect !== null) {
-      if (!on) return true
+    if (on && (armed !== null || armedEffect !== null)) {
       this.release(pad)
       if (armed !== null)
         this.persistThrows({ ...this.bindings.get(), [armed]: pad })
@@ -131,9 +134,10 @@ export class ThrowPads {
           [armedEffect.control]: { ...pad, value: armedEffect.value },
         })
       this.cancel()
+      this.lifting.add(id)
       return true
     }
-    const target = this.targetByPad.get(padId(pad))
+    const target = this.targetByPad.get(id)
     if (target === undefined) return false
     if ('throw' in target) {
       const def = throwNamed(target.throw)
@@ -150,13 +154,17 @@ export class ThrowPads {
     return true
   }
 
-  // A pad takes one target, so binding it elsewhere drops what it held.
   private release(pad: PadBinding) {
     const prev = this.targetByPad.get(padId(pad))
-    if (prev === undefined) return
-    if ('throw' in prev)
-      this.persistThrows(omit(this.bindings.get(), prev.throw))
-    else this.persistEffects(omit(this.effects.get(), prev.effect))
+    if (prev !== undefined) {
+      if ('throw' in prev) {
+        engine.letGoThrow(prev.throw)
+        this.persistThrows(omit(this.bindings.get(), prev.throw))
+      } else {
+        engine.letGoThrow(effectName(prev.effect))
+        this.persistEffects(omit(this.effects.get(), prev.effect))
+      }
+    }
   }
 
   private persistThrows(next: ThrowPadMap) {

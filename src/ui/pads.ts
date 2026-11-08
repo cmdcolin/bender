@@ -105,6 +105,7 @@ export class PadKit {
   readonly armed = createStore<DrumVoiceKey | null>(null)
 
   private voiceByPad = new Map<string, number>()
+  private lifting = new Set<string>()
   private sweep: {
     keys: DrumVoiceKey[]
     index: number
@@ -179,27 +180,26 @@ export class PadKit {
       voice, bound one, or swallowed the finger coming back up — and false for a
       note that was nobody's pad, which is a key and goes to the chip. */
   play(channel: number, note: number, on: boolean, velocity: number): boolean {
+    const id = padId({ channel, note })
+    const lifted = this.lifting.delete(id)
+    if (!on && lifted) return true
     const sweep = this.sweep
-    if (sweep !== null) {
-      // Only a hit binds — the finger coming back up is the same pad — and a
-      // pad already claimed this sweep can be leaned on without eating the
-      // voice after it.
+    if (on && sweep !== null) {
       const waiting = sweep.keys[sweep.index]
-      const id = padId({ channel, note })
-      if (!on || waiting === undefined || sweep.seen.has(id)) return true
+      if (waiting === undefined || sweep.seen.has(id)) return true
       sweep.seen.add(id)
       this.bind(waiting, { channel, note })
+      this.lifting.add(id)
       sweep.index += 1
       if (sweep.index >= sweep.keys.length) this.sweep = null
       this.report()
       return true
     }
     const armed = this.armed.get()
-    if (armed !== null) {
-      if (on) {
-        this.bind(armed, { channel, note })
-        this.armed.set(null)
-      }
+    if (on && armed !== null) {
+      this.bind(armed, { channel, note })
+      this.lifting.add(id)
+      this.armed.set(null)
       return true
     }
     const voice = this.voiceFor(channel, note)
