@@ -29,6 +29,7 @@ import {
   voiceBit,
   type CellRow,
 } from '../drums.ts'
+import { wireLaw } from '../dsp/destLaw.ts'
 import { BLOCK, METER_EVERY } from '../dsp/stage.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { followsGate, gateLane, SEQ_TO_LEAD } from '../dsp/trigbus.ts'
@@ -1025,6 +1026,7 @@ function rawBenderApi() {
         step: def.step,
         choices: def.choices?.join(' | '),
         help: def.help,
+        wire: wireLaw(def.key),
       }
     },
 

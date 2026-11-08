@@ -2766,7 +2766,7 @@ back.
 ## Scripts
 
 <details>
-<summary>51 commands</summary>
+<summary>52 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2809,6 +2809,7 @@ back.
 | `pnpm test:full`     | the suite plus the sixteen files that take fifteen seconds or more of audio rendering; CI runs this                                                                                    |
 | `pnpm test:changed`  | only the test files that import something changed since main                                                                                                                           |
 | `pnpm check`         | lint, typecheck and the changed tests, for the edit loop                                                                                                                               |
+| `pnpm contract`      | renders every bay destination named a knob in src/dsp/destLaw.ts both ways, outside the suite                                                                                          |
 | `pnpm denormal`      | the DSP sweep for denormals, run on demand and outside the suite                                                                                                                       |
 | `pnpm typecheck`     | types only                                                                                                                                                                             |
 | `pnpm sync:check`    | compare the regions shared with videoskillet                                                                                                                                           |

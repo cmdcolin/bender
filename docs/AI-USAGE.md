@@ -70,7 +70,7 @@ Then ask Claude Code to open the public URL, or
 | `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text                                                                                                |
 | `bender.heard()`                       | resolves with the controls the arc or a cue holds away from the written board, and what each patch-bay wire pushes now                                                    |
 | `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                                                             |
-| `bender.describe(key)`                 | one control's range, unit, choices and help                                                                                                                               |
+| `bender.describe(key)`                 | one control's range, unit, choices and help, and what a patch-bay wire on it does                                                                                         |
 | `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                                                                                                        |
 | `bender.route(lines?)`                 | puts effects on sets of machines, as `{ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }`, and reads back each unit and machine                                        |
 | `bender.presets(search?)`              | lists presets                                                                                                                                                             |

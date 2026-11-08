@@ -149,6 +149,12 @@ test('describe lists a control’s choices and suggests keys for a typo', () => 
   expect(() => bender.describe('volume')).toThrow(/bender.find\(words\)/)
 })
 
+test('describe says what a bay wire does to a control it can reach', () => {
+  expect(bender.describe('drumWander').wire).toMatch(/knob turned by d/)
+  expect(bender.describe('drumLevel').wire).toMatch(/scales the machine/)
+  expect(bender.describe('chipTone').wire).toBeUndefined()
+})
+
 test('tune writes the melody memory and switches the chip to play it', () => {
   const out = bender.tune(['C4 E4 | G4 ~ . C5', 'C3 ~ ~ ~'])
   const c = engine.controls.get()

@@ -16,15 +16,16 @@ bugs they exposed landed in 0a369ac2..997f2d34.
 
 ## Proposals
 
-- **Destination contract.** A `DEST_LAW` table beside `DEST` in `src/dsp` (knob,
-  law add|oct|hop|vca|custom, bounds, engages) that audio never reads; describe
-  and the panel read it. A measured contract test holds it to the DSP: a sweep
-  found 43 destinations bit-exact as add, 38 differing as expected and 11
-  ignoring a wire. An `engaged(p, bay, dest)` helper replaces about seven
-  hand-written gates. Applying the laws in the bus was declined: float32 lane
-  rounding, about 35% of the laws custom, and bounds that stay in the stages.
-  The open call is whether depth units should ever be normalised, which changes
-  the sound.
+- **Destination contract, the rest.** `src/dsp/destLaw.ts` names the 56
+  destinations where a wire plays bit-exactly as the knob and the machine
+  levels, where it is gain; `pnpm contract` holds the first set to the DSP and
+  `describe()` reads both. Left: octave and selector laws with their spans and
+  bounds, and an `engaged(p, bay, dest)` helper for about seven hand-written
+  gates. The contract renders 1.5 s, which misses slow random bends such as
+  Wander. Applying the laws in the bus was declined: float32 lane rounding,
+  about 35% of the laws custom, and bounds that stay in the stages. The open
+  call is whether depth units should ever be normalised, which changes the
+  sound.
 - **Worklet ramps.** Cue with seconds, so queued glides start on the step the
   cue lands on rather than a meter period later, and the bend row on the step
   strobe. Drift-leg choice and bend envelopes stay on the main thread. Mid-ramp
