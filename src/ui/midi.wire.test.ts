@@ -712,6 +712,18 @@ test('clock sets the tempo only once it is asked to', () => {
   vi.restoreAllMocks()
 })
 
+test('a clock that comes back after a gap reads its new tempo', () => {
+  const at = (ms: number) => {
+    vi.spyOn(performance, 'now').mockReturnValue(ms)
+    send(0xf8)
+  }
+  for (let i = 0; i < 30; i++) at(i * (60000 / (140 * 24)))
+  expect(midi.bpm.get()).toBe(140)
+  for (let i = 0; i < 8; i++) at(10000 + i * (60000 / (90 * 24)))
+  expect(midi.bpm.get()).toBe(90)
+  vi.restoreAllMocks()
+})
+
 // Alternating note and rest, so a step of the memory is a burst with silence
 // after it and the step rate can be counted off the level. The kit is muted:
 // this take measures the toy. Same rig as sync.test.ts, which measures the same

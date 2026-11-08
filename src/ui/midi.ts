@@ -341,6 +341,8 @@ export function hasCaught(
       : (knobWas - onScreen) * (knobNow - onScreen) <= 0
 }
 
+const PULSE_GAP_MS = 1000
+
 // 24 pulses per quarter note, averaged over about a beat of arrivals.
 export function bpmFromPulses(pulses: number[]): number | null {
   const first = pulses[0]
@@ -1078,6 +1080,7 @@ class Midi {
 
   private onPulse() {
     const now = performance.now()
+    if (now - this.lastPulse > PULSE_GAP_MS) this.pulses = []
     this.pulses.push(now)
     if (this.pulses.length > 25) this.pulses.shift()
     this.lastPulse = now
