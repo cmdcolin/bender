@@ -234,6 +234,21 @@ test('a key lets go of the note it struck after the scale moves under it', () =>
   expect(engine.isStruck(4, 'fm')).toBe(false)
 })
 
+test('two keys snapped to one note sound it until both are let go', () => {
+  const engine = new Engine()
+  const posted = wire(engine)
+  engine.set('keyScale', SCALE_NAMES.indexOf('major'))
+  engine.set('keyRoot', 0)
+  engine.noteOn(3)
+  engine.noteOn(4)
+  engine.noteOff(4)
+  expect([...engine.keysDown.get()]).toEqual([3])
+  expect(posted.filter(m => m.kind === 'noteOff')).toHaveLength(0)
+  engine.noteOff(3)
+  expect(engine.keysDown.get().size).toBe(0)
+  expect(posted.filter(m => m.kind === 'noteOff')).toHaveLength(1)
+})
+
 test('striking a note already down is not news', () => {
   const engine = new Engine()
   engine.noteOn(3)

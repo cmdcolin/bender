@@ -2033,12 +2033,14 @@ export class Engine {
     const struck = this.struck[dest]
     const note = struck.get(semitone) ?? this.locked(semitone)
     struck.delete(semitone)
-    this.post({ kind: 'noteOff', semitone: note, dest })
-    this.hold(note, false, dest)
-    if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
-      this.writeHeld('tune', note)
-    if (this.recordsSeq(dest)) this.writeHeld('seq', note)
-    if (this.recordsLead(dest)) this.writeHeld('lead', note)
+    if (![...struck.values()].includes(note)) {
+      this.post({ kind: 'noteOff', semitone: note, dest })
+      this.hold(note, false, dest)
+      if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
+        this.writeHeld('tune', note)
+      if (this.recordsSeq(dest)) this.writeHeld('seq', note)
+      if (this.recordsLead(dest)) this.writeHeld('lead', note)
+    }
   }
 
   /** Whether a key, as pressed rather than as the scale lock snapped it, is
