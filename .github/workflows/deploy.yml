@@ -23,6 +23,13 @@ jobs:
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm test:full
+
+  denormal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
       - run: pnpm denormal
 
   # Runs alongside `check`. Uploading the Pages artifact publishes nothing;
@@ -39,7 +46,7 @@ jobs:
           path: dist
 
   deploy:
-    needs: [check, build]
+    needs: [check, denormal, build]
     permissions:
       contents: read
       pages: write
