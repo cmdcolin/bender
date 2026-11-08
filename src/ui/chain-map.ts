@@ -1001,7 +1001,9 @@ function pickParts(c: Controls, o: Options) {
   )
   const topRow = chipRows[0] ?? []
   const underRow = new Set(
-    topRow.slice(1, -1).filter(n => wiredInto.has(n.label)),
+    chipRows.flatMap(row =>
+      row.slice(1, -1).filter(n => wiredInto.has(n.label)),
+    ),
   )
 
   // Notes the drawing writes on itself: a part that is on the board with
@@ -1221,12 +1223,15 @@ function layDown(m: Measured) {
   // rather than about one box in it: what the key line is, the bridges you have
   // patched across it, and — when you have patched none — that there are none.
   const trackY = chipY + BOX_H + TRACK / 2
-  const laneY = chipY + BOX_H + (underRow.size ? TRACK : 0)
+  const underTop = [...underRow].some(n => !lower.has(n))
+  const underLow = [...underRow].some(n => lower.has(n))
+  const laneY = chipY + BOX_H + (underTop ? TRACK : 0)
   const trigY = laneY + TRIG_H
   const laneEnd =
     laneY + (laneUsed ? Math.max(CHIP_H, trigs.length * TRIG_H) + 4 : 0)
   const lowY = laneEnd + 4
-  const rail2Y = lowY + BOX_H + RAIL_H / 2
+  const lowTrackY = lowY + BOX_H + TRACK / 2
+  const rail2Y = lowY + BOX_H + (underLow ? TRACK : 0) + RAIL_H / 2
   for (const n of lower) n.y = lowY
   const boardFloor = lower.size
     ? rail2Y + RAIL_H / 2
@@ -1276,7 +1281,17 @@ function layDown(m: Measured) {
   for (const n of foot) n.y = footY
   fittings.y = captionY
 
-  return { railY, chipY, trackY, laneY, trigY, rail2Y, collectY, bodyBottom }
+  const trackUnder = (n: MapNode) => (lower.has(n) ? lowTrackY : trackY)
+  return {
+    railY,
+    chipY,
+    trackUnder,
+    laneY,
+    trigY,
+    rail2Y,
+    collectY,
+    bodyBottom,
+  }
 }
 
 // Every box's x, laid out at an origin of zero so the gutters can be measured
@@ -1396,7 +1411,10 @@ function layAcross(d: LaidDown) {
     rack,
     foot,
     has,
-  }).map(t => (underRow.has(t.target) ? { ...t, edge: rowEdge(topRow) } : t))
+  }).map(t => {
+    const row = chipRows.find(r => r.includes(t.target))
+    return row && underRow.has(t.target) ? { ...t, edge: rowEdge(row) } : t
+  })
 
   // Which edge of the drawing a label on this box hangs off. A box in the right
   // column, or in the right-hand half of the band, reaches for the right — and
@@ -1669,10 +1687,18 @@ function boardWires(m: Laid) {
   }
 }
 
-// Where the band's leads meet on their way down to the bus: the gap between
-// the first row of line machines, else under the board, else over the bus.
+// Where the band's leads meet on their way down to the bus: the gap nearest the
+// bus in the first row of line machines, else under the board, else over the
+// bus.
+const gapsOf = (row: readonly MapNode[]) =>
+  row.slice(1).map((n, i) => (row[i]!.x + row[i]!.w + n.x) / 2)
+
 const gapAt = (row: readonly MapNode[], mix: MapNode) =>
-  row.length > 1 ? (row[0]!.x + row[0]!.w + row[1]!.x) / 2 : mix.x + mix.w / 2
+  gapsOf(row).reduce(
+    (best, x) =>
+      Math.abs(x - midX(mix)) < Math.abs(best - midX(mix)) ? x : best,
+    gapsOf(row)[0] ?? midX(mix),
+  )
 
 function spineAt(m: {
   lineRows: MapNode[][]
@@ -1738,7 +1764,9 @@ function bandWires(m: Laid) {
   const boardBottom = board.y + board.h
   const inGap =
     lastRow.length < 2 ||
-    (spineX > lastRow[0]!.x + lastRow[0]!.w && spineX < lastRow[1]!.x)
+    lastRow
+      .slice(1)
+      .some((n, i) => spineX > lastRow[i]!.x + lastRow[i]!.w && spineX < n.x)
   if (hasBoard)
     bar(
       'board-out',
@@ -1964,7 +1992,7 @@ function feedbackWires(m: Laid) {
 // a label out in the gutter with a short run onto what it feeds.
 function tapWires(m: Laid): MapNode[] {
   const { k, wire, drawn, pad, bay, laneSide, fbTarget, taps, tapSide } = m
-  const { underRow, trackY } = m
+  const { underRow, trackUnder } = m
 
   // Dotted and cool, like every other line off the bay: a control line rather
   // than anything you can hear.
@@ -2000,6 +2028,7 @@ function tapWires(m: Laid): MapNode[] {
     const side = tapSide.get(tap)!
     const h = tap.value ? LABEL_H * 2 : LABEL_H
     const under = underRow.has(tap.target)
+    const trackY = trackUnder(tap.target)
     const y = clear(side, (under ? trackY : tapY(tap)) - LABEL_H / 2, h)
     const edge = side === 'left' ? tap.edge.x : tap.edge.x + tap.edge.w
     const land = side === 'left' ? tap.target.x : tap.target.x + tap.target.w

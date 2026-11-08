@@ -1064,3 +1064,52 @@ test('a unit on several machines hangs under a head that names them all', () => 
   expect(onBoard(board)).toContain('Clatter')
   expect(onBoard(board)).toContain('Plinky')
 })
+
+const BOTH_ROWS = new Set([
+  'Plinky',
+  'Glint',
+  'Clatter',
+  'Growler',
+  'Howler',
+  'Prattle',
+])
+
+test('a wire onto a middle box of the lower row hangs its label clear of the row', () => {
+  const map = buildMap(
+    {
+      ...DEFAULT_CONTROLS,
+      mod0Src: 1,
+      mod0Dest: WIRE_TARGET.indexOf('Growler'),
+      mod0Depth: 0.25,
+    },
+    { wrap: true, loop: true, shown: new Set([...BOTH_ROWS, 'Output']) },
+  )
+  const label = box(map, 'wire0')!
+  const right = label.anchor === 'end' ? label.x : label.x + label.w
+  const row = map.nodes.filter(
+    n => n.kind === 'inst' && n.y === box(map, 'Growler')!.y,
+  )
+  expect(row.map(n => n.label)).toEqual([
+    'Clatter',
+    'Growler',
+    'Howler',
+    'Prattle',
+  ])
+  for (const n of row) expect(right <= n.x || label.y >= n.y + n.h).toBe(true)
+})
+
+test.each(Object.entries({ ...BOARDS, 'both rows': DEFAULT_CONTROLS }))(
+  'the board drops onto the mix bus: %s',
+  (name, board) => {
+    const map = buildMap(board, {
+      wrap: true,
+      loop: true,
+      ...(name === 'both rows' && { shown: BOTH_ROWS }),
+    })
+    const mix = box(map, 'mix')!
+    const drop = map.wires.find(w => w.id === 'collect-mix')!
+    const x = Number(/L([\d.]+) [\d.]+$/.exec(drop.d)![1])
+    expect(x).toBeGreaterThan(mix.x)
+    expect(x).toBeLessThan(mix.x + mix.w)
+  },
+)
