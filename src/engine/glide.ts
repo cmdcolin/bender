@@ -38,6 +38,7 @@ export class Glide {
 
   private readonly from: Controls
   private readonly to: Controls
+  private readonly spans: ReadonlyMap<ControlKey, number>
 
   constructor(
     from: Controls,
@@ -45,9 +46,11 @@ export class Glide {
     // Keys HOLD_KEYS would otherwise shield — set by a caller that means to
     // change one of them on purpose, such as a reset that owns outGain.
     forceKeys: ReadonlySet<ControlKey> = new Set(),
+    spans: ReadonlyMap<ControlKey, number> = new Map(),
   ) {
     this.from = from
     this.to = to
+    this.spans = spans
     readInOrder(from, CONTROL_KEYS, fromValues)
     readInOrder(to, CONTROL_KEYS, toValues)
     const moved = CONTROL_KEYS.filter(
@@ -73,16 +76,25 @@ export class Glide {
       for (const k of this.switching) next[k] = this.to[k]
       return next
     }
-    const e = ease(t)
-    for (const k of this.travel)
-      next[k] = this.from[k] + (this.to[k] - this.from[k]) * e
+    for (const k of this.travel) {
+      const tk = this.along(k, t)
+      next[k] =
+        tk >= 1
+          ? this.to[k]
+          : this.from[k] + (this.to[k] - this.from[k]) * ease(tk)
+    }
     // Modes cut at the midpoint. Nothing hides that and nothing should: half a
     // distortion circuit is not a sound, so there is no honest in-between to
     // play. The midpoint is where the cut is least conspicuous, with everything
     // around it at full tilt.
     for (const k of this.switching)
-      next[k] = e < 0.5 ? this.from[k] : this.to[k]
+      next[k] = ease(this.along(k, t)) < 0.5 ? this.from[k] : this.to[k]
     return next
+  }
+
+  private along(k: ControlKey, t: number) {
+    const span = this.spans.get(k)
+    return span === undefined || span <= 0 ? t : Math.min(t / span, 1)
   }
 
   /** Stop moving `keys`, leaving them to whatever the base holds. */

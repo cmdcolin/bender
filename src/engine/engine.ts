@@ -1014,11 +1014,16 @@ export class Engine {
   }
 
   /** A whole-board change that sets off at once, phrase lock or not. */
-  morphNow(target: Controls, seconds = 1, forceKeys?: ReadonlySet<ControlKey>) {
+  morphNow(
+    target: Controls,
+    seconds = 1,
+    forceKeys?: ReadonlySet<ControlKey>,
+    spans?: ReadonlyMap<ControlKey, number>,
+  ) {
     this.stopHunt()
     this.callOffBoard()
     this.bank()
-    this.travel(target, seconds, forceKeys)
+    this.travel(target, seconds, forceKeys, spans)
   }
 
   private counterReport(): CounterReport {
@@ -1461,9 +1466,10 @@ export class Engine {
     target: Controls,
     seconds: number,
     forceKeys?: ReadonlySet<ControlKey>,
+    spans?: ReadonlyMap<ControlKey, number>,
   ) {
     this.cancelMorph()
-    const glide = new Glide(this.controls.get(), target, forceKeys)
+    const glide = new Glide(this.controls.get(), target, forceKeys, spans)
     const land = () => {
       this.cancelMorph()
       this.controls.set(glide.at(this.controls.get(), 1))

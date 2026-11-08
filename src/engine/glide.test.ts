@@ -18,6 +18,21 @@ test('eases numbers and lands exactly on the destination', () => {
   expect(glide.at(from, 1).dlyFb).toBe(1)
 })
 
+test('a key given a shorter span arrives early and stays', () => {
+  const from = board({ dlyFb: 0, chipStarve: 0 })
+  const glide = new Glide(
+    from,
+    board({ dlyFb: 1, chipStarve: 1 }),
+    new Set(),
+    new Map([['chipStarve', 0.25]]),
+  )
+  const quarter = glide.at(from, 0.25)
+  expect(quarter.chipStarve).toBe(1)
+  expect(quarter.dlyFb).toBeLessThan(0.25)
+  expect(glide.at(from, 0.125).chipStarve).toBeCloseTo(0.5, 6)
+  expect(glide.at(from, 0.5).dlyFb).toBeCloseTo(0.5, 6)
+})
+
 test('leaves and arrives at rest', () => {
   const from = board({ dlyFb: 0 })
   const glide = new Glide(from, board({ dlyFb: 1 }))

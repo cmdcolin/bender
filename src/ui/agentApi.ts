@@ -332,7 +332,7 @@ function numberFor(key: ControlKey, asked: Value): number {
 interface Queued {
   cut: Partial<Controls>
   glide: Partial<Controls>
-  seconds: number
+  seconds: Map<ControlKey, number>
   force: Set<ControlKey>
   hits: (() => void)[]
 }
@@ -343,19 +343,21 @@ function land(
   patch: Partial<Controls>,
   seconds: number,
   force?: ReadonlySet<ControlKey>,
+  spans?: ReadonlyMap<ControlKey, number>,
 ) {
   const glide = Number.isFinite(seconds) ? Math.max(seconds, 0) : 0
   const board = engine.controls.get()
   if (queueing && glide > 0) {
     Object.assign(queueing.glide, patch)
-    queueing.seconds = Math.max(queueing.seconds, glide)
+    for (const key of CONTROL_KEYS)
+      if (patch[key] !== undefined) queueing.seconds.set(key, glide)
     for (const key of force ?? []) queueing.force.add(key)
   } else if (queueing) {
     Object.assign(queueing.cut, patch)
   } else if (
     CONTROL_KEYS.some(k => patch[k] !== undefined && patch[k] !== board[k])
   ) {
-    engine.morphNow({ ...board, ...patch }, glide, force)
+    engine.morphNow({ ...board, ...patch }, glide, force, spans)
     engine.flush()
   }
 }
@@ -462,7 +464,7 @@ function queue(write: () => unknown, when: Bars | { bar: number } = 1) {
   const taken: Queued = {
     cut: {},
     glide: {},
-    seconds: 0,
+    seconds: new Map(),
     force: new Set(),
     hits: [],
   }
@@ -478,7 +480,11 @@ function queue(write: () => unknown, when: Bars | { bar: number } = 1) {
   const now = !counting()
   return engine.cue(taken.cut, at, every).then(tick => {
     if (tick !== null) {
-      land(taken.glide, taken.seconds, taken.force)
+      const longest = Math.max(0, ...taken.seconds.values())
+      const spans = new Map(
+        [...taken.seconds].map(([key, s]) => [key, s / longest] as const),
+      )
+      land(taken.glide, longest, taken.force, spans)
       for (const fire of taken.hits) fire()
     }
     return {
