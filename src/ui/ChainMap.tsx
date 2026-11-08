@@ -204,6 +204,7 @@ export function StageBar({
   children?: ReactNode
 }) {
   const listed = useStoreValue(listView)
+  const removing = on.filter(g => removable(g.name))
   return (
     <div className={styles.addRow}>
       <ToggleButtonGroup
@@ -214,23 +215,27 @@ export function StageBar({
         onChange={view => setListView(view === 'every stage')}
       />
       {children}
-      <StageMenu
-        groups={off}
-        button="+ add a stage"
-        label="add a stage"
-        former
-        onPick={onOpen}
-      />
-      <StageMenu
-        groups={on.filter(g => removable(g.name))}
-        button="− take off"
-        label="take off a stage"
-        onPick={name => {
-          const group = GROUP_BY_NAME.get(name)!
-          engine.morphTo(takeOff(group, engine.controls.get()), seconds)
-          if (open === name) onOpen(name)
-        }}
-      />
+      {off.length > 0 && (
+        <StageMenu
+          groups={off}
+          button="+ add a stage"
+          label="add a stage"
+          former
+          onPick={onOpen}
+        />
+      )}
+      {removing.length > 0 && (
+        <StageMenu
+          groups={removing}
+          button="− take off"
+          label="take off a stage"
+          onPick={name => {
+            const group = GROUP_BY_NAME.get(name)!
+            engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+            if (open === name) onOpen(name)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -250,7 +255,6 @@ function StageMenu({
 }) {
   const [menu, setMenu] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
-  if (groups.length === 0) return null
   return (
     <>
       <button

@@ -4,6 +4,8 @@ import { expect, test, vi } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
+import { StageBar } from './ChainMap.tsx'
+import { GROUPS } from './controls/index.ts'
 import './testDom.ts'
 
 // The map is the panel's only index, so every door on it has to be reachable
@@ -213,4 +215,16 @@ test('take off turns the stage down and takes it off the map', async () => {
   await act(() => new Promise(r => setTimeout(r, 150)))
   expect(engine.controls.get().ringMix).toBe(0)
   expect(doorsOnMap().has('Ring mod')).toBe(false)
+})
+
+test('the take-off menu starts shut when its list comes back after emptying', () => {
+  const on = GROUPS.filter(g => g.name === 'Wraith' || g.name === 'Ring mod')
+  const props = { off: [], open: null, onOpen: () => {}, seconds: 0 }
+  const { rerender } = render(<StageBar on={on} {...props} />)
+  fireEvent.click(screen.getByRole('button', { name: '− take off' }))
+  expect(screen.queryByRole('menu')).not.toBeNull()
+  rerender(<StageBar on={[]} {...props} />)
+  expect(screen.queryByRole('button', { name: '− take off' })).toBeNull()
+  rerender(<StageBar on={on} {...props} />)
+  expect(screen.queryByRole('menu')).toBeNull()
 })
