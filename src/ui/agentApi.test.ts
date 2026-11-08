@@ -6,6 +6,7 @@ import { YOURS } from '../dsp/stages/roms.ts'
 import { N_BANDS } from '../dsp/util/bandMeter.ts'
 import { engine } from '../engine/engine.ts'
 import { BAND_ROWS, N_TAPS, SOURCE_TAPS } from '../engine/params.ts'
+import { lineFor } from '../jacks.ts'
 import { HOLD, REST, TUNE_LANE_KEYS } from '../tune.ts'
 import { activity, ACTIVITY_LINES } from './activity.ts'
 import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi.ts'
@@ -128,11 +129,12 @@ test('help and every guide topic fit in one browser tool result', () => {
     'hit',
     'speak',
     'clock',
+    'route',
     'sound',
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, perform, line, lead, rot, hit, speak, clock, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, perform, line, lead, rot, hit, speak, clock, route, sound",
   )
 })
 
@@ -907,4 +909,95 @@ test('queue records a line above the writes it holds', async () => {
     'set dlyFb 0.40',
     'queue the writes below for the next bar of 4',
   ])
+})
+
+test('route puts effects on sets of machines and reads back each unit and machine', () => {
+  bender.reset()
+  bender.set({ echoLevel: 0.6, revMix: 0.5, crushMix: 0.4 })
+  const back = bender.route({
+    ricochet: ['Clatter', 'Plinky'],
+    Boing: ['clatter', 'plinky', 'sheet'],
+    Crusher: 'Clatter',
+  })
+  expect(engine.controls.get()).toMatchObject({
+    echoLines: lineFor('toyDrum', 'toyChip'),
+    revLines: lineFor('toyDrum', 'toyChip', 'sheet'),
+    crushLines: lineFor('toyDrum'),
+  })
+  expect(back.units.Crusher).toMatchObject({
+    lines: 'Clatter',
+    order: 1,
+    bypassed: false,
+    mix: '0.40',
+  })
+  expect(back.units.Ricochet).toMatchObject({
+    lines: 'Plinky + Clatter',
+    order: 2,
+  })
+  expect(back.units.Boing).toMatchObject({
+    lines: 'Plinky + Clatter + Sheet',
+    order: 3,
+  })
+  expect(back.units.Gnash?.lines).toBe('master')
+  expect(back.machines).toEqual({
+    Clatter: {
+      own: ['Crusher'],
+      shared: [
+        'Ricochet on Plinky + Clatter',
+        'Boing on Plinky + Clatter + Sheet',
+      ],
+    },
+    Plinky: {
+      own: [],
+      shared: [
+        'Ricochet on Plinky + Clatter',
+        'Boing on Plinky + Clatter + Sheet',
+      ],
+    },
+    Sheet: { own: [], shared: ['Boing on Plinky + Clatter + Sheet'] },
+  })
+  expect(
+    bender.route({ Boing: 'master', Ricochet: [] }).units.Boing,
+  ).toMatchObject({
+    lines: 'master',
+  })
+  expect(engine.controls.get().echoLines).toBe(0)
+})
+
+test('route throws on an unknown effect or machine, and changes nothing', () => {
+  bender.reset()
+  expect(() => bender.route({ Reverb: ['Sheet'] })).toThrow(
+    /^no effect named 'Reverb'; the effects are Ring mod, /,
+  )
+  expect(() => bender.route({ Boing: ['Sheat'] })).toThrow(
+    /^no machine matches 'sheat'; the lines are master, Mic, Plinky/,
+  )
+  expect(() => bender.route({ Boing: ['P'] })).toThrow(
+    /'p' matches Plinky and Parlor and Prattle/,
+  )
+  expect(engine.controls.get().revLines).toBe(0)
+})
+
+test('set still takes the Into keys and a plus between machines', () => {
+  bender.reset()
+  expect(bender.set({ echoInto: 'clatter' }).applied).toEqual({
+    echoLines: 'Clatter',
+  })
+  expect(bender.set({ revInto: 14 }).applied).toEqual({ revLines: 'Prattle' })
+  expect(bender.set({ ampLines: 'Clatter+Plinky' }).applied).toEqual({
+    ampLines: 'Plinky + Clatter',
+  })
+  expect(engine.controls.get().ampLines).toBe(lineFor('toyDrum', 'toyChip'))
+})
+
+test('route reports a unit heard while its return is over the floor', () => {
+  bender.reset()
+  bender.route({ Boing: ['Sheet'] })
+  const was = engine.meter.get()
+  const returns = new Float32Array(was.returns.length)
+  returns[13] = 0.2
+  engine.meter.set({ ...was, returns })
+  expect(bender.route().units.Boing!.heard).toBe(true)
+  expect(bender.route().units.Gnash!.heard).toBe(false)
+  engine.meter.set(was)
 })
