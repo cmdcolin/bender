@@ -128,6 +128,27 @@ const ROUTES: Record<string, Partial<Controls>> = {
     stompMix: 0.8,
     stompLines: lineFor('toyChip'),
   },
+  'route one unit on two machines': {
+    ...PLAYING,
+    echoLevel: 0.6,
+    echoFb: 0.5,
+    echoLines: lineFor('toyDrum', 'toyChip'),
+  },
+  'route nested sets': {
+    ...PLAYING,
+    echoLevel: 0.6,
+    echoFb: 0.5,
+    echoLines: lineFor('toyDrum', 'toyChip'),
+    revMix: 0.7,
+    revLines: lineFor('toyDrum', 'toyChip', 'sheet'),
+  },
+  'route mic and a machine': {
+    ...PLAYING,
+    micLevel: 1,
+    micPatch: 0,
+    revMix: 0.7,
+    revLines: lineOf(TAP_MIC) | lineFor('sheet'),
+  },
   'route mic': {
     ...PLAYING,
     micLevel: 1,

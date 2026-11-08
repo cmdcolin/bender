@@ -61,28 +61,26 @@ const FEEDS_LOGIC = 2
 const FEEDS_TOY = 4
 const FEEDS_FM = 8
 
-/** Seats one unit on the line its jack names, and says whether it moved and
-    wants flushing. A unit leaving its line fades out there first, and only
-    once silent moves, to fade in on the next; the board's first block seats
-    every unit where it already is. */
-function reseat(
-  at: Int8Array,
-  seat: Float32Array,
-  from: Float32Array,
-  i: number,
-  want: number,
-  seated: boolean,
-) {
-  const was = seated ? seat[i]! : 0
-  const moving = want !== at[i] && was === 0
-  if (moving) at[i] = want
-  from[i] = seated ? was : 1
-  seat[i] = want === at[i] ? 1 : 0
-  return moving && seated
+const ON_MASTER = -1
+const BUNDLED = -2
+const MAX_BUNDLES = BEND_LINE_KEYS.length + PEDALS.length
+
+const seatOf = (lines: number, was: number) =>
+  was !== 0
+    ? BUNDLED
+    : lines === 0
+      ? ON_MASTER
+      : (lines & (lines - 1)) === 0
+        ? 31 - Math.clz32(lines)
+        : BUNDLED
+
+function popcount(mask: number) {
+  const a = mask - ((mask >>> 1) & 0x55555555)
+  const b = (a & 0x33333333) + ((a >>> 2) & 0x33333333)
+  return Math.imul((b + (b >>> 4)) & 0x0f0f0f0f, 0x01010101) >>> 24
 }
 
-const lowestTap = (mask: number) =>
-  mask === 0 ? -1 : 31 - Math.clz32(mask & -mask)
+const within = (inner: number, outer: number) => (inner & ~outer) === 0
 
 const SLOT_IDX = [
   IDX.bendSlot0,
@@ -429,11 +427,30 @@ export class Chain {
       n: BLOCK,
     }),
   )
-  /** The tap each bend (by id − 1) and each pedal is cabled onto this block,
-      −1 for the master run, and one bit per tap that has anything on it. */
-  private readonly bendAt = new Int8Array(BEND_LINES_IDX.length).fill(-1)
-  private readonly pedalAt = new Int8Array(PEDAL_LINES_IDX.length).fill(-1)
+  private readonly bendAt = new Int8Array(BEND_LINES_IDX.length).fill(ON_MASTER)
+  private readonly pedalAt = new Int8Array(PEDAL_LINES_IDX.length).fill(
+    ON_MASTER,
+  )
+  private readonly unitLines = new Int32Array(MAX_BUNDLES)
+  private readonly unitWas = new Int32Array(MAX_BUNDLES)
+  private readonly unitRank = new Int16Array(MAX_BUNDLES)
   private jacked = 0
+  private inline = 0
+  private bundled = false
+  private readonly bundleTo = new Int32Array(MAX_BUNDLES)
+  private readonly bundleFrom = new Int32Array(MAX_BUNDLES)
+  private readonly bundleUnit = new Int8Array(MAX_BUNDLES)
+  private readonly bundleRank = new Int16Array(MAX_BUNDLES)
+  private readonly bundleOrder = new Uint8Array(MAX_BUNDLES)
+  private readonly bundleRetL = new Float32Array(MAX_BUNDLES * BLOCK)
+  private readonly bundleRetR = new Float32Array(MAX_BUNDLES * BLOCK)
+  private readonly bundleIo: StereoBlock = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  private readonly bundleInL = new Float32Array(BLOCK)
+  private readonly bundleInR = new Float32Array(BLOCK)
   /** Each unit's wet share on the line it is cabled onto, as this block began
       and as it ends: a unit moving lines fades out on one and in on the next. */
   private readonly bendSeatFrom = new Float32Array(BEND_LINES_IDX.length).fill(
@@ -696,7 +713,7 @@ export class Chain {
       (crushing && Math.round(p[IDX.crushRef]!) === CRUSH_REF_TOY)
     // A toy with units on it hands the kit and the FM chip its wet line, which
     // is ready only once the sources have run: they hear last block's.
-    const toyLate = toyRef && (this.jacked & (1 << TOY_TAP)) !== 0
+    const toyLate = toyRef && (this.inline & (1 << TOY_TAP)) !== 0
     if (toyRef && !toyLate) ctx.toy.fill(0, 0, n)
     const fmTap =
       p[IDX.chipFmClock]! > 0 || ctx.mod.read(DEST.chipFmClock) !== null
@@ -819,6 +836,7 @@ export class Chain {
       if (toyRef) feeds[TOY_TAP]! |= FEEDS_TOY
       if (fmTap) feeds[FM_TAP]! |= FEEDS_FM
       this.runInserts(io, p, n, cap)
+      if (this.bundled) this.runBundles(io, p, n)
     }
     if (this.bands.on) {
       for (let k = 0; k < MAX_SOURCES; k++)
@@ -889,7 +907,7 @@ export class Chain {
     if (tapeAt === TAPE_AT_PEDALS) this.runTape(io, p)
 
     for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
-      if (this.pedalAt[i]! < 0) this.runPedal(i, io, p, n)
+      if (this.pedalAt[i] === ON_MASTER) this.runPedal(i, io, p, n)
     for (const s of this.post) {
       if (s === this.tape && tapeAt !== TAPE_AT_END) continue
       if (!s.when || s.when(p, ctx)) {
@@ -945,29 +963,68 @@ export class Chain {
       )
   }
 
-  // Which machine each unit is cabled onto this block. A machine with anything
-  // on it starts the block with a clean line, so a source whose `when` said no
-  // hands its units silence and their tails still ring out.
+  private reseat(
+    at: Int8Array,
+    seat: Float32Array,
+    from: Float32Array,
+    i: number,
+    u: number,
+    want: number,
+    seated: boolean,
+  ) {
+    const was = seated ? seat[i]! : 0
+    const cur = this.unitLines[u]!
+    const crossing =
+      seated &&
+      was === 1 &&
+      cur !== 0 &&
+      want !== 0 &&
+      want !== cur &&
+      (cur & want) !== 0
+    const moving = !crossing && want !== cur && was === 0
+    const lines = crossing || moving ? want : cur
+    const leaving = crossing ? cur : 0
+    this.unitLines[u] = lines
+    this.unitWas[u] = leaving
+    at[i] = seatOf(lines, leaving)
+    from[i] = seated ? was : 1
+    seat[i] = want === lines ? 1 : 0
+    return moving && seated
+  }
+
   private routeJacks(p: Float32Array, n: number) {
     let jacked = 0
+    let lines = 0
     const { seated } = this
-    for (let i = 0; i < BEND_LINES_IDX.length; i++) {
-      const want = lowestTap(tapMaskOf(p[BEND_LINES_IDX[i]!]!))
+    const bends = BEND_LINES_IDX.length
+    for (let i = 0; i < bends; i++) {
+      const want = tapMaskOf(p[BEND_LINES_IDX[i]!]!)
       if (
-        reseat(this.bendAt, this.bendSeat, this.bendSeatFrom, i, want, seated)
+        this.reseat(
+          this.bendAt,
+          this.bendSeat,
+          this.bendSeatFrom,
+          i,
+          i,
+          want,
+          seated,
+        )
       )
         this.bendById[i + 1]?.panic()
       const t = this.bendAt[i]!
       if (t >= 0) jacked |= 1 << t
+      else if (t === BUNDLED) lines |= this.unitLines[i]! | this.unitWas[i]!
     }
     for (let i = 0; i < PEDAL_LINES_IDX.length; i++) {
-      const want = lowestTap(tapMaskOf(p[PEDAL_LINES_IDX[i]!]!))
+      const u = bends + i
+      const want = tapMaskOf(p[PEDAL_LINES_IDX[i]!]!)
       if (
-        reseat(
+        this.reseat(
           this.pedalAt,
           this.pedalSeat,
           this.pedalSeatFrom,
           i,
+          u,
           want,
           seated,
         )
@@ -975,13 +1032,16 @@ export class Chain {
         this.pedals[i]?.panic()
       const t = this.pedalAt[i]!
       if (t >= 0) jacked |= 1 << t
+      else if (t === BUNDLED) lines |= this.unitLines[u]! | this.unitWas[u]!
     }
     this.seated = true
     let ducked = 0
     for (let k = 0; k < DUCK_IDX.length; k++)
       if (this.vactrols[k]!.live(p[DUCK_IDX[k]!]!)) ducked |= 1 << k
     this.ducked = ducked
-    this.jacked = jacked | ducked
+    this.inline = jacked | ducked
+    this.bundled = lines !== 0
+    this.jacked = jacked | ducked | lines
     this.clearInserts(n)
   }
 
@@ -1025,34 +1085,42 @@ export class Chain {
   ) {
     if (this.jacked & (1 << t)) {
       const ins = this.inserts[t]!
-      const feeds = this.feeds[t]!
-      for (let i = 0; i < n; i++) {
-        io.l[i]! -= ins.l[i]!
-        io.r[i]! -= ins.r[i]!
-      }
-      if (feeds) this.carry(feeds, ins.l, n)
-      let seen = 0
-      for (let k = 0; k < SLOT_IDX.length; k++) {
-        const id = Math.round(p[SLOT_IDX[this.order[k]!]!]!)
-        if (id > 0 && !(seen & (1 << id))) {
-          seen |= 1 << id
-          if (this.bendAt[id - 1] === t) this.runBend(id, ins, p, n)
-        }
-      }
-      for (let id = 1; id <= this.bendAt.length; id++)
-        if (!(seen & (1 << id)) && this.bendAt[id - 1] === t)
-          this.runBend(id, ins, p, n)
-      for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
-        if (this.pedalAt[i] === t) this.runPedal(i, ins, p, n)
-      if (this.ducked & (1 << t)) this.duckLine(t, ins, p)
-      if (feeds) this.carry(feeds, ins.l, n)
       let peak = 0
-      for (let i = 0; i < n; i++) {
-        const l = ins.l[i]!
-        io.l[i]! += l
-        io.r[i]! += ins.r[i]!
-        const a = l < 0 ? -l : l
-        if (a > peak) peak = a
+      if (this.inline & (1 << t)) {
+        const feeds = this.feeds[t]!
+        for (let i = 0; i < n; i++) {
+          io.l[i]! -= ins.l[i]!
+          io.r[i]! -= ins.r[i]!
+        }
+        if (feeds) this.carry(feeds, ins.l, n)
+        let seen = 0
+        for (let k = 0; k < SLOT_IDX.length; k++) {
+          const id = Math.round(p[SLOT_IDX[this.order[k]!]!]!)
+          if (id > 0 && !(seen & (1 << id))) {
+            seen |= 1 << id
+            if (this.bendAt[id - 1] === t) this.runBend(id, ins, p, n)
+          }
+        }
+        for (let id = 1; id <= this.bendAt.length; id++)
+          if (!(seen & (1 << id)) && this.bendAt[id - 1] === t)
+            this.runBend(id, ins, p, n)
+        for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
+          if (this.pedalAt[i] === t) this.runPedal(i, ins, p, n)
+        if (this.ducked & (1 << t)) this.duckLine(t, ins, p)
+        if (feeds) this.carry(feeds, ins.l, n)
+        for (let i = 0; i < n; i++) {
+          const l = ins.l[i]!
+          io.l[i]! += l
+          io.r[i]! += ins.r[i]!
+          const a = l < 0 ? -l : l
+          if (a > peak) peak = a
+        }
+      } else {
+        for (let i = 0; i < n; i++) {
+          const l = ins.l[i]!
+          const a = l < 0 ? -l : l
+          if (a > peak) peak = a
+        }
       }
       if (peak > this.taps[t]!) this.taps[t] = peak
       if (t === TAP_MIC) {
@@ -1062,6 +1130,170 @@ export class Chain {
         const base = t * BLOCK
         for (let i = 0; i < n; i++)
           this.stems[base + i] = 0.5 * (ins.l[i]! + ins.r[i]!)
+      }
+    }
+  }
+
+  private rankUnits(p: Float32Array) {
+    const rank = this.unitRank
+    let r = 0
+    let seen = 0
+    for (let k = 0; k < SLOT_IDX.length; k++) {
+      const id = Math.round(p[SLOT_IDX[this.order[k]!]!]!)
+      if (id > 0 && !(seen & (1 << id))) {
+        seen |= 1 << id
+        rank[id - 1] = r++
+      }
+    }
+    for (let id = 1; id <= this.bendAt.length; id++)
+      if (!(seen & (1 << id))) rank[id - 1] = r++
+    for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
+      rank[this.bendAt.length + i] = r++
+  }
+
+  private bundleKey(b: number) {
+    return (
+      popcount(this.bundleTo[b]! | this.bundleFrom[b]!) * MAX_BUNDLES +
+      this.bundleRank[b]!
+    )
+  }
+
+  private gatherBundles() {
+    const bends = this.bendAt.length
+    let count = 0
+    for (let u = 0; u < MAX_BUNDLES; u++) {
+      const at = u < bends ? this.bendAt[u] : this.pedalAt[u - bends]
+      if (at === BUNDLED) {
+        const to = this.unitLines[u]!
+        const was = this.unitWas[u]!
+        const rank = this.unitRank[u]!
+        let b = -1
+        if (was === 0)
+          for (let k = 0; k < count && b < 0; k++)
+            if (this.bundleUnit[k] === -1 && this.bundleTo[k] === to) b = k
+        if (b >= 0) {
+          if (rank < this.bundleRank[b]!) this.bundleRank[b] = rank
+        } else {
+          this.bundleTo[count] = to
+          this.bundleFrom[count] = was === 0 ? to : was
+          this.bundleUnit[count] = was === 0 ? -1 : u
+          this.bundleRank[count] = rank
+          count++
+        }
+      }
+    }
+    const order = this.bundleOrder
+    for (let k = 0; k < count; k++) {
+      const key = this.bundleKey(k)
+      let j = k
+      while (j > 0 && this.bundleKey(order[j - 1]!) > key) {
+        order[j] = order[j - 1]!
+        j--
+      }
+      order[j] = k
+    }
+    return count
+  }
+
+  private feedBundle(
+    work: StereoBlock,
+    l: Float32Array,
+    r: Float32Array,
+    base: number,
+    inFrom: boolean,
+    inTo: boolean,
+    n: number,
+  ) {
+    if (inFrom && inTo) {
+      for (let i = 0; i < n; i++) {
+        work.l[i]! += l[base + i]!
+        work.r[i]! += r[base + i]!
+      }
+    } else if (inFrom || inTo) {
+      for (let i = 0; i < n; i++) {
+        const g = (i + 1) / n
+        const w = inTo ? g : 1 - g
+        work.l[i]! += w * l[base + i]!
+        work.r[i]! += w * r[base + i]!
+      }
+    }
+  }
+
+  private inBundle(u: number, b: number) {
+    const own = this.bundleUnit[b]!
+    return own >= 0
+      ? own === u
+      : this.unitWas[u] === 0 && this.unitLines[u] === this.bundleTo[b]
+  }
+
+  private runBundles(io: StereoBlock, p: Float32Array, n: number) {
+    this.rankUnits(p)
+    const count = this.gatherBundles()
+    const work = this.bundleIo
+    const bends = this.bendAt.length
+    work.n = n
+    for (let ob = 0; ob < count; ob++) {
+      const b = this.bundleOrder[ob]!
+      const to = this.bundleTo[b]!
+      const from = this.bundleFrom[b]!
+      const mask = to | from
+      work.l.fill(0, 0, n)
+      work.r.fill(0, 0, n)
+      for (let t = 0; t < this.inserts.length; t++)
+        if (mask & (1 << t)) {
+          const ins = this.inserts[t]!
+          this.feedBundle(
+            work,
+            ins.l,
+            ins.r,
+            0,
+            (from & (1 << t)) !== 0,
+            (to & (1 << t)) !== 0,
+            n,
+          )
+        }
+      for (let oc = 0; oc < ob; oc++) {
+        const c = this.bundleOrder[oc]!
+        const inner = this.bundleTo[c]! | this.bundleFrom[c]!
+        this.feedBundle(
+          work,
+          this.bundleRetL,
+          this.bundleRetR,
+          c * BLOCK,
+          within(inner, from),
+          within(inner, to),
+          n,
+        )
+      }
+      this.bundleInL.set(work.l)
+      this.bundleInR.set(work.r)
+      let seen = 0
+      for (let k = 0; k < SLOT_IDX.length; k++) {
+        const id = Math.round(p[SLOT_IDX[this.order[k]!]!]!)
+        if (id > 0 && !(seen & (1 << id))) {
+          seen |= 1 << id
+          if (this.bendAt[id - 1] === BUNDLED && this.inBundle(id - 1, b))
+            this.runBend(id, work, p, n)
+        }
+      }
+      for (let id = 1; id <= bends; id++)
+        if (
+          !(seen & (1 << id)) &&
+          this.bendAt[id - 1] === BUNDLED &&
+          this.inBundle(id - 1, b)
+        )
+          this.runBend(id, work, p, n)
+      for (const i of pedalOrderAt(p[IDX.pedalOrder]!))
+        if (this.pedalAt[i] === BUNDLED && this.inBundle(bends + i, b))
+          this.runPedal(i, work, p, n)
+      const base = b * BLOCK
+      for (let i = 0; i < n; i++) {
+        const l = work.l[i]! - this.bundleInL[i]!
+        const r = work.r[i]! - this.bundleInR[i]!
+        this.bundleRetL[base + i] = l
+        this.bundleRetR[base + i] = r
+        io.l[i]! += l
+        io.r[i]! += r
       }
     }
   }
@@ -1281,7 +1513,9 @@ export class Chain {
       if (id > 0) seen |= 1 << id
       const joint = this.joints[k]!
       const s =
-        first && this.bendAt[id - 1]! < 0 ? this.bendById[id] : undefined
+        first && this.bendAt[id - 1] === ON_MASTER
+          ? this.bendById[id]
+          : undefined
       // A position with nothing soldered into it has no joint to break, so its
       // joint comes back at rest. Leaving it standing would freeze it mid-break
       // instead: a socket emptied while its contact was open used to hold that

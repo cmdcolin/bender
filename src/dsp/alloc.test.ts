@@ -560,6 +560,18 @@ test('nor with units patched into machines', () => {
   expect(report(found).unexplained).toEqual([])
 })
 
+test('nor with units patched onto sets of lines that nest and overlap', () => {
+  const { found } = playing(make, {
+    ...FIRST_BENDS,
+    echoLines: lineFor('toyDrum', 'toyChip'),
+    revLines: lineFor('toyDrum', 'toyChip', 'sheet'),
+    ampLines: lineFor('toyChip', 'fmChip'),
+    crushLines: lineFor('toyDrum', 'toyChip'),
+    dlyLines: lineOf(TAP_MIC) | lineFor('pcmKeys'),
+  })
+  expect(report(found).unexplained).toEqual([])
+})
+
 // Nearly all of it is doubles boxed where TurboFan ran out of inlining budget
 // and called a helper instead, so it moves with the JIT rather than with any
 // one allocation the counter above could catch. Both boards measured 40-50 MB
