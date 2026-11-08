@@ -30,6 +30,7 @@ const KEYS = [
   'fmDacSlot',
   'fmDacSlip',
   'fmBodge',
+  'fmBodgeR',
   'fmAlloc',
   'fmColdBoot',
   'fmAdder',
@@ -44,7 +45,7 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   allocator: ['fmAlloc', 'fmStack'],
   registers: ['fmColdBoot', 'fmRot', 'fmHeat'],
   voices: ['fmAdder', 'fmRing', 'fmSkew', 'fmPitchWire'],
-  DAC: ['fmDacSlot', 'fmDacSlip', 'fmBodge'],
+  DAC: ['fmDacSlot', 'fmDacSlip', 'fmBodge', 'fmBodgeR'],
   'register rot': ['fmRot'],
   heat: ['fmHeat'],
 }

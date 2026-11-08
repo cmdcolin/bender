@@ -249,10 +249,13 @@ Bends:
     staircase.
   - Step tap, the clock pot and Crosstalk move the strobe with the tune.
   - Output on address and Output on data flip at the strobe rate.
-- **Bodge wire:** lifts the melody's or the bass's resistor off the mixing
+- **Bodge to left:** lifts the melody's or the bass's resistor off the mixing
   network and wires it to the left jack. That voice plays hard left and the rest
   stay in the middle. The lifted voice skips the output pin, so the pin's faults
   and Output hold reach only the middle.
+- **Bodge to right:** a second wire, from one voice to the right jack. Melody
+  left and bass right splits the toy across the field; both wires on one voice
+  put it in both jacks, off the mix.
 - **Hard sync:** a free oscillator, 30 Hz at the bottom of the knob and four and
   a half octaves up at the top, resets every voice's divider each cycle.
   - A note above the oscillator sounds at the oscillator's pitch with a
@@ -443,13 +446,17 @@ write touches that register again.
   - Slipping: the counter sometimes reads a channel twice and skips the next. A
     touch is a flutter, the middle a buzz pitched by the slip rate, and the top
     folds notes into images a quarter of the sample rate apart.
-- **Bodge wire:** a second latch on the converter, strobed in one slot and wired
-  to the left jack. The voice in that slot plays hard left.
+- **Bodge to left:** a second latch on the converter, strobed in one slot and
+  wired to the left jack. The voice in that slot plays hard left.
   - Notes land on whichever channel is free, so a chord spreads across the field
     as it is struck.
   - With **Slot slip** up the latch catches whichever channel the counter lands
     on, so voices jump sides.
   - **FM bodge** walks the latch through the slots.
+- **Bodge to right:** a third latch, strobed in another slot and wired to the
+  right jack. With the left bodge on a different slot two voices sit on opposite
+  sides, and a chord struck note by note lands left, right and centre. The **FM
+  bodge right** lane walks it.
 - **Allocator:** the driver's channel picker. Stuck, every note goes to one
   channel, each note cuts off the last one's tail, and a chord comes out as its
   last note.

@@ -1539,3 +1539,15 @@ test('a slipping slot counter moves what the bodge latch catches', () => {
   expect(Math.abs(slipping.side - steady.side)).toBeGreaterThan(0.005)
   expect(slipping.side).toBeGreaterThan(0.25 * steady.l)
 })
+
+test('the right bodge puts a voice hard right', () => {
+  const bodged = sides({ ...FM_ONLY, fmBodgeR: 1 })
+  expect(bodged.r).toBeGreaterThan(bodged.l)
+  expect(bodged.side).toBeGreaterThan(0.25 * bodged.r)
+})
+
+test('two bodges on two slots split the chip across both jacks', () => {
+  const left = sides({ ...FM_ONLY, fmBodge: 1 })
+  const split = sides({ ...FM_ONLY, fmBodge: 1, fmBodgeR: 2 })
+  expect(split.side).toBeGreaterThan(left.side)
+})

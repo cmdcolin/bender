@@ -39,7 +39,7 @@ export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
     'chipEnvBits',
     ...POT,
   ],
-  'output pin': ['chipScan', 'chipHold', 'chipBodge', ...POT],
+  'output pin': ['chipScan', 'chipHold', 'chipBodge', 'chipBodgeR', ...POT],
 }
 
 export const VOICE_BOXES = {

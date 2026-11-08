@@ -1127,3 +1127,16 @@ test('the bodge wire on the bass leaves the melody in the middle', () => {
   expect(lifted.side).toBeGreaterThan(0.25 * stock.l)
   expect(lifted.r).toBeGreaterThan(0.85 * stock.r)
 })
+
+test('melody on the left bodge and bass on the right split the toy', () => {
+  const stock = sides(BACKED)
+  const split = sides({ ...BACKED, chipBodge: 1, chipBodgeR: 2 })
+  expect(split.side).toBeGreaterThan(0.5 * stock.l)
+  expect(split.side).toBeGreaterThan(sides({ ...BACKED, chipBodge: 1 }).side)
+})
+
+test('both bodges on the melody put it in both jacks, off the mix', () => {
+  const both = sides({ ...BACKED, chipBodge: 1, chipBodgeR: 1 })
+  expect(both.side).toBe(0)
+  expect(both.l).toBeGreaterThan(0.5 * sides(BACKED).l)
+})

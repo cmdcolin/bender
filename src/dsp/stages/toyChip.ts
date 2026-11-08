@@ -442,6 +442,7 @@ export class ToyChip implements Stage {
   private lifted = 0
   private leadOut = 1
   private bodge = 0
+  private bodgeR = 0
   private readonly laneNotes = new Float64Array(LANE_IDX.length)
   private yours = false
   private len = 1
@@ -1196,6 +1197,7 @@ export class ToyChip implements Stage {
     this.lifted = this.yours ? Math.round(p[IDX.tuneLift]!) : 0
     this.leadOut = this.lifted & 1 ? 0 : 1
     this.bodge = hop(p[IDX.chipBodge]!, BODGES, ctx.mod.read(DEST.chipBodge))
+    this.bodgeR = hop(p[IDX.chipBodgeR]!, BODGES, ctx.mod.read(DEST.chipBodgeR))
     const clockX = p[IDX.chipClockX]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
@@ -1632,6 +1634,7 @@ export class ToyChip implements Stage {
       feed.timing = timing
       feed.scanHz = scanHz
       feed.lift = 0
+      feed.liftR = 0
       let out = 0
       if (this.pumpDead > 0) this.pumpDead--
       else if (this.crashed)
@@ -1669,7 +1672,8 @@ export class ToyChip implements Stage {
       }
       out *= level * 0.4
       const lifted = feed.lift * level * 0.4
-      rail.load = Math.abs(out) + Math.abs(lifted)
+      const liftedR = feed.liftR * level * 0.4
+      rail.load = Math.abs(out) + Math.abs(lifted) + Math.abs(liftedR)
       supplies.tick(rail, i)
       ctx.step[i] = this.stepClock
       ctx.trig.melodyHz[i] = rail.booting || rail.dead ? 0 : this.melodyHz
@@ -1688,9 +1692,13 @@ export class ToyChip implements Stage {
           this.laneNotes[lane] = 0
         }
       }
-      if (this.bodge > 0) io.l[i]! += out + lifted
-      else io.l[i]! += out
-      io.r[i]! += out
+      if (this.bodge > 0 || this.bodgeR > 0) {
+        io.l[i]! += out + lifted
+        io.r[i]! += out + liftedR
+      } else {
+        io.l[i]! += out
+        io.r[i]! += out
+      }
     }
   }
 
@@ -1713,6 +1721,7 @@ export class ToyChip implements Stage {
     keys: 0,
     out: 0,
     lift: 0,
+    liftR: 0,
   }
 
   // The voices, out of process() so that they have an inlining budget of their
@@ -1758,8 +1767,10 @@ export class ToyChip implements Stage {
           env *
           amp *
           this.leadOut
-        if (this.bodge === BODGE_MELODY) feed.lift = v
-        else if (pinned) {
+        if (this.bodge === BODGE_MELODY || this.bodgeR === BODGE_MELODY) {
+          if (this.bodge === BODGE_MELODY) feed.lift = v
+          if (this.bodgeR === BODGE_MELODY) feed.liftR = v
+        } else if (pinned) {
           val[0] = v
           live[0] = this.leadOut
         } else out += v
@@ -1792,8 +1803,10 @@ export class ToyChip implements Stage {
             env *
             rail.ampFactorAt(BASS_TRIM) *
             accomp
-          if (this.bodge === BODGE_BASS) feed.lift += v
-          else if (pinned) {
+          if (this.bodge === BODGE_BASS || this.bodgeR === BODGE_BASS) {
+            if (this.bodge === BODGE_BASS) feed.lift += v
+            if (this.bodgeR === BODGE_BASS) feed.liftR += v
+          } else if (pinned) {
             val[1] = v
             live[1] = 1
           } else keys += v
@@ -1827,6 +1840,7 @@ export class ToyChip implements Stage {
       out = (out + mixVoices(keys, mixDrive)) * this.gateState
       if (spot === 3) out += pot * 0.4
       feed.lift *= this.gateState
+      feed.liftR *= this.gateState
     }
     feed.out = out
   }

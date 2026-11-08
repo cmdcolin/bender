@@ -216,6 +216,8 @@ export const DEST_CHOICES = [
   'FM bodge',
   'toy bodge',
   'verb howl',
+  'FM bodge right',
+  'toy bodge right',
 ] as const
 
 export const ENV_KEYS = [
@@ -433,6 +435,7 @@ export const PATCH_GROUPS: Group[] = [
                 'toy FM on clock',
                 'toy hold',
                 'toy bodge',
+                'toy bodge right',
                 'toy hard sync',
                 'toy voice XOR',
                 'toy envelope bits',
@@ -496,6 +499,7 @@ export const PATCH_GROUPS: Group[] = [
                 'FM DAC slot',
                 'FM slot slip',
                 'FM bodge',
+                'FM bodge right',
                 'FM allocator',
                 'FM cold boot',
                 'FM log adder',

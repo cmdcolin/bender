@@ -46,6 +46,7 @@ const DIE = [
   'fmDacSlot',
   'fmDacSlip',
   'fmBodge',
+  'fmBodgeR',
   'fmAlloc',
   'fmColdBoot',
   'fmAdder',

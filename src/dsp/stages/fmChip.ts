@@ -577,7 +577,10 @@ export class FmChip implements Stage {
   private bootRng = mulberry32(BOOT_SEED)
   private dacSlot = -1
   private bodge = -1
+  private bodgeR = -1
+  private bodged = false
   private lift = 0
+  private liftR = 0
   private slotPos = 0.5
   // Notes struck on the chip's own keys, waiting for the block to start. A key
   // pressed between two blocks is a message on a queue rather than a wire, so
@@ -1614,6 +1617,8 @@ export class FmChip implements Stage {
     this.dacSlot =
       hop(p[IDX.fmDacSlot]!, N_CH + 1, bay.read(DEST.fmDacSlot)) - 1
     this.bodge = hop(p[IDX.fmBodge]!, N_CH + 1, bay.read(DEST.fmBodge)) - 1
+    this.bodgeR = hop(p[IDX.fmBodgeR]!, N_CH + 1, bay.read(DEST.fmBodgeR)) - 1
+    this.bodged = this.bodge >= 0 || this.bodgeR >= 0
     const baseSlip = p[IDX.fmDacSlip]!
     const alloc = hop(p[IDX.fmAlloc]!, N_CH + 2, bay.read(DEST.fmAlloc))
     this.stuckCh = alloc > N_CH ? -1 : alloc - 1
@@ -1899,6 +1904,7 @@ export class FmChip implements Stage {
 
       let sum = 0
       this.lift = 0
+      this.liftR = 0
       const pitch = rail.pitchFactor * xtal
       const skew = modSkew ? clamp01(baseSkew + modSkew[i]!) : baseSkew
       const wire =
@@ -1917,7 +1923,7 @@ export class FmChip implements Stage {
         if (c.offIn > 0 && (c.offIn -= cpu) <= 0) this.keyOff(n)
         if (kit && n >= this.kitCh) {
           const v = this.percussion(n, c, raced, wideOpen, pitch)
-          if (n === this.bodge) this.lift = v
+          if (this.bodged) sum += this.tap(n, v)
           else sum += v
           if (slotted) this.slotOut[n] = v
           continue
@@ -1986,7 +1992,7 @@ export class FmChip implements Stage {
           ? this.logMul(cs, carEnv * this.volume(n))
           : cs * carEnv * this.volume(n)
         if (ringIn > 0) this.ringLatch = cs * carEnv
-        if (n === this.bodge) this.lift = v
+        if (this.bodged) sum += this.tap(n, v)
         else sum += v
         if (slotted) this.slotOut[n] = v
       }
@@ -2004,18 +2010,17 @@ export class FmChip implements Stage {
       }
       const out = this.tripped ? 0 : this.held * railAmp * level * 0.3
       load += Math.abs(out)
-      if (this.bodge >= 0) {
-        const lifted = this.tripped
-          ? 0
-          : (softclip(this.lift * drive) / drive) *
-            makeup *
-            railAmp *
-            level *
-            0.3
-        load += Math.abs(lifted)
-        io.l[i]! += out + lifted
-      } else io.l[i]! += out
-      io.r[i]! += out
+      if (this.bodged) {
+        const jack = this.tripped ? 0 : (makeup * railAmp * level * 0.3) / drive
+        const left = jack * softclip(this.lift * drive)
+        const right = jack * softclip(this.liftR * drive)
+        load += Math.abs(left) + Math.abs(right)
+        io.l[i]! += out + left
+        io.r[i]! += out + right
+      } else {
+        io.l[i]! += out
+        io.r[i]! += out
+      }
     }
     rail.drawing += load / io.n
     ctx.regs.set(this.regs)
@@ -2065,21 +2070,24 @@ export class FmChip implements Stage {
   // the next.
   private dac(slip: number) {
     const out = this.slotOut
-    if (this.dacSlot >= 0) {
-      const v = out[this.dacSlot]!
-      if (this.bodge < 0) return N_CH * v
-      this.lift = v
-      return (N_CH - 1) * v
-    }
+    if (this.dacSlot >= 0 && !this.bodged) return N_CH * out[this.dacSlot]!
     const rate = 1 - SLIP_MAX * slip * slip
     let sum = 0
     for (let s = 0; s < N_CH; s++) {
-      const v = out[Math.floor(this.slotPos)]!
-      if (s === this.bodge) this.lift = v
-      else sum += v
-      this.slotPos = (this.slotPos + rate) % N_CH
+      const v =
+        this.dacSlot >= 0 ? out[this.dacSlot]! : out[Math.floor(this.slotPos)]!
+      sum += this.bodged ? this.tap(s, v) : v
+      if (this.dacSlot < 0) this.slotPos = (this.slotPos + rate) % N_CH
     }
     return sum
+  }
+
+  private tap(slot: number, v: number) {
+    const left = slot === this.bodge
+    const right = slot === this.bodgeR
+    if (left) this.lift = v
+    if (right) this.liftR = v
+    return left || right ? 0 : v
   }
 
   // One operator's output through the log domain: two attenuations added on
