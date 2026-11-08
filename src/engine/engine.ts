@@ -77,6 +77,7 @@ import {
 } from './phraseClock.ts'
 import { openTake, sweepTakes } from './takeSink.ts'
 import { encodeWav, pcmMono, pcmStereo } from './wav.ts'
+import { fetchLink } from './ytdlp.ts'
 
 import type { WildPack } from '../dsp/arc.ts'
 import type {
@@ -1713,6 +1714,33 @@ export class Engine {
       `no mp3 came back for ${item.title}`,
       opts => fetchItem(item.id, item.title, opts),
     )
+  }
+
+  /** A page yt-dlp can read, fetched by the dev server and onto the tape. */
+  async loadLink(url: string) {
+    if (!this.ctx) await this.booted().catch(noop)
+    if (this.ctx) {
+      const ctl = this.claimTape()
+      this.sampleError.set('')
+      this.archiveStep.set('fetching with yt-dlp…')
+      try {
+        const got = await fetchLink(url, ctl.signal)
+        if (!ctl.signal.aborted) {
+          await this.decodeOnto(got.data, got.title, ctl.signal)
+          if (!ctl.signal.aborted) {
+            this.archiveSource.set(null)
+            this.archiveStep.set(null)
+          }
+        }
+      } catch (e) {
+        if (!ctl.signal.aborted) {
+          this.archiveStep.set(null)
+          this.sampleError.set(errorText(e))
+        }
+      } finally {
+        if (this.tapeLoad === ctl) this.tapeLoad = null
+      }
+    }
   }
 
   /** What archive.org has for the words typed, most downloaded first. */

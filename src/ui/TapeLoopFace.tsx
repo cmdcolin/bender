@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { detailsUrl } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
+import { hasYtdlp } from '../engine/ytdlp.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { DeckKey } from './DeckKey.tsx'
 import { Faceplate } from './Faceplate.tsx'
@@ -37,7 +38,9 @@ export function TapeLoopFace({
           loaded={!!sampleName}
           lead={
             <>
-              <Tip text="Puts a tape on Spool off archive.org: a random one from a shelf, or one you search for.">
+              <Tip
+                text={`Puts a tape on Spool off archive.org: a random one from a shelf, or one you search for${hasYtdlp ? ', or any link yt-dlp reads' : ''}.`}
+              >
                 <DeckKey
                   ref={setShelfBtn}
                   glyph={archiveStep ? 'cancel' : 'eject'}

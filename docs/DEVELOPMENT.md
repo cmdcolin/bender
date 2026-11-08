@@ -16,6 +16,11 @@ The site is an [Astro](https://astro.build) project with three pages:
 The three pages sit under `/bender/`, the path GitHub Pages serves the repo at,
 so the dev server has the app at `http://localhost:4321/bender/app/`.
 
+With [yt-dlp](https://github.com/yt-dlp/yt-dlp) on `PATH`, the dev server also
+fetches links for the tape loop: Spool's load drawer gets a row to paste a
+YouTube or other yt-dlp link into. `scripts/ytdlp.ts` runs it and caches the
+audio in the system temp directory. A built site has no such row.
+
 ## Styling
 
 [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) lists the tokens, the button kinds and the

@@ -2,6 +2,7 @@ import react from '@astrojs/react'
 import { defineConfig } from 'astro/config'
 
 import pkg from './package.json' with { type: 'json' }
+import { ytdlp } from './scripts/ytdlp.ts'
 
 import type { Plugin } from 'vite'
 
@@ -57,7 +58,7 @@ export default defineConfig({
   compressHTML: false,
   integrations: [react()],
   vite: {
-    plugins: [reloadForWorklet()],
+    plugins: [reloadForWorklet(), ytdlp()],
     worker: { format: 'es' },
     server: {
       // Astro restarts on any changed file named `astro.config.*`, and agent
@@ -69,6 +70,7 @@ export default defineConfig({
     define: {
       __APP_VERSION__: JSON.stringify(pkg.version),
       __GIT_SHA__: JSON.stringify(gitSha()),
+      __YTDLP__: 'false',
     },
   },
 })

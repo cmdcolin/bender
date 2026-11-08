@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties } from 'react'
 
 import { POOLS, type Pool } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
+import { hasYtdlp } from '../engine/ytdlp.ts'
 import { DeckKey } from './DeckKey.tsx'
 import { Menu } from './Menu.tsx'
 import styles from './TapeShelf.module.css'
@@ -42,6 +43,7 @@ export function TapeShelf({
   onDone: () => void
 }) {
   const [typed, setTyped] = useState('')
+  const [link, setLink] = useState('')
   const [hits, setHits] = useState<Hits | null>(null)
   const latest = useRef(0)
 
@@ -61,6 +63,13 @@ export function TapeShelf({
   const pick = (item: { id: string; title: string }) => {
     void engine.loadArchive(item)
     onDone()
+  }
+
+  const fetchLink = () => {
+    if (link.trim()) {
+      void engine.loadLink(link.trim())
+      onDone()
+    }
   }
 
   return (
@@ -142,6 +151,27 @@ export function TapeShelf({
               </li>
             ))}
           </ul>
+        )}
+        {hasYtdlp && (
+          <div className={styles.searchRow}>
+            <input
+              className={styles.query}
+              type="text"
+              value={link}
+              placeholder="or paste a link for yt-dlp…"
+              aria-label="a link for yt-dlp to fetch"
+              onChange={e => setLink(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') fetchLink()
+              }}
+            />
+            <DeckKey
+              glyph="eject"
+              legend="fetch"
+              name="fetch with yt-dlp"
+              onClick={fetchLink}
+            />
+          </div>
         )}
       </div>
     </Menu>

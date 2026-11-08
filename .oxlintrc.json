@@ -27,6 +27,13 @@
       }
     },
     {
+      // __YTDLP__ is a Vite `define` global set by scripts/ytdlp.ts.
+      "files": ["src/engine/ytdlp.ts"],
+      "rules": {
+        "no-underscore-dangle": "off"
+      }
+    },
+    {
       "files": ["src/dsp/worklet.ts"],
       "rules": {
         // The worklet posts on its MessagePort, whose postMessage takes no
