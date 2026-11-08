@@ -9,7 +9,7 @@
   color: var(--fg3);
   border: 1px solid var(--border-hover);
   border-radius: var(--ctl-radius);
-  box-shadow: 0 8px 28px #000a;
+  box-shadow: var(--shadow-pop);
 }
 
 .head {

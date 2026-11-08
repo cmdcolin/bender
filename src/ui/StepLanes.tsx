@@ -67,7 +67,7 @@ function Lane(props: {
   }
 
   return (
-    <div className={styles.lane}>
+    <div>
       <div className={styles.head}>
         <span className={styles.name}>{props.name}</span>
         <select

@@ -18,7 +18,7 @@
   color: var(--fg);
   border: 1px solid var(--border-hover);
   border-radius: 4px;
-  box-shadow: 0 6px 20px #000c;
+  box-shadow: var(--shadow-pop);
   font-size: var(--fs-md);
   line-height: 1.5;
   /* Written down because the dot renders its bubble inside itself, and a button

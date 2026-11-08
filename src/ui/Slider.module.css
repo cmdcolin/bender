@@ -163,6 +163,10 @@
   background: var(--surface-raised);
 }
 
+.typed:focus-visible {
+  outline: none;
+}
+
 .typed {
   width: 8ch;
   font: inherit;

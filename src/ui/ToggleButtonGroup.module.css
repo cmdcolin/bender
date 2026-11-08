@@ -26,6 +26,11 @@
   position: relative;
 }
 
+.off:hover {
+  position: relative;
+  z-index: 1;
+}
+
 .off + .off,
 .off + .on,
 .on + .off {

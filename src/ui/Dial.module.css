@@ -111,13 +111,18 @@
   visibility: hidden;
 }
 
-.dial:hover .reading,
 .dial:focus-visible .reading,
 .dial[data-held] .reading,
-.fader:hover .reading,
 .fader:focus-visible .reading,
 .fader[data-held] .reading {
   visibility: visible;
+}
+
+@media (hover: hover) {
+  .dial:hover .reading,
+  .fader:hover .reading {
+    visibility: visible;
+  }
 }
 
 .groove {

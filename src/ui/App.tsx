@@ -449,7 +449,7 @@ function History({ seconds }: { seconds: MorphSeconds }) {
     <div className={`${styles.group} ${styles.history}`}>
       <Tip text="Steps back through the boards you have been through (ctrl+z).">
         <button
-          className={styles.icon}
+          className={styles.menuBtn}
           aria-label="undo"
           onClick={() => engine.undo(seconds)}
           disabled={!walk.past.length}
@@ -459,7 +459,7 @@ function History({ seconds }: { seconds: MorphSeconds }) {
       </Tip>
       <Tip text="Steps forward again (ctrl+shift+z).">
         <button
-          className={styles.icon}
+          className={styles.menuBtn}
           aria-label="redo"
           onClick={() => engine.redo(seconds)}
           disabled={!walk.future.length}

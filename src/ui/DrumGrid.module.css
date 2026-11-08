@@ -358,10 +358,6 @@
   border-color: var(--border-hover);
 }
 
-.tail[aria-pressed='true'] {
-  color: var(--fg2);
-}
-
 .tailOn {
   color: var(--accent2);
   border-color: var(--accent2);

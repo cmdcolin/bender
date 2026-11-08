@@ -1,4 +1,4 @@
-.open {
+:where(.open) {
   font: inherit;
   color: inherit;
   padding: 0 var(--space-2xs);

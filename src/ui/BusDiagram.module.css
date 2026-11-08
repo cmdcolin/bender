@@ -48,10 +48,6 @@
   fill: transparent;
 }
 
-.tagPick:hover .tag {
-  fill: var(--fg2);
-}
-
 .bus,
 .faulted {
   font-size: 9px;

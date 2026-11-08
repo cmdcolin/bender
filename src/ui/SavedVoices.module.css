@@ -115,7 +115,7 @@
 .hint {
   margin: 0;
   font-size: var(--fs-xs);
-  line-height: 1.45;
+  line-height: var(--prose-lh);
   color: var(--fg3);
 }
 

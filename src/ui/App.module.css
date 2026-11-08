@@ -130,7 +130,7 @@
   pointer-events: none;
 }
 
-.scope .hint b {
+.scope .hint b:not(.warn) {
   padding: var(--space-2xs) var(--space-sm);
   background: color-mix(in srgb, var(--bg) 85%, transparent);
   border-radius: var(--ctl-radius);
@@ -189,10 +189,6 @@
 
 .btnOn {
   composes: outlineOn from './button.module.css';
-}
-
-.icon {
-  composes: outlineIcon from './button.module.css';
 }
 
 .morph {
@@ -281,9 +277,6 @@
 
 .label {
   margin-right: auto;
-}
-
-.label {
   flex: none;
   font-size: var(--fs-xs);
   color: var(--fg4);

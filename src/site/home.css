@@ -95,7 +95,8 @@
 .pile[data-playing] .lit2 {
   opacity: calc(0.15 + var(--high, 0));
 }
-.pile[data-playing] .pad0 {
+.pile[data-playing] .pad0,
+.pile[data-playing] .pad3 {
   opacity: calc(var(--low, 0) * 0.6);
 }
 .pile[data-playing] .pad1 {
@@ -233,6 +234,7 @@
 .card:hover,
 .card:focus-visible {
   border-color: var(--accent);
+  outline: none;
 }
 /* A board's bars, grey until its row is pointed at: a list of a dozen
    accents is a list nobody can read. */
@@ -274,7 +276,7 @@
 .says {
   color: var(--fg4);
   font-size: 0.82rem;
-  line-height: 1.45;
+  line-height: var(--prose-lh);
 }
 
 /* The signed-in home: one column on the landing page's left edge, a slim
