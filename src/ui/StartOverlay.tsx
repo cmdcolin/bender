@@ -1,13 +1,8 @@
 import { engine } from '../engine/engine.ts'
+import { Dialog } from './components/Dialog.tsx'
 import { useStoreValue } from './ControlsContext.ts'
 import styles from './StartOverlay.module.css'
 
-// What a shared link opens onto: a board already patched and waiting, with
-// both run buttons small and one map among many things on the panel. Nobody
-// finds those on the first look, so this sits over the whole page and says
-// what to press. It only ever shows once — closing it, by any door, means the
-// board is either playing or you asked to look at it in silence, and neither
-// of those wants the overlay back on the next click.
 export function StartOverlay(props: { onClose: () => void }) {
   const { onClose } = props
 
@@ -25,15 +20,11 @@ export function StartOverlay(props: { onClose: () => void }) {
   }
 
   return (
-    <dialog
-      ref={el => {
-        if (el && !el.open) el.showModal()
-      }}
-      onCancel={e => {
-        e.preventDefault()
-        onClose()
-      }}
-      aria-label="start the board"
+    <Dialog
+      label="start the board"
+      size="narrow"
+      loud
+      onCancel={onClose}
       className={styles.card}
     >
       <button className={styles.start} autoFocus onClick={start}>
@@ -52,6 +43,6 @@ export function StartOverlay(props: { onClose: () => void }) {
       <button className={styles.quiet} onClick={onClose}>
         or look at it in silence
       </button>
-    </dialog>
+    </Dialog>
   )
 }

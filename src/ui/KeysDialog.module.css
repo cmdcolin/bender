@@ -2,26 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  width: min(680px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
-  overflow-y: auto;
-  padding: var(--space-lg);
-  background: var(--surface);
-  color: var(--fg2);
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-}
-
-.card::backdrop {
-  background: #000c;
-}
-
-.title {
-  margin: 0;
-  font-size: var(--fs-md);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--accent);
 }
 
 .says {
@@ -32,8 +12,6 @@
   color: var(--fg3);
 }
 
-/* Forty-four columns, four to a key, so a row sits a quarter of a key over from
-   the one above it the way a keyboard's rows do. */
 .keys {
   display: grid;
   grid-template-columns: repeat(44, minmax(0, 1fr));

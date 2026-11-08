@@ -1,6 +1,8 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
 
 import { semitoneName } from '../notes.ts'
+import dlg from './components/dialog.module.css'
+import { Dialog } from './components/Dialog.tsx'
 import { useStoreValue } from './ControlsContext.ts'
 import { pitch } from './keyboard.ts'
 import {
@@ -52,7 +54,6 @@ export function KeysDialog({ onClose }: { onClose: () => void }) {
     else drop(letter)
   }
 
-  // The keys the board listens to must not answer while one is being chosen.
   const keyDown = (e: KeyboardEvent) => {
     e.stopPropagation()
     if (picked === null || e.metaKey || e.ctrlKey || e.altKey) return
@@ -64,24 +65,17 @@ export function KeysDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <dialog
-      ref={el => {
-        if (el && !el.open) {
-          el.showModal()
-          el.querySelector<HTMLElement>('[data-done]')?.focus()
-        }
-      }}
-      onCancel={e => {
-        e.preventDefault()
-        if (picked === null) onClose()
-        else setPicked(null)
-      }}
+    <Dialog
+      label="computer keys"
+      size="wide"
+      loud
+      onOpen={el => el.querySelector<HTMLElement>('[data-done]')?.focus()}
+      onCancel={() => (picked === null ? onClose() : setPicked(null))}
       onKeyDown={keyDown}
       onKeyUp={e => e.stopPropagation()}
-      aria-label="computer keys"
       className={styles.card}
     >
-      <p className={styles.title}>Computer keys</p>
+      <p className={dlg.title}>Computer keys</p>
       <p className={styles.says}>
         {pickedRole
           ? `Press the key that should be ${describe(pickedRole).main}, or click it. Esc to cancel.`
@@ -143,6 +137,6 @@ export function KeysDialog({ onClose }: { onClose: () => void }) {
           done
         </button>
       </div>
-    </dialog>
+    </Dialog>
   )
 }

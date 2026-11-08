@@ -1,0 +1,67 @@
+:where(.card) {
+  width: min(var(--dialog-w), calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-lg);
+  background: var(--surface);
+  color: var(--fg2);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-modal);
+  font-size: var(--fs-sm);
+}
+
+:where(.card)::backdrop {
+  background: var(--scrim);
+}
+
+:where(.loud) {
+  border-color: var(--accent);
+}
+
+:where(.narrow) {
+  --dialog-w: 360px;
+}
+
+:where(.prose) {
+  --dialog-w: 420px;
+}
+
+:where(.picture) {
+  --dialog-w: 460px;
+}
+
+:where(.wide) {
+  --dialog-w: 680px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: var(--caps-track);
+  color: var(--accent);
+}
+
+.close {
+  composes: chip from '../button.module.css';
+}
+
+.line {
+  margin: 0 0 var(--space-md);
+  color: var(--fg3);
+  line-height: var(--prose-lh);
+}
+
+.link {
+  color: var(--accent);
+}

@@ -1,24 +1,13 @@
 import { useEffect, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
+import dlg from './components/dialog.module.css'
+import { Dialog } from './components/Dialog.tsx'
 import { useStoreValue } from './ControlsContext.ts'
 import styles from './HuntDialog.module.css'
 
-// How long the landed note stays up on its own. Long enough to read at a
-// glance, short enough that a modal is never what stands between you and the
-// board it just landed.
 const LANDED_MS = 6000
 
-// What a hunt looks like while it runs. Every other roll on the panel lands a
-// board and is over; this one cuts to six strangers in a row, and without
-// something saying so the board sounds like it is being played by somebody
-// else. So the panel says what it is doing, which candidate it is on, and how
-// to call it off.
-//
-// A real modal: the hunt owns the board for the eight seconds it runs, and a
-// slider moved underneath would cancel it — the engine's rule — which from the
-// outside looks like the dialog lied about what was happening. The way out is
-// the button or escape, and both keep whatever is playing.
 export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
   const hunting = useStoreValue(engine.hunting)
   const step = useStoreValue(engine.huntStep)
@@ -27,7 +16,6 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
   const picked = pick.of === hunted ? pick.i : 0
   const { landed, onDismiss } = props
 
-  // A tray of runners-up stays until you close it.
   const tray = hunted.length > 1
   useEffect(() => {
     if (!landed || tray) return undefined
@@ -37,33 +25,17 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
 
   if (!hunting && !landed) return null
 
-  // Escape asks the browser to close it. The hunt has to hear that rather than
-  // the element quietly closing under a component that still thinks it is open,
-  // so the cancel is taken here and this unmounts on the state that follows.
   const close = () => {
     if (hunting) engine.stopHunt()
     else onDismiss()
   }
 
   return (
-    <dialog
-      // Opened from the ref rather than an effect: showModal on the frame it
-      // mounts, and guarded because a ref that fires twice on an open dialog
-      // throws.
-      ref={el => {
-        if (el && !el.open) el.showModal()
-      }}
-      onCancel={e => {
-        e.preventDefault()
-        close()
-      }}
-      aria-label="hunt an edge"
-      className={styles.card}
-    >
+    <Dialog label="hunt an edge" size="prose" loud onCancel={close}>
       {hunting ? (
         <>
-          <div className={styles.head}>
-            <span className={styles.title}>hunting an edge</span>
+          <div className={dlg.head}>
+            <span className={dlg.title}>hunting an edge</span>
             <span className={styles.count} aria-live="polite">
               {step ? `board ${step.board} of ${step.of}` : 'rolling'}
             </span>
@@ -76,16 +48,16 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
               />
             ))}
           </div>
-          <p className={styles.line}>
+          <p className={dlg.line}>
             {step?.of ?? 6} rolled boards, played one after another for a second
             and a half each. What you are hearing is the audition, not a fault.
           </p>
-          <p className={styles.line}>
+          <p className={dlg.line}>
             The limiter is the judge. It keeps whichever board kept arriving at
             the ceiling and backing off — the edge of running away — rather than
             the loudest or the most broken.
           </p>
-          <p className={styles.line}>
+          <p className={dlg.line}>
             Stop here and it keeps what is playing. Either way the whole hunt is
             one step in the walk, so undo puts back the board you started from.
           </p>
@@ -97,10 +69,10 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
         </>
       ) : (
         <>
-          <div className={styles.head}>
-            <span className={styles.title}>hunt landed</span>
+          <div className={dlg.head}>
+            <span className={dlg.title}>hunt landed</span>
           </div>
-          <p className={styles.line}>
+          <p className={dlg.line}>
             It kept the best board. Undo puts back the one you were on before it
             started.
           </p>
@@ -128,6 +100,6 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
           </div>
         </>
       )}
-    </dialog>
+    </Dialog>
   )
 }

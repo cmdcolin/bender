@@ -66,7 +66,7 @@ test('the check finds an override through a local composes', () => {
 })
 
 test('no module overrides a button kind it composes', () => {
-  const found = readdirSync(DIR)
+  const found = readdirSync(DIR, { recursive: true, encoding: 'utf8' })
     .filter(f => f.endsWith('.module.css') && f !== KINDS)
     .flatMap(f =>
       overrides(readFileSync(join(DIR, f), 'utf8')).map(s => `${f} ${s}`),
