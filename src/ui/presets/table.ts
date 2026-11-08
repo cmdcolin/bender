@@ -802,6 +802,26 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'springs on the sheet',
+    blurb:
+      'Boing’s springs are patched onto the struck steel sheet alone, so the sheet rings in the tank while the kit under it stays dry',
+    patch: {
+      ...kit({
+        kick: 'x.......x.......',
+        hat: '..x...x...x...x.',
+      }),
+      chipLevel: 0,
+      drumLevel: 0.7,
+      drumBpm: 96,
+      sheetLevel: 0.6,
+      sheetStrikes: 0.5,
+      revMix: 0.8,
+      revDecayS: 5,
+      revBoing: 0.6,
+      revInto: jackFor('sheet'),
+    },
+  },
+  {
     name: 'gravel dac',
     blurb: 'The kit’s converter is built from resistors off an unmeasured reel',
     patch: {
