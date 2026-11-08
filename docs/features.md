@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-850 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
+856 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 220 destinations, among
+- **A patch bay that modulates itself.** Four wires, 223 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -257,7 +257,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>95 controls</summary>
+<summary>101 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -299,6 +299,10 @@ puts the fault on, and the rows under it show the controls it set:
 | Bank sync        | off, to the kick, to the tom                                                                                       | Resets all six metal oscillators each time the kick or tom network swings up through zero                                                               |
 | Tank coupling    | off to full                                                                                                        | A wire from the kick’s network into the tom’s drive                                                                                                     |
 | Hiss into kick   | off to full                                                                                                        | A leak from the snare’s and the clap’s amplifiers into the kick’s network                                                                               |
+| Into kick        | off to full                                                                                                        | A wire onto the base of the kick’s feedback transistor, which rectifies whatever arrives                                                                |
+| Into kick from   | the kit, the bus, the mic                                                                                          | Where the other end of that wire goes: the kit’s own output, the bus with everything ahead of the kit on it, or the mic                                 |
+| Tank tap         | off, ÷2, ÷4, ÷8, ÷16                                                                                               | Tunes the kick’s and the tom’s networks off a stage of Plinky’s melody divider in place of their own trimmers                                           |
+| Kick on amps     | off to full                                                                                                        | A wire from the kick’s network onto the control pin of every amplifier on the board                                                                     |
 | Trigger pulse    | 0.05 to 8 ms                                                                                                       | How long the one-shot holds the trigger line down                                                                                                       |
 | Pulse sharing    | off to full                                                                                                        | How much charge a one-shot fired alongside others loses to them, since the one-shots all charge off one timing rail                                     |
 | Trigger load †   | off to full                                                                                                        | How much the one-shots’ charge costs the supply                                                                                                         |
@@ -319,6 +323,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Ladder           | off to full                                                                                                        | How much of that converter’s error you are hearing                                                                                                      |
 | Part grade       | 0 to 0.6                                                                                                           | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                                                           |
 | Overflow         | off or wrap                                                                                                        | What the converter does with a sum too wide for its word                                                                                                |
+| Mix drive        | off to full                                                                                                        | Gain on the summing amplifier ahead of the converter, up to 24 dB, into rails at one and a half times full scale                                        |
 | DAC reference    | fixed, the toy chip, the kit itself, the mic, the bus                                                              | What the converter’s reference pin is wired to                                                                                                          |
 | Reference depth  | off to full                                                                                                        | How much of the reference pin is that signal and how much is the fixed voltage it shipped with                                                          |
 | Kit              | analog or sampled                                                                                                  | Which kit is on the output                                                                                                                              |
@@ -330,6 +335,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Data fault †     | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag                                       | What happened to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                                                     |
 | Retrigger        | 0 Hz to 4 kHz                                                                                                      | Retriggers the current step at this rate                                                                                                                |
 | Retrig sweep     | −1 to +1                                                                                                           | Glides the retrigger across each step, up to four octaves: down is a falling zip, up a rising whine                                                     |
+| Retrig tap       | off, ×1, ÷2, ÷4, ÷8, ÷16                                                                                           | Clocks the retrigger off a stage of Plinky’s melody divider, on the steps where the retrig row or Retrigger already has it running                      |
 | Retrig target    | the step, all voices, the kick, the snare, the hat, the clap, the tom, the bell, the open hat, the cymbal          | What the retrigger hammers: the step’s voices, every voice at once, or one voice                                                                        |
 | Touch            | off to full                                                                                                        | Fingers and a paperclip across the trigger line                                                                                                         |
 | Mains            | 60 Hz or 50 Hz                                                                                                     | The hum your body picks up off the wall                                                                                                                 |
@@ -1809,7 +1815,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 220 of them, filt cut through lead Plinky in                                                                           | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 223 of them, filt cut through kit mix drive                                                                            | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

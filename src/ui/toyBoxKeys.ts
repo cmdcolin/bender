@@ -63,6 +63,9 @@ export const VOICE_BOXES = {
     'drumSnareSwoop',
     'drumTankCouple',
     'drumHissKick',
+    'drumKickFeed',
+    'drumKickFeedFrom',
+    'drumTankTap',
     'drumBankSync',
   ],
   'metal bank': [

@@ -276,8 +276,11 @@ export const DEST = {
   drumCymDecay: 217,
   monoToyIn: 218,
   leadToyIn: 219,
+  drumKickFeed: 220,
+  drumKickVca: 221,
+  drumMixDrive: 222,
 } as const
-export const N_DEST = 220
+export const N_DEST = 223
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

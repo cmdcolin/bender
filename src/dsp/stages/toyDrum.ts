@@ -48,7 +48,7 @@ import { MetalBank } from '../util/metal.ts'
 import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { octaves, tapDivisor } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
-import { flushDenormal } from '../util/softclip.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 import { Wander } from '../wander.ts'
 
 import type { Cue } from '../cue.ts'
@@ -240,6 +240,16 @@ const TANK_COUPLE = 0.05
 const KICK_BIAS = 4
 const BIAS_CEILING = 2
 const HISS_KICK = 0.04
+
+export const KICK_FEED_NAMES = ['the kit', 'the bus', 'the mic']
+const KICK_FEED_BUS = 1
+const KICK_FEED_MIC = 2
+const KICK_FEED = [6e-4, 0.1, 0.1]
+const KICK_VCA = 4
+export const TANK_TAP_NAMES = ['off', '÷2', '÷4', '÷8', '÷16']
+export const RETRIG_TAP_NAMES = ['off', '×1', '÷2', '÷4', '÷8', '÷16']
+const MIX_DRIVE_OCT = 4
+const MIX_RAIL = 1.5
 
 /** What the kit's dice is a comparator on. Free, it rolls on every arrival;
     on the junction, it rolls only while the noise transistor conducts and
@@ -947,6 +957,7 @@ export class ToyDrum implements Stage {
   private motorV = 1
   private motorOff = false
   private hissLeak = 0
+  private kitOut = 0
   private tankBase = new Float32Array(N_TANKS)
   private rushHeat = 0
   private fuseHeat = 0
@@ -1641,6 +1652,8 @@ export class ToyDrum implements Stage {
       RETRIG_TARGET_NAMES.length - 1,
     )
     const ramp = Math.min(Math.max(p[IDX.drumRatchetRamp]!, -1), 1)
+    const retrigTap = Math.round(p[IDX.drumRetrigTap]!)
+    const retrigDiv = retrigTap > 0 ? 2 ** (retrigTap - 1) : 0
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = micInto(p, ctx, MIC.drumTrig)
     const biasBase = p[IDX.drumTrigBias]!
@@ -1842,6 +1855,27 @@ export class ToyDrum implements Stage {
     const kickBias = KICK_BIAS * Math.min(Math.max(p[IDX.drumKickBias]!, 0), 1)
     const hissKick = HISS_KICK * Math.min(Math.max(p[IDX.drumHissKick]!, 0), 1)
     if (hissKick === 0) this.hissLeak = 0
+    const feedLane = ctx.mod.read(DEST.drumKickFeed)
+    const feedDepth = Math.min(
+      Math.max(p[IDX.drumKickFeed]! + (feedLane ? feedLane[0]! : 0), 0),
+      1,
+    )
+    const feedFrom = Math.round(p[IDX.drumKickFeedFrom]!)
+    const feedGain = (KICK_FEED[feedFrom] ?? 0) * feedDepth * feedDepth
+    const feedMic = feedFrom === KICK_FEED_MIC ? ctx.mic : null
+    const tankTap = Math.round(p[IDX.drumTankTap]!)
+    const tankDiv = tankTap > 0 ? TANKS[0].hz * 2 ** tankTap : 0
+    const vcaLane = ctx.mod.read(DEST.drumKickVca)
+    const vcaDepth = Math.min(
+      Math.max(p[IDX.drumKickVca]! + (vcaLane ? vcaLane[0]! : 0), 0),
+      1,
+    )
+    const driveLane = ctx.mod.read(DEST.drumMixDrive)
+    const mixDrive = Math.min(
+      Math.max(p[IDX.drumMixDrive]! + (driveLane ? driveLane[0]! : 0), 0),
+      1,
+    )
+    const mixGain = mixDrive > 0 ? octaves(MIX_DRIVE_OCT * mixDrive) : 1
     const bankPf = octaves(
       -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
     )
@@ -1997,7 +2031,11 @@ export class ToyDrum implements Stage {
         this.repeats = 0
       }
       // the bend: hammer the current step's trigger line at audio rate
-      const hammer = this.colRetrig > 0 ? this.colRetrig : baseRetrig
+      const set = this.colRetrig > 0 ? this.colRetrig : baseRetrig
+      const hammer =
+        set > 0 && retrigDiv > 0 && melody[i]! > 0
+          ? melody[i]! / retrigDiv
+          : set
       const modded = mod
         ? Math.min(hammer * octaves(mod[i]! * 4), RETRIG_MAX_HZ)
         : hammer
@@ -2153,6 +2191,19 @@ export class ToyDrum implements Stage {
             ? MOTOR_CHOKE
             : 1 - motorRing / RING_LATCH
           const motorF = motor > 0 ? 1 - MOTOR_DIVE * (1 - this.motorV) : 1
+          const feedIn =
+            feedGain > 0
+              ? feedGain *
+                Math.max(
+                  feedFrom === KICK_FEED_BUS
+                    ? io.l[i]!
+                    : feedMic
+                      ? feedMic[i]!
+                      : this.kitOut,
+                  0,
+                )
+              : 0
+          const tapF = tankDiv > 0 && melody[i]! > 0 ? melody[i]! / tankDiv : 1
           for (let t = 0; t < N_TANKS; t++) {
             const v = TANKS[t]!.voice
             // The kick's ring wired into the tom's drive.
@@ -2163,8 +2214,10 @@ export class ToyDrum implements Stage {
                   ? shock[v]! + this.hissLeak
                   : shock[v]!) + motorKick
             const tank = this.tanks[t]!
-            if (drive === 0 && tank.level <= AUDIBLE) continue
+            const feed = t === 0 ? feedIn : 0
+            if (drive === 0 && feed === 0 && tank.level <= AUDIBLE) continue
             tank.drive = drive
+            tank.feed = feed
             const leakLift =
               this.leakDepth === 0
                 ? 1
@@ -2172,7 +2225,13 @@ export class ToyDrum implements Stage {
                   ? 1 + LEAK_LIFT * this.leakDepth * this.leak[v]!
                   : 1 / (1 - LEAK_LIFT * this.leakDepth * this.leak[v]!)
             tank.pulse = shock[v]! !== 0
-            tank.f = this.tankF[t]! * pf * bankFm * motorF * leakLift
+            tank.f =
+              this.tankF[t]! *
+              pf *
+              bankFm *
+              motorF *
+              leakLift *
+              (v === SNARE ? 1 : tapF)
             tank.rate =
               motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!
             tank.sweep = this.tankSweep[t]!
@@ -2280,6 +2339,8 @@ export class ToyDrum implements Stage {
           // bank's two bands. Woken with the last hit's charge on them, they
           // met a sum that had moved since and rang a needle at the front of
           // the hat, 5 dB over the rest of it.
+          const dry = out
+          const drySend = send
           const snareOn = amp[SNARE]! > AUDIBLE
           const clapOn = amp[CLAP]! > AUDIBLE
           const hats = amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE
@@ -2405,6 +2466,11 @@ export class ToyDrum implements Stage {
             out += y
             if (th & (1 << BELL)) send += y
           }
+          if (vcaDepth > 0) {
+            const vca = 1 - vcaDepth + vcaDepth * KICK_VCA * kickRing
+            out = dry + vca * (out - dry)
+            send = drySend + vca * (send - drySend)
+          }
         }
         // Every voice's envelope falls on its own, whatever its amplifier is
         // hearing. Decaying the envelope inside the output test instead left a
@@ -2482,8 +2548,10 @@ export class ToyDrum implements Stage {
             slotS > 0
               ? Math.max(Math.round(slotS * this.live * this.sr), 1) - 1
               : 0
-          this.sumHeld = out
-          let code = Math.round(out * q)
+          const summed =
+            mixGain > 1 ? MIX_RAIL * softclip((out * mixGain) / MIX_RAIL) : out
+          this.sumHeld = summed
+          let code = Math.round(summed * q)
           if (wrap) code = ((((code + q) % (2 * q)) + 2 * q) % (2 * q)) - q
           // Sixteen rungs walked to add nothing is the shape of the stock
           // board: the knob rests at zero and the error scales by it.
@@ -2492,7 +2560,10 @@ export class ToyDrum implements Stage {
               ? code + this.ladderErr(code, bits, ladder, ladderTol)
               : code) / q
         }
-        out = this.muxHeld * railAmp
+        out =
+          mixGain > 1
+            ? (this.muxHeld * railAmp) / Math.sqrt(Math.sqrt(mixGain))
+            : this.muxHeld * railAmp
         send *= railAmp
         // A multiplying converter: the reference pin scales every code, and
         // with audio on the pin the kit comes out as a product. Read ahead of
@@ -2516,6 +2587,7 @@ export class ToyDrum implements Stage {
           send *= g
         }
       }
+      this.kitOut = out
 
       if (rush !== 0) {
         const a = Math.abs(out)
@@ -2652,6 +2724,7 @@ export class ToyDrum implements Stage {
     this.trigSag = 0
     this.rotSeen.fill(-1)
     this.sumHeld = 0
+    this.kitOut = 0
     this.outAddr = 0
     this.motorV = 1
     this.motorOff = false

@@ -325,6 +325,7 @@ export const DEFAULT_CONTROLS = {
   drumLadder: 0,
   drumLadderTol: 0.15,
   drumOverflow: 0,
+  drumMixDrive: 0,
   // Which kit is on the output, and the clock the recording is read off. 26,040
   // Hz is where the machine sampled itself; the switch rests on the circuits.
   drumRom: 0,
@@ -336,6 +337,7 @@ export const DEFAULT_CONTROLS = {
   drumRomDataFault: 0,
   drumRetrigHz: 0,
   drumRetrigSweep: 0,
+  drumRetrigTap: 0,
   drumRetrigTarget: 0,
   drumTouch: 0,
   drumTouchMains: 0,
@@ -378,6 +380,10 @@ export const DEFAULT_CONTROLS = {
   drumTankCouple: 0,
   drumKickBias: 0,
   drumHissKick: 0,
+  drumKickFeed: 0,
+  drumKickFeedFrom: 0,
+  drumTankTap: 0,
+  drumKickVca: 0,
   drumDice: 0,
   drumRef: 0,
   drumRefDepth: 1,

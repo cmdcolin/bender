@@ -237,6 +237,9 @@ export const DEST_CHOICES = [
   'cymbal decay',
   'mono Plinky in',
   'lead Plinky in',
+  'kit into kick',
+  'kit kick on amps',
+  'kit mix drive',
 ] as const
 
 export const ENV_KEYS = [
@@ -519,6 +522,9 @@ export const PATCH_GROUPS: Group[] = [
                 'bell decay',
                 'open hat decay',
                 'cymbal decay',
+                'kit into kick',
+                'kit kick on amps',
+                'kit mix drive',
               ],
             },
             {

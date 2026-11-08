@@ -27,6 +27,7 @@ const OPENS: Record<string, { keys: readonly ControlKey[]; help: string }> = {
     keys: [
       'drumRetrigHz',
       'drumRetrigSweep',
+      'drumRetrigTap',
       'drumRetrigTarget',
       'drumTouch',
       'drumTouchMains',
@@ -39,8 +40,8 @@ const OPENS: Record<string, { keys: readonly ControlKey[]; help: string }> = {
     help: 'One trigger line a voice off the pattern memory. The rows set how fast a step retriggers, how a ratcheted step’s repeats swell or fade, how far a voice must drain before it answers again, how hard a drained voice fires itself, where the trigger input is biased and how slowly the chip scans its lines.',
   },
   amps: {
-    keys: ['drumAccentAmt', 'drumAccentSag'],
-    help: 'One amplifier a voice, each following its own voice’s envelope unless the cross-patch bridges it to another. The accent cap feeds all of them.',
+    keys: ['drumAccentAmt', 'drumAccentSag', 'drumKickVca'],
+    help: 'One amplifier a voice, each following its own voice’s envelope unless the cross-patch bridges it to another. The accent cap feeds all of them, and a wire can bring the kick’s swing onto their control pins.',
   },
   choke: {
     keys: ['drumChoke'],

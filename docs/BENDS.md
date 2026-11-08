@@ -628,6 +628,20 @@ tempo, swing, chance, tune, decay and mute.
   - A snare alone pulls a hum out of the kick at its pitch, about two thirds as
     loud as a kick at the top of the travel, and no two hum alike.
   - A clap buzz bows it as loud as a kick.
+- **Into kick:** a wire onto the base of the kick's feedback transistor, which
+  rectifies what arrives.
+  - From the kit, the kick hears itself through the converter. Low on the travel
+    its tail rings longer; past about 0.6 it howls at its pitch, clipped and
+    swooping, and every other hit lands on the howl. Ring and Decay bring the
+    howl on sooner.
+  - From the bus or the mic, every note or word thumps the kick at the kick's
+    pitch.
+- **Tank tap:** tunes the kick's and the tom's networks off a stage of Plinky's
+  melody divider, so the kick plays the tune as a bass line. ÷8 sits near the
+  stock pitch and ÷16 is a sub.
+- **Kick on amps:** the kick's swing on every amplifier's control pin. The
+  snare, clap, hats, cowbell and cymbal growl at the kick's pitch while it
+  rings, and at full they drop out between kicks.
 - **Trigger pulse:** how long the one-shot holds the trigger down.
   - Narrow gives a click and a clean shock.
   - Wide gives no click and less body.
@@ -1004,6 +1018,9 @@ See [the trigger patch](features.md#trigger-patch) for wiring.
 
 - **Retrigger:** pulses the trigger line. Past roughly 40 Hz the retrigger
   period becomes pitch.
+- **Retrig tap:** clocks the retrigger off a stage of Plinky's melody divider
+  wherever it already runs, so the hammered drum plays the tune. ÷8 sits near
+  the 30 Hz chatter of a bent toy kit.
 - **Trigger floor:** how far a voice must decay before its one-shot answers
   again. Zero strikes on every pulse; maximum waits for a full finish. The
   sequencer, pads, mic and keyboard all pass through it.
@@ -1411,6 +1428,10 @@ The rack makes each measured part value a parameter, and the dice skip it.
     flips, at the zero crossing, so quiet sounds and tails suffer most.
   - **Overflow:** a wrapping accumulator turns a step stacking several voices
     under an accent inside-out. Quiet steps stay untouched.
+  - **Mix drive:** up to 24 dB into the summing amplifier's rails, ahead of the
+    converter. The kick flattens and crushes everything on top of it; with
+    Overflow on wrap the sum past full scale folds into hash, hardest around
+    halfway.
 - **Voice slot:** one converter shared by eight voices. The sample rate falls as
   the step gets busier, so a kick under five other voices comes out coarser than
   alone. The slot counts off the chip's oscillator, so a dying battery goes

@@ -1330,6 +1330,12 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumCymDecay',
   'monoToyIn',
   'leadToyIn',
+  'drumKickFeed',
+  'drumKickFeedFrom',
+  'drumTankTap',
+  'drumRetrigTap',
+  'drumKickVca',
+  'drumMixDrive',
 ]
 
 // Retired controls that old links still carry, each read into the control that

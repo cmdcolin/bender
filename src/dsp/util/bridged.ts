@@ -58,6 +58,7 @@ export class BridgedT {
   private bp = 0
   private env = 0
   drive = 0
+  feed = 0
   pulse = false
   f = 0
   rate = 0
@@ -114,7 +115,9 @@ export class BridgedT {
     const w = Math.min(Math.max(f * lift, -1), 1)
     const loss = charge > 0 && lift > 1 ? rate / lift : rate
     this.lp = flushDenormal(this.lp + w * this.bp)
-    this.bp = rail(this.bp + drive - w * this.lp - 2 * loss * this.bp)
+    this.bp = rail(
+      this.bp + drive + this.feed - w * this.lp - 2 * loss * this.bp,
+    )
     this.env = Math.sqrt(this.bp * this.bp + this.lp * this.lp)
     this.out = this.bp
   }

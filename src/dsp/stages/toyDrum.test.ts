@@ -1601,6 +1601,90 @@ test('hiss into the kick leaves a kick under the hats alone', () => {
   expect(soloVoice({ ...kit, drumHissKick: 1 }, 2)).toEqual(soloVoice(kit, 2))
 })
 
+const BEATS: Partial<Controls> = {
+  drumBpm: 120,
+  drumKick: stepMask(1, 5, 9, 13),
+}
+
+const beatPitches = (x: Float32Array) =>
+  Array.from({ length: 7 }, (_, k) =>
+    pitchHz(slice(x, 0.53 + 0.5 * k, 0.7 + 0.5 * k)),
+  )
+
+test('the kit fed back into the kick lengthens its tail, then howls', () => {
+  const late = (feed: number) =>
+    rms(slice(soloVoice({ ...BEATS, drumKickFeed: feed }, 3), 2.35, 2.5))
+  expect(late(0.45)).toBeGreaterThan(1.5 * late(0))
+  expect(late(0.8)).toBeGreaterThan(2.5 * late(0.45))
+  expect(soloVoice({ ...BEATS, drumKickFeed: 0.3, drumRom: 1 })).toEqual(
+    soloVoice({ ...BEATS, drumRom: 1 }),
+  )
+})
+
+test('the bus fed into the kick thumps a sub under the melody', () => {
+  const silent = { drumKick: 0, drumSnare: 0, drumHat: 0, drumKickFeedFrom: 1 }
+  const dry = render({ ...silent, drumKickFeed: 0 }, 3)
+  const fed = render({ ...silent, drumKickFeed: 0.8 }, 3)
+  const sub = slice(fed, 1, 3).map((v, i) => v - dry[i + SR]!)
+  expect(lowEnergy(sub, 120)).toBeGreaterThan(
+    1.4 * lowEnergy(slice(dry, 1, 3), 120),
+  )
+})
+
+test('the tank tap tunes the kick to the melody, an octave a stage', () => {
+  const at = (tap: number) =>
+    beatPitches(soloVoice({ ...BEATS, drumTankTap: tap }, 4))
+  const half = at(1)
+  const quarter = at(2)
+  const ratios = half.map((hz, k) => hz / quarter[k]!).toSorted((a, b) => a - b)
+  expect(ratios[3]).toBeGreaterThan(1.6)
+  expect(ratios[3]).toBeLessThan(2.4)
+  expect(Math.max(...quarter) / Math.min(...quarter)).toBeGreaterThan(1.5)
+})
+
+test('the retrig tap follows the tune wherever the retrigger already runs', () => {
+  const hammered: Partial<Controls> = {
+    ...BEATS,
+    drumHat: stepMask(3, 7, 11, 15),
+    drumRetrig4: 3,
+    drumRetrig12: 3,
+  }
+  const tuned = (tap: number, chipTune: number) =>
+    soloVoice({ ...hammered, drumRetrigTap: tap, chipTune }, 2)
+  expect(tuned(0, 1)).toEqual(tuned(0, 2))
+  expect(deviation(tuned(4, 1), tuned(4, 2))).toBeGreaterThan(0.1)
+  expect(deviation(tuned(4, 1), tuned(0, 1))).toBeGreaterThan(0.1)
+  expect(soloVoice({ ...BEATS, drumRetrigTap: 4 }, 2)).toEqual(
+    soloVoice(BEATS, 2),
+  )
+})
+
+test('the kick on the amps silences the hats between kicks', () => {
+  const hats: Partial<Controls> = {
+    drumBpm: 120,
+    drumHat: stepMask(1, 3, 5, 7, 9, 11, 13, 15),
+  }
+  const hiss = (o: Partial<Controls>) => highEnergy(soloVoice(o, 1), 4000)
+  expect(hiss({ ...hats, drumKickVca: 1 })).toBeLessThan(0.01 * hiss(hats))
+  expect(hiss({ ...hats, ...BEATS, drumKickVca: 1 })).toBeGreaterThan(
+    0.05 * hiss(hats),
+  )
+  expect(soloVoice({ ...BEATS, drumKickVca: 1 })).toEqual(soloVoice(BEATS))
+})
+
+test('mix drive squashes the kit denser and no louder at the peak, and wrap folds it', () => {
+  const kit = (o: Partial<Controls>) =>
+    slice(render({ chipLevel: 0, ...o }, 3), 1, 3)
+  const stock = kit({})
+  const driven = kit({ drumMixDrive: 1 })
+  expect(rms(driven)).toBeGreaterThan(1.5 * rms(stock))
+  expect(loudest(driven)).toBeLessThan(loudest(stock))
+  const half = { drumMixDrive: 0.5 }
+  expect(highEnergy(kit({ ...half, drumOverflow: 1 }), 4000)).toBeGreaterThan(
+    1.2 * highEnergy(kit(half), 4000),
+  )
+})
+
 test('a bowed kick runs down to silence once the noise voices stop', () => {
   const x = soloVoice(
     {
