@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "blog:draft": "node scripts/blogdraft.mjs",
-    "build": "astro sync && tsc -b && astro build",
+    "build": "astro sync && tsrs -b && astro build",
     "ab": "node scripts/ab.ts",
     "agent": "node scripts/agent.ts",
     "agent:eval": "node scripts/agent-eval.ts",
@@ -44,7 +44,7 @@
     "test:changed": "scripts/heavy-run-slot.sh vitest run --changed main --passWithNoTests",
     "check": "pnpm lint && pnpm typecheck && pnpm test:changed",
     "denormal": "DENORMAL=1 scripts/heavy-run-slot.sh vitest run src/dsp/denormal",
-    "typecheck": "astro sync && scripts/heavy-run-slot.sh tsc -b",
+    "typecheck": "astro sync && scripts/heavy-run-slot.sh tsrs -b",
     "sync:check": "node scripts/sync-check.mjs",
     "pat": "node scripts/push.mjs patch",
     "min": "node scripts/push.mjs minor",
@@ -78,8 +78,8 @@
     "lint-staged": "^17.6.0",
     "oxfmt": "^0.77.0",
     "oxlint": "^1.92.0",
-    "oxlint-tsgolint": "^7.0.2006",
     "prettier-plugin-astro": "^1.1.2",
+    "tsrs": "0.23.0-ts7.1.0-beta",
     "typescript": "^7.0.2",
     "vite": "^8.3.6",
     "vitest": "^5.1.0"

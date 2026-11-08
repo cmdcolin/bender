@@ -60,7 +60,7 @@ test('the wire costs the panel nothing until it is asked for', () => {
 test('the dialog leaves the panel behind it reachable', () => {
   render(<Panel />)
   fireEvent.click(tab())
-  const dialog = screen.getByRole('dialog') as HTMLDialogElement
+  const dialog = screen.getByRole<HTMLDialogElement>('dialog')
   expect(dialog.open).toBe(true)
   // show() and not showModal(): a modal makes the rest of the page inert, and
   // the rest of the page is where the mark that binds a control lives.

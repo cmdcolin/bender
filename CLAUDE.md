@@ -53,7 +53,7 @@ at ES2022 plus `es2023.array` for that reason; anything newer, such as
 
 ## Tests and typecheck
 
-Agents run `pnpm test` and `pnpm typecheck`, never bare `vitest` or `tsc`. Both
+Agents run `pnpm test` and `pnpm typecheck`, never bare `vitest` or `tsrs`. Both
 queue on `BENDER_HEAVY_SLOTS` machine-wide slots (default 2,
 `scripts/heavy-run-slot.sh`), so four agents at once cannot overload the
 machine. `BENDER_HEAVY_SLOTS=0` turns the gate off.
