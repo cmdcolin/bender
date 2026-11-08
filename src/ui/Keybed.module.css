@@ -18,7 +18,7 @@
    FM board's `.board` overrides them whichever stylesheet loads last. The case
    is a size container, so the deck hides decoration based on the case width. */
 :where(.body) {
-  container-type: inline-size;
+  container: case / inline-size;
   --case: #2b2b33;
   --case-edge: #14141a;
   --bed: #0a0a0d;
@@ -202,8 +202,7 @@
   height: 2px;
 }
 
-.outsideWhite,
-.outsideWhite:hover {
+.outsideWhite {
   filter: brightness(0.72) saturate(0.6);
 }
 
@@ -328,5 +327,9 @@
   .white:hover,
   .black:hover {
     filter: brightness(1.07);
+  }
+
+  .outsideWhite:hover {
+    filter: brightness(0.72) saturate(0.6);
   }
 }

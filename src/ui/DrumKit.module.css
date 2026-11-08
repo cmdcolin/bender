@@ -10,7 +10,7 @@
   --rubber: #1a1a1f;
   --rubber-edge: #0b0b0e;
 
-  container-type: inline-size;
+  container: case / inline-size;
   position: relative;
   flex: 0 1 330px;
   min-width: 220px;
@@ -299,7 +299,7 @@
 }
 
 @media (pointer: coarse) {
-  .kit {
+  .kit:not(.kitStaged) {
     gap: 5px;
     padding: 6px 8px 9px;
   }
