@@ -34,20 +34,7 @@ const box = (map: ChainMap, id: string) => map.nodes.find(n => n.id === id)
 function checkLayout(map: ChainMap) {
   expect(map.width).toBeGreaterThan(0)
   for (const n of map.nodes) {
-    // A label is anchored text and not a box: its x is the point the text is
-    // hung from, and which part of the text that is depends on the anchor —
-    // start hangs the left edge there, end the right, and the default, middle,
-    // the centre. Read as a left edge whatever the anchor, two of the three
-    // report an edge no glyph is ever painted at, and the check passes or fails
-    // on how wide the word happens to be rather than on where it sits.
-    const left =
-      n.kind !== 'label'
-        ? n.x
-        : n.anchor === 'start'
-          ? n.x
-          : n.anchor === 'end'
-            ? n.x - n.w
-            : n.x - n.w / 2
+    const left = n.kind === 'label' ? leftOf(n.x, n.w, n.anchor) : n.x
     expect(left).toBeGreaterThanOrEqual(0)
     expect(n.y).toBeGreaterThanOrEqual(0)
     expect(left + n.w).toBeLessThanOrEqual(map.width)
@@ -66,13 +53,43 @@ function checkLayout(map: ChainMap) {
           a.y + a.h <= b.y ||
           b.y + b.h <= a.y,
       ).toBe(true)
-  const ids = new Set(map.nodes.map(n => n.id))
+  const ids = new Set([...map.nodes.map(n => n.id), 'toy_board'])
   for (const w of map.wires) {
     expect(ids).toContain(w.from)
     expect(ids).toContain(w.to)
     expect(w.d).toMatch(/^M[\d.-]+ [\d.-]+/)
   }
+  const containers = new Set(['label', 'frame', 'rack'])
+  const solid = map.nodes.filter(n => !containers.has(n.kind))
+  for (const s of labelSpans(map))
+    for (const n of solid)
+      expect(
+        s.right <= n.x ||
+          n.x + n.w <= s.left ||
+          s.bottom <= n.y ||
+          n.y + n.h <= s.top,
+        `${s.id} on ${n.id}`,
+      ).toBe(true)
 }
+
+const leftOf = (x: number, width: number, anchor?: string) =>
+  anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2
+
+const labelSpans = (map: ChainMap) => [
+  ...map.wires.flatMap(w => {
+    if (!w.label) return []
+    const { text, x, y, anchor } = w.label
+    const left = leftOf(x, textWidth(text, 10), anchor)
+    const right = left + textWidth(text, 10)
+    return [{ id: w.id, left, right, top: y - 10, bottom: y }]
+  }),
+  ...map.nodes
+    .filter(n => n.kind === 'label')
+    .map(n => {
+      const left = leftOf(n.x, n.w, n.anchor)
+      return { id: n.id, left, right: left + n.w, top: n.y, bottom: n.y + n.h }
+    }),
+]
 
 test('the path is drawn, wired and inside its own box', () => {
   for (const wrap of [false, true]) {
@@ -620,9 +637,6 @@ test('a machine off the shared cells drops no tap onto their rail', () => {
 
 const OPEN_HAT = VOICE_LABELS.indexOf('open hat') + 1
 
-const leftOf = (x: number, width: number, anchor?: string) =>
-  anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2
-
 test.each(
   Object.entries({
     ...BOARDS,
@@ -648,27 +662,8 @@ test.each(
 )('no two labels overlap: %s', (_, board) => {
   for (const live of [true, false]) {
     const map = buildMap(board, { wrap: true, loop: true, live })
-    const spans = [
-      ...map.wires.flatMap(w => {
-        if (!w.label) return []
-        const { text, x, y, anchor } = w.label
-        const left = leftOf(x, textWidth(text, 10), anchor)
-        const right = left + textWidth(text, 10)
-        return [{ id: w.id, left, right, top: y - 10, bottom: y }]
-      }),
-      ...map.nodes
-        .filter(n => n.kind === 'label' || n.id === 'no_trig')
-        .map(n => {
-          const left = n.kind === 'label' ? leftOf(n.x, n.w, n.anchor) : n.x
-          return {
-            id: n.id,
-            left,
-            right: left + n.w,
-            top: n.y,
-            bottom: n.y + n.h,
-          }
-        }),
-    ]
+    checkLayout(map)
+    const spans = labelSpans(map)
     for (const [i, a] of spans.entries())
       for (const b of spans.slice(i + 1))
         expect(
@@ -1074,30 +1069,6 @@ const BOTH_ROWS = new Set([
   'Prattle',
 ])
 
-test('a wire onto a middle box of the lower row hangs its label clear of the row', () => {
-  const map = buildMap(
-    {
-      ...DEFAULT_CONTROLS,
-      mod0Src: 1,
-      mod0Dest: WIRE_TARGET.indexOf('Growler'),
-      mod0Depth: 0.25,
-    },
-    { wrap: true, loop: true, shown: new Set([...BOTH_ROWS, 'Output']) },
-  )
-  const label = box(map, 'wire0')!
-  const right = label.anchor === 'end' ? label.x : label.x + label.w
-  const row = map.nodes.filter(
-    n => n.kind === 'inst' && n.y === box(map, 'Growler')!.y,
-  )
-  expect(row.map(n => n.label)).toEqual([
-    'Clatter',
-    'Growler',
-    'Howler',
-    'Prattle',
-  ])
-  for (const n of row) expect(right <= n.x || label.y >= n.y + n.h).toBe(true)
-})
-
 test.each(Object.entries({ ...BOARDS, 'both rows': DEFAULT_CONTROLS }))(
   'the board drops onto the mix bus: %s',
   (name, board) => {
@@ -1113,3 +1084,21 @@ test.each(Object.entries({ ...BOARDS, 'both rows': DEFAULT_CONTROLS }))(
     expect(x).toBeLessThan(mix.x + mix.w)
   },
 )
+
+test.each([
+  ['every stage', undefined],
+  ['both rows', new Set([...BOTH_ROWS, 'Mix bus', 'Output'])],
+  ['the top row', new Set(['Plinky', 'Glint', 'Parlor', 'Mix bus', 'Output'])],
+] as const)('a wire onto any destination lays out clean: %s', (_, shown) => {
+  for (const [dest, target] of WIRE_TARGET.entries()) {
+    if (!target) continue
+    const board = {
+      ...DEFAULT_CONTROLS,
+      mod0Src: 1,
+      mod0Dest: dest,
+      mod0Depth: 0.5,
+    }
+    for (const live of [true, false])
+      checkLayout(buildMap(board, { wrap: true, loop: true, live, shown }))
+  }
+})
