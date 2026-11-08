@@ -1,5 +1,6 @@
 import { isPedal, PEDALS, pedalOrderAt, pedalOrderOf } from '../pedals.ts'
 import { BEND_SLOT_KEYS, BENDS, bendAt } from './controls/index.ts'
+import { intoOf, JACK_NAMES, MASTER, patchedInto } from './controls/jacks.ts'
 import { move } from './reorder.ts'
 
 import type { Controls } from '../controls.ts'
@@ -7,16 +8,56 @@ import type { Controls } from '../controls.ts'
 export const FROM_BUS = 'the mix bus'
 export const TO_OUTPUT = 'the output'
 
-export function effectChain(c: Controls) {
-  const bends = BEND_SLOT_KEYS.flatMap(k => {
-    const bend = bendAt(c[k])
-    return bend ? [bend.group] : []
-  })
-  return [
-    ...new Set(bends),
-    ...pedalOrderAt(c.pedalOrder).map(i => PEDALS[i]!.group),
-  ]
+export interface Run {
+  from: string
+  to: string
+  chain: string[]
 }
+
+function rackOrder(c: Controls) {
+  const slotted: string[] = [
+    ...new Set(
+      BEND_SLOT_KEYS.flatMap(k => {
+        const bend = bendAt(c[k])
+        return bend ? [bend.group] : []
+      }),
+    ),
+  ]
+  return {
+    slotted,
+    order: [
+      ...slotted,
+      ...BENDS.map(b => b.group).filter(g => !slotted.includes(g)),
+      ...pedalOrderAt(c.pedalOrder).map(i => PEDALS[i]!.group),
+    ],
+  }
+}
+
+const lineOf = (c: Controls, stage: string) => {
+  const into = intoOf(stage)
+  return into ? patchedInto(c[into]) : undefined
+}
+
+export function effectRuns(c: Controls): Run[] {
+  const { slotted, order } = rackOrder(c)
+  const master = order.filter(
+    s => lineOf(c, s) === undefined && (isPedal(s) || slotted.includes(s)),
+  )
+  const lines = JACK_NAMES.filter(name => name !== MASTER).flatMap(line => {
+    const chain = order.filter(s => lineOf(c, s) === line)
+    return chain.length > 0 ? [{ from: line, to: FROM_BUS, chain }] : []
+  })
+  return [{ from: FROM_BUS, to: TO_OUTPUT, chain: master }, ...lines]
+}
+
+export const runText = (runs: readonly Run[]) =>
+  runs.map(r => [r.from, r.to, ...r.chain].join('|')).join('\n')
+
+export const runsFrom = (text: string): Run[] =>
+  text.split('\n').map(row => {
+    const [from = '', to = '', ...chain] = row.split('|')
+    return { from, to, chain }
+  })
 
 export interface Cord {
   from: string
@@ -24,13 +65,13 @@ export interface Cord {
   through: string[]
 }
 
-export function cordsFor(chain: readonly string[], shown: readonly string[]) {
+export function cordsFor(run: Run, shown: readonly string[]) {
   const on = new Set(shown)
   const cords: Cord[] = []
-  let from = FROM_BUS
+  let from = run.from
   let through: string[] = []
-  for (const stage of [...chain, TO_OUTPUT]) {
-    if (on.has(stage) || stage === TO_OUTPUT) {
+  for (const stage of [...run.chain, run.to]) {
+    if (on.has(stage) || stage === run.to) {
       cords.push({ from, to: stage, through })
       from = stage
       through = []

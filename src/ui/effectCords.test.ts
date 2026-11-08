@@ -1,15 +1,18 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
+import { jackFor } from '../jacks.ts'
 import { PEDAL_ORDERS, PEDALS, pedalOrderAt } from '../pedals.ts'
 import { BEND_SLOT_KEYS } from './controls/index.ts'
 import {
   cordsFor,
-  effectChain,
+  effectRuns,
   inSays,
   landed,
   landingOf,
   outSays,
+  runsFrom,
+  runText,
 } from './effectCords.ts'
 
 const board = {
@@ -23,8 +26,10 @@ const board = {
   pedalOrder: 0,
 }
 
-test('the chain is the socketed effects once each in position order, then the six pedals', () => {
-  expect(effectChain(board)).toEqual([
+const master = (c: typeof board) => effectRuns(c)[0]!
+
+test('the master run is the socketed effects once each in position order, then the six pedals', () => {
+  expect(master(board).chain).toEqual([
     'Clipper',
     'Crusher',
     'Gnash',
@@ -37,7 +42,7 @@ test('the chain is the socketed effects once each in position order, then the si
 })
 
 test('a cord joins each face on the bench to the next, naming what it passes through', () => {
-  const cords = cordsFor(effectChain(board), ['Clipper', 'Ricochet', 'Ember'])
+  const cords = cordsFor(master(board), ['Clipper', 'Ricochet', 'Ember'])
   expect(cords).toEqual([
     { from: 'the mix bus', to: 'Clipper', through: [] },
     {
@@ -55,7 +60,33 @@ test('a cord joins each face on the bench to the next, naming what it passes thr
 })
 
 test('with no faces on the bench the one cord runs from the bus to the output', () => {
-  expect(cordsFor(effectChain(board), [])).toHaveLength(1)
+  expect(cordsFor(master(board), [])).toHaveLength(1)
+})
+
+test('a unit patched onto a machine leaves the master run for a run of its own from that machine to the mix bus', () => {
+  const c = {
+    ...board,
+    revInto: jackFor('sheet'),
+    octInto: jackFor('sheet'),
+    crushInto: jackFor('toyDrum'),
+  }
+  const runs = effectRuns(c)
+  expect(runs[0]!.chain).toEqual([
+    'Clipper',
+    'Gnash',
+    'Wraith',
+    'Ricochet',
+    'Chorale',
+    'Ember',
+  ])
+  expect(runs.slice(1)).toEqual([
+    { from: 'Clatter', to: 'the mix bus', chain: ['Crusher'] },
+    { from: 'Sheet', to: 'the mix bus', chain: ['Octave', 'Boing'] },
+  ])
+  const sheet = cordsFor(runs[2]!, ['Boing'])
+  expect(inSays(sheet[0]!)).toBe('In from Sheet, through Octave.')
+  expect(outSays(sheet[1]!)).toBe('Out to the mix bus.')
+  expect(runsFrom(runText(runs))).toEqual(runs)
 })
 
 const slotsOf = (c: typeof board) => BEND_SLOT_KEYS.map(k => c[k])

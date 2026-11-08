@@ -17,11 +17,13 @@ import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import {
   canLand,
   cordsFor,
-  effectChain,
+  effectRuns,
   inSays,
   landed,
   landingOf,
   outSays,
+  runsFrom,
+  runText,
   type Cord,
   type Landing,
 } from './effectCords.ts'
@@ -46,10 +48,11 @@ interface Box {
 function useEffectFaces() {
   const { pedals, bends } = useStoreValue(bench)
   const shown = [...bends, ...pedals]
-  const chain = useBoardValue(c => effectChain(c).join('|')).split('|')
+  const runs = runsFrom(useBoardValue(c => runText(effectRuns(c))))
+  const chain = runs.flatMap(r => r.chain)
   const placed = chain.filter(stage => shown.includes(stage))
   const loose = bends.filter(stage => !chain.includes(stage))
-  return { placed, loose, cords: cordsFor(chain, placed) }
+  return { placed, loose, cords: runs.flatMap(r => cordsFor(r, placed)) }
 }
 
 function measure(root: HTMLElement): Box[] {
