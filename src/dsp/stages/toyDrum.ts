@@ -1864,6 +1864,7 @@ export class ToyDrum implements Stage {
     falls[CYM] = Math.exp((1.5 * perSample) / voiceDecay[CYM]!)
 
     const chokeFall = Math.exp(CHOKE_COUNT * perSample)
+    const chokeRate = -CHOKE_COUNT * perSample
 
     const {
       clickCapCoef,
@@ -2344,8 +2345,10 @@ export class ToyDrum implements Stage {
               leakLift *
               (v === SNARE ? 1 : tapF) *
               hissF
-            tank.rate =
+            const rate =
               motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!
+            tank.rate =
+              this.chokedBits & (1 << v) ? Math.max(rate, chokeRate) : rate
             tank.sweep = this.tankSweep[t]!
             tank.drain = this.tankDrain[t]!
             tank.charge = this.tankCharge[t]!

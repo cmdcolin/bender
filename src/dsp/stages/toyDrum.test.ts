@@ -1320,6 +1320,20 @@ test('the choke wire moves, and the hats keep their pedal wherever it goes', () 
   expect(pedal).toBeLessThan(open * 0.3)
 })
 
+test('a kick choking the tom drains the tom’s ringing tank', () => {
+  const at: Partial<Controls> = {
+    drumTom: stepMask(1),
+    drumKick: stepMask(3),
+    drumDecay: 3,
+  }
+  const tomRing = (o: Partial<Controls>) => {
+    const kick = soloVoice({ ...o, drumTom: 0 }, 1)
+    const tom = soloVoice(o, 1).map((v, i) => v - kick[i]!)
+    return rms(tom.subarray(Math.round(0.3 * SR), Math.round(0.6 * SR)))
+  }
+  expect(tomRing({ ...at, drumChoke: 2 })).toBeLessThan(tomRing(at) * 0.2)
+})
+
 const RESET_ON_KICK = 1
 
 test('a reset wire ends the bar on the step its voice strikes', () => {
