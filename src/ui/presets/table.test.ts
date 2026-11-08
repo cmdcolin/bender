@@ -10,7 +10,7 @@ import {
   rms,
   SR,
 } from '../../dsp/testRender.ts'
-import { HOLD_KEYS } from '../controls/index.ts'
+import { HOLD_KEYS, SLIDER_BY_KEY } from '../controls/index.ts'
 import { applyPreset, presetPath } from './apply.ts'
 import { PRESETS } from './table.ts'
 import { mine } from './testBoard.ts'
@@ -136,6 +136,20 @@ test('every preset patches keys that exist', () => {
   for (const preset of PRESETS) {
     for (const key of Object.keys(preset.patch)) {
       expect(DEFAULT_CONTROLS, `${preset.name}/${key}`).toHaveProperty(key)
+    }
+  }
+})
+
+test('every choice a preset names lands on its travel', () => {
+  for (const preset of PRESETS) {
+    for (const def of SLIDER_BY_KEY.values()) {
+      const value = preset.patch[def.key]
+      if (def.choices && value !== undefined) {
+        expect(value, `${preset.name}/${def.key}`).toBeGreaterThanOrEqual(
+          def.min,
+        )
+        expect(value, `${preset.name}/${def.key}`).toBeLessThanOrEqual(def.max)
+      }
     }
   }
 })

@@ -19,13 +19,9 @@ import {
 } from '../../dsp/stages/crusher.ts'
 import { ECHO_MODE } from '../../dsp/stages/echo.ts'
 import { ENS_MODE } from '../../dsp/stages/ensemble.ts'
-import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects.ts'
-import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices.ts'
-import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom.ts'
 import { RING_FROM } from '../../dsp/stages/ringmod.ts'
 import { SHIFT_OUTS } from '../../dsp/stages/shifter.ts'
 import { DELAY_SYNC_MODES } from '../../dsp/stages/tapeDelay.ts'
-import { ARP_MODES, ARP_SYNC_MODES } from '../../dsp/stages/toyChip.ts'
 import {
   BANK_GATE_NAMES,
   DAC_REF_NAMES,
@@ -47,6 +43,7 @@ import {
 } from '../../engine/archive.ts'
 import { jackFor } from '../../jacks.ts'
 import { phraseControls } from '../../prattle.ts'
+import { choiceValue } from '../controls/index.ts'
 import { RAVE_STAB } from './rigs.ts'
 import { kit, lead, line } from './write.ts'
 
@@ -61,18 +58,6 @@ export interface PresetDef {
 }
 
 const romMasks = (name: string) => DRUM_ROMS.find(r => r.name === name)!.masks
-
-/** By name, so the catalog survives the ROM growing another script. */
-const effect = (name: string) => FM_EFFECT_NAMES.indexOf(name)
-
-/** And the same for the patches under the voice buttons. */
-const voice = (name: string) => FM_VOICE_NAMES.indexOf(name)
-
-const arp = (name: string) => ARP_MODES.indexOf(name)
-const arpSync = (name: string) => ARP_SYNC_MODES.indexOf(name)
-
-/** And the recordings in the home keyboard's ROM. */
-const keys = (name: string) => PCM_VOICE_NAMES.indexOf(name)
 
 const ACID: Partial<Controls> = {
   monoWave1: 1,
@@ -175,7 +160,7 @@ export const PRESETS: PresetDef[] = [
       'Parlor is on strings with the toy’s gate still soldered on, so the demo song plays a pad through a long spring and a tape that wanders',
     patch: {
       pcmLevel: 0.9,
-      pcmVoice: keys('strings'),
+      pcmVoice: choiceValue('pcmVoice', 'strings'),
       pcmEnv: 2,
       pcmRelease: 1.4,
       pcmTone: 3200,
@@ -195,7 +180,7 @@ export const PRESETS: PresetDef[] = [
       'Tube bells play off the eight-bit ROM, locked to a pentatonic and hung in the delay pedal',
     patch: {
       pcmLevel: 0.85,
-      pcmVoice: keys('chime'),
+      pcmVoice: choiceValue('pcmVoice', 'chime'),
       pcmEnv: 3,
       pcmRelease: 4,
       pcmTone: 6000,
@@ -215,7 +200,7 @@ export const PRESETS: PresetDef[] = [
       'Whatever you dropped plays across the keyboard off the sample memory, with a data line on the rail and the address bus bridged. The tape loop’s fader is down, so the only copy you hear is the keyed one',
     patch: {
       pcmLevel: 0.9,
-      pcmVoice: keys('sampled'),
+      pcmVoice: choiceValue('pcmVoice', 'sampled'),
       pcmEnv: 1,
       pcmRelease: 0.4,
       pcmTone: 5000,
@@ -235,7 +220,7 @@ export const PRESETS: PresetDef[] = [
       'Parlor’s slot clock is dragged down to its floor, so each chord of the demo song plays one voice at a time as a slow arpeggio of strings',
     patch: {
       pcmLevel: 0.9,
-      pcmVoice: keys('strings'),
+      pcmVoice: choiceValue('pcmVoice', 'strings'),
       pcmEnv: 2,
       pcmRelease: 1.2,
       pcmTone: 4000,
@@ -253,7 +238,7 @@ export const PRESETS: PresetDef[] = [
       'The data bus is shorted into Parlor’s rate adder, so each voice of the choir bends the next and every chord tangles into noise',
     patch: {
       pcmLevel: 0.85,
-      pcmVoice: keys('choir'),
+      pcmVoice: choiceValue('pcmVoice', 'choir'),
       pcmEnv: 2,
       pcmRelease: 1,
       pcmTone: 5000,
@@ -271,7 +256,7 @@ export const PRESETS: PresetDef[] = [
       'Parlor’s memory goes unrefreshed and its die runs hot: the e.piano crackles away to nothing until the chip cuts out, and it boots back clean',
     patch: {
       pcmLevel: 0.9,
-      pcmVoice: keys('e.piano'),
+      pcmVoice: choiceValue('pcmVoice', 'e.piano'),
       pcmEnv: 0,
       pcmRelease: 0.8,
       pcmTone: 5000,
@@ -578,7 +563,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       drumLevel: 0,
       fmLevel: 0.8,
-      fmEffect: effect('bird'),
+      fmEffect: choiceValue('fmEffect', 'bird'),
       fmDataLine: 3,
       fmDataFault: 0,
       fmBusCut: 0.55,
@@ -592,7 +577,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       drumLevel: 0,
       fmLevel: 0.8,
-      fmEffect: effect('wind'),
+      fmEffect: choiceValue('fmEffect', 'wind'),
       fmStrobe: 0.15,
     },
   },
@@ -603,7 +588,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       drumLevel: 0,
       fmLevel: 0.8,
-      fmEffect: effect('siren'),
+      fmEffect: choiceValue('fmEffect', 'siren'),
       fmAddrLine: 6,
       fmAddrFault: 0,
       fmBusCut: 0.5,
@@ -617,7 +602,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       drumLevel: 0,
       fmLevel: 0.8,
-      fmEffect: effect('crickets'),
+      fmEffect: choiceValue('fmEffect', 'crickets'),
       fmStrobe: 0.4,
     },
   },
@@ -673,7 +658,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       drumLevel: 0,
       fmLevel: 0.8,
-      fmEffect: effect('bird'),
+      fmEffect: choiceValue('fmEffect', 'bird'),
       fmAlloc: 4,
     },
   },
@@ -685,7 +670,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       drumLevel: 0,
       fmLevel: 0.8,
-      fmEffect: effect('applause'),
+      fmEffect: choiceValue('fmEffect', 'applause'),
       fmAdder: 3,
     },
   },
@@ -699,7 +684,7 @@ export const PRESETS: PresetDef[] = [
       drumBpm: 112,
       ...romMasks('disco'),
       fmLevel: 0.85,
-      fmVoice: voice('clarinet'),
+      fmVoice: choiceValue('fmVoice', 'clarinet'),
       fmExpLine: 10,
       fmExpFault: FAULT.cut,
       fmBusCut: 0.35,
@@ -804,7 +789,7 @@ export const PRESETS: PresetDef[] = [
       drumBpm: 142,
       drumSwing: 0,
       pcmLevel: 0.75,
-      pcmVoice: keys('brass'),
+      pcmVoice: choiceValue('pcmVoice', 'brass'),
       bits: 4,
       srHz: 3500,
       crushMix: 1,
@@ -1556,7 +1541,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       fmLevel: 0.7,
       fmKeyGate: 1,
-      fmVoice: voice('e.piano'),
+      fmVoice: choiceValue('fmVoice', 'e.piano'),
       fmBright: 0.45,
       ampVoice: AMP_VOICE.fender,
       ampGain: 0.3,
@@ -1598,7 +1583,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       fmLevel: 0.8,
       fmKeyGate: 1,
-      fmVoice: voice('bass'),
+      fmVoice: choiceValue('fmVoice', 'bass'),
       ampVoice: AMP_VOICE.fender,
       ampGain: 0.2,
       ampMaster: 0.8,
@@ -2611,7 +2596,7 @@ export const PRESETS: PresetDef[] = [
       'The counter steps through the notes you hold. Hold a chord, or latch it with hold',
     patch: {
       chipLevel: 0.8,
-      chipArp: arp('up-down'),
+      chipArp: choiceValue('chipArp', 'up-down'),
       chipArpHz: 8,
       chipArpOct: 2,
       delayMs: 240,
@@ -2627,8 +2612,8 @@ export const PRESETS: PresetDef[] = [
     patch: {
       ...romMasks('rock'),
       chipLevel: 0.75,
-      chipArp: arp('random'),
-      chipArpSync: arpSync('sixty-fourths'),
+      chipArp: choiceValue('chipArp', 'random'),
+      chipArpSync: choiceValue('chipArpSync', 'sixty-fourths'),
       chipArpOct: 4,
       drumLevel: 0.6,
       drumBpm: 140,
@@ -2682,7 +2667,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0.75,
       fmLevel: 0.7,
       fmKeyGate: 1,
-      fmVoice: voice('bass'),
+      fmVoice: choiceValue('fmVoice', 'bass'),
       fmBright: 0.45,
       fmModDecay: 8,
       revDecayS: 2,
@@ -2696,7 +2681,7 @@ export const PRESETS: PresetDef[] = [
     patch: {
       chipLevel: 0.7,
       chipTone: 0,
-      chipArp: arp('up-down'),
+      chipArp: choiceValue('chipArp', 'up-down'),
       chipArpHz: 6,
       chipArpOct: 2,
       ensMode: ENS_MODE.ensemble,
@@ -2717,7 +2702,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       fmLevel: 0.7,
       fmKeyGate: 1,
-      fmVoice: voice('e.piano'),
+      fmVoice: choiceValue('fmVoice', 'e.piano'),
       fmBright: 0.4,
       fmLength: 1.6,
       ensMode: ENS_MODE.dimension,
@@ -2755,7 +2740,7 @@ export const PRESETS: PresetDef[] = [
     patch: {
       chipLevel: 0.6,
       fmLevel: 0.6,
-      fmVoice: voice('strings'),
+      fmVoice: choiceValue('fmVoice', 'strings'),
       fmBright: 0.6,
       fmLength: 1.2,
       revDecayS: 3,
@@ -2773,7 +2758,7 @@ export const PRESETS: PresetDef[] = [
       chipAccomp: 0.5,
       drumLevel: 0.25,
       fmLevel: 0.6,
-      fmVoice: voice('e.piano'),
+      fmVoice: choiceValue('fmVoice', 'e.piano'),
       fmBright: 0.4,
       fmLength: 1.4,
       revMix: 0.6,
@@ -3019,7 +3004,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0,
       drumLevel: 0.5,
       pcmLevel: 1,
-      pcmVoice: keys('pipe organ'),
+      pcmVoice: choiceValue('pcmVoice', 'pipe organ'),
       pcmEnv: 1,
       pcmChord: 6,
       pcmClockX: 0.12,
