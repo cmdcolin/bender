@@ -15,6 +15,7 @@ import {
 import { IDX, MAX_SOURCES, STEM_FILES } from './params.ts'
 
 import type { RecMsg, ToWorklet } from './messages.ts'
+import type { WavSink } from './takeSink.ts'
 
 // Animation frames never fire here, so morphs and param posts move only on the
 // engine's timer fallback, and a synchronous test sees a morph still in flight.
@@ -732,6 +733,22 @@ test('a stem take saves the master and a file for each source that made a sound'
   const pcm = new DataView(await drums!.arrayBuffer())
   expect(pcm.getInt16(44, true)).toBeGreaterThan(16000)
   expect(pcm.getInt16(44 + N * 2, true)).toBe(0)
+})
+
+test('a stem file that fails to close leaves the other files saved', async () => {
+  const { files, chunk, engine } = recorder(true)
+  const rec = (engine as unknown as { rec: { stems: WavSink[] } }).rec
+  rec.stems[STEM_FILES.indexOf('drums')]!.close = () =>
+    Promise.reject(new Error('disk error'))
+  const l = new Float32Array(N)
+  const slabs = Array.from({ length: MAX_SOURCES }, () => new Float32Array(N))
+  slabs[STEM_FILES.indexOf('drums')]!.fill(0.5)
+  slabs[STEM_FILES.indexOf('fm')]!.fill(0.5)
+  chunk({ l, r: l, n: N, done: true, stems: slabs })
+  await vi.waitFor(() =>
+    expect(engine.recError.get()).toBe('disk error; saved 2 of 3 files'),
+  )
+  expect(suffixes(files)).toEqual(['-master.wav', '-fm.wav'])
 })
 
 test('a master-only take saves one file under the bare stamp', async () => {

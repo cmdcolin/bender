@@ -123,10 +123,6 @@ export function openTake(sr: number): Take {
   const frameBytes = { all: 0, widest: 0 }
   let failure = ''
 
-  const fail = (e: unknown) => {
-    if (failure === '') failure = errorText(e)
-  }
-
   const recheck = () => {
     if (!streamed || Date.now() - checkedAt < RECHECK_MS) return
     checkedAt = Date.now()
@@ -150,6 +146,11 @@ export function openTake(sr: number): Take {
       let handle: FileSystemFileHandle | null = null
       let stream: FileSystemWritableFileStream | null = null
       const pieces: Blob[] = []
+      let failed = ''
+      const fail = (e: unknown) => {
+        if (failed === '') failed = errorText(e)
+        if (failure === '') failure = failed
+      }
 
       let chain: Promise<void> = dir.then(async parent => {
         if (parent === null) return
@@ -183,7 +184,7 @@ export function openTake(sr: number): Take {
         },
         close: async () => {
           await chain
-          if (failure !== '') throw new Error(failure)
+          if (failed !== '') throw new Error(failed)
           const header = wavHeader(bytes, channels, sr)
           if (stream === null || handle === null) {
             return new File([header, ...pieces], name, { type: 'audio/wav' })

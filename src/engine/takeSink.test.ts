@@ -16,6 +16,8 @@ const entry = (kind: Entry['kind']): Entry => ({
   children: new Map(),
 })
 
+const POISON = -12345
+
 class Writable {
   private swap: Uint8Array<ArrayBuffer>
   private target: Entry
@@ -29,6 +31,12 @@ class Writable {
       | ArrayBufferView
       | { type: 'write'; position: number; data: Uint8Array },
   ) {
+    if (
+      !('type' in chunk) &&
+      chunk.byteLength >= 2 &&
+      new DataView(chunk.buffer, chunk.byteOffset).getInt16(0, true) === POISON
+    )
+      throw new Error('disk error')
     const [at, bytes] =
       'type' in chunk
         ? [chunk.position, chunk.data]
@@ -146,6 +154,19 @@ for (const opfs of [true, false]) {
     expect(v.getInt16(44 + 4 * 4, true)).toBe(-200)
   })
 }
+
+test('a file whose write failed fails alone, and the others close', async () => {
+  stubBrowser({ opfs: true })
+  const take = openTake(SR)
+  const master = take.wav('bender-1-master.wav', 2)
+  const stem = take.wav('bender-1-toy.wav', 1)
+  master.write(slab(4, 100))
+  stem.write(new Int16Array(4).fill(POISON))
+  expect((await master.close()).size).toBe(44 + 4 * 4)
+  await expect(stem.close()).rejects.toThrow('disk error')
+  expect(take.failure()).toBe('disk error')
+  take.end()
+})
 
 test('a file take keeps its name and type on the file it hands back', async () => {
   stubBrowser({ opfs: true })
