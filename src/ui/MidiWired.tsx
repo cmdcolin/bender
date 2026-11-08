@@ -298,7 +298,12 @@ function EffectPads() {
           max={1}
           step={0.01}
           value={pos}
-          onChange={e => setPos(Number(e.target.value))}
+          onChange={e => {
+            const next = Number(e.target.value)
+            setPos(next)
+            if (armed?.control === def.key)
+              midi.armEffect({ control: def.key, value: fromPos(def, next) })
+          }}
           aria-label="value while the pad is down"
         />
         <span className={styles.cc}>{formatValue(def, value)}</span>

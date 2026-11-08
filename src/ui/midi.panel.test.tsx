@@ -6,6 +6,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { sliderFor } from './controls/index.ts'
 import { midi } from './midi.ts'
 import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
+import { fromPos } from './slider-scale.ts'
 import { ControlSlider } from './Slider.tsx'
 import './testDom.ts'
 
@@ -124,6 +125,31 @@ test('escape lets go of a waiting knob on a later open too', async () => {
     expect(midi.waiting()).toBe(false)
     expect(screen.queryByRole('dialog')).not.toBeNull()
   }
+})
+
+test('moving the effect value while the pad is armed arms the new value', async () => {
+  midi.status.set('ready')
+  render(<Panel />)
+  fireEvent.click(tab())
+  await act(() => import('./MidiWired.tsx'))
+  const send = sliderFor('dlySend')
+  fireEvent.change(
+    await screen.findByRole('combobox', { name: 'control for the effect pad' }),
+    { target: { value: send.key } },
+  )
+  const range = screen.getByRole('slider', {
+    name: 'value while the pad is down',
+  })
+  fireEvent.change(range, { target: { value: '1' } })
+  fireEvent.click(
+    screen.getByRole('button', { name: `bind ${send.label} to a pad` }),
+  )
+  fireEvent.change(range, { target: { value: '0.25' } })
+  expect(midi.armedEffect.get()).toEqual({
+    control: send.key,
+    value: fromPos(send, 0.25),
+  })
+  act(() => midi.armEffect(null))
 })
 
 // The one thing that must survive being folded away. A stranded knob is one the
