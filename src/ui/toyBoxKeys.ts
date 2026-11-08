@@ -49,6 +49,7 @@ export const VOICE_BOXES = {
     'drumMotor',
     'drumSweep',
     'drumSwoopCap',
+    'drumLeak',
     'drumTomSweep',
     'drumTomSwoop',
     'drumSnareSweep',

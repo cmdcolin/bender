@@ -248,8 +248,12 @@ export const DEST = {
   fmSkew: 189,
   fmPitchWire: 190,
   drumTouch: 191,
+  echoPull: 192,
+  echoSag: 193,
+  drumLeak: 194,
+  drumSelfFire: 195,
 } as const
-export const N_DEST = 192
+export const N_DEST = 196
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

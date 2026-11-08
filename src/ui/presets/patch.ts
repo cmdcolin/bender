@@ -1,4 +1,5 @@
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
+import { ECHO_MODE } from '../../dsp/stages/echo.ts'
 import { RING_SHAPES } from '../../dsp/stages/ringmod.ts'
 import { YOURS } from '../../dsp/stages/roms.ts'
 import { SUPPLIED, SUPPLY } from '../../dsp/supplies.ts'
@@ -69,6 +70,9 @@ const RAILED: { level: ControlKey; supply: ControlKey }[] = [
 const onRail = (c: Controls, rail: number) =>
   RAILED.filter(m => Math.round(c[m.supply]) === rail).map(m => m.level)
 
+const echoAnalog = (c: Controls) =>
+  Math.round(c.echoMode) === ECHO_MODE.analog
+
 const hasMaybes = (c: Controls) => DRUM_VOICES.some(v => c[v.maybe] !== 0)
 
 const CHOP = RING_SHAPES.indexOf('chop')
@@ -103,6 +107,8 @@ const LANDED = {
   'delay filt': { up: ['dlyMix', 'dlyLoopMode'] },
   'tape speed': { up: ['dlyMix'] },
   'echo time': { up: ['echoLevel'] },
+  'echo pull': { up: ['echoLevel'], needs: echoAnalog },
+  'echo sag': { up: ['echoLevel'], needs: echoAnalog },
   'fb amount': { up: [] },
   'tape loop speed': { up: ['sampleLevel'], hands: true },
   'loop slide': { up: ['sampleLevel'], hands: true },
@@ -244,6 +250,8 @@ const LANDED = {
   'kit pattern rot': { up: ['drumLevel'] },
   'kit out to address': { up: ['drumLevel'] },
   'kit touch': { up: ['drumLevel'] },
+  'kit swoop leak': { up: ['drumLevel'] },
+  'kit self fire': { up: ['drumLevel'] },
   'kit step tap': { up: ['drumLevel'] },
   'toy kit on addr': { up: ['chipLevel', 'drumLevel'] },
   'ground bounce': { up: [], oneOf: ['chipLevel', 'drumLevel'] },

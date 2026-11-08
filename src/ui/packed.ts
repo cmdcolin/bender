@@ -1284,6 +1284,10 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumRetrigTarget',
   'drumTouch',
   'drumTouchMains',
+  'echoPull',
+  'echoSag',
+  'drumLeak',
+  'drumSelfFire',
 ]
 
 // Retired controls that old links still carry, each read into the control that

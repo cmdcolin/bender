@@ -2523,3 +2523,69 @@ test('the body pad drives touch through the mod bay', () => {
   expect(rms(render({ ...look, bodyX: 0 }, 0.5))).toBe(0)
   expect(rms(render({ ...look, bodyX: 1 }, 0.5))).toBeGreaterThan(0.001)
 })
+
+const kicksAt = (mask: number, over: Partial<Controls> = {}) =>
+  pitchHz(
+    render(
+      {
+        chipLevel: 0,
+        drumLevel: 1,
+        drumBpm: 120,
+        drumKick: mask,
+        drumSnare: 0,
+        drumHat: 0,
+        ...over,
+      },
+      4,
+    ).subarray(3 * SR, 4 * SR),
+  )
+
+const QUARTERS = stepMask(0, 4, 8, 12)
+const SIXTEENTHS = stepMask(...Array.from({ length: STEPS }, (_, k) => k))
+
+test('swoop leak and self fire at zero leave the kit unchanged', () => {
+  expect(render({ ...kitOnly, drumLeak: 0, drumSelfFire: 0 }, 1)).toEqual(
+    render(kitOnly, 1),
+  )
+})
+
+test('swoop leak tunes a run of kicks up about an octave, and a fill further', () => {
+  const stock = kicksAt(QUARTERS)
+  const run = kicksAt(QUARTERS, { drumLeak: 1 })
+  expect(run / stock).toBeGreaterThan(1.7)
+  expect(run / stock).toBeLessThan(2.3)
+  expect(kicksAt(SIXTEENTHS, { drumLeak: 1 })).toBeGreaterThan(1.3 * run)
+})
+
+test('swoop leak below zero pulls the kicks down', () => {
+  expect(kicksAt(QUARTERS, { drumLeak: -1 })).toBeLessThan(
+    0.6 * kicksAt(QUARTERS),
+  )
+})
+
+test('a wire on swoop leak tunes the kicks with the knob at zero', () => {
+  expect(kicksAt(QUARTERS, held(DEST.drumLeak))).toBeGreaterThan(
+    1.7 * kicksAt(QUARTERS),
+  )
+})
+
+test('self fire trails a lone kick with hits that die out', () => {
+  const stock = soloVoice(KICK_ALONE, 4)
+  const trailed = soloVoice({ ...KICK_ALONE, drumSelfFire: 0.6 }, 4)
+  const gap = (x: Float32Array) => rms(slice(x, 0.45, 0.9))
+  expect(gap(trailed)).toBeGreaterThan(2 * gap(stock))
+  expect(rms(slice(trailed, 2.5, 4))).toBeLessThan(0.1 * gap(trailed))
+})
+
+test('self fire near the top keeps a lone kick going', () => {
+  const looped = soloVoice({ ...KICK_ALONE, drumSelfFire: 0.9 }, 4)
+  expect(rms(slice(looped, 3, 4))).toBeGreaterThan(0.05)
+  expect(loudest(looped)).toBeLessThanOrEqual(1)
+})
+
+test('self fire at full with the floor up fills the gaps between steps', () => {
+  const stock = render({ ...kitOnly, drumTrigFloor: 1 }, 6)
+  const looped = render({ ...kitOnly, drumTrigFloor: 1, drumSelfFire: 1 }, 6)
+  expect(quietShare(looped)).toBeLessThan(quietShare(stock) - 0.2)
+  expect(loudest(looped)).toBeLessThanOrEqual(1)
+})

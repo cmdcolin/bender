@@ -431,6 +431,13 @@ const OWN_SWOOP: Partial<Record<number, { sweep: number; swoop: number }>> = {
 const OWN_SWOOP_MAX = 1000
 const OWN_CHARGE_S = 0.003
 
+const LEAK_STEP = 0.25
+const LEAK_S = 1.2
+const LEAK_LIFT = 3
+
+const SELF_TOP = 0.3
+const SELF_LAST = 0.02
+
 // Where the ring knob crosses over. Below it the transistor hands back less
 // than it took and the drum is a drum; at it the network never runs down; past
 // it the loop makes up the difference and the tank grows into its own clipping.
@@ -755,6 +762,12 @@ export class ToyDrum implements Stage {
   private tankSweep = new Float64Array(N_TANKS)
   private tankDrain = new Float64Array(N_TANKS)
   private tankCharge = new Float64Array(N_TANKS)
+  private leak = new Float64Array(N_VOICES)
+  private leakFall = 1
+  private leakDepth = 0
+  private selfFire = 0
+  private selfGain = new Float32Array(N_VOICES)
+  private envWas = new Float32Array(N_VOICES)
   // The accent cap, as the fraction of its rested charge still on it. One cap
   // feeds every voice on the board, so what a step takes off it is what the
   // next step does not get.
@@ -1319,6 +1332,9 @@ export class ToyDrum implements Stage {
       // line does the same thing either way and only what listens to it moves.
       this.romPos[v] = this.romStart
       this.romGate[v] = 1
+      this.selfGain[v] = g
+      this.leak[v] =
+        this.leak[v]! + LEAK_STEP * Math.min(g, 1.5) * (1 - this.leak[v]!)
       struck |= 1 << v
     }
     if (!struck) return 0
@@ -1331,6 +1347,18 @@ export class ToyDrum implements Stage {
     this.thrown = this.throwing ? this.thrown | struck : this.thrown & ~struck
     ctx.trig.drumFired(i, struck, struck & ~soft ? gain : gain * GHOST_GAIN)
     return struck
+  }
+
+  private fireSelf(ctx: Ctx, i: number) {
+    const env = this.env
+    const below = Math.min(this.trigFloor, SELF_TOP)
+    for (let v = 0; v < N_VOICES; v++) {
+      const e = env[v]!
+      const g = this.selfGain[v]! * this.selfFire
+      if (this.envWas[v]! > below && e <= below && g > SELF_LAST)
+        this.hit(1 << v, g, ctx, i)
+      this.envWas[v] = env[v]!
+    }
   }
 
   private narrow(v: number, w: number) {
@@ -1791,6 +1819,17 @@ export class ToyDrum implements Stage {
     )
     const bankGate = Math.round(p[IDX.drumBankGate]!) - 1
     const ownCharge = 1 - Math.exp(-1 / (OWN_CHARGE_S * this.sr))
+    const leakLane = ctx.mod.read(DEST.drumLeak)
+    this.leakDepth = Math.min(
+      Math.max(p[IDX.drumLeak]! + (leakLane ? leakLane[0]! : 0), -1),
+      1,
+    )
+    this.leakFall = Math.exp(-1 / (LEAK_S * this.sr))
+    const selfLane = ctx.mod.read(DEST.drumSelfFire)
+    this.selfFire = Math.min(
+      Math.max(p[IDX.drumSelfFire]! + (selfLane ? selfLane[0]! : 0), 0),
+      1,
+    )
     for (let t = 0; t < N_TANKS; t++) {
       const spec = TANKS[t]!
       const own = OWN_SWOOP[spec.voice]
@@ -2090,7 +2129,13 @@ export class ToyDrum implements Stage {
             const tank = this.tanks[t]!
             if (drive === 0 && tank.level <= AUDIBLE) continue
             tank.drive = drive
-            tank.f = this.tankF[t]! * pf * bankFm * motorF
+            const leakLift =
+              this.leakDepth === 0
+                ? 1
+                : this.leakDepth > 0
+                  ? 1 + LEAK_LIFT * this.leakDepth * this.leak[v]!
+                  : 1 / (1 - LEAK_LIFT * this.leakDepth * this.leak[v]!)
+            tank.f = this.tankF[t]! * pf * bankFm * motorF * leakLift
             tank.rate =
               motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!
             tank.sweep = this.tankSweep[t]!
@@ -2347,6 +2392,7 @@ export class ToyDrum implements Stage {
           const lp = pulseOut[v]! + pulseRise[v]! * (pulse[v]! - pulseOut[v]!)
           pulseOut[v] = lp > 1e-7 ? lp : 0
           if (env[v]! > AUDIBLE) live++
+          this.leak[v] = flushDenormal(this.leak[v]! * this.leakFall)
         }
         // The one-shots draw their charge off the supply, ahead of the sound
         // they start: the bank's local cap dips at once, and the shared rail
@@ -2360,6 +2406,7 @@ export class ToyDrum implements Stage {
         // What the next pass has to get through. One, at the least: a chip with
         // nothing to do still goes round.
         this.live = live > 0 ? live : 1
+        if (this.selfFire > 0) this.fireSelf(ctx, i)
         if (this.ringSrc >= 0) this.ringCompare(heard, ctx, i)
         // There is one converter and there are eight voices, and the chip in
         // front of it is not fast enough to pretend otherwise. It works through
@@ -2563,6 +2610,9 @@ export class ToyDrum implements Stage {
     this.fuseHeat = 0
     this.fuseOpen = false
     this.env.fill(0)
+    this.leak.fill(0)
+    this.selfGain.fill(0)
+    this.envWas.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)
     this.weight.fill(1)

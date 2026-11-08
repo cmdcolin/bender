@@ -209,6 +209,10 @@ export const DEST_CHOICES = [
   'FM slot skew',
   'FM mod into pitch',
   'kit touch',
+  'echo pull',
+  'echo sag',
+  'kit swoop leak',
+  'kit self fire',
 ] as const
 
 export const ENV_KEYS = [
@@ -460,6 +464,8 @@ export const PATCH_GROUPS: Group[] = [
                 'kit pattern rot',
                 'kit out to address',
                 'kit touch',
+                'kit swoop leak',
+                'kit self fire',
               ],
             },
             {
@@ -612,6 +618,8 @@ export const PATCH_GROUPS: Group[] = [
                 'delay filt',
                 'tape speed',
                 'echo time',
+                'echo pull',
+                'echo sag',
                 'verb decay',
                 'verb warble',
                 'ens rate',

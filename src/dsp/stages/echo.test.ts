@@ -1,6 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { IDX } from '../../engine/params.ts'
+import { DEFAULT_CONTROLS } from '../../controls.ts'
+import { IDX, packParams } from '../../engine/params.ts'
+import { ModBus } from '../modbus.ts'
+import { spectrum } from '../spectrum.ts'
+import { BLOCK, GLINT_REGS, type Ctx } from '../stage.ts'
 import {
   SR,
   bin,
@@ -11,7 +15,9 @@ import {
   sine,
   tail,
 } from '../testRender.ts'
-import { ECHO_MODE } from './echo.ts'
+import { DEAD_V } from '../toyRail.ts'
+import { TriggerBus } from '../trigbus.ts'
+import { ECHO_MODE, Echo } from './echo.ts'
 import { romIndex } from './roms.ts'
 
 import type { Controls } from '../../controls.ts'
@@ -268,4 +274,106 @@ test('shift moves every lap by the interval again', () => {
   const [down1, down2] = laps(-12)
   expect(down1! / 400).toBeCloseTo(0.5, 1)
   expect(down2! / 400).toBeCloseTo(0.25, 1)
+})
+
+const blank = (): Ctx => ({
+  sr: SR,
+  mic: new Float32Array(BLOCK),
+  mic2: new Float32Array(BLOCK),
+  fb: new Float32Array(BLOCK),
+  railV: new Float32Array(BLOCK).fill(1),
+  sag: new Float32Array(BLOCK),
+  droop: new Float32Array(BLOCK),
+  env: new Float32Array(BLOCK),
+  out: new Float32Array(BLOCK),
+  step: new Float32Array(BLOCK),
+  carrier: new Float32Array(BLOCK),
+  logic: new Float32Array(BLOCK),
+  toy: new Float32Array(BLOCK),
+  fm: new Float32Array(BLOCK),
+  send: new Float32Array(BLOCK),
+  bright: new Float32Array(BLOCK),
+  gnd: new Float32Array(BLOCK),
+  regs: new Uint8Array(GLINT_REGS),
+  heat: 0,
+  fbDest: 0,
+  mod: new ModBus(SR, 1),
+  trig: new TriggerBus(),
+})
+
+const fullRail = () => 1
+
+function brigade(
+  board: Partial<Controls>,
+  rail: (t: number) => number = fullRail,
+  seconds = 4,
+) {
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    echoMode: ECHO_MODE.analog,
+    echoLevel: 1,
+    echoMs: 300,
+    echoFb: 0.9,
+    ...board,
+  })
+  const echo = new Echo(SR)
+  const ctx = blank()
+  const io = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const blocks = Math.ceil((seconds * SR) / BLOCK)
+  const out = new Float32Array(blocks * BLOCK)
+  for (let b = 0; b < blocks; b++) {
+    for (let i = 0; i < BLOCK; i++) {
+      const t = b * BLOCK + i
+      io.l[i] = io.r[i] =
+        t < SR / 4 ? 0.4 * Math.sin((2 * Math.PI * 400 * t) / SR) : 0
+      ctx.railV[i] = rail(t)
+    }
+    echo.process(io, p, ctx)
+    out.set(io.l, b * BLOCK)
+  }
+  return out
+}
+
+const repeats = (x: Float32Array) => x.subarray(SR)
+
+test('a full rail leaves the brigade on its clock', () => {
+  const stock = repeats(brigade({}))
+  const railed = repeats(brigade({ echoSag: 1 }))
+  const centroid = (x: Float32Array) => spectrum(x, SR).centroid
+  expect(centroid(railed) / centroid(stock)).toBeCloseTo(1, 1)
+  expect(rms(railed) / rms(stock)).toBeCloseTo(1, 1)
+})
+
+test('a dying rail slows the brigade’s clock and dives the repeats', () => {
+  const dying = (t: number) => Math.max(1 - t / (3 * SR), DEAD_V)
+  const stock = spectrum(repeats(brigade({})), SR).centroid
+  const dived = spectrum(repeats(brigade({ echoSag: 1 }, dying)), SR).centroid
+  expect(dived).toBeLessThan(0.3 * stock)
+})
+
+test('a starved brigade holds its repeats as loud as a healthy one', () => {
+  const dying = (t: number) => Math.max(1 - t / (3 * SR), DEAD_V)
+  expect(rms(repeats(brigade({ echoSag: 1 }, dying)))).toBeGreaterThan(
+    0.7 * rms(repeats(brigade({}))),
+  )
+})
+
+test('clock pull sends loud repeats up in pitch and keeps them as loud', () => {
+  const stock = repeats(brigade({}))
+  const pulled = repeats(brigade({ echoPull: 1 }))
+  expect(spectrum(pulled, SR).centroid).toBeGreaterThan(
+    1.3 * spectrum(stock, SR).centroid,
+  )
+  expect(rms(pulled)).toBeGreaterThan(0.7 * rms(stock))
+})
+
+test('clock pull leaves no offset on the line', () => {
+  const pulled = repeats(brigade({ echoPull: 1, echoFb: 1.1 }, fullRail, 6))
+  let sum = 0
+  for (const v of pulled) sum += v
+  expect(Math.abs(sum / pulled.length)).toBeLessThan(0.005)
 })

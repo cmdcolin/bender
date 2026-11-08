@@ -567,6 +567,12 @@ tempo, swing, chance, tune, decay and mute.
   - At 0 there is no cap, and the swoop falls as fast as the drum runs down.
   - A few milliseconds with Sweep wound up chirps a kick down from high into a
     long sub: the hard kick of distorted techno.
+- **Swoop leak:** a big cap on the bias of the kick, tom and snare networks,
+  charged a slice by each hit and leaking away between them.
+  - At the top, steady kicks settle well above rest and a fill climbs higher
+    still; a gap lets them sink back.
+  - Below zero the charge pulls the networks down, so busy bars dive.
+  - Harder hits add more charge.
 - **Tom sweep, Tom swoop:** the tom's network gets a bias trimmer of its own, in
   series with Sweep, and a cap of its own, charged off its trigger line.
   - The strike lands near rest and the tuning leaps a few milliseconds later, so
@@ -976,6 +982,14 @@ See [the trigger patch](features.md#trigger-patch) for wiring.
     lowers the drone and divides it out at maximum.
   - _Kick fires the kit_ strikes all seven other voices every cycle.
   - The sampled kit reads the slab's output.
+- **Self fire:** each voice's envelope wired back onto its own trigger line
+  through a comparator that trips once the voice has drained to the trigger
+  floor. Each repeat strikes at this fraction of the last one's strength.
+  - Partway up, a lone kick trails a few hits that die out.
+  - Near the top every voice loops on its own decay: the hats fast, the kick
+    slowly. Decay, the rail and the trigger load move the loops apart.
+  - A step on the grid restarts a voice's loop, and every repeat lands on the
+    trigger bus, so the bay's ADSR and the TRIG cables follow it.
 - **Cross-patch:** bridges two voices' envelope pins, so one amplifier follows
   another voice's envelope.
 - **Rotate:** cycles the cross-patch through the original three voices.
@@ -1168,6 +1182,20 @@ rests on the bench supply.
 - **Speaker:** a cone whose resonance climbs from 120 Hz to 960 Hz as it
   shrinks. Its output follows the cone's acceleration, so a cone pinned at its
   stop goes silent, and each slam clicks and rattles.
+
+## The delay pedal's bucket brigade
+
+Ricochet's **analog** mode is a bucket brigade on one clock. Two faults reach
+that clock, and both rest off.
+
+- **Clock pull:** the output's rectified swing loads the clock's timing cap.
+  Loud repeats slow the clock as they go in and come back out sharp, so the
+  echoes climb in pitch while they are loud and settle as they fade.
+- **Clock on the rail:** how much of the clock runs off the shared cells. A
+  starve stretches the delay and dives every repeat on the line; when the supply
+  comes back they rush up again. Below the toy's dead voltage the clock nearly
+  stops.
+- The patch bay's **echo pull** and **echo sag** lanes ride them.
 
 ## The comb's bucket brigade
 

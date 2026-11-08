@@ -1,10 +1,12 @@
 import { IDX } from '../../engine/params.ts'
-import { DEST } from '../modbus.ts'
+import { DEST, type ModBus } from '../modbus.ts'
+import { DEAD_V } from '../toyRail.ts'
 import { Bbd } from '../util/bbd.ts'
-import { DelayLine } from '../util/delayline.ts'
+import { clamp01 } from '../util/clamp.ts'
+import { DelayLine, ringSize } from '../util/delayline.ts'
 import { Follower, coef as timeCoef } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
-import { OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { Highpass, OnePoleLP, lpCoef } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
@@ -38,6 +40,11 @@ const BBD = {
   hiss: 0.004,
   seed: 0x0dd8,
 } as const
+const PULL_DEPTH = 1.5
+const CLOCK_FLOOR = 0.05
+const COUPLING_HZ = 30
+const LOAD_ATTACK_S = 0.005
+const LOAD_RELEASE_S = 0.08
 const MOD_HZ = 0.7
 const MOD_MS = 6
 // Hold: a hit lifts the record head. The window the time knob names is taken
@@ -70,6 +77,8 @@ export class Echo implements Stage {
   private lineR: DelayLine
   private toneL = new OnePoleLP()
   private toneR = new OnePoleLP()
+  private capL = new Highpass(1)
+  private capR = new Highpass(1)
   private readonly bbd: Bbd
   private lfo = new SineOsc()
   private slam = new Follower()
@@ -86,6 +95,14 @@ export class Echo implements Stage {
   private revPhase = 0
   private revLen = 0
   private shiftPhase = 0
+  private last = 0
+  private load = new Follower()
+  private readonly stamps: Float64Array
+  private readonly stampMask: number
+  private stampAt = 0
+  private stamped = false
+  private walked = 0
+  private reach = 1
   private readonly shiftWindow: number
   private readonly maxDelay: number
   private readonly maxRead: number
@@ -102,6 +119,8 @@ export class Echo implements Stage {
     this.maxRead = 2 * this.maxDelay
     this.lineL = new DelayLine(this.maxRead + 8)
     this.lineR = new DelayLine(this.maxRead + 8)
+    this.stamps = new Float64Array(ringSize(this.maxRead + 8))
+    this.stampMask = this.stamps.length - 1
     this.bbd = new Bbd(sr, 2, BBD)
     this.fadeStep = 1 / (0.025 * sr)
     this.shiftWindow = (SHIFT_WINDOW_MS / 1000) * sr
@@ -149,6 +168,16 @@ export class Echo implements Stage {
         ? p[IDX.echoMod]! * (MOD_MS / 1000) * this.sr
         : 0
     if (bbd) this.bbd.setClock(target)
+    const pull = bbd
+      ? PULL_DEPTH * this.lane(p, ctx.mod, IDX.echoPull, DEST.echoPull)
+      : 0
+    const sag = bbd ? this.lane(p, ctx.mod, IDX.echoSag, DEST.echoSag) : 0
+    const pulled = pull > 0 || sag > 0
+    const loadA = timeCoef(LOAD_ATTACK_S, this.sr)
+    const loadR = timeCoef(LOAD_RELEASE_S, this.sr)
+    const capCoef = lpCoef(COUPLING_HZ, this.sr)
+    if (pulled && !this.stamped) this.restamp()
+    this.stamped = pulled
     if (crosses && this.fade >= 1 && Math.abs(target - this.cur) > 8) {
       this.next = target
       this.fade = 0
@@ -156,6 +185,17 @@ export class Echo implements Stage {
 
     for (let i = 0; i < io.n; i++) {
       const bend = modTime ? octaves(2 * modTime[i]!) : 1
+      const speed = pulled
+        ? Math.max(
+            (sag > 0
+              ? 1 -
+                sag +
+                sag * Math.max((ctx.railV[i]! - DEAD_V) / (1 - DEAD_V), 0)
+              : 1) *
+              (1 - pull * this.load.process(this.last, loadA, loadR)),
+            CLOCK_FLOOR,
+          )
+        : 1
       let tapL = 0
       let tapR = 0
       if (hold) {
@@ -251,7 +291,11 @@ export class Echo implements Stage {
           }
         }
         const v = wobble ? wobble * this.lfo.step(lfoK) : 0
-        const base = crosses ? this.cur : this.glide
+        const base = crosses
+          ? this.cur
+          : pulled
+            ? this.brigadeDelay(this.glide)
+            : this.glide
         const dl = this.tap(base + v, bend)
         const dr = this.tap(base - v, bend)
         tapL = this.lineL.readHermite(dl)
@@ -274,6 +318,10 @@ export class Echo implements Stage {
         const w = this.bbd.bleed()
         tapL = this.bbd.band(0, tapL) + w
         tapR = this.bbd.band(1, tapR) + w
+        if (pulled) {
+          tapL = this.capL.process(tapL, capCoef)
+          tapR = this.capR.process(tapR, capCoef)
+        }
       }
 
       let wl = io.l[i]! + fb * tapL
@@ -283,9 +331,15 @@ export class Echo implements Stage {
         this.bbd.feed[1] = wr
         // The clock walks where the head is rather than where the knob is: a
         // time being dragged drags the clock with it.
-        this.bbd.sample(this.bbd.rate(this.glide))
+        this.bbd.sample(this.bbd.rate(this.glide / speed))
         wl = this.bbd.held[0]!
         wr = this.bbd.held[1]!
+        this.last = 0.5 * (wl + wr)
+        if (pulled) {
+          this.walked += speed
+          this.stamps[this.stampAt] = this.walked
+          this.stampAt = (this.stampAt + 1) & this.stampMask
+        }
       } else {
         wl = Math.min(Math.max(wl, -HEADROOM), HEADROOM)
         wr = Math.min(Math.max(wr, -HEADROOM), HEADROOM)
@@ -297,6 +351,32 @@ export class Echo implements Stage {
     }
   }
 
+  private restamp() {
+    for (let k = 0; k <= this.stampMask; k++)
+      this.stamps[(this.stampAt - 1 - k) & this.stampMask] = this.walked - k
+    this.reach = 1
+  }
+
+  private walkedSince(k: number) {
+    return this.walked - this.stamps[(this.stampAt - 1 - k) & this.stampMask]!
+  }
+
+  private brigadeDelay(buckets: number) {
+    const top = this.maxRead - 2
+    let k = this.reach
+    while (k > 1 && this.walkedSince(k) > buckets) k--
+    while (k < top && this.walkedSince(k + 1) <= buckets) k++
+    this.reach = k
+    const lo = this.walkedSince(k)
+    const step = this.walkedSince(k + 1) - lo
+    return k + (step > 0 ? Math.min(Math.max((buckets - lo) / step, 0), 1) : 0)
+  }
+
+  private lane(p: Float32Array, bay: ModBus, key: number, dest: number) {
+    const m = bay.read(dest)
+    return m ? clamp01(p[key]! + m[0]!) : p[key]!
+  }
+
   private tap(d: number, bend: number) {
     return Math.min(Math.max(d * bend, 1), this.maxRead)
   }
@@ -306,6 +386,8 @@ export class Echo implements Stage {
     this.lineR.reset()
     this.toneL.reset()
     this.toneR.reset()
+    this.capL.reset()
+    this.capR.reset()
     this.bbd.reset()
     this.lfo.reset()
     this.slam.reset()
@@ -322,5 +404,10 @@ export class Echo implements Stage {
     this.revPhase = 0
     this.revLen = 0
     this.shiftPhase = 0
+    this.last = 0
+    this.load.reset()
+    this.stamped = false
+    this.walked = 0
+    this.reach = 1
   }
 }

@@ -32,9 +32,10 @@ const OPENS: Record<string, { keys: readonly ControlKey[]; help: string }> = {
       'drumTouchMains',
       'drumRatchetRamp',
       'drumTrigFloor',
+      'drumSelfFire',
       'drumScan',
     ],
-    help: 'One trigger line a voice off the pattern memory. The rows set how fast a step retriggers, how a ratcheted step’s repeats swell or fade, how far a voice must drain before it answers again and how slowly the chip scans its lines.',
+    help: 'One trigger line a voice off the pattern memory. The rows set how fast a step retriggers, how a ratcheted step’s repeats swell or fade, how far a voice must drain before it answers again, how hard a drained voice fires itself and how slowly the chip scans its lines.',
   },
   amps: {
     keys: ['drumAccentAmt', 'drumAccentSag'],

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-821 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 196
+825 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 196
 presets, 24 stage settings and 112 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 192 destinations, among
+- **A patch bay that modulates itself.** Four wires, 196 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 107 controls are shy, mostly the ones that act on the
+names it still sets it. 109 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -255,7 +255,7 @@ puts the fault on, and the rows under it show the controls it set:
   word sits in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>76 controls</summary>
+<summary>78 controls</summary>
 
 | control          | range                                                                                                              | what it does                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -272,6 +272,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Motorboat †      | off to full                                                                                                        | Runs the feedback transistor around the kick, tom and snare off a small local supply behind a resistor                                                  |
 | Sweep            | −1× to +8×                                                                                                         | The bias trimmer behind the swoop: how far above their resting pitch the kick, tom and snare networks start on a hard hit                               |
 | Swoop cap        | 0 to 200 ms                                                                                                        | How fast the swoop falls, set by a cap soldered onto the bias it reads                                                                                  |
+| Swoop leak †     | −1 to +1                                                                                                           | A big cap on the bias of the kick, tom and snare networks, charged a little by each hit and leaking away between them                                   |
 | Tom sweep        | −1× to +500×                                                                                                       | The tom network’s own bias trimmer, in series with Sweep                                                                                                |
 | Tom swoop        | 0 ms to 1 s                                                                                                        | A cap of the tom’s own on its bias, charged through a resistor off the tom’s trigger line and drained in this many milliseconds                         |
 | Snare sweep      | −1× to +500×                                                                                                       | A bias trimmer of the snare networks’ own, in series with Sweep, as Tom sweep is for the tom                                                            |
@@ -316,6 +317,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Mains            | 60 Hz or 50 Hz                                                                                                     | The hum your body picks up off the wall                                                                                                                 |
 | Ratchet ramp     | −1 to +1                                                                                                           | How the repeats of a ratcheted step land                                                                                                                |
 | Trigger floor    | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                                                    |
+| Self fire †      | off to full                                                                                                        | A wire from each voice’s envelope back onto its own trigger line, through a comparator that trips when the voice has drained to the trigger floor       |
 | Scan             | 0 to 40 ms                                                                                                         | The chip strikes one voice per scan                                                                                                                     |
 | Accent           | 1× to 4×                                                                                                           | How far the accent bus swings when it is rested                                                                                                         |
 | Accent sag       | off to full                                                                                                        | How much each accented step takes off the accent cap, which feeds every voice                                                                           |
@@ -1631,19 +1633,21 @@ the record head on every hit and loops the window it just recorded, which with
 the kit running is a beat repeat.
 
 <details>
-<summary>9 controls</summary>
+<summary>11 controls</summary>
 
-| control      | range                                            | what it does                                                                                                               |
-| ------------ | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| Mode         | standard, analog, reverse, modulate, hold, shift | Which delay the box is being                                                                                               |
-| Time         | 20 ms to 2 s                                     | Delay time                                                                                                                 |
-| Feedback     | 0 to 2, normal 0 to 1                            | How much of the repeat goes back in                                                                                        |
-| Tone         | 800 Hz to 16 kHz                                 | High cut in the loop, so each lap comes back darker than the last                                                          |
-| Mod depth    | off to full                                      | How far the read head swings, up to six milliseconds at 0.7 Hz                                                             |
-| Shift        | −24 to +24 st                                    | How far each repeat moves in pitch, and each lap moves again because the repeat goes back round                            |
-| Bypass       | on or bypassed                                   | Takes Ricochet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
-| E. level     | off to full                                      | Volume of the repeats, added on top of the dry signal                                                                      |
-| Patched into | 15 of them, master through Prattle               | Cables Ricochet onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
+| control           | range                                            | what it does                                                                                                               |
+| ----------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Mode              | standard, analog, reverse, modulate, hold, shift | Which delay the box is being                                                                                               |
+| Time              | 20 ms to 2 s                                     | Delay time                                                                                                                 |
+| Feedback          | 0 to 2, normal 0 to 1                            | How much of the repeat goes back in                                                                                        |
+| Tone              | 800 Hz to 16 kHz                                 | High cut in the loop, so each lap comes back darker than the last                                                          |
+| Mod depth         | off to full                                      | How far the read head swings, up to six milliseconds at 0.7 Hz                                                             |
+| Shift             | −24 to +24 st                                    | How far each repeat moves in pitch, and each lap moves again because the repeat goes back round                            |
+| Clock pull        | off to full                                      | The rectified swing of what goes into the bucket brigade loads its clock’s timing cap                                      |
+| Clock on the rail | off to full                                      | How much of the bucket brigade’s clock runs off the shared cells                                                           |
+| Bypass            | on or bypassed                                   | Takes Ricochet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound      |
+| E. level          | off to full                                      | Volume of the repeats, added on top of the dry signal                                                                      |
+| Patched into      | 15 of them, master through Prattle               | Cables Ricochet onto one machine’s output instead of the master run, so it processes that machine alone before the mix bus |
 
 </details>
 
@@ -1780,7 +1784,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 192 of them, filt cut through kit touch                                                                                | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 196 of them, filt cut through kit self fire                                                                            | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>
