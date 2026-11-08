@@ -154,3 +154,18 @@ test.each([
     expect(apart).toBe(0)
   },
 )
+
+test('a reboot with the song stopped strikes nothing on the stacks', () => {
+  const built = buildBender(SR)
+  const p = packParams({ ...BOARD, fmLevel: 0, pcmLevel: 0, monoLevel: 0 })
+  const io = makeIo()
+  const out = new Int16Array(16)
+  for (let b = 0; b < 20; b++) built.chain.process(io, p)
+  built.rail.trip()
+  let sounded = 0
+  for (let b = 0; b < SR / BLOCK; b++) {
+    built.chain.process(io, p)
+    sounded += built.toyChip.soundingNotes(out)
+  }
+  expect(sounded).toBe(0)
+})

@@ -990,8 +990,10 @@ export class ToyChip implements Stage {
     const step = this.readAt(tune, addr)
     this.note = isNote(step) ? step : REST
     this.env = isNote(step) ? 1 : 0
-    if (isNote(step) && this.transport.tune) this.laneNotes[0] = step + KEY_BIAS
-    this.strikeStacks(addr)
+    if (this.transport.tune) {
+      if (isNote(step)) this.laneNotes[0] = step + KEY_BIAS
+      this.strikeStacks(addr)
+    }
     this.chord = this.triads[0]!
     this.bassFifth = false
   }
