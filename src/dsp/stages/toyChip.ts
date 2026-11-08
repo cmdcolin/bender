@@ -57,6 +57,9 @@ const LANE_IDX = TUNE_LANE_KEYS.map(keys => keys.map(k => IDX[k]))
 const TUNE_IDX = LANE_IDX[0]!
 
 const ENV_FLOOR = 0.003
+const WALK_SR = 48000
+const WALK_STEP = 0.2
+const WALK_LEAK = 0.999
 
 // An envelope that has fallen under the floor stops there, rather than halving
 // its way toward zero for the rest of the session.
@@ -469,6 +472,8 @@ export class ToyChip implements Stage {
   private gateState = 1
   private gateClock = 0
   private clockWalk = 0
+  private readonly walkStep: number
+  private readonly walkLeak: number
   private wasPlaying = false
   // The gate, waiting to go out on the bus. A flag rather than a sentinel note:
   // the keys reach under the toy's bottom key, so there is no note number left
@@ -631,6 +636,8 @@ export class ToyChip implements Stage {
     seed = 101,
   ) {
     this.sr = sr
+    this.walkStep = WALK_STEP * Math.sqrt(WALK_SR / sr)
+    this.walkLeak = WALK_LEAK ** (WALK_SR / sr)
     this.supplies = supplies
     this.power = new SupplyTap(supplies)
     this.transport = transport
@@ -1404,8 +1411,8 @@ export class ToyChip implements Stage {
       // clock bend: the pot shorts the RC — wildly fast and unstable
       let clock = clockX
       if (spot === 1 && pot > 0) {
-        this.clockWalk += (this.rng() - 0.5) * pot * 0.2
-        this.clockWalk *= 0.999
+        this.clockWalk += (this.rng() - 0.5) * pot * this.walkStep
+        this.clockWalk *= this.walkLeak
         clock *= 1 + pot * 24 * (1 + 0.4 * Math.sin(this.clockWalk))
       }
       // The clip landing on the timing pin instead of the supply, which is the
