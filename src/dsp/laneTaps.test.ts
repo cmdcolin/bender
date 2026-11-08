@@ -114,3 +114,43 @@ test('a lift does nothing while Plinky plays a ROM song', () => {
   const rom = { chipTune: 0, tuneLift: 0b111 }
   expect(heard(rom).toyChip).toEqual(heard({ chipTune: 0 }).toyChip)
 })
+
+function played(over: Partial<Controls>) {
+  const built = buildBender(SR)
+  built.transport.tune = true
+  const p = packParams({
+    ...BOARD,
+    fmLevel: 0,
+    pcmLevel: 0,
+    monoLevel: 0,
+    ...over,
+  })
+  const io = makeIo()
+  const out = new Float32Array(Math.ceil(SR / BLOCK) * BLOCK)
+  for (let b = 0; b < out.length / BLOCK; b++) {
+    built.chain.process(io, p)
+    out.set(io.l, b * BLOCK)
+  }
+  return out
+}
+
+test.each([
+  ['scanned', { chipScan: 1 }],
+  ['shorted', { chipShort: 1 }],
+  ['ring', { chipXor: 1 }],
+] as const)(
+  'a lifted lead leaves the %s output pin to the stacks',
+  (_, pin) => {
+    const blank = Object.fromEntries(TUNE_LANE_KEYS[0].map(key => [key, REST]))
+    const lifted = played({ ...pin, tuneLift: 0b001 })
+    const empty = played({ ...pin, ...blank })
+    let apart = 0
+    let size = 0
+    for (let i = 0; i < empty.length; i++) {
+      apart = Math.max(apart, Math.abs(lifted[i]! - empty[i]!))
+      size = Math.max(size, Math.abs(empty[i]!))
+    }
+    expect(size).toBeGreaterThan(0.01)
+    expect(apart).toBe(0)
+  },
+)

@@ -1740,7 +1740,7 @@ export class ToyChip implements Stage {
           this.leadOut
         if (pinned) {
           val[0] = v
-          live[0] = 1
+          live[0] = this.leadOut
         } else out += v
       }
       let keys = 0
