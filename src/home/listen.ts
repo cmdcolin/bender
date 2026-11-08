@@ -1,4 +1,9 @@
+import { pileMeter } from './pileMeter.ts'
+
 const audio = new Audio()
+audio.crossOrigin = 'anonymous'
+const pile = document.querySelector<HTMLElement>('.pile')
+const meter = pile ? pileMeter(audio, pile) : undefined
 let current: HTMLAnchorElement | undefined
 
 const nameOf = (play: HTMLAnchorElement) =>
@@ -26,8 +31,10 @@ function start(play: HTMLAnchorElement) {
     audio.src = play.href
   }
   show(play, true)
+  meter?.start()
   audio.play().catch(() => {
     show(play, false)
+    meter?.stop()
   })
 }
 
@@ -54,6 +61,7 @@ for (const play of document.querySelectorAll<HTMLAnchorElement>('.play')) {
 }
 
 audio.addEventListener('pause', () => {
+  meter?.stop()
   if (current !== undefined) show(current, false)
 })
 
@@ -66,6 +74,7 @@ audio.addEventListener('timeupdate', () => {
 })
 
 audio.addEventListener('ended', () => {
+  meter?.stop()
   stop()
   audio.currentTime = 0
 })

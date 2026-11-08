@@ -63,9 +63,70 @@
     background-position: 18px 77px;
   }
 }
+.pile .lit1 {
+  animation: blink 1.7s steps(1) infinite;
+}
+.pile .lit2 {
+  animation: blink 0.6s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0.15;
+  }
+}
+.pile .cone,
+.pile .hub {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pile .needle {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.pile[data-playing] :is(.lit0, .lit1, .lit2, .lit3) {
+  animation: none;
+}
+.pile[data-playing] :is(.lit0, .lit3) {
+  opacity: calc(0.15 + var(--low, 0));
+}
+.pile[data-playing] .lit1 {
+  opacity: calc(0.15 + var(--mid, 0));
+}
+.pile[data-playing] .lit2 {
+  opacity: calc(0.15 + var(--high, 0));
+}
+.pile[data-playing] .pad0 {
+  opacity: calc(var(--low, 0) * 0.6);
+}
+.pile[data-playing] .pad1 {
+  opacity: calc(var(--mid, 0) * 0.6);
+}
+.pile[data-playing] .pad2 {
+  opacity: calc(var(--high, 0) * 0.6);
+}
+.pile[data-playing] .cone {
+  transform: scale(calc(1 + var(--low, 0) * 0.12));
+}
+.pile[data-playing] .needle {
+  transform: rotate(calc((var(--mid, 0) - 0.5) * 70deg));
+}
+.pile[data-playing] .hub {
+  animation: spin 1.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .pile[data-ready]::after {
+  .pile[data-ready]::after,
+  .pile .lit1,
+  .pile .lit2,
+  .pile[data-playing] .hub {
     animation: none;
+  }
+  .pile[data-playing] :is(.cone, .needle) {
+    transform: none;
   }
 }
 @media (max-width: 40rem) {
