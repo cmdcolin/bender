@@ -63,36 +63,37 @@ Then ask Claude Code to open the public URL, or
 
 ## The API
 
-| Call                                   | Effect                                                                                                                                                            |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bender.guide(topic)`                  | the calls for one topic, such as `read`, `change`, `music`, `route` or `sound`; `bender.help` lists them all                                                      |
-| `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                                                                                                       |
-| `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text                                                                                        |
-| `bender.heard()`                       | resolves with the controls the arc or a cue holds away from the written board, and what each patch-bay wire pushes now                                            |
-| `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                                                     |
-| `bender.describe(key)`                 | one control's range, unit, choices and help                                                                                                                       |
-| `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                                                                                                |
-| `bender.route(lines?)`                 | puts effects on sets of machines, as `{ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }`, and reads back each unit and machine                                |
-| `bender.presets(search?)`              | lists presets                                                                                                                                                     |
-| `bender.load(name, seconds?)`          | loads a preset                                                                                                                                                    |
-| `bender.reset(seconds?)`               | restores the defaults                                                                                                                                             |
-| `bender.undo()`, `bender.redo()`       | steps through the history, which gains one step per call that changes the board                                                                                   |
-| `bender.say(text)`                     | heads the activity panel, which lists and traces each call that changes the board, and glows as each bend lands                                                   |
-| `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`, or three lanes from an array                                                               |
-| `bender.drums(rows)`                   | writes drum rows such as `{ kick: 'x(3,8)', hat: 'g.[xxx]' }` (`g` is a ghost), the ratchet, nudge, retrig, event, echo and bar condition rows, `mute` and `fill` |
-| `bender.move(name, opts?)`             | rewrites the pattern with one of the panel's moves, such as `'vary'` or `'turnaround'`; `seed` repeats a roll                                                     |
-| `bender.line(text, flags?)`            | writes Growler's bassline memory on the kit's sixteenths, with `accent` and `slide` rows; `on: 'Howler'` writes Howler's lead                                     |
-| `bender.speak(text, opts?)`            | loads Prattle's phrase and says it; `struck: 'hat'` speaks a syllable a hit, `repeat: true` loops it                                                              |
-| `bender.restore(on?)`                  | writes Growler's line, or Howler's with `'Howler'`, back over what a leaking write enable or bit rot did to the memory                                            |
-| `bender.start()`                       | starts audio, or reports that the page needs a click first                                                                                                        |
-| `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                                                   |
-| `bender.listen(ms)`                    | peak, limiter, rail, reboots, the machines heard, their peaks and notes, drum hits, five-band levels and shares, buried leads and each effect's return peak       |
-| `bender.hit(what, spot?)`              | strikes the Sheet or the Bottle, at `{ x, y }` on its face, or kit voices such as `['kick', 'open hat']`, by hand                                                 |
-| `bender.link()`                        | a `#set=` URL for the current board                                                                                                                               |
-| `bender.position()`                    | the kit's counter as bar, beat and step, its bpm, and the bars queued writes wait for                                                                             |
-| `bender.next(bars?)`                   | resolves just after the next downbeat, or after the next bar divisible by `bars`; `'beat'` waits for a beat                                                       |
-| `bender.queue(write, when?)`           | lands the writes made inside `write` on the kit's step at the next bar, the next bar divisible by `when`, or `{ bar: 32 }`                                        |
-| `bender.unqueue()`                     | drops queued writes                                                                                                                                               |
+| Call                                   | Effect                                                                                                                                                                    |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bender.guide(topic)`                  | the calls for one topic, such as `read`, `change`, `music`, `route` or `sound`; `bender.help` lists them all                                                              |
+| `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                                                                                                               |
+| `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text                                                                                                |
+| `bender.heard()`                       | resolves with the controls the arc or a cue holds away from the written board, and what each patch-bay wire pushes now                                                    |
+| `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                                                             |
+| `bender.describe(key)`                 | one control's range, unit, choices and help                                                                                                                               |
+| `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                                                                                                        |
+| `bender.route(lines?)`                 | puts effects on sets of machines, as `{ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }`, and reads back each unit and machine                                        |
+| `bender.presets(search?)`              | lists presets                                                                                                                                                             |
+| `bender.load(name, seconds?)`          | loads a preset                                                                                                                                                            |
+| `bender.reset(seconds?)`               | restores the defaults                                                                                                                                                     |
+| `bender.undo()`, `bender.redo()`       | steps through the history, which gains one step per call that changes the board                                                                                           |
+| `bender.say(text)`                     | heads the activity panel, which lists and traces each call that changes the board, and glows as each bend lands                                                           |
+| `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`, or three lanes from an array                                                                       |
+| `bender.drums(rows)`                   | writes drum rows such as `{ kick: 'x(3,8)', hat: 'g.[xxx]' }` (`g` is a ghost), the ratchet, nudge, retrig, event, echo and bar condition rows, `mute` and `fill`         |
+| `bender.move(name, opts?)`             | rewrites the pattern with one of the panel's moves, such as `'vary'` or `'turnaround'`; `seed` repeats a roll                                                             |
+| `bender.line(text, flags?)`            | writes Growler's bassline memory on the kit's sixteenths, with `accent` and `slide` rows; `on: 'Howler'` writes Howler's lead                                             |
+| `bender.speak(text, opts?)`            | loads Prattle's phrase and says it; `struck: 'hat'` speaks a syllable a hit, `repeat: true` loops it                                                                      |
+| `bender.tape(what?)`                   | loads Spool's tape: a shelf such as `'78s'` rolls a random one, other words search archive.org, a link goes through yt-dlp on a dev server; no argument lists the shelves |
+| `bender.restore(on?)`                  | writes Growler's line, or Howler's with `'Howler'`, back over what a leaking write enable or bit rot did to the memory                                                    |
+| `bender.start()`                       | starts audio, or reports that the page needs a click first                                                                                                                |
+| `bender.play(which?)`, `bender.stop()` | starts and stops the melody and drum sequencers                                                                                                                           |
+| `bender.listen(ms)`                    | peak, limiter, rail, reboots, the machines heard, their peaks and notes, drum hits, five-band levels and shares, buried leads and each effect's return peak               |
+| `bender.hit(what, spot?)`              | strikes the Sheet or the Bottle, at `{ x, y }` on its face, or kit voices such as `['kick', 'open hat']`, by hand                                                         |
+| `bender.link()`                        | a `#set=` URL for the current board                                                                                                                                       |
+| `bender.position()`                    | the kit's counter as bar, beat and step, its bpm, and the bars queued writes wait for                                                                                     |
+| `bender.next(bars?)`                   | resolves just after the next downbeat, or after the next bar divisible by `bars`; `'beat'` waits for a beat                                                               |
+| `bender.queue(write, when?)`           | lands the writes made inside `write` on the kit's step at the next bar, the next bar divisible by `when`, or `{ bar: 32 }`                                                |
+| `bender.unqueue()`                     | drops queued writes                                                                                                                                                       |
 
 ## Effects on some machines
 

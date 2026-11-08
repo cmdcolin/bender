@@ -182,6 +182,10 @@ export function recorded(api: RawBenderApi) {
         `hit ${typeof what === 'string' ? what : what.join(', ')}`,
     ),
 
+    tape: after(api.tape.bind(api), (_result, what = '') =>
+      what.trim() ? `tape ${short(what.trim())}` : undefined,
+    ),
+
     speak: after(
       api.speak.bind(api),
       ({ phrase }, _text, _opts = {}) => `speak ${short(phrase)}`,

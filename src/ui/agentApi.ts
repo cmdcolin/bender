@@ -34,8 +34,10 @@ import { YOURS } from '../dsp/stages/roms.ts'
 import { followsGate, gateLane, SEQ_TO_LEAD } from '../dsp/trigbus.ts'
 import { mulberry32 } from '../dsp/util/rng.ts'
 import { strayNames } from '../dsp/wander.ts'
+import { POOLS } from '../engine/archive.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
 import { BAND_ROWS, IDX } from '../engine/params.ts'
+import { hasYtdlp } from '../engine/ytdlp.ts'
 import { errorText } from '../errorText.ts'
 import { JACK_KEYS, linesFromJack, UNIT_LINE_KEYS } from '../jacks.ts'
 import { MACHINES } from '../machines.ts'
@@ -93,10 +95,11 @@ const GUIDE = {
   speak: `Prattle, a talking toy's speech chip. bender.speak('kill the bass') loads the phrase and says it once; speak('kill the bass', { struck: 'open hat' }) speaks the next syllable on each open hat hit, so words land on the grid, and { repeat: true } says it round and round. It knows numbers and techno words (bass, kick, drop, noise, acid, machine, error, reboot, again…) and sounds out the rest. Level starts at 0, so speak brings talkLevel up to 0.8. Bends: talkClock, talkFrameDiv ('stopped' drones), talkLock (frame clock off the kit), talkLoopBit and talkLoopSlip (a stuttering loop), talkDataLine/talkDataFault (D10 'to +V' howls), talkPitchLine/Fault, talkVoicing and talkLeak. The mic jack 'Prattle in' talks through its mouth. Presets: robot chant, lattice howl.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
   route: `Routing effects. Each bend and pedal runs on master, the whole mix after the summing amp, or on a set of lines, machines and the mic, before the mix bus. bender.route({ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }) puts the echo on the kit and the toy and the reverb on Sheet; 'master' or [] puts a unit back. Names ignore case. Units on the same set run in rack order. A set inside a wider one runs first and the wider set hears its output, so echo on Clatter + Plinky then reverb on Clatter + Plinky + Sheet reverbs the echo; sets that only overlap run side by side. route() reads back each unit's lines, its place in the chain, bypass, mix and heard (its return in the last meter), and each machine's own units and the shared ones on its line. listen(ms) lists each heard effect's return peak as effects, and set({ echoLines: 'Clatter+Plinky' }) also works.`,
+  tape: `Spool, the tape loop. await bender.tape('78s') rolls a random tape off a shelf; bender.tape() lists the shelves and says whether links work. Any other words search archive.org and load the first of the top hits that has an mp3: tape('moon landing'). A link, tape('https://youtube.com/watch?v=…'), is fetched with yt-dlp, but only on a dev server with yt-dlp installed. It resolves once the tape is on the reel, with its name as tape, or with problem saying what went wrong. Spool keeps the front of a long recording. Loading brings sampleLevel to 0.7 if it was 0. find('spool') lists its controls: sampleSpeed, sampleMode, loopIn, loopOut, loopWear and more.`,
   sound: `Sound. Audio waits for a click: await bender.start() returns running or says to click an empty area. bender.play() starts the kit, bassline and tune; play('song') a demo song, play('drums') the kit alone; stop() stops all. A screenshot measures no sound. await bender.listen(1500) reads the meters that many ms, at most 20000: meters arrived against due, peak dBFS, limiter reduction, lowest toy rail (1 is full), reboots, sources, sourcePeaks, notes, drumHits. bands is each source's dBFS in sub <90 Hz, low, mid 350-1.4k, presence 1.4-5.6k and air; owners is each band's share by source. masked gives each lead the share of its energy under the rest by ${MASK_DB} dB, its top masker and band. Over 0.3 the lead is buried: raise it, cut the masker, patch a unit onto it alone (filtLines, ampLines), or duck it to the kick: set({ noiseDuck: 0.8 }), any machine's …Duck. link() returns a URL to this board.`,
 }
 
-const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. Return arrays and objects as they are: the browser tool cuts a returned string at 1000 characters. Start with bender.summary(). The rest is in ${Object.keys(GUIDE).length} topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'route' patches effects; 'music' covers tune and drums, 'drums' the rest of the kit, 'perform' its mutes, fills, echo row and pattern moves, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things by hand; 'speak' gives Prattle words; 'clock' lands changes on the bar with position, next and queue.`
+const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before using it. Return arrays and objects as they are: the browser tool cuts a returned string at 1000 characters. Start with bender.summary(). The rest is in ${Object.keys(GUIDE).length} topics: bender.guide('read') covers board, find and describe; 'change' covers set, presets, load, reset and undo; 'route' effects; 'music' covers tune and drums, 'drums' the rest of the kit, 'perform' its mutes, fills, echo row and pattern moves, 'line' the bassline memory, 'lead' Howler's and 'rot' their faults; 'sound' covers start, play, stop, listen and link; 'hit' strikes things; 'speak' gives Prattle words; 'tape' loads Spool; 'clock' lands changes on the bar with position, next and queue.`
 
 type Topic = keyof typeof GUIDE
 
@@ -117,6 +120,35 @@ const WIRE_KEYS = [
 const SPEAK_LEVEL = 0.8
 
 const talk = () => engine.talk()
+
+const isLink = (text: string) => /^https?:\/\//i.test(text)
+
+const tapeProblem = () =>
+  engine.archiveStep.get() ?? (engine.sampleError.get() || undefined)
+
+const SEARCH_TRIES = 4
+
+const firstThatLoads = async (
+  hits: readonly { id: string; title: string }[],
+  problem: string | undefined,
+): Promise<string | undefined> => {
+  const [hit, ...rest] = hits
+  const now =
+    hit === undefined
+      ? problem
+      : await engine.loadArchive(hit).then(tapeProblem)
+  return hit === undefined || now === undefined
+    ? now
+    : firstThatLoads(rest, now)
+}
+
+const searchOnto = async (words: string) => {
+  const hits = await engine.searchArchive(words)
+  return firstThatLoads(
+    hits.slice(0, SEARCH_TRIES),
+    `nothing on archive.org for ${words}`,
+  )
+}
 const BACKLOG = 1.25
 const START_WAIT_MS = 1000
 const CHOICES_SHOWN = 4
@@ -1340,6 +1372,35 @@ function rawBenderApi() {
         phrase: phraseText(phraseOf(engine.controls.get())),
         ...(queueing && { lands: 'when the queue lands' }),
         warnings: engine.running.get() ? [] : [audioState()],
+      }
+    },
+
+    async tape(what?: string) {
+      const asked = what?.trim() ?? ''
+      const shelf = POOLS.find(
+        p => squash(p.label) === squash(asked) || p.id === asked,
+      )
+      const problem =
+        asked === ''
+          ? undefined
+          : isLink(asked)
+            ? hasYtdlp
+              ? await engine.loadLink(asked).then(tapeProblem)
+              : 'links need the dev server with yt-dlp on PATH'
+            : shelf
+              ? await engine.rollSample(shelf).then(tapeProblem)
+              : await searchOnto(asked)
+      return {
+        tape: engine.sampleName.get(),
+        ...(problem && { problem }),
+        ...(asked === '' && {
+          shelves: POOLS.map(p => p.label),
+          links: hasYtdlp,
+        }),
+        warnings:
+          engine.controls.get().sampleLevel === 0
+            ? ['sampleLevel is 0, so Spool is silent']
+            : [],
       }
     },
 

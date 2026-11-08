@@ -134,7 +134,7 @@ test('help and every guide topic fit in one browser tool result', () => {
   ])
     expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   expect(() => bender.guide('nope')).toThrow(
-    "no guide topic 'nope'; topics: read, change, music, drums, perform, line, lead, rot, hit, speak, clock, route, sound",
+    "no guide topic 'nope'; topics: read, change, music, drums, perform, line, lead, rot, hit, speak, clock, route, tape, sound",
   )
 })
 
@@ -1024,5 +1024,22 @@ test('heard reads back what the audio thread plays and what each wire pushes', a
     engine.running.set(false)
     probe.mockRestore()
     bender.reset()
+  }
+})
+
+test('tape rolls a shelf by name, searches other words and lists the shelves', async () => {
+  const roll = vi.spyOn(engine, 'rollSample').mockResolvedValue()
+  const search = vi.spyOn(engine, 'searchArchive').mockResolvedValue([])
+  try {
+    await bender.tape('numbers stations')
+    expect(roll.mock.calls[0]?.[0].id).toBe('numbers')
+    expect(await bender.tape('moon landing')).toMatchObject({
+      problem: 'nothing on archive.org for moon landing',
+    })
+    expect(search).toHaveBeenCalledWith('moon landing')
+    expect((await bender.tape()).shelves).toContain('78s')
+  } finally {
+    roll.mockRestore()
+    search.mockRestore()
   }
 })
