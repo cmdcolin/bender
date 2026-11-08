@@ -2135,6 +2135,7 @@ export class ToyDrum implements Stage {
                 : this.leakDepth > 0
                   ? 1 + LEAK_LIFT * this.leakDepth * this.leak[v]!
                   : 1 / (1 - LEAK_LIFT * this.leakDepth * this.leak[v]!)
+            tank.pulse = shock[v]! !== 0
             tank.f = this.tankF[t]! * pf * bankFm * motorF * leakLift
             tank.rate =
               motor > 0 ? motorLoss * this.tankBase[t]! : this.tankRate[t]!

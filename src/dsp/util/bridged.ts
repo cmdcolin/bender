@@ -58,6 +58,7 @@ export class BridgedT {
   private bp = 0
   private env = 0
   drive = 0
+  pulse = false
   f = 0
   rate = 0
   sweep = 0
@@ -102,11 +103,11 @@ export class BridgedT {
    * network rings on through the dive.
    */
   run() {
-    const { drive, f, rate, sweep, push, drain, charge } = this
+    const { drive, pulse, f, rate, sweep, push, drain, charge } = this
     this.cap =
-      drain === 0 || (drive !== 0 && charge === 0)
+      drain === 0 || (pulse && charge === 0)
         ? this.env
-        : drive !== 0
+        : pulse
           ? this.cap + charge * (this.env - this.cap)
           : Math.min(this.env, flushDenormal(this.cap * drain))
     const lift = Math.max(1 + sweep * this.cap + push, SWEEP_FLOOR)
