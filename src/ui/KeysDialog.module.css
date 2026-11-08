@@ -110,20 +110,7 @@
 }
 
 .quiet {
-  background: none;
-  border: none;
-  color: var(--fg4);
-  font-size: var(--fs-xs);
-  cursor: pointer;
-}
-
-.quiet:hover:not(:disabled) {
-  color: var(--fg3);
-}
-
-.quiet:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  composes: quiet from './button.module.css';
 }
 
 .done {

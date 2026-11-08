@@ -30,14 +30,5 @@
 }
 
 .quiet {
-  padding: var(--space-md);
-  background: none;
-  border: none;
-  color: var(--fg4);
-  font-size: var(--fs-xs);
-  cursor: pointer;
-}
-
-.quiet:hover {
-  color: var(--fg3);
+  composes: quiet from './button.module.css';
 }

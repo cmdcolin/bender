@@ -68,6 +68,10 @@ sets a control's height whatever font the system supplies.
   `capSnug(On)` for a glyph, `capJoined(On)`, `capIdle`
 - **select / selectSm:** a dropdown at the action or chip height. Variant:
   `selectSmOn`
+- **quiet:** a borderless text button (a "look at it in silence", a row's
+  shuffle). Variants: `quietDotted` for an underlined word, `quietX` for a ×
+  glyph, `quietXDanger` for a × that removes. On touch a pseudo-element
+  stretches the target to `--ctl-h` without moving anything
 - **deck:** a fixed-size tape-deck key, glyph over legend. Variants: `deckOn`,
   `deckRed(On)`, `deckWord(On)`, `deckRow(On)`
 

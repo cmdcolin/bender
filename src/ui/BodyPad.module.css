@@ -100,18 +100,7 @@
 }
 
 .unwired {
-  font-size: var(--fs-xs);
-  font-family: inherit;
-  color: var(--fg4);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-decoration: underline dotted;
-}
-
-.unwired:hover {
-  color: var(--accent);
+  composes: quietDotted from './button.module.css';
 }
 
 /* A finger is not a mouse pointer: on a phone the pad is the instrument, so it

@@ -327,16 +327,8 @@
 }
 
 .shuffleRow {
-  padding: 0;
-  background: none;
-  border: none;
-  color: var(--fg4);
-  cursor: pointer;
+  composes: quiet from './button.module.css';
   touch-action: manipulation;
-}
-
-.shuffleRow:hover {
-  color: var(--fg2);
 }
 
 .tail,
@@ -439,21 +431,10 @@
   background: var(--surface-raised);
 }
 
-/* --fg3, because at --fg4 the sentence read at 2.8:1. */
 .silent {
+  composes: quietDotted from './button.module.css';
   display: block;
   margin-top: var(--space-md);
-  padding: 0;
-  background: none;
-  border: none;
-  font-size: var(--fs-xs);
-  color: var(--fg3);
-  text-decoration: underline dotted;
-  cursor: pointer;
-}
-
-.silent:hover {
-  color: var(--fg2);
 }
 
 /* Sixteen contacts across a phone are 4 mm each, which is a step you close by

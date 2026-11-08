@@ -68,17 +68,7 @@
 }
 
 .close {
-  background: none;
-  border: none;
-  color: var(--fg3);
-  font-size: var(--fs-md);
-  line-height: 1;
-  padding: 0 var(--space-2xs);
-  cursor: pointer;
-}
-
-.close:hover {
-  color: var(--fg);
+  composes: quietX from './button.module.css';
 }
 
 .body {

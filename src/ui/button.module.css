@@ -438,10 +438,54 @@
   composes: deckOn deckRow;
 }
 
+.quiet {
+  padding: 0;
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+  background: none;
+  border: 0;
+}
+
+.quiet:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quietDotted {
+  composes: quiet;
+  text-decoration: underline dotted;
+}
+
+.quietX {
+  composes: quiet;
+  padding: 0 var(--space-2xs);
+  font-size: var(--fs-md);
+  line-height: 1;
+}
+
+.quietXDanger {
+  composes: quietX;
+}
+
 @media (pointer: coarse) {
   .chip,
   .pick {
     padding: 0 var(--space-md);
+  }
+
+  .quiet {
+    position: relative;
+  }
+
+  .quiet::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, var(--ctl-h));
+    height: max(100%, var(--ctl-h));
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -508,5 +552,13 @@
   .deckRedOn:hover:not(:disabled) {
     color: var(--alarm);
     border-color: var(--alarm);
+  }
+
+  .quiet:hover:not(:disabled) {
+    color: var(--fg);
+  }
+
+  .quietXDanger:hover:not(:disabled) {
+    color: var(--alarm);
   }
 }
