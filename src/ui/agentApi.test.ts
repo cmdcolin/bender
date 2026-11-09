@@ -1091,6 +1091,44 @@ test('wire patches a free wire in the unit its destination moves in', () => {
   }
 })
 
+test('wires patched inside one queue each take their own wire', async () => {
+  bender.reset()
+  try {
+    let unwired: unknown
+    await bender.queue(() => {
+      bender.wire('lfo', 'filtHz', { octaves: 1 })
+      bender.wire('drum hit', 'chipDataLine', { settings: 2 })
+      bender.wire('mic', 'srHz', { octaves: 1 })
+      unwired = bender.unwire('srHz')
+    })
+    expect(unwired).toEqual({ unwired: 3 })
+    expect(engine.controls.get()).toMatchObject({
+      mod0Dest: DEST.filtHz,
+      mod1Dest: DEST.chipDataLine,
+      mod2Src: 0,
+    })
+  } finally {
+    bender.reset()
+  }
+})
+
+test('wire takes a bay label by its start, and keeps a wire off its own depth', () => {
+  bender.reset()
+  try {
+    expect(bender.wire('lfo', 'filt c')).toMatchObject({ into: 'filt cut' })
+    expect(() => bender.wire('lfo', 'filt')).toThrow(
+      /'filt' starts more than one bay label/,
+    )
+    expect(bender.wire('lfo', 'mod1Depth', 0.3)).toMatchObject({ wire: 3 })
+    expect(() => bender.wire('lfo', 'mod0Depth', 0.3, { wire: 1 })).toThrow(
+      'wire 1 cannot push its own depth; use another wire',
+    )
+    expect(() => bender.wire('off', 'filtHz')).toThrow(/is no source/)
+  } finally {
+    bender.reset()
+  }
+})
+
 test('wire says why it refuses, and unwire frees a wire', () => {
   bender.reset()
   try {

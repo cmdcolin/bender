@@ -15,14 +15,14 @@ import { choiceName, choiceValue } from './controls/index.ts'
 // second bay — the wire it solders is one of the same four, draws in the same
 // diagram, and rolls, saves and shares like any other.
 
-const WIRES = [
+export const WIRES = [
   { src: 'mod0Src', dest: 'mod0Dest', depth: 'mod0Depth' },
   { src: 'mod1Src', dest: 'mod1Dest', depth: 'mod1Depth' },
   { src: 'mod2Src', dest: 'mod2Dest', depth: 'mod2Depth' },
   { src: 'mod3Src', dest: 'mod3Dest', depth: 'mod3Depth' },
 ] as const satisfies readonly Record<'src' | 'dest' | 'depth', ControlKey>[]
 
-const SRC_OFF = choiceValue('mod0Src', 'off')
+export const SRC_OFF = choiceValue('mod0Src', 'off')
 // What a wire soldered from a row picks up. The bay's own oscillator is the one
 // source running on every board — a mic nobody has turned on, or a kit that is
 // stopped, would hand back a wire that reads as patched and sits still.
@@ -31,18 +31,18 @@ const SRC_LFO = choiceValue('mod0Src', 'LFO')
 // The lane that is each wire's own push rather than a stage, so no wire is ever
 // soldered onto its own depth: that is the one patch in the bay that cannot do
 // anything at all.
-const OWN_DEPTH = WIRES.map((_, i) =>
+export const OWN_DEPTH = WIRES.map((_, i) =>
   choiceValue('mod0Dest', `wire ${i + 1} depth`),
 )
 
-function soldered(c: Controls, dest: number) {
+export function soldered(c: Controls, dest: number) {
   for (const [at, w] of WIRES.entries())
     if (c[w.src] !== SRC_OFF && Math.round(c[w.dest]) === dest)
       return { at, ...w }
   return undefined
 }
 
-function spare(c: Controls, dest: number) {
+export function spare(c: Controls, dest: number) {
   for (const [at, w] of WIRES.entries())
     if (c[w.src] === SRC_OFF && OWN_DEPTH[at] !== dest) return { at, ...w }
   return undefined

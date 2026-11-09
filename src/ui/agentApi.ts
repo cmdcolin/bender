@@ -68,6 +68,7 @@ import {
   TUNE_LANES,
 } from '../tune.ts'
 import { recorded } from './activity.ts'
+import { OWN_DEPTH, soldered, spare, SRC_OFF, WIRES } from './bayWire.ts'
 import { CARDS, keyOf, type CardStage } from './cards.ts'
 import {
   ALL_SLIDERS,
@@ -104,7 +105,7 @@ const GUIDE = {
   hit: `Hitting things. bender.hit('sheet') strikes the steel sheet once and bender.hit('bottle') taps the glass bottle; bender.hit('kick') or hit(['kick', 'open hat']) strikes kit voices by hand. { x: 0.2, y: 0.8 } picks the spot on the sheet or the bottle, 0 to 1 across and down its face, which changes the modes that ring, and { gain: 0.5 } hits softer. A hit plays at once; inside bender.queue it waits for the queue's bar and lands within about 20 ms of it. The sheet and the bottle start at Level 0, and hit warns while sheetLevel or bottleLevel is 0. To keep them ringing between calls, sheetStrikes and bottleStrikes hit at random so many times a second, and sheetStruckBy and bottleStruckBy name a kit voice, any hit or a key that strikes them too. Shake feeds the board's sound back in and howls turned well up; bottleFill pours in water, lower and duller.`,
   speak: `Prattle, a talking toy's speech chip. bender.speak('kill the bass') loads the phrase and says it once; speak('kill the bass', { struck: 'open hat' }) speaks the next syllable on each open hat hit, so words land on the grid, and { repeat: true } says it round and round. It knows numbers and techno words (bass, kick, drop, noise, acid, machine, error, reboot, again…) and sounds out the rest. Level starts at 0, so speak brings talkLevel up to 0.8. Bends: talkClock, talkFrameDiv ('stopped' drones), talkLock (frame clock off the kit), talkLoopBit and talkLoopSlip (a stuttering loop), talkDataLine/talkDataFault (D10 'to +V' howls), talkPitchLine/Fault, talkVoicing and talkLeak. The mic jack 'Prattle in' talks through its mouth. Presets: robot chant, lattice howl.`,
   clock: `The kit's clock. bender.position() returns the kit's counter as bar, beat 0 to 3 and step 0 to 15, the bpm it runs at, and the bars queued changes wait for. Bars count as 'snare bars': '4:4' counts them. await bender.next() resolves within about 16 ms after the next downbeat, next(4) after the next bar divisible by 4, and next('beat') after the next beat. bender.queue(() => { bender.drums({ kick: 'x.x.x.x.' }); bender.set({ dlyFb: 0.9 }) }, 4) lands the set, load, reset, tune, line and drums writes made inside the function on the next bar divisible by 4, exactly on the kit's step; queue(fn, { bar: 32 }) names the bar. A glide inside starts on that bar. queue returns a promise of where the writes landed, and the writes' own results describe the board before the bar. While the kit is stopped, queue lands at once, and stop lands everything waiting. bender.unqueue() drops it.`,
-  bay: `The patch bay: four wires, each from a source onto a destination. bender.wire('lfo', 'filtHz', { octaves: 1 }) patches a free wire so a full swing of the LFO moves the cutoff an octave; { settings: 2 } steps a selector two settings, { by: 0.3 } adds 0.3 of the knob, and a number is the raw depth, -2 to 2. The destination is a control key or a bay label such as 'filt cut', and describe(key).wire says how a wire moves it. Wiring a destination again reuses its wire; { wire: 2 } picks one. Sources: LFO, supply, envelope, mic, body X and Y, fb bus, ROM step, drum hit, key hit, heat, lane A and B, phrase and ADSR. The LFO is modLfoHz, modLfoShape and modLfoSync, the lanes modLaneA0 to A15, the phrase modPhraseBars and modPhraseShape. bender.unwire(1) or unwire('filtHz') frees a wire, and await bender.heard() reads what each one pushes.`,
+  bay: `The patch bay: four wires, each from a source onto a target. bender.wire('lfo', 'filtHz', { octaves: 1 }) patches a free wire that takes the cutoff an octave up at the LFO's peak and an octave down at its trough. An amount is the push at the source's full swing: -1 to 1 for the LFO, 0 to 1 for an envelope, the mic or a hit, so a quiet one pushes less. { settings: 2 } steps a selector two settings, { by: 0.3 } adds 0.3 to the knob, and a number is the raw depth, -2 to 2. The target is a control key or a bay label such as 'filt cut'; describe(key).wire says how a wire moves it. Wiring a destination again reuses its wire; { wire: 2 } picks one. describe('mod0Src') lists the sources. The LFO is modLfoHz, modLfoShape and modLfoSync, the lanes modLaneA0 to A15, the phrase modPhraseBars and modPhraseShape. bender.unwire(1) or unwire('filtHz') frees a wire; heard() reads each wire's push.`,
   route: `Routing effects. Each bend and pedal runs on master, the whole mix after the summing amp, or on a set of lines, machines and the mic, before the mix bus. bender.route({ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }) puts the echo on the kit and the toy and the reverb on Sheet; 'master' or [] puts a unit back. Names ignore case. Units on the same set run in rack order. A set inside a wider one runs first and the wider set hears its output, so echo on Clatter + Plinky then reverb on Clatter + Plinky + Sheet reverbs the echo; sets that only overlap run side by side. route() reads back each unit's lines, its place in the chain, bypass, mix and heard (its return in the last meter), and each machine's own units and the shared ones on its line. listen(ms) lists each heard effect's return peak as effects, and set({ echoLines: 'Clatter+Plinky' }) also works.`,
   tape: `Spool, the tape loop. await bender.tape('78s') rolls a random tape off a shelf; bender.tape() lists the shelves and says whether links work. Any other words search archive.org and load the first of the top hits that has an mp3: tape('moon landing'). A link, tape('https://youtube.com/watch?v=…'), is fetched with yt-dlp, but only on a dev server with yt-dlp installed. It resolves once the tape is on the reel, with its name as tape, or with problem saying what went wrong. Spool keeps the front of a long recording. Loading brings sampleLevel to 0.7 if it was 0. find('spool') lists its controls: sampleSpeed, sampleMode, loopIn, loopOut, loopWear and more.`,
   sound: `Sound. Audio waits for a click: await bender.start() returns running or says to click an empty area. bender.play() starts the kit, bassline and tune; play('song') a demo song, play('drums') the kit alone; stop() stops all. A screenshot measures no sound. await bender.listen(1500) reads the meters that many ms, at most 20000: meters arrived against due, peak dBFS, limiter reduction, lowest toy rail (1 is full), reboots, sources, sourcePeaks, notes, drumHits. bands is each source's dBFS in sub <90 Hz, low, mid 350-1.4k, presence 1.4-5.6k and air; owners is each band's share by source. masked gives each lead the share of its energy under the rest by ${MASK_DB} dB, its top masker and band. Over 0.3 the lead is buried: raise it, cut the masker, patch a unit onto it alone (filtLines, ampLines), or duck it to the kick: set({ noiseDuck: 0.8 }), any machine's …Duck. link() returns a URL to this board.`,
@@ -122,13 +123,6 @@ const isStruck = (name: string): name is Struck =>
   Object.hasOwn(STRUCK_HOME, name)
 
 const MAX_LISTEN_MS = 20000
-const WIRE_KEYS = [
-  ['mod0Src', 'mod0Dest', 'mod0Depth'],
-  ['mod1Src', 'mod1Dest', 'mod1Depth'],
-  ['mod2Src', 'mod2Dest', 'mod2Depth'],
-  ['mod3Src', 'mod3Dest', 'mod3Depth'],
-] as const satisfies readonly (readonly [ControlKey, ControlKey, ControlKey])[]
-
 type Amount =
   | number
   | { octaves: number }
@@ -139,17 +133,26 @@ const refuse = (message: string): never => {
   throw new Error(message)
 }
 
+function choiceMatches(choices: readonly string[], asked: string) {
+  const lower = asked.toLowerCase()
+  const exact = choices.findIndex(c => c.toLowerCase() === lower)
+  return exact >= 0
+    ? [exact]
+    : choices.flatMap((c, i) => (c.toLowerCase().startsWith(lower) ? [i] : []))
+}
+
 function destNamed(into: string) {
-  const byKey = destFor(into)
-  const lower = into.toLowerCase()
-  const label = SLIDER_BY_KEY.get('mod0Dest')?.choices?.findIndex(
-    c => c.toLowerCase() === lower,
-  )
+  const def = SLIDER_BY_KEY.get('mod0Dest')
+  const labels = def?.choices ? choiceMatches(def.choices, into) : []
+  const byLabel =
+    def && labels.length === 1 ? destAt(def.min + labels[0]!) : undefined
   return (
-    byKey ??
-    (label !== undefined && label >= 0 ? destAt(label) : undefined) ??
+    destFor(into) ??
+    byLabel ??
     refuse(
-      `no bay destination '${into}'; give a control key such as filtHz or srHz, or a bay label such as 'filt cut'`,
+      labels.length > 1
+        ? `'${into}' starts more than one bay label: ${labels.map(i => def?.choices?.[i]).join(', ')}`
+        : `no bay destination '${into}'; give a control key such as filtHz or srHz, or a bay label such as 'filt cut'`,
     )
   )
 }
@@ -174,26 +177,24 @@ function depthFor(dest: LiveDest, amount: Amount) {
 }
 
 const slotIndex = (slot: number) =>
-  Number.isInteger(slot) && slot >= 1 && slot <= WIRE_KEYS.length
+  Number.isInteger(slot) && slot >= 1 && slot <= WIRES.length
     ? slot - 1
-    : refuse(`wire is 1 to ${WIRE_KEYS.length}, not ${slot}`)
+    : refuse(`wire is 1 to ${WIRES.length}, not ${slot}`)
 
 function wireOn(c: Controls, dest: LiveDest, slot?: number) {
   const id = DEST[dest]
-  const taken = WIRE_KEYS.findIndex(
-    ([src, to]) => c[src] !== 0 && Math.round(c[to]) === id,
-  )
-  const free = WIRE_KEYS.findIndex(([src]) => c[src] === 0)
-  return slot !== undefined
-    ? slotIndex(slot)
-    : taken >= 0
-      ? taken
-      : free >= 0
-        ? free
-        : refuse(
-            `all ${WIRE_KEYS.length} wires are in use; pass { wire: 1 } to ${WIRE_KEYS.length} to repatch one, or bender.unwire(n) first`,
-          )
+  const at =
+    slot !== undefined
+      ? slotIndex(slot)
+      : ((soldered(c, id) ?? spare(c, id))?.at ??
+        refuse(
+          `all ${WIRES.length} wires are in use; pass { wire: 1 } to ${WIRES.length} to repatch one, or bender.unwire(n) first`,
+        ))
+  return OWN_DEPTH[at] === id
+    ? refuse(`wire ${at + 1} cannot push its own depth; use another wire`)
+    : at
 }
+
 const SPEAK_LEVEL = 0.8
 
 const talk = () => engine.talk()
@@ -425,17 +426,12 @@ function numberFor(key: ControlKey, asked: Value): number {
       throw new Error(`'${asked}' is not a number`)
     return n
   }
-  const lower = asked.toLowerCase()
-  const exact = def.choices.findIndex(c => c.toLowerCase() === lower)
-  const prefixed = def.choices.flatMap((c, i) =>
-    c.toLowerCase().startsWith(lower) ? [i] : [],
-  )
-  const at = exact >= 0 ? exact : prefixed.length === 1 ? prefixed[0]! : -1
-  if (at < 0)
+  const found = choiceMatches(def.choices, asked)
+  if (found.length !== 1)
     throw new Error(
-      `${prefixed.length > 1 ? `'${asked}' matches more than one choice` : `no choice matches '${asked}'`}; ${range(def)}`,
+      `${found.length > 1 ? `'${asked}' matches more than one choice` : `no choice matches '${asked}'`}; ${range(def)}`,
     )
-  return def.min + at
+  return def.min + found[0]!
 }
 
 interface Queued {
@@ -447,6 +443,8 @@ interface Queued {
 }
 
 let queueing: Queued | null = null
+
+const queuedBoard = () => ({ ...engine.controls.get(), ...queueing?.cut })
 
 function land(
   patch: Partial<Controls>,
@@ -1039,7 +1037,7 @@ function rawBenderApi() {
               `${def.key} = ${formatValue(def, at)}  (written ${formatValue(def, c[def.key])})`,
             ]
       })
-      const wires = WIRE_KEYS.flatMap(([src, dest], w) => {
+      const wires = WIRES.flatMap(({ src, dest }, w) => {
         const push = probed.wires[w]!
         const srcDef = SLIDER_BY_KEY.get(src)
         const destDef = SLIDER_BY_KEY.get(dest)
@@ -1086,8 +1084,11 @@ function rawBenderApi() {
     ) {
       const src = numberFor('mod0Src', from)
       const dest = destNamed(into)
-      const at = wireOn(engine.controls.get(), dest, slot)
-      const [srcKey, destKey, depthKey] = WIRE_KEYS[at]!
+      const at =
+        src === SRC_OFF
+          ? refuse(`'${from}' is no source; bender.unwire(n) frees a wire`)
+          : wireOn(queuedBoard(), dest, slot)
+      const { src: srcKey, dest: destKey, depth: depthKey } = WIRES[at]!
       const depth = depthFor(dest, amount)
       const got = coerceControl(depthKey, depth)
       const patch: Partial<Controls> = {}
@@ -1108,20 +1109,15 @@ function rawBenderApi() {
     },
 
     unwire(which: number | string) {
-      const c = engine.controls.get()
       const at =
         typeof which === 'number'
           ? slotIndex(which)
-          : WIRE_KEYS.findIndex(
-              ([src, to]) =>
-                c[src] !== 0 && Math.round(c[to]) === DEST[destNamed(which)],
-            )
-      const [srcKey, , depthKey] =
-        WIRE_KEYS[at] ?? refuse(`no wire is patched into '${which}'`)
+          : (soldered(queuedBoard(), DEST[destNamed(which)])?.at ??
+            refuse(`no wire is patched into '${which}'`))
+      const { src } = WIRES[at]!
       const patch: Partial<Controls> = {}
-      patch[srcKey] = 0
-      patch[depthKey] = DEFAULT_CONTROLS[depthKey]
-      land(patch, 0, new Set([srcKey, depthKey]))
+      patch[src] = SRC_OFF
+      land(patch, 0, new Set([src]))
       return { unwired: at + 1 }
     },
 
@@ -1393,7 +1389,7 @@ function rawBenderApi() {
         for (const [s, key] of CELL_ROWS[row].keys.entries())
           patch[key] = values[s]!
       }
-      const board = { ...engine.controls.get(), ...queueing?.cut }
+      const board = queuedBoard()
       land(
         {
           ...patch,
@@ -1412,7 +1408,7 @@ function rawBenderApi() {
         throw new Error(
           `no drum move named '${name}'; moves: ${DRUM_MOVES.map(m => m.name).join(', ')}`,
         )
-      const board = { ...engine.controls.get(), ...queueing?.cut }
+      const board = queuedBoard()
       const written = move.play({
         masks: masksOf(board),
         lens: board,
