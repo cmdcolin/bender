@@ -54,6 +54,11 @@ which bends get built: for the bends themselves "anything can go".
   `drumTune: 0.91`, `drumSweep: 6`, `drumSwoopCap: 10`, its rumble only the kick
   thrown into Wraith at sixteenths, everything through Ember ("this is pretty
   sick so far").
+- Creepy stabs over hard techno at 152 (after DJ Valentimes' D.A.): Parlor's
+  choir at a quarter to half its ROM clock, its bus faults re-rolled every bar,
+  ducked by the kick ("weird creepy stabs like that rule"). Keep them sparse,
+  one every several bars, with little delay: "sparse is key for that sound",
+  "too much delay now", "even less delay too".
 - Several layers of noise at once over the groove, each machine re-rolling its
   own faults every bar: Plinky's and Glint's chip settings, Parlor's bus faults
   at a quarter to half its ROM clock ("kinda sweet lol", "several layers doing
