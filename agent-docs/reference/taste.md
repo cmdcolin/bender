@@ -82,9 +82,18 @@ which bends get built: for the bends themselves "anything can go".
   short, ghosts, bank and divider lines) as tuned in `toyChip.ts`: "these are
   all amazing ... keep all". Leave those constants alone unasked.
 
+- In hard techno, three parts: the kick, one low line and one lead. Plinky,
+  Parlor, a melodic bass and Glint all at once were "fighting for lead" and
+  "still too complex"; it settled as the kick at 160 with offbeat hats and
+  Glint's evil riff (G#, A, D) taken three octaves down by `fmSign: ÷8`, ducked
+  hard to the kick (`fmDuck: 0.85`), with Growler out.
+
 ## Dislikes
 
 - Power-supply bends: batteries, starve, brownout, sag.
+- Glint's own output on its bus (`fmSelfBus`) and its ground loop over a
+  groove: each note smears and repeats, which reads as "too much delay" and
+  "not sure we have control over glint".
 - Pitch that moves: chorus wobble, tape wow, varispeed glides ("got a little off
   tune").
 - Glitch-buffer stutters and drum retriggers ("not my fav setting").
