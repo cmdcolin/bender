@@ -59,6 +59,13 @@ which bends get built: for the bends themselves "anything can go".
   ducked by the kick ("weird creepy stabs like that rule"). Keep them sparse,
   one every several bars, with little delay: "sparse is key for that sound",
   "too much delay now", "even less delay too".
+- Glint bent hard as the lead over that kit: a slow G#, A, D riff in quarter
+  notes on the bass patch, `fmSign: ÷4`, `fmFeedback` 4 to 8, `fmDrive: 18`,
+  `fmGroundLoop: 0.35`, `fmSelfBus: 3 bits`, its wave faults and noise blob
+  re-rolled every bar, with the kit's hats, toms, ghosts and kick doubles
+  rewritten every bar around a steady four on the floor ("this is good hell ya
+  that is the noisy insanity we need"). The same riff unbent sounded "not very
+  good".
 - Several layers of noise at once over the groove, each machine re-rolling its
   own faults every bar: Plinky's and Glint's chip settings, Parlor's bus faults
   at a quarter to half its ROM clock ("kinda sweet lol", "several layers doing
