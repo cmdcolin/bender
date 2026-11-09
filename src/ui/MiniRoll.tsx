@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { YOURS } from '../dsp/stages/roms.ts'
+import { followsGate, gateLane } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
 import { SEQ_DESTS } from '../engine/messages.ts'
 import { asTuneLen, isNote, TUNE_STEPS, voicing } from '../tune.ts'
@@ -23,7 +24,7 @@ import {
 
 import type { ControlKey } from '../controls.ts'
 import type { MemoryName } from '../engine/engine.ts'
-import type { NoteDest, SeqDest } from '../engine/messages.ts'
+import type { NoteDest } from '../engine/messages.ts'
 
 // An octave, so one note reads as a dash rather than as a bar the full height.
 const MIN_ROWS = 13
@@ -34,16 +35,17 @@ interface Span {
   note: number
   from: number
   to: number
+  lane: number
 }
 
 // Each held note as one bar across the steps it sounds for.
-function spans(steps: readonly number[]): Span[] {
+function spans(steps: readonly number[], lane: number): Span[] {
   const out: Span[] = []
   voicing(steps).forEach(({ note, head }, s) => {
     if (!isNote(note)) return
     const last = out.at(-1)
     if (!head && last?.note === note && last.to === s) last.to = s + 1
-    else out.push({ note, from: s, to: s + 1 })
+    else out.push({ note, from: s, to: s + 1, lane })
   })
   return out
 }
@@ -53,16 +55,25 @@ interface Props {
   onOpen?: (stage: string) => void
 }
 
+const KEY_GATES = { fm: 'fmKeyGate', pcm: 'pcmKeyGate' } as const
+
 // The melody memory a bed records into, in miniature on its deck: the notes as
 // they land and the step the counter is on, so a press of rec shows it working.
 export function MiniRoll({ dest, onOpen }: Props) {
+  const lineHere = useBoardValue(
+    c =>
+      Math.round(c.monoSeqOn) === 1 &&
+      SEQ_DESTS[Math.round(c.monoSeqTo)] === dest,
+  )
   return dest === 'toy' ? (
     <TuneMini onOpen={onOpen} />
   ) : dest === 'lead' ? (
     <LeadMini onOpen={onOpen} />
-  ) : (
-    <SeqMini dest={dest} onOpen={onOpen} />
-  )
+  ) : lineHere ? (
+    <SeqMini onOpen={onOpen} />
+  ) : dest === 'fm' || dest === 'pcm' ? (
+    <LaneMini dest={dest} onOpen={onOpen} />
+  ) : null
 }
 
 function LeadMini({ onOpen }: Omit<Props, 'dest'>) {
@@ -111,18 +122,37 @@ function TuneMini({ onOpen }: Omit<Props, 'dest'>) {
   )
 }
 
-function SeqMini({ dest, onOpen }: Props & { dest: SeqDest }) {
-  const here = useBoardValue(
-    c =>
-      Math.round(c.monoSeqOn) === 1 &&
-      SEQ_DESTS[Math.round(c.monoSeqTo)] === dest,
-  )
+function LaneMini({ dest, onOpen }: Props & { dest: keyof typeof KEY_GATES }) {
+  const gate = useControlValue(KEY_GATES[dest])
+  const mine = useBoardValue(c => Math.round(c.chipTune) === YOURS)
+  const lanes = useLanes()
+  const len = asTuneLen(useControlValue('tuneLen'))
+  const pos = useTunePos()
+  const playing = useStoreValue(engine.songPlaying)
+  const armed = useStoreValue(engine.tuneRecord)
+  const lane = gateLane(gate)
+  const followed = lane >= 0 ? lanes.slice(lane, lane + 1) : lanes
+  return mine && followsGate(gate) ? (
+    <Strip
+      lanes={followed}
+      len={len}
+      pos={pos}
+      playing={playing}
+      armed={armed}
+      memory="tune"
+      stage="Plinky"
+      aim="chipTune"
+      onOpen={onOpen}
+    />
+  ) : null
+}
+
+function SeqMini({ onOpen }: Omit<Props, 'dest'>) {
   const steps = useSteps()
   const len = asTuneLen(useControlValue('monoSeqLen'))
   const pos = useSeqPos()
   const playing = useLinePlaying()
   const armed = useStoreValue(engine.seqRecord)
-  if (!here) return null
   return (
     <Strip
       lanes={[steps]}
@@ -165,7 +195,7 @@ function Strip({
   const [old] = useState(taken)
   const fresh = taken !== old && taken?.memory === memory ? taken : null
   const under = playing ? pos % len : -1
-  const bars = lanes.flatMap(spans)
+  const bars = lanes.flatMap((steps, lane) => spans(steps, lane))
   const notes = bars.map(b => b.note)
   const lo = Math.min(...notes, Infinity)
   const hi = Math.max(...notes, -Infinity)
@@ -210,7 +240,7 @@ function Strip({
       )}
       {bars.map(b => (
         <line
-          key={`${b.note}@${b.from}`}
+          key={`${b.lane}:${b.note}@${b.from}`}
           className={
             under >= b.from && under < b.to ? styles.noteOn : styles.note
           }

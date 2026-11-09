@@ -3,15 +3,20 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
 import { YOURS } from '../dsp/stages/roms.ts'
+import { GATE_CHOICES } from '../dsp/trigbus.ts'
 import { engine } from '../engine/engine.ts'
 import { SEQ_DESTS } from '../engine/messages.ts'
+import { MONO_SEQ_STEP_KEYS, REST, TUNE_LANE_KEYS } from '../tune.ts'
 import { bench } from './bench.ts'
 import { GROUPS } from './controls/index.ts'
 import { FmKeys } from './FmKeys.tsx'
 import { Keys } from './Keys.tsx'
 import { LeadKeys, MonoKeys } from './MonoKeys.tsx'
+import { PcmKeys } from './PcmKeys.tsx'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
+
+import type { ControlKey, Controls } from '../controls.ts'
 
 const strip = () =>
   screen.queryByRole('button', { name: 'open the piano roll' })
@@ -97,4 +102,65 @@ test('the second melody’s notes do not flash the toy', () => {
   render(<Keys onOpen={() => {}} />)
   act(() => engine.noteTaken.set({ memory: 'seq', step: 2, at: 1 }))
   expect(flash()).toBeFalsy()
+})
+
+const written = (keys: readonly ControlKey[], note: (s: number) => number) => {
+  const board: Partial<Controls> = {}
+  keys.forEach((key, s) => {
+    board[key] = note(s)
+  })
+  return board
+}
+
+// Lane 1 holds one note, lane 2 two and lane 3 three, so the count of bars
+// says which lanes a strip draws.
+const laneTune = TUNE_LANE_KEYS.reduce<Partial<Controls>>(
+  (board, keys, lane) => ({
+    ...board,
+    ...written(keys, s => (s % 4 === 0 && s / 4 <= lane ? 10 + s : REST)),
+  }),
+  {},
+)
+const gate = (choice: string) => GATE_CHOICES.indexOf(choice)
+
+test('Glint draws the lanes its key gate follows', () => {
+  act(() => engine.patch({ ...laneTune, chipTune: YOURS }))
+  render(<FmKeys onOpen={() => {}} />)
+  expect(bars()).toBe(6)
+  act(() => engine.patch({ fmKeyGate: gate('lane 2') }))
+  expect(bars()).toBe(2)
+  act(() => engine.patch({ fmKeyGate: gate('no, cut') }))
+  expect(strip()).toBeNull()
+})
+
+test('Parlor follows its own jumper, and only while the chip plays your tune', () => {
+  act(() =>
+    engine.patch({ ...laneTune, chipTune: YOURS, pcmKeyGate: gate('lane 3') }),
+  )
+  render(<PcmKeys onOpen={() => {}} />)
+  expect(bars()).toBe(3)
+  act(() => engine.patch({ chipTune: 0 }))
+  expect(strip()).toBeNull()
+})
+
+test('pressing a following strip opens the toy’s roll', () => {
+  act(() => engine.patch({ chipTune: YOURS }))
+  const onOpen = vi.fn()
+  render(<PcmKeys onOpen={onOpen} />)
+  fireEvent.click(strip()!)
+  expect(onOpen).toHaveBeenCalledWith('Plinky')
+})
+
+test('Growler’s line soldered to Glint takes its strip over the toy’s lanes', () => {
+  act(() =>
+    engine.patch({
+      ...laneTune,
+      ...written(MONO_SEQ_STEP_KEYS, s => (s === 0 ? 10 : REST)),
+      chipTune: YOURS,
+      monoSeqOn: 1,
+      monoSeqTo: SEQ_DESTS.indexOf('fm'),
+    }),
+  )
+  render(<FmKeys onOpen={() => {}} />)
+  expect(bars()).toBe(1)
 })
