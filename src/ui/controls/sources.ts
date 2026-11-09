@@ -27,6 +27,7 @@ import {
   PHASE_BITS,
   CARRY_LINES,
   SIGN_TAPS,
+  LATCH_CLOCKS,
 } from '../../dsp/stages/fmVoices.ts'
 import {
   PCM_ADDR_LINES,
@@ -2150,6 +2151,7 @@ export const SOURCE_GROUPS: Group[] = [
       'fmSign',
       'fmGroundLoop',
       'fmSelfBus',
+      'fmLatch',
     ],
     sliders: [
       {
@@ -2866,6 +2868,19 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         help: 'The output stage’s return current shares a ground with the wave table. The output, low-passed at 80 Hz by the coupling capacitor, lifts every operator’s phase, and the loop closes back through the output. Low on the knob the bass thickens; from about 0.3 the loop oscillates under 120 Hz and the rumble bends every note on the chip. With no note sounding the loop stays quiet.',
+      },
+      {
+        key: 'fmLatch',
+        lane: 'FM latch clock',
+        part: 'die and driver',
+        label: 'Latch clock',
+        min: 0,
+        max: LATCH_CLOCKS.length - 1,
+        step: 1,
+        unit: '',
+        choices: [...LATCH_CLOCKS],
+        shy: true,
+        help: 'Clocks the output latch off one channel’s carrier, once a cycle, so the chip’s output updates at that voice’s pitch. The other notes alias against it into their difference tones, so a chord collapses into a low growl under 120 Hz, and the clocking voice itself reads one point of its own wave each cycle. While that channel is silent the latch passes every sample.',
       },
       {
         key: 'fmToyBus',

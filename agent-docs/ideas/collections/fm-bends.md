@@ -4,9 +4,9 @@ description:
   Further bends for the FM chip with hook points and measurements. Items 1–8,
   the exp table's bus, the allocator, cold boot and five effect scripts have
   landed with named cuts, and so has the phase generator (increment bus, carry,
-  slot skew, mod into pitch) and three bass loops (sign line, ground loop, Glint
-  on bus); a busy flag, the spare register bits, the envelope state bits and a
-  kit-strobed latch are what is left.
+  slot skew, mod into pitch) and four bass bends (sign line, ground loop, Glint
+  on bus, latch clock); the spare register bits, the envelope state bits and
+  envelope skew are what is left.
 ---
 
 # Further bends for the FM chip
@@ -531,6 +531,14 @@ Stacked, the sign line on ÷8 with Glint on bus at four bits reads 0.95, centroi
 the numbers: a wire from the envelope's floor back to key-on, and the envelope
 dropping the block an octave per halving.
 
+A second round added **Latch clock** (`fmLatch`): the output latch clocked off
+one channel's carrier wraps. Chords alias into their difference tones: 0.29 to
+0.94 under 120 Hz on a held organ chord, 0.65 on the sakura stem. Named cut:
+_every chord on its difference tones_. Four more were built and dropped, with
+their numbers at the code: a sync wire and a carry chain between channels (0.14
+and 0.26 on sakura), the busy flag ignored, and a latch enable opened by kit
+hits (both silent).
+
 Named cuts: _the tune five octaves down_ (÷32), _a rumble the chip feeds itself_
 (ground loop 1), _the chip writing its own octave_ (four bits).
 
@@ -587,15 +595,8 @@ Mono landed as the two bodge wires.
    vibrato at 6.4 kHz), the phase held still, and the shift register on every
    accumulator's bottom bit. Cold boot, rot and data faults reach the register,
    so these would come and go.
-5. **The busy flag ignored.** Writes inside the chip's wait window are lost. The
-   window counts off the chip's crystal and the writes off the CPU's, so the two
-   **Clock** knobs would start to interact, and **Glint on bus** would flood the
-   bus and lock the driver out.
-6. **The address latch strobed off a kit line.** Writes land only on hits, so
-   the tune is sampled and held by the pattern.
-7. **Envelope skew.** **Slot skew** for levels: a carrier takes its neighbour's
+5. **Envelope skew.** **Slot skew** for levels: a carrier takes its neighbour's
    envelope, and in rhythm mode the tune is articulated by the hi-hat.
-8. **A sync wire.** One channel's wrap resets the others' phases.
 
 ## Compositions to try
 

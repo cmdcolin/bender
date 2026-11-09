@@ -867,6 +867,14 @@ export const CUTS: CutDef[] = [
     patch: { fmGroundLoop: 1 },
   },
   {
+    group: 'Glint',
+    part: DIE,
+    name: 'every chord on its difference tones',
+    blurb:
+      'The output latch is clocked off the first channel’s carrier, so the chip’s output updates once per cycle of that voice. The other notes alias against it, and every chord folds down into a growl under 120 Hz',
+    patch: { fmLatch: pick('fmLatch', 'voice 1') },
+  },
+  {
     group: 'Crusher',
     part: BUS,
     name: 'the sign bit wanders',

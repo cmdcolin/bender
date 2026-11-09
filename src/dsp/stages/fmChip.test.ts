@@ -1602,3 +1602,25 @@ test.each([
   ]!
   expect(rms(x)).toBe(0)
 })
+
+const lowChord = (o: Partial<Controls>) =>
+  heldOn({ fmVoice: voice('organ'), ...o }, [-12, -5, 0])
+
+test('a latch clocked off one voice folds a chord into a growl under 120 Hz', () => {
+  expect(subShare(lowChord({}))).toBeLessThan(0.4)
+  expect(subShare(lowChord({ fmLatch: 1 }))).toBeGreaterThan(0.85)
+})
+
+test('a latch clocked off a silent channel passes every sample', () => {
+  expect(lowChord({ fmLatch: 4 })).toEqual(lowChord({}))
+})
+
+test('a wire on the latch clock lane picks the voice the knob does', () => {
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmLatch,
+    mod0Depth: 1 / 5,
+  }
+  expect(lowChord(wire)).toEqual(lowChord({ fmLatch: 1 }))
+})

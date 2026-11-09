@@ -481,6 +481,14 @@ export const SIGN_TAPS = [
   'slot before',
 ] as const
 export const SIGN_DIVIDERS = SIGN_TAPS.length - 2
+/** What clocks the output latch: every sample, or one channel's carrier. */
+export const LATCH_CLOCKS = [
+  'sample clock',
+  'voice 1',
+  'voice 2',
+  'voice 3',
+  'voice 4',
+] as const
 
 // The kit the die keeps in ROM. The bass drum is the only one of the three
 // still running off the sine table, so it is the only one that needs a patch —

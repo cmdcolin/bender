@@ -579,6 +579,7 @@ export const DEST_LAW = {
   fmSign: { law: 'hop', choices: 7 },
   fmGroundLoop: { law: 'add', lo: 0, hi: 1 },
   fmSelfBus: { law: 'hop', choices: 9 },
+  fmLatch: { law: 'hop', choices: 5 },
 } as const satisfies Record<LiveDest, Law>
 
 export const WIRE_IS_KNOB = new Set<LiveDest>([

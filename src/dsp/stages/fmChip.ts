@@ -49,6 +49,7 @@ import {
   CARRY_LINES,
   SIGN_DIVIDERS,
   SIGN_TAPS,
+  LATCH_CLOCKS,
   REG,
   RHY,
   ROM_PATCH_BYTES,
@@ -671,6 +672,9 @@ export class FmChip implements Stage {
   private selfBits = 0
   private selfHeld = 0
   private ground = 0
+  /** the channel whose carrier wraps clock the output latch, or -1 */
+  private latchFrom = -1
+  private latchDue = false
   private readonly groundLp: number
   private temp = 0
   private tripped = false
@@ -738,6 +742,10 @@ export class FmChip implements Stage {
     this.commit(this.busAddr, (this.busData & ~mask) | level)
   }
 
+  // Two gates on this were tried. Ignoring the busy flag lost the address of
+  // every write in a burst after the first, so a note's frequency never landed
+  // and it played at 0 Hz. An enable opened by a kit hit arrives a block after
+  // the note struck with it, and the sakura tune landed 0 of 38 writes.
   private commit(addr: number, data: number) {
     const a = this.addrBus.read(
       addr,
@@ -1723,6 +1731,8 @@ export class FmChip implements Stage {
     const baseBounce = p[IDX.fmGroundLoop]!
     const modBounce = bay.read(DEST.fmGroundLoop)
     this.selfBits = hop(p[IDX.fmSelfBus]!, 9, bay.read(DEST.fmSelfBus))
+    this.latchFrom =
+      hop(p[IDX.fmLatch]!, LATCH_CLOCKS.length, bay.read(DEST.fmLatch)) - 1
     this.blob = baseBlob
     const rail = this.power.pick(p[IDX.fmSupply]!)
     const railAmp = rail.ampFactor
@@ -2053,7 +2063,13 @@ export class FmChip implements Stage {
         const carWas = c.car.phase
         if (this.phaseFault || wire > 0) this.advance(c.car, carStep, wire * m)
         else c.car.phase = (c.car.phase + carStep) % 1
-        if (c.car.phase < carWas) c.car.wraps++
+        // A wrap resetting the other channels' phases, and a wrap kicking the
+        // next channel's phase, were tried as bass bends: they moved the
+        // sakura stem's share under 120 Hz from 0.12 to 0.14 and 0.26.
+        if (c.car.phase < carWas) {
+          c.car.wraps++
+          if (n === this.latchFrom) this.latchDue = true
+        }
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
         this.wavePhase = c.car.phase + m * 2 * indexBoost + bounce
@@ -2077,7 +2093,11 @@ export class FmChip implements Stage {
       // can reach. A latch that only takes every other slot holds through the
       // one it missed, and a sign line held is everything below the line folded
       // back over it.
-      if ((test & TEST.dacSkew) === 0 || (i & 1) === 0) {
+      if (
+        ((test & TEST.dacSkew) === 0 || (i & 1) === 0) &&
+        (this.latchFrom < 0 || this.latchDue || this.unclocked())
+      ) {
+        this.latchDue = false
         const word = (softclip(sum * drive) / drive) * makeup
         this.held = test & TEST.dacSign ? Math.abs(word) : word
       }
@@ -2119,6 +2139,13 @@ export class FmChip implements Stage {
           (((acc & ~below) + (word & ~below)) & PHASE_TOP)) /
         PHASE_FULL
     }
+  }
+
+  private unclocked() {
+    return (
+      this.ch[this.latchFrom]!.car.stage === IDLE ||
+      (this.kitOn && this.latchFrom >= this.kitCh)
+    )
   }
 
   private signOf(op: Op) {
@@ -2289,6 +2316,7 @@ export class FmChip implements Stage {
     this.lastHalf = 0
     this.selfHeld = 0
     this.ground = 0
+    this.latchDue = false
     if (!this.cold) return
     for (let r = 0; r < N_REGS; r++)
       this.regs[r] = Math.floor(this.bootRng() * 256)

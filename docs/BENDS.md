@@ -593,6 +593,17 @@ write touches that register again.
     stays in.
   - With no note sounding the loop stays silent.
   - Its patch-bay lane moves every sample.
+- **Latch clock:** clocks the output latch off one channel's carrier, once a
+  cycle, so the output updates at that voice's pitch.
+  - The other notes alias against it into their difference tones. A held organ
+    chord goes from 0.29 of its level under 120 Hz to 0.94, centred at 104 Hz,
+    about 4 dB quieter.
+  - The clocking voice reads one point of its own wave each cycle, so it drops
+    out and the rest of the chord carries the sound.
+  - While that channel is silent the latch passes every sample, so a tune that
+    never reaches the chosen channel plays clean.
+  - With **Glint on bus** at four bits the sakura tune puts 0.91 of its level
+    under 120 Hz, centred at 181 Hz.
 
 ## Inside the drum voices
 

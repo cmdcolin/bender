@@ -292,8 +292,9 @@ export const DEST = {
   fmSign: 233,
   fmGroundLoop: 234,
   fmSelfBus: 235,
+  fmLatch: 236,
 } as const
-export const N_DEST = 236
+export const N_DEST = 237
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

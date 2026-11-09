@@ -253,6 +253,7 @@ export const DEST_CHOICES = [
   'FM sign line',
   'FM ground loop',
   'FM Glint on bus',
+  'FM latch clock',
 ] as const
 
 export const ENV_KEYS = [
@@ -588,6 +589,7 @@ export const PATCH_GROUPS: Group[] = [
                 'FM sign line',
                 'FM ground loop',
                 'FM Glint on bus',
+                'FM latch clock',
               ],
             },
             {

@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-872 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
-presets, 24 stage settings and 115 named cuts. The generator reads everything
+873 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 197
+presets, 24 stage settings and 116 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -38,7 +38,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   **Random bus fault** under random ▾ draws from the same table.
 - **Ten bends, six slots.** You pick which are on the board and in what order,
   so four always sit out. A mix at zero takes the stage out of the path.
-- **A patch bay that modulates itself.** Four wires, 236 destinations, among
+- **A patch bay that modulates itself.** Four wires, 237 destinations, among
   them the supply rail, the tape loop's capstan, and the depths of the other
   wires.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 136 controls are shy, mostly the ones that act on the
+names it still sets it. 137 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -514,9 +514,13 @@ puts the fault on, and the rows under it show the controls it set:
   table, so the output under 80 Hz lifts every operator’s phase. The loop
   oscillates below 120 Hz as soon as a note sounds, and every note of the tune
   bends around the rumble
+- **every chord on its difference tones**: The output latch is clocked off the
+  first channel’s carrier, so the chip’s output updates once per cycle of that
+  voice. The other notes alias against it, and every chord folds down into a
+  growl under 120 Hz
 
 <details>
-<summary>58 controls</summary>
+<summary>59 controls</summary>
 
 | control                        | range                                                                                    | what it does                                                                                                                                                                             |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -576,6 +580,7 @@ puts the fault on, and the rows under it show the controls it set:
 | Mod into pitch †               | off to full                                                                              | A wire from each modulator’s output onto the carrier’s step, so the modulator moves the carrier’s frequency rather than its phase, up to 16 kHz either way at the modulator’s full swing |
 | Sign line †                    | phase, ÷2, ÷4, ÷8, ÷16, ÷32, slot before                                                 | Moves the wave table’s sign wire off the phase                                                                                                                                           |
 | Ground loop †                  | off to full                                                                              | The output stage’s return current shares a ground with the wave table                                                                                                                    |
+| Latch clock †                  | sample clock, voice 1, voice 2, voice 3, voice 4                                         | Clocks the output latch off one channel’s carrier, once a cycle, so the chip’s output updates at that voice’s pitch                                                                      |
 | Toy on bus                     | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders Plinky’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire                                                                                        |
 | Glint on bus                   | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders this chip’s output onto the low bits of its data bus, loudest bit on the lowest wire, the way Toy on bus does with Plinky                                                        |
 
@@ -1844,7 +1849,7 @@ markers, or another wire’s depth, so the bay can modulate itself.
 | Release        | 5 ms to 30.0 s                                                                                                         | How long it takes to fall back to nothing once the gate closes                                      |
 | Hold           | 1 step to 16 steps                                                                                                     | How many kit steps a hit holds the gate open for, so a hit can reach its sustain before the release |
 | Wire 1–4 from  | 16 of them, off through ADSR                                                                                           | What the wire picks up                                                                              |
-| Wire 1–4 to    | 236 of them, filt cut through FM Glint on bus                                                                          | Where the other end is soldered                                                                     |
+| Wire 1–4 to    | 237 of them, filt cut through FM latch clock                                                                           | Where the other end is soldered                                                                     |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                    | How hard the wire pushes                                                                            |
 
 </details>

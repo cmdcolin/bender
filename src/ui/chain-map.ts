@@ -281,6 +281,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmSign: 'Glint',
   fmGroundLoop: 'Glint',
   fmSelfBus: 'Glint',
+  fmLatch: 'Glint',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

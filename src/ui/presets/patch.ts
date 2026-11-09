@@ -182,6 +182,7 @@ const LANDED = {
   'FM sign line': { up: ['fmLevel'] },
   'FM ground loop': { up: ['fmLevel'] },
   'FM Glint on bus': { up: ['fmLevel'] },
+  'FM latch clock': { up: ['fmLevel'] },
   'sheet level': { up: ['sheetLevel'] },
   'bottle level': { up: ['bottleLevel'] },
   'FM cut depth': {

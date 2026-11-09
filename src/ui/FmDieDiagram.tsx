@@ -41,6 +41,7 @@ const KEYS = [
   'fmPitchWire',
   'fmSign',
   'fmGroundLoop',
+  'fmLatch',
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
@@ -54,7 +55,7 @@ const OPENS: Record<string, readonly ControlKey[]> = {
     'fmSign',
     'fmGroundLoop',
   ],
-  DAC: ['fmDacSlot', 'fmDacSlip', 'fmBodge', 'fmBodgeR'],
+  DAC: ['fmDacSlot', 'fmDacSlip', 'fmBodge', 'fmBodgeR', 'fmLatch'],
   'register rot': ['fmRot'],
   heat: ['fmHeat'],
 }
@@ -274,8 +275,8 @@ export function FmDieDiagram() {
             />
             <Chip
               box={dacBox}
-              lit={slot > 0 || slip > 0}
-              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
+              lit={slot > 0 || slip > 0 || r.value('fmLatch') > 0}
+              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next. A latch clocked off one voice updates the output once per cycle of that voice."
               pick={pick}
               keys={OPENS.DAC}
             />
