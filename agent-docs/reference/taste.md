@@ -94,6 +94,15 @@ which bends get built: for the bends themselves "anything can go".
 - Glint's own output on its bus (`fmSelfBus`) and its ground loop over a
   groove: each note smears and repeats, which reads as "too much delay" and
   "not sure we have control over glint".
+- Howler's preset lead in hard techno: osc 2 at 8′, hard-synced and swept,
+  tearing over the groove ("kinda fun but not bass enough ... annoying"). Both
+  oscillators at 32′ with sync off made it a melodic bass instead.
+- Parlor as more than a rare stab in hard techno, above all its e.piano in
+  sixteenth broken chords: "pretty chill", then "goddamnit the parlor is not
+  good here".
+- Two kick-outs in a row, or one of four bars, in a hard section: "the beat
+  sounds kind of like a breakdown". A brake throw and a slowed, smeared
+  whisper read as "a somewhat silly effect".
 - Pitch that moves: chorus wobble, tape wow, varispeed glides ("got a little off
   tune").
 - Glitch-buffer stutters and drum retriggers ("not my fav setting").
