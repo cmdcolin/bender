@@ -696,8 +696,8 @@ export class MonoVoice {
       }
       this.cv += (this.target - this.cv) * glideK
       if (droopK > 0) {
-        this.cv -= this.cv * droopK
-        this.target -= this.target * droopK
+        this.cv = flushDenormal(this.cv - this.cv * droopK)
+        this.target = flushDenormal(this.target - this.target * droopK)
       }
       if (choke > 0) {
         const level = Math.abs(this.last)

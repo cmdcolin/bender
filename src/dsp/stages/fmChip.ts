@@ -16,7 +16,7 @@ import { KEY_BIAS, N_DRUM_VOICES, SEQ_TO_FM, voiceMask } from '../trigbus.ts'
 import { clamp01 } from '../util/clamp.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
 import { mulberry32 } from '../util/rng.ts'
-import { softclip } from '../util/softclip.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 import {
   blockOf,
   type Cpu,
@@ -1985,7 +1985,9 @@ export class FmChip implements Stage {
         ? clamp01(baseBounce + modBounce[i]!)
         : baseBounce
       if (bounceDepth > 0)
-        this.ground += this.groundLp * (this.held - this.ground)
+        this.ground = flushDenormal(
+          this.ground + this.groundLp * (this.held - this.ground),
+        )
       const bounce = bounceDepth * BOUNCE_DEPTH * this.ground
       const slotted = this.dacSlot >= 0 || slip > 0
       if (slotted) this.slotOut.fill(0)
