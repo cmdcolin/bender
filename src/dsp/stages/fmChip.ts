@@ -2095,7 +2095,7 @@ export class FmChip implements Stage {
       // back over it.
       if (
         ((test & TEST.dacSkew) === 0 || (i & 1) === 0) &&
-        (this.latchFrom < 0 || this.latchDue || this.unclocked())
+        (this.latchFrom < 0 || this.latchDue || this.unclocked(kit))
       ) {
         this.latchDue = false
         const word = (softclip(sum * drive) / drive) * makeup
@@ -2141,10 +2141,10 @@ export class FmChip implements Stage {
     }
   }
 
-  private unclocked() {
+  private unclocked(kit: boolean) {
     return (
       this.ch[this.latchFrom]!.car.stage === IDLE ||
-      (this.kitOn && this.latchFrom >= this.kitCh)
+      (kit && this.latchFrom >= this.kitCh)
     )
   }
 

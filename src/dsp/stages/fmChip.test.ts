@@ -1624,3 +1624,14 @@ test('a wire on the latch clock lane picks the voice the knob does', () => {
   }
   expect(lowChord(wire)).toEqual(lowChord({ fmLatch: 1 }))
 })
+
+test('a latch clocked off a channel the kit took over passes every sample', () => {
+  const stray = {
+    fmRhythm: 0,
+    fmDataLine: MODE_LINE,
+    fmDataFault: FAULT.supply,
+    drumSnare: 0,
+    drumHat: 0,
+  }
+  expect(fmStem({ ...stray, fmLatch: 3 })).toEqual(fmStem(stray))
+})
