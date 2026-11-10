@@ -2,6 +2,78 @@
 
 All notable changes to bender are documented here.
 
+## [1.28.1](https://github.com/cmdcolin/bender/compare/v1.28.0...v1.28.1) - 2026-11-10
+
+### Features
+- *(dsp)* [`45afb4e`](https://github.com/cmdcolin/bender/commit/45afb4e39904dc42838204cf36774f51ef9188ff) a level and a decay for each of Clatter's voices, each with a bay lane
+- *(dsp)* [`088e771`](https://github.com/cmdcolin/bender/commit/088e771907b22a55a877bd7c8e05455891985130) Plinky's output pin into Growler's and Howler's mixer, drawn as an AUDIO cord on the bench
+- *(dsp)* [`7858c52`](https://github.com/cmdcolin/bender/commit/7858c527ba583cb84ba0349708ecb5bc54b91ccb) Clatter's kick fed back into itself, tank and retrig taps off the melody, the kick on the amps, mix drive
+- *(dsp)* [`82c7701`](https://github.com/cmdcolin/bender/commit/82c77019b836f9596f8e8c90c756bb8d6882e1e3) five Clatter bends that put the metal bank and the hiss inside the drums
+- *(dsp)* [`cc86611`](https://github.com/cmdcolin/bender/commit/cc866115edc8c033584dbd5426d3deac289ff95b) Clatter's counter turns on a voice, a row on a second counter, the kick on the bank's supply
+- *(dsp)* [`538df70`](https://github.com/cmdcolin/bender/commit/538df707b71b79209f423ab5b2ff7470130daf08) a flip-flop divider on Plinky's AUDIO cord, and the cord on the signal path map
+- *(engine)* [`e998fc8`](https://github.com/cmdcolin/bender/commit/e998fc8270d83f17848b19d95e0735653cb2b856) bender.heard() reads the board as the audio thread plays it
+- *(engine)* [`5a01199`](https://github.com/cmdcolin/bender/commit/5a011992afc2a9d3baf4a959bfd7c8f5adea59d4) the dev server fetches links for the tape loop with yt-dlp
+- *(dsp)* [`30b325b`](https://github.com/cmdcolin/bender/commit/30b325b868afa26bb29c9040c1832e63342def9b) AUDIO cords from Clatter, Glint, Parlor, Growler and Howler into the synths' mixers
+- *(ui)* [`ec4295e`](https://github.com/cmdcolin/bender/commit/ec4295ee2d75ca4830169352a4e93db697855b2c) bender.tape() loads Spool from a shelf, a search or a link
+- *(engine)* [`7b999cc`](https://github.com/cmdcolin/bender/commit/7b999ccf6626a199bd14927e4d3749918551674a) describe() says what a bay wire does, held to the DSP by pnpm contract
+- *(engine)* [`d166332`](https://github.com/cmdcolin/bender/commit/d166332cd7c49877fa9f4b620c2c8a907bb79d16) a yt-dlp fetch shows its progress and credits its link
+- *(engine)* [`c160634`](https://github.com/cmdcolin/bender/commit/c160634d1574ffd4adc8ee9cb8534d52702f2b72) every bay destination declares its law, and describe() words it
+- *(engine)* [`c0da8f0`](https://github.com/cmdcolin/bender/commit/c0da8f0fa7120c987a40a84d7093c695ba385d0a) bender.wire() patches the bay in each destination's own unit
+- *(dsp)* [`db15ee2`](https://github.com/cmdcolin/bender/commit/db15ee2dc343b784b2c53138b8aaa934c0997efc) three bass loops on Glint: sign line, ground loop, Glint on bus
+- *(dsp)* [`a7fb655`](https://github.com/cmdcolin/bender/commit/a7fb6555f2dfb0ea7b11bdff5820cde4ef9f59f9) Glint's output latch clocked off one voice
+- *(ui)* [`b81f7d1`](https://github.com/cmdcolin/bender/commit/b81f7d129ae20bf5a3249ae621d11c2fe08d5c86) Glint and Parlor show the memory lanes they play in a mini roll
+
+### Fixes
+- *(ui)* [`b441df7`](https://github.com/cmdcolin/bender/commit/b441df76f03d53a35eb0bff2753c44efc1f65c8c) a map wire onto a lower-row machine hangs in the gutter, and the board drops onto the mix bus
+- *(ui)* [`14a7e77`](https://github.com/cmdcolin/bender/commit/14a7e77f86813b81da6aa858154b671ae9f518af) a unit patched into a machine hangs under the machine's name, not a patch-wire label
+- *(ui)* [`c4207d3`](https://github.com/cmdcolin/bender/commit/c4207d3e1792309db49084c704c36158c89ae793) keyboard case decorations measure the case, not the deck
+- *(ui)* [`30d92ee`](https://github.com/cmdcolin/bender/commit/30d92eeea1179f9be7f503a15b96d34c26ad0da4) button hovers apply only where a pointer hovers
+- *(ui)* [`018b473`](https://github.com/cmdcolin/bender/commit/018b473a13a65b08e85d24f8f1be335b74e89ab1) CSS rules that never applied or fought each other
+- *(ui)* [`2131c2d`](https://github.com/cmdcolin/bender/commit/2131c2d365f2f0f14a226908433b1600bcac38ec) the blind dice restore your controls before they move wires off dead stages
+- *(ui)* [`06d9e2e`](https://github.com/cmdcolin/bender/commit/06d9e2e9aa920ac230d3d3437aa0a75f0210ad88) a slam skips a drum voice's own controls while that voice has no hits
+- *(ui)* [`1e439b2`](https://github.com/cmdcolin/bender/commit/1e439b2f7de5be5a8a6aeab6cef63b8cdfe16a8a) borderless text buttons are one quiet kind with a fingertip's reach
+- *(dsp)* [`0a369ac`](https://github.com/cmdcolin/bender/commit/0a369ac2e4c290e615df10f6b88c5c7c259a2adf) a pedal switched off empties its lines, so switching it back on replays nothing
+- *(dsp)* [`a2112c6`](https://github.com/cmdcolin/bender/commit/a2112c67a682be005c5639ba6c6a3558d9d1b472) a wire alone on Wander plays the faults its strays plan
+- *(dsp)* [`43594d4`](https://github.com/cmdcolin/bender/commit/43594d44121fb6fd784c21c8f6a18dc35cd87a61) envelope relax no longer wakes a dead bass or chord
+- *(dsp)* [`0e0a1c4`](https://github.com/cmdcolin/bender/commit/0e0a1c4519ce4ddbce14de80edac4a747c419008) a choked kick or tom drains its ringing tank
+- *(dsp)* [`0b2b050`](https://github.com/cmdcolin/bender/commit/0b2b0507e2a6e3478610a7a0669d6e02f0f55823) the crusher carries its held sample across a switch between paths
+- *(dsp)* [`daff036`](https://github.com/cmdcolin/bender/commit/daff036d38261205c850347a1186cf0e78680419) per-sample constants scale with the sample rate, exact at 48 kHz
+- *(engine)* [`f8da208`](https://github.com/cmdcolin/bender/commit/f8da2080669e68f1c641d2533a45e15dda7f3607) each glide in a queue keeps its own length
+- *(engine)* [`d7f2f01`](https://github.com/cmdcolin/bender/commit/d7f2f01f407bff2fd5b0f767c67302d86caad249) wire() inside a queue takes its own wire, and keeps off its own depth
+- [`ae5087a`](https://github.com/cmdcolin/bender/commit/ae5087a0a40654e2c818039e19f65674dfbd369e) lint syncs Astro's content types first, so CI's type-aware rules see them
+- *(dsp)* [`cbd2f26`](https://github.com/cmdcolin/bender/commit/cbd2f26426da0bcba78b8c53ba5da13133174eb2) Glint's latch clock reads the kit from the mode bit, so a stray bit cannot freeze it
+- *(dsp)* [`e927197`](https://github.com/cmdcolin/bender/commit/e927197ec517d6906962b4ddfe454e4e121a8cb8) flush Glint's ground and the mono voice's droop CV before they decay into denormals
+
+### Refactor
+- *(ui)* [`73203a9`](https://github.com/cmdcolin/bender/commit/73203a926e92c736c92307505e0f265f22a6b80b) every dialog opens through one Dialog component and card
+- *(ui)* [`095d0be`](https://github.com/cmdcolin/bender/commit/095d0be973bf123f6e9838f735d330c3b742f81d) element defaults and depth tokens come from skillet-shared 0.7.0
+- *(ui)* [`6c1e2c7`](https://github.com/cmdcolin/bender/commit/6c1e2c73a4914a4533ab3fa0a94e581082b95658) the outline button is bender's and videoskillet's one shared kind
+- *(ui)* [`3bc41ab`](https://github.com/cmdcolin/bender/commit/3bc41aba57473c03eb4bddb7f38cd2449edd5d57) text inputs are one field kind, and two literals become tokens
+- *(dsp)* [`291dfe7`](https://github.com/cmdcolin/bender/commit/291dfe7f6d93e688711870f6158aaa0a703fde4d) one place answers the kit's step rate
+- *(dsp)* [`0dfd607`](https://github.com/cmdcolin/bender/commit/0dfd6074be1d443ca02cab300ef7a2a49090a4df) each stage says which cross-machine tap it reads
+- *(dsp)* [`ba3d0a1`](https://github.com/cmdcolin/bender/commit/ba3d0a14641b6fbe7f9c8dcdd585c9f108ee01bd) the arc counts bars off the same step-rate fallback
+- [`b9e2926`](https://github.com/cmdcolin/bender/commit/b9e2926b09bd68077c00a3bf08331495139ff61a) type the any sources the strict lint found
+- [`18bfa23`](https://github.com/cmdcolin/bender/commit/18bfa236199fcc336fe4eb5446b5e25638d39cb2) test fakes that never await stop being async
+
+### Documentation
+- [`eb9509a`](https://github.com/cmdcolin/bender/commit/eb9509af00e0b005a6ca5b863072acd99e078bb0) memory-store facts move to the repo
+- [`997f2d3`](https://github.com/cmdcolin/bender/commit/997f2d3451fd07be874ce826d2ef87b23af082d1) list bender.heard() in the API table
+- [`402d68a`](https://github.com/cmdcolin/bender/commit/402d68a93b2c2ba9f1efe8fa379df2d760c6ce46) the architecture review keeps only what is still open
+- [`8c28bcc`](https://github.com/cmdcolin/bender/commit/8c28bccdde62e56c07bdff1d5921d06ecb26744b) hand off the CSS and shared design system work
+- [`046a8d1`](https://github.com/cmdcolin/bender/commit/046a8d18e598a06e75d223e4b7460310d9c2a485) taste notes the sparse creepy Parlor stabs over hard techno
+- [`cba85c3`](https://github.com/cmdcolin/bender/commit/cba85c3b3c3f3ad81660df102bbd78b5ac17168f) taste notes Glint bent hard over a kit that mutates every bar
+- [`8fad411`](https://github.com/cmdcolin/bender/commit/8fad411fd8e28d16e74769f52eec890b77b684c8) taste notes one lead over the kick, and Glint's self-bus heard as delay
+- [`7e71e29`](https://github.com/cmdcolin/bender/commit/7e71e2972d41aba530ef49588ca4d5f83d0308bb) taste notes the tearing Howler lead, Parlor beyond a stab, and long kick-outs
+- [`49db06e`](https://github.com/cmdcolin/bender/commit/49db06e3cdb73969b635d6ace74680450e9d11b8) taste notes Howler's rotting melody over a locked groove
+
+### Tests
+- *(ui)* [`e368bb1`](https://github.com/cmdcolin/bender/commit/e368bb162b57d6ad71d00af7a40dbb11aa7ecd04) the map's layout check covers labels on boxes, the folded panel layout and every wire destination
+- *(engine)* [`64ac441`](https://github.com/cmdcolin/bender/commit/64ac44163b58ebeb4b40ae81101b5abc1c20709f) a probe goes through the real worklet and back
+
+### Chores
+- [`755f506`](https://github.com/cmdcolin/bender/commit/755f506ab03bcc70944a5b188e7de91a9d4d0bb8) typecheck with tsrs, and type-aware lint runs tsrs-lint
+- [`89fbb90`](https://github.com/cmdcolin/bender/commit/89fbb901f13bf2694ed856d2e742d5dfada4265d) lint with the strict type-aware rule set shared with videoskillet
+
 ## [1.28.0](https://github.com/cmdcolin/bender/compare/v1.27.0...v1.28.0) - 2026-11-08
 
 ### Features
