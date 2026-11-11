@@ -7,18 +7,26 @@ option and record why in the commit and the idea doc.
 
 ## Next round, by source
 
+A round on 2026-11-11 landed bends on Growler and Howler, Prattle, Glint and
+Plinky; `git log --oneline 90eee6cf..e3a9e4aa` lists them.
+
+- **Plinky:** `agent-docs/ideas/collections/toy-bends.md`, "Unbuilt". The
+  envelope comparator holding the tempo counter is next.
 - **FM chip:** `agent-docs/ideas/collections/fm-bends.md`, "What is left,
-  ranked": rhythm at full width and the exp table's bus have landed, so a mono
-  bodge wire is next, then the spare register bits. "Compositions to try" has
-  three setups no preset surfaces yet.
+  ranked": the key register's sustain bit and the test register's spare bits.
+  "Compositions to try" has setups no preset surfaces yet.
+- **Growler and Howler:** `agent-docs/ideas/collections/mono-bends.md`,
+  "Candidates".
+- **Prattle:** `agent-docs/ideas/collections/prattle-bends.md`, "Candidates".
 - **Kit and ring mod:** `drum-bends.md` and `ring-mod.md` have no numbered
   candidates left. Each needs a fresh survey written the same way before
   building.
-- **Sources and pedals with no idea doc:** `chaosOsc`, `monoSynth`/`monoVoice`,
-  `pcmKeys`/`pcmRom`, `sampler`, `noise`, `glitchBuf`, `screech`, `shifter`,
-  `ensemble`, `comb`, `crusher`, `stompbox`, `tape`, `tapeDelay`. Survey one,
-  write `ideas/collections/<stage>-bends.md` ranked by `pnpm knife` /
-  `pnpm spectrum`, then build its top few.
+- **Sources and pedals with no idea doc:** `chaosOsc`, `pcmKeys`/`pcmRom`,
+  `sampler`, `noise`, `glitchBuf`, `screech`, `ensemble`, `stompbox`, `tape`,
+  `tapeDelay`. Survey one, write `ideas/collections/<stage>-bends.md` ranked by
+  `pnpm faults` / `pnpm spectrum`, then build its top few.
+- **Bay lanes:** the 2026-11-11 round added no `DEST` lanes, so none of its
+  knobs is on the patch bay yet.
 - **Bigger, waiting on a call:** `ideas/waiting-on-a-call/knob-automation.md`.
 
 ## How the rounds ran
