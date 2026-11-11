@@ -1,5 +1,6 @@
 import { IDX } from '../../engine/params.ts'
 import { DelayLine } from '../util/delayline.ts'
+import { Halfband, LATENCY, Upsampler } from '../util/halfband.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { Highpass, lpCoef } from '../util/onepole.ts'
 import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
@@ -142,6 +143,8 @@ const HEAD_DC_HZ = 10
     harmonic stops being a bloom and starts being the note. */
 const HYST_MAX = 1.5
 const SLOWEST = -2
+const OVERSAMPLE = 2
+const WARM = 2 * LATENCY + 2
 const LINE_MS = NOMINAL_MS + 3600 + 20
 const EMPH_HZ = 1200
 const AZIMUTH_MS = 1
@@ -242,6 +245,8 @@ interface Settings {
 // and two heads make that twelve — the same thing the spring tank was paying.
 class TapeHead {
   private line: DelayLine
+  private readonly up = new Upsampler()
+  private readonly down = new Halfband()
   private pre = 0
   private de = 0
   private tiltY = 0
@@ -278,6 +283,68 @@ class TapeHead {
     this.dropHazard = this.nextHazard()
   }
 
+  private record(s: Settings) {
+    this.up.process(this.y * s.drive)
+    const pair = this.up.pair
+    let { pre, de, magEnv } = this
+    let first = 0
+    let second = 0
+    for (let k = 0; k < OVERSAMPLE; k++) {
+      const xd = pair[k]!
+      pre = flushDenormal(pre + s.emphCoef * (xd - pre))
+      // The field the gap presents to the oxide, and the curve it meets there.
+      //
+      // A clipper on its own is odd: both halves of a wave meet the same shape, so
+      // it makes a third harmonic and a fifth and never a second — which is the
+      // sound of something breaking up rather than of something warm. Tape is not
+      // odd. The medium arrives at the gap already magnetised, by more of it the
+      // harder it has been driven, and that remanence sits the curve off centre:
+      // the two halves of the wave saturate against different amounts of it and
+      // come out different shapes. That difference is the second harmonic, and
+      // because the offset rides the programme envelope rather than the note, it
+      // blooms up with the level and goes away again when you back off.
+      //
+      // What the offset does to the operating point is the sound; the dc it also
+      // leaves is not, and would come off headroom the rest of the take needs. So
+      // the curve is read at the offset and taken back off there, which is a
+      // second call into the clipper and the only per-sample cost this knob has.
+      //
+      // How much the medium is carrying is measured off the clipper's own output
+      // rather than off what comes back from the replay head: the record level
+      // makes up its gain on the way out, so a head being driven twice as hard
+      // plays back at the same level, and reading the offset from there would have
+      // meant a tape that blooms *less* the harder you hit it. What the domains
+      // have been through is `rec`, which is a difference of two clipped values
+      // and so bounded by ±2 rather than ±1 — the loop closes on itself all the
+      // same, because the further off centre the offset sits the curve, the
+      // smaller the difference either half of the wave comes back as.
+      const field = pre + (1 + s.emph) * (xd - pre)
+      const offset = s.remanence * magEnv
+      const rec =
+        offset === 0
+          ? softclip(field)
+          : softclip(field + offset) - softclip(offset)
+      // Domains flip as fast as the field asks them to and then stay flipped —
+      // that is what remanence is — so this rises in a couple of milliseconds and
+      // lets go over a twentieth of a second. Tracked at one speed both ways it
+      // sat near the average of a rectified wave, which is a bloom that follows
+      // the note; riding the peak and hanging after it is a bloom that follows the
+      // playing, and it stays lit through the gap between two hits instead of
+      // pumping in and out of every one.
+      const mag = Math.abs(rec)
+      magEnv = flushDenormal(
+        magEnv + (mag > magEnv ? s.magAtk : s.magRel) * (mag - magEnv),
+      )
+      de = flushDenormal(de + s.deCoef * (rec - de))
+      first = second
+      second = (de + (rec - de) / (1 + s.emph)) * s.makeup
+    }
+    this.pre = pre
+    this.de = de
+    this.magEnv = magEnv
+    this.y = this.down.process(first, second)
+  }
+
   // gapLog is the log of this head's replay pole with the azimuth error already
   // in it — `-2*pi*f/sr`, which is the corner in the units the erase and the
   // dropouts want to move it in. Settled once a block rather than taken forty-
@@ -287,56 +354,8 @@ class TapeHead {
   // thing a hole in the oxide never is.
   process(s: Settings) {
     const { delay, gapLog } = this
-    const xd = this.y * s.drive
-    this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
-    const pre = this.pre
-    // The field the gap presents to the oxide, and the curve it meets there.
-    //
-    // A clipper on its own is odd: both halves of a wave meet the same shape, so
-    // it makes a third harmonic and a fifth and never a second — which is the
-    // sound of something breaking up rather than of something warm. Tape is not
-    // odd. The medium arrives at the gap already magnetised, by more of it the
-    // harder it has been driven, and that remanence sits the curve off centre:
-    // the two halves of the wave saturate against different amounts of it and
-    // come out different shapes. That difference is the second harmonic, and
-    // because the offset rides the programme envelope rather than the note, it
-    // blooms up with the level and goes away again when you back off.
-    //
-    // What the offset does to the operating point is the sound; the dc it also
-    // leaves is not, and would come off headroom the rest of the take needs. So
-    // the curve is read at the offset and taken back off there, which is a
-    // second call into the clipper and the only per-sample cost this knob has.
-    //
-    // How much the medium is carrying is measured off the clipper's own output
-    // rather than off what comes back from the replay head: the record level
-    // makes up its gain on the way out, so a head being driven twice as hard
-    // plays back at the same level, and reading the offset from there would have
-    // meant a tape that blooms *less* the harder you hit it. What the domains
-    // have been through is `rec`, which is a difference of two clipped values
-    // and so bounded by ±2 rather than ±1 — the loop closes on itself all the
-    // same, because the further off centre the offset sits the curve, the
-    // smaller the difference either half of the wave comes back as.
-    const field = pre + (1 + s.emph) * (xd - pre)
-    const offset = s.remanence * this.magEnv
-    const rec =
-      offset === 0
-        ? softclip(field)
-        : softclip(field + offset) - softclip(offset)
-    // Domains flip as fast as the field asks them to and then stay flipped —
-    // that is what remanence is — so this rises in a couple of milliseconds and
-    // lets go over a twentieth of a second. Tracked at one speed both ways it
-    // sat near the average of a rectified wave, which is a bloom that follows
-    // the note; riding the peak and hanging after it is a bloom that follows the
-    // playing, and it stays lit through the gap between two hits instead of
-    // pumping in and out of every one.
-    const mag = Math.abs(rec)
-    this.magEnv = flushDenormal(
-      this.magEnv +
-        (mag > this.magEnv ? s.magAtk : s.magRel) * (mag - this.magEnv),
-    )
-    this.de = flushDenormal(this.de + s.deCoef * (rec - this.de))
-    const de = this.de
-    const played = (de + (rec - de) / (1 + s.emph)) * s.makeup
+    this.record(s)
+    const played = this.y
     // The record tilt and the hiss are both a knob at rest for most boards, and
     // a head runs whatever is here forty-eight thousand times a second in each
     // channel. Both branches go the same way for the whole of a take, which is
@@ -478,12 +497,19 @@ class TapeHead {
     this.line.write(x)
   }
 
+  warm(x: number, s: Settings) {
+    this.y = x
+    this.record(s)
+  }
+
   reset() {
     this.line.reset()
     this.settle()
   }
 
   settle() {
+    this.up.reset()
+    this.down.reset()
     this.pre = 0
     this.de = 0
     this.tiltY = 0
@@ -619,8 +645,8 @@ export class Tape implements Stage {
       const r = io.r[i]!
       this.dryL.write(l)
       this.dryR.write(r)
-      this.headL.listen(l)
-      this.headR.listen(r)
+      this.headL.listen(this.dryL.readAt(LATENCY, 0))
+      this.headR.listen(this.dryR.readAt(LATENCY, 0))
     }
   }
 
@@ -668,7 +694,8 @@ export class Tape implements Stage {
     // could least afford one. Written out as poles rather than as corners, the
     // two cancel to the bit.
     const g = 1 + s.emph
-    const a = 1 - lpCoef(EMPH_HZ, this.sr)
+    const recSr = this.sr * OVERSAMPLE
+    const a = 1 - lpCoef(EMPH_HZ, recSr)
     s.emphCoef = 1 - a
     s.deCoef = 1 - (g * a) / (g + (1 - a) * (1 - g))
     // How far off centre the remanence sits the curve, per unit of level the
@@ -682,8 +709,8 @@ export class Tape implements Stage {
     s.demag = fm.demag
     s.hissCoef = lpCoef(1500, this.sr)
     s.envCoef = lpCoef(12, this.sr)
-    s.magAtk = lpCoef(60, this.sr)
-    s.magRel = lpCoef(2.5, this.sr)
+    s.magAtk = lpCoef(60, recSr)
+    s.magRel = lpCoef(2.5, recSr)
     s.dropAmt = p[IDX.tapeDrop]!
     s.dropProb = (s.dropAmt * 3) / this.sr
     s.dropCoef = lpCoef(120, this.sr)
@@ -730,6 +757,12 @@ export class Tape implements Stage {
     const lowC = lowOn ? lpCoef(fm.lowHz / GAP_POLE, this.sr) : 0
     const enc = this.compander('rec', Math.round(p[IDX.tapeNrRec]!))
     const dec = this.compander('play', Math.round(p[IDX.tapeNrPlay]!))
+    const head = this.nominal - LATENCY
+    if (entering)
+      for (let k = WARM; k > 0; k--) {
+        this.headL.warm(this.dryL.readAt(k - 1, 0), s)
+        this.headR.warm(this.dryR.readAt(k - 1, 0), s)
+      }
 
     for (let i = 0; i < io.n; i++) {
       this.driftY = flushDenormal(
@@ -772,7 +805,7 @@ export class Tape implements Stage {
       // the grain flutter puts on everything; over it, everything already
       // recorded wobbles at the squeal's rate — which is why a machine going
       // off sounds wrong on material that has none of it in it.
-      const d = Math.max(this.nominal + wobbleMs * msToSamples + span * sqFm, 4)
+      const d = Math.max(head + wobbleMs * msToSamples + span * sqFm, 4)
 
       const inL = io.l[i]!
       const inR = io.r[i]!

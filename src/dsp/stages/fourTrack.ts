@@ -4,6 +4,7 @@ import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { BiquadState, flat, peak, shelf } from '../util/biquad.ts'
 import { hermite } from '../util/delayline.ts'
 import { coef } from '../util/follower.ts'
+import { Halfband, Upsampler } from '../util/halfband.ts'
 import { SineOsc } from '../util/lfo.ts'
 import {
   LoopAmp,
@@ -71,6 +72,7 @@ const REMANENCE = 0.45
 const BIAS_ERASE_HZ = 6000
 const BIAS_KEEP = 0.55
 const REPLAY_REF = 0.891
+const OVERSAMPLE = 2
 
 // The desk's op-amps clip at twice the board's full scale, which is the
 // headroom a line-level four-track has over its nominal level.
@@ -214,6 +216,8 @@ class Loop {
   private readonly smooth: number
   readonly enc: Dbx
   readonly dec: Dbx
+  private readonly up = new Upsampler()
+  private readonly down = new Halfband()
 
   private readonly gauss: Rng
   private readonly rng: Rng
@@ -306,9 +310,7 @@ class Loop {
   // and its inverse, as the tape machine's head does it, then the top end the
   // medium cannot hold at this speed and this level.
   record(s: Settings) {
-    const xd = this.y * s.drive
-    this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
-    const field = this.pre + (1 + EMPH) * (xd - this.pre)
+    this.up.process(this.y * s.drive)
     // The offset rides a 60 Hz envelope, so it and its own clip are held for a
     // control period, both together so the curve stays read at one point.
     if (--this.selfIn <= 0) {
@@ -318,16 +320,27 @@ class Loop {
       this.offset = s.remanence * this.mag
       this.offsetClip = softclip(this.offset)
     }
-    const rec =
-      this.offset === 0
-        ? softclip(field)
-        : softclip(field + this.offset) - this.offsetClip
-    const m = rec < 0 ? -rec : rec
-    this.mag = flushDenormal(
-      this.mag + (m > this.mag ? s.magAtk : s.magRel) * (m - this.mag),
-    )
-    this.de = flushDenormal(this.de + s.deCoef * (rec - this.de))
-    const played = (this.de + (rec - this.de) / (1 + EMPH)) * s.makeup
+    const pair = this.up.pair
+    const { offset, offsetClip } = this
+    let { pre, de, mag } = this
+    let first = 0
+    let second = 0
+    for (let k = 0; k < OVERSAMPLE; k++) {
+      const xd = pair[k]!
+      pre = flushDenormal(pre + s.emphCoef * (xd - pre))
+      const field = pre + (1 + EMPH) * (xd - pre)
+      const rec =
+        offset === 0 ? softclip(field) : softclip(field + offset) - offsetClip
+      const m = rec < 0 ? -rec : rec
+      mag = flushDenormal(mag + (m > mag ? s.magAtk : s.magRel) * (m - mag))
+      de = flushDenormal(de + s.deCoef * (rec - de))
+      first = second
+      second = (de + (rec - de) / (1 + EMPH)) * s.makeup
+    }
+    this.pre = pre
+    this.de = de
+    this.mag = mag
+    const played = this.down.process(first, second)
     this.selfLp = flushDenormal(
       this.selfLp + this.selfC * (played - this.selfLp),
     )
@@ -475,6 +488,8 @@ class Loop {
     this.offset = 0
     this.offsetClip = 0
     this.wearAt = -1
+    this.up.reset()
+    this.down.reset()
     this.enc.reset()
     this.dec.reset()
     const tape = this.tape
@@ -577,15 +592,16 @@ export class FourTrack implements Stage {
       () => new Strip(gaussian(mulberry32(next()))),
     )
     const g = 1 + EMPH
-    const a = 1 - lpCoef(EMPH_HZ, sr)
+    const recSr = sr * OVERSAMPLE
+    const a = 1 - lpCoef(EMPH_HZ, recSr)
     this.s = {
       drive: 1,
       makeup: 1,
       emphCoef: 1 - a,
       deCoef: 1 - (g * a) / (g + (1 - a) * (1 - g)),
       remanence: 0,
-      magAtk: lpCoef(60, sr),
-      magRel: lpCoef(2.5, sr),
+      magAtk: lpCoef(60, recSr),
+      magRel: lpCoef(2.5, recSr),
       recLog: 0,
       biasC: 0,
       hiss: 0,

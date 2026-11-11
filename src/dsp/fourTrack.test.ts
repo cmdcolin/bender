@@ -99,6 +99,21 @@ test('double speed plays a take an octave up', () => {
   expect(pitchHz(at(x, 1.1, 1.4)) / 300).toBeCloseTo(2, 1)
 })
 
+test('a bright take driven hard keeps its folded harmonics off the loop', () => {
+  const hz = 6100
+  const x = renderBender(
+    { ...DECK, four1Len: 1, fourSpeed: 1, fourDrive: 12 },
+    2,
+    undefined,
+    burst(tone(hz, 0.7), 0, 0.98),
+    (_b, secs, p) => {
+      if (secs >= 1) p[IDX.four1Rec] = 0
+    },
+  )
+  const lap = at(x, 1.1, 1.9)
+  expect(db(bin(lap, 7 * hz - SR) / bin(lap, hz))).toBeLessThan(-55)
+})
+
 // Recording over a loop takes some of what was there off, and the top first.
 test('a partly erased loop decays each lap, and darker each time', () => {
   const twoTone = (t: number) => tone(200, 0.2)(t) + tone(5000, 0.2)(t)

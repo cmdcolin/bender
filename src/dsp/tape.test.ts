@@ -939,6 +939,74 @@ test('turning the tape to and from nothing fades rather than clicks', () => {
   expect(jump).toBeLessThan(0.03)
 })
 
+test('a take that starts mid-note joins what the idle machine heard', () => {
+  const out = renderBender(
+    {
+      ...SILENT,
+      ...STEADY,
+      sampleLevel: 1,
+      tapeMix: 0,
+      tapeDrive: 0,
+      tapeHyst: 0,
+      tapeBump: 0,
+      tapeSpeed: 2,
+    },
+    1.5,
+    b => b.sampler.setBuffer(sine(220, 1.5, 0.05)),
+    undefined,
+    (_, secs, p) => {
+      p[IDX.tapeMix] = secs < 0.5 ? 0 : 1
+    },
+  )
+  const slope = 0.05 * ((2 * Math.PI * 220) / SR)
+  let jump = 0
+  for (let t = SR / 4; t < out.length; t++)
+    jump = Math.max(jump, Math.abs(out[t]! - out[t - 1]!))
+  expect(jump).toBeLessThan(2.5 * slope)
+})
+
+test('harmonics past the top of the band stay out from under a bright tone', () => {
+  const hz = 6100
+  const fifthFold = SR - 5 * hz
+  const seventhFold = 7 * hz - SR
+  for (const tapeDrive of [6, 15]) {
+    const out = renderBender(
+      { ...SILENT, ...STEADY, sampleLevel: 1, tapeMix: 1, tapeDrive },
+      2,
+      b => b.sampler.setBuffer(sine(hz, 1, 0.7)),
+    ).subarray(SR)
+    const tone = bin(out, hz)
+    expect(db(bin(out, seventhFold) / tone), `${tapeDrive} dB`).toBeLessThan(
+      -80,
+    )
+    expect(db(bin(out, fifthFold) / tone), `${tapeDrive} dB`).toBeLessThan(-55)
+  }
+})
+
+test('the wet side stays in step with the dry side at half mix', () => {
+  const flat: Partial<Controls> = {
+    ...SILENT,
+    ...STEADY,
+    sampleLevel: 1,
+    tapeDrive: 0,
+    tapeHyst: 0,
+    tapeBump: 0,
+    tapeSpeed: 2,
+  }
+  const half = (hz: number) => {
+    const at = (tapeMix: number) =>
+      bin(
+        renderBender({ ...flat, tapeMix }, 2, b =>
+          b.sampler.setBuffer(sine(hz, 1, 0.05)),
+        ).subarray(SR),
+        hz,
+      )
+    return db(at(0.5) / at(0))
+  }
+  for (const hz of [774, 2322, 5418])
+    expect(Math.abs(half(hz)), `${hz} Hz`).toBeLessThan(0.5)
+})
+
 test('tape off leaves the board bit-identical', () => {
   const look: Partial<Controls> = { chipLevel: 0.6, dlyMix: 0.3, revMix: 0.2 }
   expect(render({ ...look, tapeMix: 0 }, 1).l).toEqual(render(look, 1).l)
