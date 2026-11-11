@@ -12,7 +12,7 @@
 }
 
 .add {
-  composes: actionQuiet from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .placeGroup {
@@ -24,7 +24,7 @@
 }
 
 .stage {
-  composes: action from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .was {

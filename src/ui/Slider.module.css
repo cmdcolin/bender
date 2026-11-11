@@ -191,26 +191,10 @@
 }
 
 /* A press beside the readout, for a value that is worked out rather than dialled
-   in. An offer rather than a mode, which the outline and the quiet fill say; the
-   word itself reads at the panel's quiet tier and not below it. At --fg4 it was
-   2.6:1 — `stop` on the sampler and `lock` on the keybed, which are the two
-   places a row hands you a verb instead of a number. */
+   in: `stop` on the sampler, `lock` on the keybed, `tap`. */
 .action {
+  composes: chip from './button.module.css';
   margin-left: var(--space-xs);
-  min-height: var(--ctl-h-sm);
-  font-size: var(--fs-xs);
-  line-height: 1.2;
-  padding: 0 var(--space-xs);
-  background: var(--surface-raised);
-  color: var(--fg3);
-  border: 1px solid var(--border-quiet);
-  border-radius: var(--ctl-radius);
-  cursor: pointer;
-}
-
-.action:hover {
-  border-color: var(--border-hover);
-  color: var(--fg2);
 }
 
 /* The knob's end of the row, in the same quiet register as .action: an offer
@@ -222,8 +206,7 @@
 
 .bindOn {
   composes: bind;
-  color: var(--accent2);
-  border-color: var(--accent2);
+  composes: chipBound from './button.module.css';
 }
 
 /* The bay's end of the row, in the same quiet register: an offer beside the
@@ -237,9 +220,8 @@
    leads in the bay's diagram are drawn in. */
 .modOn {
   composes: action;
+  composes: chipLit from './button.module.css';
   font-variant-numeric: tabular-nums;
-  color: var(--accent);
-  border-color: var(--accent);
 }
 
 /* Four wires and no spare: the offer stays in its place rather than vanishing
@@ -247,9 +229,7 @@
    there is nothing to press — a dead button is a worse answer than a label. */
 .modFull {
   composes: action;
-  color: var(--fg4);
-  border-style: dashed;
-  cursor: default;
+  composes: chipEmpty from './button.module.css';
 }
 
 /* The offer keeps its place but shows only on the row a pointer or the focus
@@ -322,13 +302,8 @@
 }
 
 .unplug {
-  composes: action;
+  composes: chipDanger from './button.module.css';
   margin: var(--space-xs) 0 0;
-}
-
-.unplug:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 /* Where the physical knob is sitting while it has yet to catch this control.

@@ -50,7 +50,7 @@ sets a control's height whatever font the system supplies.
 
 ## Kinds
 
-- **action:** a filled verb inside a panel or dialog (+ mod, tap, record wav).
+- **action:** a filled verb that closes or commits a dialog (done, record wav).
   Variants: `actionOn` (running), `actionQuiet`, `actionPicked`, and the bend
   board's two-row keys `actionKey`, `actionKeyHeld`, `actionKeyFixed`,
   `actionKeyQuiet`
@@ -60,8 +60,10 @@ sets a control's height whatever font the system supplies.
   split pair `splitMain` / `splitCaret(On)`. `outline`, `outlineOn` and
   `outlineIcon` are shared with videoskillet's `ui.module.css` through the
   `outline-kind` and `outline-states` sync regions
-- **chip:** one quiet item among many (cuts, rolls). Variants: `chipOn`,
-  `chipOff`, `chipDanger`
+- **chip:** every plain verb in a panel (cuts, rolls, + mod, tap, add a stage,
+  ×). Variants: `chipOn`, `chipOff`, `chipDanger`, `chipLit` for a row that
+  moves on its own, `chipBound` for a row a controller holds, `chipEmpty` for an
+  offer with nothing left to give
 - **pick:** one of a set where exactly one is on (ROMs, slider choices).
   Variants: `pickOn`, `pickLg(On)` for presets, `pickJoined(On)` for a
   ToggleButtonGroup, `pickJoinedLit` for its `lit` option (a pedal's `on`),

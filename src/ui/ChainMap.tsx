@@ -209,7 +209,6 @@ export function StageBar({
     <div className={styles.addRow}>
       <ToggleButtonGroup
         label="stage view"
-        large
         options={PANEL_VIEWS}
         value={listed ? 'every stage' : 'map'}
         onChange={view => setListView(view === 'every stage')}

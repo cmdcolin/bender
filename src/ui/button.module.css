@@ -205,6 +205,25 @@
   cursor: not-allowed;
 }
 
+.chipLit {
+  composes: chip;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.chipBound {
+  composes: chip;
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
+.chipEmpty {
+  composes: chip;
+  color: var(--fg4);
+  border-style: dashed;
+  cursor: default;
+}
+
 .chipDanger {
   composes: chip;
 }
@@ -549,6 +568,21 @@
   .chipDanger:hover:not(:disabled) {
     color: var(--alarm);
     border-color: var(--alarm);
+  }
+
+  .chipLit:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .chipBound:hover:not(:disabled) {
+    color: var(--accent2);
+    border-color: var(--accent2);
+  }
+
+  .chipEmpty:hover:not(:disabled) {
+    color: var(--fg4);
+    border-color: var(--border-quiet);
   }
 
   .pick:hover:not(:disabled) {

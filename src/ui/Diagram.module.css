@@ -248,7 +248,7 @@
 }
 
 .hide {
-  composes: quietX from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .openBox svg {
