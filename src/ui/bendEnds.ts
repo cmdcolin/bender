@@ -340,6 +340,9 @@ export const BEND_ENDS: Partial<
   drumSnareMetal: [null, 0],
   drumHissLatch: [0, 0],
   fmGroundLoop: [0, -2.5],
+  monoLoopSync: [-0.5, -0.5],
+  monoLoopCutoff: [null, -0.5],
+  monoStrobe: [null, null],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

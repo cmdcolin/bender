@@ -899,7 +899,7 @@ Eight bends sit inside the die, between the counter and the DAC.
 
 ## Growler's voice card
 
-The voice card has ten faults modelled on analog synth parts. The drawing under
+The voice card's faults are modelled on analog synth parts. The drawing under
 the **voice card** box shows each fault as a red reading on its part.
 
 - **Hot converter:** the exponential converter's transistor pair with no heater.
@@ -948,8 +948,19 @@ the **voice card** box shows each fault as a red reading on its part.
   - Up to about half way the note keeps its pitch and changes colour. Near full
     it drops into sub-octaves and bursts of noise, and locks back in for
     stretches. More emphasis gets there sooner.
+- **Hold strobe:** the strobe of the pitch hold comes off osc 3. The pitch
+  voltage, with its glide, modulation and **Out to pitch**, reaches the
+  oscillators once per cycle of osc 3 and stays there until the next cycle.
+  - With osc 3 on _lo_, notes arrive late and short ones go missing, so a line
+    from the melody memory keeps its rhythm and loses some of its pitches.
+  - With osc 3 _free_ or _keyed_, a glide climbs in steps, and **Out to pitch**
+    settles into repeating figures.
+  - Below the top of the knob the switch leaks, and the pitch creeps toward the
+    key between strobes.
+  - **Pitch droop** drains the held voltage and each strobe refills it, so the
+    pitch falls and snaps back at the rate of osc 3.
 
-Two more cables run from the output jack, under the **mixer** box beside
+More cables run from the output jack, under the **mixer** box beside
 **Feedback**.
 
 - **Out to pitch:** the output goes into the pitch inputs of osc 1 and osc 2
@@ -962,6 +973,25 @@ Two more cables run from the output jack, under the **mixer** box beside
   a rate set by the contours, the emphasis and **Feedback**. Higher settings
   close the gate at a lower level. A key struck while the gate is closed waits
   for it to open.
+- **Out to sync:** the output goes into the sync input of osc 1 and osc 2. While
+  it is above the sync comparator's threshold both oscillators sit at the start
+  of their cycle, and they run again once it falls back. The loop runs through
+  the ladder, so the cutoff and the contours move the pitch of a held key.
+  - Near the bottom of the knob the threshold is high and only the loudest peaks
+    reach it.
+  - Around two thirds the note jumps above its key and follows the filter: a 110
+    Hz saw sounds at 145 Hz with the cutoff at 200 Hz and at 227 Hz with it at
+    1600 Hz.
+  - At the top the threshold is at zero. A square parks high, the output's
+    coupling cap takes a moment to let go, and a bass stalls into thuds near 30
+    Hz.
+- **Out to cutoff:** the output goes into the ladder's cutoff control input.
+  Each upward swing opens the filter and each downward swing closes it, inside
+  every cycle of the note.
+  - The low end thickens as the knob comes up.
+  - With **Emphasis** near the top, the ladder's ringing bends: a 220 Hz
+    self-oscillation picks up a second harmonic a third as loud at 0.6, and at
+    full it breaks into noise that follows the loudness contour.
 
 One AUDIO cord comes into the mixer. It sits under the **mixer** box, and on the
 bench it is the grey cord from a machine's AUDIO out to the synth's AUDIO in.

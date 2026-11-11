@@ -690,6 +690,9 @@ export const PARAM_DEFS = [
   ['monoRegTrip', 'slew'],
   ['monoThump', 'slew'],
   ['monoFold', 'slew'],
+  ['monoLoopSync', 'slew'],
+  ['monoLoopCutoff', 'slew'],
+  ['monoStrobe', 'slew'],
 
   ['leadLevel', 'slew'],
   ['leadMute', 'ramp'],
@@ -747,6 +750,9 @@ export const PARAM_DEFS = [
   ['leadRegTrip', 'slew'],
   ['leadThump', 'slew'],
   ['leadFold', 'slew'],
+  ['leadLoopSync', 'slew'],
+  ['leadLoopCutoff', 'slew'],
+  ['leadStrobe', 'slew'],
 
   ['talkLevel', 'slew'],
   ['talkMute', 'ramp'],

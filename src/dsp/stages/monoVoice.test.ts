@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { bin, rms } from '../testRender.ts'
+import { bin, lowEnergy, rms } from '../testRender.ts'
 import { MonoVoice, SYNC, WAVE, type MonoPatch } from './monoVoice.ts'
 
 const SR = 48000
@@ -489,10 +489,139 @@ describe('MonoVoice', () => {
       expect(rms(x.subarray(t * SR, (t + 0.1) * SR))).toBeGreaterThan(0.01)
   })
 
+  // `pitch` reads the second half of what it is given.
+  const hzBetween = (x: Float32Array, from: number, to: number) =>
+    pitch(x.subarray(Math.round((2 * from - to) * SR), Math.round(to * SR)))
+
+  it('moves the pitch of a held key with the cutoff once the output is on the sync input', () => {
+    const saw = {
+      level: [1, 0, 0] as [number, number, number],
+      range: [0, 0, 0] as [number, number, number],
+      drift: 0,
+      contour: 0,
+      track: 0,
+    }
+    const at = (cutoff: number, loopSync: number) =>
+      pitch(play({ ...saw, cutoff, loopSync }, 45, 1))
+    expect(at(200, 0)).toBeCloseTo(110, 0)
+    expect(at(1600, 0)).toBeCloseTo(110, 0)
+    expect(at(200, 0.7)).toBeGreaterThan(125)
+    expect(at(1600, 0.7) / at(200, 0.7)).toBeGreaterThan(1.3)
+  })
+
+  it('stalls a square bass under its key with the sync threshold at zero', () => {
+    const square = {
+      wave: [WAVE.square, WAVE.square, WAVE.square] as [number, number, number],
+      drift: 0,
+    }
+    const off = play(square, 36, 2)
+    const on = play({ ...square, loopSync: 1 }, 36, 2)
+    expect(pitch(on)).toBeLessThan(0.7 * pitch(off))
+    expect(lowEnergy(on) / rms(on)).toBeGreaterThan(lowEnergy(off) / rms(off))
+    expect(rms(on)).toBeGreaterThan(0.5 * rms(off))
+  })
+
+  it('bends the ladder’s own ringing with the output on the cutoff input', () => {
+    const ring = {
+      level: [0, 0, 0] as [number, number, number],
+      emphasis: 1.05,
+      cutoff: 220,
+      contour: 0,
+      track: 0,
+      drift: 0,
+    }
+    const second = (loopCutoff: number) => {
+      const x = play({ ...ring, loopCutoff }, 48, 2).subarray(SR)
+      const hz = pitch(x)
+      return bin(x, 2 * hz) / bin(x, hz)
+    }
+    expect(second(0)).toBeLessThan(0.01)
+    expect(second(0.6)).toBeGreaterThan(0.2)
+  })
+
+  it('thickens the low end of a dark bass with the output on the cutoff input', () => {
+    const bass = { drift: 0, cutoff: 150, emphasis: 0.6, contour: 1 }
+    const low = (loopCutoff: number) => {
+      const x = play({ ...bass, loopCutoff }, 36, 2)
+      return lowEnergy(x) / rms(x)
+    }
+    expect(low(1)).toBeGreaterThan(low(0) + 0.02)
+  })
+
+  const blocks = (
+    patch: Partial<MonoPatch>,
+    note: number,
+    secs: number,
+    then?: { at: number; note: number },
+  ) => {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, patch)
+    v.noteOn(note)
+    const out = new Float32Array(Math.round(secs * SR))
+    const change = then ? Math.round(then.at * SR) : -1
+    for (let i = 0; i < out.length; i += 128) {
+      if (then && i <= change && change < i + 128) v.noteOn(then.note)
+      v.render(out, i, Math.min(i + 128, out.length))
+    }
+    return out
+  }
+  // Osc 3 on lo, two cycles a second, so it strobes the hold at 0.5 s and 1 s.
+  const STROBED = {
+    ...OPEN,
+    level: [1, 0, 0] as [number, number, number],
+    range: [0, 0, 2] as [number, number, number],
+    fine: [0, 0, 12] as [number, number, number],
+    osc3Free: true,
+    osc3Lo: true,
+  }
+
+  it('keeps a new key waiting for osc 3 with the hold strobed off it', () => {
+    const late = { at: 0.1, note: 57 }
+    const free = blocks(STROBED, 45, 1, late)
+    const strobed = blocks({ ...STROBED, strobe: 1 }, 45, 1, late)
+    expect(hzBetween(free, 0.25, 0.45)).toBeCloseTo(220, 0)
+    expect(hzBetween(strobed, 0.25, 0.45)).toBeCloseTo(110, 0)
+    expect(hzBetween(strobed, 0.6, 0.95)).toBeCloseTo(220, 0)
+  })
+
+  it('lets the pitch creep toward the new key between strobes with the hold leaking', () => {
+    const x = blocks({ ...STROBED, strobe: 0.5 }, 45, 1, { at: 0.1, note: 57 })
+    const early = hzBetween(x, 0.15, 0.25)
+    const later = hzBetween(x, 0.35, 0.45)
+    expect(early).toBeGreaterThan(115)
+    expect(later).toBeGreaterThan(early + 10)
+    expect(later).toBeLessThan(215)
+  })
+
+  it('drains the strobed hold with pitch droop and refills it on each strobe', () => {
+    const x = blocks({ ...STROBED, strobe: 1, droop: 0.5 }, 57, 1.5)
+    const filled = hzBetween(x, 0.52, 0.6)
+    const drained = hzBetween(x, 0.9, 0.98)
+    expect(drained).toBeLessThan(0.65 * filled)
+    expect(hzBetween(x, 1.02, 1.1)).toBeGreaterThan(1.5 * drained)
+  })
+
+  it('stays finite and inside the rails with all three patches, the emphasis and the drive at full', () => {
+    const x = blocks(
+      {
+        loopSync: 1,
+        loopCutoff: 1,
+        strobe: 1,
+        loopPitch: 1,
+        loop: 1,
+        emphasis: 1.1,
+        drive: 4,
+      },
+      36,
+      4,
+    )
+    expect(x.every(v => Number.isFinite(v) && Math.abs(v) <= 1)).toBe(true)
+  })
+
   it('plays again after panic clears a NaN out of its oscillator and sag state', () => {
     const v = new MonoVoice(SR)
     Object.assign(v.patch, OPEN)
-    for (const field of ['sagEnv', 'v1', 'v2', 'pinkish', 'ampLow'])
+    for (const field of ['sagEnv', 'v1', 'v2', 'pinkish', 'ampLow', 'hold'])
       Reflect.set(v, field, NaN)
     Reflect.set(Reflect.get(v, 'osc0'), 'phase', NaN)
     v.panic()

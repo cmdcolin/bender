@@ -28,6 +28,7 @@ const SUFFIXES = [
   'RegTrip',
   'Thump',
   'Fold',
+  'Strobe',
 ] as const satisfies readonly CardSuffix[]
 
 function faultKeys(stage: CardStage) {
@@ -35,7 +36,7 @@ function faultKeys(stage: CardStage) {
   const opens: Record<string, readonly ControlKey[]> = {
     regulator: [k('Sag'), k('RegTrip')],
     'key DAC': [k('DacBit')],
-    hold: [k('Droop')],
+    hold: [k('Droop'), k('Strobe')],
     'exp conv': [k('Heat')],
     ladder: [k('Mismatch'), k('Fold')],
     VCA: [k('Leak'), k('Thump')],
@@ -79,8 +80,8 @@ function CardFaultsDiagram({ stage }: { stage: CardStage }) {
     },
     {
       name: 'hold',
-      lit: on('Droop'),
-      help: 'The sample-and-hold capacitor that keeps the pitch voltage while the key is down. A leak makes a held note sink.',
+      lit: on('Droop') || on('Strobe'),
+      help: 'The sample-and-hold capacitor that keeps the pitch voltage while the key is down. A leak makes a held note sink, and a strobe off osc 3 lets the pitch through once per cycle of that oscillator.',
     },
     {
       name: 'exp conv',
@@ -110,6 +111,8 @@ function CardFaultsDiagram({ stage }: { stage: CardStage }) {
   }))
   const at = (name: string) => boxes.find(b => b.name === name)!
   const [conv, ladder, vca] = [at('exp conv'), at('ladder'), at('VCA')]
+  const strobeY = CHIP_Y + CHIP_H + 10
+  const strobeWire = `M${centre(at('oscs'))} ${CHIP_Y + CHIP_H} V${strobeY} H${centre(at('hold'))} V${CHIP_Y + CHIP_H}`
   const regX = conv.x
   const regW = ladder.x + ladder.w - regX
   const lowX = ladder.x
@@ -158,6 +161,21 @@ function CardFaultsDiagram({ stage }: { stage: CardStage }) {
                 look={b === vca && on('Thump') ? 'on' : 'dash'}
               />
             ))}
+            <Bend name="strobe" opens="hold" pick={pick} hit={strobeWire}>
+              <Wire
+                arrow={arrow}
+                d={strobeWire}
+                look={on('Strobe') ? 'on' : 'dash'}
+              />
+              <Label
+                x={(centre(at('oscs')) + centre(at('hold'))) / 2}
+                y={strobeY + 11}
+                anchor="middle"
+                on={on('Strobe')}
+              >
+                strobe
+              </Label>
+            </Bend>
             <Chip
               box={{ name: 'regulator', x: regX, y: TOP, w: regW, h: BAR_H }}
               lit={supplyBent}

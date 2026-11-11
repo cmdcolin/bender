@@ -96,6 +96,9 @@ function cardIdx(prefix: CardPrefix) {
     regTrip: at('RegTrip'),
     thump: at('Thump'),
     fold: at('Fold'),
+    loopSync: at('LoopSync'),
+    loopCutoff: at('LoopCutoff'),
+    strobe: at('Strobe'),
   }
 }
 
@@ -308,6 +311,9 @@ export class MonoSynth implements Stage {
     v.regTrip = withLane(p[k.regTrip]!, ctx.mod.read(dest.regTrip))
     v.thump = p[k.thump]!
     v.fold = p[k.fold]!
+    v.loopSync = p[k.loopSync]!
+    v.loopCutoff = p[k.loopCutoff]!
+    v.strobe = p[k.strobe]!
     const micIn = micInto(p, ctx, mic)
     const toyIn = this.cordIn(p, ctx)
     if (toyIn > 0) {

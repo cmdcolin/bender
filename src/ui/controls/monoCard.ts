@@ -272,6 +272,9 @@ export function monoCardGroup(card: Card): Group {
       k('RegTrip'),
       k('Thump'),
       k('Fold'),
+      k('LoopSync'),
+      k('LoopCutoff'),
+      k('Strobe'),
     ],
     sliders: [
       {
@@ -630,6 +633,26 @@ export function monoCardGroup(card: Card): Group {
         help: 'The rectified output wired across the gate line. Once the output passes a level the gate closes and the note releases, and when it falls quiet the gate opens again, so a held key stutters. Higher settings close the gate at a lower level. Feedback and long contours change the rhythm.',
       },
       {
+        key: k('LoopSync'),
+        part: 'mixer',
+        label: 'Out to sync',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The output patched into the sync input of osc 1 and osc 2. While the output is above the sync comparator’s threshold both oscillators are held at the start of their cycle, and they run again once it falls back, so the pitch comes from the loop through the ladder and moves with the cutoff and the contours. Low settings put the threshold where only the loudest peaks reach it. Halfway the note jumps up and tracks the filter. At the top the threshold is at zero and the loop stalls into slow thuds, slowest on square waves.',
+      },
+      {
+        key: k('LoopCutoff'),
+        part: 'mixer',
+        label: 'Out to cutoff',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The output patched into the ladder’s cutoff control input. Each upward swing of the output opens the filter and each downward swing closes it, within every cycle of the note. The low end thickens as the knob comes up, and with Emphasis near the top the ringing breaks into noise that follows the loudness of the note.',
+      },
+      {
         key: k('FA'),
         part: 'filter contour',
         label: 'Attack',
@@ -909,6 +932,16 @@ export function monoCardGroup(card: Card): Group {
         step: 0.01,
         unit: '',
         help: 'The ladder’s input transistor pair biased off centre, so past its knee it folds the wave back instead of clipping it, the top side sooner than the bottom. Higher settings and more Drive fold it more times. The emphasis comes back through the same pair, so the ladder folds its own ringing: near the top of the knob a note falls into sub-octaves and bursts of noise, and locks back in for stretches.',
+      },
+      {
+        key: k('Strobe'),
+        part: 'voice card faults',
+        label: 'Hold strobe',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The strobe of the pitch hold moved onto osc 3. The pitch voltage, with its glide, modulation and Out to pitch, reaches the oscillators once per cycle of osc 3 and stays there until the next one. With osc 3 on *lo*, notes arrive late and short ones go missing. With osc 3 *free* or *keyed*, a glide climbs in steps and Out to pitch settles into repeating figures. Lower settings leave the switch leaking, so the pitch creeps toward the key between strobes. Pitch droop drains the held voltage until the next strobe refills it.',
       },
     ],
   }

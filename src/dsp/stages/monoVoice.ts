@@ -94,6 +94,12 @@ export interface MonoPatch {
   regTrip: number
   thump: number
   fold: number
+  /** The output on the sync input of osc 1 and 2: 0 off, 1 the sync comparator's threshold at zero. */
+  loopSync: number
+  /** The output patched into the cutoff control input. */
+  loopCutoff: number
+  /** The pitch hold's strobe on osc 3: 0 off, 1 a switch that passes nothing between strobes. */
+  strobe: number
 }
 
 export const MONO_DEFAULT: MonoPatch = {
@@ -143,6 +149,9 @@ export const MONO_DEFAULT: MonoPatch = {
   regTrip: 0,
   thump: 0,
   fold: 0,
+  loopSync: 0,
+  loopCutoff: 0,
+  strobe: 0,
 }
 
 const OS = 2
@@ -174,6 +183,13 @@ const CHOKE_ATTACK_S = 0.001
 const CHOKE_RELEASE_S = 0.03
 const THUMP = 4
 const THUMP_HZ = 50
+const LOOP_SYNC_TOP = 0.35
+const LOOP_SYNC_HYST = 0.05
+const LOOP_CUTOFF_OCT = 24
+const CUTOFF_KICK_LIMIT = 5
+const STROBE_LEAK_S = 0.5
+// The pitch sum at 0 V, in octaves from the A the keys count from.
+const ZERO_VOLTS = -69 / 12
 
 // tanh(x)/x as a rational, for the ladder's per-stage gains.
 function tanhXdX(x: number): number {
@@ -275,6 +291,15 @@ class Osc {
     }
     this.out = this.held
     this.held = now
+  }
+
+  // Held in reset for as long as the sync input stays high. A pulse parks
+  // high, where the cycle starts: parked low, a held square bass squealed at
+  // 483 Hz with 0.30 of its level under 120 Hz, against 33 Hz and 0.96.
+  parked(wave: number) {
+    this.phase = 0
+    this.out = this.held
+    this.held = naive(wave, 0)
   }
 }
 
@@ -484,6 +509,7 @@ export class MonoVoice {
   private readonly osc0 = new Osc()
   private readonly osc1 = new Osc()
   private readonly osc2 = new Osc()
+  private readonly trip = new Osc()
   private readonly drunk = [new Drunk(), new Drunk(), new Drunk()]
   private readonly heatWalk = [new Drunk(), new Drunk(), new Drunk()]
   private readonly heatScale: [number, number, number]
@@ -515,6 +541,11 @@ export class MonoVoice {
   private choked = false
   private sagEnv = 0
   private ampLow = 0
+  private armed = false
+  private syncWas = 0
+  private hold = 0
+  private holding = false
+  private strobed = false
   private v1 = 0
   private v2 = 0
   private tick = 0
@@ -686,6 +717,17 @@ export class MonoVoice {
     const gain = p.volume * 1.4
     const thump = THUMP * p.thump
     const thumpK = 1 - Math.exp((-2 * Math.PI * THUMP_HZ) / sr)
+    const trip = this.trip
+    const loopSync = p.loopSync
+    const syncAt = LOOP_SYNC_TOP * (1 - loopSync)
+    const loopCutoff = LOOP_CUTOFF_OCT * p.loopCutoff * p.loopCutoff
+    const strobe = p.strobe
+    const strobeK =
+      strobe >= 1
+        ? 0
+        : strobe > 0
+          ? 1 - Math.exp(-(1 - strobe) / (STROBE_LEAK_S * strobe * strobe * sr))
+          : 1
     const keyBase = 440 / osr
     const lo = free ? ratio[2]! / osr : 0
 
@@ -695,7 +737,7 @@ export class MonoVoice {
         this.control()
       }
       this.cv += (this.target - this.cv) * glideK
-      if (droopK > 0) {
+      if (droopK > 0 && strobe === 0) {
         this.cv = flushDenormal(this.cv - this.cv * droopK)
         this.target = flushDenormal(this.target - this.target * droopK)
       }
@@ -746,13 +788,27 @@ export class MonoVoice {
                 (this.pinkish += pinkK * (this.noise() - this.pinkish)))
           : modAmt * this.v2
       const sagged = this.sagEnv * sag
-      const keyHz =
-        keyBase *
-        octaves(
-          (this.cv - 69 + this.bend + modPitch * mod - sagged * 3) / 12 -
-            REG_DIVE * (1 - reg.rail) +
-            (pitchLane ? pitchLane[n]! : 0),
-        )
+      const live =
+        (this.cv - 69 + this.bend + modPitch * mod - sagged * 3) / 12 -
+        REG_DIVE * (1 - reg.rail) +
+        (pitchLane ? pitchLane[n]! : 0)
+      if (strobe > 0) {
+        const patched =
+          live +
+          Math.min(
+            Math.max(loopPitch * (this.last - this.loopLow), -KICK_LIMIT),
+            KICK_LIMIT,
+          )
+        this.hold =
+          this.holding && !this.strobed
+            ? this.hold +
+              strobeK * (patched - this.hold) +
+              droopK * (ZERO_VOLTS - this.hold)
+            : patched
+        this.holding = true
+        this.strobed = false
+      } else this.holding = false
+      const keyHz = keyBase * octaves(strobe > 0 ? this.hold : live)
       const dt0 = keyHz * ratio[0]!
       const dt1 = Math.min(
         keyHz * ratio[1]! * (sweep === 0 ? 1 : octaves((sweep * fe) / 12)),
@@ -779,7 +835,7 @@ export class MonoVoice {
       let pair0 = 0
       for (let k = 0; k < OS; k++) {
         const kick =
-          loopPitch === 0
+          loopPitch === 0 || strobe > 0
             ? 1
             : octaves(
                 Math.min(
@@ -794,13 +850,35 @@ export class MonoVoice {
         osc1.advance()
         osc2.dt = dt2
         osc2.advance()
-        if (sync === SYNC.off) osc1.value(wave1)
-        else osc1.synced(wave1, osc0)
+        if (strobe > 0 && osc2.wrapped) this.strobed = true
+        // The comparator holds the cores in reset while it is high. Resetting
+        // on its edge alone, off the ladder ahead of the VCA, raised every note
+        // and thinned it: a held acid bass fell from 0.86 of its level under
+        // 120 Hz to 0.66.
+        if (loopSync > 0) {
+          const back = this.last - this.loopLow
+          trip.wrapped = this.armed && back >= syncAt
+          if (trip.wrapped) {
+            trip.since = Math.min((back - syncAt) / (back - this.syncWas), 1)
+            this.armed = false
+          } else if (back < syncAt - LOOP_SYNC_HYST) this.armed = true
+          this.syncWas = back
+          if (this.armed || trip.wrapped) {
+            osc1.synced(wave1, sync === SYNC.off || trip.wrapped ? trip : osc0)
+            osc0.synced(wave0, trip)
+          } else {
+            osc1.parked(wave1)
+            osc0.parked(wave0)
+          }
+        } else {
+          if (sync === SYNC.off) osc1.value(wave1)
+          else osc1.synced(wave1, osc0)
+          osc0.value(wave0)
+        }
         const v1 = osc1.out
         this.v1 = v1
         osc2.value(wave2)
         const v2 = osc2.out
-        osc0.value(wave0)
         const mix =
           lvl0 * osc0.out +
           lvl1 * v1 +
@@ -809,7 +887,28 @@ export class MonoVoice {
           loop * (this.last - this.loopLow) +
           e
         ladder.y = mix * inGain
-        ladder.f = f
+        ladder.f =
+          loopCutoff === 0
+            ? f
+            : tan(
+                piOverSr *
+                  Math.min(
+                    Math.max(
+                      cutoff *
+                        octaves(
+                          Math.min(
+                            Math.max(
+                              loopCutoff * (this.last - this.loopLow),
+                              -CUTOFF_KICK_LIMIT,
+                            ),
+                            CUTOFF_KICK_LIMIT,
+                          ),
+                        ),
+                      15,
+                    ),
+                    fTop,
+                  ),
+              )
         ladder.process()
         const v = thump > 0 ? ladder.y * amp + jolt : ladder.y * amp
         this.loopLow = flushDenormal(
@@ -847,9 +946,14 @@ export class MonoVoice {
     this.regulator.reset()
     this.sagEnv = 0
     this.ampLow = 0
+    this.armed = false
+    this.syncWas = 0
+    this.hold = 0
+    this.holding = false
+    this.strobed = false
     this.v1 = 0
     this.v2 = 0
-    for (const osc of [this.osc0, this.osc1, this.osc2]) osc.reset()
+    for (const osc of [this.osc0, this.osc1, this.osc2, this.trip]) osc.reset()
     for (const walk of [...this.drunk, ...this.heatWalk]) walk.reset()
   }
 }

@@ -57,7 +57,7 @@ test('the stock card names its parts, lights none and shows no value', () => {
   )
   expect(words().filter(w => /\d|%|\/s|×|\+/.test(w))).toEqual([])
   for (const part of words())
-    if (part !== 'out') expect(lit(part), part).toBe(false)
+    if (part !== 'out' && part !== 'strobe') expect(lit(part), part).toBe(false)
 })
 
 test('each fault lights the part it bends and writes no number', () => {
@@ -91,12 +91,15 @@ const centre = (title: string) => {
 }
 
 const drops = () =>
-  [...card().querySelectorAll('path[class*="wireDash"]')].map(p => {
-    const [, x, y0, y1] = /M([\d.]+) ([\d.]+) V([\d.]+)/
-      .exec(p.getAttribute('d')!)!
-      .map(Number) as [number, number, number, number]
-    return { x, down: y0 < y1 }
-  })
+  [...card().querySelectorAll('path[class*="wireDash"]')]
+    .map(p => p.getAttribute('d')!)
+    .filter(d => !d.includes('H'))
+    .map(d => {
+      const [, x, y0, y1] = /M([\d.]+) ([\d.]+) V([\d.]+)/
+        .exec(d)!
+        .map(Number) as [number, number, number, number]
+      return { x, down: y0 < y1 }
+    })
 
 test('the regulator feeds the converter and ladder, the contours feed the ladder and VCA', () => {
   open()
@@ -123,6 +126,26 @@ test('VCA thump lights the VCA and the contour drop into it, and opens from the 
   set({ monoThump: 0 })
   fireEvent.click(screen.getByRole('button', { name: 'VCA controls' }))
   expect(screen.getByText('VCA thump')).not.toBeNull()
+})
+
+test('hold strobe lights the hold and the wire from the oscillators, and opens from either', () => {
+  open()
+  const strobe = () =>
+    [...card().querySelectorAll('path')].find(
+      p =>
+        p.getAttribute('d')!.startsWith(`M${centre('oscs')} `) &&
+        p.getAttribute('d')!.includes(`H${centre('hold')} `) &&
+        /wire(On|Dash)/.test(p.getAttribute('class')!),
+    )!
+  expect(strobe().getAttribute('class')).toMatch(/wireDash/)
+  set({ monoStrobe: 0.5 })
+  expect(lit('hold')).toBe(true)
+  expect(strobe().getAttribute('class')).toMatch(/wireOn/)
+  set({ monoStrobe: 0 })
+  expect(lit('hold')).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'strobe controls' }))
+  expect(screen.getByText('Hold strobe')).not.toBeNull()
+  expect(screen.getByText('Pitch droop')).not.toBeNull()
 })
 
 test('folding pair lights the ladder and opens from it', () => {

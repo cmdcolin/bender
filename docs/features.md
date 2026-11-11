@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-875 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 201
+881 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 205
 presets, 24 stage settings and 116 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 201 presets, and a roll button on every heading as well as
+- **Whole boards.** 205 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -717,7 +717,7 @@ the fault on, and the rows under it show the controls it set:
   and the gate never lifts
 
 <details>
-<summary>70 controls</summary>
+<summary>73 controls</summary>
 
 | control                         | range                                                                                                                          | what it does                                                                                                                                              |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -765,6 +765,8 @@ the fault on, and the rows under it show the controls it set:
 | Cord divider                    | ÷1, ÷2, ÷4, ÷8                                                                                                                 | A flip-flop chain on the AUDIO cord                                                                                                                       |
 | Out to pitch                    | off to full                                                                                                                    | The output patched into the pitch inputs of osc 1 and osc 2                                                                                               |
 | Out to gate                     | off to full                                                                                                                    | The rectified output wired across the gate line                                                                                                           |
+| Out to sync                     | off to full                                                                                                                    | The output patched into the sync input of osc 1 and osc 2                                                                                                 |
+| Out to cutoff                   | off to full                                                                                                                    | The output patched into the ladder’s cutoff control input                                                                                                 |
 | Attack                          | 0.001 to 10 s                                                                                                                  | How long the filter contour takes to open to its peak                                                                                                     |
 | Decay                           | 0.001 to 10 s                                                                                                                  | How long the filter contour takes to fall from the peak to the sustain level                                                                              |
 | Sustain                         | off to full                                                                                                                    | Where the filter contour sits while a key is down                                                                                                         |
@@ -791,6 +793,7 @@ the fault on, and the rows under it show the controls it set:
 | Regulator trip                  | off to full                                                                                                                    | The voice card regulator with a poor heatsink                                                                                                             |
 | VCA thump                       | off to full                                                                                                                    | The VCA’s control voltage feeding through to its output, the thump of a VCA nobody trimmed                                                                |
 | Folding pair                    | off to full                                                                                                                    | The ladder’s input transistor pair biased off centre, so past its knee it folds the wave back instead of clipping it, the top side sooner than the bottom |
+| Hold strobe                     | off to full                                                                                                                    | The strobe of the pitch hold moved onto osc 3                                                                                                             |
 
 </details>
 
@@ -829,7 +832,7 @@ the fault on, and the rows under it show the controls it set:
   and the gate never lifts
 
 <details>
-<summary>69 controls</summary>
+<summary>72 controls</summary>
 
 | control                         | range                                                                                                                          | what it does                                                                                                                                              |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -876,6 +879,8 @@ the fault on, and the rows under it show the controls it set:
 | Cord divider                    | ÷1, ÷2, ÷4, ÷8                                                                                                                 | A flip-flop chain on the AUDIO cord                                                                                                                       |
 | Out to pitch                    | off to full                                                                                                                    | The output patched into the pitch inputs of osc 1 and osc 2                                                                                               |
 | Out to gate                     | off to full                                                                                                                    | The rectified output wired across the gate line                                                                                                           |
+| Out to sync                     | off to full                                                                                                                    | The output patched into the sync input of osc 1 and osc 2                                                                                                 |
+| Out to cutoff                   | off to full                                                                                                                    | The output patched into the ladder’s cutoff control input                                                                                                 |
 | Attack                          | 0.001 to 10 s                                                                                                                  | How long the filter contour takes to open to its peak                                                                                                     |
 | Decay                           | 0.001 to 10 s                                                                                                                  | How long the filter contour takes to fall from the peak to the sustain level                                                                              |
 | Sustain                         | off to full                                                                                                                    | Where the filter contour sits while a key is down                                                                                                         |
@@ -902,6 +907,7 @@ the fault on, and the rows under it show the controls it set:
 | Regulator trip                  | off to full                                                                                                                    | The voice card regulator with a poor heatsink                                                                                                             |
 | VCA thump                       | off to full                                                                                                                    | The VCA’s control voltage feeding through to its output, the thump of a VCA nobody trimmed                                                                |
 | Folding pair                    | off to full                                                                                                                    | The ladder’s input transistor pair biased off centre, so past its knee it folds the wave back instead of clipping it, the top side sooner than the bottom |
+| Hold strobe                     | off to full                                                                                                                    | The strobe of the pitch hold moved onto osc 3                                                                                                             |
 
 </details>
 
@@ -2162,7 +2168,7 @@ result:
 
 ### Presets
 
-201 presets. Each name is a link that opens the app with that board loaded, and
+205 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2674,6 +2680,23 @@ the board waits until you press play.
   — A slow Phrygian line plays Growler from its melody memory with no kit. The
   VCA’s control thumps through, so each note lands with a click and a thud, and
   the ladder’s input pair folds its own resonance into sub-octaves and grit
+- [**cutoff plays the tune**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqLen:32,monoSeqStep0:3,monoSeqStep8:-2,monoSeqStep16:1,monoSeqStep24:3,monoSeqStep28:6,drumLevel:0,drumBpm:120,monoLevel:2.4,monoKeyGate:1,monoGate:0.9,monoMix1:0.8,monoMix2:0.6,monoMix3:0,monoCutoff:180,monoEmph:0.6,monoContour:3.5,monoTrack:0,monoFD:0.9,monoFS:0,monoFR:0.5,monoAD:1.2,monoAS:0.7,monoAR:0.4,monoLoopSync:0.7,revDecayS:4,revMix:0.2)
+  — Growler alone from its melody memory with the output patched into its sync
+  input. The oscillators restart off the ladder’s output, so each note starts
+  above its key and slides down as the filter contour closes
+- [**stalled square**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqLen:32,monoSeqStep0:3,monoSeqStep4:3,monoSeqStep8:6,monoSeqStep12:3,monoSeqStep16:3,monoSeqStep20:-2,monoSeqStep24:1,monoSeqStep28:3,monoSeqAccentLo:32896,monoSeqAccentHi:32896,drumLevel:0,drumBpm:120,monoLevel:1.6,monoKeyGate:1,monoGate:0.9,monoAccent:0.8,monoWave1:2,monoWave2:2,monoCutoff:260,monoEmph:0.5,monoContour:2,monoFD:0.6,monoAD:1,monoAS:0.8,monoAR:0.3,monoLoopSync:1,monoLoopCutoff:0.6)
+  — Three square waves with the sync threshold at zero, so the output holds the
+  oscillators still until the coupling cap lets go. The bassline comes out as
+  slow thuds under its key, and the output on the cutoff input thickens them
+- [**ladder eats its tail**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqLen:32,monoSeqStep0:3,monoSeqStep3:3,monoSeqStep6:6,monoSeqStep8:3,monoSeqStep12:-2,monoSeqStep16:3,monoSeqStep19:3,monoSeqStep22:1,monoSeqStep24:3,monoSeqAccentLo:33288,monoSeqAccentHi:33280,drumLevel:0,drumBpm:130,monoLevel:1.6,monoKeyGate:1,monoGate:0.8,monoAccent:0.7,monoMix1:0.5,monoMix2:0.4,monoMix3:0.3,monoCutoff:500,monoEmph:1.02,monoFD:0.5,monoAD:0.8,monoAS:0.6,monoAR:0.3,monoLoopCutoff:1)
+  — Growler’s ladder near self-oscillation with the output patched into its
+  cutoff input at full. Each note’s ringing swings the cutoff that makes it, and
+  the scream breaks into noise that rises and falls with the loudness contour
+- [**late for every note**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoSeqOn:1,monoSeqSync:1,monoSeqStep0:-9,monoSeqStep1:-9,monoSeqStep2:3,monoSeqStep3:-9,monoSeqStep4:-6,monoSeqStep5:-9,monoSeqStep6:-2,monoSeqStep7:-11,monoSeqStep8:-9,monoSeqStep9:-9,monoSeqStep10:3,monoSeqStep11:-9,monoSeqStep12:-4,monoSeqStep13:-6,monoSeqStep14:-9,monoSeqStep15:1,monoSeqAccentLo:37412,monoSeqSlideLo:8464,drumBpm:124,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:1.6,monoKeyGate:1,monoAccent:0.8,monoRange3:2,monoTune3:12,monoOsc3:2,monoMix3:0,monoCutoff:320,monoEmph:0.8,monoFD:0.25,monoDroop:0.6,monoStrobe:1)
+  — Osc 3 runs as a slow LFO and strobes Growler’s pitch hold, so the acid line
+  keeps its rhythm over the rock kit and takes a new pitch only when the LFO
+  comes round. Pitch droop drains the hold between strobes, and each one snaps
+  the line back up
 - [**filter kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:2.5,monoKeyGate:1,monoStruck:1,monoMix1:0,monoMix2:0,monoMix3:0,monoCutoff:33,monoEmph:1.08,monoContour:2.2,monoTrack:1,monoFD:0.07,monoFS:0,monoFR:0.05,monoAD:0.5,monoAS:0.6,monoAR:0.12)
   — Every oscillator is down and the ladder runs past self-oscillation, struck
   by the kick, so the filter contour drops a sine two octaves on each hit

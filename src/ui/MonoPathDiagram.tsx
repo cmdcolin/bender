@@ -50,7 +50,7 @@ const BOXES = {
   },
   mixer: {
     part: 'mixer',
-    help: 'The three oscillators, the noise source and the output patched back in, plus cables from the output to the pitch inputs and the gate line.',
+    help: 'The three oscillators, the noise source and the output patched back in, plus cables from the output to the pitch and sync inputs, the cutoff input and the gate line.',
   },
   filter: {
     part: 'filter contour',
@@ -238,6 +238,11 @@ export function MonoPathDiagram({
   const noiseWire = `M${noiseX} ${over - 12} V${top}`
   const toyX = mixer.x + mixer.w - 8
   const toyWire = `M${toyX} ${FRAME_BOTTOM - 5} V${top + BOX_H}`
+  const cutX = filter.x + filter.w / 2 + 10
+  const cutoffStub = `M${cutX} ${over} V${top}`
+  const outCutoffWire = up(k('LoopCutoff'))
+    ? `M${back} ${MID} V${over} H${cutX} V${top}`
+    : cutoffStub
   const outPitchWire = `M${pitchX} ${MID} V${pitchLane} H${frameX + FRAME_W}`
   const outGateWire = `M${gateX} ${MID} V${gateLane} H${keysBox.x + keysBox.w / 2} V${top}`
   const tapWire = `M${tap} ${oscMid(2)} V${modMid} H${mod.x}`
@@ -296,6 +301,21 @@ export function MonoPathDiagram({
                 feedback
               </Label>
             </Bend>
+            <Bend
+              name="out to cutoff"
+              opens="mixer"
+              pick={pick}
+              hit={cutoffStub}
+            >
+              <Wire
+                arrow={arrow}
+                d={outCutoffWire}
+                look={wire(up(k('LoopCutoff')))}
+              />
+              <Label x={cutX + 4} y={over + 12} on={up(k('LoopCutoff'))}>
+                out to cutoff
+              </Label>
+            </Bend>
             <Dot x={back} y={MID} />
             <Bend
               name="out to pitch"
@@ -306,7 +326,7 @@ export function MonoPathDiagram({
               <Wire
                 arrow={arrow}
                 d={outPitchWire}
-                look={wire(up(k('LoopPitch')))}
+                look={wire(up(k('LoopPitch')) || up(k('LoopSync')))}
               />
               <Label
                 x={laneWords}
@@ -315,6 +335,14 @@ export function MonoPathDiagram({
                 on={up(k('LoopPitch'))}
               >
                 out to pitch
+              </Label>
+              <Label
+                x={laneWords}
+                y={pitchLane + 10}
+                anchor="middle"
+                on={up(k('LoopSync'))}
+              >
+                out to sync
               </Label>
             </Bend>
             <Dot x={pitchX} y={MID} />

@@ -711,6 +711,9 @@ export const DEFAULT_CONTROLS = {
   monoRegTrip: 0,
   monoThump: 0,
   monoFold: 0,
+  monoLoopSync: 0,
+  monoLoopCutoff: 0,
+  monoStrobe: 0,
 
   // Howler, a second build of the same card, voiced as a lead.
   leadLevel: 0,
@@ -769,6 +772,9 @@ export const DEFAULT_CONTROLS = {
   leadRegTrip: 0,
   leadThump: 0,
   leadFold: 0.35,
+  leadLoopSync: 0,
+  leadLoopCutoff: 0,
+  leadStrobe: 0,
 
   // Prattle, the talking toy's speech chip, and the phrase it holds: an
   // allophone a word, see prattle.ts. Its fader boots at the floor.
