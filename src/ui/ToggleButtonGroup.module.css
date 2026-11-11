@@ -26,6 +26,12 @@
   position: relative;
 }
 
+.lit {
+  composes: pickJoinedLit from './button.module.css';
+  position: relative;
+  z-index: 1;
+}
+
 .off:hover {
   position: relative;
   z-index: 1;
@@ -33,17 +39,21 @@
 
 .off + .off,
 .off + .on,
-.on + .off {
+.on + .off,
+.off + .lit,
+.lit + .off {
   margin-left: -1px;
 }
 
 .off:first-child,
-.on:first-child {
+.on:first-child,
+.lit:first-child {
   border-radius: var(--ctl-radius) 0 0 var(--ctl-radius);
 }
 
 .off:last-child,
-.on:last-child {
+.on:last-child,
+.lit:last-child {
   border-radius: 0 var(--ctl-radius) var(--ctl-radius) 0;
 }
 

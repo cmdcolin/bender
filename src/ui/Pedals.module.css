@@ -1,9 +1,9 @@
 .bench {
-  composes: chip square from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .benchOn {
-  composes: chipOn square from './button.module.css';
+  composes: chipOn from './button.module.css';
 }
 
 .add {

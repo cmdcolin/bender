@@ -11,6 +11,7 @@ import { JackCap } from './JackCap.tsx'
 import { Menu } from './Menu.tsx'
 import { menuCheck, menuItem } from './menuItems.ts'
 import { MicCap } from './MicJacks.tsx'
+import { PowerSwitch } from './PowerSwitch.tsx'
 import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import { ShuffleMark } from './ShuffleMark.tsx'
@@ -22,16 +23,6 @@ import { Tip } from './Tip.tsx'
 import type { ControlKey } from '../controls.ts'
 import type { Group } from './controls/types.ts'
 import type { StageRoll } from './presets/index.ts'
-
-const POWER = (
-  <svg className={styles.speaker} viewBox="0 0 12 12" aria-hidden="true">
-    <path
-      d="M6 1v4.5M3.2 3a4.5 4.5 0 1 0 5.6 0"
-      fill="none"
-      stroke="currentColor"
-    />
-  </svg>
-)
 
 const SPEAKER = (muted: boolean) => (
   <svg className={styles.speaker} viewBox="0 0 12 12" aria-hidden="true">
@@ -73,11 +64,9 @@ function Mute({
   if (levelAt > AUDIBLE_LEVEL && levelAt !== lastUp) setLastUp(levelAt)
   const atZero = levelAt <= 0
   const muted = switched || atZero
-  const pedal = isPedal(stage) || isBend(stage)
-  const lit = pedal ? !muted : muted
   const where = useHeardThrough(stage)
-  const heard = !pedal && where.length > 0
-  const popover = !pedal && level !== undefined && !bare
+  const heard = where.length > 0
+  const popover = level !== undefined && !bare
   const [open, setOpen] = useState(false)
   const [cap, setCap] = useState<HTMLButtonElement | null>(null)
   const close = useCallback(() => setOpen(false), [])
@@ -91,15 +80,11 @@ function Mute({
     }
   }
 
-  const tip = pedal
-    ? muted
-      ? `${stage} is bypassed. Switching it back on brings the sound you left.`
-      : `Takes ${stage} out of the path and leaves its knobs where they are.`
-    : popover
-      ? `Opens ${stage}’s volume. Drag it to 0 to silence it, or mute it and keep the Level where it is. The bar in the cap is how loud it plays, the line over it is the last second’s peak, and a red outline means it reached full scale since the last press.`
-      : muted
-        ? `${stage} is muted. Unmute brings it back.`
-        : `Silences ${stage}.`
+  const tip = popover
+    ? `Opens ${stage}’s volume. Drag it to 0 to silence it, or mute it and keep the Level where it is. The bar in the cap is how loud it plays, the line over it is the last second’s peak, and a red outline means it reached full scale since the last press.`
+    : muted
+      ? `${stage} is muted. Unmute brings it back.`
+      : `Silences ${stage}.`
 
   return (
     <>
@@ -111,15 +96,15 @@ function Mute({
       >
         <button
           ref={setCap}
-          className={lit ? styles.capOn : styles.cap}
+          className={muted ? styles.capOn : styles.cap}
           data-control={bare ? control : undefined}
-          aria-label={`${pedal ? 'bypass' : popover ? 'volume' : 'mute'} ${stage}`}
+          aria-label={`${popover ? 'volume' : 'mute'} ${stage}`}
           aria-pressed={popover ? undefined : muted}
           aria-expanded={popover ? open : undefined}
           onClick={popover ? () => setOpen(o => !o) : flip}
         >
           {popover && <FaceMeter stage={stage} />}
-          {pedal ? POWER : SPEAKER(muted)}
+          {SPEAKER(muted)}
           {heard && (
             <span className={styles.leak} role="img" aria-label="still heard" />
           )}
@@ -144,9 +129,13 @@ function Mute({
   )
 }
 
+const switchesPower = (stage: string) => isPedal(stage) || isBend(stage)
+
 export function MuteCap({ stage }: { stage: string }) {
   const mute = muteOf(stage)
-  return mute ? (
+  return mute && switchesPower(stage) ? (
+    <PowerSwitch stage={stage} control={mute} />
+  ) : mute ? (
     <Mute stage={stage} control={mute} level={levelOf(stage)} bare />
   ) : null
 }

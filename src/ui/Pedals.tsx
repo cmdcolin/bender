@@ -1,13 +1,12 @@
-import { engine } from '../engine/engine.ts'
-import { isPedal, pedalNamed } from '../pedals.ts'
+import { isPedal } from '../pedals.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { bench, putOnBench, takeOffBench } from './bench.ts'
 import { switchOn } from './bendChain.ts'
-import { pedalWet } from './chain-map.ts'
-import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { useStoreValue } from './ControlsContext.ts'
 import { add } from './fitted.ts'
 import styles from './Pedals.module.css'
-import { Footswitch, StompFace, type Face } from './StompFace.tsx'
+import { switchPedalOn } from './power.ts'
+import { StompFace, type Face } from './StompFace.tsx'
 import { Tip } from './Tip.tsx'
 
 const FACE: Record<string, Face> = {
@@ -39,8 +38,6 @@ const FACE: Record<string, Face> = {
     sliders: ['ampGain', 'ampMaster', 'ampMix'],
   },
 }
-
-const ADDED_MIX = 0.5
 
 const listOf = (stage: string) => (isPedal(stage) ? 'pedals' : 'bends')
 
@@ -102,19 +99,6 @@ const BY_SOUND: { section: string; kinds: Record<string, string> }[] = [
   },
 ]
 
-function switchPedalOn(stage: string) {
-  const { mix, mute } = pedalNamed(stage)!
-  const board = engine.controls.get()
-  if (board[mix] === 0 || board[mute] > 0.5) {
-    engine.armStep()
-    engine.writeBoard({
-      ...board,
-      [mix]: board[mix] === 0 ? ADDED_MIX : board[mix],
-      [mute]: 0,
-    })
-  }
-}
-
 function bringUpPedal(stage: string) {
   putOnBench('pedals', stage)
   switchPedalOn(stage)
@@ -154,37 +138,13 @@ export function PedalFace({
   seconds: number
   onOpen: (stage: string) => void
 }) {
-  const face = FACE[stage]!
-  const { mute } = pedalNamed(stage)!
-  const why = useBoardValue(c =>
-    c[mute] > 0.5 ? 'bypassed' : !pedalWet(c, stage) ? 'dry' : 'on',
-  )
   return (
     <StompFace
       stage={stage}
-      face={face}
+      face={FACE[stage]!}
       seconds={seconds}
       onOpen={onOpen}
       onClose={() => takeOffBench('pedals', stage)}
-      footswitch={
-        <Footswitch
-          stage={stage}
-          bypassed={why !== 'on'}
-          tip={
-            why === 'bypassed'
-              ? `${stage} is bypassed. Press to switch it back on at the sound you left.`
-              : why === 'dry'
-                ? `${stage} is silent with its mix at 0. Press to bring the mix up.`
-                : `Press to take ${stage} out of the path. Its knobs stay where they are.`
-          }
-          onPress={() => {
-            if (why === 'on') {
-              engine.armStep()
-              engine.set(mute, 1)
-            } else switchPedalOn(stage)
-          }}
-        />
-      }
     />
   )
 }

@@ -24,6 +24,7 @@
 }
 
 .header {
+  --cap-h: var(--ctl-h-sm);
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -60,15 +61,15 @@
 }
 
 .editor {
-  composes: chip square from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .editorOn {
-  composes: chipOn square from './button.module.css';
+  composes: chipOn from './button.module.css';
 }
 
 .close {
-  composes: quietX from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .body {

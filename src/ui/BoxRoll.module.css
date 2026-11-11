@@ -5,10 +5,10 @@
 }
 
 .roll {
-  composes: chip square from './button.module.css';
+  composes: chip from './button.module.css';
 }
 
 .reset {
-  composes: chipDanger square from './button.module.css';
+  composes: chipDanger from './button.module.css';
   font-variant-numeric: tabular-nums;
 }

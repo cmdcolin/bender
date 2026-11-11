@@ -182,7 +182,7 @@
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: var(--pill-radius);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
 }
 
@@ -194,7 +194,8 @@
 .chipOn {
   composes: chip;
   color: var(--fg);
-  border-color: var(--accent);
+  background: var(--surface-raised);
+  border-color: var(--fg4);
 }
 
 .chipOff {
@@ -206,10 +207,6 @@
 
 .chipDanger {
   composes: chip;
-}
-
-.square {
-  border-radius: var(--ctl-radius);
 }
 
 .pick {
@@ -259,6 +256,12 @@
   border-radius: 0;
 }
 
+.pickJoinedLit {
+  composes: pickJoinedOn;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .pickEmpty {
   composes: pick;
   color: var(--fg4);
@@ -283,13 +286,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--ctl-h);
+  min-height: var(--cap-h, var(--ctl-h));
   font-size: var(--fs-xs);
   line-height: 1.2;
   padding: 0 var(--space-md);
-  background: var(--switch);
+  background: var(--switch, none);
   color: var(--fg2);
-  border: 1px solid var(--case-edge);
+  border: 1px solid var(--case-edge, var(--border-quiet));
   border-radius: var(--ctl-radius);
   cursor: pointer;
 }
@@ -530,8 +533,12 @@
   }
 
   .chip:hover:not(:disabled) {
-    color: var(--accent);
-    border-color: var(--accent);
+    color: var(--fg);
+    border-color: var(--border-hover);
+  }
+
+  .chipOn:hover:not(:disabled) {
+    border-color: var(--fg4);
   }
 
   .chipDanger:hover:not(:disabled) {
@@ -544,13 +551,22 @@
     border-color: var(--border-hover);
   }
 
+  .pickOn:hover:not(:disabled) {
+    border-color: var(--fg4);
+  }
+
+  .pickJoinedLit:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
   .pickRecOn:hover:not(:disabled) {
     color: var(--bg);
     border-color: var(--accent2);
   }
 
   .cap:hover:not(:disabled) {
-    background: var(--switch-hover);
+    background: var(--switch-hover, none);
     color: var(--fg);
   }
 

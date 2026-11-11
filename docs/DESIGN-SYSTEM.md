@@ -22,8 +22,7 @@
 | `--ctl-h-sm`    | 18px  | 32px  | chip, pick, selectSm            | theme.css  |
 | `--gap-ctl`     | 6px   | 8px   | a row of action-height controls | theme.css  |
 | `--gap-ctl-sm`  | 4px   | 6px   | a row of chips or picks         | theme.css  |
-| `--ctl-radius`  | 3px   | 3px   | controls and panels             | tokens.css |
-| `--pill-radius` | 999px | 999px | chips                           | tokens.css |
+| `--ctl-radius`  | 3px   | 3px   | every control and panel         | tokens.css |
 | `--card-radius` | 6px   | 6px   | dialogs                         | theme.css  |
 
 ## Spacing
@@ -59,15 +58,16 @@ sets a control's height whatever font the system supplies.
   `outlineSelect`, and the split pair `splitMain` / `splitCaret(On)`. `outline`,
   `outlineOn` and `outlineIcon` are shared with videoskillet's `ui.module.css`
   through the `outline-kind` and `outline-states` sync regions
-- **chip:** one quiet item among many, pill-shaped (cuts, rolls). Variants:
-  `chipOn`, `chipOff`, `chipDanger`; `.square` squares the corners
+- **chip:** one quiet item among many (cuts, rolls). Variants: `chipOn`,
+  `chipOff`, `chipDanger`
 - **pick:** one of a set where exactly one is on (ROMs, slider choices).
   Variants: `pickOn`, `pickLg(On)` for presets, `pickJoined(On)` for a
-  ToggleButtonGroup, `pickEmpty`, `pickRecOn` / `pickRecIdle` for a pattern's
-  record switch
+  ToggleButtonGroup, `pickJoinedLit` for its `lit` option (a pedal's `on`),
+  `pickEmpty`, `pickRecOn` / `pickRecIdle` for a pattern's record switch
 - **cap:** a switch on an instrument's case. The case sets `--switch`,
-  `--switch-hover`, `--case-edge` and `--cap-lit`. Variants: `capOn`,
-  `capSnug(On)` for a glyph, `capJoined(On)`, `capIdle`
+  `--switch-hover`, `--case-edge` and `--cap-lit`; off a case a cap takes the
+  chip's quiet border. Variants: `capOn`, `capSnug(On)` for a glyph,
+  `capJoined(On)`, `capIdle`
 - **select / selectSm:** a dropdown at the action or chip height. Variant:
   `selectSmOn`
 - **quiet:** a borderless text button (a "look at it in silence", a row's
@@ -87,6 +87,15 @@ sets a control's height whatever font the system supplies.
   comes later in the bundle.
 - A new look goes in `button.module.css` as a variant, next to the kind it
   extends.
+- Every button has a border and the `--ctl-radius` corner. Only the quiet kind,
+  a glyph or word inside a row, goes without one.
+- A two-state switch is a ToggleButtonGroup with both states named, such as a
+  pedal's `on | off`, never a lone glyph whose fill carries the state.
+- A chosen item, a pick or a chip, takes the grey fill with an `--fg4` edge. The
+  accent is for something that sounds or runs, such as a pedal's `on`.
+- Hover brightens the text and the edge and never borrows a chosen look.
+- A stage panel's header sets `--cap-h` to `--ctl-h-sm`, so its caps sit level
+  with its chips and its menus keep their height.
 - Hover looks sit under `@media (hover: hover)`, so a tapped control on a phone
   does not stay lit.
 - Colours come from tokens. A literal colour belongs to an instrument's case

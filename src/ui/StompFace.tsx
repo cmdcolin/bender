@@ -5,6 +5,7 @@ import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { rowShown } from './diagram.ts'
 import { useOpenFace } from './openStage.ts'
 import styles from './Pedals.module.css'
+import { usePower } from './power.ts'
 import { ControlSlider } from './Slider.tsx'
 import { Tip } from './Tip.tsx'
 
@@ -47,29 +48,20 @@ function Selector({ control }: { control: ControlKey }) {
 }
 
 /** The footswitch. The lamp is lit while the stage is in the path. */
-export function Footswitch({
-  stage,
-  bypassed,
-  tip,
-  onPress,
-}: {
-  stage: string
-  bypassed: boolean
-  tip: string
-  onPress: () => void
-}) {
+function Footswitch({ stage }: { stage: string }) {
+  const { on, tip, flip } = usePower(stage)
   return (
     <Tip text={tip}>
       <span className={styles.bay}>
         <span
-          className={bypassed ? styles.lampOff : styles.lampOn}
+          className={on ? styles.lampOn : styles.lampOff}
           aria-hidden="true"
         />
         <button
           className={styles.foot}
           aria-label={`bypass ${stage}`}
-          aria-pressed={bypassed}
-          onClick={onPress}
+          aria-pressed={!on}
+          onClick={flip}
         />
       </span>
     </Tip>
@@ -80,7 +72,7 @@ export function StompFace({
   stage,
   face,
   seconds,
-  footswitch,
+  footswitch = <Footswitch stage={stage} />,
   badge,
   onOpen,
   onClose,
@@ -88,7 +80,8 @@ export function StompFace({
   stage: string
   face: Face
   seconds: number
-  footswitch: ReactNode
+  /** The pedal's power footswitch unless the face brings its own. */
+  footswitch?: ReactNode
   badge?: ReactNode
   onOpen: (stage: string) => void
   onClose?: () => void

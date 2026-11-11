@@ -8,6 +8,8 @@ export function ToggleButtonGroup<T extends string>(props: {
   disabled?: boolean
   large?: boolean
   full?: boolean
+  /** The option that lights in the accent while chosen, such as a switch's on. */
+  lit?: T
 }) {
   return (
     <div
@@ -24,7 +26,13 @@ export function ToggleButtonGroup<T extends string>(props: {
       {props.options.map(option => (
         <button
           key={option}
-          className={option === props.value ? styles.on : styles.off}
+          className={
+            option !== props.value
+              ? styles.off
+              : option === props.lit
+                ? styles.lit
+                : styles.on
+          }
           aria-pressed={option === props.value}
           disabled={props.disabled}
           onClick={() => props.onChange(option)}

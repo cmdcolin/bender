@@ -143,6 +143,6 @@
 }
 
 .blank {
-  composes: chip square from './button.module.css';
+  composes: chip from './button.module.css';
   margin-left: auto;
 }

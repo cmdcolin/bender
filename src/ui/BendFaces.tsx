@@ -1,17 +1,9 @@
 import { takeOffBench } from './bench.ts'
-import {
-  bypassed,
-  patchedOn,
-  positionOf,
-  sounds,
-  stepOf,
-  switchOff,
-  switchOn,
-} from './bendChain.ts'
+import { patchedOn, positionOf, stepOf } from './bendChain.ts'
 import { BEND_SLOT_KEYS } from './controls/index.ts'
 import { useBoardValue, useMeterValue } from './ControlsContext.ts'
 import styles from './Pedals.module.css'
-import { Footswitch, StompFace, type Face } from './StompFace.tsx'
+import { StompFace, type Face } from './StompFace.tsx'
 import { Tip } from './Tip.tsx'
 
 const FACE: Record<string, Face> = {
@@ -132,39 +124,14 @@ export function BendFace({
   seconds: number
   onOpen: (stage: string) => void
 }) {
-  const face = FACE[stage]!
-  const on = useBoardValue(c => sounds(c, stage))
-  const why = useBoardValue(c =>
-    positionOf(c, stage) === 0 && !patchedOn(c, stage)
-      ? 'unslotted'
-      : bypassed(c, stage)
-        ? 'bypassed'
-        : 'dry',
-  )
   return (
     <StompFace
       stage={stage}
-      face={face}
+      face={FACE[stage]!}
       seconds={seconds}
       onOpen={onOpen}
       onClose={() => takeOffBench('bends', stage)}
       badge={<Position stage={stage} />}
-      footswitch={
-        <Footswitch
-          stage={stage}
-          bypassed={!on}
-          tip={
-            on
-              ? `Press to take ${stage} out of the path. Its knobs stay where they are.`
-              : why === 'unslotted'
-                ? `${stage} is in no chain position. Press to slot it in.`
-                : why === 'bypassed'
-                  ? `${stage} is bypassed. Press to switch it back on at the sound you left.`
-                  : `${stage} is silent with its mix at 0. Press to bring the mix up.`
-          }
-          onPress={() => (on ? switchOff(stage) : switchOn(stage))}
-        />
-      }
     />
   )
 }
