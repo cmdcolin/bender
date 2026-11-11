@@ -8,12 +8,12 @@
   composes: cap from './button.module.css';
 }
 
-.capOn {
-  composes: capOn from './button.module.css';
+.capMuted {
+  composes: capMuted from './button.module.css';
 }
 
 .cap,
-.capOn {
+.capMuted {
   position: relative;
 }
 

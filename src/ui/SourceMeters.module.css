@@ -1,9 +1,9 @@
 .switch {
-  composes: action from './button.module.css';
+  composes: outline from './button.module.css';
 }
 
 .switchOn {
-  composes: actionOn from './button.module.css';
+  composes: outlineOn from './button.module.css';
 }
 
 .tiles {

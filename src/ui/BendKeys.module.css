@@ -13,11 +13,11 @@
 }
 
 .letterSwitch {
-  composes: action from './button.module.css';
+  composes: outline from './button.module.css';
 }
 
 .letterSwitchOn {
-  composes: actionOn from './button.module.css';
+  composes: outlineOn from './button.module.css';
 }
 
 .settings {
@@ -29,10 +29,6 @@
 
 .chip {
   composes: chip from './button.module.css';
-}
-
-.chipOn {
-  composes: chipOn from './button.module.css';
 }
 
 .every {

@@ -50,14 +50,16 @@ sets a control's height whatever font the system supplies.
 
 ## Kinds
 
-- **action:** a filled verb (random, mutate, record wav). Variants: `actionOn`
-  (running), `actionQuiet`, `actionPicked`, and the bend board's two-row keys
-  `actionKey`, `actionKeyHeld`, `actionKeyFixed`, `actionKeyQuiet`
-- **outline:** header chrome in a faint outline at the body size. Variants:
-  `outlineOn`, `outlineWaiting`, `outlineDanger`, `outlineIcon`,
-  `outlineSelect`, and the split pair `splitMain` / `splitCaret(On)`. `outline`,
-  `outlineOn` and `outlineIcon` are shared with videoskillet's `ui.module.css`
-  through the `outline-kind` and `outline-states` sync regions
+- **action:** a filled verb inside a panel or dialog (+ mod, tap, record wav).
+  Variants: `actionOn` (running), `actionQuiet`, `actionPicked`, and the bend
+  board's two-row keys `actionKey`, `actionKeyHeld`, `actionKeyFixed`,
+  `actionKeyQuiet`
+- **outline:** header and toolbar chrome in a faint outline at the body size
+  (presets, random, add instrument, bend keys). Variants: `outlineOn`,
+  `outlineWaiting`, `outlineDanger`, `outlineIcon`, `outlineSelect`, and the
+  split pair `splitMain` / `splitCaret(On)`. `outline`, `outlineOn` and
+  `outlineIcon` are shared with videoskillet's `ui.module.css` through the
+  `outline-kind` and `outline-states` sync regions
 - **chip:** one quiet item among many (cuts, rolls). Variants: `chipOn`,
   `chipOff`, `chipDanger`
 - **pick:** one of a set where exactly one is on (ROMs, slider choices).
@@ -67,7 +69,7 @@ sets a control's height whatever font the system supplies.
 - **cap:** a switch on an instrument's case. The case sets `--switch`,
   `--switch-hover`, `--case-edge` and `--cap-lit`; off a case a cap takes the
   chip's quiet border. Variants: `capOn`, `capSnug(On)` for a glyph,
-  `capJoined(On)`, `capIdle`
+  `capJoined(On)`, `capIdle`, `capMuted` for a muted speaker in the alarm red
 - **select / selectSm:** a dropdown at the action or chip height. Variant:
   `selectSmOn`
 - **quiet:** a borderless text button (a "look at it in silence", a row's

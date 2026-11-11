@@ -96,7 +96,7 @@ function Mute({
       >
         <button
           ref={setCap}
-          className={muted ? styles.capOn : styles.cap}
+          className={muted ? styles.capMuted : styles.cap}
           data-control={bare ? control : undefined}
           aria-label={`${popover ? 'volume' : 'mute'} ${stage}`}
           aria-pressed={popover ? undefined : muted}

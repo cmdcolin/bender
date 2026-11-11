@@ -39,6 +39,7 @@ import { claimPress, claimRelease } from './keyPress.ts'
 import { letterKeys } from './letters.ts'
 import { pressThrow, releaseThrow, useThrowKeys } from './throwKeys.ts'
 import { Tip } from './Tip.tsx'
+import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 
 import type { MorphSeconds } from './morph.ts'
 
@@ -53,11 +54,11 @@ const setLetters = (bends: boolean) => {
   rememberLetters(bends)
 }
 
-const HEAT_TIP = {
-  tame: 'one control a key',
-  wild: 'one to three controls a key, now and then a pair that fight',
+const HEAT_TIPS = {
+  tame: 'one control a key — the next deal reads it',
+  wild: 'one to three controls a key, now and then a pair that fight — the next deal reads it',
   wreck:
-    'three controls a key, and a third of the keys solder a bay wire or a bend into the chain on top',
+    'three controls a key, and a third of the keys solder a bay wire or a bend into the chain on top — the next deal reads it',
 }
 
 // The three rows of letters as they sit on a keyboard, each indented by its
@@ -254,17 +255,13 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
     <div className={styles.board}>
       <div className={styles.bar}>
         <span className={styles.settings}>
-          {HEATS.map(h => (
-            <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
-              <button
-                className={heat === h ? styles.chipOn : styles.chip}
-                aria-pressed={heat === h}
-                onClick={() => setBendHeat(h)}
-              >
-                {h}
-              </button>
-            </Tip>
-          ))}
+          <ToggleButtonGroup
+            label="how hard the deal bends"
+            options={HEATS}
+            value={heat}
+            onChange={setBendHeat}
+            tips={HEAT_TIPS}
+          />
           <Tip
             text={`${ENVELOPE_TIP[shape]}${shape === 'swell' ? ` — ${Math.max(morphSeconds, 1)}s as the picker stands` : ''}`}
           >

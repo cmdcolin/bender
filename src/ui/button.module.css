@@ -319,6 +319,11 @@
   color: var(--accent-ink);
 }
 
+.capMuted {
+  composes: cap;
+  color: var(--alarm);
+}
+
 .capSnugOn {
   composes: capOn;
   padding: 0 var(--space-xs);
@@ -568,6 +573,10 @@
   .cap:hover:not(:disabled) {
     background: var(--switch-hover, none);
     color: var(--fg);
+  }
+
+  .capMuted:hover:not(:disabled) {
+    color: var(--alarm);
   }
 
   .capOn:hover:not(:disabled) {

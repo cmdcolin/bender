@@ -7,7 +7,7 @@
 }
 
 .add {
-  composes: action from './button.module.css';
+  composes: outline from './button.module.css';
 }
 
 /* A stompbox: a painted enclosure with the name silkscreened on it, the sliders

@@ -49,5 +49,5 @@
 }
 
 .add {
-  composes: action from './button.module.css';
+  composes: outline from './button.module.css';
 }
