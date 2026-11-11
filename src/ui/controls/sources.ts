@@ -28,6 +28,7 @@ import {
   CARRY_LINES,
   SIGN_TAPS,
   LATCH_CLOCKS,
+  BLOCK_SHORTS,
 } from '../../dsp/stages/fmVoices.ts'
 import {
   PCM_ADDR_LINES,
@@ -2152,6 +2153,9 @@ export const SOURCE_GROUPS: Group[] = [
       'fmGroundLoop',
       'fmSelfBus',
       'fmLatch',
+      'fmBlockShort',
+      'fmKeyLoop',
+      'fmEnvChain',
     ],
     sliders: [
       {
@@ -2881,6 +2885,40 @@ export const SOURCE_GROUPS: Group[] = [
         choices: [...LATCH_CLOCKS],
         shy: true,
         help: 'Clocks the output latch off one channel’s carrier, once a cycle, so the chip’s output updates at that voice’s pitch. The other notes alias against it into their difference tones, so a chord collapses into a low growl under 120 Hz, and the clocking voice itself reads one point of its own wave each cycle. While that channel is silent the latch passes every sample.',
+      },
+      {
+        key: 'fmBlockShort',
+        part: 'die and driver',
+        label: 'Octave short',
+        min: 0,
+        max: BLOCK_SHORTS.length - 1,
+        step: 1,
+        unit: '',
+        choices: [...BLOCK_SHORTS],
+        shy: true,
+        help: 'Shorts the three octave wires of the four channels into one set. Every sounding channel drives the wires, and each reads back what is left on them. On low wins a wire stays high only if every sounding note has that bit, so a chord drops onto the octave bits its notes share: A4 and A5 share none, and both sound at 55 Hz. On high wins any note sets a wire, and the same pair sounds at 7 kHz. A lone note plays at its pitch, and each note jumps octave as the notes around it start and stop. With Rhythm on the drums drive the wires too, so each bass drum hit pulls the tune and the hi-hat’s hiss down while it rings.',
+      },
+      {
+        key: 'fmKeyLoop',
+        part: 'die and driver',
+        label: 'Output on key line',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'Wires the rectified output onto the key line through a capacitor. When the output passes the trip level every key reads up and the notes release. Once the capacitor has drained the keys read down again, and every note the processor still holds restarts from the top of its wave. A held organ note re-keys about 7 times a second low on the knob and 50 at the top, where the restarts run together into a low buzz. Quiet notes stay under the trip level and play clean. With Rhythm on, every drum the kit has struck fires again on each restart, so the bass drum rolls.',
+      },
+      {
+        key: 'fmEnvChain',
+        part: 'die and driver',
+        label: 'Envelope chain',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'Wires each channel’s envelope to the key of the channel after it, round all four. When a note falls under the trip level it strikes the next channel at the pitch last written there, that note strikes the one after, and the chip plays on round the ring after the tune stops. The knob raises the trip level. Low on the knob each note waits for the one before to die away. At the top an organ strikes about 270 times a second and the notes run together into a buzz. The patch’s decay and release set the tempo, and a held note above the trip level passes nothing on until its key comes up. With Rhythm on the ring runs through the drums, so the tune’s notes fire the bass drum, snare and hi-hat.',
       },
       {
         key: 'fmToyBus',

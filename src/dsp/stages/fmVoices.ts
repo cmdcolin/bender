@@ -489,6 +489,9 @@ export const LATCH_CLOCKS = [
   'voice 3',
   'voice 4',
 ] as const
+/** The block wires of the four channels: apart, or shorted into one set where
+    the bits every sounding channel has are left, or the bits any has. */
+export const BLOCK_SHORTS = ['apart', 'low wins', 'high wins'] as const
 
 // The kit the die keeps in ROM. The bass drum is the only one of the three
 // still running off the sine table, so it is the only one that needs a patch —

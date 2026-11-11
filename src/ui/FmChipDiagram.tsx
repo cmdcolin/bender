@@ -59,6 +59,9 @@ const DIE = [
   'fmSign',
   'fmGroundLoop',
   'fmLatch',
+  'fmBlockShort',
+  'fmKeyLoop',
+  'fmEnvChain',
 ] as const
 
 const KEYS = [
@@ -176,7 +179,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       TOP + ROW * 2,
       span,
       DIE,
-      'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot, the log adder, register rot, heat, the operator ring, slot skew, the wire from modulator to pitch, the sign line, the ground loop and the latch clock.',
+      'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot, the log adder, register rot, heat, the operator ring, slot skew, the wire from modulator to pitch, the sign line, the ground loop, the latch clock, the octave short, the output on the key line and the envelope chain.',
     ),
   ]
   useOpensOnAim(pick, boxes)

@@ -42,6 +42,9 @@ const KEYS = [
   'fmSign',
   'fmGroundLoop',
   'fmLatch',
+  'fmBlockShort',
+  'fmKeyLoop',
+  'fmEnvChain',
 ] as const
 
 const OPENS: Record<string, readonly ControlKey[]> = {
@@ -54,8 +57,17 @@ const OPENS: Record<string, readonly ControlKey[]> = {
     'fmPitchWire',
     'fmSign',
     'fmGroundLoop',
+    'fmBlockShort',
+    'fmEnvChain',
   ],
-  DAC: ['fmDacSlot', 'fmDacSlip', 'fmBodge', 'fmBodgeR', 'fmLatch'],
+  DAC: [
+    'fmDacSlot',
+    'fmDacSlip',
+    'fmBodge',
+    'fmBodgeR',
+    'fmLatch',
+    'fmKeyLoop',
+  ],
   'register rot': ['fmRot'],
   heat: ['fmHeat'],
 }
@@ -101,7 +113,10 @@ export function FmDieDiagram() {
     r.value('fmSkew') > 0 ||
     r.value('fmPitchWire') > 0 ||
     r.value('fmSign') > 0 ||
-    r.value('fmGroundLoop') > 0
+    r.value('fmGroundLoop') > 0 ||
+    r.value('fmBlockShort') > 0 ||
+    r.value('fmEnvChain') > 0
+  const latched = r.value('fmLatch') > 0 || r.value('fmKeyLoop') > 0
 
   const frameW = boxWidth('voice 4') + 16
   const widths = [
@@ -162,7 +177,9 @@ export function FmDieDiagram() {
                 the step of the slot before it, and a wire puts each modulator
                 on its carrier’s pitch. The sign line sets where each sine takes
                 its polarity, and the ground loop feeds the output back onto
-                every operator’s phase.
+                every operator’s phase. The octave short joins the four
+                channels’ octave wires into one set, and the envelope chain has
+                each falling note strike the channel after it.
               </title>
               <Plate
                 x={frameX}
@@ -275,8 +292,8 @@ export function FmDieDiagram() {
             />
             <Chip
               box={dacBox}
-              lit={slot > 0 || slip > 0 || r.value('fmLatch') > 0}
-              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next. A latch clocked off one voice updates the output once per cycle of that voice."
+              lit={slot > 0 || slip > 0 || latched}
+              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next. A latch clocked off one voice updates the output once per cycle of that voice. The rectified output wired to the key line lifts every key when the level passes the trip point."
               pick={pick}
               keys={OPENS.DAC}
             />

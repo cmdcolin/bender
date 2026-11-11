@@ -345,6 +345,8 @@ export const BEND_ENDS: Partial<
   monoStrobe: [null, null],
   talkStackSlip: [null, null],
   talkOvershoot: [0, 0.5],
+  fmKeyLoop: [-3.5, -2],
+  fmEnvChain: [0.5, 0],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */

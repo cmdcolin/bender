@@ -1635,3 +1635,96 @@ test('a latch clocked off a channel the kit took over passes every sample', () =
   }
   expect(fmStem({ ...stray, fmLatch: 3 })).toEqual(fmStem(stray))
 })
+
+const A1 = A3 / 4
+const octaves = (o: Partial<Controls>, notes: number[]) =>
+  heldOn({ fmVoice: voice('organ'), fmBright: 0, ...o }, notes)
+
+test('octave wires shorted low put A4 and A5 on the 55 Hz their blocks share', () => {
+  const apart = octaves({}, [12, 24])
+  const low = octaves({ fmBlockShort: 1 }, [12, 24])
+  expect(bin(low, A1)).toBeGreaterThan(50 * bin(apart, A1))
+  expect(bin(low, 2 * A3)).toBeLessThan(0.5 * bin(apart, 2 * A3))
+  expect(subShare(low)).toBeGreaterThan(0.6)
+})
+
+test('octave wires shorted high put A4 and A5 at 7 kHz', () => {
+  const apart = octaves({}, [12, 24])
+  const high = octaves({ fmBlockShort: 2 }, [12, 24])
+  expect(bin(high, 32 * A3)).toBeGreaterThan(20 * bin(apart, 32 * A3))
+  expect(bin(high, 2 * A3)).toBeLessThan(0.1 * bin(apart, 2 * A3))
+})
+
+test('a lone note reads its own octave back off the shorted wires', () => {
+  expect(octaves({ fmBlockShort: 1 }, [12])).toEqual(octaves({}, [12]))
+  expect(octaves({ fmBlockShort: 2 }, [12])).toEqual(octaves({}, [12]))
+})
+
+test('a bass drum on the shorted octave wires pulls the hi-hat’s hiss down', () => {
+  const hats = { drumSnare: 0, drumKick: 0b1000_1000_1000_1000 }
+  const apart = fmStem(hats)
+  const low = fmStem({ ...hats, fmBlockShort: 1 })
+  expect(highEnergy(low)).toBeLessThan(0.6 * highEnergy(apart))
+})
+
+const swing = (x: Float32Array) => {
+  const level = envelope(x)
+  return Math.min(...level) / Math.max(...level)
+}
+
+test('the output on the key line lifts and re-strikes a held note', () => {
+  const note = (o: Partial<Controls>) =>
+    heldOn({ fmVoice: voice('organ'), ...o }, [0])
+  expect(swing(note({}))).toBeGreaterThan(0.9)
+  expect(swing(note({ fmKeyLoop: 0.1 }))).toBeLessThan(0.5)
+})
+
+test('a note under the trip level leaves the key line alone', () => {
+  const quiet = (o: Partial<Controls>) =>
+    renderStems({ ...ORGAN_ONLY, fmKeyGate: 1, ...o }, 1, built =>
+      built.fmChip.noteOn(0, 0),
+    ).stems[FM_TAP]!
+  expect(rms(quiet({}))).toBeGreaterThan(0.01)
+  expect(quiet({ fmKeyLoop: 1 })).toEqual(quiet({}))
+})
+
+test('the output on the key line rolls the bass drum after one hit', () => {
+  const once = { drumSnare: 0, drumHat: 0, drumKick: 1 << 8 }
+  expect(rms(tail(fmStem(once)))).toBeLessThan(1e-3)
+  expect(rms(tail(fmStem({ ...once, fmKeyLoop: 0.1 })))).toBeGreaterThan(0.02)
+})
+
+const released = (o: Partial<Controls>, notes = [0, 7]) => {
+  let up = false
+  return renderBender(
+    { ...ORGAN_ONLY, fmKeyGate: 1, ...o },
+    3,
+    built => notes.forEach(n => built.fmChip.noteOn(n)),
+    undefined,
+    (built, secs) => {
+      if (secs >= 0.3 && !up) {
+        up = true
+        notes.forEach(n => built.fmChip.noteOff(n))
+      }
+    },
+  )
+}
+
+test('the envelope chain strikes each channel off the one before after the keys come up', () => {
+  expect(rms(tail(released({}), 1))).toBeLessThan(1e-4)
+  const ring = tail(released({ fmEnvChain: 0.8 }), 1)
+  expect(rms(ring)).toBeGreaterThan(0.05)
+  expect(bin(ring, A3)).toBeGreaterThan(0.001)
+  expect(bin(ring, E4)).toBeGreaterThan(0.001)
+})
+
+test('a held note above the trip level passes nothing down the chain', () => {
+  expect(lowChord({ fmEnvChain: 0.8 })).toEqual(lowChord({}))
+})
+
+test('the envelope chain stays silent with no note struck', () => {
+  const x = renderStems({ ...FM_ONLY, fmKeyGate: 1, fmEnvChain: 1 }, 1).stems[
+    FM_TAP
+  ]!
+  expect(rms(x)).toBe(0)
+})

@@ -363,6 +363,12 @@ const TRIP_SPAN = 0.3
 const RESTART_LOW = 0.05
 const RESTART_SPAN = 0.25
 
+const KEY_CAP_SECS = 0.02
+const KEY_TRIP = 0.7
+const KEY_REARM = 0.25
+const KEY_REARM_TOP = 0.9
+const CHAIN_TRIP_TOP = 0.98
+
 const IDLE = 0
 const ATTACK = 1
 const DECAY = 2
@@ -395,6 +401,8 @@ interface Op {
   fb2: number
   /** how many times the accumulator has wrapped, for the sign line's divider */
   wraps: number
+  unheld: boolean
+  chainedOn: boolean
 }
 
 const newOp = (): Op => ({
@@ -404,7 +412,12 @@ const newOp = (): Op => ({
   fb1: 0,
   fb2: 0,
   wraps: 0,
+  unheld: false,
+  chainedOn: true,
 })
+
+const fallenUnder = (op: Op, trip: number) =>
+  !op.chainedOn && op.stage !== ATTACK && op.env < trip
 
 const newPanel = (): Panel => ({
   bright: -1,
@@ -416,6 +429,8 @@ const newPanel = (): Panel => ({
 })
 
 function strike(op: Op) {
+  op.unheld = false
+  op.chainedOn = false
   op.stage = ATTACK
   op.phase = 0
   op.fb1 = 0
@@ -431,6 +446,8 @@ function kitEdge(before: number, now: number, bit: number, op: Op) {
 
 function clear(op: Op) {
   op.wraps = 0
+  op.unheld = false
+  op.chainedOn = true
   op.phase = 0
   op.env = 0
   op.stage = IDLE
@@ -675,6 +692,12 @@ export class FmChip implements Stage {
   /** the channel whose carrier wraps clock the output latch, or -1 */
   private latchFrom = -1
   private latchDue = false
+  private blockAnd = 7
+  private blockOr = 0
+  private kitMode = false
+  private keyCap = 0
+  private keyLifted = false
+  private readonly keyDrain: number
   private readonly groundLp: number
   private temp = 0
   private tripped = false
@@ -688,6 +711,7 @@ export class FmChip implements Stage {
     this.sr = sr
     this.power = new SupplyTap(supplies)
     this.groundLp = 1 - Math.exp((-2 * Math.PI * BOUNCE_HZ) / sr)
+    this.keyDrain = Math.exp(-1 / (KEY_CAP_SECS * sr))
   }
 
   needs(p: Float32Array, ctx: Ctx) {
@@ -766,7 +790,7 @@ export class FmChip implements Stage {
     const before = this.regs[reg]!
     this.regs[reg] = d & 0xff
     this.writtenAt[reg] = this.now
-    this.landed(reg, before)
+    if (!this.keyLifted) this.landed(reg, before)
   }
 
   private landed(reg: number, before: number) {
@@ -790,6 +814,74 @@ export class FmChip implements Stage {
     const now = (this.regs[reg]! & KEY_ON) !== 0
     if (now && !was) this.attack(ch)
     else if (was && !now) this.release(ch)
+  }
+
+  // An averaging capacitor with the trip level on the knob was tried: a held
+  // organ chord re-keyed 9 times a second at every setting and fell to 0.40 of
+  // its level at the top.
+  private keyLine(depth: number) {
+    this.keyCap = flushDenormal(
+      Math.max(Math.abs(this.held), this.keyCap * this.keyDrain),
+    )
+    const rearm = KEY_TRIP * (KEY_REARM + (KEY_REARM_TOP - KEY_REARM) * depth)
+    if (this.keyLifted) {
+      if (depth <= 0 || this.keyCap < rearm) {
+        this.keyLifted = false
+        this.rekey(true)
+      }
+    } else if (this.keyCap > KEY_TRIP) {
+      this.rekey(false)
+      this.keyLifted = true
+    }
+  }
+
+  private rekey(down: boolean) {
+    const kit = this.regs[REG.rhythm]!
+    const melody = kit & RHY.on ? this.kitCh : N_CH
+    for (let n = 0; n < melody; n++) {
+      const keyed = (this.regs[REG.keyBlock + n]! & KEY_ON) !== 0
+      if (keyed && down) this.attack(n)
+      else if (keyed) this.release(n)
+    }
+    if (down) this.kitKeys(kit & RHY.on, kit)
+    else this.kitKeys(kit, kit & RHY.on)
+  }
+
+  private strikeNext(n: number, c: Channel) {
+    c.mod.chainedOn = true
+    c.car.chainedOn = true
+    const after = (n + 1) % N_CH
+    const next = this.ch[after]!
+    const unheld = (this.regs[REG.keyBlock + after]! & KEY_ON) === 0
+    strike(next.mod)
+    strike(next.car)
+    next.mod.unheld = unheld
+    next.car.unheld = unheld
+  }
+
+  // Shorting each channel's block wires to the slot before alone was tried:
+  // the sakura stem read 0.28 under 120 Hz against 0.41 for one set of wires
+  // across all four.
+  private shortBlocks(highWins: boolean) {
+    let shared = 7
+    let any = 0
+    for (let n = 0; n < N_CH; n++) {
+      const c = this.ch[n]!
+      if (
+        c.car.stage !== IDLE ||
+        (this.kitMode && n > this.kitCh && c.mod.stage !== IDLE)
+      ) {
+        const block = (this.regs[REG.keyBlock + n]! >> 1) & 7
+        shared &= block
+        any |= block
+      }
+    }
+    this.blockAnd = highWins ? 7 : shared
+    this.blockOr = highWins ? any : 0
+  }
+
+  private blockOn(key: number) {
+    return ((key >> 1) & 7 & this.blockAnd) | this.blockOr
   }
 
   // Three drums keyed out of one byte. The bass drum is an ordinary pair of
@@ -1364,7 +1456,8 @@ export class FmChip implements Stage {
     const key = this.regs[REG.keyBlock + n]!
     const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
     const inc =
-      ((fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[(key >> 1) & 7]! * pitch) / this.sr
+      ((fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[this.blockOn(key)]! * pitch) /
+      this.sr
     const vol = this.volume(n)
 
     if (n === this.kitCh + 2)
@@ -1470,7 +1563,10 @@ export class FmChip implements Stage {
       this.regs[REG.fnumLo + this.kitCh + 1]! | ((hatKey & 1) << 8)
     this.hatPhase =
       (this.hatPhase +
-        ((hatFnum / FNUM_FULL) * FNUM_HZ * OCTAVE[(hatKey >> 1) & 7]! * pitch) /
+        ((hatFnum / FNUM_FULL) *
+          FNUM_HZ *
+          OCTAVE[this.blockOn(hatKey)]! *
+          pitch) /
           this.sr) %
       1
     let out = 0
@@ -1503,6 +1599,10 @@ export class FmChip implements Stage {
   // listening — there is no enable anywhere on the die, only a pair of bits per
   // patch deciding who is soldered to the result — so a note that arrives finds
   // the wobble already somewhere rather than starting it.
+  //
+  // Skipping the LFO's divider with a test bit, for tremolo near 3.7 kHz and
+  // vibrato near 6.4 kHz, was tried: with both wired the sakura stem read
+  // 0.001 flat with 0.0004 of its power in the air band.
   private stepLfo() {
     const clockFactor = this.dieClock
     this.amPhase = (this.amPhase + (AM_HZ * clockFactor) / this.sr) % 1
@@ -1536,7 +1636,7 @@ export class FmChip implements Stage {
     if (this.faultRng() < chance) {
       const before = this.regs[r]!
       this.regs[r] = before ^ (1 << ((this.faultRng() * 8) | 0))
-      this.landed(r, before)
+      if (!this.keyLifted) this.landed(r, before)
     }
   }
 
@@ -1563,7 +1663,9 @@ export class FmChip implements Stage {
 
   // A wire from the floor comparator back to key-on was tried as a bass bend:
   // patches that sustain at 0 dB never fall to the trip, and the sakura stem
-  // kept 0.12 of its level under 120 Hz at every setting.
+  // kept 0.12 of its level under 120 Hz at every setting. Clocking the
+  // envelope counter off one carrier's wraps was tried too: the stem kept 0.11
+  // under 120 Hz, and every envelope stopped while the clocking voice was idle.
   private stepEnv(op: Op, r: Rates) {
     switch (op.stage) {
       case ATTACK:
@@ -1575,7 +1677,8 @@ export class FmChip implements Stage {
         break
       case DECAY:
         op.env *= r.decay
-        if (op.env <= r.sustain) op.stage = r.sustained ? SUSTAIN : RELEASE
+        if (op.env <= r.sustain)
+          op.stage = r.sustained && !op.unheld ? SUSTAIN : RELEASE
         break
       case RELEASE:
         op.env *= r.release
@@ -1733,6 +1836,16 @@ export class FmChip implements Stage {
     this.selfBits = hop(p[IDX.fmSelfBus]!, 9, bay.read(DEST.fmSelfBus))
     this.latchFrom =
       hop(p[IDX.fmLatch]!, LATCH_CLOCKS.length, bay.read(DEST.fmLatch)) - 1
+    const blockShort = Math.round(p[IDX.fmBlockShort]!)
+    this.blockAnd = 7
+    this.blockOr = 0
+    const keyLoop = p[IDX.fmKeyLoop]!
+    const chainDepth = p[IDX.fmEnvChain]!
+    const chainTrip =
+      chainDepth > 0
+        ? CHAIN_TRIP_TOP *
+          Math.pow(ENV_FLOOR / CHAIN_TRIP_TOP, (1 - chainDepth) ** 2)
+        : 0
     this.blob = baseBlob
     const rail = this.power.pick(p[IDX.fmSupply]!)
     const railAmp = rail.ampFactor
@@ -1797,6 +1910,7 @@ export class FmChip implements Stage {
     // is on the panel and the mode bit is in the register file, and everything
     // between them is wire.
     const kit = (this.regs[REG.rhythm]! & RHY.on) !== 0
+    this.kitMode = kit
 
     // A driver with an effect running does not re-select the melody instrument
     // behind it. The script owns the patch registers until the button comes up,
@@ -1869,6 +1983,7 @@ export class FmChip implements Stage {
       if (this.toyBits > 0) this.toyOnBus(toy[i]!)
       if (micOnBus) this.micOnBus(micOnBus[i]!)
       if (this.selfBits > 0) this.selfOnBus(this.held)
+      if (keyLoop > 0 || this.keyLifted) this.keyLine(keyLoop)
       if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
       if (this.blob > 0 && !kit) this.stepNoise()
 
@@ -1972,6 +2087,7 @@ export class FmChip implements Stage {
       let sum = 0
       this.lift = 0
       this.liftR = 0
+      if (blockShort > 0) this.shortBlocks(blockShort > 1)
       const pitch = rail.pitchFactor * xtal
       const skew = modSkew ? clamp01(baseSkew + modSkew[i]!) : baseSkew
       const wire =
@@ -1997,7 +2113,15 @@ export class FmChip implements Stage {
         // anything is between it and the wires.
         if (c.offIn > 0 && (c.offIn -= cpu) <= 0) this.keyOff(n)
         if (kit && n >= this.kitCh) {
+          const carOn = c.car.stage !== IDLE
+          const modOn = n > this.kitCh && c.mod.stage !== IDLE
           const v = this.percussion(n, c, raced, wideOpen, pitch)
+          if (
+            chainTrip > 0 &&
+            ((carOn && fallenUnder(c.car, chainTrip)) ||
+              (modOn && fallenUnder(c.mod, chainTrip)))
+          )
+            this.strikeNext(n, c)
           if (this.bodged) sum += this.tap(n, v)
           else sum += v
           if (slotted) this.slotOut[n] = v
@@ -2010,7 +2134,7 @@ export class FmChip implements Stage {
         // out wrong.
         const key = this.regs[REG.keyBlock + n]!
         const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
-        const block = (key >> 1) & 7
+        const block = this.blockOn(key)
         // Dropping the block an octave per halving of the envelope was tried:
         // the drops land in the quiet tail, and a bell kept 0.46 of its level
         // under 120 Hz against 0.39 clean.
@@ -2020,6 +2144,8 @@ export class FmChip implements Stage {
         const { mod, car } = this.chRates[n]!
         this.stepEnv(c.mod, raced ? this.raceRates : mod)
         this.stepEnv(c.car, raced ? this.raceRates : car)
+        if (chainTrip > 0 && fallenUnder(c.car, chainTrip))
+          this.strikeNext(n, c)
         // Wide open is not a loud envelope, it is no envelope: the stages go on
         // running underneath, so notes still start and still end — they simply
         // stop having a shape between the two.
@@ -2028,6 +2154,15 @@ export class FmChip implements Stage {
         // neither is an envelope: one is what the octave costs an operator and
         // the other is a counter nothing on this chip can address, and both go
         // on taking level from a note whose envelope has stopped having a shape.
+        //
+        // Two envelope skews were tried. With each operator on the envelope of
+        // the slot before, the modulators fell silent and the sakura stem's
+        // centroid dropped from 1.67 kHz to 0.49 kHz at 0.00001 flat. With each
+        // channel on the envelopes of the channel before, the stem lost 0.29 of
+        // its level and the kit board read 0.48 under 120 Hz. A fault on the
+        // seven-bit attenuation word was tried as well: the 6 dB and 24 dB
+        // lines to ground deviated 0.31 and 0.37 on the stem, and to +V they
+        // left 0.56 and 0.08 of its level.
         const modAm = mod.am ? this.amGain : 1
         const carAm = car.am ? this.amGain : 1
         const modEnv =
@@ -2165,7 +2300,7 @@ export class FmChip implements Stage {
       const inc =
         ((fnum / FNUM_FULL) *
           FNUM_HZ *
-          OCTAVE[(key >> 1) & 7]! *
+          OCTAVE[this.blockOn(key)]! *
           pitch *
           this.taps[n]!) /
         this.sr
@@ -2319,6 +2454,8 @@ export class FmChip implements Stage {
     this.selfHeld = 0
     this.ground = 0
     this.latchDue = false
+    this.keyCap = 0
+    this.keyLifted = false
     if (!this.cold) return
     for (let r = 0; r < N_REGS; r++)
       this.regs[r] = Math.floor(this.bootRng() * 256)

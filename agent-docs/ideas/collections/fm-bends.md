@@ -5,8 +5,10 @@ description:
   the exp table's bus, the allocator, cold boot and five effect scripts have
   landed with named cuts, and so has the phase generator (increment bus, carry,
   slot skew, mod into pitch) and four bass bends (sign line, ground loop, Glint
-  on bus, latch clock); the spare register bits, the envelope state bits and
-  envelope skew are what is left.
+  on bus, latch clock) and the bends on the envelope generator and the octave
+  wires (octave short, output on key line, envelope chain); the spare register
+  bits, the envelope state bits and bay lanes for that last round are what is
+  left.
 ---
 
 # Further bends for the FM chip
@@ -542,6 +544,100 @@ hits (both silent).
 Named cuts: _the tune five octaves down_ (÷32), _a rumble the chip feeds itself_
 (ground loop 1), _the chip writing its own octave_ (four bits).
 
+## The envelope generator and the octave wires — landed
+
+Asked for further complex bends, with loops and one part of the chip reaching
+another ranked over static colour. These landed, all in `fmChip.ts`:
+
+- **Octave short** (`fmBlockShort`: apart, low wins, high wins): the four
+  channels' block wires joined into one set. Each sounding channel drives the
+  wires, and each reads back the bits every sounding channel has (low wins) or
+  the bits any has (high wins). A4 and A5 held together both sound at 55 Hz on
+  low wins and at 7 kHz on high wins.
+- **Output on key line** (`fmKeyLoop`): the rectified output on a capacitor
+  across the key line. Past 0.7 of full scale every key reads up; once the
+  capacitor drains to the rearm level, every key the register file still holds
+  down strikes again, drums included.
+- **Envelope chain** (`fmEnvChain`): a carrier envelope under the trip level
+  strikes the channel after it, once per strike, at the pitch that channel's
+  registers hold. The ring keeps running after the tune stops.
+
+Measured on the FM stem: the sakura tune (4 s), a held organ chord (A2 E3 A3),
+and the sakura tune with **Rhythm** on and the kit's lines clipped on. Clean
+they read 0.12, 0.29 and 0.35 under 120 Hz.
+
+| setting                  | board  | level | under 120 Hz | centroid | flat  |
+| ------------------------ | ------ | ----- | ------------ | -------- | ----- |
+| octave short, low wins   | sakura | 1.00× | 0.41         | 1.19 kHz | 0.000 |
+|                          | chord  | 1.17× | 0.57         | 207 Hz   | 0.000 |
+|                          | kit    | 1.00× | 0.48         | 383 Hz   | 0.013 |
+| octave short, high wins  | sakura | 1.00× | 0.10         | 4.60 kHz | 0.002 |
+|                          | kit    | 1.03× | 0.16         | 6.49 kHz | 0.175 |
+| key line 0.1             | sakura | 0.55× | 0.18         | 890 Hz   | 0.000 |
+|                          | chord  | 0.32× | 0.43         | 298 Hz   | 0.000 |
+|                          | kit    | 0.58× | 0.67         | 541 Hz   | 0.065 |
+| key line 1               | sakura | 0.85× | 0.19         | 895 Hz   | 0.004 |
+|                          | chord  | 0.56× | 0.37         | 384 Hz   | 0.001 |
+|                          | kit    | 0.88× | 0.58         | 1.12 kHz | 0.158 |
+| chain 0.8                | sakura | 1.05× | 0.13         | 1.60 kHz | 0.000 |
+|                          | kit    | 1.32× | 0.34         | 1.58 kHz | 0.124 |
+| chain 1                  | sakura | 1.11× | 0.13         | 1.64 kHz | 0.001 |
+|                          | kit    | 1.59× | 0.34         | 2.54 kHz | 0.324 |
+| chain 0.9 with low wins  | sakura | 1.09× | 0.59         | 235 Hz   | 0.000 |
+|                          | kit    | 1.45× | 0.62         | 290 Hz   | 0.013 |
+| key line 1 with low wins | chord  | 0.90× | 0.77         | 111 Hz   | 0.000 |
+|                          | kit    | 1.06× | 0.71         | 285 Hz   | 0.025 |
+
+Rates, on notes held or released by hand:
+
+- Key line: a held organ note re-keys 6.8 times a second at 0.1, 13 at 0.5 and
+  51 at 1. Brass reaches 109 and strings 238 at the top, the e.piano 23. A lone
+  bell note peaks under the trip level and plays clean.
+- Chain, two organ notes released: 1.5 strikes a second at 0.2, 3.8 at 0.5, 22
+  at 0.8, 69 at 0.9 and 270 at 1. At 1 brass strikes 82 times a second, the
+  e.piano 45, the bell 29 and strings 12.
+- Chain, four notes released with low wins: 0.48 under 120 Hz on the organ, 0.75
+  on brass, 0.76 on the e.piano and 0.80 on strings, centred at 98 Hz.
+
+Design calls, toward the wilder option:
+
+- Octave short reads sounding channels only, so a lone note plays at its pitch
+  and the octave jumps as notes start and die away. With an idle register
+  driving the slot after it, the sakura stem read 0.48, and a lone note played
+  in the wrong octave whenever the register before it held another block.
+- The drums drive the octave wires in rhythm mode. The bass drum's block is 1
+  and the noise pair's is 5, so a ringing bass drum drops the hi-hat's clock
+  four octaves.
+- The key line's capacitor holds the peak of the rectified output and drains in
+  20 ms. The knob moves the rearm level from 0.25 to 0.9 of the trip level, so
+  it sets how far the notes fall before they restart.
+- The key line strikes every drum whose key bit is set. The kit leaves those
+  bits set after a hit, so one bass drum hit rolls until the knob comes down.
+- A register write that lands while the keys read up moves no envelope. The key
+  it wrote strikes when the keys read down again.
+- The chain's trip level runs from the envelope's floor to 0.98 on a squared
+  curve, which puts the fast laps in the top fifth of the knob.
+- A channel struck off the chain with its key up skips sustain, so a sustained
+  patch falls away and hands the strike on.
+- No bay lanes this round, to keep parallel branches mergeable.
+
+Built and dropped, with a sentence and a number at the code in `fmChip.ts`:
+
+- Envelope skew with each operator on the envelope of the slot before (the
+  stem's centroid fell from 1.67 kHz to 0.49 kHz), and with each channel on the
+  envelopes of the channel before (0.48 under 120 Hz on the kit board).
+- The envelope counter clocked off one carrier's wraps (0.11 on sakura).
+- A fault on the envelope's seven-bit attenuation word (0.31 to 0.37 deviation
+  to ground, 0.56 and 0.08 of the level to +V).
+- The LFO's divider skipped by a test bit (0.001 flat with both wired).
+- Octave short to the slot before alone (0.28 on sakura).
+- The key line through an averaging capacitor with the trip level on the knob (9
+  re-keys a second at every setting).
+
+Named cuts: _chords on the octave bits they share_ (low wins), _loud notes
+re-key themselves_ (key line 1), _the chip plays on by itself_ (chain 1), _a
+ring of four in the bottom octaves_ (chain 0.9 with low wins).
+
 ## Named and measured
 
 Every bend from the last two rounds has a name on the panel. Numbers are
@@ -591,12 +687,20 @@ so the doc can still be cited by them.
 Mono landed as the two bodge wires.
 
 4. **The test register's 0xf0 and the key register's sustain bit**, as above.
-   Three proposals for 0xf0: the LFO's divider skipped (tremolo at 3.7 kHz,
-   vibrato at 6.4 kHz), the phase held still, and the shift register on every
-   accumulator's bottom bit. Cold boot, rot and data faults reach the register,
-   so these would come and go.
-5. **Envelope skew.** **Slot skew** for levels: a carrier takes its neighbour's
-   envelope, and in rhythm mode the tune is articulated by the hi-hat.
+   The proposals left for 0xf0 are the phase held still and the shift register
+   on every accumulator's bottom bit. Increment lines I0 to I5 measured as no
+   change, so the bottom bit is likely to be silent. The LFO's divider skipped
+   was built and read 0.001 flat. Cold boot, rot and data faults reach the
+   register, so these would come and go.
+5. **Envelope skew** was built and dropped; see _The envelope generator and the
+   octave wires_ above.
+6. **Bay lanes for the envelope and octave bends.** A square wire on **Envelope
+   chain** would start and stop the ring in time, and a hop lane on **Octave
+   short** would switch a chord between its shared octave and its top one.
+7. **Envelope state bits**, from the phase generator survey: a fault on the
+   two-bit stage register.
+8. **A key line per channel.** The output on one channel's key only, so a loud
+   passage re-keys one voice and the others ring through it.
 
 ## Compositions to try
 

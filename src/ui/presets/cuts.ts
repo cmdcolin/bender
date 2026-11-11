@@ -899,6 +899,41 @@ export const CUTS: CutDef[] = [
     patch: { fmLatch: pick('fmLatch', 'voice 1') },
   },
   {
+    group: 'Glint',
+    part: DIE,
+    name: 'chords on the octave bits they share',
+    blurb:
+      'One set of octave wires serves all four channels and a low wire wins, so each note sounds in the octave bits every sounding note has. Notes an octave apart drop together, as far as 55 Hz, and jump back up as the notes around them die away',
+    patch: { fmBlockShort: pick('fmBlockShort', 'low wins') },
+  },
+  {
+    group: 'Glint',
+    part: DIE,
+    name: 'loud notes re-key themselves',
+    blurb:
+      'The rectified output sits on the key line. Each time the level passes the trip point every key lifts, and the notes restart once the capacitor drains, up to fifty times a second on an organ. Loud notes turn into a low buzz, and with Rhythm on the bass drum rolls',
+    patch: { fmKeyLoop: 1 },
+  },
+  {
+    group: 'Glint',
+    part: DIE,
+    name: 'the chip plays on by itself',
+    blurb:
+      'Each channel’s falling envelope strikes the channel after it, round all four. The last four notes chase each other hundreds of times a second and carry on after the tune stops',
+    patch: { fmEnvChain: 1 },
+  },
+  {
+    group: 'Glint',
+    part: DIE,
+    name: 'a ring of four in the bottom octaves',
+    blurb:
+      'The envelope chain keeps all four channels sounding and the octave wires are shorted with low winning, so the ring plays in whichever octave bits its four notes share',
+    patch: {
+      fmEnvChain: 0.9,
+      fmBlockShort: pick('fmBlockShort', 'low wins'),
+    },
+  },
+  {
     group: 'Crusher',
     part: BUS,
     name: 'the sign bit wanders',

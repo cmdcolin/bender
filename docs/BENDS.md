@@ -604,6 +604,51 @@ write touches that register again.
     never reaches the chosen channel plays clean.
   - With **Glint on bus** at four bits the sakura tune puts 0.91 of its level
     under 120 Hz, centred at 181 Hz.
+- **Octave short:** joins the three octave wires of the four channels into one
+  set. Every sounding channel drives the wires, and each reads back what is left
+  on them.
+  - On **low wins** a wire stays high only if every sounding note has that bit.
+    A4 and A5 share no octave bit, so held together both sound at 55 Hz. A held
+    organ chord goes from 0.29 of its level under 120 Hz to 0.57, centred at 207
+    Hz, and the sakura tune from 0.12 to 0.41.
+  - On **high wins** any note sets a wire. The same pair sounds at 7 kHz, and
+    the sakura tune's centre moves from 1.7 kHz to 4.6 kHz.
+  - A lone note plays at its pitch. A note jumps octave as the notes around it
+    start and die away, so a long release holds the drop longer.
+  - With **Rhythm** on, the drums drive the wires too. Each bass drum hit pulls
+    the tune down while it rings and drops the hi-hat's hiss four octaves.
+- **Output on key line:** wires the rectified output onto the key line through a
+  capacitor.
+  - When the output passes the trip level every key reads up and the notes
+    release. Once the capacitor has drained the keys read down again, and every
+    note the processor still holds restarts from the top of its wave.
+  - A held organ note re-keys about 7 times a second low on the knob and 50 at
+    the top. A patch with a slow release re-keys slower: the e.piano reaches 23
+    a second.
+  - A note under the trip level plays clean, so a quiet key or a faded bell
+    passes and a loud chord stutters.
+  - With **Rhythm** on, every drum the kit has struck fires again on each
+    restart. One bass drum hit starts a roll that runs until the knob comes
+    down. Low on the knob the tune with the kit clipped on goes from 0.35 of its
+    level under 120 Hz to 0.67.
+- **Envelope chain:** wires each channel's envelope to the key of the channel
+  after it, round all four.
+  - When a note falls under the trip level it strikes the next channel at the
+    pitch last written there. That note strikes the one after, so the chip plays
+    on round the ring after the tune stops, until the knob comes down.
+  - The knob raises the trip level. Low on the knob each note waits for the one
+    before to die away. At the top an organ strikes about 270 times a second and
+    the notes run together into a buzz.
+  - The patch's decay and release set the tempo: at the top a bell strikes 29
+    times a second and strings 12.
+  - A held note above the trip level passes nothing on until its key comes up. A
+    channel no note has reached plays at 0 Hz, a rest in the ring.
+  - With **Rhythm** on the ring runs through the drums, so the tune's notes fire
+    the bass drum, snare and hi-hat. At the top the tune with the kit clipped on
+    is 1.6 times as loud and reads 0.32 flat.
+  - With **Octave short** on low wins the ring holds all four channels on the
+    octave bits they share: at 0.9 the sakura tune puts 0.59 of its level under
+    120 Hz, centred at 235 Hz.
 
 ## Inside the drum voices
 

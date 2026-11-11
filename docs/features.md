@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-886 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 205
-presets, 24 stage settings and 119 named cuts. The generator reads everything
+889 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 205
+presets, 24 stage settings and 123 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 137 controls are shy, mostly the ones that act on the
+names it still sets it. 140 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -518,9 +518,23 @@ puts the fault on, and the rows under it show the controls it set:
   first channel’s carrier, so the chip’s output updates once per cycle of that
   voice. The other notes alias against it, and every chord folds down into a
   growl under 120 Hz
+- **chords on the octave bits they share**: One set of octave wires serves all
+  four channels and a low wire wins, so each note sounds in the octave bits
+  every sounding note has. Notes an octave apart drop together, as far as 55 Hz,
+  and jump back up as the notes around them die away
+- **loud notes re-key themselves**: The rectified output sits on the key line.
+  Each time the level passes the trip point every key lifts, and the notes
+  restart once the capacitor drains, up to fifty times a second on an organ.
+  Loud notes turn into a low buzz, and with Rhythm on the bass drum rolls
+- **the chip plays on by itself**: Each channel’s falling envelope strikes the
+  channel after it, round all four. The last four notes chase each other
+  hundreds of times a second and carry on after the tune stops
+- **a ring of four in the bottom octaves**: The envelope chain keeps all four
+  channels sounding and the octave wires are shorted with low winning, so the
+  ring plays in whichever octave bits its four notes share
 
 <details>
-<summary>59 controls</summary>
+<summary>62 controls</summary>
 
 | control                        | range                                                                                    | what it does                                                                                                                                                                             |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -581,6 +595,9 @@ puts the fault on, and the rows under it show the controls it set:
 | Sign line †                    | phase, ÷2, ÷4, ÷8, ÷16, ÷32, slot before                                                 | Moves the wave table’s sign wire off the phase                                                                                                                                           |
 | Ground loop †                  | off to full                                                                              | The output stage’s return current shares a ground with the wave table                                                                                                                    |
 | Latch clock †                  | sample clock, voice 1, voice 2, voice 3, voice 4                                         | Clocks the output latch off one channel’s carrier, once a cycle, so the chip’s output updates at that voice’s pitch                                                                      |
+| Octave short †                 | apart, low wins, high wins                                                               | Shorts the three octave wires of the four channels into one set                                                                                                                          |
+| Output on key line †           | off to full                                                                              | Wires the rectified output onto the key line through a capacitor                                                                                                                         |
+| Envelope chain †               | off to full                                                                              | Wires each channel’s envelope to the key of the channel after it, round all four                                                                                                         |
 | Toy on bus                     | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders Plinky’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire                                                                                        |
 | Glint on bus                   | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders this chip’s output onto the low bits of its data bus, loudest bit on the lowest wire, the way Toy on bus does with Plinky                                                        |
 
