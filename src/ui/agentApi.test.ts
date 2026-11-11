@@ -808,6 +808,59 @@ test('queue aims at a named bar or a run of bars, and refuses one already begun'
   })
 })
 
+test('a glide in bars runs at the kit tempo, and an unreadable length writes nothing', () => {
+  const morph = vi.spyOn(engine, 'morphNow').mockImplementation(() => {})
+  const board = engine.controls.get()
+  try {
+    atTick(0)
+    bender.set({ dlyFb: 0.9 }, { bars: 2 })
+    expect(activity.get().lines[0]?.text).toMatch(/\(glide 2 bars\)$/)
+    bender.set('dlyFb', 0.4, { bars: 'beat' })
+    bender.load('dying toy', { bars: 1 })
+    engine.controls.set({ ...board, dlyFb: 0.7 })
+    bender.reset({ bars: 0.5 })
+    bender.set({ dlyFb: 0.9 }, 3)
+    engine.meter.set({ ...engine.meter.get(), drumStepMs: 0 })
+    engine.controls.set({ ...board, drumBpm: 150 })
+    bender.set({ dlyFb: 0.9 }, { bars: 1 })
+    expect(morph.mock.calls.map(call => call[1])).toEqual([
+      4, 0.5, 2, 1, 3, 1.6,
+    ])
+    expect(() => bender.set({ dlyFb: 0.1 }, { bars: 0 })).toThrow(
+      /'0' is not a count of bars/,
+    )
+    expect(() => bender.set({ dlyFb: 0.1 }, '8 bars')).toThrow(
+      "'8 bars' is not a glide; give seconds such as 4, or bars as { bars: 8 }",
+    )
+    expect(() => bender.reset(Number.NaN)).toThrow(/is not a glide/)
+    expect(morph).toHaveBeenCalledTimes(6)
+  } finally {
+    morph.mockRestore()
+    engine.controls.set(board)
+  }
+})
+
+test('a queued glide in bars reads the tempo on the bar it lands', async () => {
+  const morph = vi.spyOn(engine, 'morphNow').mockImplementation(() => {})
+  try {
+    await onTheClock(async posted => {
+      atTick(5)
+      const landed = bender.queue(() => bender.set({ dlyFb: 0.9 }, { bars: 2 }))
+      const cue = posted.findLast(m => m.kind === 'cue')
+      engine.meter.set({
+        ...engine.meter.get(),
+        tick: 16,
+        cued: cue?.id ?? 0,
+        drumStepMs: 100,
+      })
+      await landed
+      expect(morph.mock.calls.at(-1)?.[1]).toBe(3.2)
+    })
+  } finally {
+    morph.mockRestore()
+  }
+})
+
 test('next and queue settle when the audio suspends', async () => {
   await onTheClock(async () => {
     atTick(5)

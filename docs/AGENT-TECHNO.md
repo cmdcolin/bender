@@ -209,8 +209,9 @@ the kit and the bassline and leaves the toy's demo song off.
 - **Timbre:** no reading covers a squelch, a slip or a drift, so Claude checks
   the controls it set and leaves the sound to your ears.
 - **Bar position:** `listen` lists which voices hit, not the bar each landed in.
-- **Glides:** `set` with seconds returns at once. Start a glide in one call and
-  listen in the next, since one call held across a long glide can time out.
+- **Glides:** `set` with a glide, in seconds or bars, returns at once. Start a
+  glide in one call and listen in the next, since one call held across a long
+  glide can time out.
 
 ## By hand
 

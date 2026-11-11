@@ -89,9 +89,13 @@ function note(text: string, said = false, bends: readonly Bend[] = []) {
   })
 }
 
-const glide = (seconds: unknown) => {
-  const s = Number(seconds)
-  return Number.isFinite(s) && s > 0 ? `  (glide ${s}s)` : ''
+const glide = (length: unknown) => {
+  const s = Number(length)
+  return typeof length === 'object' && length !== null && 'bars' in length
+    ? `  (glide ${String(length.bars)} ${length.bars === 1 ? 'bar' : 'bars'})`
+    : Number.isFinite(s) && s > 0
+      ? `  (glide ${s}s)`
+      : ''
 }
 
 const pair = ([key, value]: [string, unknown]) =>

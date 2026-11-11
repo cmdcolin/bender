@@ -95,7 +95,7 @@ export const GUIDE_MAX_CHARS = 900
 
 const GUIDE = {
   read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. Search before guessing keys. bender.find('delay feedback') ranks controls by key, label, group and help text and returns up to 8 rows with ranges; find('tape delay', 20) returns more, and find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help. await bender.heard() lists what the arc or a cue holds off the board and each bay wire's push. bender.guide('route') puts effects on machines.`,
-  change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of them, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists unknown keys with the closest real ones, and failed lists values set could not read; set leaves those controls unchanged. Seconds as a second argument glide the controls there; set returns at once, so listen in a later call. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds. bender.say('the kick drops') labels the changes the page lists for a listener.`,
+  change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }), or set('chipStarve', 0.8) for one, accepts numbers, choice names and unique prefixes of them, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists unknown keys with the closest real ones, and failed lists values set could not read; set leaves those controls unchanged. Seconds as a second argument, or { bars: 8 } at the kit's tempo, glide the controls there; set returns at once, so listen in a later call. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset glide the same way. bender.say('the kick drops') labels the changes the page lists for a listener.`,
   music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory, one token a step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold. It also switches the chip to the memory, at tuneRate steps a second. An array of up to three strings writes one lane each. Glint, Parlor, Growler and Howler follow it on fm-, pcm-, mono- and leadKeyGate; 'lane 1' to 'lane 3' follow one lane, and tuneLift keeps lanes off Plinky. bender.drums({ kick: 'x...x...', hat: '..x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. x is a hit, ? a hit with probability drumChance, . a rest. Each character is a sixteenth, so a beat is four. A row's length sets its loop, an empty string clears it, and rows left out keep theirs. bpm: 130 sets the tempo. bender.guide('drums') covers Euclid rows, ratchets, nudges, faults and bar conditions.`,
   drums: `More drums. In a row, a g is a ghost, a hit struck soft. x(3,8) is a Euclidean row of 3 hits over 8 steps (x(3,8,2) turns it by 2), and [xxx] strikes one step three times as a ratchet on that column. The rows ratchet ('..3...2.'), nudge (twelfths late, '....6...'), retrig (1 to 9: roll, growl, scream, 20 to 960 Hz: '....3...') and event (c cut, d drop, b brake, f freeze, r reboot: '............bbbb') take one character a column. 'event every': '4:4' fires the event row on the fourth bar of every four, and 'snare bars': '!4:4' plays a voice row on every bar but the fourth; the conditions are ${CONDS.join(', ')}, and '' or 'off' means every bar. bender.board().drums reads all of these back in the same form. drumWander from 0 to 1 strays the kit off the grid for a bar now and then, and the wander field of bender.listen names the strays it played.`,
   perform: `Performing the kit. bender.drums({ mute: 'kick, open hat' }) silences rows and keeps their steps; mute: '' brings them back. set({ drumHatLevel: 0.5, drumKickDecay: 2 }) trims one voice; a bay wire on 'hat level' rides it. echo: '............x...' is the echo row: hits on its steps also go into Wraith, the tape delay, which it turns up if it is off. fill: 'on' holds the fill key down. 'step bars' gives each column a condition, one token a column: '. . . . . . . . . . . . fill fill fill fill' plays the last beat only while fill is on. A dot plays every bar; the rest are ${STEP_CONDS.slice(1).join(', ')}, and pre plays when the last column with an A:B before it played. bender.move('vary') rewrites the pattern as the panel's buttons do: ${DRUM_MOVES.map(m => m.name).join(', ')}. { back: true } shifts backwards and { seed: 7 } repeats a roll. Inside bender.queue all of these land on the bar.`,
@@ -437,7 +437,7 @@ function numberFor(key: ControlKey, asked: Value): number {
 interface Queued {
   cut: Partial<Controls>
   glide: Partial<Controls>
-  seconds: Map<ControlKey, number>
+  glides: Map<ControlKey, unknown>
   force: Set<ControlKey>
   hits: (() => void)[]
 }
@@ -448,23 +448,23 @@ const queuedBoard = () => ({ ...engine.controls.get(), ...queueing?.cut })
 
 function land(
   patch: Partial<Controls>,
-  seconds: number,
+  glide: unknown,
   force?: ReadonlySet<ControlKey>,
   spans?: ReadonlyMap<ControlKey, number>,
 ) {
-  const glide = Number.isFinite(seconds) ? Math.max(seconds, 0) : 0
+  const seconds = secondsOf(glide)
   const board = engine.controls.get()
-  if (queueing && glide > 0) {
+  if (queueing && seconds > 0) {
     Object.assign(queueing.glide, patch)
     for (const key of CONTROL_KEYS)
-      if (patch[key] !== undefined) queueing.seconds.set(key, glide)
+      if (patch[key] !== undefined) queueing.glides.set(key, glide)
     for (const key of force ?? []) queueing.force.add(key)
   } else if (queueing) {
     Object.assign(queueing.cut, patch)
   } else if (
     CONTROL_KEYS.some(k => patch[k] !== undefined && patch[k] !== board[k])
   ) {
-    engine.morphNow({ ...board, ...patch }, glide, force, spans)
+    engine.morphNow({ ...board, ...patch }, seconds, force, spans)
     engine.flush()
   }
 }
@@ -476,15 +476,32 @@ const CUE_LEAD_MS = 25
 
 type Bars = number | 'bar' | 'beat'
 
-function runOf(bars: Bars) {
+type Glide = number | { bars: Bars }
+
+function runOf(bars: unknown) {
   const steps = Math.round(
-    (bars === 'bar' ? 1 : bars === 'beat' ? 1 / BEAT : bars) * STEPS,
+    (bars === 'bar' ? 1 : bars === 'beat' ? 1 / BEAT : Number(bars)) * STEPS,
   )
   if (!(steps >= 1))
     throw new Error(
-      `'${bars}' is not a count of bars; use 'bar', 'beat', or a number such as 4, 0.25 for a beat or 1/16 for a step`,
+      `'${String(bars)}' is not a count of bars; use 'bar', 'beat', or a number such as 4, 0.25 for a beat or 1/16 for a step`,
     )
   return steps
+}
+
+const stepMs = () =>
+  engine.meter.get().drumStepMs ||
+  15000 / Math.max(engine.controls.get().drumBpm, 1)
+
+function secondsOf(glide: unknown) {
+  if (typeof glide === 'object' && glide !== null && 'bars' in glide)
+    return (runOf(glide.bars) * stepMs()) / 1000
+  const seconds = Number(glide ?? 0)
+  if (!Number.isFinite(seconds))
+    throw new Error(
+      `'${String(glide)}' is not a glide; give seconds such as 4, or bars as { bars: 8 }`,
+    )
+  return Math.max(seconds, 0)
 }
 
 const counting = () => engine.drumsPlaying.get() && engine.running.get()
@@ -571,7 +588,7 @@ function queue(write: () => unknown, when: Bars | { bar: number } = 1) {
   const taken: Queued = {
     cut: {},
     glide: {},
-    seconds: new Map(),
+    glides: new Map(),
     force: new Set(),
     hits: [],
   }
@@ -587,9 +604,12 @@ function queue(write: () => unknown, when: Bars | { bar: number } = 1) {
   const now = !counting()
   return engine.cue(taken.cut, at, every).then(tick => {
     if (tick !== null) {
-      const longest = Math.max(0, ...taken.seconds.values())
+      const seconds = new Map(
+        [...taken.glides].map(([key, g]) => [key, secondsOf(g)] as const),
+      )
+      const longest = Math.max(0, ...seconds.values())
       const spans = new Map(
-        [...taken.seconds].map(([key, s]) => [key, s / longest] as const),
+        [...seconds].map(([key, s]) => [key, s / longest] as const),
       )
       land(taken.glide, longest, taken.force, spans)
       for (const fire of taken.hits) fire()
@@ -1150,11 +1170,13 @@ function rawBenderApi() {
 
     set(
       changes: Record<string, Value> | string,
-      ...rest: [seconds?: number] | [value: Value, seconds?: number]
+      ...rest: [glide?: Glide] | [value: Value, glide?: Glide]
     ): SetReport {
       if (typeof changes === 'string')
-        return this.set({ [changes]: rest[0] ?? '' }, rest[1] ?? 0)
-      const seconds = Number(rest[0] ?? 0)
+        return this.set(
+          { [changes]: typeof rest[0] === 'object' ? '' : (rest[0] ?? '') },
+          rest[1] ?? 0,
+        )
       const applied: Record<string, string> = {}
       const adjusted: string[] = []
       const unknown: string[] = []
@@ -1183,7 +1205,7 @@ function rawBenderApi() {
           failed.push(`${name}: ${errorText(e)}`)
         }
       }
-      land(patch, seconds, named)
+      land(patch, rest[0], named)
       return { applied, adjusted, unknown, failed }
     },
 
@@ -1196,7 +1218,7 @@ function rawBenderApi() {
       ).map(p => `${p.name}: ${p.blurb}`)
     },
 
-    load(name: string, seconds = 0) {
+    load(name: string, glide: Glide = 0) {
       const lower = name.toLowerCase()
       if (lower === '')
         throw new Error('name a preset; bender.presets() lists them')
@@ -1207,13 +1229,13 @@ function rawBenderApi() {
         throw new Error(
           `no preset named '${name}'; bender.presets() lists all ${PRESETS.length}`,
         )
-      land(applyPreset(preset, engine.controls.get()), seconds)
+      land(applyPreset(preset, engine.controls.get()), glide)
       if (preset.shelf) void engine.fillFromShelf(preset.shelf)
       return { loaded: preset.name, blurb: preset.blurb, ...summary() }
     },
 
-    reset(seconds = 0) {
-      land({ ...DEFAULT_CONTROLS }, seconds)
+    reset(glide: Glide = 0) {
+      land({ ...DEFAULT_CONTROLS }, glide)
       return summary()
     },
 

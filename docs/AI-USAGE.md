@@ -71,13 +71,13 @@ Then ask Claude Code to open the public URL, or
 | `bender.heard()`                       | resolves with the controls the arc or a cue holds away from the written board, and what each patch-bay wire pushes now                                                                |
 | `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                                                                                                                         |
 | `bender.describe(key)`                 | one control's range, unit, choices and help, and what a patch-bay wire on it does                                                                                                     |
-| `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                                                                                                                    |
+| `bender.set(values, glide?)`           | sets controls and returns `{ applied, adjusted, unknown, failed }`; `glide` is seconds, or `{ bars: 8 }` at the kit's tempo                                                           |
 | `bender.route(lines?)`                 | puts effects on sets of machines, as `{ Ricochet: ['Clatter', 'Plinky'], Boing: ['Sheet'] }`, and reads back each unit and machine                                                    |
 | `bender.wire(from, into, amount?)`     | patches a bay wire from a source such as `'lfo'` onto a destination, with the amount in the destination's own unit: `{ octaves: 1 }`, `{ settings: 2 }`, `{ by: 0.3 }` or a raw depth |
 | `bender.unwire(wire)`                  | frees a wire by number or by the destination it is patched into                                                                                                                       |
 | `bender.presets(search?)`              | lists presets                                                                                                                                                                         |
-| `bender.load(name, seconds?)`          | loads a preset                                                                                                                                                                        |
-| `bender.reset(seconds?)`               | restores the defaults                                                                                                                                                                 |
+| `bender.load(name, glide?)`            | loads a preset                                                                                                                                                                        |
+| `bender.reset(glide?)`                 | restores the defaults                                                                                                                                                                 |
 | `bender.undo()`, `bender.redo()`       | steps through the history, which gains one step per call that changes the board                                                                                                       |
 | `bender.say(text)`                     | heads the activity panel, which lists and traces each call that changes the board, and glows as each bend lands                                                                       |
 | `bender.tune(text)`                    | writes the melody memory from note names, such as `'C4 E4 G4 ~ . C5'`, or three lanes from an array                                                                                   |
@@ -122,9 +122,9 @@ and the shared ones on its line. `'master'` or `[]` puts a unit back on master.
   the page sometimes left audio suspended, and the agent clicked again near the
   top of the page. A Chrome started with
   `--autoplay-policy=no-user-gesture-required` needs no click.
-- `bender.set` with `seconds` glides on animation frames, and Chrome pauses
-  animation frames in a hidden tab. Without `seconds`, `set` posts the new
-  values to the audio worklet immediately, in any tab.
+- `bender.set` with a glide runs on animation frames, and Chrome pauses
+  animation frames in a hidden tab. Without one, `set` posts the new values to
+  the audio worklet immediately, in any tab.
 - `bender.next` resolves off the meters, up to about 16 ms after the downbeat.
   `bender.queue` lands its controls in the audio worklet on the sample the kit
   steps onto the bar, so the downbeat plays the new pattern; a stage that reads
