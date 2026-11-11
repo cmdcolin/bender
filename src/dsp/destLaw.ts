@@ -580,6 +580,36 @@ export const DEST_LAW = {
   fmGroundLoop: { law: 'add', lo: 0, hi: 1 },
   fmSelfBus: { law: 'hop', choices: 9 },
   fmLatch: { law: 'hop', choices: 5 },
+  machineLevel: {
+    law: 'add',
+    scale: 12,
+    lo: -12,
+    hi: 15,
+    knob: 'tapeDrive',
+    note: 'Moves the tape machine’s record level in dB and glides there as the knob does, so a stepped wire does not click.',
+  },
+  machineBias: {
+    law: 'add',
+    lo: -1,
+    hi: 1,
+    knob: 'tapeBias',
+    note: 'Glides as the knob does, so a kick on it dulls and squashes each hit without a click.',
+  },
+  machineDrop: {
+    law: 'add',
+    lo: 0,
+    hi: 1,
+    knob: 'tapeDrop',
+    note: 'Sets how often a patch of shed oxide arrives. A dropout already passing the head plays out when the wire falls back.',
+  },
+  machineSqueal: { law: 'add', lo: 0, hi: 1, knob: 'tapeSqueal' },
+  machineAzimuth: {
+    law: 'add',
+    lo: 0,
+    hi: 1,
+    knob: 'tapeAzimuth',
+    note: 'Glides as the knob does, so the right head’s lag moves without a click.',
+  },
 } as const satisfies Record<LiveDest, Law>
 
 export const WIRE_IS_KNOB = new Set<LiveDest>([

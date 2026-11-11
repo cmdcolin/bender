@@ -64,6 +64,7 @@ export const TAPE_GROUPS: Group[] = [
       },
       {
         key: 'tapeDrive',
+        lane: 'tape machine level',
         label: 'Level',
         role: 'level',
         min: -12,
@@ -101,6 +102,7 @@ export const TAPE_GROUPS: Group[] = [
       },
       {
         key: 'tapeDrop',
+        lane: 'tape machine dropouts',
         label: 'Dropouts',
         min: 0,
         max: 1,
@@ -119,6 +121,7 @@ export const TAPE_GROUPS: Group[] = [
       },
       {
         key: 'tapeSqueal',
+        lane: 'tape machine squeal',
         label: 'Squeal',
         min: 0,
         max: 1,
@@ -128,6 +131,7 @@ export const TAPE_GROUPS: Group[] = [
       },
       {
         key: 'tapeBias',
+        lane: 'tape machine bias',
         label: 'Bias',
         min: -1,
         max: 1,
@@ -161,6 +165,7 @@ export const TAPE_GROUPS: Group[] = [
       },
       {
         key: 'tapeAzimuth',
+        lane: 'tape machine azimuth',
         label: 'Azimuth',
         min: 0,
         max: 1,

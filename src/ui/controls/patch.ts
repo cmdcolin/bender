@@ -254,6 +254,11 @@ export const DEST_CHOICES = [
   'FM ground loop',
   'FM Glint on bus',
   'FM latch clock',
+  'tape machine level',
+  'tape machine bias',
+  'tape machine dropouts',
+  'tape machine squeal',
+  'tape machine azimuth',
 ] as const
 
 export const ENV_KEYS = [
@@ -715,6 +720,16 @@ export const PATCH_GROUPS: Group[] = [
                 'verb warble',
                 'verb howl',
                 'ens rate',
+              ],
+            },
+            {
+              name: 'Tape machine',
+              choices: [
+                'tape machine level',
+                'tape machine bias',
+                'tape machine dropouts',
+                'tape machine squeal',
+                'tape machine azimuth',
               ],
             },
             { name: 'Feedback', choices: ['fb amount', 'fb time'] },

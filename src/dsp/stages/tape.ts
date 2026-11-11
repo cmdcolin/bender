@@ -1,5 +1,8 @@
-import { IDX } from '../../engine/params.ts'
+import { IDX, SMOOTH_SEC } from '../../engine/params.ts'
+import { DEST_LAW } from '../destLaw.ts'
+import { DEST } from '../modbus.ts'
 import { DelayLine } from '../util/delayline.ts'
+import { coef as timeCoef } from '../util/follower.ts'
 import { Halfband, LATENCY, Upsampler } from '../util/halfband.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { Highpass, lpCoef } from '../util/onepole.ts'
@@ -201,6 +204,14 @@ const SCRAPE_SEED = 0.5
     and the machine screaming into the room. */
 const SQ_FM_MS = 0.08
 const SQ_BLEED = 0.06
+
+const LEVEL = DEST_LAW.machineLevel
+const recordDrive = (db: number, bias: number) =>
+  Math.pow(10, db / 20) * (1 - 0.45 * bias)
+const makeupFor = (drive: number) =>
+  softclip(REPLAY_REF) / softclip(REPLAY_REF * drive)
+const wired = (knob: number, lo: number, hi: number, push: number) =>
+  push === 0 ? knob : Math.min(Math.max(knob + push, lo), hi)
 
 interface Settings {
   drive: number
@@ -547,6 +558,9 @@ export class Tape implements Stage {
   private flut2 = new SineOsc()
   private sqLow = 0
   private sqBand = 0
+  private levelY = 0
+  private biasY = 0
+  private skewY = 0
   private lowL = new Highpass(2)
   private lowR = new Highpass(2)
   private readonly nr: {
@@ -632,9 +646,9 @@ export class Tape implements Stage {
     return pair
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const mix = p[IDX.tapeMix]!
-    if (this.live || mix > 0) this.roll(io, p, mix)
+    if (this.live || mix > 0) this.roll(io, p, mix, ctx)
     else this.listen(io)
   }
 
@@ -650,7 +664,7 @@ export class Tape implements Stage {
     }
   }
 
-  private roll(io: StereoBlock, p: Float32Array, mix: number) {
+  private roll(io: StereoBlock, p: Float32Array, mix: number, ctx: Ctx) {
     const entering = !this.live && this.heard
     const leaving = mix <= 0
     this.live = !leaving
@@ -669,10 +683,26 @@ export class Tape implements Stage {
       FORMAT[
         Math.min(Math.max(Math.round(p[IDX.tapeFormat]!), 0), FORMAT.length - 1)
       ]!
-    const bias = p[IDX.tapeBias]!
+    const levelLane = ctx.mod.read(DEST.machineLevel)
+    const biasLane = ctx.mod.read(DEST.machineBias)
+    const skewLane = ctx.mod.read(DEST.machineAzimuth)
+    const dropLane = ctx.mod.read(DEST.machineDrop)
+    const knobDb = p[IDX.tapeDrive]!
+    const knobBias = p[IDX.tapeBias]!
+    const knobSkew = p[IDX.tapeAzimuth]!
+    const riding =
+      levelLane !== null ||
+      biasLane !== null ||
+      this.levelY !== 0 ||
+      this.biasY !== 0
+    const skewing = skewLane !== null || this.skewY !== 0
+    const levelK = timeCoef(SMOOTH_SEC[IDX.tapeDrive]!, this.sr)
+    const biasK = timeCoef(SMOOTH_SEC[IDX.tapeBias]!, this.sr)
+    const skewK = timeCoef(SMOOTH_SEC[IDX.tapeAzimuth]!, this.sr)
+    const bias = wired(knobBias, -1, 1, this.biasY)
     // Under-bias records hotter highs and distorts sooner; over-bias is duller
     // and squashes. One knob, the two moving against each other.
-    const drive = Math.pow(10, p[IDX.tapeDrive]! / 20) * (1 - 0.45 * bias)
+    const drive = recordDrive(knobDb, bias)
     // Gap loss is flat and then a cliff — a wavelength either fits across the
     // gap or it cancels in it — so the knee is where the two poles cross -3 dB
     // and the fall past it is 12 dB an octave. One pole was 6, which is a tone
@@ -685,7 +715,7 @@ export class Tape implements Stage {
     )
     const s = this.s
     s.drive = drive
-    s.makeup = softclip(REPLAY_REF) / softclip(REPLAY_REF * drive)
+    s.makeup = makeupFor(drive)
     // Record and replay have to be each other's inverse, or the machine at rest
     // colours a signal it never touched. A shelf that lifts the top by `g` from
     // a corner inverts to a shelf that cuts it by `g` from a corner `g` times
@@ -711,7 +741,9 @@ export class Tape implements Stage {
     s.envCoef = lpCoef(12, this.sr)
     s.magAtk = lpCoef(60, recSr)
     s.magRel = lpCoef(2.5, recSr)
-    s.dropAmt = p[IDX.tapeDrop]!
+    s.dropAmt = dropLane
+      ? Math.max(wired(p[IDX.tapeDrop]!, 0, 1, dropLane[0]!), Number.MIN_VALUE)
+      : p[IDX.tapeDrop]!
     s.dropProb = (s.dropAmt * 3) / this.sr
     s.dropCoef = lpCoef(120, this.sr)
     s.dropSr = this.sr
@@ -724,7 +756,7 @@ export class Tape implements Stage {
     s.printDelay = (sp.printMs / 1000) * this.sr
     s.printCoef = lpCoef(2500, this.sr)
 
-    const skew = p[IDX.tapeAzimuth]!
+    const skew = wired(knobSkew, 0, 1, this.skewY)
     const azimuth = (skew * AZIMUTH_MS * this.sr) / 1000
     const gapL = Math.log(1 - lpCoef(gapHz, this.sr))
     this.headL.gapLog = gapL
@@ -737,7 +769,10 @@ export class Tape implements Stage {
     const wow2K = SineOsc.rate(sp.wowHz * 0.37, this.sr)
     const flutK = SineOsc.rate(sp.flutHz * fm.flut, this.sr)
     const flut2K = SineOsc.rate(sp.flutHz * fm.flut * 1.54, this.sr)
-    const sqAmt = p[IDX.tapeSqueal]!
+    const squealLane = ctx.mod.read(DEST.machineSqueal)
+    const sqAmt = squealLane
+      ? wired(p[IDX.tapeSqueal]!, 0, 1, squealLane[0]!)
+      : p[IDX.tapeSqueal]!
     const sqOn = sqAmt > 0
     const spanOn = sqOn || flutAmt > 0
     // The coefficient is scaled per sample rather than resolved, since a
@@ -821,12 +856,34 @@ export class Tape implements Stage {
         enc[1].process()
         recR = enc[1].y
       }
+      if (riding) {
+        const toLevel = levelLane ? levelLane[i]! : 0
+        const toBias = biasLane ? biasLane[i]! : 0
+        this.levelY = flushDenormal(
+          this.levelY + levelK * (toLevel - this.levelY),
+        )
+        this.biasY = flushDenormal(this.biasY + biasK * (toBias - this.biasY))
+        const biasAt = wired(knobBias, -1, 1, this.biasY)
+        s.drive = recordDrive(
+          wired(knobDb, LEVEL.lo, LEVEL.hi, LEVEL.scale * this.levelY),
+          biasAt,
+        )
+        s.makeup = makeupFor(s.drive)
+        s.tilt = -biasAt * 0.85
+      }
+      let skewAt = azimuth
+      if (skewing) {
+        const toSkew = skewLane ? skewLane[i]! : 0
+        this.skewY = flushDenormal(this.skewY + skewK * (toSkew - this.skewY))
+        skewAt =
+          (wired(knobSkew, 0, 1, this.skewY) * AZIMUTH_MS * this.sr) / 1000
+      }
       const { headL, headR } = this
       headL.y = recL
       headL.delay = d
       headL.process(s)
       headR.y = recR
-      headR.delay = d + azimuth
+      headR.delay = d + skewAt
       headR.process(s)
       let wetL = headL.y
       let wetR = headR.y
@@ -873,6 +930,9 @@ export class Tape implements Stage {
     this.dryL.reset()
     this.dryR.reset()
     this.driftY = 0
+    this.levelY = 0
+    this.biasY = 0
+    this.skewY = 0
     this.wow.reset()
     this.wow2.reset()
     this.flut.reset()

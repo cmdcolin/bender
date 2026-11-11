@@ -3,6 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { IDX, packParams } from '../engine/params.ts'
 import { buildChain, type BuiltChain } from './build.ts'
+import { DEST, SRC } from './modbus.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
 import { bin, renderBender, sine } from './testRender.ts'
 
@@ -1010,4 +1011,163 @@ test('the wet side stays in step with the dry side at half mix', () => {
 test('tape off leaves the board bit-identical', () => {
   const look: Partial<Controls> = { chipLevel: 0.6, dlyMix: 0.3, revMix: 0.2 }
   expect(render({ ...look, tapeMix: 0 }, 1).l).toEqual(render(look, 1).l)
+})
+
+const pushed = (dest: number, depth: number): Partial<Controls> => ({
+  bodyX: 1,
+  mod0Src: SRC.bodyX,
+  mod0Dest: dest,
+  mod0Depth: depth,
+})
+
+const harmonics = (over: Partial<Controls>) => {
+  const out = renderBender(
+    { ...SILENT, ...STEADY, sampleLevel: 1, tapeMix: 1, tapeHyst: 0, ...over },
+    2,
+    b => b.sampler.setBuffer(sine(220, 1, 0.3)),
+  ).subarray(SR)
+  const fundamental = bin(out, 220)
+  return db(
+    Math.hypot(...[2, 3, 4, 5].map(k => bin(out, 220 * k))) / fundamental,
+  )
+}
+
+test('a wire on the record level drives the tape as the knob does', () => {
+  const clean = harmonics({ tapeDrive: -12 })
+  const wired = harmonics({
+    tapeDrive: -12,
+    ...pushed(DEST.machineLevel, 2),
+  })
+  const knob = harmonics({ tapeDrive: 12 })
+  expect(wired - clean).toBeGreaterThan(10)
+  expect(Math.abs(wired - knob)).toBeLessThan(0.5)
+})
+
+test('a wire on the bias dulls the tape as the knob does', () => {
+  const at = (over: Partial<Controls>) =>
+    bright(
+      render({ ...TONE, ...STEADY, tapeMix: 1, ...over }, 1).l.subarray(SR / 2),
+    )
+  const centred = at({})
+  const wired = at(pushed(DEST.machineBias, 1))
+  const knob = at({ tapeBias: 1 })
+  expect(wired / centred).toBeLessThan(0.9)
+  expect(Math.abs(wired / knob - 1)).toBeLessThan(0.01)
+})
+
+test('a wire on the dropouts dips the level', () => {
+  const quietest = (over: Partial<Controls>) => {
+    const { l } = render({ ...TONE, ...STEADY, tapeMix: 1, ...over }, 8)
+    let min = Infinity
+    for (let i = SR; i + 1200 < l.length; i += 600)
+      min = Math.min(min, rms(l.subarray(i, i + 1200)))
+    return min
+  }
+  const bare = quietest({})
+  expect(db(quietest(pushed(DEST.machineDrop, 1)) / bare)).toBeLessThan(-10)
+})
+
+test('a wire on the squeal brings up the note the span holds', () => {
+  const sung = (over: Partial<Controls>) =>
+    renderBender({ ...SILENT, ...STEADY, tapeMix: 1, ...over }, 4).subarray(
+      2 * SR,
+    )
+  const strongest = (x: Float32Array) => {
+    let best = 0
+    let hz = 0
+    for (let f = 600; f < 6000; f += 25)
+      if (bin(x, f) > best) {
+        best = bin(x, f)
+        hz = f
+      }
+    return hz
+  }
+  const wired = sung(pushed(DEST.machineSqueal, 1))
+  expect(rms(sung({}))).toBe(0)
+  expect(db(rms(wired))).toBeGreaterThan(-40)
+  expect(strongest(wired) / 2400).toBeGreaterThan(0.89)
+  expect(strongest(wired) / 2400).toBeLessThan(1.11)
+})
+
+test('a wire on the azimuth collapses the mono sum as the knob does', () => {
+  const collapse = (over: Partial<Controls>) => {
+    const { l, r } = render({ ...TONE, ...STEADY, tapeMix: 1, ...over }, 1)
+    const mono = new Float32Array(l.length)
+    for (let i = 0; i < l.length; i++) mono[i] = 0.5 * (l[i]! + r[i]!)
+    return db(rms(mono.subarray(SR / 2)) / rms(l.subarray(SR / 2)))
+  }
+  const wired = collapse(pushed(DEST.machineAzimuth, 1))
+  expect(Math.abs(collapse({}))).toBeLessThan(0.5)
+  expect(wired).toBeLessThan(-2)
+  expect(Math.abs(wired - collapse({ tapeAzimuth: 1 }))).toBeLessThan(0.5)
+})
+
+test('an unwired bay leaves the tape machine exactly where it was', () => {
+  const machine: Partial<Controls> = {
+    ...TONE,
+    tapeMix: 1,
+    tapeDrive: 9,
+    tapeBias: 0.3,
+    tapeDrop: 0.5,
+    tapeSqueal: 0.3,
+    tapeAzimuth: 0.5,
+  }
+  const bare = render(machine, 1)
+  const elsewhere = render(
+    {
+      ...machine,
+      mod0Src: SRC.lfo,
+      modLfoHz: 4,
+      mod0Depth: 1,
+      mod0Dest: DEST.filtHz,
+    },
+    1,
+  )
+  expect(elsewhere.l).toEqual(bare.l)
+  expect(elsewhere.r).toEqual(bare.r)
+  for (const dest of [
+    DEST.machineLevel,
+    DEST.machineBias,
+    DEST.machineDrop,
+    DEST.machineSqueal,
+    DEST.machineAzimuth,
+  ]) {
+    const resting = render({ ...machine, ...pushed(dest, 1), bodyX: 0 }, 1)
+    expect(resting.l, `dest ${dest}`).toEqual(bare.l)
+    expect(resting.r, `dest ${dest}`).toEqual(bare.r)
+  }
+})
+
+test.each([
+  ['record level', DEST.machineLevel],
+  ['bias', DEST.machineBias],
+])('a stepped wire on the %s glides without a click', (_, dest) => {
+  const take = (step: (secs: number) => number) =>
+    renderBender(
+      {
+        ...SILENT,
+        ...STEADY,
+        sampleLevel: 1,
+        tapeMix: 1,
+        tapeDrive: -6,
+        ...pushed(dest, 1),
+        bodyX: 0,
+      },
+      1.5,
+      b => b.sampler.setBuffer(sine(220, 1.5, 0.1)),
+      undefined,
+      (_built, secs, p) => {
+        p[IDX.bodyX] = step(secs)
+      },
+    )
+  const jump = (x: Float32Array) => {
+    let most = 0
+    for (let t = SR / 4; t < x.length; t++)
+      most = Math.max(most, Math.abs(x[t]! - x[t - 1]!))
+    return most
+  }
+  const low = jump(take(() => 0))
+  const high = jump(take(() => 1))
+  const stepped = jump(take(secs => (secs >= 0.5 && secs < 1 ? 1 : 0)))
+  expect(stepped / Math.max(low, high)).toBeLessThan(1.1)
 })

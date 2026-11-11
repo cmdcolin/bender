@@ -282,6 +282,11 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmGroundLoop: 'Glint',
   fmSelfBus: 'Glint',
   fmLatch: 'Glint',
+  machineLevel: 'Tape machine',
+  machineBias: 'Tape machine',
+  machineDrop: 'Tape machine',
+  machineSqueal: 'Tape machine',
+  machineAzimuth: 'Tape machine',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
