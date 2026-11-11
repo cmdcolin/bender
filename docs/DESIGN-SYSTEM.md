@@ -55,9 +55,11 @@ sets a control's height whatever font the system supplies.
   board's two-row keys `actionKey`, `actionKeyHeld`, `actionKeyFixed`,
   `actionKeyQuiet`
 - **outline:** header and toolbar chrome in a faint outline at the body size
-  (presets, random, add instrument, bend keys). Variants: `outlineOn`,
-  `outlineWaiting`, `outlineDanger`, `outlineIcon`, `outlineSelect`, and the
-  split pair `splitMain` / `splitCaret(On)`. `outline`, `outlineOn` and
+  (presets, random, add instrument, bend keys). Variants: `outlineOn` for
+  something running (arc, drift, a morph in flight), `outlineChosen` for an open
+  drawer or view (presets, meters, bend keys), `outlineWaiting`,
+  `outlineDanger`, `outlineIcon`, `outlineSelect`, and the split pair
+  `splitMain` / `splitCaret(On)`. `outline`, `outlineOn`, `outlineChosen` and
   `outlineIcon` are shared with videoskillet's `ui.module.css` through the
   `outline-kind` and `outline-states` sync regions
 - **chip:** every plain verb in a panel (cuts, rolls, + mod, tap, add a stage,

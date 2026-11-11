@@ -731,7 +731,7 @@ export function App(props: { openedFromLink?: boolean }) {
               <div className={styles.group}>
                 <Tip text="Named boards to jump to. Drag one sideways to stop part way there.">
                   <button
-                    className={presetsShown ? styles.btnOn : styles.btn}
+                    className={presetsShown ? styles.btnShown : styles.btn}
                     aria-pressed={presetsShown}
                     onClick={() => showPresets(!presetsShown)}
                   >

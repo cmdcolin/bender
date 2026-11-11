@@ -17,7 +17,7 @@
 }
 
 .letterSwitchOn {
-  composes: outlineOn from './button.module.css';
+  composes: outlineChosen from './button.module.css';
 }
 
 .settings {

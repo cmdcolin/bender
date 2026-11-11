@@ -191,6 +191,10 @@
   composes: outlineOn from './button.module.css';
 }
 
+.btnShown {
+  composes: outlineChosen from './button.module.css';
+}
+
 .morph {
   composes: outlineSelect from './button.module.css';
 }
