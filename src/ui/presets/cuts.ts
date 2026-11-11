@@ -779,6 +779,30 @@ export const CUTS: CutDef[] = [
     patch: { talkLeak: 0.6 },
   },
   {
+    group: 'Prattle',
+    part: TALK_MOUTH,
+    name: 'ten wrong mouths',
+    blurb:
+      'The coefficient stack misses a shift on every other frame, so the words keep their rhythm and pass through ten shapes of mouth before the stack lines up again',
+    patch: { talkStackSlip: 1 },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_MOUTH,
+    name: 'croak and squeal',
+    blurb:
+      'The interpolator steps three times too far toward each frame, so the registers wrap and the voice flips between a croak and a squeal',
+    patch: { talkOvershoot: 1 },
+  },
+  {
+    group: 'Prattle',
+    part: TALK_PITCH,
+    name: 'sings the toy’s tune',
+    blurb:
+      'Plinky’s output pin restarts the pitch counter, so the voiced sounds take the tune’s notes',
+    patch: { talkSingFrom: pick('talkSingFrom', 'Plinky') },
+  },
+  {
     group: 'Glint',
     part: BUS,
     name: 'one write late',

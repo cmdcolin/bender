@@ -11,6 +11,7 @@ import {
   textToPhrase,
 } from '../../prattle.ts'
 import { buildBender } from '../build.ts'
+import { spectrum } from '../spectrum.ts'
 import {
   bin,
   envelope,
@@ -20,6 +21,7 @@ import {
   SR,
   stepMask,
 } from '../testRender.ts'
+import { FRAME_DIVS, SING_FROM } from './prattle.ts'
 import { CHIP_HZ, N_K, ROM, stepUp } from './prattleRom.ts'
 
 const phrase = (text: string): Partial<Controls> =>
@@ -110,6 +112,61 @@ test('a coefficient pushed past one howls, bounded and finite', () => {
     expect(peak).toBeLessThanOrEqual(1)
     expect(rms(x)).toBeGreaterThan(rms(speak('kill the bass', {}, 2)))
   }
+})
+
+const bounded = (x: Float32Array) =>
+  x.every(v => Number.isFinite(v) && Math.abs(v) <= 1)
+
+test('a slipping coefficient stack moves the formants and leaves the level alone', () => {
+  const stock = speak('kill the bass', { talkRepeat: 1 }, 4)
+  const slipped = speak('kill the bass', { talkRepeat: 1, talkStackSlip: 1 }, 4)
+  expect(bounded(slipped)).toBe(true)
+  expect(spectrum(slipped, SR).centroid).toBeLessThan(
+    0.85 * spectrum(stock, SR).centroid,
+  )
+  expect(rms(slipped) / rms(stock)).toBeGreaterThan(0.7)
+  expect(rms(slipped) / rms(stock)).toBeLessThan(1.6)
+})
+
+test('an interpolator that overshoots swings every frame louder and lower', () => {
+  const stock = speak('kill the bass', { talkRepeat: 1 }, 4)
+  const settles = speak(
+    'kill the bass',
+    { talkRepeat: 1, talkOvershoot: 0.25 },
+    4,
+  )
+  const grows = speak('kill the bass', { talkRepeat: 1, talkOvershoot: 1 }, 4)
+  expect(bounded(grows)).toBe(true)
+  expect(rms(settles)).toBeLessThan(1.5 * rms(stock))
+  expect(rms(grows)).toBeGreaterThan(2 * rms(stock))
+  expect(spectrum(grows, SR).centroid).toBeLessThan(
+    0.7 * spectrum(stock, SR).centroid,
+  )
+})
+
+test('with Plinky on the pitch counter’s reset, the buzz takes the pitch of the key held on Plinky', () => {
+  const drone = {
+    ...QUIET,
+    ...phrase('kill the bass'),
+    talkLevel: 1,
+    talkFrameDiv: FRAME_DIVS.indexOf(0),
+    chipLevel: 1,
+    chipMute: 1,
+  }
+  const sing = { ...drone, talkSingFrom: SING_FROM.indexOf('Plinky') }
+  const take = (board: Partial<Controls>, key: number | null) =>
+    renderBender(board, 2, built => {
+      built.prattle.say()
+      if (key !== null) built.toyChip.noteOn(key)
+    }).subarray(SR)
+  for (const [key, hz] of [
+    [0, 220],
+    [7, 329.63],
+  ] as const)
+    expect(bin(take(sing, key), hz), `${hz} Hz`).toBeGreaterThan(
+      10 * bin(take(drone, key), hz),
+    )
+  expect(take(sing, null)).toEqual(take(drone, null))
 })
 
 test('a cut carry loops the frame counter, so a syllable repeats', () => {

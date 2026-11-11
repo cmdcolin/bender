@@ -1,6 +1,6 @@
 import { VOICE_LABELS } from '../../drums.ts'
 import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
-import { FRAME_DIVS, LOCK_MULTS } from '../../dsp/stages/prattle.ts'
+import { FRAME_DIVS, LOCK_MULTS, SING_FROM } from '../../dsp/stages/prattle.ts'
 import {
   COEF_ADDR_LINES,
   COEF_DATA_LINES,
@@ -239,6 +239,17 @@ export const PRATTLE_GROUP: Group = {
       help: 'The switch between the pitch buzz and the noise register, stuck one way: every frame voiced, or every frame whispered.',
     },
     {
+      key: 'talkSingFrom',
+      label: 'Pitch reset from',
+      part: TALK_PITCH,
+      min: 0,
+      max: SING_FROM.length - 1,
+      step: 1,
+      unit: '',
+      choices: SING_FROM,
+      help: 'A machine’s output soldered onto the pitch counter’s reset. Each cycle of that machine restarts the buzz, so the voiced sounds take its pitch and the chip sings its tune with the words’ own vowels. While the machine is silent the counter runs at the pitch in the ROM. Chords and drums cross zero unevenly, so they come out as a rasp.',
+    },
+    {
       key: 'talkLeak',
       label: 'Board leak',
       part: TALK_MOUTH,
@@ -247,6 +258,26 @@ export const PRATTLE_GROUP: Group = {
       step: 0.01,
       unit: '',
       help: 'The board’s own output crossing onto the excitation line, so the kit and everything else speak through the lattice. Up high it feeds back and howls at the formants.',
+    },
+    {
+      key: 'talkStackSlip',
+      label: 'Stack slip',
+      part: TALK_MOUTH,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      unit: '',
+      help: 'The ten lattice coefficients sit in one recirculating stack, and this is how often a frame’s load misses a shift pulse. Each miss leaves every coefficient one stage along, so the mouth takes a shape no voice has while the words keep their rhythm. After ten misses the stack is back in line. At 0 the stack realigns on the next frame.',
+    },
+    {
+      key: 'talkOvershoot',
+      label: 'Overshoot',
+      part: TALK_MOUTH,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      unit: '',
+      help: 'The interpolator adds too large a step toward each new frame, up to three times the distance at the top of the knob. Coefficients, loudness and pitch swing past their targets, and a register pushed past full scale wraps round to the other end. Up to halfway each frame rings and settles. Past halfway the swings grow from frame to frame, and the voice flips between a croak and a squeal.',
     },
   ],
 }

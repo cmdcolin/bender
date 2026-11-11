@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-883 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 205
-presets, 24 stage settings and 116 named cuts. The generator reads everything
+886 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 205
+presets, 24 stage settings and 119 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/app/**
@@ -962,32 +962,42 @@ fault on, and the rows under it show the controls it set:
   breath
 - **the board speaks**: The board’s output leaks onto the excitation line, so
   the kit is shaped into the words
+- **ten wrong mouths**: The coefficient stack misses a shift on every other
+  frame, so the words keep their rhythm and pass through ten shapes of mouth
+  before the stack lines up again
+- **croak and squeal**: The interpolator steps three times too far toward each
+  frame, so the registers wrap and the voice flips between a croak and a squeal
+- **sings the toy’s tune**: Plinky’s output pin restarts the pitch counter, so
+  the voiced sounds take the tune’s notes
 
 <details>
-<summary>20 controls</summary>
+<summary>23 controls</summary>
 
-| control          | range                                                                        | what it does                                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Level            | 0 to 4, normal 0 to 1                                                        | How loud Prattle, a talking toy’s speech chip, is in the source mix                                                   |
-| Mute             | live or muted                                                                | Silences Prattle on the bus and leaves its Level where you set it                                                     |
-| Supply           | shared cells, second cells, bench supply                                     | Which supply Prattle runs off                                                                                         |
-| Struck by        | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit            | A kit voice whose hits speak the phrase a syllable at a time, so the words land on the grid                           |
-| Repeat           | once or over and over                                                        | Says the phrase round and round                                                                                       |
-| Inflection       | -12 st to +12 st                                                             | The inflection pins: shifts every pitch code, in half-semitone steps                                                  |
-| RC clock         | 0.1× to 4×                                                                   | The one RC oscillator behind the samples, the pitch and the frames                                                    |
-| Frame divider    | ÷1, ÷2, ÷3, ÷4, ÷6, ÷8, ÷16, ÷32, ÷64, stopped                               | Divides the frame clock and leaves the pitch alone, so words smear                                                    |
-| Frame clock from | its own RC, kit step, kit step ×2, kit step ×4                               | Runs the frame counter off the kit’s step counter                                                                     |
-| Carry cut after  | off, A0, A1, A2, A3, A4                                                      | Cuts the frame counter’s carry, so it loops 2, 4, 8, 16 or 32 frames of ROM and a syllable stutters                   |
-| Carry leak       | off to full                                                                  | How often the cut carry gets through anyway, so the stutter drifts on through the phrase                              |
-| Data line        | 13 of them, off through D11                                                  | A wire of the coefficient ROM’s output                                                                                |
-| Data fault       | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to that wire                                                                                            |
-| Address line     | off, A0, A1, A2, A3, A4, A5, A6, A7, A8                                      | A wire into the coefficient ROM                                                                                       |
-| Address fault    | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to that wire                                                                                            |
-| Cut depth        | off to full                                                                  | How far through the trace a cut went                                                                                  |
-| Pitch line       | off, P0, P1, P2, P3, P4, P5                                                  | A wire of the latch holding each frame’s pitch code                                                                   |
-| Pitch fault      | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to that wire                                                                                            |
-| Voicing gate     | as spoken, stuck on buzz, stuck on hiss                                      | The switch between the pitch buzz and the noise register, stuck one way: every frame voiced, or every frame whispered |
-| Board leak       | off to full                                                                  | The board’s own output crossing onto the excitation line, so the kit and everything else speak through the lattice    |
+| control          | range                                                                        | what it does                                                                                                           |
+| ---------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Level            | 0 to 4, normal 0 to 1                                                        | How loud Prattle, a talking toy’s speech chip, is in the source mix                                                    |
+| Mute             | live or muted                                                                | Silences Prattle on the bus and leaves its Level where you set it                                                      |
+| Supply           | shared cells, second cells, bench supply                                     | Which supply Prattle runs off                                                                                          |
+| Struck by        | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit            | A kit voice whose hits speak the phrase a syllable at a time, so the words land on the grid                            |
+| Repeat           | once or over and over                                                        | Says the phrase round and round                                                                                        |
+| Inflection       | -12 st to +12 st                                                             | The inflection pins: shifts every pitch code, in half-semitone steps                                                   |
+| RC clock         | 0.1× to 4×                                                                   | The one RC oscillator behind the samples, the pitch and the frames                                                     |
+| Frame divider    | ÷1, ÷2, ÷3, ÷4, ÷6, ÷8, ÷16, ÷32, ÷64, stopped                               | Divides the frame clock and leaves the pitch alone, so words smear                                                     |
+| Frame clock from | its own RC, kit step, kit step ×2, kit step ×4                               | Runs the frame counter off the kit’s step counter                                                                      |
+| Carry cut after  | off, A0, A1, A2, A3, A4                                                      | Cuts the frame counter’s carry, so it loops 2, 4, 8, 16 or 32 frames of ROM and a syllable stutters                    |
+| Carry leak       | off to full                                                                  | How often the cut carry gets through anyway, so the stutter drifts on through the phrase                               |
+| Data line        | 13 of them, off through D11                                                  | A wire of the coefficient ROM’s output                                                                                 |
+| Data fault       | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to that wire                                                                                             |
+| Address line     | off, A0, A1, A2, A3, A4, A5, A6, A7, A8                                      | A wire into the coefficient ROM                                                                                        |
+| Address fault    | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to that wire                                                                                             |
+| Cut depth        | off to full                                                                  | How far through the trace a cut went                                                                                   |
+| Pitch line       | off, P0, P1, P2, P3, P4, P5                                                  | A wire of the latch holding each frame’s pitch code                                                                    |
+| Pitch fault      | cut, to ground, to +V, bridged, one hole along, reversed, bounce, probe drag | What happened to that wire                                                                                             |
+| Voicing gate     | as spoken, stuck on buzz, stuck on hiss                                      | The switch between the pitch buzz and the noise register, stuck one way: every frame voiced, or every frame whispered  |
+| Pitch reset from | off, Plinky, Clatter, Glint, Parlor, Growler, Howler                         | A machine’s output soldered onto the pitch counter’s reset                                                             |
+| Board leak       | off to full                                                                  | The board’s own output crossing onto the excitation line, so the kit and everything else speak through the lattice     |
+| Stack slip       | off to full                                                                  | The ten lattice coefficients sit in one recirculating stack, and this is how often a frame’s load misses a shift pulse |
+| Overshoot        | off to full                                                                  | The interpolator adds too large a step toward each new frame, up to three times the distance at the top of the knob    |
 
 </details>
 

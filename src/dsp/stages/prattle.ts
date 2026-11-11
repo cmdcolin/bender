@@ -15,6 +15,7 @@ import { voiceMask } from '../trigbus.ts'
 import { DcBlocker, lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { mulberry32 } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
+import { CORD_FROM, cordTap, PIN } from './cord.ts'
 import {
   BASE_PITCH,
   BLOCK_WORDS,
@@ -67,6 +68,20 @@ const DATA_SEED = 0x3d
 const ADDR_SEED = 0x5b
 const PITCH_SEED = 0x71
 const LOOP_SEED = 0x2c
+const SLIP_SEED = 0x46
+const SLIP_ODDS = 0.5
+const OVER_GAIN = 2
+const PERIOD_WRAP = 256
+const SING_HYST = 0.05
+// Chip samples the pitch counter waits for the next reset before it goes back
+// to wrapping at its own period: 50 ms, so a sung note down to 20 Hz holds.
+const SING_HOLD = 400
+
+export const SING_FROM = ['off', ...CORD_FROM]
+
+// A coefficient or energy register is ten bits of two's complement, so a sum
+// past full scale comes back from the other end.
+const wrapSigned = (x: number) => x - 2 * Math.floor((x + 1) / 2)
 
 export class Prattle implements Stage {
   label = 'prattle'
@@ -109,6 +124,12 @@ export class Prattle implements Stage {
   private readonly addrBus = new Bus(COEF_ADDR_LINES, ADDR_SEED)
   private readonly pitchBus = new Bus(PITCH_BITS, PITCH_SEED)
   private loopRng = mulberry32(LOOP_SEED)
+  private slipRng = mulberry32(SLIP_SEED)
+  private slip = 0
+  private slipOdds = 0
+  private over = 0
+  private singHigh = false
+  private sungAgo = SING_HOLD
   private dataLine = -1
   private dataFault = 0
   private addrLine = -1
@@ -146,6 +167,12 @@ export class Prattle implements Stage {
     if (on && !this.on) this.sayQueued = true
     this.on = on
     return on
+  }
+
+  cords(p: Float32Array) {
+    const from = Math.round(p[IDX.talkSingFrom]!)
+    const tap = from > 0 ? cordTap(from - 1, null) : PIN
+    return tap === PIN ? 0 : 1 << tap
   }
 
   /** Speak the phrase from the top. */
@@ -273,8 +300,15 @@ export class Prattle implements Stage {
     const pCode = ROM.framePitch[f]!
     const eCode = ROM.frameEnergy[f]!
     const base = f * N_K
+    this.slip =
+      this.slipOdds > 0
+        ? (this.slip + (this.slipRng() < this.slipOdds ? 1 : 0)) % N_K
+        : 0
+    const slip = this.slip
     for (let s = 0; s < N_K; s++)
-      this.tgtK[s] = signed(this.fetch(s * BLOCK_WORDS + ROM.frameK[base + s]!))
+      this.tgtK[(s + slip) % N_K] = signed(
+        this.fetch(s * BLOCK_WORDS + ROM.frameK[base + s]!),
+      )
     this.tgtE = signed(this.fetch(ENERGY_BLOCK * BLOCK_WORDS + eCode))
     const pitch =
       pCode === 0
@@ -315,11 +349,19 @@ export class Prattle implements Stage {
     const step = Math.min(Math.floor(this.fp * INTERP_STEPS), INTERP_STEPS - 1)
     if (step !== this.step) {
       this.step = step
-      const t = (step + 1) / INTERP_STEPS
-      for (let s = 0; s < N_K; s++)
-        this.k[s] = this.fromK[s]! + (this.tgtK[s]! - this.fromK[s]!) * t
-      this.energy = this.fromE + (this.tgtE - this.fromE) * t
-      this.period = Math.round(this.fromP + (this.tgtP - this.fromP) * t)
+      const over = this.over
+      const t = ((step + 1) / INTERP_STEPS) * (1 + OVER_GAIN * over)
+      for (let s = 0; s < N_K; s++) {
+        const k = this.fromK[s]! + (this.tgtK[s]! - this.fromK[s]!) * t
+        this.k[s] = over > 0 ? wrapSigned(k) : k
+      }
+      const energy = this.fromE + (this.tgtE - this.fromE) * t
+      this.energy = over > 0 ? wrapSigned(energy) : energy
+      const period = Math.round(this.fromP + (this.tgtP - this.fromP) * t)
+      this.period =
+        over > 0 && this.fromP > 0 && this.tgtP > 0
+          ? ((period % PERIOD_WRAP) + PERIOD_WRAP) % PERIOD_WRAP
+          : period
     }
   }
 
@@ -333,8 +375,10 @@ export class Prattle implements Stage {
     }
     this.interpolate()
     let e: number
+    if (this.sungAgo < SING_HOLD) this.sungAgo++
     if (this.period > 0) {
-      if (++this.pitchCount >= this.period) this.pitchCount = 0
+      if (++this.pitchCount >= this.period && this.sungAgo >= SING_HOLD)
+        this.pitchCount = 0
       e =
         this.pitchCount < CHIRP_LEN
           ? signed(this.fetch(CHIRP_BLOCK * BLOCK_WORDS + this.pitchCount))
@@ -380,6 +424,9 @@ export class Prattle implements Stage {
     this.inflect = Math.round(p[IDX.talkInflect]!)
     this.voicing = Math.round(p[IDX.talkVoicing]!)
     this.leak = p[IDX.talkLeak]!
+    const slip = p[IDX.talkStackSlip]!
+    this.slipOdds = SLIP_ODDS * slip * slip
+    this.over = p[IDX.talkOvershoot]!
     this.repeat = p[IDX.talkRepeat]! >= 0.5
   }
 
@@ -402,6 +449,15 @@ export class Prattle implements Stage {
     const subLen = Math.max(ctx.trig.stepLenNow / Math.max(mult, 1), 1)
     const lockStep = 1 / (subLen * Math.max(this.div, 1))
     const mic = micInto(p, ctx, MIC.prattleIn)
+    const singFrom = Math.round(p[IDX.talkSingFrom]!)
+    const singTap = singFrom > 0 ? cordTap(singFrom - 1, null) : PIN
+    const sung =
+      singFrom === 0
+        ? null
+        : singTap === PIN
+          ? ctx.trig.pin
+          : ctx.trig.outs[singTap]!
+    if (!sung) this.sungAgo = SING_HOLD
     const chipHz = CHIP_HZ * p[IDX.talkClock]! * rail.clockFactor
     const inc = chipHz / this.sr
     const smooth = lpCoef(
@@ -433,6 +489,14 @@ export class Prattle implements Stage {
           this.tick()
         }
         this.fp = Math.min(this.fp + lockStep, 1)
+      }
+      if (sung) {
+        const x = sung[i]!
+        if (!this.singHigh && x > SING_HYST) {
+          this.singHigh = true
+          this.pitchCount = -1
+          this.sungAgo = 0
+        } else if (this.singHigh && x < -SING_HYST) this.singHigh = false
       }
       this.micNow = mic ? mic[i]! : 0
       this.outNow = ctx.out[i]!
@@ -484,6 +548,10 @@ export class Prattle implements Stage {
     this.addrBus.reset()
     this.pitchBus.reset()
     this.loopRng = mulberry32(LOOP_SEED)
+    this.slipRng = mulberry32(SLIP_SEED)
+    this.slip = 0
+    this.singHigh = false
+    this.sungAgo = SING_HOLD
     this.lfsr = LFSR_SEED
   }
 }

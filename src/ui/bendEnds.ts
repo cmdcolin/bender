@@ -343,6 +343,8 @@ export const BEND_ENDS: Partial<
   monoLoopSync: [-0.5, -0.5],
   monoLoopCutoff: [null, -0.5],
   monoStrobe: [null, null],
+  talkStackSlip: [null, null],
+  talkOvershoot: [0, 0.5],
 }
 
 /** How much louder the board gets when a key brings a silent stage up. */
@@ -365,4 +367,5 @@ export const STAGE_DB: Partial<Record<ControlKey, number>> = {
   ampMix: 3.5,
   fbAmt: 13.5,
   tapeMix: 1,
+  talkLevel: 0.5,
 }
