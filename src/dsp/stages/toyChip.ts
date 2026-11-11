@@ -347,6 +347,30 @@ const ENV_DIV_OCTAVES = 3
 const PWM_TAP_LOW = 1
 const PWM_TAP_SPAN = 5
 
+// The bass, chord, key and effect dividers clocked off the melody divider's
+// output in place of the master clock. Each takes the top bits of the word it
+// loaded as its count, so its pitch is the melody's over a whole number. The
+// knob moves the tap from the top four bits of the twelve to the top eight.
+const CASCADE_TOP = 8
+const CASCADE_SPAN = 4.5
+
+// The divider latches on cells that leak toward +V. A cell reads high once its
+// share of the leak time has passed, so the word grows and the pitch falls in
+// steps until the next load. The whole word takes six seconds at the bottom of
+// the knob and 12 ms at the top. The leak is an RC, so it runs in seconds
+// whatever the clock does.
+//
+// The same leak on the six-wire note latch walked each note through other
+// notes and left the share under 120 Hz at 0.42, against 0.91 on the divider.
+const LEAK_SLOW_S = 6
+const LEAK_OCTAVES = 9
+const LEAK_TOLERANCE = 0.8
+// One latch a divider: the melody, the bass, three chord notes and four keys.
+const LATCHES = 9
+const BASS_LATCH = 1
+const CHORD_LATCH = 2
+const KEY_LATCH = 5
+
 export const ENV_CAPS = ['stock', 'reversed', 'leaky']
 const ENV_REVERSED = 1
 const ENV_LEAKY = 2
@@ -364,6 +388,14 @@ const ascending = (a: number, b: number) => a - b
     envelope runs x stays tiny and four Taylor terms hold to 3e-9. */
 const expNeg = (x: number) =>
   x < 0.05 ? 1 - x * (1 - (x / 2) * (1 - (x / 3) * (1 - x / 4))) : Math.exp(-x)
+
+// The ratio a divider runs at off a latch whose `high` wires read high.
+const wordRatio = (loaded: number, high: number) =>
+  DIV_A3 / (Math.min(Math.round(DIV_A3 / loaded), DIV_MAX) | high)
+
+// How many melody cycles one cycle of a cascaded divider takes.
+const cascadeCount = (loaded: number, tap: number) =>
+  Math.max(Math.round((DIV_A3 / loaded) * tap), 1)
 
 const addOnce = (out: number[], g: number, skip: number[]) => {
   if (!skip.includes(g) && !out.includes(g)) out.push(g)
@@ -635,6 +667,16 @@ export class ToyChip implements Stage {
   private vmTimerHigh = false
   private irqClock = 0
   private watchdog = 0
+  private cascadeTap = 0
+  private leaking = false
+  private leakRate = 0
+  private readonly leakAt = new Float64Array(LATCHES * DIV_LINES)
+  private readonly leakAge = new Float64Array(LATCHES)
+  private readonly leakNext = new Float64Array(LATCHES)
+  private readonly leakMask = new Int32Array(LATCHES)
+  private outDiv = -1
+  private readonly pinAtLoad = new Uint8Array(LATCHES)
+  private readonly pulled = new Int32Array(LATCHES)
 
   private readonly sr: number
   private readonly supplies: Supplies
@@ -668,6 +710,84 @@ export class ToyChip implements Stage {
     const fill = mulberry32(seed ^ 0xf1a5)
     for (let i = 0; i < VM_BYTES; i++)
       this.firmware[i] = Math.floor(fill() * 256)
+    const cell = mulberry32(seed ^ 0x1eac)
+    for (let i = 0; i < this.leakAt.length; i++)
+      this.leakAt[i] =
+        (((i % DIV_LINES) + 1) / DIV_LINES) * (1 - LEAK_TOLERANCE * cell())
+  }
+
+  // The wires of a latch that read high whatever word it loaded: its leaked
+  // cells, and the wire the output pin pulled as its divider last reloaded.
+  private pull(latch: number) {
+    this.pulled[latch] =
+      this.leakMask[latch]! |
+      (this.outDiv >= 0 ? this.pinAtLoad[latch]! << this.outDiv : 0)
+  }
+
+  // The output pin through a diode onto one wire of the divider word. A divider
+  // reads the wire as it reloads, so a cycle that ends with the pin high runs
+  // on the longer word.
+  //
+  // Bridged both ways, a lone note with that bit set loaded a word of 1 and sat
+  // at the top of the band (centroid 12 kHz on sakura through N8). With the pin
+  // inverted a lone melody took one fixed word, which Divider line to +V gives.
+  private readPin(latch: number) {
+    this.pinAtLoad[latch] = this.lastOut > 0 ? 1 : 0
+    this.pull(latch)
+  }
+
+  private setOutDiv(line: number) {
+    if (line !== this.outDiv) {
+      this.outDiv = line
+      this.pinAtLoad.fill(0)
+      for (let l = 0; l < LATCHES; l++) this.pull(l)
+    }
+  }
+
+  private setLeak(amount: number) {
+    if (amount > 0) {
+      this.leaking = true
+      this.leakRate = octaves(LEAK_OCTAVES * amount) / (LEAK_SLOW_S * this.sr)
+    } else if (this.leaking) {
+      this.leaking = false
+      this.leakMask.fill(0)
+      this.leakAge.fill(0)
+      this.leakNext.fill(0)
+      for (let l = 0; l < LATCHES; l++) this.pull(l)
+    }
+  }
+
+  private leakStep() {
+    const age = this.leakAge
+    const next = this.leakNext
+    for (let l = 0; l < LATCHES; l++) {
+      if (next[l]! < Infinity) {
+        age[l]! += this.leakRate
+        if (age[l]! >= next[l]!) this.leakScan(l)
+      }
+    }
+  }
+
+  private leakScan(latch: number) {
+    const at = this.leakAt
+    const age = this.leakAge[latch]!
+    let mask = 0
+    let next = Infinity
+    for (let b = 0; b < DIV_LINES; b++) {
+      const t = at[latch * DIV_LINES + b]!
+      if (t <= age) mask |= 1 << b
+      else next = Math.min(next, t)
+    }
+    this.leakMask[latch] = mask
+    this.leakNext[latch] = next
+    this.pull(latch)
+  }
+
+  private reload(latch: number) {
+    this.leakAge[latch] = 0
+    this.leakNext[latch] = 0
+    this.leakMask[latch] = 0
+    this.pull(latch)
   }
 
   // The pitch ratio a note loads into its divider. With no fault on the
@@ -752,6 +872,7 @@ export class ToyChip implements Stage {
     v.env = gain
     v.held = false
     v.started = this.voiceClock++
+    this.reload(KEY_LATCH + this.voices.indexOf(v))
     this.gate(semitone)
     return v
   }
@@ -968,6 +1089,9 @@ export class ToyChip implements Stage {
       this.dataFault,
       this.busCut,
     )
+    // A second song's chip-enable held on, its word ANDed or ORed onto this
+    // one, played one fixed third tune: the share under 120 Hz read 0.42 and
+    // 0.34 against 0.41 stock.
     if (this.loopFrom >= 0) {
       const bit = 1 << this.loopFrom
       this.resetEdge =
@@ -1015,6 +1139,7 @@ export class ToyChip implements Stage {
     const step = this.readAt(tune, addr)
     this.note = isNote(step) ? step : REST
     this.env = isNote(step) ? 1 : 0
+    this.reload(0)
     if (this.transport.tune) {
       if (isNote(step)) this.laneNotes[0] = step + KEY_BIAS
       this.strikeStacks(addr)
@@ -1039,8 +1164,10 @@ export class ToyChip implements Stage {
       this.bassNote = (this.bassFifth ? this.chord[2]! : this.chord[0]!) - 12
       this.bassFifth = !this.bassFifth
       this.bassEnv = 1
+      this.reload(BASS_LATCH)
     } else {
       this.chordEnv = 1
+      for (let c = 0; c < 3; c++) this.reload(CHORD_LATCH + c)
     }
   }
 
@@ -1301,6 +1428,9 @@ export class ToyChip implements Stage {
       this.ghostCols = ghostCols
       this.regroundGhosts()
     }
+    // The step counter's low bits on this selector changed the take by 0.78,
+    // the least of any candidate, and took the share under 120 Hz from 0.41
+    // to 0.36.
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
@@ -1391,6 +1521,11 @@ export class ToyChip implements Stage {
       if (this.wasPlaying) this.restart(tune)
     }
 
+    const cascade = p[IDX.chipCascade]!
+    this.cascadeTap =
+      cascade > 0 ? octaves(CASCADE_SPAN * cascade - CASCADE_TOP) : 0
+    this.setLeak(p[IDX.chipDivLeak]!)
+    this.setOutDiv(Math.round(p[IDX.chipOutDiv]!) - 1)
     const feed = this.feed
     feed.maxHz = maxHz
     feed.duty = duty
@@ -1398,6 +1533,8 @@ export class ToyChip implements Stage {
     feed.spread = spread
     feed.mixDrive = mixDrive
     feed.pot = pot
+    feed.cascade = this.cascadeTap
+    feed.onDivider = this.outDiv >= 0
     for (let i = 0; i < io.n; i++) {
       this.counterFault.step()
       const latched = rail.latched
@@ -1502,8 +1639,13 @@ export class ToyChip implements Stage {
           ? this.melodyHz / tapDivisor(stepTap, TAP_STAGES)
           : stepHz * timing
 
+      if (this.leaking) this.leakStep()
       // sequencer — the run/stop line freezes it where it stands, and so does a
       // latched die: the counter stops clocking and the note it was on stays on
+      // A comparator on the envelope cap holding this counter while a note is
+      // loud slowed the tune to 0.40 of its level at full and left the share
+      // under 120 Hz at 0.39. An output overshoot tripping the supply left
+      // 0.47 to 0.75 of the take silent, the reboot loop Starve already makes.
       if (this.transport.tune && !latched && !this.halted) {
         this.stepClock += this.stepHzNow / this.sr
         if (this.gndEdge.rise(ctx.gnd[i]!)) this.stepClock += 1
@@ -1737,6 +1879,8 @@ export class ToyChip implements Stage {
     amp: 0,
     timing: 0,
     scanHz: 0,
+    cascade: 0,
+    onDivider: false,
     keys: 0,
     out: 0,
     lift: 0,
@@ -1757,7 +1901,7 @@ export class ToyChip implements Stage {
   ) {
     const feed = this.feed
     const { maxHz, duty, accomp, mixDrive, pot } = feed
-    const { envDiv, clock, dutyEnv, amp, timing, scanHz } = feed
+    const { envDiv, clock, dutyEnv, amp, timing, scanHz, cascade } = feed
     let out = 0
     if (!rail.booting && !rail.dead) {
       const live = this.slotLive
@@ -1768,10 +1912,12 @@ export class ToyChip implements Stage {
         if (note !== this.melodyLoaded) {
           this.melodyLoaded = note
           this.melodyRatio = this.divRatio(note)
+          this.reload(0)
         }
+        const high = this.pulled[0]!
         const hz = Math.min(
           A3_HZ *
-            this.melodyRatio *
+            (high ? wordRatio(this.melodyRatio, high) : this.melodyRatio) *
             clock *
             rail.pitchFactor *
             (envDiv > 0 ? octaves(-envDiv * (1 - this.env)) : 1),
@@ -1780,6 +1926,7 @@ export class ToyChip implements Stage {
         this.melodyHz = hz
         const inc = hz / this.sr
         this.phase = wrap1(this.phase + inc)
+        if (feed.onDivider && this.phase < inc) this.readPin(0)
         const env = shaped ? this.level(this.env, pwmOn) : this.env
         const v =
           this.tone(0, this.phase, width(duty, dutyEnv, this.env), inc) *
@@ -1801,16 +1948,21 @@ export class ToyChip implements Stage {
             this.bassLoaded = this.bassNote
             this.bassRatio = this.divRatio(this.bassNote)
           }
+          const high = this.pulled[BASS_LATCH]!
+          const word = high ? wordRatio(this.bassRatio, high) : this.bassRatio
           const hz = Math.min(
-            A3_HZ *
-              this.bassRatio *
-              clock *
-              rail.pitchFactorAt(BASS_TRIM) *
-              (envDiv > 0 ? octaves(-envDiv * (1 - this.bassEnv)) : 1),
+            cascade > 0
+              ? this.melodyHz / cascadeCount(word, cascade)
+              : A3_HZ *
+                  word *
+                  clock *
+                  rail.pitchFactorAt(BASS_TRIM) *
+                  (envDiv > 0 ? octaves(-envDiv * (1 - this.bassEnv)) : 1),
             maxHz,
           )
           const inc = hz / this.sr
           this.bassPhase = wrap1(this.bassPhase + inc)
+          if (feed.onDivider && this.bassPhase < inc) this.readPin(BASS_LATCH)
           const env = shaped ? this.level(this.bassEnv, pwmOn) : this.bassEnv
           const v =
             this.tone(
@@ -1871,6 +2023,7 @@ export class ToyChip implements Stage {
   ) {
     const feed = this.feed
     const { maxHz, duty, dutyEnv, envDiv, clock, accomp } = feed
+    const { cascade, onDivider } = feed
     const live = this.slotLive
     const val = this.slotVal
     if (this.chord !== this.chordLoaded) {
@@ -1882,12 +2035,18 @@ export class ToyChip implements Stage {
     const fall = envDiv > 0 ? octaves(-envDiv * (1 - this.chordEnv)) : 1
     for (let c = 0; c < 3; c++) {
       const trim = CHORD_TRIM[c]!
+      const high = this.pulled[CHORD_LATCH + c]!
+      const loaded = this.chordRatio[c]!
+      const word = high ? wordRatio(loaded, high) : loaded
       const hz = Math.min(
-        A3_HZ * this.chordRatio[c]! * clock * rail.pitchFactorAt(trim) * fall,
+        cascade > 0
+          ? this.melodyHz / cascadeCount(word, cascade)
+          : A3_HZ * word * clock * rail.pitchFactorAt(trim) * fall,
         maxHz,
       )
       const inc = hz / this.sr
       this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
+      if (onDivider && this.chordPhase[c]! < inc) this.readPin(CHORD_LATCH + c)
       const v =
         this.tone(
           2 + c,
@@ -1914,6 +2073,7 @@ export class ToyChip implements Stage {
   ) {
     const feed = this.feed
     const { maxHz, duty, dutyEnv, envDiv, clock, spread } = feed
+    const { cascade, onDivider } = feed
     const live = this.slotLive
     const val = this.slotVal
     for (let k = 0; k < this.voices.length; k++) {
@@ -1924,16 +2084,21 @@ export class ToyChip implements Stage {
         v.ratio = this.divRatio(v.note)
       }
       const trim = trimAt(k, spread)
+      const high = this.pulled[KEY_LATCH + k]!
+      const word = high ? wordRatio(v.ratio, high) : v.ratio
       const hz = Math.min(
-        A3_HZ *
-          v.ratio *
-          clock *
-          rail.pitchFactorAt(trim) *
-          (envDiv > 0 ? octaves(-envDiv * (1 - v.env)) : 1),
+        cascade > 0
+          ? this.melodyHz / cascadeCount(word, cascade)
+          : A3_HZ *
+              word *
+              clock *
+              rail.pitchFactorAt(trim) *
+              (envDiv > 0 ? octaves(-envDiv * (1 - v.env)) : 1),
         maxHz,
       )
       const inc = hz / this.sr
       v.phase = wrap1(v.phase + inc)
+      if (onDivider && v.phase < inc) this.readPin(KEY_LATCH + k)
       const env = shaped ? this.level(v.env, pwmOn) : v.env
       const x =
         this.tone(5 + k, v.phase, width(duty, dutyEnv, v.env), inc) *
@@ -1985,7 +2150,13 @@ export class ToyChip implements Stage {
             : this.divBus.read(word, this.divLine, this.divFault, this.busCut)
         this.sfxRatio = 1 / Math.max(read, 1)
       }
-      const hz = Math.min(MASTER_HZ * this.sfxRatio * pitch, maxHz)
+      const hz = Math.min(
+        this.cascadeTap > 0
+          ? this.melodyHz /
+              cascadeCount(DIV_A3 * this.sfxRatio, this.cascadeTap)
+          : MASTER_HZ * this.sfxRatio * pitch,
+        maxHz,
+      )
       const inc = hz / this.sr
       this.sfxPhase = wrap1(this.sfxPhase + inc)
       const env = shaped ? this.level(f.tone, pwmOn) : f.tone
@@ -2045,6 +2216,7 @@ export class ToyChip implements Stage {
   private land(step: number) {
     this.note = step
     this.env = 1
+    this.reload(0)
     this.keyNote = step
     this.keyPending = true
     this.laneNotes[0] = step + KEY_BIAS
@@ -2280,6 +2452,11 @@ export class ToyChip implements Stage {
     this.noiseReg.fill(1)
     this.noisePhase.fill(0)
     this.crashed = false
+    this.leakMask.fill(0)
+    this.leakAge.fill(0)
+    this.leakNext.fill(0)
+    this.pinAtLoad.fill(0)
+    this.pulled.fill(0)
     this.pumpV = 0
     this.pumpPin = false
     this.pumpDead = 0

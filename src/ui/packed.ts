@@ -1369,6 +1369,9 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'fmBlockShort',
   'fmKeyLoop',
   'fmEnvChain',
+  'chipCascade',
+  'chipDivLeak',
+  'chipOutDiv',
 ]
 
 // Retired controls that old links still carry, each read into the control that

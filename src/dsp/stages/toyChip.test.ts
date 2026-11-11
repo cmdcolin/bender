@@ -10,6 +10,7 @@ import { BLOCK } from '../stage.ts'
 import {
   bin,
   deviation,
+  lowEnergy,
   makeIo,
   pitchHz,
   playKeys,
@@ -1147,4 +1148,99 @@ test('both bodges on the melody put it in both jacks, off the mix', () => {
   const both = sides({ ...BACKED, chipBodge: 1, chipBodgeR: 1 })
   expect(both.side).toBe(0)
   expect(both.l).toBeGreaterThan(0.5 * sides(BACKED).l)
+})
+
+// A held A3 with the tune running and the melody's own resistor lifted, so the
+// take is the key alone while the melody's divider still clocks.
+const keyUnderMelody = (tuneNote: number, chipCascade: number) =>
+  pitchHz(
+    tail(
+      renderBender(
+        {
+          ...CHIP_ONLY,
+          chipSync: 0,
+          chipTune: YOURS,
+          tuneLen: 1,
+          tuneLift: 1,
+          ...memory({ 0: tuneNote }),
+          chipCascade,
+        },
+        2,
+        b => {
+          b.transport.tune = true
+          b.toyChip.noteOn(0)
+        },
+      ),
+      1,
+    ),
+  )
+
+test('a divider cascade plays a held key at a whole fraction of the melody’s pitch', () => {
+  expect(keyUnderMelody(0, 0)).toBeCloseTo(220, -1)
+  expect(keyUnderMelody(12, 0)).toBeCloseTo(220, -1)
+  // A3 loads 512, and halfway up the knob its top bits count ten melody cycles.
+  const under = keyUnderMelody(0, 0.5)
+  expect(under).toBeGreaterThan(21)
+  expect(under).toBeLessThan(23)
+  const octaveUp = keyUnderMelody(12, 0.5)
+  expect(octaveUp).toBeGreaterThan(43)
+  expect(octaveUp).toBeLessThan(45)
+})
+
+// The samples between one rising edge of a take and the next.
+const periods = (x: Float32Array) => {
+  const out: number[] = []
+  let last = -1
+  for (let i = 1; i < x.length; i++) {
+    if (x[i - 1]! <= 0 && x[i]! > 0) {
+      if (last >= 0) out.push(i - last)
+      last = i
+    }
+  }
+  return out
+}
+
+test('a divider leak drops a held key in steps to the full word, and a new strike reloads it', () => {
+  const take = (chipDivLeak: number) =>
+    renderBender(
+      { ...CHIP_ONLY, chipDivLeak },
+      2,
+      b => b.toyChip.noteOn(0),
+      undefined,
+      (b, secs) => {
+        if (secs >= 1 && secs < 1 + BLOCK / SR) b.toyChip.noteOn(0)
+      },
+    )
+  expect(new Set(periods(take(0).subarray(0, SR))).size).toBeLessThanOrEqual(2)
+  // The whole word leaks in half a second at 0.4.
+  const x = take(0.4)
+  const falling = periods(x.subarray(0, SR))
+  for (let i = 1; i < falling.length; i++)
+    expect(falling[i]).toBeGreaterThanOrEqual(falling[i - 1]! - 2)
+  expect(new Set(falling).size).toBeGreaterThan(5)
+  // A3 loads 512 and plays 220 Hz; all twelve cells high is 4095, 27.5 Hz.
+  expect(SR / falling[0]!).toBeCloseTo(220, -1)
+  expect(SR / falling.at(-1)!).toBeCloseTo(27.5, 0)
+  const reloaded = periods(x.subarray(SR + 2 * BLOCK, SR + SR / 20))
+  expect(SR / reloaded[0]!).toBeCloseTo(220, -1)
+})
+
+const holdTriad = (b: BuiltChain) => [0, 4, 7].forEach(n => b.toyChip.noteOn(n))
+
+test('the output on a divider wire leaves a lone key alone and drops a chord to the longer word', () => {
+  const lone = (chipOutDiv: number) =>
+    renderBender({ ...CHIP_ONLY, chipOutDiv }, 1, b => b.toyChip.noteOn(0))
+  expect(deviation(lone(12), lone(0))).toBe(0)
+  const chordTake = (chipOutDiv: number) =>
+    tail(renderBender({ ...CHIP_ONLY, chipOutDiv }, 2, holdTriad), 1)
+  // With N11 high the three words are 2560, 2454 and 2390: 44 to 47 Hz.
+  const sub = (x: Float32Array) =>
+    Math.max(...[43, 44, 45, 46, 47, 48].map(hz => bin(x, hz)))
+  const stock = chordTake(0)
+  const wired = chordTake(12)
+  expect(sub(stock)).toBeLessThan(0.002)
+  expect(sub(wired)).toBeGreaterThan(20 * sub(stock))
+  expect(lowEnergy(wired) / rms(wired)).toBeGreaterThan(
+    2 * (lowEnergy(stock) / rms(stock)),
+  )
 })

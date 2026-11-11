@@ -306,6 +306,39 @@ Bends:
     stays within half a dB of the stock tune.
   - Each note keeps one noise colour while it sounds.
   - The effect voice, bass and chords run through the same registers.
+- **Divider cascade:** the bass, chord, key and effect dividers count the melody
+  divider's output in place of the master clock.
+  - Each one counts with the top bits of the word it loaded, so it plays the
+    melody's pitch divided by a whole number, and the backing follows the tune
+    as undertones.
+  - Low on the knob the chord sits at the melody's pitch or an octave under it.
+    Higher settings take more bits, so the chord drops to sub-bass and the bass
+    to clicks.
+  - On the Sakura board with backing, the share of the level under 120 Hz goes
+    from 0.36 to 0.64 at half way and 0.68 at three quarters.
+  - Clock, envelope and divider bends on the melody reach every voice under it.
+- **Divider leak:** the latch holding each divider's word sits on cells that
+  leak toward +V.
+  - After a note loads, its cells read high one at a time. The word grows and
+    the note falls in steps, by cents, then semitones, then octaves, down to 27
+    Hz with every cell high. The next strike loads the word again.
+  - The knob sets the leak, from six seconds for the whole word to 12 ms.
+  - Each latch has its own tolerances, so the notes of a chord fall by different
+    steps.
+  - The leak runs in seconds whatever the clock does, so a slower **Clock**
+    gives each note longer to fall, and a held key sinks to the bottom and stays
+    there.
+  - On the Sakura board with backing, the share under 120 Hz goes from 0.36 to
+    0.69 at half way, 0.86 at three quarters and 0.92 at the top.
+- **Output on divider:** the output pin drives one wire of the divider word
+  through a diode.
+  - Each divider reads the wire as it reloads, so a cycle that ends with the
+    output high loads the longer word.
+  - A lone note reloads while its own pulse is low and plays clean. With a
+    second voice sounding, the mix decides which word each cycle gets.
+  - N0 to N8 roughen a chord. N9 and N10 pull notes down by fifths and octaves.
+    N11 drops them between 33 and 53 Hz: on the Sakura board with backing the
+    share under 120 Hz goes from 0.36 to 0.85, about 2 dB louder.
 - **Effect buttons:** six programs for a sweep counter that loads the melody's
   divider, plus a noise register for bomb and gun.
   - Clock, a flat battery and a pot on the timing pin lower and stretch each

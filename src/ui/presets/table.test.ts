@@ -235,6 +235,8 @@ const BASS = [
   'leaky drone',
   'sinking bass',
   'filter kick',
+  'leaking latches',
+  'growl under the chord',
 ]
 
 const subShare = (patch: Partial<typeof DEFAULT_CONTROLS>) =>

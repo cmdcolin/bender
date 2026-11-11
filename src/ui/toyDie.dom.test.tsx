@@ -205,6 +205,20 @@ test('a box lights for any knob it opens', () => {
   set({ chipXor: 0, chipHardSync: 0 })
 })
 
+test('the divider bends light the voices and list under the drawing', () => {
+  open()
+  const bends = ['Divider cascade', 'Divider leak', 'Output on divider']
+  for (const name of bends)
+    expect(screen.queryByRole('button', { name })).toBeNull()
+  set({ chipCascade: 0.5, chipDivLeak: 0.5, chipOutDiv: 12 })
+  expect(lit('voices')).toBe(true)
+  for (const name of bends)
+    expect(screen.getByRole('button', { name })).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Divider leak' }))
+  expect(screen.getByRole('region', { name: 'voices' })).not.toBeNull()
+  set({ chipCascade: 0, chipDivLeak: 0, chipOutDiv: 0 })
+})
+
 test('the clock shows its clk tags while open', () => {
   open()
   expect(

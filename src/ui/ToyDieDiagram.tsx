@@ -56,6 +56,9 @@ const KEYS = [
   'chipPump',
   'chipCrash',
   'chipLfsr',
+  'chipCascade',
+  'chipDivLeak',
+  'chipOutDiv',
 ] as const
 
 const GROUP = GROUPS.find(g => g.name === 'Plinky')!
@@ -142,6 +145,9 @@ const BEND_BOX: Partial<Record<(typeof KEYS)[number], string>> = {
   chipXor: 'voices',
   chipDutyEnv: 'voices',
   chipLfsr: 'voices',
+  chipCascade: 'voices',
+  chipDivLeak: 'voices',
+  chipOutDiv: 'voices',
   chipGhost: 'key matrix',
   chipOutKeys: 'key matrix',
   chipKeyScan: 'key matrix',
@@ -371,7 +377,7 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
               box={voices}
               keys={NODE_KEYS[voices.name]}
               lit={lit('voices')}
-              help="The tone generators, one a note, each with its own pitch divider."
+              help="The tone generators, one a note, each with its own pitch divider and the latch that holds its word. The dividers can be chained off the melody’s, the latches can leak, and the output pin can be wired onto one latch wire."
             />
             <Chip
               pick={pick}

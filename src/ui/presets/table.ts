@@ -3418,6 +3418,39 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'undertone backing',
+    blurb:
+      'Plinky’s bass and chord dividers count the melody’s cycles in place of the master clock, so the backing plays each melody note divided by whole numbers and moves under the tune as sub-bass and clicks',
+    patch: {
+      chipLevel: 0.85,
+      chipAccomp: 1,
+      chipCascade: 0.6,
+      drumLevel: 0.25,
+    },
+  },
+  {
+    name: 'leaking latches',
+    blurb:
+      'Plinky’s divider latches leak toward +V. Each note loads in tune and drops in steps to a 27 Hz buzz within a twentieth of a second, and each note of a chord falls by different steps',
+    patch: {
+      chipLevel: 0.85,
+      chipAccomp: 0.6,
+      chipDivLeak: 0.75,
+      drumLevel: 0.25,
+    },
+  },
+  {
+    name: 'growl under the chord',
+    blurb:
+      'Plinky’s output pin pulls the top wire of the divider word high through a diode. A divider that reloads while the pin is high runs its next cycle near 45 Hz, so with the backing up every voice flips between its note and sub-bass many times a second',
+    patch: {
+      chipLevel: 0.85,
+      chipAccomp: 1,
+      chipOutDiv: choiceValue('chipOutDiv', 'N11'),
+      drumLevel: 0.25,
+    },
+  },
+  {
     name: 'filter kick',
     blurb:
       'Every oscillator is down and the ladder runs past self-oscillation, struck by the kick, so the filter contour drops a sine two octaves on each hit',

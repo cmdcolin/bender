@@ -53,6 +53,9 @@ function ring(hot: Partial<Controls>, cold: Partial<Controls>): string[] {
 const RINGING: Partial<Controls> = {
   chipLevel: 0.6,
   chipAccomp: 1,
+  chipCascade: 0.7,
+  chipDivLeak: 0.7,
+  chipOutDiv: 11,
   drumLevel: 0.6,
   // Both kits, because the sampled one has a gate and a reconstruction filter
   // that settle on their own clock rather than on the circuits'.

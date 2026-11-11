@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-889 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 205
+892 knobs and switches in 42 groups, ten bends for six slots, 18 ROM tunes, 208
 presets, 24 stage settings and 123 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -68,7 +68,7 @@ grey out. `pnpm diagram` renders it with the same layout the app uses.
   its tempo; its address or data bus, so a yell scrambles the song; Spool's
   capstan motor; Glint's registers. The body contact pad uses the same idea with
   your finger as the resistor.
-- **Whole boards.** 205 presets, and a roll button on every heading as well as
+- **Whole boards.** 208 presets, and a roll button on every heading as well as
   on the whole board; **morph** moves between two boards over up to thirty
   seconds; **hunt** plays six candidates and keeps the one whose limiter gain
   reduction varies most, which is a board that keeps reaching the limiter and
@@ -84,7 +84,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 140 controls are shy, mostly the ones that act on the
+names it still sets it. 143 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -126,7 +126,7 @@ puts the fault on, and the rows under it show the controls it set:
   lifting off, so the song keeps taking different wrong turns
 
 <details>
-<summary>59 controls</summary>
+<summary>62 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -176,6 +176,9 @@ puts the fault on, and the rows under it show the controls it set:
 | Charge pump †       | off to full                                                                                                                    | Wires the output pin through a diode onto the timing cap, with a bleed resistor across it                                                                                                     |
 | Crash †             | off to full                                                                                                                    | Static hits knock the program counter into the wrong part of the ROM, up to three times a second at the top of the knob                                                                       |
 | Noise divider †     | off to full                                                                                                                    | Bridges two stages of each pitch divider back into its input through an XOR, so the counter runs as a shift register and each voice plays noise clocked by its note                           |
+| Divider cascade †   | off to full                                                                                                                    | Clocks the bass, chord, key and effect dividers off the melody divider’s output in place of the master clock                                                                                  |
+| Divider leak †      | off to full                                                                                                                    | The latch that holds each divider’s word, on cells that leak toward +V                                                                                                                        |
+| Output on divider † | 13 of them, off through N11                                                                                                    | Solders the output pin through a diode onto one wire of the divider word                                                                                                                      |
 | Effect wire †       | 13 of them, off through stuck                                                                                                  | Solders a wire onto the effect buttons                                                                                                                                                        |
 | Button it presses   | laser, siren, ufo, bomb, gun, bird, random, next                                                                               | Which effect button the wire presses                                                                                                                                                          |
 | Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the fault is on                                                                                                                                    |
@@ -2197,7 +2200,7 @@ result:
 
 ### Presets
 
-205 presets. Each name is a link that opens the app with that board loaded, and
+208 presets. Each name is a link that opens the app with that board loaded, and
 the board waits until you press play.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -2726,6 +2729,19 @@ the board waits until you press play.
   keeps its rhythm over the rock kit and takes a new pitch only when the LFO
   comes round. Pitch droop drains the hold between strobes, and each one snaps
   the line back up
+- [**undertone backing**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:1,chipCascade:0.6,drumLevel:0.25)
+  — Plinky’s bass and chord dividers count the melody’s cycles in place of the
+  master clock, so the backing plays each melody note divided by whole numbers
+  and moves under the tune as sub-bass and clicks
+- [**leaking latches**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.6,chipDivLeak:0.75,drumLevel:0.25)
+  — Plinky’s divider latches leak toward +V. Each note loads in tune and drops
+  in steps to a 27 Hz buzz within a twentieth of a second, and each note of a
+  chord falls by different steps
+- [**growl under the chord**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:1,chipOutDiv:12,drumLevel:0.25)
+  — Plinky’s output pin pulls the top wire of the divider word high through a
+  diode. A divider that reloads while the pin is high runs its next cycle near
+  45 Hz, so with the backing up every voice flips between its note and sub-bass
+  many times a second
 - [**filter kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:2.5,monoKeyGate:1,monoStruck:1,monoMix1:0,monoMix2:0,monoMix3:0,monoCutoff:33,monoEmph:1.08,monoContour:2.2,monoTrack:1,monoFD:0.07,monoFS:0,monoFR:0.05,monoAD:0.5,monoAS:0.6,monoAR:0.12)
   — Every oscillator is down and the ladder runs past self-oscillation, struck
   by the kick, so the filter contour drops a sine two octaves on each hit

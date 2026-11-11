@@ -73,6 +73,9 @@ export const PARAM_DEFS = [
   ['chipPump', 'slew'],
   ['chipCrash', 'slew'],
   ['chipLfsr', 'slew'],
+  ['chipCascade', 'slew'],
+  ['chipDivLeak', 'slew'],
+  ['chipOutDiv', 'step'],
   ['sfxWire', 'step'],
   ['sfxPick', 'step'],
 

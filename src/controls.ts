@@ -62,6 +62,9 @@ export const DEFAULT_CONTROLS = {
   chipPump: 0,
   chipCrash: 0,
   chipLfsr: 0,
+  chipCascade: 0,
+  chipDivLeak: 0,
+  chipOutDiv: 0,
   sfxWire: 0,
   sfxPick: 0,
 
