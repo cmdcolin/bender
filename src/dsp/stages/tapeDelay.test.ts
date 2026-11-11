@@ -280,33 +280,36 @@ test('dirty heads dull the repeats and leave the bass', () => {
   expect(bin(dirty, 6000)).toBeLessThan(0.3 * bin(clean, 6000))
 })
 
+const zeros = () => new Float32Array(BLOCK)
+
+const bareCtx = (): Ctx => ({
+  sr: SR,
+  mic: zeros(),
+  mic2: zeros(),
+  fb: zeros(),
+  railV: zeros().fill(1),
+  sag: zeros(),
+  droop: zeros(),
+  env: zeros(),
+  out: zeros(),
+  step: zeros(),
+  carrier: zeros(),
+  logic: zeros(),
+  toy: zeros(),
+  fm: zeros(),
+  send: zeros(),
+  bright: zeros(),
+  gnd: zeros(),
+  regs: new Uint8Array(GLINT_REGS),
+  heat: 0,
+  fbDest: 0,
+  mod: new ModBus(SR, 1),
+  trig: new TriggerBus(),
+})
+
 test('a head that clogs again starts from clean filters', () => {
   const tape = new TapeDelay(SR, 1)
-  const zeros = () => new Float32Array(BLOCK)
-  const ctx: Ctx = {
-    sr: SR,
-    mic: zeros(),
-    mic2: zeros(),
-    fb: zeros(),
-    railV: zeros().fill(1),
-    sag: zeros(),
-    droop: zeros(),
-    env: zeros(),
-    out: zeros(),
-    step: zeros(),
-    carrier: zeros(),
-    logic: zeros(),
-    toy: zeros(),
-    fm: zeros(),
-    send: zeros(),
-    bright: zeros(),
-    gnd: zeros(),
-    regs: new Uint8Array(GLINT_REGS),
-    heat: 0,
-    fbDest: 0,
-    mod: new ModBus(SR, 1),
-    trig: new TriggerBus(),
-  }
+  const ctx = bareCtx()
   const look = { dlyMix: 1, delayMs: 50, dlyFb: 0, wowDepthMs: 0, flutter: 0 }
   const dirty = packParams({ ...DEFAULT_CONTROLS, ...look, dlyHeadDirt: 1 })
   const clean = packParams({ ...DEFAULT_CONTROLS, ...look, dlyHeadDirt: 0 })
@@ -327,4 +330,80 @@ test('a head that clogs again starts from clean filters', () => {
   io.r.fill(0)
   tape.process(io, dirty, ctx)
   expect(Math.max(...io.l.map(Math.abs))).toBeLessThan(1e-6)
+})
+
+// The echo on its own with nothing played in, feedback past unity, and the
+// last second of the take.
+const unfed = (over: Partial<Controls>, seconds: number) => {
+  const tape = new TapeDelay(SR, 1)
+  const ctx = bareCtx()
+  const p = packParams({ ...DEFAULT_CONTROLS, dlyMix: 1, dlyFb: 1.3, ...over })
+  const io = { l: zeros(), r: zeros(), n: BLOCK }
+  const out = new Float32Array(SR)
+  const blocks = Math.floor((seconds * SR) / BLOCK)
+  for (let b = 0; b < blocks; b++) {
+    io.l.fill(0)
+    io.r.fill(0)
+    tape.process(io, p, ctx)
+    const at = (b - blocks) * BLOCK + SR
+    if (at >= 0) out.set(io.l, at)
+  }
+  return out
+}
+
+// A one-second take, so a whole-hertz bin is a DFT bin and the bins add up to
+// the take's power.
+const spectrum = (x: Float32Array) => {
+  let low = bin(x, 0) ** 2
+  let top = 0
+  let topLevel = 0
+  for (let hz = 1; hz < 200; hz++) {
+    const b = bin(x, hz)
+    if (hz < 120) low += 2 * b * b
+    if (b > topLevel) {
+      top = hz
+      topLevel = b
+    }
+  }
+  return { low: low / rms(x) ** 2, top }
+}
+
+test('with no bump and no hiss the echo keeps its samples', () => {
+  const busy: Partial<Controls> = {
+    ...ECHO,
+    dlyFb: 1.2,
+    dlyHeads: 4,
+    dlyHeadDirt: 0.5,
+    flutter: 0.5,
+    wowDepthMs: 2,
+  }
+  const take = (over: Partial<Controls>) =>
+    renderBender({ ...busy, ...over }, 2, load)
+  const stock = take({})
+  expect(take({ dlyBump: 0, dlyHiss: 0 })).toEqual(stock)
+  expect(take({ dlyBump: 0.01 })).not.toEqual(stock)
+  expect(take({ dlyHiss: 0.01 })).not.toEqual(stock)
+})
+
+test('hiss on the tape grows a runaway out of silence', () => {
+  expect(rms(unfed({}, 8))).toBe(0)
+  expect(rms(unfed({ dlyHiss: 1 }, 8))).toBeGreaterThan(0.2)
+})
+
+test('the bump settles the runaway low, and higher on a shorter repeat', () => {
+  const flat = spectrum(unfed({ dlyHiss: 1 }, 8))
+  const long = spectrum(unfed({ dlyHiss: 1, dlyBump: 1 }, 8))
+  const short = spectrum(unfed({ dlyHiss: 1, dlyBump: 1, delayMs: 150 }, 8))
+  expect(flat.low).toBeLessThan(0.1)
+  expect(long.low).toBeGreaterThan(0.9)
+  expect(long.top).toBeGreaterThan(25)
+  expect(long.top).toBeLessThan(40)
+  expect(short.top).toBeGreaterThan(2 * long.top)
+})
+
+test('the brake drags the bump down with the tape', () => {
+  const free = spectrum(unfed({ dlyHiss: 1, dlyBump: 1 }, 8))
+  const braked = spectrum(unfed({ dlyHiss: 1, dlyBump: 1, tapeBrake: 0.3 }, 14))
+  expect(braked.low).toBeGreaterThan(0.9)
+  expect(braked.top).toBeLessThan(0.75 * free.top)
 })

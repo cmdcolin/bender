@@ -25,6 +25,8 @@ const KEYS = [
   'dlySend',
   'dlyHeads',
   'dlyHeadDirt',
+  'dlyBump',
+  'dlyHiss',
   'dlyFb',
   'dlyToneHz',
   'dlyLoopMode',

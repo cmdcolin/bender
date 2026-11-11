@@ -6,7 +6,7 @@ import { coef as timeCoef } from '../util/follower.ts'
 import { QuadOsc, SineOsc } from '../util/lfo.ts'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
-import { mulberry32, type Rng } from '../util/rng.ts'
+import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 import { dampAt, Svf, svfF } from '../util/svf.ts'
 
@@ -45,7 +45,8 @@ const DELAY_MS = [20, 4000] as const
 // 6 µm, 17 dB down at 10 kHz at that speed, and the heads clog unevenly.
 const DIRT_UM = 6
 const DIRT_SHARE = [1, 0.55, 0.8]
-const SPEED_UM_S = 19e4 * 0.3
+const NOMINAL_UM_S = 19e4
+const SPEED_UM_S = NOMINAL_UM_S * 0.3
 // Debris catching under a head lifts the tape off it for a moment: a dropout,
 // a few to tens of µm, gone again in tens of ms.
 const DROPS_PER_S = 2.5
@@ -66,6 +67,44 @@ const lowPole = (f3: number, sr: number) =>
   lpCoef(Math.min(1.1 * f3, 0.45 * sr), sr)
 const highPole = (f3: number, sr: number) =>
   lpCoef(Math.min(5 * f3, 0.45 * sr), sr)
+
+// The replay head's bump and the inverted ripple above it, as the tape machine
+// has them, at the 7½ ips row's frequency for the nominal speed. Hiss on the
+// medium is that row's level and grows on slower tape the way the four-track's
+// does.
+const BUMP_HZ = 38
+const BUMP_Q = 1 / 1.2
+const RIPPLE_RATIO = 2.2
+const RIPPLE_DEPTH = 0.4
+const SPEED_RANGE = [0.25, 8] as const
+const HISS = 0.006
+const HISS_SLOPE = -0.77
+
+class HeadBump {
+  private low = 0
+  private band = 0
+  private ripLow = 0
+  private ripBand = 0
+
+  process(y: number, f: number, ripF: number, bump: number) {
+    this.low = flushDenormal(this.low + f * this.band)
+    this.band = flushDenormal(
+      this.band + f * (y - this.low - BUMP_Q * this.band),
+    )
+    this.ripLow = flushDenormal(this.ripLow + ripF * this.ripBand)
+    this.ripBand = flushDenormal(
+      this.ripBand + ripF * (y - this.ripLow - BUMP_Q * this.ripBand),
+    )
+    return y + BUMP_Q * bump * (this.band - RIPPLE_DEPTH * this.ripBand)
+  }
+
+  reset() {
+    this.low = 0
+    this.band = 0
+    this.ripLow = 0
+    this.ripBand = 0
+  }
+}
 
 // A sine carrier at full depth costs the tail 3 dB a lap, so the repeats die
 // faster for no reason anyone asked for. √2 is exactly what the modulation took
@@ -118,6 +157,11 @@ export class TapeDelay implements Stage {
   private readonly gapL2 = HEAD_IDS.map(() => new OnePoleLP())
   private readonly gapR1 = HEAD_IDS.map(() => new OnePoleLP())
   private readonly gapR2 = HEAD_IDS.map(() => new OnePoleLP())
+  private bumpL = new HeadBump()
+  private bumpR = new HeadBump()
+  private hissGauss: Rng
+  private hissL = 0
+  private hissR = 0
   private readonly maxDelay: number
   private readonly loop: number
   private readonly gap: number
@@ -137,12 +181,17 @@ export class TapeDelay implements Stage {
     this.lineR = new DelayLine(this.maxDelay + 4)
     this.rng = mulberry32(seed)
     this.dirtRng = mulberry32(seed ^ 0x5eed)
+    this.hissGauss = gaussian(mulberry32(seed ^ 0x4155))
+  }
+
+  private umPerS(delaySec: number) {
+    return (SPEED_UM_S / Math.max(delaySec, 0.02)) * this.motor
   }
 
   /** Each head's spacing for this block, as the poles that lose it; returns
       the heads that have any. */
   private clog(dirt: number, delaySec: number, n: number): number {
-    const umPerS = (SPEED_UM_S / Math.max(delaySec, 0.02)) * this.motor
+    const umPerS = this.umPerS(delaySec)
     const fall = Math.exp(-n / (DROP_S * this.sr))
     const odds = (dirt * DROPS_PER_S * n) / this.sr
     let clogged = 0
@@ -199,6 +248,25 @@ export class TapeDelay implements Stage {
     const erase = p[IDX.dlyErase]!
     const heads = HEAD_MASKS[Math.round(p[IDX.dlyHeads]!)] ?? 1
     const clogged = this.clog(p[IDX.dlyHeadDirt]!, baseDelay / this.sr, io.n)
+    const speed = Math.min(
+      Math.max(this.umPerS(baseDelay / this.sr) / NOMINAL_UM_S, SPEED_RANGE[0]),
+      SPEED_RANGE[1],
+    )
+    const headBump = p[IDX.dlyBump]!
+    const bumping = headBump > 0
+    const bumpF = bumping
+      ? 2 * Math.sin((Math.PI * BUMP_HZ * speed) / this.sr)
+      : 0
+    const ripF = bumping
+      ? 2 * Math.sin((Math.PI * BUMP_HZ * speed * RIPPLE_RATIO) / this.sr)
+      : 0
+    if (!bumping) {
+      this.bumpL.reset()
+      this.bumpR.reset()
+    }
+    const hiss = p[IDX.dlyHiss]! * HISS * Math.pow(speed, HISS_SLOPE)
+    const hissing = hiss > 0
+    const hissCoef = lpCoef(1500, this.sr)
     const nHeads = (heads & 1) + ((heads >> 1) & 1) + ((heads >> 2) & 1)
     const lap = fixedTap(this.loop, this.maxDelay)
     const modSpeed = ctx.mod.read(DEST.tapeSpeed)
@@ -276,6 +344,10 @@ export class TapeDelay implements Stage {
         sumL += l
         sumR += r
       }
+      if (bumping) {
+        sumL = this.bumpL.process(sumL, bumpF, ripF, headBump)
+        sumR = this.bumpR.process(sumR, bumpF, ripF, headBump)
+      }
       let tapL = this.toneL.process(sumL, coef)
       let tapR = this.toneR.process(sumR, coef)
       if (loopMode >= 0) {
@@ -309,6 +381,14 @@ export class TapeDelay implements Stage {
       if (fbInject) {
         wl += ctx.fb[i]!
         wr += ctx.fb[i]!
+      }
+      if (hissing) {
+        const nl = this.hissGauss()
+        const nr = this.hissGauss()
+        this.hissL = flushDenormal(this.hissL + hissCoef * (nl - this.hissL))
+        this.hissR = flushDenormal(this.hissR + hissCoef * (nr - this.hissR))
+        wl += (nl + 0.8 * (nl - 2 * this.hissL)) * hiss
+        wr += (nr + 0.8 * (nr - 2 * this.hissR)) * hiss
       }
       if (erase > 0) {
         wl += softclip(erase * this.lineL.readAt(lap.whole, lap.frac))
@@ -359,5 +439,9 @@ export class TapeDelay implements Stage {
     this.lift.fill(0)
     this.clogged = 0
     for (const k of HEAD_IDS) this.wipeHead(k)
+    this.bumpL.reset()
+    this.bumpR.reset()
+    this.hissL = 0
+    this.hissR = 0
   }
 }

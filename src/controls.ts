@@ -1124,6 +1124,8 @@ export const DEFAULT_CONTROLS = {
   tapeMotorRail: 0,
   dlyHeads: 0,
   dlyHeadDirt: 0,
+  dlyBump: 0,
+  dlyHiss: 0,
   dlySplice: 0,
   dlyErase: 0,
   dlyMix: 0,
