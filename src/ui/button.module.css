@@ -124,7 +124,7 @@
 .outlineChosen {
   composes: outline;
   color: var(--fg);
-  background: color-mix(in srgb, var(--fg) 14%, transparent);
+  background: var(--chosen-bg);
   border-color: var(--fg4);
 }
 
@@ -208,7 +208,7 @@
 .chipOn {
   composes: chip;
   color: var(--fg);
-  background: var(--surface-raised);
+  background: var(--chosen-bg);
   border-color: var(--fg4);
 }
 
@@ -263,7 +263,7 @@
 .pickOn {
   composes: pick;
   color: var(--fg);
-  background: var(--surface-raised);
+  background: var(--chosen-bg);
   border-color: var(--fg4);
 }
 

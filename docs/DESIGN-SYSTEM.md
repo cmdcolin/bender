@@ -1,8 +1,10 @@
 # Design system
 
+- **Rules:** skillet-shared's `DESIGN.md`, shared with videoskillet: shape, the
+  chosen and running looks, hover and switches
 - **Tokens:** `skillet-shared/tokens.css`, shared with videoskillet (neutrals,
-  borders, type, spacing, corners, shadows, scrim), and `src/theme.css`
-  (bender's accent, control heights, row gaps, card corners)
+  borders, type, spacing, corners, the chosen fill, shadows, scrim), and
+  `src/theme.css` (bender's accent, control heights, row gaps, card corners)
 - **Element defaults:** `skillet-shared/base.css`, shared with videoskillet
   (border-box, reduced motion, control fonts, pointer cursor, focus ring)
 - **Buttons and dropdowns:** `src/ui/button.module.css`, where every look and
@@ -97,7 +99,7 @@ sets a control's height whatever font the system supplies.
   a glyph or word inside a row, goes without one.
 - A two-state switch is a ToggleButtonGroup with both states named, such as a
   pedal's `on | off`, never a lone glyph whose fill carries the state.
-- A chosen item, a pick or a chip, takes the grey fill with an `--fg4` edge. The
+- A chosen item, a pick or a chip, takes `--chosen-bg` with an `--fg4` edge. The
   accent is for something that sounds or runs, such as a pedal's `on`.
 - Hover brightens the text and the edge and never borrows a chosen look.
 - A stage panel's header sets `--cap-h` to `--ctl-h-sm`, so its caps sit level
