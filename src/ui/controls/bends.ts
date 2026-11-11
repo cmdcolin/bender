@@ -1,7 +1,15 @@
 import { FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
 import { CHOP_FILLS } from '../../dsp/stages/chopGate.ts'
 import { PIN_GAIN_MAX, STOCK_GAIN } from '../../dsp/stages/clipper.ts'
-import { CODEC_CONCEAL, CODEC_FRAME_NAMES } from '../../dsp/stages/codec.ts'
+import {
+  CODEC_CONCEAL,
+  CODEC_FRAME_NAMES,
+  CODEC_INVERT_HZ,
+  CODEC_MISREAD_KHZ,
+  CODEC_PAN_FLOOR_HZ,
+  CODEC_SCRAMBLE,
+  CODEC_SCRAMBLE_HOLD,
+} from '../../dsp/stages/codec.ts'
 import { COMB_CHIP } from '../../dsp/stages/comb.ts'
 import {
   CRUSH_ADC,
@@ -1247,7 +1255,29 @@ export const BEND_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Chance per frame that the decoder files each band under another band, so the tune jumps between registers and the bass turns up in the treble.',
+        help: 'How much of the stream the decoder misreads. Scramble kind names the field. With bands or pan this is the chance for each band, and with rate or invert it is the chance for each new scramble.',
+      },
+      {
+        key: 'codecScrambleKind',
+        label: 'Scramble kind',
+        min: 0,
+        max: CODEC_SCRAMBLE.length - 1,
+        step: 1,
+        unit: '',
+        choices: CODEC_SCRAMBLE,
+        needs: c => c.codecScramble > 0,
+        help: `The field the decoder misreads. Bands files each band under another band, so the tune jumps between registers and the bass turns up in the treble. Rate reads the sample-rate bits as ${CODEC_MISREAD_KHZ.join(', ')} kHz and plays the frame that much slower, so the note drops in pitch and the end of the frame is cut. Invert plays the bins under a carrier back to front, as a voice scrambler does, with the carrier drawn between ${CODEC_INVERT_HZ[0]} and ${CODEC_INVERT_HZ[1]} Hz, so a rising line falls and the bass moves up under the carrier. Pan reads each band above ${CODEC_PAN_FLOOR_HZ} Hz as intensity stereo and throws it hard left or right.`,
+      },
+      {
+        key: 'codecScrambleHold',
+        label: 'Scramble hold',
+        min: 0,
+        max: CODEC_SCRAMBLE_HOLD.length - 1,
+        step: 1,
+        unit: '',
+        choices: CODEC_SCRAMBLE_HOLD,
+        needs: c => c.codecScramble > 0,
+        help: 'How long one scramble lasts. On frame the decoder draws a new one every frame, a flicker at the frame rate. On hit it keeps one until the level at the encoder jumps, so the scramble changes on each note or drum hit and stays until the next.',
       },
       {
         key: 'codecFreeze',

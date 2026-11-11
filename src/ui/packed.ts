@@ -1353,6 +1353,8 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'fmGroundLoop',
   'fmSelfBus',
   'fmLatch',
+  'codecScrambleKind',
+  'codecScrambleHold',
 ]
 
 // Retired controls that old links still carry, each read into the control that

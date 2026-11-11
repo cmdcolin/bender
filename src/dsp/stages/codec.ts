@@ -4,7 +4,7 @@ import { Burst } from '../util/burst.ts'
 import { Mdct } from '../util/mdct.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
-import { softclip } from '../util/softclip.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -16,6 +16,13 @@ import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 export const CODEC_FRAMES = [128, 256, 512, 1024, 2048] as const
 export const CODEC_FRAME_NAMES = ['short', 'normal', 'long', 'huge', 'giant']
 export const CODEC_CONCEAL = ['repeat', 'mute', 'noise']
+export const CODEC_SCRAMBLE = ['bands', 'rate', 'invert', 'pan']
+export const CODEC_SCRAMBLE_HOLD = ['frame', 'hit']
+
+const BANDS = 0
+const RATE = 1
+const INVERT = 2
+const PAN = 3
 
 const BAND_HZ = [
   0, 100, 200, 300, 400, 510, 630, 770, 920, 1080, 1270, 1480, 1720, 2000, 2320,
@@ -36,13 +43,25 @@ const ERR_BIN = 0.02
 const ERR_DESYNC = 0.25
 const LATE_JITTER = 0.2
 const LATE_DROOP = 2
+export const CODEC_MISREAD_KHZ = [44.1, 32, 24, 22.05, 16]
+export const CODEC_INVERT_HZ = [250, 1400] as const
+export const CODEC_PAN_FLOOR_HZ = 200
+const MISREAD_RATES = CODEC_MISREAD_KHZ.map(khz => khz / 48)
+const INVERT_OCTAVES = Math.log2(CODEC_INVERT_HZ[1] / CODEC_INVERT_HZ[0])
+const ATTACK_FAST_S = 0.005
+const ATTACK_SLOW_S = 0.06
+const ATTACK_RISE = 1.5
+const ATTACK_REARM = 1.2
+const ATTACK_FLOOR = 1e-7
 
 class Size {
   readonly mdct: Mdct
   readonly edges: Uint16Array
+  readonly binHz: number
   constructor(n: number, sr: number) {
     this.mdct = new Mdct(n)
     const binHz = sr / 2 / n
+    this.binHz = binHz
     const edges = [0]
     for (const hz of BAND_HZ.slice(1)) {
       const at = Math.min(Math.round(hz / binHz), n)
@@ -67,12 +86,14 @@ class Lane {
   readonly rms = new Float64Array(MAX_BANDS)
   readonly peak = new Float64Array(MAX_BANDS)
   readonly bits = new Uint8Array(MAX_BANDS)
+  readonly filed = new Int8Array(MAX_BANDS).fill(-1)
 
   reset() {
     this.input.fill(0)
     this.ready.fill(0)
     this.tail.fill(0)
     this.held.fill(0)
+    this.filed.fill(-1)
   }
 }
 
@@ -92,6 +113,15 @@ export class Codec implements Stage {
   private rng: Rng
   private loss: Burst
   private readonly sr: number
+  private readonly thrown = new Int8Array(MAX_BANDS)
+  private carrierHz = 0
+  private rate = 1
+  private rateNext = 1
+  private rolledChance = 0
+  private rolledKind = BANDS
+  private envFast = 0
+  private envSlow = 0
+  private armed = true
 
   constructor(sr: number, seed = 0xc0dec) {
     this.sr = sr
@@ -205,7 +235,15 @@ export class Codec implements Stage {
     const freeze = Math.round(p[IDX.codecFreeze]!) === 1
     const conceal = Math.round(p[IDX.codecConceal]!)
     const swap = p[IDX.codecScramble]!
+    const kind = Math.round(p[IDX.codecScrambleKind]!)
     const alias = p[IDX.codecAlias]!
+    const hit = this.attack(n)
+    const fresh =
+      Math.round(p[IDX.codecScrambleHold]!) === 0 ||
+      hit ||
+      swap !== this.rolledChance ||
+      kind !== this.rolledKind
+    const bands = size.edges.length - 1
 
     for (const lane of lanes) {
       if (freeze) scatter(lane, n, rng)
@@ -217,14 +255,68 @@ export class Codec implements Stage {
         quantise(lane, size.edges, cut, n, err, rng)
         copy(lane.coef, lane.held, n)
       }
-      if (swap > 0) scramble(lane.coef, size.edges, cut, swap, rng)
+      if (swap > 0 && kind === BANDS) {
+        if (fresh) file(lane.filed, bands, swap, rng)
+        refile(lane.coef, lane.filed, size.edges, cut)
+      }
+    }
+
+    this.rate = this.rateNext
+    if (fresh) this.roll(kind, swap, bands)
+    const top = Math.min(Math.round(this.carrierHz / size.binHz), n)
+    if (top > 0) for (const lane of lanes) reverse(lane.coef, top)
+    intensity(
+      mid.coef,
+      side.coef,
+      this.thrown,
+      size.edges,
+      CODEC_PAN_FLOOR_HZ / size.binHz,
+    )
+
+    for (const lane of lanes) {
       size.mdct.inverse(lane.coef, lane.frame)
       for (let k = 0; k < n; k++) {
         lane.ready[k] = lane.tail[k]! + lane.frame[k]!
         lane.tail[k] = lane.frame[n + k]!
       }
       if (alias > 0) mirror(lane.ready, n, alias)
+      if (this.rate < 1) slow(lane.ready, lane.frame, n, this.rate)
     }
+  }
+
+  private attack(n: number) {
+    const hop = this.mid.input
+    let e = 0
+    for (let k = 0; k < n; k++) e += hop[k]! * hop[k]!
+    const seconds = n / this.sr
+    const was = this.envSlow
+    const fast = flushDenormal(
+      this.envFast +
+        (e / n - this.envFast) * (1 - Math.exp(-seconds / ATTACK_FAST_S)),
+    )
+    this.envFast = fast
+    this.envSlow = flushDenormal(
+      was + (fast - was) * (1 - Math.exp(-seconds / ATTACK_SLOW_S)),
+    )
+    const hit = this.armed && fast > ATTACK_RISE * was + ATTACK_FLOOR
+    this.armed = !hit && (this.armed || fast < ATTACK_REARM * was)
+    return hit
+  }
+
+  private roll(kind: number, chance: number, bands: number) {
+    const { rng, thrown } = this
+    this.rolledChance = chance
+    this.rolledKind = kind
+    this.rateNext =
+      kind === RATE && rng() < chance
+        ? MISREAD_RATES[Math.floor(rng() * MISREAD_RATES.length)]!
+        : 1
+    this.carrierHz =
+      kind === INVERT && rng() < chance
+        ? CODEC_INVERT_HZ[0] * 2 ** (rng() * INVERT_OCTAVES)
+        : 0
+    for (let b = 0; b < bands; b++)
+      thrown[b] = kind === PAN && rng() < chance ? (rng() < 0.5 ? 1 : -1) : 0
   }
 
   private restart(pick: number) {
@@ -232,6 +324,11 @@ export class Codec implements Stage {
     this.mid.reset()
     this.side.reset()
     this.pos = 0
+    this.thrown.fill(0)
+    this.carrierHz = 0
+    this.rate = 1
+    this.rateNext = 1
+    this.rolledKind = -1
   }
 
   panic() {
@@ -241,6 +338,9 @@ export class Codec implements Stage {
     this.live = false
     this.heard = false
     this.loss.reset()
+    this.envFast = 0
+    this.envSlow = 0
+    this.armed = true
   }
 }
 
@@ -370,18 +470,21 @@ function scatter(lane: Lane, n: number, rng: Rng) {
     lane.coef[k] = rng() < 0.5 ? lane.held[k]! : -lane.held[k]!
 }
 
-function scramble(
+function file(filed: Int8Array, bands: number, chance: number, rng: Rng) {
+  for (let b = 0; b < bands; b++)
+    filed[b] = rng() < chance ? Math.floor(rng() * bands) : -1
+}
+
+function refile(
   c: Float64Array,
+  filed: Int8Array,
   edges: Uint16Array,
   cut: number,
-  chance: number,
-  rng: Rng,
 ) {
-  const bands = edges.length - 1
-  for (let b = 0; b < bands; b++) {
-    if (rng() >= chance) continue
-    const o = Math.floor(rng() * bands)
-    const width = Math.min(edges[b + 1]! - edges[b]!, edges[o + 1]! - edges[o]!)
+  for (let b = 0; b + 1 < edges.length; b++) {
+    const o = filed[b]!
+    const width =
+      o < 0 ? 0 : Math.min(edges[b + 1]! - edges[b]!, edges[o + 1]! - edges[o]!)
     for (let k = 0; k < width; k++) {
       const i = edges[b]! + k
       const j = edges[o]! + k
@@ -390,6 +493,42 @@ function scramble(
       c[i] = c[j]!
       c[j] = t
     }
+  }
+}
+
+function reverse(c: Float64Array, top: number) {
+  for (let i = 0, j = top - 1; i < j; i++, j--) {
+    const t = c[i]!
+    c[i] = c[j]!
+    c[j] = t
+  }
+}
+
+function intensity(
+  mid: Float64Array,
+  side: Float64Array,
+  thrown: Int8Array,
+  edges: Uint16Array,
+  floor: number,
+) {
+  for (let b = 0; b + 1 < edges.length; b++) {
+    const to = thrown[b]!
+    if (to !== 0 && edges[b]! >= floor)
+      for (let k = edges[b]!; k < edges[b + 1]!; k++) {
+        const m = mid[k]! * Math.SQRT1_2
+        mid[k] = m
+        side[k] = to * m
+      }
+  }
+}
+
+function slow(x: Float64Array, scratch: Float64Array, n: number, rate: number) {
+  copy(x, scratch, n)
+  for (let k = 0; k < n; k++) {
+    const at = k * rate
+    const i = Math.floor(at)
+    const a = scratch[i]!
+    x[k] = a + (at - i) * (scratch[i + 1]! - a)
   }
 }
 

@@ -1262,8 +1262,22 @@ decoder, two frames late. The dry path waits the same two frames.
 - **Alias:** leaves the time aliasing uncancelled, so each frame plays with a
   reversed copy of itself on top. A giant frame (2048 samples) reverses 43 ms at
   a time.
-- **Scramble:** the decoder files bands under other bands, so the tune jumps
-  between registers.
+- **Scramble:** the decoder misreads one field of the stream, and **Scramble
+  kind** names the field.
+  - **bands:** the decoder files bands under other bands, so the tune jumps
+    between registers.
+  - **rate:** the decoder reads the sample-rate bits as a lower rate and plays
+    the frame that much slower. Some rates land a fifth, an octave or an octave
+    and a fifth down, and the others land between notes. The end of each slow
+    frame is cut, which buzzes at the frame rate.
+  - **invert:** the decoder plays the bins under a carrier back to front, as a
+    voice scrambler does. A rising line falls, and the bass moves up under the
+    carrier while the notes there move down.
+  - **pan:** the decoder reads bands above the bass as intensity stereo and
+    throws each hard left or right, which spreads a mono toy across the field.
+- **Scramble hold:** on frame, the decoder draws a new scramble every frame. On
+  hit, it keeps one until the level at the encoder jumps, so the scramble
+  changes with each note or drum hit.
 - **Freeze:** holds the last decoded spectrum with fresh signs each frame, a
   drone made from whatever was playing.
 - The patch bay's **codec rate** and **codec errors** lanes ride Bitrate and Bit

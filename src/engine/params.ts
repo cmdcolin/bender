@@ -1037,6 +1037,8 @@ export const PARAM_DEFS = [
   ['codecFb', 'slew'],
   ['codecAlias', 'slew'],
   ['codecScramble', 'slew'],
+  ['codecScrambleKind', 'step'],
+  ['codecScrambleHold', 'step'],
   ['codecMix', 'slew'],
   ['codecMute', 'ramp'],
 

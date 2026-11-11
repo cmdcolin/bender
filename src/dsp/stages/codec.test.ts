@@ -4,7 +4,15 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
 import { packParams } from '../../engine/params.ts'
 import { DEST, ModBus } from '../modbus.ts'
 import { BLOCK, GLINT_REGS, type Ctx, type Stage } from '../stage.ts'
-import { bin, highEnergy, quiet, render, rms, SR } from '../testRender.ts'
+import {
+  bin,
+  highEnergy,
+  pitchHz,
+  quiet,
+  render,
+  rms,
+  SR,
+} from '../testRender.ts'
 import { TriggerBus } from '../trigbus.ts'
 import { Codec } from './codec.ts'
 
@@ -196,6 +204,103 @@ test('scramble files a low tone under higher bands', () => {
   const high = (codecScramble: number) =>
     highEnergy(stage({ codecRate: 320, codecScramble }, low).l, 2000)
   expect(high(0.5)).toBeGreaterThan(high(0) * 5)
+})
+
+const pure = (hz: number) => (t: number) =>
+  0.5 * Math.sin((2 * Math.PI * hz * t) / SR)
+
+const pulsed = (hz: number) => (t: number) =>
+  t % (SR / 8) < SR / 16 ? pure(hz)(t) : 0
+
+const KIND = { rate: 1, invert: 2, pan: 3 }
+const HIT = 1
+
+function balances({ l, r }: { l: Float32Array; r: Float32Array }) {
+  const hop = SR / 8
+  return Array.from({ length: 7 }, (_, i) => {
+    const at = (i + 1) * hop + LATENCY
+    const left = rms(l.subarray(at, at + hop))
+    const right = rms(r.subarray(at, at + hop))
+    return (left - right) / (left + right)
+  })
+}
+
+const spread = (x: number[]) => Math.max(...x) - Math.min(...x)
+
+test('a rate scramble plays a tone below its pitch', () => {
+  const pitch = (codecScramble: number) =>
+    pitchHz(
+      stage(
+        {
+          codecRate: 320,
+          codecFrame: 4,
+          codecScrambleKind: KIND.rate,
+          codecScramble,
+        },
+        pure(1000),
+      ).l.subarray(SR / 4),
+    )
+  expect(pitch(0)).toBeCloseTo(1000, -1)
+  expect(pitch(1)).toBeLessThan(950)
+  expect(pitch(1)).toBeGreaterThan(300)
+})
+
+test('an invert scramble moves a low tone off its pitch', () => {
+  const at = (codecScramble: number) =>
+    bin(
+      stage(
+        { codecRate: 320, codecScrambleKind: KIND.invert, codecScramble },
+        pure(220),
+      ).l,
+      220,
+    )
+  expect(at(1)).toBeLessThan(at(0) / 3)
+})
+
+test('a pan scramble throws bands of a mono tone to one side', () => {
+  const width = (codecScramble: number) => {
+    const { l, r } = stage(
+      { codecRate: 320, codecScrambleKind: KIND.pan, codecScramble },
+      pure(1000),
+    )
+    return rms(l.map((v, i) => v - r[i]!)) / rms(l.map((v, i) => v + r[i]!))
+  }
+  expect(width(0)).toBeLessThan(0.01)
+  expect(width(1)).toBeGreaterThan(0.5)
+})
+
+test('a scramble held for a hit keeps one code through a steady tone', () => {
+  const thrown = (codecScrambleHold: number) =>
+    balances(
+      stage(
+        {
+          codecRate: 320,
+          codecScrambleKind: KIND.pan,
+          codecScramble: 1,
+          codecScrambleHold,
+        },
+        pure(1000),
+      ),
+    )
+  const held = thrown(HIT)
+  expect(spread(held)).toBeLessThan(0.05)
+  expect(Math.abs(held[0]!)).toBeGreaterThan(0.9)
+  expect(Math.abs(thrown(0)[0]!)).toBeLessThan(0.5)
+})
+
+test('a scramble held for a hit rolls a new code at each attack', () => {
+  const sides = balances(
+    stage(
+      {
+        codecRate: 320,
+        codecScrambleKind: KIND.pan,
+        codecScramble: 1,
+        codecScrambleHold: HIT,
+      },
+      pulsed(1000),
+    ),
+  )
+  expect(spread(sides)).toBeGreaterThan(1.5)
 })
 
 function sweep(

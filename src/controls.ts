@@ -1067,6 +1067,8 @@ export const DEFAULT_CONTROLS = {
   codecFb: 0,
   codecAlias: 0,
   codecScramble: 0,
+  codecScrambleKind: 0,
+  codecScrambleHold: 0,
   codecMix: 0,
   codecMute: 0,
 

@@ -1863,6 +1863,62 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'wrong sample rate',
+    blurb:
+      'The decoder misreads the sample-rate bits on some hits, so those notes play slow and low until the next hit',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 96,
+      codecFrame: 3,
+      codecScramble: 0.5,
+      codecScrambleKind: 1,
+      codecScrambleHold: 1,
+    },
+  },
+  {
+    name: 'voice scrambler',
+    blurb:
+      'The decoder draws a new inversion carrier on each hit and plays the notes under it upside down, so the bass and the melody trade places',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 96,
+      codecScramble: 0.7,
+      codecScrambleKind: 2,
+      codecScrambleHold: 1,
+    },
+  },
+  {
+    name: 'intensity stereo',
+    blurb:
+      'On each hit the decoder throws the bands of the mono toy to new sides, and they stay there until the next',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 96,
+      codecScramble: 0.8,
+      codecScrambleKind: 3,
+      codecScrambleHold: 1,
+    },
+  },
+  {
+    name: 'register per note',
+    blurb:
+      'Bands are filed under other bands once per hit, so each note holds one wrong register for its length',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 9,
+      codecMix: 1,
+      codecRate: 64,
+      codecScramble: 0.35,
+      codecScrambleHold: 1,
+    },
+  },
+  {
     name: 'cheap cathedral',
     blurb:
       'The toy plays through a 1980s rack reverb at its largest program and nearly full decay, onto a tape that wanders',
