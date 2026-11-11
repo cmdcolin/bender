@@ -437,7 +437,7 @@ function numberFor(key: ControlKey, asked: Value): number {
 interface Queued {
   cut: Partial<Controls>
   glide: Partial<Controls>
-  glides: Map<ControlKey, unknown>
+  glides: Map<ControlKey, Length>
   force: Set<ControlKey>
   hits: (() => void)[]
 }
@@ -452,12 +452,16 @@ function land(
   force?: ReadonlySet<ControlKey>,
   spans?: ReadonlyMap<ControlKey, number>,
 ) {
-  const seconds = secondsOf(glide)
+  const length = lengthOf(glide)
   const board = engine.controls.get()
+  const seconds = secondsAt(
+    length,
+    patch.drumBpm === board.drumBpm ? undefined : patch.drumBpm,
+  )
   if (queueing && seconds > 0) {
     Object.assign(queueing.glide, patch)
     for (const key of CONTROL_KEYS)
-      if (patch[key] !== undefined) queueing.glides.set(key, glide)
+      if (patch[key] !== undefined) queueing.glides.set(key, length)
     for (const key of force ?? []) queueing.force.add(key)
   } else if (queueing) {
     Object.assign(queueing.cut, patch)
@@ -489,20 +493,30 @@ function runOf(bars: unknown) {
   return steps
 }
 
-const stepMs = () =>
-  engine.meter.get().drumStepMs ||
-  15000 / Math.max(engine.controls.get().drumBpm, 1)
-
-function secondsOf(glide: unknown) {
-  if (typeof glide === 'object' && glide !== null && 'bars' in glide)
-    return (runOf(glide.bars) * stepMs()) / 1000
+function lengthOf(glide: unknown) {
   const seconds = Number(glide ?? 0)
-  if (!Number.isFinite(seconds))
-    throw new Error(
-      `'${String(glide)}' is not a glide; give seconds such as 4, or bars as { bars: 8 }`,
-    )
-  return Math.max(seconds, 0)
+  return typeof glide === 'object' && glide !== null && 'bars' in glide
+    ? { steps: runOf(glide.bars) }
+    : Number.isFinite(seconds)
+      ? { seconds: Math.max(seconds, 0) }
+      : refuse(
+          `'${typeof glide === 'string' || typeof glide === 'number' ? String(glide) : JSON.stringify(glide)}' is not a glide; give seconds such as 4, or bars as { bars: 8 }`,
+        )
 }
+
+type Length = ReturnType<typeof lengthOf>
+
+function stepMs(bpm: number | undefined) {
+  const metered = engine.meter.get().drumStepMs
+  return bpm === undefined && engine.running.get() && metered > 0
+    ? metered
+    : 15000 / Math.max(bpm ?? engine.controls.get().drumBpm, 1)
+}
+
+const secondsAt = (length: Length, bpm?: number) =>
+  length.steps === undefined
+    ? length.seconds
+    : (length.steps * stepMs(bpm)) / 1000
 
 const counting = () => engine.drumsPlaying.get() && engine.running.get()
 
@@ -605,7 +619,10 @@ function queue(write: () => unknown, when: Bars | { bar: number } = 1) {
   return engine.cue(taken.cut, at, every).then(tick => {
     if (tick !== null) {
       const seconds = new Map(
-        [...taken.glides].map(([key, g]) => [key, secondsOf(g)] as const),
+        [...taken.glides].map(
+          ([key, length]) =>
+            [key, secondsAt(length, taken.cut.drumBpm)] as const,
+        ),
       )
       const longest = Math.max(0, ...seconds.values())
       const spans = new Map(
@@ -1174,7 +1191,12 @@ function rawBenderApi() {
     ): SetReport {
       if (typeof changes === 'string')
         return this.set(
-          { [changes]: typeof rest[0] === 'object' ? '' : (rest[0] ?? '') },
+          {
+            [changes]:
+              typeof rest[0] === 'object'
+                ? JSON.stringify(rest[0])
+                : (rest[0] ?? ''),
+          },
           rest[1] ?? 0,
         )
       const applied: Record<string, string> = {}

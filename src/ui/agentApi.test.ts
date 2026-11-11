@@ -808,23 +808,28 @@ test('queue aims at a named bar or a run of bars, and refuses one already begun'
   })
 })
 
-test('a glide in bars runs at the kit tempo, and an unreadable length writes nothing', () => {
+test('a glide in bars runs at the kit tempo, and an unreadable length writes nothing', async () => {
   const morph = vi.spyOn(engine, 'morphNow').mockImplementation(() => {})
   const board = engine.controls.get()
+  const meter = engine.meter.get()
   try {
-    atTick(0)
-    bender.set({ dlyFb: 0.9 }, { bars: 2 })
-    expect(activity.get().lines[0]?.text).toMatch(/\(glide 2 bars\)$/)
-    bender.set('dlyFb', 0.4, { bars: 'beat' })
-    bender.load('dying toy', { bars: 1 })
-    engine.controls.set({ ...board, dlyFb: 0.7 })
-    bender.reset({ bars: 0.5 })
-    bender.set({ dlyFb: 0.9 }, 3)
-    engine.meter.set({ ...engine.meter.get(), drumStepMs: 0 })
-    engine.controls.set({ ...board, drumBpm: 150 })
-    bender.set({ dlyFb: 0.9 }, { bars: 1 })
+    await onTheClock(() => {
+      atTick(0)
+      bender.set({ dlyFb: 0.9 }, { bars: 2 })
+      expect(activity.get().lines[0]?.text).toMatch(/\(glide 2 bars\)$/)
+      bender.set('dlyFb', 0.4, { bars: 'beat' })
+      expect(activity.get().lines[0]?.text).toMatch(/\(glide 1 beat\)$/)
+      bender.load('dying toy', { bars: 1 })
+      engine.controls.set({ ...board, dlyFb: 0.7 })
+      bender.reset({ bars: 0.5 })
+      bender.set({ dlyFb: 0.9 }, 3)
+      bender.set({ drumBpm: 100, dlyFb: 0.2 }, { bars: 1 })
+      engine.meter.set({ ...engine.meter.get(), drumStepMs: 0 })
+      engine.controls.set({ ...board, drumBpm: 150 })
+      bender.set({ dlyFb: 0.9 }, { bars: 1 })
+    })
     expect(morph.mock.calls.map(call => call[1])).toEqual([
-      4, 0.5, 2, 1, 3, 1.6,
+      4, 0.5, 2, 1, 3, 2.4, 1.6,
     ])
     expect(() => bender.set({ dlyFb: 0.1 }, { bars: 0 })).toThrow(
       /'0' is not a count of bars/,
@@ -833,31 +838,46 @@ test('a glide in bars runs at the kit tempo, and an unreadable length writes not
       "'8 bars' is not a glide; give seconds such as 4, or bars as { bars: 8 }",
     )
     expect(() => bender.reset(Number.NaN)).toThrow(/is not a glide/)
-    expect(morph).toHaveBeenCalledTimes(6)
+    expect(morph).toHaveBeenCalledTimes(7)
+    expect(bender.set('echoLines', { bars: 2 }).failed).toHaveLength(1)
   } finally {
     morph.mockRestore()
     engine.controls.set(board)
+    engine.meter.set(meter)
   }
 })
 
 test('a queued glide in bars reads the tempo on the bar it lands', async () => {
   const morph = vi.spyOn(engine, 'morphNow').mockImplementation(() => {})
+  const board = engine.controls.get()
   try {
     await onTheClock(async posted => {
+      const landAt = async (tick: number, write: () => void) => {
+        const landed = bender.queue(write)
+        const cue = posted.findLast(m => m.kind === 'cue')
+        engine.meter.set({
+          ...engine.meter.get(),
+          tick,
+          cued: cue?.id ?? 0,
+          drumStepMs: 100,
+        })
+        await landed
+        return morph.mock.calls.at(-1)?.[1]
+      }
       atTick(5)
-      const landed = bender.queue(() => bender.set({ dlyFb: 0.9 }, { bars: 2 }))
-      const cue = posted.findLast(m => m.kind === 'cue')
-      engine.meter.set({
-        ...engine.meter.get(),
-        tick: 16,
-        cued: cue?.id ?? 0,
-        drumStepMs: 100,
-      })
-      await landed
-      expect(morph.mock.calls.at(-1)?.[1]).toBe(3.2)
+      expect(
+        await landAt(16, () => bender.set({ dlyFb: 0.9 }, { bars: 2 })),
+      ).toBe(3.2)
+      expect(
+        await landAt(32, () => {
+          bender.drums({ bpm: 100 })
+          bender.set({ dlyFb: 0.3 }, { bars: 2 })
+        }),
+      ).toBe(4.8)
     })
   } finally {
     morph.mockRestore()
+    engine.controls.set(board)
   }
 })
 

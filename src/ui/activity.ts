@@ -89,10 +89,17 @@ function note(text: string, said = false, bends: readonly Bend[] = []) {
   })
 }
 
+const barsText = (bars: unknown) =>
+  bars === 'bar' || bars === 1
+    ? '1 bar'
+    : bars === 'beat'
+      ? '1 beat'
+      : `${String(bars)} bars`
+
 const glide = (length: unknown) => {
   const s = Number(length)
   return typeof length === 'object' && length !== null && 'bars' in length
-    ? `  (glide ${String(length.bars)} ${length.bars === 1 ? 'bar' : 'bars'})`
+    ? `  (glide ${barsText(length.bars)})`
     : Number.isFinite(s) && s > 0
       ? `  (glide ${s}s)`
       : ''
