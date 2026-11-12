@@ -2,6 +2,35 @@
 
 All notable changes to bender are documented here.
 
+## [1.28.2](https://github.com/cmdcolin/bender/compare/v1.28.1...v1.28.2) - 2026-11-12
+
+### Features
+- *(ui)* [`5cb3714`](https://github.com/cmdcolin/bender/commit/5cb3714e6aec18ce9ad7f219fff6272b4c27e5ab) glides take bars as well as seconds
+- *(ui)* [`f7595e8`](https://github.com/cmdcolin/bender/commit/f7595e8e5ad78c81ecb17f593b9c28c76e3e3e64) an on | off switch for pedals, and one button vocabulary
+- *(ui)* [`362dbbe`](https://github.com/cmdcolin/bender/commit/362dbbeb1618fca66e49195747ea60ad0183f13b) a red muted speaker, a joined heat group, and outline toolbar buttons
+- *(ui)* [`3e040f8`](https://github.com/cmdcolin/bender/commit/3e040f811fc616e9ee59f54e15d6e4c5dc8eae5a) panel verbs are chips, so a grey fill only ever means chosen
+- *(ui)* [`81169fd`](https://github.com/cmdcolin/bender/commit/81169fd0734048465767a237808568f76ba6f3de) an open drawer or view lights grey, and orange stays for running
+- *(ui)* [`6216e30`](https://github.com/cmdcolin/bender/commit/6216e302e5ab29f0839c48be63554814d0f80aa6) chosen chips and picks take skillet-shared's --chosen-bg
+- *(dsp)* [`90eee6c`](https://github.com/cmdcolin/bender/commit/90eee6cf009581b006acb497104b8323a7ae4644) codec scramble kinds (rate, invert, pan) and a hold that rolls on each hit
+- *(dsp)* [`33d44c8`](https://github.com/cmdcolin/bender/commit/33d44c87a8be962244e7c13c0b1b670d3d9f4a89) out to sync, out to cutoff and a hold strobe on Growler and Howler
+- *(dsp)* [`2a14c32`](https://github.com/cmdcolin/bender/commit/2a14c32b203b6f3b5d7fb00a561c76ac5ad9fd52) Wraith's replay head has a bump and its tape hisses
+- *(dsp)* [`e4ad708`](https://github.com/cmdcolin/bender/commit/e4ad7083f2d05ba46d42d49b402ef042c2ac1ae4) bay wires on the tape machine's level, bias, dropouts, squeal and azimuth
+- *(dsp)* [`f75385f`](https://github.com/cmdcolin/bender/commit/f75385f47adcfdf49df2f899b5837c9f2c330802) stack slip, overshoot and a pitch reset from another machine on Prattle
+- *(dsp)* [`f057447`](https://github.com/cmdcolin/bender/commit/f057447523e51300e8e48a0890cdcf352b989b41) three Glint bends: octave short, output on key line, envelope chain
+- *(dsp)* [`e3a9e4a`](https://github.com/cmdcolin/bender/commit/e3a9e4aa0070e610d93203a063608b335b0c9dd3) divider cascade, divider leak and output on divider for Plinky
+
+### Fixes
+- *(ui)* [`d7cb881`](https://github.com/cmdcolin/bender/commit/d7cb881083270485a79ae877590959aa14fe73d8) bar glides follow a tempo change and keep bad values out of the bay
+- *(dsp)* [`043d990`](https://github.com/cmdcolin/bender/commit/043d990d17ffc3bec45fce1993ac28d7af7459dc) the tape and four-track record heads saturate at twice the rate
+- [`3bc03d0`](https://github.com/cmdcolin/bender/commit/3bc03d01c01a4070965718ae7c85a1ec0ec47b70) keep a posts-folder CLAUDE.md out of the blog drafter
+
+### Documentation
+- [`2253f61`](https://github.com/cmdcolin/bender/commit/2253f614b72a4ea701a1571643302951905799bd) file the tape follow-ups as todo items
+- [`7c801f8`](https://github.com/cmdcolin/bender/commit/7c801f8052ab00acf556c31f75324cf9281f5088) point the bends handoff at this round's surveys and what each leaves unbuilt
+
+### Chores
+- [`6268e4a`](https://github.com/cmdcolin/bender/commit/6268e4a53ce9d13745294c28dd028265e6e4b60d) put bender's page views on its own GoatCounter site
+
 ## [1.28.1](https://github.com/cmdcolin/bender/compare/v1.28.0...v1.28.1) - 2026-11-10
 
 ### Features
