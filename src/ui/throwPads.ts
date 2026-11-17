@@ -2,8 +2,10 @@ import { isControlKey, type ControlKey } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
 import { bendDeal, bendName, isBendName } from './bendKeys.ts'
-import { padId, type PadBinding } from './pads.ts'
+import { SLIDER_BY_KEY } from './controls/index.ts'
+import { padId, readPad, type PadBinding } from './pads.ts'
 import { omit, parseMap, read, write } from './persist.ts'
+import { coerceControl } from './share.ts'
 import { THROWS } from './throws.ts'
 
 export type ThrowPadMap = Partial<Record<string, PadBinding>>
@@ -34,25 +36,18 @@ const throwName = (name: string) =>
   isBendName(name) ? name : (THROWS.find(t => t.name === name)?.name ?? null)
 const effectName = (control: string) => `effect:${control}`
 
-const readPad = (stored: object) => {
-  const { channel, note } = stored as Partial<PadBinding>
-  return typeof channel === 'number' && typeof note === 'number'
-    ? { channel, note }
-    : null
-}
-
-const parseThrowPads = (raw: string | null): ThrowPadMap =>
+export const parseThrowPads = (raw: string | null): ThrowPadMap =>
   parseMap(raw, throwName, readPad)
 
-const parseEffectPads = (raw: string | null): EffectPadMap =>
+export const parseEffectPads = (raw: string | null): EffectPadMap =>
   parseMap(
     raw,
-    name => (isControlKey(name) ? name : null),
-    stored => {
+    name => (isControlKey(name) && SLIDER_BY_KEY.has(name) ? name : null),
+    (stored, key) => {
       const pad = readPad(stored)
-      const { value } = stored as Partial<EffectPad>
+      const value = 'value' in stored ? stored.value : undefined
       return pad !== null && typeof value === 'number'
-        ? { ...pad, value }
+        ? { ...pad, value: coerceControl(key, value) }
         : null
     },
   )
@@ -114,6 +109,15 @@ export class ThrowPads {
     for (const name of Object.keys(this.bindings.get())) engine.letGoThrow(name)
     for (const control of Object.keys(this.effects.get()))
       engine.letGoThrow(effectName(control))
+  }
+
+  /** A note this pad set takes before the kit does: it binds one or is bound. */
+  claims(channel: number, note: number) {
+    return (
+      this.armed.get() !== null ||
+      this.armedEffect.get() !== null ||
+      this.targetByPad.has(padId({ channel, note }))
+    )
   }
 
   /** True once a pad has dealt with the note: bound, held or let go. */

@@ -21,7 +21,7 @@ import {
   sliderFor,
   snapToStep,
 } from './controls/index.ts'
-import { PadKit } from './pads.ts'
+import { inRange, PadKit } from './pads.ts'
 import { forget, omit, parseMap, read, write } from './persist.ts'
 import { fromPos, toPos } from './slider-scale.ts'
 import { ThrowPads, type EffectArm } from './throwPads.ts'
@@ -256,9 +256,6 @@ const NOTE_OUT_KEY = 'bender.midi.noteout'
 const ROUTE_KEY = 'bender.midi.route'
 const SPLIT_KEY = 'bender.midi.split'
 const DEBUG_KEY = 'bender.midi.debug'
-
-const inRange = (n: unknown, max: number): n is number =>
-  typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= max
 
 // A stored binding map read back. Anything that no longer names a control with
 // a slider — one renamed or dropped between versions — goes, the same way the
@@ -1218,7 +1215,8 @@ class Midi {
       !this.kit.binding &&
       data.length === 3 &&
       (head & 0xf0) === 0x90 &&
-      (data[2] ?? 0) > 0
+      (data[2] ?? 0) > 0 &&
+      !this.throwPads.claims(head & 0x0f, data[1] ?? 0)
         ? this.kit.voiceFor(head & 0x0f, data[1] ?? 0)
         : null
     this.record(

@@ -67,7 +67,7 @@ export function omit<K extends string, V>(
 export function parseMap<K extends string, V>(
   raw: string | null,
   key: (name: string) => K | null,
-  value: (stored: object) => V | null,
+  value: (stored: object, key: K) => V | null,
 ): Partial<Record<K, V>> {
   if (raw === null) return {}
   let stored: unknown
@@ -82,7 +82,7 @@ export function parseMap<K extends string, V>(
   for (const [name, v] of entries) {
     const k = key(name)
     if (k === null || typeof v !== 'object' || v === null) continue
-    const parsed = value(v)
+    const parsed = value(v, k)
     if (parsed !== null) out[k] = parsed
   }
   return out

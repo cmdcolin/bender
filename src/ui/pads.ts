@@ -78,18 +78,18 @@ export const padGain = (v: number) =>
 
 export const padId = (p: PadBinding) => `${p.channel}:${p.note}`
 
+export const inRange = (n: unknown, max: number): n is number =>
+  typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= max
+
+export const readPad = (stored: object) => {
+  const channel = 'channel' in stored ? stored.channel : undefined
+  const note = 'note' in stored ? stored.note : undefined
+  return inRange(channel, 15) && inRange(note, 127) ? { channel, note } : null
+}
+
 /** A stored pad map read back, dropping anything that no longer names a voice. */
 export const parsePads = (raw: string | null): PadMap =>
-  parseMap(
-    raw,
-    name => VOICE_KEYS.find(k => k === name) ?? null,
-    stored => {
-      const { channel, note } = stored as Partial<PadBinding>
-      return typeof channel === 'number' && typeof note === 'number'
-        ? { channel, note }
-        : null
-    },
-  )
+  parseMap(raw, name => VOICE_KEYS.find(k => k === name) ?? null, readPad)
 
 const PADS_KEY = 'bender.midi.pads'
 const PAD_MAP_KEY = 'bender.midi.padmap'

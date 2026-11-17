@@ -17,6 +17,7 @@ import {
 import { gmVoice, GM_PADS, padGain, parsePads, VOICE_KEYS } from './pads.ts'
 import { omit } from './persist.ts'
 import { fromPos, toPos } from './slider-scale.ts'
+import { parseEffectPads, parseThrowPads } from './throwPads.ts'
 
 test('a CC sweeps the whole of a control and lands on its grid', () => {
   const def = sliderFor('filtHz')
@@ -231,4 +232,33 @@ test('a stored pad map keeps what still names a voice', () => {
   expect(parsePads(stored)).toEqual({ drumKick: { channel: 9, note: 36 } })
   expect(parsePads(null)).toEqual({})
   expect(parsePads('not json')).toEqual({})
+})
+
+test('a stored pad keeps only a channel and note a wire can send', () => {
+  const stored = JSON.stringify({
+    drumKick: { channel: 16, note: 36 },
+    drumSnare: { channel: 9, note: 128 },
+    drumHat: { channel: 9.5, note: 42 },
+    drumClap: { channel: 15, note: 127 },
+  })
+  expect(parsePads(stored)).toEqual({ drumClap: { channel: 15, note: 127 } })
+  expect(
+    parseThrowPads(
+      JSON.stringify({
+        crush: { channel: -1, note: 40 },
+        dive: { channel: 0, note: 40 },
+      }),
+    ),
+  ).toEqual({ dive: { channel: 0, note: 40 } })
+})
+
+test('a stored effect pad needs a slider and replays a value inside its range', () => {
+  const stored = JSON.stringify({
+    dlySend: { channel: 0, note: 62, value: 99 },
+    drumKick: { channel: 0, note: 63, value: 1 },
+    chipStarve: { channel: 0, note: 300, value: 0.5 },
+  })
+  expect(parseEffectPads(stored)).toEqual({
+    dlySend: { channel: 0, note: 62, value: sliderFor('dlySend').max },
+  })
 })

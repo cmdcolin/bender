@@ -589,6 +589,19 @@ test('the readout says which voice a pad struck', async () => {
   expect(midi.traffic.get()?.voice).toBeUndefined()
 })
 
+test('the readout names no voice for a pad a throw takes', async () => {
+  const legible = () => new Promise(r => setTimeout(r, 100))
+  await legible()
+  midi.armThrow('dive')
+  send(0x99, 36, 100)
+  expect(midi.traffic.get()?.voice).toBeUndefined()
+  await legible()
+  send(0x99, 36, 100)
+  expect(engine.held.get().has('dive')).toBe(true)
+  expect(midi.traffic.get()?.voice).toBeUndefined()
+  send(0x89, 36, 0)
+})
+
 // An endless encoder has no position to disagree with the screen, so the whole
 // soft-takeover dance is beside the point: a turn moves the control from
 // wherever it stands, first message included.
