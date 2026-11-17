@@ -87,6 +87,7 @@ export function PocketPage() {
   const shelf = SHELVES.find(s => s.name === shelfName) ?? SHELVES[0]!
 
   useEffect(() => engine.autostart(), [])
+  useEffect(() => engine.holdTabWhileRecording(), [])
   useBoardUrl()
   useWakeLock(song || drums)
 
