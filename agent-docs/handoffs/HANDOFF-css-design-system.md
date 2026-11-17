@@ -6,11 +6,13 @@ and to ask before anything that changes how one app's main buttons look.
 
 ## Where the work is
 
-- bender: `git log --oneline 73203a92^..3bc41aba`
+- bender: `git log --oneline 73203a92^..3bc41aba`, then the button vocabulary
+  and chosen states in `git log --oneline f7595e8e^..6216e302`
 - videoskillet: `c7857332`, `951439c3`, `cfae5de7`, `eb0e9090`, and `5813d88a`
   (oxlint 1.92, so type-aware lint and the pre-commit hook run again; the four
   before it went in with `--no-verify`)
-- skillet-shared: `v0.7.0` (`css/base.css`, depth tokens), `v0.7.1` (`--fs-2xs`)
+- skillet-shared: `v0.7.0` (`css/base.css`, depth tokens), `v0.7.1`
+  (`--fs-2xs`), `v0.8.0` (`--chosen-bg`, `DESIGN.md`)
 
 Read these first:
 
@@ -72,9 +74,8 @@ scripts lived in a session scratchpad and are gone; rebuild from:
 - `src/pocket/pocket.module.css` `.sheet` uses `64vh`
 - `src/site/page-shell.css` (synced) and `home.css` pad both sides with
   `env(safe-area-inset-left)`
-- Buttons drawn without a kind: Slider `.action`, SlotRack `.loose` / `.arrow`,
-  Shelf `.part`, Pedals `.more` / `.selector`, SavedVoices `.rowBtn`,
-  StartOverlay `.start`
+- Buttons drawn without a kind: SlotRack `.loose` / `.arrow`, Shelf `.part`,
+  Pedals `.more` / `.selector`, SavedVoices `.rowBtn`, StartOverlay `.start`
 - Duplicated looks: DrumKit's case and `:where(.body)` in Keybed; JackCap and
   MicJacks items and Menu's `.item`; KeysDialog's and BendKeys' 44-column grid;
   Recorder `.counter` and PhraseBox `.held` (one LED readout)

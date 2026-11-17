@@ -33,9 +33,9 @@ questions, made without asking.
 
 ## Unverified
 
-- Nobody has listened to any of it. Offline renders and tests measure the
-  faults, the conditions, the pump, the phrase and the ADSR, but nobody has
-  judged how they sound.
+- The owner's verdicts on kick-outs and the brake throw are in
+  `agent-docs/reference/taste.md`. Nobody has judged the conditions, the pump,
+  the phrase or the ADSR by ear; offline renders and tests measure them.
 - The owner asked for bends that climb and move over seconds while the beat runs
   faster, and suggested ADSR. The phrase source, the bend envelopes and the
   bay's ADSR are the answer so far, and the owner has not tried them yet.
@@ -68,6 +68,5 @@ questions, made without asking.
   `drumStepCond0` to `drumStepCond15` by name.
 - A morph that arrives on the downbeat sets every pattern mask the preset names
   as it lands, so a pattern queued for the same downbeat can lose to it.
-- Howler (`src/dsp/stages/monoSynth.ts`, `HOWLER`) has been rendered offline
-  only, and nobody has heard it. Growler's memory can play on it, but its own
-  memory plays only Howler.
+- Howler (`src/dsp/stages/monoSynth.ts`, `HOWLER`): Growler's memory can play on
+  it, but its own memory plays only Howler.

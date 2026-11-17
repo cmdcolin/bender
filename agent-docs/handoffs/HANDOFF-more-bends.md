@@ -57,9 +57,3 @@ Plinky; `git log --oneline 90eee6cf..e3a9e4aa` lists them.
   `needs` is unmet. Selector bends (`drumLoop`, `drumRef`, `fmDacSlot`,
   `fmAlloc`, `fmColdBoot`, `fmAdder`) are reachable only through their named
   cuts and presets.
-
-## Loose ends
-
-- The worktree `.claude/worktrees/agent-ab8c381887f4dff5b` still exists. Its
-  commits landed by cherry-pick under new hashes, so `git branch -d` refuses; it
-  holds nothing main lacks.
