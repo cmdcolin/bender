@@ -1,9 +1,9 @@
 import { clamp01 } from './clamp.ts'
 import { Follower, coef as timeCoef } from './follower.ts'
 import { SineOsc } from './lfo.ts'
-import { lpCoef } from './onepole.ts'
+import { Lowpass, lpCoef } from './onepole.ts'
 import { gaussian, mulberry32, type Rng } from './rng.ts'
-import { flushDenormal, softclip } from './softclip.ts'
+import { softclip } from './softclip.ts'
 
 // A bucket brigade, shared by the two boxes on the board built out of one: the
 // delay pedal's analog mode and the ensemble.
@@ -27,8 +27,6 @@ import { flushDenormal, softclip } from './softclip.ts'
 // read head that crosses, three that sweep 120° apart, or two that swing against
 // each other.
 
-// Two poles a side, run as flat state rather than as filter objects: the loop
-// runs per sample per channel, and a chip is three channels at most.
 const POLES = 2
 
 /** One chip's own numbers, which is the whole of what makes two of these sound
@@ -63,8 +61,8 @@ export class Bbd {
   readonly stages: number
 
   private readonly wet: Float64Array
-  private readonly pre: Float64Array
-  private readonly post: Float64Array
+  private readonly pre: Lowpass[]
+  private readonly post: Lowpass[]
   private readonly comp = new Follower()
   private readonly whistle = new SineOsc()
   private readonly noise: Rng
@@ -94,8 +92,8 @@ export class Bbd {
     this.held = new Float64Array(n)
     this.feed = new Float64Array(n)
     this.wet = new Float64Array(n)
-    this.pre = new Float64Array(n * POLES)
-    this.post = new Float64Array(n * POLES)
+    this.pre = Array.from({ length: n }, () => new Lowpass(POLES))
+    this.post = Array.from({ length: n }, () => new Lowpass(POLES))
     this.noise = gaussian(mulberry32(chip.seed))
     this.envA = timeCoef(0.01, sr)
     this.envR = timeCoef(0.25, sr)
@@ -126,7 +124,7 @@ export class Bbd {
 
   /** The lid the clock leaves on what comes back off the line. */
   band(ch: number, x: number): number {
-    return this.lp(this.post, ch * POLES, x, this.postCoef)
+    return this.post[ch]!.process(x, this.postCoef)
   }
 
   /** In through the compander and onto the clock: what the line takes comes
@@ -138,9 +136,7 @@ export class Bbd {
     const loud = this.comp.process(this.feed[0]!, this.envA, this.envR)
     const hiss = this.hiss * (0.2 + 0.8 * (1 - Math.min(loud, 1)))
     for (let c = 0; c < lines; c++) {
-      this.wet[c] = this.lp(
-        this.pre,
-        c * POLES,
+      this.wet[c] = this.pre[c]!.process(
         softclip(1.5 * (this.feed[c]! + hiss * this.noise())) * 0.7,
         this.preCoef,
       )
@@ -156,19 +152,10 @@ export class Bbd {
     this.held.fill(0)
     this.feed.fill(0)
     this.wet.fill(0)
-    this.pre.fill(0)
-    this.post.fill(0)
+    for (const lp of this.pre) lp.reset()
+    for (const lp of this.post) lp.reset()
     this.comp.reset()
     this.whistle.reset()
     this.phase = 0
-  }
-
-  private lp(state: Float64Array, at: number, x: number, coef: number): number {
-    let y = x
-    for (let k = at; k < at + POLES; k++) {
-      state[k] = flushDenormal(state[k]! + coef * (y - state[k]!))
-      y = state[k]!
-    }
-    return y
   }
 }
