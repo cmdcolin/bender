@@ -33,10 +33,14 @@ function stored(): RunState | null {
   if (raw === null) return null
   try {
     const v: unknown = JSON.parse(raw)
-    if (typeof v !== 'object' || v === null) return null
-    const { song, drums } = v as Partial<RunState>
-    if (typeof song !== 'boolean' || typeof drums !== 'boolean') return null
-    return { song, drums }
+    return typeof v === 'object' &&
+      v !== null &&
+      'song' in v &&
+      'drums' in v &&
+      typeof v.song === 'boolean' &&
+      typeof v.drums === 'boolean'
+      ? { song: v.song, drums: v.drums }
+      : null
   } catch {
     return null
   }

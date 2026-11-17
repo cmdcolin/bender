@@ -265,11 +265,14 @@ export const parseBindings = (raw: string | null): BindingMap =>
     raw,
     name => CONTROL_KEYS.find(k => k === name && SLIDER_BY_KEY.has(k)) ?? null,
     stored => {
-      const { channel, controller, relative } = stored as Partial<Binding>
-      if (!inRange(channel, 15) || !inRange(controller, 127)) return null
-      return relative === true
-        ? { channel, controller, relative }
-        : { channel, controller }
+      const channel = 'channel' in stored ? stored.channel : undefined
+      const controller = 'controller' in stored ? stored.controller : undefined
+      const relative = 'relative' in stored && stored.relative === true
+      return inRange(channel, 15) && inRange(controller, 127)
+        ? relative
+          ? { channel, controller, relative }
+          : { channel, controller }
+        : null
     },
   )
 
