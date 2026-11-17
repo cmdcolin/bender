@@ -30,6 +30,7 @@ import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
 import { Thermal } from './thermal.ts'
 import { TriggerBus, voiceMask } from './trigbus.ts'
 import { BandMeter } from './util/bandMeter.ts'
+import { popcount } from './util/bits.ts'
 import { GroundBounce } from './util/bounce.ts'
 import { Burst } from './util/burst.ts'
 import { DelayLine } from './util/delayline.ts'
@@ -75,12 +76,6 @@ const seatOf = (lines: number, was: number) =>
       : (lines & (lines - 1)) === 0
         ? 31 - Math.clz32(lines)
         : BUNDLED
-
-function popcount(mask: number) {
-  const a = mask - ((mask >>> 1) & 0x55555555)
-  const b = (a & 0x33333333) + ((a >>> 2) & 0x33333333)
-  return Math.imul((b + (b >>> 4)) & 0x0f0f0f0f, 0x01010101) >>> 24
-}
 
 const within = (inner: number, outer: number) => (inner & ~outer) === 0
 

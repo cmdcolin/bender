@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { SUPPLY, SupplyTap, type Supplies } from '../supplies.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { RATE_MASK } from '../util/lfo.ts'
 import { OnePoleLP, lpCoef } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
@@ -294,9 +295,7 @@ export class Clipper implements Stage {
     const right = this.right
     let pulled = 0
     for (let i = 0; i < n; i++) {
-      const draw = modDraw
-        ? Math.min(Math.max(drawBase + modDraw[i]!, 0), 1)
-        : drawBase
+      const draw = modDraw ? clamp01(drawBase + modDraw[i]!) : drawBase
       const src = railFrom + ((railTo - railFrom) * (i + 1)) / n
       const out = this.current * (AMP_SELF + AMP_DRAW * draw) * scale
       this.ampV = Math.max(this.ampV + fill * (src - this.ampV) - out, 0)

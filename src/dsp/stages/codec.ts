@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
 import { Burst } from '../util/burst.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { Mdct } from '../util/mdct.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
@@ -216,7 +217,7 @@ export class Codec implements Stage {
     const cutHz = Math.min(LOWPASS_HZ * (rate / 8) ** LOWPASS_EXP, this.sr / 2)
     const cut = Math.min(Math.round((cutHz / (this.sr / 2)) * n), n)
     const budget = (rate * 1000 * n) / this.sr
-    const err = Math.min(Math.max(errors, 0), 1)
+    const err = clamp01(errors)
 
     for (const lane of lanes) {
       copy(lane.input, lane.frame, 2 * n)

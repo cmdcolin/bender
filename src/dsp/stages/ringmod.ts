@@ -2,6 +2,7 @@ import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { KEY_BIAS } from '../trigbus.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { DelayLine } from '../util/delayline.ts'
 import { QuadOsc, RATE_MASK } from '../util/lfo.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
@@ -212,7 +213,7 @@ export class RingMod implements Stage {
     const last = io.n - 1
     const pushed = (key: number, start: number) => {
       const wire = ctx.mod.read(key)
-      return wire ? Math.min(Math.max(start + wire[last]!, 0), 1) : start
+      return wire ? clamp01(start + wire[last]!) : start
     }
     this.gate.configure(
       Math.min(Math.max(pushed(DEST.chopWidth, p[IDX.ringDuty]!), 0.02), 0.98),
@@ -352,9 +353,7 @@ export class RingMod implements Stage {
         : shape === 2
           ? bridge(r, carR)
           : r * carR
-      const mix = mixMod
-        ? Math.min(Math.max(baseMix + mixMod[i]!, 0), 1)
-        : baseMix
+      const mix = mixMod ? clamp01(baseMix + mixMod[i]!) : baseMix
       io.l[i] = l * (1 - mix) + wl * mix
       io.r[i] = r * (1 - mix) + wr * mix
     }

@@ -1,3 +1,4 @@
+import { clamp01 } from './clamp.ts'
 import { flushDenormal } from './softclip.ts'
 
 // Near enough to the target that a decay or release counts as there: e^-4.6 is
@@ -25,7 +26,7 @@ export function adsrRates(
 ): AdsrRates {
   out.rise = 1 / Math.max(attack * sr, 1)
   out.decay = fall(decay, sr)
-  out.sustain = Math.min(Math.max(sustain, 0), 1)
+  out.sustain = clamp01(sustain)
   out.release = fall(release, sr)
   return out
 }

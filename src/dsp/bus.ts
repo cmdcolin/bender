@@ -1,3 +1,4 @@
+import { popcount } from './util/bits.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
 import { flushDenormal } from './util/softclip.ts'
 
@@ -89,11 +90,7 @@ function reverse(bits: number, width: number) {
   return out
 }
 
-function falls(from: number, to: number) {
-  let n = 0
-  for (let x = from & ~to; x; x &= x - 1) n++
-  return n
-}
+const falls = (from: number, to: number) => popcount(from & ~to)
 
 /** Line names for a bus of `width` wires, least significant first. */
 export const lineNames = (prefix: string, width: number) => [

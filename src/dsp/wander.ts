@@ -1,6 +1,7 @@
 import { doubleMask, halveMask, rotate } from '../drum-moves.ts'
 import { EVENT, N_DRUM_VOICES, RATCHETS, STEPS, stepBit } from '../drums.ts'
 import { FAULT } from './bus.ts'
+import { clamp01 } from './util/clamp.ts'
 
 import type { Rng } from './util/rng.ts'
 
@@ -251,7 +252,7 @@ export class Wander {
       grid; a bar that strays rewrites them. */
   plan(amount: number, bar: number) {
     this.reset()
-    const a = Math.min(Math.max(amount, 0), 1)
+    const a = clamp01(amount)
     if (a <= 0 || this.rand() >= Wander.odds(a, bar)) return
     amount = a
     this.first = this.stray(amount)

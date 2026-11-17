@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { Crossings } from '../util/crossings.ts'
 import { octaves, wrap1 } from '../util/pitch.ts'
 import { flushDenormal } from '../util/softclip.ts'
@@ -87,7 +88,7 @@ export class ChaosOsc implements Stage {
 
     for (let i = 0; i < io.n; i++) {
       const starve = modStarve
-        ? Math.min(Math.max(baseStarve + modStarve[i]!, 0), 1)
+        ? clamp01(baseStarve + modStarve[i]!)
         : baseStarve
       const pitchF = 0.5 + 0.5 * this.rail
       this.phaseB = wrap1(this.phaseB + (bHz * pitchF) / this.sr)
@@ -109,7 +110,7 @@ export class ChaosOsc implements Stage {
         hz = Math.min(Math.max(hz, 0), this.sr * 0.45)
         this.phaseA = wrap1(this.phaseA + hz / this.sr)
         if (micSync && this.micEdges.rise(micSync[i]!)) this.phaseA = 0
-        const amp = Math.min(Math.max((this.rail - 0.12) / 0.6, 0), 1)
+        const amp = clamp01((this.rail - 0.12) / 0.6)
         out = shape(this.phaseA, mode) * amp
       }
 

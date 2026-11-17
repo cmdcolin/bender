@@ -1,3 +1,4 @@
+import { A3_HZ } from '../util/pitch.ts'
 import { mulberry32 } from '../util/rng.ts'
 
 // The sample ROM of an eight-bit home keyboard, cut in code rather than
@@ -49,7 +50,7 @@ export const RATE_MAX = (1 << RATE_BITS) - 1
 export const RATE_NUM = 220_000
 
 /** Semitones above the toy's bottom A as a frequency, as the FM chip has it. */
-export const noteHz = (note: number) => 220 * Math.pow(2, note / 12)
+export const noteHz = (note: number) => A3_HZ * Math.pow(2, note / 12)
 
 /** What the driver writes into the rate register for a note. */
 export const rateReg = (hz: number) =>

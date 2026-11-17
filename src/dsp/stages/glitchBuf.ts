@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params.ts'
 import { MIC, micInto } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { Burst } from '../util/burst.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { Transient } from '../util/follower.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 
@@ -80,9 +81,7 @@ export class GlitchBuf implements Stage {
       this.sliceCountdown -= 1
       if (this.sliceCountdown <= 0) {
         this.sliceCountdown = sliceSamples
-        const prob = mod
-          ? Math.min(Math.max(baseProb + mod[i]!, 0), 1)
-          : baseProb
+        const prob = mod ? clamp01(baseProb + mod[i]!) : baseProb
         if (
           !this.glitching &&
           (freeze || this.fault.roll(prob, cluster, this.rng, sliceSamples))

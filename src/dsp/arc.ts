@@ -1,6 +1,7 @@
 import { STEPS } from '../drums.ts'
 import { IDX, N_PARAMS } from '../engine/params.ts'
 import { stepHzOr } from './trigbus.ts'
+import { clamp01 } from './util/clamp.ts'
 
 export const ARC_SHAPES = [
   'hold',
@@ -99,7 +100,7 @@ export class Arc {
     kitTick: number,
     kitStepHz: number,
   ): Float32Array {
-    const depth = Math.min(Math.max(board[IDX.arcDepth]!, 0), 1)
+    const depth = clamp01(board[IDX.arcDepth]!)
     const kitRunning = kitStepHz > 0
     const bpm = Math.max(board[IDX.drumBpm]!, 1)
     this.bars += (n / sr) * (stepHzOr(kitStepHz, bpm) / STEPS)
@@ -129,7 +130,7 @@ export class Arc {
     for (let k = 0; k < wild.idx.length; k++) {
       const i = wild.idx[k]!
       const start = wild.start[k]!
-      const local = Math.min(Math.max((pos - start) / (1 - start), 0), 1)
+      const local = clamp01((pos - start) / (1 - start))
       if (local <= 0) continue
       const from = board[i]!
       const to = wild.to[k]!

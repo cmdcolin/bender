@@ -43,6 +43,7 @@ import {
 import { bandpass, BiquadState, type Biquad } from '../util/biquad.ts'
 import { GroundEdge } from '../util/bounce.ts'
 import { BridgedT } from '../util/bridged.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { coef, Transient } from '../util/follower.ts'
 import { MetalBank } from '../util/metal.ts'
 import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole.ts'
@@ -334,7 +335,7 @@ function stepRate(
   modTap: Float32Array | null,
   melody: Float32Array,
 ) {
-  const tap = modTap ? Math.min(Math.max(tapBase + modTap[i]!, 0), 1) : tapBase
+  const tap = modTap ? clamp01(tapBase + modTap[i]!) : tapBase
   if (tap > 0) return melody[i]! / tapDivisor(tap, TAP_STAGES)
   return modTempo ? stepHz * octaves(modTempo[i]!) : stepHz
 }
@@ -476,7 +477,7 @@ const fold = (x: number) => {
 
 const laned = (p: Float32Array, ctx: Ctx, key: number, dest: number) => {
   const lane = ctx.mod.read(dest)
-  return Math.min(Math.max(p[key]! + (lane ? lane[0]! : 0), 0), 1)
+  return clamp01(p[key]! + (lane ? lane[0]! : 0))
 }
 
 const BIAS_FIRE = 0.5
@@ -1346,7 +1347,7 @@ export class ToyDrum implements Stage {
   }
 
   private wireRot(p: Float32Array, lane: Float32Array | null) {
-    this.rot = Math.min(Math.max(p[IDX.drumRot]! + (lane ? lane[0]! : 0), 0), 1)
+    this.rot = clamp01(p[IDX.drumRot]! + (lane ? lane[0]! : 0))
     if (this.rot === 0) this.rotSeen.fill(-1)
   }
 
@@ -1636,7 +1637,7 @@ export class ToyDrum implements Stage {
     if (this.transport.drums) ctx.trig.kitClocking(this.stepHz)
     const baseSwing = p[IDX.drumSwing]!
     const modSwing = ctx.mod.read(DEST.drumSwing)
-    const slip = Math.min(Math.max(p[IDX.drumSlip]!, 0), 1)
+    const slip = clamp01(p[IDX.drumSlip]!)
     const baseTune = p[IDX.drumTune]!
     const modTune = ctx.mod.read(DEST.drumTune)
     // Decay and Ring set per-block constants, so their lanes are read once a
@@ -1669,31 +1670,28 @@ export class ToyDrum implements Stage {
     }
     const modRing = ctx.mod.read(DEST.drumRing)
     const ring = modRing
-      ? Math.min(Math.max(p[IDX.drumRing]! + modRing[0]!, 0), 1)
+      ? clamp01(p[IDX.drumRing]! + modRing[0]!)
       : p[IDX.drumRing]!
     // The two halves of the snare are a transistor's hiss and a pair of tuned
     // networks, and nothing in one is in the other. So the pot between them has
     // to fade on power rather than on amplitude, or the middle of its travel —
     // which is where a snare wants to sit — comes out three decibels down on
     // both ends of it.
-    const snappy = Math.min(Math.max(p[IDX.drumSnappy]!, 0), 1)
+    const snappy = clamp01(p[IDX.drumSnappy]!)
     const hiss = Math.sqrt(snappy)
     const tone = Math.sqrt(1 - snappy)
     // How far past the knee the noise transistor is biased, 1 being a junction
     // that has all the reverse voltage it wants.
-    const noiseBias = Math.min(Math.max(p[IDX.drumNoiseBias]!, 0), 1)
+    const noiseBias = clamp01(p[IDX.drumNoiseBias]!)
     const { noiseEdge } = this.coefs
     // The same pot on the hats' amplifier, between the same transistor and the
     // metal bank, and equal-power for the same reason: the two sources have
     // nothing in common, so an amplitude fade would dip in the middle.
-    const metal = Math.min(Math.max(p[IDX.drumMetal]!, 0), 1)
+    const metal = clamp01(p[IDX.drumMetal]!)
     const bank = Math.sqrt(metal)
     const trans = Math.sqrt(1 - metal)
-    this.metal.tune(
-      Math.min(Math.max(p[IDX.drumSpread]!, 0), 1),
-      Math.min(Math.max(p[IDX.drumSquare]!, 0), 1),
-    )
-    const cymTone = Math.min(Math.max(p[IDX.drumCymTone]!, 0), 1)
+    this.metal.tune(clamp01(p[IDX.drumSpread]!), clamp01(p[IDX.drumSquare]!))
+    const cymTone = clamp01(p[IDX.drumCymTone]!)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const retrigSweep = Math.min(Math.max(p[IDX.drumRetrigSweep]!, -1), 1)
     const modTouch = ctx.mod.read(DEST.drumTouch)
@@ -1784,7 +1782,7 @@ export class ToyDrum implements Stage {
     const modChance = ctx.mod.read(DEST.drumChance)
     const baseWander = p[IDX.drumWander]!
     const modWander = ctx.mod.read(DEST.drumWander)
-    this.chance = Math.min(Math.max(baseChance, 0), 1)
+    this.chance = clamp01(baseChance)
     this.diceOnJunction = Math.round(p[IDX.drumDice]!) === 1
     // All the way up is a voice that will not answer again until it has stopped
     // sounding; at nothing the floor sits above where an envelope starts, so
@@ -1908,7 +1906,7 @@ export class ToyDrum implements Stage {
     const clickHeight = 1 / (1 - this.pulseFall)
     // One-shots fired together share one timing rail, so each runs short at
     // the same height: less charge into the network and less edge for the cap.
-    this.pulseShare = Math.min(Math.max(p[IDX.drumPulseShare]!, 0), 1)
+    this.pulseShare = clamp01(p[IDX.drumPulseShare]!)
     this.pulseS = pulseS
     for (let v = 0; v < N_VOICES; v++) this.narrow(v, this.pulseW[v]!)
 
@@ -1921,17 +1919,13 @@ export class ToyDrum implements Stage {
     const sweep = p[IDX.drumSweep]!
     const swoopMs = Math.min(Math.max(p[IDX.drumSwoopCap]!, 0), SWOOP_CAP_MAX)
     const drain = swoopMs > 0 ? Math.exp(-1000 / (swoopMs * this.sr)) : 0
-    const fmDepth = BANK_FM * Math.min(Math.max(p[IDX.drumBankFm]!, 0), 1)
+    const fmDepth = BANK_FM * clamp01(p[IDX.drumBankFm]!)
     const syncTank = BANK_SYNC_TANK[Math.round(p[IDX.drumBankSync]!)] ?? -1
     const couple =
-      TANK_COUPLE *
-      perRef(this.sr) *
-      Math.min(Math.max(p[IDX.drumTankCouple]!, 0), 1)
-    const kickBias = KICK_BIAS * Math.min(Math.max(p[IDX.drumKickBias]!, 0), 1)
+      TANK_COUPLE * perRef(this.sr) * clamp01(p[IDX.drumTankCouple]!)
+    const kickBias = KICK_BIAS * clamp01(p[IDX.drumKickBias]!)
     const hissKick =
-      HISS_KICK *
-      Math.sqrt(perRef(this.sr)) *
-      Math.min(Math.max(p[IDX.drumHissKick]!, 0), 1)
+      HISS_KICK * Math.sqrt(perRef(this.sr)) * clamp01(p[IDX.drumHissKick]!)
     if (hissKick === 0) this.hissLeak = 0
     const feedLane = ctx.mod.read(DEST.drumKickFeed)
     const feedDepth = Math.min(
@@ -1968,9 +1962,7 @@ export class ToyDrum implements Stage {
     const latchGain = 1 + LATCH_MAKEUP * latch * Math.sqrt(latch)
     const latchDiv =
       latch > 0 ? 1 + Math.floor(latch * latch * LATCH_DIV_MAX) : 0
-    const bankPf = octaves(
-      -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
-    )
+    const bankPf = octaves(-BANK_STARVE_OCT * clamp01(p[IDX.drumBankStarve]!))
     const bankGate = Math.round(p[IDX.drumBankGate]!) - 1
     const kickBankLane = ctx.mod.read(DEST.drumKickBank)
     const kickBank =
@@ -2012,7 +2004,7 @@ export class ToyDrum implements Stage {
       this.tankGain[t] = spec.voice === SNARE ? spec.gain * tone : spec.gain
     }
 
-    const trigLoad = Math.min(Math.max(p[IDX.drumTrigLoad]!, 0), 1)
+    const trigLoad = clamp01(p[IDX.drumTrigLoad]!)
     const trigRecover = Math.exp(-1 / (TRIG_RECOVER * this.sr))
     const modMotor = ctx.mod.read(DEST.drumMotor)
     const motor = Math.min(
@@ -2051,8 +2043,7 @@ export class ToyDrum implements Stage {
         this.struckBits = 0
         this.struckGain = 0
       }
-      if (modChance)
-        this.chance = Math.min(Math.max(baseChance + modChance[i]!, 0), 1)
+      if (modChance) this.chance = clamp01(baseChance + modChance[i]!)
       this.wanderAmt = modWander ? baseWander + modWander[i]! : baseWander
       if (this.scanBits) this.scanStep(ctx, i)
       if (this.transport.drums) {
@@ -2215,9 +2206,7 @@ export class ToyDrum implements Stage {
       // while something is leaning, and copying twelve floats a sample to say
       // nothing was bridged is the kit's whole idle cost.
       const env = this.env
-      const bleed = modCross
-        ? Math.min(Math.max(baseBleed + modCross[i]!, 0), 1)
-        : baseBleed
+      const bleed = modCross ? clamp01(baseBleed + modCross[i]!) : baseBleed
       let amp = env
       let weight = this.gain
       let shock = this.pulseOut
@@ -2732,7 +2721,7 @@ export class ToyDrum implements Stage {
             DAC_REF_RAIL,
           )
           const depth = modRefDepth
-            ? Math.min(Math.max(baseRefDepth + modRefDepth[i]!, 0), 1)
+            ? clamp01(baseRefDepth + modRefDepth[i]!)
             : baseRefDepth
           const g = 1 + depth * (r - 1)
           out *= g

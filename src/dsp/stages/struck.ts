@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { Room } from '../util/room.ts'
 
@@ -145,8 +146,8 @@ export class Struck implements Stage {
 
   /** A hand on it: where, as fractions of its face, and how hard. */
   strikeAt(x: number, y: number, gain: number) {
-    this.handX = Math.min(Math.max(x, 0), 1)
-    this.handY = Math.min(Math.max(y, 0), 1)
+    this.handX = clamp01(x)
+    this.handY = clamp01(y)
     this.handGain = gain
   }
 
@@ -158,13 +159,13 @@ export class Struck implements Stage {
     const strikeOdds = p[k.strikes]! / sr
     const struckBy = Math.round(p[k.struckBy]!)
     const mask = voiceMask(struckBy)
-    const hard = Math.min(Math.max(p[k.hard]!, 0), 1)
+    const hard = clamp01(p[k.hard]!)
     const pulse = Math.max(
       2,
       Math.round(sr * SOFTEST_S * (HARDEST_S / SOFTEST_S) ** hard),
     )
     const size = Math.max(p[k.size]!, 0.05)
-    const hold = HOLD_RANGE ** Math.min(Math.max(p[k.hold]!, 0), 1)
+    const hold = HOLD_RANGE ** clamp01(p[k.hold]!)
     const shake = p[k.shake]! ** 2 * this.body.shakeGain
     const rattle = p[k.rattle]!
     const { struck, shaken, rattled } = this
@@ -236,7 +237,7 @@ export class Struck implements Stage {
       io.l[i]! += wetL[i]! * gain
       io.r[i]! += wetR[i]! * gain
     }
-    const send = Math.min(Math.max(p[k.room]!, 0), 1) * gain * 0.5
+    const send = clamp01(p[k.room]!) * gain * 0.5
     if (send > 0 || !this.room.quiet) {
       const { toRoom } = this
       for (let i = 0; i < n; i++) toRoom[i] = (wetL[i]! + wetR[i]!) * send

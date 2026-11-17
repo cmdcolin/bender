@@ -1,6 +1,7 @@
 import { IDX, MAX_SOURCES } from '../engine/params.ts'
 import { DEST } from './modbus.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
+import { clamp01 } from './util/clamp.ts'
 import { hermite } from './util/delayline.ts'
 import { Lowpass, lpCoef } from './util/onepole.ts'
 import { octaves } from './util/pitch.ts'
@@ -139,7 +140,7 @@ export class Deck {
       // A cheap deck's lid on the way in. Crossfaded rather than switched, and
       // at ×1 the wet share is zero, so the ring holds the chain's own samples
       // and nothing about the path changes as the knob passes the detent.
-      const wet = Math.min(Math.max(speed - 1, 0), 1)
+      const wet = clamp01(speed - 1)
       const aa = lpCoef((0.4 * this.sr) / Math.max(speed, 1), this.sr)
       let ran = false
       while (this.write < need) {

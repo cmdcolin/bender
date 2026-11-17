@@ -11,6 +11,8 @@ import {
 } from '../tune.ts'
 import { Bus, cross, drifts } from './bus.ts'
 import { SupplyTap, type Supplies } from './supplies.ts'
+import { popcount } from './util/bits.ts'
+import { clamp01 } from './util/clamp.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
 
 import type { Ctx } from './stage.ts'
@@ -109,12 +111,6 @@ type Memory = typeof GROWLER_MEMORY | typeof HOWLER_MEMORY
 
 const wordOf = (note: number, flags: number) =>
   encodeTune(asTuneStep(note)) | (flags << FLAG_SHIFT)
-
-function popcount(word: number) {
-  let n = 0
-  for (let w = word; w; w &= w - 1) n++
-  return n
-}
 
 // The second melody: a 32-step memory with a counter of its own, clocked off the
 // toy's supply so it sags and stalls with the rest of the board. Its notes ride
@@ -258,7 +254,7 @@ export class MelodyMemory {
     this.dataLine = Math.round(p[k.dataLine]!) - 1
     this.dataFault = Math.round(p[k.dataFault]!)
     this.cut = p[k.busCut]!
-    this.leak = Math.min(Math.max(p[k.leak]!, 0), 1)
+    this.leak = clamp01(p[k.leak]!)
     this.rotEvery = MEMORY_ROT_STEPS[Math.round(p[k.rot]!)] ?? 0
   }
 

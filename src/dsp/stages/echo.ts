@@ -369,7 +369,7 @@ export class Echo implements Stage {
     this.reach = k
     const lo = this.walkedSince(k)
     const step = this.walkedSince(k + 1) - lo
-    return k + (step > 0 ? Math.min(Math.max((buckets - lo) / step, 0), 1) : 0)
+    return k + (step > 0 ? clamp01((buckets - lo) / step) : 0)
   }
 
   private lane(p: Float32Array, bay: ModBus, key: number, dest: number) {

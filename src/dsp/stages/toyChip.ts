@@ -991,7 +991,7 @@ export class ToyChip implements Stage {
   }
 
   get tuneFrac() {
-    return Math.min(Math.max(this.stepClock, 0), 1)
+    return clamp01(this.stepClock)
   }
 
   /** How long a step of the tune lasts at the rate the chip is counting now. */

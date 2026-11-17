@@ -1,3 +1,4 @@
+import { clamp01 } from './util/clamp.ts'
 // Heat, which has no knob of its own on the board because a real one doesn't
 // either.
 //
@@ -22,7 +23,7 @@ export class Thermal {
 
   /** work: how hard the board is running this block, nominally 0 to 1. */
   tick(work: number, samples: number) {
-    const target = Math.min(Math.max(work, 0), 1)
+    const target = clamp01(work)
     const rate = (target > this.t ? this.rise : this.fall) * samples
     this.t += Math.min(rate, 1) * (target - this.t)
   }

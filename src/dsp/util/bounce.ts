@@ -1,3 +1,4 @@
+import { clamp01 } from './clamp.ts'
 import { coef, Follower } from './follower.ts'
 
 const GAIN = 4
@@ -28,7 +29,7 @@ export class GroundBounce {
       const x = out[i]!
       const f = this.fast.process(x, this.fastA, this.fastR)
       const s = this.slow.process(x, this.slowA, this.slowR)
-      const amt = lane ? Math.min(Math.max(base + lane[i]!, 0), 1) : base
+      const amt = lane ? clamp01(base + lane[i]!) : base
       gnd[i] = f > s ? amt * GAIN * (f - s) : 0
     }
   }

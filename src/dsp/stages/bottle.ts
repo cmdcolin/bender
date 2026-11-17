@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { mulberry32 } from '../util/rng.ts'
 import { Struck, type Body, type Couplings } from './struck.ts'
 
@@ -99,7 +100,7 @@ function bottleBody(): Body {
           : Math.min(WALL_RING_S, WALL_RING_HZ_S / f) * hold ** 0.6
     },
     retune(p, pitch, ringBy) {
-      const fill = Math.min(Math.max(p[IDX.bottleFill]!, 0), 1)
+      const fill = clamp01(p[IDX.bottleFill]!)
       for (let k = 0; k < THUNK; k++) {
         pitch[k] = 1 / Math.sqrt(1 + FILL_PITCH * fill)
         ringBy[k] = 1 / (1 + FILL_DAMP * fill)

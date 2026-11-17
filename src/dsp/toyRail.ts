@@ -1,4 +1,5 @@
 import { Burst } from './util/burst.ts'
+import { clamp01 } from './util/clamp.ts'
 import { Drunk } from './util/drift.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
 import { flushDenormal } from './util/softclip.ts'
@@ -357,7 +358,7 @@ export class ToyRail {
       ? charge * (this.open - this.v) - drain * draw - shunt
       : -((OPEN_LEAK + OPEN_DRAIN * draw) / this.sr / slow) - shunt
     if (this.spike > 0) this.v -= (TRIG_DRAIN * this.spike) / slow
-    this.v = flushDenormal(Math.min(Math.max(this.v, 0), 1))
+    this.v = flushDenormal(clamp01(this.v))
 
     if (this.bootRemaining > 0) {
       this.bootRemaining--
@@ -463,7 +464,7 @@ export class ToyRail {
   // so each browns out at its own voltage and sags by its own amount: a chord
   // on a starving chip detunes against itself and dies a voice at a time.
   ampFactorAt(trim: number) {
-    return Math.min(Math.max((this.v - 0.15 * trim) / 0.55, 0), 1)
+    return clamp01((this.v - 0.15 * trim) / 0.55)
   }
 
   pitchFactorAt(trim: number) {

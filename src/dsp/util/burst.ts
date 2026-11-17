@@ -1,3 +1,4 @@
+import { clamp01 } from './clamp.ts'
 import { flushDenormal } from './softclip.ts'
 
 import type { Rng } from './rng.ts'
@@ -49,7 +50,7 @@ export class Burst {
 
   roll(prob: number, cluster: number, rng: Rng, interval = 1): boolean {
     if (prob <= 0) return false
-    const n = Math.min(Math.max(cluster, 0), 1) * MAX_BRANCH
+    const n = clamp01(cluster) * MAX_BRANCH
     const kick = interval === 1 ? this.kick : 1 - this.cool ** interval
     const p = n > 0 ? prob * (1 - n) + n * kick * this.excite : prob
     if (rng() >= Math.min(p, 1)) return false

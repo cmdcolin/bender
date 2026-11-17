@@ -12,6 +12,7 @@ import {
   voiceMask,
   type SeqLine,
 } from '../trigbus.ts'
+import { clamp01 } from '../util/clamp.ts'
 import { removeAt } from '../util/list.ts'
 import { Cord, CORD_DIV_NAMES, cordTap, PIN } from './cord.ts'
 import { MonoVoice } from './monoVoice.ts'
@@ -34,7 +35,7 @@ const OUT_GAIN = 4
 const TOY_IN_TOP = 2
 
 function withLane(base: number, lane: Float32Array | null) {
-  return Math.min(Math.max(base + (lane ? lane[0]! : 0), 0), 1)
+  return clamp01(base + (lane ? lane[0]! : 0))
 }
 
 function cardIdx(prefix: CardPrefix) {

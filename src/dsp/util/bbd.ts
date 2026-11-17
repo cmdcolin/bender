@@ -1,3 +1,4 @@
+import { clamp01 } from './clamp.ts'
 import { Follower, coef as timeCoef } from './follower.ts'
 import { SineOsc } from './lfo.ts'
 import { lpCoef } from './onepole.ts'
@@ -108,8 +109,7 @@ export class Bbd {
     this.preCoef = lpCoef(Math.min(Math.max(hz / 3, 600), 14000), this.sr)
     this.postCoef = lpCoef(Math.min(Math.max(hz / 4, 600), 14000), this.sr)
     this.whineK = SineOsc.rate(hz, this.sr)
-    this.whineAmp =
-      this.level * Math.min(Math.max((this.top - hz) / this.span, 0), 1)
+    this.whineAmp = this.level * clamp01((this.top - hz) / this.span)
   }
 
   /** How far the clock walks per sample on a line this long. The host divides
