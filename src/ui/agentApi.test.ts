@@ -423,13 +423,29 @@ test('a line on Howler writes its own memory and leaves the bassline alone', () 
   expect(bender.summary().lead).toBe('stopped on Howler')
 })
 
-test('line holds an out-of-range target and sync to the ends of their range', () => {
-  bender.line('A2 A2', { on: 9, sync: 99 })
-  const c = engine.controls.get()
-  expect(c.monoSeqTo).toBe(3)
-  expect(c.monoSeqSync).toBe(sliderFor('monoSeqSync').max)
-  bender.line('A2 A2', { on: -4 })
+test('line holds sync to the end of its range and refuses a target off the panel', () => {
+  bender.line('A2 A2', { sync: 99 })
+  expect(engine.controls.get().monoSeqSync).toBe(sliderFor('monoSeqSync').max)
+  expect(() => bender.line('A2 A2', { on: 9 })).toThrow(
+    /monoSeqTo takes 0 to 3 .*, not 9/,
+  )
+  expect(() => bender.line('A2 A2', { on: -4 })).toThrow(/not -4/)
   expect(engine.controls.get().monoSeqTo).toBe(0)
+})
+
+test('line and restore pick Howler by a prefix or its index, as monoSeqTo does', () => {
+  bender.line('A2 A2')
+  bender.line('C5 D5', { on: 'how' })
+  bender.line('C5 D5 E5', { on: 3 })
+  expect(engine.controls.get()).toMatchObject({
+    monoSeqLen: 2,
+    monoSeqTo: 0,
+    leadSeqLen: 3,
+  })
+  expect(bender.restore('how')).toMatchObject({ line: 'C5 D5 E5' })
+  expect(bender.restore('gli')).toMatchObject({ line: 'A2 A2' })
+  bender.line('A2 A3', { on: 'gli' })
+  expect(engine.controls.get().monoSeqTo).toBe(1)
 })
 
 test('the bassline aimed at Howler reports Howler and its warnings', () => {
@@ -1197,6 +1213,9 @@ test('wire takes a bay label by its start, and keeps a wire off its own depth', 
       'wire 1 cannot push its own depth; use another wire',
     )
     expect(() => bender.wire('off', 'filtHz')).toThrow(/is no source/)
+    expect(() => bender.wire(42, 'filtHz')).toThrow(
+      /mod0Src takes 0 to 15 .*, not 42/,
+    )
   } finally {
     bender.reset()
   }
@@ -1208,6 +1227,15 @@ test('wire says why it refuses, and unwire frees a wire', () => {
     expect(() => bender.wire('lfo', 'filtHz', { settings: 1 })).toThrow(
       /filtHz does not move in settings\. A bay wire at depth d multiplies/,
     )
+    const untyped: { wire(...args: unknown[]): unknown } = bender
+    for (const amount of [NaN, { octave: 1 }, '0.5'])
+      expect(() => untyped.wire('lfo', 'filtHz', amount)).toThrow(
+        /is no amount; an amount is a raw depth from -2 to 2/,
+      )
+    expect(() => untyped.wire('lfo', 'filt res', { octave: 1 })).toThrow(
+      /\{"octave":1\} is no amount/,
+    )
+    expect(engine.controls.get().mod0Src).toBe(0)
     expect(() => bender.wire('lfo', 'nowhere')).toThrow(
       /no bay destination 'nowhere'/,
     )

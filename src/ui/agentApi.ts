@@ -157,23 +157,50 @@ function destNamed(into: string) {
   )
 }
 
-function depthFor(dest: LiveDest, amount: Amount) {
+const AMOUNT_USAGE =
+  'an amount is a raw depth from -2 to 2, { octaves: n }, { settings: n } or { by: n }'
+
+const amountText = (amount: unknown) =>
+  typeof amount === 'number' ? `${amount}` : JSON.stringify(amount)
+
+const isAmount = (amount: unknown): amount is Amount =>
+  typeof amount === 'number' ||
+  (typeof amount === 'object' &&
+    amount !== null &&
+    ['octaves', 'settings', 'by'].some(unit => unit in amount))
+
+function depthFor(dest: LiveDest, amount: unknown) {
   const law: Law = DEST_LAW[dest]
   const wrong = (unit: string) =>
     refuse(`${dest} does not move in ${unit}. ${lawText(dest)}`)
-  return typeof amount === 'number'
-    ? amount
-    : 'octaves' in amount
-      ? law.law === 'oct'
-        ? amount.octaves / law.span
-        : wrong('octaves')
-      : 'settings' in amount
-        ? law.law === 'hop'
-          ? amount.settings / law.choices
-          : wrong('settings')
-        : law.law === 'add'
-          ? amount.by / (law.scale ?? 1)
-          : wrong('knob amounts')
+  const unusable = () =>
+    refuse(`${amountText(amount)} is no amount; ${AMOUNT_USAGE}`)
+  const depth = !isAmount(amount)
+    ? unusable()
+    : typeof amount === 'number'
+      ? amount
+      : 'octaves' in amount
+        ? law.law === 'oct'
+          ? amount.octaves / law.span
+          : wrong('octaves')
+        : 'settings' in amount
+          ? law.law === 'hop'
+            ? amount.settings / law.choices
+            : wrong('settings')
+          : law.law === 'add'
+            ? amount.by / (law.scale ?? 1)
+            : wrong('knob amounts')
+  return Number.isFinite(depth) ? depth : unusable()
+}
+
+function inRangeFor(key: ControlKey, asked: Value) {
+  const n = numberFor(key, asked)
+  const def = SLIDER_BY_KEY.get(key)
+  return coerceControl(key, n) === n
+    ? n
+    : refuse(
+        `${key} takes ${def ? `${def.min} to ${def.max} or ${range(def)}` : 'other values'}, not ${asked}`,
+      )
 }
 
 const slotIndex = (slot: number) =>
@@ -779,8 +806,11 @@ function lineWarnings(c: Controls, stage: CardStage = 'Growler') {
 const lineState = (c: Controls, stage: CardStage) =>
   `${lineRuns(c, stage) ? 'playing' : 'stopped'} on ${stage === 'Howler' ? 'Howler' : show('monoSeqTo', c.monoSeqTo)}`
 
-const isHowler = (on: Value | undefined) =>
-  typeof on === 'string' && on.trim().toLowerCase() === 'howler'
+const targetOf = (on: Value | undefined) =>
+  on === undefined ? undefined : inRangeFor('monoSeqTo', on)
+
+const stageOf = (target: number | undefined): CardStage =>
+  target === SEQ_TO_LEAD ? 'Howler' : 'Growler'
 
 const barsText = (bars: number) => `${bars}:${bars}`
 
@@ -1114,12 +1144,12 @@ function rawBenderApi() {
     },
 
     wire(
-      from: string,
+      from: Value,
       into: string,
       amount: Amount = 0.5,
       { wire: slot }: { wire?: number } = {},
     ) {
-      const src = numberFor('mod0Src', from)
+      const src = inRangeFor('mod0Src', from)
       const dest = destNamed(into)
       const at =
         src === SRC_OFF
@@ -1305,7 +1335,8 @@ function rawBenderApi() {
       text: string,
       opts: { accent?: string; slide?: string; sync?: Value; on?: Value } = {},
     ) {
-      const stage: CardStage = isHowler(opts.on) ? 'Howler' : 'Growler'
+      const target = targetOf(opts.on)
+      const stage = stageOf(target)
       const card = CARDS[stage]
       let steps: number[]
       try {
@@ -1342,11 +1373,7 @@ function rawBenderApi() {
       const synced = opts.sync ?? (c[sync] === 0 ? 'sixteenths' : null)
       if (synced !== null)
         patch[sync] = coerceControl(sync, numberFor(sync, synced))
-      if (opts.on !== undefined && stage === 'Growler')
-        patch.monoSeqTo = coerceControl(
-          'monoSeqTo',
-          numberFor('monoSeqTo', opts.on),
-        )
+      if (target !== undefined && stage === 'Growler') patch.monoSeqTo = target
       land(patch, 0)
       restoreLine(stage)
       const now = engine.controls.get()
@@ -1354,7 +1381,7 @@ function rawBenderApi() {
     },
 
     restore(on?: Value) {
-      const stage: CardStage = isHowler(on) ? 'Howler' : 'Growler'
+      const stage = stageOf(targetOf(on))
       restoreLine(stage)
       return lineOf(engine.controls.get(), stage)
     },
