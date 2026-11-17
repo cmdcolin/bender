@@ -73,6 +73,10 @@ export const UNIT_LINE_KEYS: readonly ControlKey[] = [
   ...PEDALS.map(p => p.into),
 ]
 
+export const INTO_ALIAS = new Map<string, ControlKey>(
+  UNIT_LINE_KEYS.map(k => [k.replace(/Lines$/, 'Into'), k]),
+)
+
 export const JACK_KEYS: ReadonlySet<ControlKey> = new Set<ControlKey>(
   UNIT_LINE_KEYS,
 )

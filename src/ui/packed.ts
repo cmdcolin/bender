@@ -7,22 +7,8 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
-import { asKitSetting, asLen, asMask, LEN_KEYS } from '../drums.ts'
-import { linesFromJack, UNIT_LINE_KEYS } from '../jacks.ts'
-import {
-  asLaneLen,
-  asLaneValue,
-  LANE_LEN_SET,
-  LANE_VALUE_KEYS,
-} from '../lanes.ts'
-import { asPhraseCode, PHRASE_KEY_SET } from '../prattle.ts'
-import {
-  asTuneLen,
-  asTuneStep,
-  LEAD_SEQ_STEP_KEYS,
-  MONO_SEQ_STEP_KEYS,
-  TUNE_ALL_STEP_KEYS,
-} from '../tune.ts'
+import { INTO_ALIAS, linesFromJack } from '../jacks.ts'
+import { coerceControl } from './coerce.ts'
 import { SLIDER_BY_KEY, sliderFor, snapToStep } from './controls/index.ts'
 
 // The short form of a board: the same controls the long form names, written as
@@ -1384,16 +1370,10 @@ interface Renamed {
 
 export const RENAMED = new Map<string, Renamed>([
   ['revDryCut', { key: 'revDry', step: 0.01, value: v => 1 - v }],
-  ...UNIT_LINE_KEYS.map((key): [string, Renamed] => [
-    key.replace(/Lines$/, 'Into'),
+  ...[...INTO_ALIAS].map(([old, key]): [string, Renamed] => [
+    old,
     { key, step: 1, value: linesFromJack },
   ]),
-])
-
-const TUNE = new Set<ControlKey>([
-  ...TUNE_ALL_STEP_KEYS,
-  ...MONO_SEQ_STEP_KEYS,
-  ...LEAD_SEQ_STEP_KEYS,
 ])
 
 const isLive = (key: ControlKey | Retired | undefined): key is ControlKey =>
@@ -1435,17 +1415,7 @@ function fromInt(key: ControlKey, n: number): number {
   const def = SLIDER_BY_KEY.get(key)
   // Through the same snap the long form goes through, so a value the travel has
   // since grown past lands at the end of it rather than outside.
-  if (def) return snapToStep(def, n * def.step)
-  if (TUNE.has(key)) return asTuneStep(n)
-  if (PHRASE_KEY_SET.has(key)) return asPhraseCode(n)
-  if (LEN_KEYS.has(key)) return asLen(n)
-  if (key === 'tuneLen' || key === 'monoSeqLen' || key === 'leadSeqLen')
-    return asTuneLen(n)
-  if (LANE_VALUE_KEYS.has(key)) return asLaneValue(n)
-  const kit = asKitSetting(key, n)
-  if (kit !== undefined) return kit
-  if (LANE_LEN_SET.has(key)) return asLaneLen(n)
-  return asMask(n)
+  return def ? snapToStep(def, n * def.step) : coerceControl(key, n)
 }
 
 // Counting from zero means half the numbers are negative — a depth, a bias, a

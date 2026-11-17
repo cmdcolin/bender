@@ -2,10 +2,10 @@ import { isControlKey, type ControlKey } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
 import { bendDeal, bendName, isBendName } from './bendKeys.ts'
+import { coerceControl } from './coerce.ts'
 import { SLIDER_BY_KEY } from './controls/index.ts'
 import { padId, readPad, type PadBinding } from './pads.ts'
 import { omit, parseMap, read, write } from './persist.ts'
-import { coerceControl } from './share.ts'
 import { THROWS } from './throws.ts'
 
 export type ThrowPadMap = Partial<Record<string, PadBinding>>

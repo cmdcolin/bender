@@ -49,7 +49,7 @@ import { engine, SOUND_FLOOR } from '../engine/engine.ts'
 import { BAND_ROWS, IDX } from '../engine/params.ts'
 import { hasYtdlp } from '../engine/ytdlp.ts'
 import { errorText } from '../errorText.ts'
-import { JACK_KEYS, linesFromJack, UNIT_LINE_KEYS } from '../jacks.ts'
+import { INTO_ALIAS, JACK_KEYS, linesFromJack } from '../jacks.ts'
 import { MACHINES } from '../machines.ts'
 import { semitoneName } from '../notes.ts'
 import { PEDALS } from '../pedals.ts'
@@ -70,6 +70,7 @@ import {
 import { recorded } from './activity.ts'
 import { OWN_DEPTH, soldered, spare, SRC_OFF, WIRES } from './bayWire.ts'
 import { CARDS, keyOf, type CardStage } from './cards.ts'
+import { coerceControl } from './coerce.ts'
 import {
   ALL_SLIDERS,
   BENDS,
@@ -84,7 +85,7 @@ import { linesText, parseLines } from './controls/jacks.ts'
 import { BandTally, MASK_DB } from './masking.ts'
 import { applyPreset, PRESETS, presetNameFor } from './presets/index.ts'
 import { bundlesOf, masterRun } from './routes.ts'
-import { boardHash, coerceControl } from './share.ts'
+import { boardHash } from './share.ts'
 import { formatValue } from './slider-scale.ts'
 import { STRUCK_HOME, strike, type Struck } from './strikes.ts'
 
@@ -273,10 +274,6 @@ interface SetReport {
   unknown: string[]
   failed: string[]
 }
-
-const INTO_ALIAS = new Map<string, ControlKey>(
-  UNIT_LINE_KEYS.map(k => [k.replace(/Lines$/, 'Into'), k]),
-)
 
 const RACK = [
   ...BENDS.map(b => ({
