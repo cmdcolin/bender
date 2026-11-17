@@ -346,11 +346,15 @@ export function keyOf(steps: readonly number[]) {
 
 /** What each step is actually sounding once the holds are resolved: the note,
     and whether the step struck it or is carrying the one before. A hold at the
-    top of the memory carries whatever the last step left sounding, a rest
-    included, because that is what the step before is when the counter comes
-    round. */
-export function voicing(steps: readonly number[]) {
-  const carried = steps.toReversed().find(step => step !== HOLD) ?? REST
+    top of the memory carries whatever the last step it plays left sounding, a
+    rest included, because that is what the step before is when the counter
+    comes round at `len`. */
+export function voicing(steps: readonly number[], len: number) {
+  const carried =
+    steps
+      .slice(0, asTuneLen(len))
+      .toReversed()
+      .find(step => step !== HOLD) ?? REST
   let note = carried
   return steps.map(step => {
     const head = isNote(step)
@@ -369,7 +373,7 @@ export const laneSteps = (c: Controls, lane: number) =>
     lanes is taken off the one the chip's own oscillator is on. */
 export function laneOf(c: Controls, step: number, note: number): number {
   for (let lane = 0; lane < TUNE_LANES; lane++) {
-    const at = voicing(laneSteps(c, lane))[step]!
+    const at = voicing(laneSteps(c, lane), c.tuneLen)[step]!
     if (at.note === note) return lane
   }
   return -1
@@ -390,7 +394,7 @@ export function laneForNote(
   const held = laneOf(c, step, note)
   if (held >= 0) return held
   for (let lane = 0; lane < TUNE_LANES; lane++) {
-    if (voicing(laneSteps(c, lane))[step]!.note === REST) return lane
+    if (voicing(laneSteps(c, lane), c.tuneLen)[step]!.note === REST) return lane
   }
   return 0
 }

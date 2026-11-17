@@ -39,9 +39,9 @@ interface Span {
 }
 
 // Each held note as one bar across the steps it sounds for.
-function spans(steps: readonly number[], lane: number): Span[] {
+function spans(steps: readonly number[], len: number, lane: number): Span[] {
   const out: Span[] = []
-  voicing(steps).forEach(({ note, head }, s) => {
+  voicing(steps, len).forEach(({ note, head }, s) => {
     if (!isNote(note)) return
     const last = out.at(-1)
     if (!head && last?.note === note && last.to === s) last.to = s + 1
@@ -195,7 +195,7 @@ function Strip({
   const [old] = useState(taken)
   const fresh = taken !== old && taken?.memory === memory ? taken : null
   const under = playing ? pos % len : -1
-  const bars = lanes.flatMap((steps, lane) => spans(steps, lane))
+  const bars = lanes.flatMap((steps, lane) => spans(steps, len, lane))
   const notes = bars.map(b => b.note)
   const lo = Math.min(...notes, Infinity)
   const hi = Math.max(...notes, -Infinity)

@@ -71,7 +71,7 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
   const pos = useSeqPos(stage)
   const [base, setBase] = useState(() => baseFor([steps]))
   const paint = useRef(false)
-  const bars = voicing(steps)
+  const bars = voicing(steps, len)
   const under = playing && on ? pos % len : -1
 
   // A drag can end anywhere, so the release is heard on the window.

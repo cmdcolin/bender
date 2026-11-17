@@ -10,6 +10,8 @@ import {
   HOLD,
   isNote,
   keyOf,
+  laneForNote,
+  laneOf,
   laneText,
   NOTE_HI,
   NOTE_LO,
@@ -17,6 +19,7 @@ import {
   seqFlagsText,
   parseLane,
   REST,
+  TUNE_ALL_STEP_KEYS,
   TUNE_STEPS,
   TUNE_STEP_KEYS,
   voicing,
@@ -96,7 +99,7 @@ test('a length is a whole number of the steps there are', () => {
 // A hold carries the note before it, which is what makes a bar across four
 // steps one long note rather than four.
 test('holds carry the note they follow', () => {
-  const bars = voicing([5, HOLD, HOLD, REST, 9, HOLD])
+  const bars = voicing([5, HOLD, HOLD, REST, 9, HOLD], 6)
   expect(bars.map(b => b.note)).toEqual([5, 5, 5, REST, 9, 9])
   expect(bars.map(b => b.head)).toEqual([
     true,
@@ -112,9 +115,29 @@ test('holds carry the note they follow', () => {
 // round — so a memory that opens on a hold is a note wrapping past the end
 // rather than a hold with nothing to hold.
 test('a hold at the top carries what the last step left sounding', () => {
-  expect(voicing([HOLD, HOLD, 12]).map(b => b.note)).toEqual([12, 12, 12])
-  expect(voicing([HOLD, REST]).map(b => b.note)).toEqual([REST, REST])
-  expect(voicing([HOLD, 5, REST]).map(b => b.note)).toEqual([REST, 5, REST])
+  expect(voicing([HOLD, HOLD, 12], 3).map(b => b.note)).toEqual([12, 12, 12])
+  expect(voicing([HOLD, REST], 2).map(b => b.note)).toEqual([REST, REST])
+  expect(voicing([HOLD, 5, REST], 3).map(b => b.note)).toEqual([REST, 5, REST])
+})
+
+// The counter comes round at the tune's length, so the steps past it are never
+// the step before the first.
+test('a hold at the top carries the last step the memory plays', () => {
+  expect(voicing([HOLD, 7, 9, 12], 3).map(b => b.note)).toEqual([9, 7, 9, 12])
+})
+
+// A note held over the loop point is still sounding on step 0, so a chord note
+// written there goes on another lane rather than cutting it.
+test('laneForNote leaves a note held across the loop point alone', () => {
+  const c = {
+    ...DEFAULT_CONTROLS,
+    ...Object.fromEntries(TUNE_ALL_STEP_KEYS.map(k => [k, REST])),
+    tuneLen: 8,
+    tuneStep0: HOLD,
+    tuneStep7: 5,
+  }
+  expect(laneOf(c, 0, 5)).toBe(0)
+  expect(laneForNote(c, 0, 9, true)).toBe(1)
 })
 
 // The accompaniment has no chord buttons — it reads the melody — so all it
