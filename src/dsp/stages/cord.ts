@@ -1,5 +1,6 @@
 import { MACHINES } from '../../machines.ts'
 import { hop } from '../modbus.ts'
+import { Crossings } from '../util/crossings.ts'
 
 export const CORD_DIV_NAMES = ['÷1', '÷2', '÷4', '÷8']
 
@@ -24,12 +25,11 @@ const TAP_OF = CORD_FROM.map(name =>
 export const cordTap = (from: number, lane: Float32Array | null) =>
   TAP_OF[hop(from, CORD_FROM.length, lane)] ?? PIN
 
-const HYST = 0.05
 const SQUARE = 0.7
 const COUPLE_HZ = 20
 
 export class Cord {
-  private high = false
+  private edges = new Crossings(0.05)
   private count = 0
   private dc = -SQUARE
   private readonly couple: number
@@ -52,11 +52,7 @@ export class Cord {
     const wrap = (1 << stages) - 1
     const bit = 1 << (stages - 1)
     for (let i = 0; i < n; i++) {
-      const x = pin[i]!
-      if (!this.high && x > HYST) {
-        this.high = true
-        this.count = (this.count + 1) & wrap
-      } else if (this.high && x < -HYST) this.high = false
+      if (this.edges.rise(pin[i]!)) this.count = (this.count + 1) & wrap
       const sq = this.count & bit ? SQUARE : -SQUARE
       this.dc += this.couple * (sq - this.dc)
       out[i] = (sq - this.dc) * gain
@@ -64,7 +60,7 @@ export class Cord {
   }
 
   reset() {
-    this.high = false
+    this.edges.reset()
     this.count = 0
     this.dc = -SQUARE
   }

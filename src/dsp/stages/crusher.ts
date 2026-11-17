@@ -5,6 +5,7 @@ import { DEST, hop } from '../modbus.ts'
 import { NEEDS_TOY, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { DEAD_V } from '../toyRail.ts'
 import { clamp01 } from '../util/clamp.ts'
+import { Crossings } from '../util/crossings.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 
@@ -83,8 +84,6 @@ const DM_LEAK = 0.999
 const LADDER_TOL = 0.5
 const LADDER_FLOOR = 0.4
 const LADDER_HEAT = 1.5
-
-const MIC_HYST = 0.02
 
 const toWord = (v: number) =>
   Math.min(Math.max(Math.round((v + 1) * MSB), 0), TOP)
@@ -188,7 +187,7 @@ export class Crusher implements Stage {
   private right = new Side(2)
   private bus: Bus
   private sar = MSB
-  private micHigh = false
+  private micEdges = new Crossings()
   private fault: Rng
   private ladderHi = new Float64Array(256)
   private ladderLo = new Float64Array(256)
@@ -362,11 +361,7 @@ export class Crusher implements Stage {
       let latchL = false
       let latchR = false
       if (micClock) {
-        const m = micClock[i]!
-        if (!this.micHigh && m > MIC_HYST) {
-          this.micHigh = true
-          latchL = latchR = true
-        } else if (this.micHigh && m < -MIC_HYST) this.micHigh = false
+        latchL = latchR = this.micEdges.rise(micClock[i]!)
       } else {
         const v = ctx.railV[i]!
         const tick = rc ? Math.max((v - DEAD_V) / (1 - DEAD_V), 0) : 1
@@ -522,7 +517,7 @@ export class Crusher implements Stage {
     this.right.reset()
     this.bus.reset()
     this.sar = MSB
-    this.micHigh = false
+    this.micEdges.reset()
     this.wasDeep = false
   }
 }

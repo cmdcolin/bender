@@ -1,18 +1,21 @@
 import { flushDenormal } from './softclip.ts'
 
-const HYSTERESIS = 0.02
-
 // A Schmitt trigger: true on each upward crossing of zero. The dead band keeps
 // a quiet mic's hiss from firing it.
 export class Crossings {
   private high = false
+  private readonly hysteresis: number
+
+  constructor(hysteresis = 0.02) {
+    this.hysteresis = hysteresis
+  }
 
   rise(x: number): boolean {
     if (this.high) {
-      if (x < -HYSTERESIS) this.high = false
+      if (x < -this.hysteresis) this.high = false
       return false
     }
-    if (x > HYSTERESIS) {
+    if (x > this.hysteresis) {
       this.high = true
       return true
     }
