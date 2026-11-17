@@ -202,11 +202,6 @@ export const TUNE_LANES = TUNE_LANE_KEYS.length
 
 export const TUNE_ALL_STEP_KEYS = TUNE_LANE_KEYS.flat()
 
-export type TuneStepKey =
-  | (typeof TUNE_STEP_KEYS)[number]
-  | (typeof TUNE_STACK_A_KEYS)[number]
-  | (typeof TUNE_STACK_B_KEYS)[number]
-
 /** The mono synth's own melody: one lane of the same steps. */
 export const MONO_SEQ_STEP_KEYS = [
   'monoSeqStep0',

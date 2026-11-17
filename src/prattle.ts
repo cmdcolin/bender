@@ -245,8 +245,6 @@ const WORDS: Record<string, string> = {
   chant: 'CH AE N TT',
 }
 
-export const DICTIONARY_WORDS = Object.keys(WORDS)
-
 const VOWEL_PHONES = new Set<string>([
   'IY',
   'IH',

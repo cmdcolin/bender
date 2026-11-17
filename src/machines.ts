@@ -374,7 +374,6 @@ export const MACHINES = [
 ] as const satisfies readonly MachineSpec[]
 
 export type Machine = (typeof MACHINES)[number]
-export type MachineName = Machine['name']
 export type SourceTap = Machine['tap']
 export type NoteDest = Extract<Machine, { keybed: string }>['keybed']
 

@@ -534,7 +534,6 @@ export class Engine {
   readonly pcmNotes = this.notesOn.pcm
   readonly monoKeysDown = this.keysDownOn.mono
   readonly monoNotes = this.notesOn.mono
-  readonly leadKeysDown = this.keysDownOn.lead
   readonly leadNotes = this.notesOn.lead
   // Which sources are actually putting something on the bus, as a bit per
   // SOURCE_TAPS slot. A run switch says a sequencer is walking; this says the
@@ -925,7 +924,7 @@ export class Engine {
   }
 
   /** How long a run of the phrase lock lasts at the kit's tempo, in seconds. */
-  phraseSeconds(): number {
+  private phraseSeconds() {
     return (this.phraseLock.get() * STEPS * this.meter.get().drumStepMs) / 1000
   }
 
