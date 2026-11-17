@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
@@ -31,6 +31,7 @@ import {
   useLanes,
   useTunePos,
 } from './tuneRoll.ts'
+import { useWindowRelease } from './useWindowRelease.ts'
 
 import type { RefObject } from 'react'
 
@@ -68,20 +69,10 @@ export function TuneRoll() {
   const bars = lanes.map(voicing)
   const under = playing && mine ? pos % len : -1
 
-  // A drag ends wherever the hand lets go, which is often not over a cell. Without
-  // this the gesture outlives itself, and the next press anywhere on the panel
-  // dragged over the roll would carry on drawing.
-  useEffect(() => {
-    const done = () => {
-      paint.current = false
-    }
-    window.addEventListener('pointerup', done)
-    window.addEventListener('pointercancel', done)
-    return () => {
-      window.removeEventListener('pointerup', done)
-      window.removeEventListener('pointercancel', done)
-    }
-  }, [])
+  // A drag can end anywhere, so the release is heard on the window.
+  useWindowRelease(() => {
+    paint.current = false
+  })
 
   const shift = (by: number) => setBase(b => clampBase(b + by))
 

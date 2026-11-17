@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { isSharp, semitoneName } from '../notes.ts'
@@ -30,6 +30,7 @@ import {
   useSeqPos,
   useSteps,
 } from './tuneRoll.ts'
+import { useWindowRelease } from './useWindowRelease.ts'
 
 import type { ControlKey } from '../controls.ts'
 import type { RefObject } from 'react'
@@ -73,17 +74,10 @@ export function MonoRoll({ stage = 'Growler' }: { stage?: CardStage }) {
   const bars = voicing(steps)
   const under = playing && on ? pos % len : -1
 
-  useEffect(() => {
-    const done = () => {
-      paint.current = false
-    }
-    window.addEventListener('pointerup', done)
-    window.addEventListener('pointercancel', done)
-    return () => {
-      window.removeEventListener('pointerup', done)
-      window.removeEventListener('pointercancel', done)
-    }
-  }, [])
+  // A drag can end anywhere, so the release is heard on the window.
+  useWindowRelease(() => {
+    paint.current = false
+  })
 
   const shift = (by: number) => setBase(b => clampBase(b + by))
   const drawn = bars.map(b => b.note).filter(isNote)

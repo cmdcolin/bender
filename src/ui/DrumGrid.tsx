@@ -1,6 +1,5 @@
 import {
   memo,
-  useEffect,
   useRef,
   useSyncExternalStore,
   type ReactNode,
@@ -67,6 +66,7 @@ import { claimPress, claimRelease } from './keyPress.ts'
 import { ShuffleMark } from './ShuffleMark.tsx'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
+import { useWindowRelease } from './useWindowRelease.ts'
 
 import type { ControlKey, Controls } from '../controls.ts'
 
@@ -165,21 +165,10 @@ export function DrumGrid() {
   const loaded = useBoardValue(c => romMatching(c)?.name)
   const live = playing && level > 0
   const paint = useRef<StepState | null>(null)
-  // A drag ends wherever the hand lets go, which is often not over a cell — so
-  // the release is heard on the window rather than on the button. Without it
-  // the direction outlives the gesture, and the next press anywhere on the page
-  // dragged over the grid would carry on drawing the run before it.
-  useEffect(() => {
-    const done = () => {
-      paint.current = null
-    }
-    window.addEventListener('pointerup', done)
-    window.addEventListener('pointercancel', done)
-    return () => {
-      window.removeEventListener('pointerup', done)
-      window.removeEventListener('pointercancel', done)
-    }
-  }, [])
+  // A drag can end anywhere, so the release is heard on the window.
+  useWindowRelease(() => {
+    paint.current = null
+  })
 
   return (
     <div className={styles.staged}>
