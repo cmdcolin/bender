@@ -2,6 +2,45 @@
 
 All notable changes to bender are documented here.
 
+## [1.29.0](https://github.com/cmdcolin/bender/compare/v1.28.2...v1.29.0) - 2026-11-17
+
+### Fixes
+- *(home)* [`eb24da7`](https://github.com/cmdcolin/bender/commit/eb24da742c0fffe21f80b74ba974ffa5486d4562) drop a pending waveform seek when the track changes
+- *(ui)* [`bbd580e`](https://github.com/cmdcolin/bender/commit/bbd580ea36ca8fbf0308eab5e8e2f736c084b8ec) refuse bad wire sources, amounts and line targets in the agent API
+- *(midi)* [`8debb31`](https://github.com/cmdcolin/bender/commit/8debb3134ff96cdf526cdb3c6460bfebbfa1eb25) range-check stored pads and keep throw pads out of the voice readout
+- *(engine)* [`86628d9`](https://github.com/cmdcolin/bender/commit/86628d951c90e4b5c9b415f422fe7fbb58576405) resolve holds at the top of a tune against its length
+- *(engine)* [`f2cf5a7`](https://github.com/cmdcolin/bender/commit/f2cf5a72a6a99cf0d62e8ae458957c808104e4c1) boot the audio before opening the mic
+- [`8c3bb93`](https://github.com/cmdcolin/bender/commit/8c3bb9321c091567145fe221464bc8ee15293613) warn before leaving the pocket page with a take recording
+- [`981e1b3`](https://github.com/cmdcolin/bender/commit/981e1b3862f2123a02651584c4bc56274b89558f) refuse a Euclidean row longer than the grid before building it
+- *(engine)* [`eb14463`](https://github.com/cmdcolin/bender/commit/eb14463150df374a0f673afbf67c33f70cf958c0) clear the read clock and caller listener once a read is called off
+- *(dsp)* [`03f8ace`](https://github.com/cmdcolin/bender/commit/03f8acea80c5776e1607bb721e425a96f2d6e645) scale the drunk walk, brownout crackle and tape flutter by sample rate
+- *(dsp)* [`79caea5`](https://github.com/cmdcolin/bender/commit/79caea5eff449f30f3b74956a11fe17c36780f98) wrap the FM chip's carrier phase when the pitch wire runs it backwards
+- *(dsp)* [`b9611dd`](https://github.com/cmdcolin/bender/commit/b9611dd0b41b3aef19219c1dc5ccaf9d44f2063a) clear stray gates and the pinned clip voice on panic
+- *(engine)* [`af1393d`](https://github.com/cmdcolin/bender/commit/af1393d5e4616a91ce6b1609575a862858f7becb) keep the pocket's last take locked against the sweep
+
+### Performance
+- *(engine)* [`2b0047f`](https://github.com/cmdcolin/bender/commit/2b0047f61cd0fe3aad2c6a30a2adf8730ffdf094) keep a running total of the retro buffer's frames
+- *(dsp)* [`c5f9ba9`](https://github.com/cmdcolin/bender/commit/c5f9ba9229523ee6c3c550545a7e6e0f9870afd9) restamp the echo's brigade lazily when Pull or Sag engages
+- *(dsp)* [`b4aca0b`](https://github.com/cmdcolin/bender/commit/b4aca0b32ea69efddf096e31de0a6bd0914af408) drop the crusher's and prattle's per-call closures
+
+### Refactor
+- *(ui)* [`7f98971`](https://github.com/cmdcolin/bender/commit/7f98971208ebba0d17a3db0922efb4a93e649ea2) share the window pointer-release hook
+- *(ui)* [`1f8a51b`](https://github.com/cmdcolin/bender/commit/1f8a51b4caef49154606fc023a10e4379c7defe8) stop re-registering effects every render
+- *(ui)* [`68634a1`](https://github.com/cmdcolin/bender/commit/68634a192b440182df81db272e33a20d947138d9) draw the chain map's rack order from rackOrder
+- *(ui)* [`513664a`](https://github.com/cmdcolin/bender/commit/513664a347a9dba0b2b2d185b37cdaf8287c78c4) one coerceControl for links, the agent API and pads
+- *(ui)* [`2fbd623`](https://github.com/cmdcolin/bender/commit/2fbd6234f2c164ac3c1e77535e7d7c1f25a91ece) stop exporting symbols only their own file uses
+- *(engine)* [`d358f19`](https://github.com/cmdcolin/bender/commit/d358f19d4576efcae846ebe6300b4844d53257aa) derive Meter from MeterMsg
+- [`b6668cd`](https://github.com/cmdcolin/bender/commit/b6668cd9006de92be337f444a37afd5a70273bce) build drum mask records with recordOf
+- [`e45efbe`](https://github.com/cmdcolin/bender/commit/e45efbe4486afa895914a2cb0815dd9d1e70aee6) drop exports nothing reads
+- *(dsp)* [`d440e54`](https://github.com/cmdcolin/bender/commit/d440e546b542ae03c33df460dc81648508d804c7) share clamp01, popcount and A3_HZ
+- *(ui)* [`cd26215`](https://github.com/cmdcolin/bender/commit/cd2621542be7772325b0fc6ab468c2c39dec4000) keep the diagram's character width private
+- *(midi)* [`18760ff`](https://github.com/cmdcolin/bender/commit/18760ffb46c948e2a09f0d877dddddf328ad51a7) read stored bindings and run state without casts
+- *(dsp)* [`4f7b35a`](https://github.com/cmdcolin/bender/commit/4f7b35ac7bff04f67fb47d38dcd3c9f08a16812b) read a wired 0..1 knob through ModBus.knob
+- *(dsp)* [`ecf5492`](https://github.com/cmdcolin/bender/commit/ecf54926ae2f9522e198ab8d3dd8ab8dc0ef14bf) run the crusher's mic clock and the cord through Crossings
+- *(dsp)* [`80e03f7`](https://github.com/cmdcolin/bender/commit/80e03f7aa79e3ac1731896afd59fd7be35db8a86) derive N_DEST from DEST
+- *(dsp)* [`ed1102a`](https://github.com/cmdcolin/bender/commit/ed1102a104a8c1ad0f33000cb4b198208260c260) share the noise tilt with the desk loop's send
+- *(dsp)* [`6f964af`](https://github.com/cmdcolin/bender/commit/6f964afebbbe8eef19905f0b2b086d3c95c4099b) run the bucket brigade's filters through Lowpass
+
 ## [1.28.2](https://github.com/cmdcolin/bender/compare/v1.28.1...v1.28.2) - 2026-11-12
 
 ### Features
