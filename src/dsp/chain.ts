@@ -41,7 +41,7 @@ import {
   newVoicing,
   type AmpVoicing,
 } from './util/loopamp.ts'
-import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole.ts'
+import { DcBlocker, OnePoleLP, lpCoef, tilt } from './util/onepole.ts'
 import { octaves } from './util/pitch.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
 import { flushDenormal, softclip } from './util/softclip.ts'
@@ -213,13 +213,13 @@ class DeskLoop {
     this.tiltCoef = lpCoef(800, sr)
   }
 
-  open(amt: number, ms: number, tilt: number, sr: number, wired = false) {
+  open(amt: number, ms: number, slope: number, sr: number, wired = false) {
     this.on = wired || amt > 0
     if (this.on && !this.wasOn) this.clear()
     this.wasOn = this.on
     this.setAmt(amt)
     this.delay = Math.max((ms / 1000) * sr, 1)
-    this.tilt = tilt
+    this.tilt = slope
   }
 
   setAmt(amt: number) {
@@ -237,10 +237,7 @@ class DeskLoop {
   // that never quite agree.
   private send(x: number, lp: OnePoleLP): number {
     const y = x * this.amt
-    const low = lp.process(y, this.tiltCoef)
-    if (this.tilt > 0) return y + this.tilt * (y - 2 * low)
-    if (this.tilt < 0) return y + -this.tilt * (2 * low - y)
-    return y
+    return tilt(y, lp.process(y, this.tiltCoef), this.tilt)
   }
 
   /** One sample of the bus at `i` through the strip, with the rail in `v`. */

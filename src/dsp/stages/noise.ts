@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params.ts'
+import { tilt } from '../util/onepole.ts'
 import { poleAt, REF_SR, stepAt } from '../util/rate.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal } from '../util/softclip.ts'
@@ -76,10 +77,4 @@ export class Noise implements Stage {
     this.ring1 = 0
     this.ring2 = 0
   }
-}
-
-function tilt(x: number, lp: number, color: number): number {
-  if (color > 0) return x + color * (x - 2 * lp)
-  if (color < 0) return x + -color * (2 * lp - x)
-  return x
 }

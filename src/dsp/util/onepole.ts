@@ -77,3 +77,10 @@ export class DcBlocker {
     this.y1 = 0
   }
 }
+
+export const tilt = (x: number, lp: number, color: number) =>
+  color > 0
+    ? x + color * (x - 2 * lp)
+    : color < 0
+      ? x + -color * (2 * lp - x)
+      : x
