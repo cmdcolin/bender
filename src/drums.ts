@@ -664,9 +664,11 @@ export function parseRow(text: string) {
   const flat = text
     .toLowerCase()
     .replace(/[\s|]/g, '')
-    .replace(EUCLID, (_, ch: string, k: string, n: string, r?: string) =>
-      euclid(Number(k), Number(n), Number(r ?? 0)).replaceAll('x', ch),
-    )
+    .replace(EUCLID, (_, ch: string, k: string, n: string, r?: string) => {
+      if (Number(n) > STEPS)
+        throw new Error(`${n} steps; the maximum is ${STEPS}`)
+      return euclid(Number(k), Number(n), Number(r ?? 0)).replaceAll('x', ch)
+    })
   const steps: string[] = []
   const ratchets: Record<number, number> = {}
   for (let i = 0; i < flat.length; i++) {

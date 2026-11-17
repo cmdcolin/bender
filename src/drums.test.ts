@@ -43,6 +43,7 @@ test('parseRow reads hits, dice hits and rests, and rowText writes them back', (
   })
   expect(() => parseRow('x-x')).toThrow("'-' is not a step")
   expect(() => parseRow('.'.repeat(STEPS + 1))).toThrow(`${STEPS + 1} steps`)
+  expect(() => parseRow('x(3,100000000)')).toThrow('100000000 steps')
 })
 
 test('a g is a ghost step, and rowText writes it back', () => {
