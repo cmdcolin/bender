@@ -83,6 +83,7 @@ import { fetchLink, linkCredit, watchLink } from './ytdlp.ts'
 import type { WildPack } from '../dsp/arc.ts'
 import type {
   FromWorklet,
+  MeterMsg,
   NoteDest,
   ProbedMsg,
   RecMsg,
@@ -163,76 +164,7 @@ export function roomNote(left: number, limit: keyof typeof LIMIT_NOUN): string {
 export const SOUND_FLOOR = 1e-3
 const SOUND_FALL = 0.86
 
-export interface Meter {
-  peak: number
-  scope: Float32Array
-  tick: number
-  drumClock: number
-  drumStepMs: number
-  cued: number
-  /** Voices the kit fired since the last meter, as the bit order of a step. */
-  hits: number
-  strays: number
-  arc: number
-  /** Where the tune's own counter is standing and how far through that step,
-      which is the clock a note played into the memory lands on. */
-  tunePos: number
-  tuneFrac: number
-  monoSeqPos: number
-  monoSeqFrac: number
-  monoSeqStepMs: number
-  leadSeqPos: number
-  leadSeqFrac: number
-  leadSeqStepMs: number
-  /** Each memory's RAM, accent and slide bits, and the steps a fault changed. */
-  monoSeqRam: Float32Array
-  monoSeqFlags: Uint8Array
-  monoSeqDamage: number
-  leadSeqRam: Float32Array
-  leadSeqFlags: Uint8Array
-  leadSeqDamage: number
-  tuneStepMs: number
-  duck: number
-  rail: number
-  reboots: number
-  rail2: number
-  reboots2: number
-  faults: number
-  faultStage: string
-  /** What each source, the mic and the bus peaked at over the last meter — see
-      the chain's taps. Read by the mixer's meters, which draw straight to the
-      DOM off it rather than through a render. */
-  taps: Float32Array
-  /** How far each channel's duck has darkened it, for the desk's lamps. */
-  ldr: Float32Array
-  returns: Float32Array
-  /** Each source's and the mic's octave bands, while `watchBands` is on. */
-  bands: Float32Array
-  /** Which position the chain is running at each step of its walk, and which
-      steps have a joint open — what Solder is doing to the path, which no
-      control on the board says. See the chain's own walk. */
-  walk: Uint8Array
-  dropped: number
-  /** The reel the sampler is playing: its length in seconds (0 with nothing
-      threaded), where the head stands over it, whether it is turning, and its
-      envelope. Read by the reel, which draws off it every frame. */
-  sampleSecs: number
-  samplePos: number
-  samplePlaying: boolean
-  sampleTaking: boolean
-  sampleUndo: number
-  samplePeaks: Float32Array
-  /** The stretch of reel that came round last block. The two knobs until a wire
-      off the bay lands on the markers, and the wire's answer after that. */
-  sampleIn: number
-  sampleOut: number
-  /** The four-track's loops: heads, lap times, envelopes and wear. See the
-      worklet's meter post. */
-  fourHeads: Float32Array
-  fourLaps: Float32Array
-  fourPeaks: Float32Array
-  fourShed: Float32Array
-}
+export type Meter = Omit<MeterMsg, 'kind' | 'keyNotes' | 'keyNoteCounts'>
 
 // The memories a hand plays into: the toy's tune, three lanes deep, the second
 // melody and Howler's, one each. Each reads its own counter off the meter.
@@ -734,13 +666,10 @@ export class Engine {
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
       if (msg.kind === 'meter') {
+        const { kind: _kind, keyNotes, keyNoteCounts, ...meter } = msg
         for (const [i, dest] of KEYBEDS.entries()) {
           const store = this.notesOn[dest]
-          const notes = mergeNotes(
-            store.get(),
-            msg.keyNotes[i]!,
-            msg.keyNoteCounts[i],
-          )
+          const notes = mergeNotes(store.get(), keyNotes[i]!, keyNoteCounts[i])
           if (notes !== store.get()) store.set(notes)
         }
         const newFaults = msg.faults - this.meter.get().faults
@@ -750,57 +679,7 @@ export class Engine {
           )
         if (newFaults !== 0)
           this.stageFaults.set({ count: msg.faults, stage: msg.faultStage })
-        this.meter.set({
-          peak: msg.peak,
-          scope: msg.scope,
-          tick: msg.tick,
-          drumClock: msg.drumClock,
-          drumStepMs: msg.drumStepMs,
-          cued: msg.cued,
-          hits: msg.hits,
-          strays: msg.strays,
-          arc: msg.arc,
-          tunePos: msg.tunePos,
-          tuneFrac: msg.tuneFrac,
-          monoSeqPos: msg.monoSeqPos,
-          monoSeqFrac: msg.monoSeqFrac,
-          monoSeqStepMs: msg.monoSeqStepMs,
-          leadSeqPos: msg.leadSeqPos,
-          leadSeqFrac: msg.leadSeqFrac,
-          leadSeqStepMs: msg.leadSeqStepMs,
-          monoSeqRam: msg.monoSeqRam,
-          monoSeqFlags: msg.monoSeqFlags,
-          monoSeqDamage: msg.monoSeqDamage,
-          leadSeqRam: msg.leadSeqRam,
-          leadSeqFlags: msg.leadSeqFlags,
-          leadSeqDamage: msg.leadSeqDamage,
-          tuneStepMs: msg.tuneStepMs,
-          duck: msg.duck,
-          rail: msg.rail,
-          reboots: msg.reboots,
-          rail2: msg.rail2,
-          reboots2: msg.reboots2,
-          faults: msg.faults,
-          faultStage: msg.faultStage,
-          taps: msg.taps,
-          ldr: msg.ldr,
-          returns: msg.returns,
-          bands: msg.bands,
-          walk: msg.walk,
-          dropped: msg.dropped,
-          sampleSecs: msg.sampleSecs,
-          samplePos: msg.samplePos,
-          samplePlaying: msg.samplePlaying,
-          sampleTaking: msg.sampleTaking,
-          sampleUndo: msg.sampleUndo,
-          samplePeaks: msg.samplePeaks,
-          sampleIn: msg.sampleIn,
-          sampleOut: msg.sampleOut,
-          fourHeads: msg.fourHeads,
-          fourLaps: msg.fourLaps,
-          fourPeaks: msg.fourPeaks,
-          fourShed: msg.fourShed,
-        })
+        this.meter.set(meter)
         const lit = soundingMask(msg.taps, this.soundHold)
         if (lit !== this.sounding.get()) this.sounding.set(lit)
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
