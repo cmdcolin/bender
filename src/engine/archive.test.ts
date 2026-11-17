@@ -249,6 +249,22 @@ test('without AbortSignal.any the clock and the caller both still call a read of
   vi.useRealTimers()
 })
 
+test('without AbortSignal.any a read called off leaves no clock or listener behind', () => {
+  vi.useFakeTimers()
+  const caller = new AbortController()
+  const removed = vi.spyOn(caller.signal, 'removeEventListener')
+  clockOrCaller(500, caller.signal)
+  expect(vi.getTimerCount()).toBe(1)
+  vi.advanceTimersByTime(500)
+  expect(removed).toHaveBeenCalledWith('abort', expect.any(Function))
+
+  const quit = new AbortController()
+  clockOrCaller(500, quit.signal)
+  quit.abort()
+  expect(vi.getTimerCount()).toBe(0)
+  vi.useRealTimers()
+})
+
 test('a roll still lands where AbortSignal.any is missing', async () => {
   const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any')
   Reflect.deleteProperty(AbortSignal, 'any')

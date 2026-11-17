@@ -275,16 +275,20 @@ const within = (ms: number, signal: AbortSignal | undefined) =>
 
 export function clockOrCaller(ms: number, signal: AbortSignal | undefined) {
   const either = new AbortController()
-  setTimeout(() => {
+  const clock = setTimeout(() => {
     either.abort(new DOMException('signal timed out', 'TimeoutError'))
   }, ms)
-  if (signal) {
-    if (signal.aborted) either.abort(signal.reason)
-    else
-      signal.addEventListener('abort', () => either.abort(signal.reason), {
-        once: true,
-      })
-  }
+  const fromCaller = () => either.abort(signal?.reason)
+  either.signal.addEventListener(
+    'abort',
+    () => {
+      clearTimeout(clock)
+      signal?.removeEventListener('abort', fromCaller)
+    },
+    { once: true },
+  )
+  if (signal?.aborted) fromCaller()
+  else signal?.addEventListener('abort', fromCaller, { once: true })
   return either.signal
 }
 
