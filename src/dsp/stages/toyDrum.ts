@@ -475,11 +475,6 @@ const fold = (x: number) => {
   return FOLD_REF * (1 - 4 * Math.abs(u - Math.floor(u) - 0.5))
 }
 
-const laned = (p: Float32Array, ctx: Ctx, key: number, dest: number) => {
-  const lane = ctx.mod.read(dest)
-  return clamp01(p[key]! + (lane ? lane[0]! : 0))
-}
-
 const BIAS_FIRE = 0.5
 const BIAS_REARM = 0.4
 const SELF_LAST = 0.02
@@ -1346,8 +1341,8 @@ export class ToyDrum implements Stage {
     return this.loopCells[v]!
   }
 
-  private wireRot(p: Float32Array, lane: Float32Array | null) {
-    this.rot = clamp01(p[IDX.drumRot]! + (lane ? lane[0]! : 0))
+  private wireRot(rot: number) {
+    this.rot = rot
     if (this.rot === 0) this.rotSeen.fill(-1)
   }
 
@@ -1668,10 +1663,7 @@ export class ToyDrum implements Stage {
         16,
       )
     }
-    const modRing = ctx.mod.read(DEST.drumRing)
-    const ring = modRing
-      ? clamp01(p[IDX.drumRing]! + modRing[0]!)
-      : p[IDX.drumRing]!
+    const ring = ctx.mod.knob(p, IDX.drumRing, DEST.drumRing)
     // The two halves of the snare are a transistor's hiss and a pair of tuned
     // networks, and nothing in one is in the other. So the pot between them has
     // to fade on power rather than on amplitude, or the middle of its travel —
@@ -1694,11 +1686,7 @@ export class ToyDrum implements Stage {
     const cymTone = clamp01(p[IDX.drumCymTone]!)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const retrigSweep = Math.min(Math.max(p[IDX.drumRetrigSweep]!, -1), 1)
-    const modTouch = ctx.mod.read(DEST.drumTouch)
-    const touch = Math.min(
-      Math.max(p[IDX.drumTouch]! + (modTouch ? modTouch[0]! : 0), 0),
-      1,
-    )
+    const touch = ctx.mod.knob(p, IDX.drumTouch, DEST.drumTouch)
     const clipBy = this.slipClip(touch, io.n)
     const humHz = MAINS_HZ[Math.round(p[IDX.drumTouchMains]!)] ?? MAINS_HZ[0]!
     const humLock =
@@ -1820,12 +1808,8 @@ export class ToyDrum implements Stage {
     }
     this.throwLen = asLen(p[IDX.drumThrowLen]!)
     this.wireLoop(p)
-    this.wireRot(p, ctx.mod.read(DEST.drumRot))
-    const modOutAddr = ctx.mod.read(DEST.drumOutAddr)
-    this.outAddrAmt = Math.min(
-      Math.max(p[IDX.drumOutAddr]! + (modOutAddr ? modOutAddr[0]! : 0), 0),
-      1,
-    )
+    this.wireRot(ctx.mod.knob(p, IDX.drumRot, DEST.drumRot))
+    this.outAddrAmt = ctx.mod.knob(p, IDX.drumOutAddr, DEST.drumOutAddr)
     this.scanSamples = Math.round(
       (Math.max(p[IDX.drumScan]!, 0) / 1000 / clock) * this.sr,
     )
@@ -1927,53 +1911,33 @@ export class ToyDrum implements Stage {
     const hissKick =
       HISS_KICK * Math.sqrt(perRef(this.sr)) * clamp01(p[IDX.drumHissKick]!)
     if (hissKick === 0) this.hissLeak = 0
-    const feedLane = ctx.mod.read(DEST.drumKickFeed)
-    const feedDepth = Math.min(
-      Math.max(p[IDX.drumKickFeed]! + (feedLane ? feedLane[0]! : 0), 0),
-      1,
-    )
+    const feedDepth = ctx.mod.knob(p, IDX.drumKickFeed, DEST.drumKickFeed)
     const feedFrom = Math.round(p[IDX.drumKickFeedFrom]!)
     const feedGain = (KICK_FEED[feedFrom] ?? 0) * feedDepth * feedDepth
     const feedMic = feedFrom === KICK_FEED_MIC ? ctx.mic : null
     const tankTap = Math.round(p[IDX.drumTankTap]!)
     const tankDiv = tankTap > 0 ? TANKS[0].hz * 2 ** tankTap : 0
-    const vcaLane = ctx.mod.read(DEST.drumKickVca)
-    const vcaDepth = Math.min(
-      Math.max(p[IDX.drumKickVca]! + (vcaLane ? vcaLane[0]! : 0), 0),
-      1,
-    )
-    const driveLane = ctx.mod.read(DEST.drumMixDrive)
-    const mixDrive = Math.min(
-      Math.max(p[IDX.drumMixDrive]! + (driveLane ? driveLane[0]! : 0), 0),
-      1,
-    )
+    const vcaDepth = ctx.mod.knob(p, IDX.drumKickVca, DEST.drumKickVca)
+    const mixDrive = ctx.mod.knob(p, IDX.drumMixDrive, DEST.drumMixDrive)
     const mixGain = mixDrive > 0 ? octaves(MIX_DRIVE_OCT * mixDrive) : 1
-    const snareMetal = laned(p, ctx, IDX.drumSnareMetal, DEST.drumSnareMetal)
+    const snareMetal = ctx.mod.knob(p, IDX.drumSnareMetal, DEST.drumSnareMetal)
     const snareBank = Math.sqrt(snareMetal) * SNARE_BANK
     const clapBank = Math.sqrt(snareMetal) * CLAP_BANK
     const snareTrans = Math.sqrt(1 - snareMetal)
-    const tankBank = laned(p, ctx, IDX.drumTankBank, DEST.drumTankBank)
+    const tankBank = ctx.mod.knob(p, IDX.drumTankBank, DEST.drumTankBank)
     const tankHiss =
-      TANK_HISS_OCT * laned(p, ctx, IDX.drumTankHiss, DEST.drumTankHiss)
+      TANK_HISS_OCT * ctx.mod.knob(p, IDX.drumTankHiss, DEST.drumTankHiss)
     const foldGain =
-      1 + TANK_FOLD * laned(p, ctx, IDX.drumTankFold, DEST.drumTankFold)
+      1 + TANK_FOLD * ctx.mod.knob(p, IDX.drumTankFold, DEST.drumTankFold)
     const foldLevel = 1 / Math.sqrt(foldGain)
-    const latch = laned(p, ctx, IDX.drumHissLatch, DEST.drumHissLatch)
+    const latch = ctx.mod.knob(p, IDX.drumHissLatch, DEST.drumHissLatch)
     const latchGain = 1 + LATCH_MAKEUP * latch * Math.sqrt(latch)
     const latchDiv =
       latch > 0 ? 1 + Math.floor(latch * latch * LATCH_DIV_MAX) : 0
     const bankPf = octaves(-BANK_STARVE_OCT * clamp01(p[IDX.drumBankStarve]!))
     const bankGate = Math.round(p[IDX.drumBankGate]!) - 1
-    const kickBankLane = ctx.mod.read(DEST.drumKickBank)
     const kickBank =
-      KICK_BANK_OCT *
-      Math.min(
-        Math.max(
-          p[IDX.drumKickBank]! + (kickBankLane ? kickBankLane[0]! : 0),
-          0,
-        ),
-        1,
-      )
+      KICK_BANK_OCT * ctx.mod.knob(p, IDX.drumKickBank, DEST.drumKickBank)
     if (kickBank === 0) this.kickWas = 0
     const ownCharge = 1 - Math.exp(-1 / (OWN_CHARGE_S * this.sr))
     const leakLane = ctx.mod.read(DEST.drumLeak)
@@ -1982,11 +1946,7 @@ export class ToyDrum implements Stage {
       1,
     )
     this.leakFall = Math.exp(-1 / (LEAK_S * this.sr))
-    const selfLane = ctx.mod.read(DEST.drumSelfFire)
-    this.selfFire = Math.min(
-      Math.max(p[IDX.drumSelfFire]! + (selfLane ? selfLane[0]! : 0), 0),
-      1,
-    )
+    this.selfFire = ctx.mod.knob(p, IDX.drumSelfFire, DEST.drumSelfFire)
     for (let t = 0; t < N_TANKS; t++) {
       const spec = TANKS[t]!
       const own = OWN_SWOOP[spec.voice]
@@ -2006,11 +1966,7 @@ export class ToyDrum implements Stage {
 
     const trigLoad = clamp01(p[IDX.drumTrigLoad]!)
     const trigRecover = Math.exp(-1 / (TRIG_RECOVER * this.sr))
-    const modMotor = ctx.mod.read(DEST.drumMotor)
-    const motor = Math.min(
-      Math.max(p[IDX.drumMotor]! + (modMotor ? modMotor[0]! : 0), 0),
-      1,
-    )
+    const motor = ctx.mod.knob(p, IDX.drumMotor, DEST.drumMotor)
     const motorPull = 1 / (MOTOR_TAU * this.sr)
     const motorDraw = (motor * MOTOR_DRAW) / (MOTOR_TAU * this.sr)
     if (motor === 0) {

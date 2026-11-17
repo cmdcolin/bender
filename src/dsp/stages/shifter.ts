@@ -225,10 +225,7 @@ export class Shifter implements Stage {
     const n = io.n
     const { hL, hR, pairL, pairR, carrier } = this
 
-    const modDrift = ctx.mod.read(DEST.shiftDrift)
-    const drift = modDrift
-      ? clamp01(p[IDX.shiftDrift]! + modDrift[0]!)
-      : p[IDX.shiftDrift]!
+    const drift = ctx.mod.knob(p, IDX.shiftDrift, DEST.shiftDrift)
     if (drift > 0) {
       const settle = 1 - Math.exp(-n / (this.sr * WARM_S))
       let msL = 0

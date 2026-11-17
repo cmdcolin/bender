@@ -1,3 +1,4 @@
+import { clamp } from '../util/clamp.ts'
 import {
   CAR_HALF,
   KEY_ON,
@@ -62,9 +63,6 @@ export interface Effect {
   /** one pass of the script: `tick` counts loops, `t` is seconds since it started */
   run(cpu: Cpu, tick: number, t: number): void
 }
-
-const clamp = (x: number, lo: number, hi: number) =>
-  x < lo ? lo : x > hi ? hi : x
 
 // A walk with reflecting walls rather than a clamp, so it keeps visiting the
 // ends of the count instead of parking against one.

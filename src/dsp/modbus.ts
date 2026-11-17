@@ -10,6 +10,7 @@ import {
 import { MACHINES } from '../machines.ts'
 import { BLOCK } from './stage.ts'
 import { Adsr, adsrRates, type AdsrRates } from './util/adsr.ts'
+import { clamp01 } from './util/clamp.ts'
 import { Chaos, Drunk } from './util/drift.ts'
 import { Decay, Follower, coef } from './util/follower.ts'
 import { wrap1 } from './util/pitch.ts'
@@ -536,6 +537,11 @@ export class ModBus {
 
   read(dest: number): Float32Array | null {
     return this.live[dest] ? this.lanes[dest]! : null
+  }
+
+  knob(p: Float32Array, key: number, dest: number) {
+    const lane = this.read(dest)
+    return clamp01(p[key]! + (lane ? lane[0]! : 0))
   }
 
   // Sources are sampled where they are cheapest to reach: supply droop, output

@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params.ts'
-import { DEST, type ModBus } from '../modbus.ts'
+import { DEST } from '../modbus.ts'
 import { DEAD_V } from '../toyRail.ts'
 import { clamp01 } from '../util/clamp.ts'
 import { DelayLine } from '../util/delayline.ts'
@@ -264,11 +264,6 @@ export class Comb implements Stage {
     }
   }
 
-  private lane(p: Float32Array, bay: ModBus, key: number, dest: number) {
-    const m = bay.read(dest)
-    return m ? clamp01(p[key]! + m[0]!) : p[key]!
-  }
-
   // The clock is the pitch: a chip of this many buckets has to walk the charge
   // through all of them once a period. The filters and the hold either side of
   // it add their own lag, which comes off the line so the comb stays in tune.
@@ -309,12 +304,12 @@ export class Comb implements Stage {
   private brigade(io: StereoBlock, p: Float32Array, ctx: Ctx, buckets: number) {
     const bay = ctx.mod
     const sr = this.sr
-    const pump = this.lane(p, bay, IDX.combPump, DEST.combPump)
-    const rail = this.lane(p, bay, IDX.combRail, DEST.combRail)
-    const pluck = this.lane(p, bay, IDX.combPluck, DEST.combPluck)
-    const whistle = this.lane(p, bay, IDX.combWhistle, DEST.combWhistle)
-    const sag = this.lane(p, bay, IDX.combSag, DEST.combSag)
-    const pull = PULL_DEPTH * this.lane(p, bay, IDX.combPull, DEST.combPull)
+    const pump = bay.knob(p, IDX.combPump, DEST.combPump)
+    const rail = bay.knob(p, IDX.combRail, DEST.combRail)
+    const pluck = bay.knob(p, IDX.combPluck, DEST.combPluck)
+    const whistle = bay.knob(p, IDX.combWhistle, DEST.combWhistle)
+    const sag = bay.knob(p, IDX.combSag, DEST.combSag)
+    const pull = PULL_DEPTH * bay.knob(p, IDX.combPull, DEST.combPull)
     const baseHz = p[IDX.combHz]!
     const mod = bay.read(DEST.combHz)
     const mix = p[IDX.combMix]!

@@ -12,7 +12,6 @@ import {
   voiceMask,
   type SeqLine,
 } from '../trigbus.ts'
-import { clamp01 } from '../util/clamp.ts'
 import { removeAt } from '../util/list.ts'
 import { Cord, CORD_DIV_NAMES, cordTap, PIN } from './cord.ts'
 import { MonoVoice } from './monoVoice.ts'
@@ -33,10 +32,6 @@ const MIC_IN_GAIN = 1.5
 const PIN_GAIN = 1
 const OUT_GAIN = 4
 const TOY_IN_TOP = 2
-
-function withLane(base: number, lane: Float32Array | null) {
-  return clamp01(base + (lane ? lane[0]! : 0))
-}
 
 function cardIdx(prefix: CardPrefix) {
   const at = (suffix: CardSuffix) => IDX[cardKey(prefix, suffix)]
@@ -307,9 +302,9 @@ export class MonoSynth implements Stage {
     v.dacBit = Math.round(p[k.dacBit]!) - 1
     v.sag = p[k.sag]!
     v.accent = p[k.accent]!
-    v.loopPitch = withLane(p[k.loopPitch]!, ctx.mod.read(dest.loopPitch))
-    v.choke = withLane(p[k.choke]!, ctx.mod.read(dest.choke))
-    v.regTrip = withLane(p[k.regTrip]!, ctx.mod.read(dest.regTrip))
+    v.loopPitch = ctx.mod.knob(p, k.loopPitch, dest.loopPitch)
+    v.choke = ctx.mod.knob(p, k.choke, dest.choke)
+    v.regTrip = ctx.mod.knob(p, k.regTrip, dest.regTrip)
     v.thump = p[k.thump]!
     v.fold = p[k.fold]!
     v.loopSync = p[k.loopSync]!

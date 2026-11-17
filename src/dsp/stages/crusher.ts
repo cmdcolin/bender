@@ -329,8 +329,7 @@ export class Crusher implements Stage {
       FAULT_NAMES.length,
       bay.read(DEST.crushDataFault),
     )
-    const modCut = bay.read(DEST.crushBusCut)
-    const cut = clamp01(p[IDX.crushBusCut]! + (modCut ? modCut[0]! : 0))
+    const cut = bay.knob(p, IDX.crushBusCut, DEST.crushBusCut)
     const ladderBase = p[IDX.crushLadder]!
     const modLadder = bay.read(DEST.crushLadder)
     const widen = 1 + LADDER_HEAT * ctx.heat

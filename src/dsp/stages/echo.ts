@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params.ts'
-import { DEST, type ModBus } from '../modbus.ts'
+import { DEST } from '../modbus.ts'
 import { DEAD_V } from '../toyRail.ts'
 import { Bbd } from '../util/bbd.ts'
 import { clamp01 } from '../util/clamp.ts'
@@ -169,9 +169,9 @@ export class Echo implements Stage {
         : 0
     if (bbd) this.bbd.setClock(target)
     const pull = bbd
-      ? PULL_DEPTH * this.lane(p, ctx.mod, IDX.echoPull, DEST.echoPull)
+      ? PULL_DEPTH * ctx.mod.knob(p, IDX.echoPull, DEST.echoPull)
       : 0
-    const sag = bbd ? this.lane(p, ctx.mod, IDX.echoSag, DEST.echoSag) : 0
+    const sag = bbd ? ctx.mod.knob(p, IDX.echoSag, DEST.echoSag) : 0
     const pulled = pull > 0 || sag > 0
     const loadA = timeCoef(LOAD_ATTACK_S, this.sr)
     const loadR = timeCoef(LOAD_RELEASE_S, this.sr)
@@ -370,11 +370,6 @@ export class Echo implements Stage {
     const lo = this.walkedSince(k)
     const step = this.walkedSince(k + 1) - lo
     return k + (step > 0 ? clamp01((buckets - lo) / step) : 0)
-  }
-
-  private lane(p: Float32Array, bay: ModBus, key: number, dest: number) {
-    const m = bay.read(dest)
-    return m ? clamp01(p[key]! + m[0]!) : p[key]!
   }
 
   private tap(d: number, bend: number) {

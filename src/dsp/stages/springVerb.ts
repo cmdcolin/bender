@@ -3,7 +3,6 @@ import { DEST } from '../modbus.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { DEAD_V } from '../toyRail.ts'
 import { rail } from '../util/bridged.ts'
-import { clamp01 } from '../util/clamp.ts'
 import { ringSize } from '../util/delayline.ts'
 import { Transient } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
@@ -223,11 +222,7 @@ export class SpringVerb implements Stage {
       30,
     )
     const mix = p[IDX.revMix]!
-    const warbleMod = ctx.mod.read(DEST.revWarble)
-    const warble = Math.min(
-      Math.max(p[IDX.revWarble]! + (warbleMod ? warbleMod[0]! : 0), 0),
-      1,
-    )
+    const warble = ctx.mod.knob(p, IDX.revWarble, DEST.revWarble)
     const swingDepth = warble * (WARBLE_MS / 1000) * this.sr
     const swingK = SineOsc.rate(WARBLE_HZ[0]! + WARBLE_HZ[1]! * warble, this.sr)
     const chirp = 0.75 * p[IDX.revBoing]!
@@ -252,9 +247,7 @@ export class SpringVerb implements Stage {
     const inL = this.inL
     const inR = this.inR
     const dcCoef = this.dcCoef
-    const howlMod = ctx.mod.read(DEST.revHowl)
-    const howl =
-      HOWL_GAIN * clamp01(p[IDX.revHowl]! + (howlMod ? howlMod[0]! : 0))
+    const howl = HOWL_GAIN * ctx.mod.knob(p, IDX.revHowl, DEST.revHowl)
     const wetL = this.wetL
     const wetR = this.wetR
     for (let i = 0; i < n; i++) {
