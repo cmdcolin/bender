@@ -81,6 +81,8 @@ export const SING_FROM = ['off', ...CORD_FROM]
 
 // A coefficient or energy register is ten bits of two's complement, so a sum
 // past full scale comes back from the other end.
+const lineOf = (p: Float32Array, key: number) => Math.round(p[key]!) - 1
+
 const wrapSigned = (x: number) => x - 2 * Math.floor((x + 1) / 2)
 
 export class Prattle implements Stage {
@@ -409,12 +411,11 @@ export class Prattle implements Stage {
   }
 
   private read(p: Float32Array) {
-    const line = (key: number) => Math.round(p[key]!) - 1
-    this.dataLine = line(IDX.talkDataLine)
+    this.dataLine = lineOf(p, IDX.talkDataLine)
     this.dataFault = Math.round(p[IDX.talkDataFault]!)
-    this.addrLine = line(IDX.talkAddrLine)
+    this.addrLine = lineOf(p, IDX.talkAddrLine)
     this.addrFault = Math.round(p[IDX.talkAddrFault]!)
-    this.pitchLine = line(IDX.talkPitchLine)
+    this.pitchLine = lineOf(p, IDX.talkPitchLine)
     this.pitchFault = Math.round(p[IDX.talkPitchFault]!)
     this.busCut = p[IDX.talkBusCut]!
     const loop = Math.round(p[IDX.talkLoopBit]!)

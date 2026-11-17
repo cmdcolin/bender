@@ -85,6 +85,8 @@ const LADDER_TOL = 0.5
 const LADDER_FLOOR = 0.4
 const LADDER_HEAT = 1.5
 
+const quantize = (v: number, steps: number) => Math.round(v * steps) / steps
+
 const toWord = (v: number) =>
   Math.min(Math.max(Math.round((v + 1) * MSB), 0), TOP)
 const fromWord = (w: number) => w / MSB - 1
@@ -446,14 +448,13 @@ export class Crusher implements Stage {
     cut: number,
     ladder: number,
   ): number {
-    const q = (v: number) => Math.round(v * steps) / steps
     let word: number
     if (adc === ADC_ADPCM) {
       if (side.words++ % ADPCM_BLOCK === 0) {
         side.dec.pred = side.enc.pred
         side.dec.index = side.enc.index
       }
-      word = side.enc.encode(Math.round(q(x) * 32767)) << 12
+      word = side.enc.encode(Math.round(quantize(x, steps) * 32767)) << 12
     } else if (adc === ADC_DELTA) {
       const delta = 1 / Math.cbrt(2 * steps)
       const bit = x >= side.dmEnc ? 1 : 0
@@ -464,9 +465,9 @@ export class Crusher implements Stage {
       side.dmReg = (side.dmReg >> 1) | (bit << 15)
       word = side.dmReg
     } else if (adc === ADC_MULAW) {
-      word = toWord(q(compress(x)))
+      word = toWord(quantize(compress(x), steps))
     } else {
-      word = toWord(q(x))
+      word = toWord(quantize(x, steps))
       if (adc === ADC_SAR) {
         const done = side.budget * SAR_BITS_PER_SAMPLE
         let n = Math.floor(done)
@@ -480,7 +481,9 @@ export class Crusher implements Stage {
     }
     side.budget = 0
     if (logic > 0) {
-      const b = toWord(q(adc === ADC_MULAW ? compress(other) : other)) ^ MSB
+      const b =
+        toWord(quantize(adc === ADC_MULAW ? compress(other) : other, steps)) ^
+        MSB
       const a = word ^ MSB
       word =
         (logic === LOGIC_XOR ? a ^ b : logic === LOGIC_AND ? a & b : a | b) ^
