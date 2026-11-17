@@ -19,7 +19,6 @@ import type { RecentSession, SavedVoice } from './voiceModel.ts'
 // videoskillet repository's `firestore.rules`; there is no rules file here.
 //
 const COLLECTION = 'benderUsers'
-const APP = 'bender'
 
 // Whether this browser has been signed in before. Not a credential and trusted
 // for nothing — the session itself lives in Firebase's IndexedDB store, and this
@@ -40,6 +39,7 @@ const APPCHECK_SITE_KEY = '6LfXUr8tAAAAAAWJh1jC0NfYTmhiAmdq-Nd8c9nQ'
 
 const cloud = createCloud({
   config: FIREBASE_CONFIG,
+  app: 'bender',
   collection: COLLECTION,
   listField: 'voices',
   signedInHint: SIGNED_IN_HINT,
@@ -49,23 +49,8 @@ const cloud = createCloud({
 })
 
 export type { CloudUser } from 'skillet-shared/cloud'
-export const { wasSignedIn, warmSignIn, watchAuth, signOut } = cloud
+export const { wasSignedIn, warmSignIn, watchAuth, signIn, signOut } = cloud
 export const { putSession, dropSession } = cloud
-
-// Tells the sign-in alert which app the person used, since both apps share one
-// Firebase sign-in. The rules accept the marker once per person, so a repeat
-// sign-in is refused and ignored.
-export async function signIn() {
-  const user = await cloud.signIn()
-  const { db, fs } = await cloud.loadSdk()
-  await fs
-    .setDoc(fs.doc(db, 'signIns', `${APP}_${user.uid}`), {
-      app: APP,
-      at: fs.serverTimestamp(),
-    })
-    .catch(() => undefined)
-  return user
-}
 
 export interface HomeDoc {
   voices: SavedVoice[]
