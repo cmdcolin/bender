@@ -1559,6 +1559,7 @@ export class Engine {
   }
 
   private async openMic() {
+    if (!this.ctx) await this.booted()
     if (!this.ctx || this.micStream) return
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {

@@ -161,24 +161,17 @@ export function MixSheet(props: { onClose: () => void }) {
   const step = useStoreValue(engine.archiveStep)
   const source = useStoreValue(engine.archiveSource)
   const [pool, setPool] = useState(0)
-  const [micError, setMicError] = useState('')
+  const micError = useStoreValue(engine.micError)
 
   const mic = () => {
-    setMicError('')
-    if (micOn) {
-      engine.disableMic()
-      return
-    }
-    engine
-      .enableMic()
-      .then(() => {
-        if (engine.controls.get().micLevel === 0) engine.set('micLevel', 0.7)
-      })
-      .catch(() =>
-        setMicError(
-          'The browser turned the microphone down. Allow it in the site settings and try again.',
-        ),
-      )
+    if (micOn) engine.disableMic()
+    else
+      engine
+        .enableMic()
+        .then(() => {
+          if (engine.controls.get().micLevel === 0) engine.set('micLevel', 0.7)
+        })
+        .catch(() => {})
   }
 
   const roll = () => {

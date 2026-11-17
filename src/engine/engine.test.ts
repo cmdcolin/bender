@@ -1017,6 +1017,48 @@ test('a double click on the mic opens it once, and a mic unplugged goes off', as
   }
 })
 
+test('the mic boots the audio before it opens', async () => {
+  const track = Object.assign(new EventTarget(), { stop: () => {} })
+  const stream = { getTracks: () => [track], getAudioTracks: () => [track] }
+  vi.stubGlobal('navigator', {
+    mediaDevices: { getUserMedia: () => Promise.resolve(stream) },
+  })
+  try {
+    const engine = new Engine()
+    let boots = 0
+    Object.assign(engine, {
+      boot: () => {
+        boots++
+        Object.assign(engine, {
+          node: {},
+          ctx: {
+            createMediaStreamSource: () => ({
+              connect: () => {},
+              disconnect: () => {},
+            }),
+          },
+        })
+        return Promise.resolve()
+      },
+    })
+    await engine.enableMic()
+    expect(boots).toBe(1)
+    expect(engine.micOn.get()).toBe(true)
+  } finally {
+    vi.unstubAllGlobals()
+  }
+})
+
+test('a mic with no audio to go into says so', async () => {
+  const engine = new Engine()
+  Object.assign(engine, {
+    boot: () => Promise.reject(new Error('no worklet')),
+  })
+  await expect(engine.enableMic()).rejects.toThrow('no worklet')
+  expect(engine.micError.get()).toBe('microphone: no worklet')
+  expect(engine.micOn.get()).toBe(false)
+})
+
 test('turning the mic off stops its tracks and lets it open again', async () => {
   let stopped = 0
   const track = Object.assign(new EventTarget(), { stop: () => stopped++ })
