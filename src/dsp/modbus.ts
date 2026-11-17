@@ -300,7 +300,7 @@ export const DEST = {
   machineSqueal: 240,
   machineAzimuth: 241,
 } as const
-export const N_DEST = 242
+export const N_DEST = Math.max(...Object.values(DEST)) + 1
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
