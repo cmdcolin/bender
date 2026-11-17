@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { HEATS, type BendKey } from './bendDeal.ts'
@@ -130,37 +130,45 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   // A new hand, from the clock or from x, has nothing pinned in it.
   useEffect(() => bendDeal.subscribe(() => setLatched(new Set())), [])
 
+  const down = (e: KeyboardEvent) => {
+    if (!on || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
+    if (isTyping(e.target)) return
+    const pressed = e.key.toLowerCase()
+    if (pressed === octaveLetters.down) letGoAll()
+    else if (pressed === octaveLetters.up) redealAll()
+    else {
+      const k = deal[noteLetters.indexOf(pressed)]
+      if (k) press(k, e.shiftKey)
+    }
+  }
+  const up = (e: KeyboardEvent) => {
+    if (!on) return
+    const k = deal[noteLetters.indexOf(e.key.toLowerCase())]
+    if (k) release(k)
+  }
+  // The window losing focus loses the key-up with it, so what a hand was
+  // holding lets go; what it pinned down stays pinned.
+  const blur = () => {
+    for (const k of deal) release(k)
+  }
+
+  const latest = useRef({ down, up, blur })
+  // oxlint-disable-next-line react/refs -- the window listeners read this render's handlers through this ref
+  latest.current = { down, up, blur }
+
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (!on || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
-      if (isTyping(e.target)) return
-      const pressed = e.key.toLowerCase()
-      if (pressed === octaveLetters.down) letGoAll()
-      else if (pressed === octaveLetters.up) redealAll()
-      else {
-        const k = deal[noteLetters.indexOf(pressed)]
-        if (k) press(k, e.shiftKey)
-      }
-    }
-    const up = (e: KeyboardEvent) => {
-      if (!on) return
-      const k = deal[noteLetters.indexOf(e.key.toLowerCase())]
-      if (k) release(k)
-    }
-    // The window losing focus loses the key-up with it, so what a hand was
-    // holding lets go; what it pinned down stays pinned.
-    const blur = () => {
-      for (const k of deal) release(k)
-    }
-    window.addEventListener('keydown', down)
-    window.addEventListener('keyup', up)
-    window.addEventListener('blur', blur)
+    const onDown = (e: KeyboardEvent) => latest.current.down(e)
+    const onUp = (e: KeyboardEvent) => latest.current.up(e)
+    const onBlur = () => latest.current.blur()
+    window.addEventListener('keydown', onDown)
+    window.addEventListener('keyup', onUp)
+    window.addEventListener('blur', onBlur)
     return () => {
-      window.removeEventListener('keydown', down)
-      window.removeEventListener('keyup', up)
-      window.removeEventListener('blur', blur)
+      window.removeEventListener('keydown', onDown)
+      window.removeEventListener('keyup', onUp)
+      window.removeEventListener('blur', onBlur)
     }
-  })
+  }, [latest])
 
   const keyFor = (letter: string, style: CSSProperties) => {
     const k = deal[noteLetters.indexOf(letter)]

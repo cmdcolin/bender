@@ -8,6 +8,7 @@ import {
 import {
   useCallback,
   useEffect,
+  useRef,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from 'react'
@@ -86,12 +87,15 @@ export function Menu(props: {
     }
   }, [onClose, toggle, refs])
 
+  const toggleRef = useRef(toggle)
+  // oxlint-disable-next-line react/refs -- the unmount cleanup reads the latest toggle through this ref
+  toggleRef.current = toggle
   useEffect(
     () => () => {
       const at = document.activeElement
-      if (at === null || at === document.body) toggle?.focus()
+      if (at === null || at === document.body) toggleRef.current?.focus()
     },
-    [toggle],
+    [],
   )
 
   const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {

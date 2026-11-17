@@ -45,6 +45,17 @@ interface Box {
   right: number
 }
 
+const sameBox = (a: Box, b: Box) =>
+  a.stage === b.stage &&
+  a.x === b.x &&
+  a.top === b.top &&
+  a.bottom === b.bottom &&
+  a.left === b.left &&
+  a.right === b.right
+
+const sameBoxes = (a: Box[], b: Box[]) =>
+  a.length === b.length && a.every((box, i) => b[i] && sameBox(box, b[i]))
+
 function useEffectFaces() {
   const { pedals, bends } = useStoreValue(bench)
   const shown = [...bends, ...pedals]
@@ -262,9 +273,7 @@ export function EffectShelf({
     const lay = () => {
       if (el) {
         const next = measure(el)
-        setBoxes(prev =>
-          JSON.stringify(prev) === JSON.stringify(next) ? prev : next,
-        )
+        setBoxes(prev => (sameBoxes(prev, next) ? prev : next))
       }
     }
     const later = () => {
