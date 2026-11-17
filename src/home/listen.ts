@@ -8,6 +8,7 @@ audio.crossOrigin = 'anonymous'
 const pile = document.querySelector<HTMLElement>('.pile')
 const meter = pile ? pileMeter(audio, pile) : undefined
 let current: HTMLAnchorElement | undefined
+let pendingSeek: (() => void) | undefined
 
 const SKIP_S = 10
 
@@ -22,7 +23,13 @@ function show(play: HTMLAnchorElement, on: boolean) {
   play.setAttribute('aria-label', `${on ? 'Pause' : 'Play'} ${nameOf(play)}`)
 }
 
+function clearPendingSeek() {
+  if (pendingSeek) audio.removeEventListener('loadedmetadata', pendingSeek)
+  pendingSeek = undefined
+}
+
 function stop() {
+  clearPendingSeek()
   if (current !== undefined) {
     show(current, false)
     waveOf(current).style.removeProperty('--done')
@@ -73,10 +80,15 @@ for (const play of document.querySelectorAll<HTMLAnchorElement>('.play')) {
     )
     const seek = () => {
       audio.currentTime = fraction * audio.duration
+      pendingSeek = undefined
     }
     start(play)
+    clearPendingSeek()
     if (audio.readyState > 0) seek()
-    else audio.addEventListener('loadedmetadata', seek, { once: true })
+    else {
+      pendingSeek = seek
+      audio.addEventListener('loadedmetadata', seek, { once: true })
+    }
   })
 }
 
