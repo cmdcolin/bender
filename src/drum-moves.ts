@@ -11,11 +11,9 @@ import {
   stepBit,
   type DrumLens,
   type DrumMasks,
-  type DrumGhostKey,
-  type DrumMaybeKey,
-  type DrumStepKey,
   type DrumVoiceKey,
 } from './drums.ts'
+import { recordOf } from './machines.ts'
 
 import type { Controls } from './controls.ts'
 import type { Rng } from './dsp/util/rng.ts'
@@ -49,8 +47,11 @@ const every = (n: number, at = 0) => {
 // or doubled takes its loose contacts with it, or the move hands back a pattern
 // whose dice are wired to steps that have moved out from under them.
 const mapRows = (masks: DrumMasks, f: (mask: number) => number) =>
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; the entries are every pattern key
-  Object.fromEntries(PATTERN_KEYS.map(k => [k, f(masks[k])])) as DrumMasks
+  recordOf(
+    PATTERN_KEYS,
+    k => k,
+    k => f(masks[k]),
+  )
 
 const setSteps = (mask: number) => {
   const steps: number[] = []
@@ -350,18 +351,13 @@ export const rotate = (mask: number, len: number, by: number) => {
 /** Every row turned by a step, each within its own length — a five-step hat
     comes round where a five-step hat does, not where the bar does. */
 export const shiftPattern = (masks: DrumMasks, lens: DrumLens, by: number) =>
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; every row contributes both its masks
-  Object.fromEntries(
-    GRID_ROWS.flatMap(row => {
-      const len = asLen(lens[row.len])
-      const turn = (key: DrumStepKey | DrumMaybeKey | DrumGhostKey) => [
-        key,
-        rotate(masks[key], len, by),
-      ]
-      // A voice's masks are one row and come round on the one length.
-      return rowMasks(row).map(turn)
-    }),
-  ) as DrumMasks
+  recordOf(
+    GRID_ROWS.flatMap(row =>
+      rowMasks(row).map(key => ({ key, len: asLen(lens[row.len]) })),
+    ),
+    m => m.key,
+    m => rotate(masks[m.key], m.len, by),
+  )
 
 /** Twice as slow: every step of the first half of the bar is given two, and the
     second half is what the first half became. */
@@ -461,6 +457,4 @@ export const echoWake = (board: Controls): Partial<Controls> =>
     : { dlyMix: 0.7, dlySend: 0, ...(board.dlyFb < 0.55 && { dlyFb: 0.55 }) }
 
 /** Only the seven rows, out of a board that carries a hundred other numbers. */
-export const masksOf = (board: DrumMasks): DrumMasks =>
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; the entries are every pattern key
-  Object.fromEntries(PATTERN_KEYS.map(k => [k, board[k]])) as DrumMasks
+export const masksOf = (board: DrumMasks) => mapRows(board, m => m)

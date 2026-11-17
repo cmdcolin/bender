@@ -1,3 +1,5 @@
+import { recordOf } from './machines.ts'
+
 import type { ControlKey } from './controls.ts'
 
 // The drum machine's vocabulary, in one place: what the voices are, in the
@@ -487,10 +489,11 @@ export interface DrumRom {
   masks: DrumMasks
 }
 
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; the entries are every pattern key
-export const EMPTY_MASKS: DrumMasks = Object.fromEntries(
-  PATTERN_KEYS.map(k => [k, 0]),
-) as DrumMasks
+export const EMPTY_MASKS: DrumMasks = recordOf(
+  PATTERN_KEYS,
+  k => k,
+  () => 0,
+)
 
 const rom = (
   name: string,
