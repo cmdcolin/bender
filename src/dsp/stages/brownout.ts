@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params.ts'
 import { Burst } from '../util/burst.ts'
 import { coef, Follower } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
+import { perRef } from '../util/rate.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal } from '../util/softclip.ts'
 
@@ -121,7 +122,8 @@ export class Brownout implements Stage {
       }
 
       const crackle =
-        crackleAmt > 0 && this.crackleFault.roll(sag * 0.3, cluster, this.rng)
+        crackleAmt > 0 &&
+        this.crackleFault.roll(sag * 0.3 * perRef(this.sr), cluster, this.rng)
           ? (this.rng() * 2 - 1) * crackleAmt
           : 0
 

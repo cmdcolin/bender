@@ -6,6 +6,7 @@ import { coef as timeCoef } from '../util/follower.ts'
 import { QuadOsc, SineOsc } from '../util/lfo.ts'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
+import { perRef, poleAt } from '../util/rate.ts'
 import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 import { dampAt, Svf, svfF } from '../util/svf.ts'
@@ -144,6 +145,8 @@ export class TapeDelay implements Stage {
   private loopR = new Svf()
   private filament = 0
   private flutterWalk = 0
+  private readonly flutterStep: number
+  private readonly flutterLeak: number
   private motor = 1
   private slide = 0
   private spliceIn = 0
@@ -171,6 +174,8 @@ export class TapeDelay implements Stage {
 
   constructor(sr: number, seed: number) {
     this.sr = sr
+    this.flutterStep = Math.sqrt(perRef(sr))
+    this.flutterLeak = poleAt(0.995, sr)
     // The line rounds up to a power of two, so at every rate the board runs at
     // this is the same buffer 4.5 s asked for — the last second of it was
     // allocated either way and simply wasn't reachable.
@@ -305,7 +310,9 @@ export class TapeDelay implements Stage {
           )
         : baseDelay
       this.flutterWalk = flushDenormal(
-        (this.flutterWalk + (this.rng() - 0.5) * flutter * 0.6) * 0.995,
+        (this.flutterWalk +
+          (this.rng() - 0.5) * flutter * 0.6 * this.flutterStep) *
+          this.flutterLeak,
       )
       const wobble =
         wowDepth * this.wow.step(wowK) + this.flutterWalk * 0.002 * this.sr

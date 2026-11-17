@@ -1,3 +1,5 @@
+import { perRef, REF_SR } from './rate.ts'
+
 import type { Rng } from './rng.ts'
 
 // Control sources that never come round again.
@@ -14,7 +16,9 @@ export class Drunk {
   private y = 0
 
   step(rateHz: number, sr: number, rng: Rng): number {
-    this.y += (rng() * 2 - 1) * Math.min((rateHz * 6) / sr, 0.4)
+    this.y +=
+      (rng() * 2 - 1) *
+      Math.min(((rateHz * 6) / REF_SR) * Math.sqrt(perRef(sr)), 0.4)
     if (this.y > 1) this.y = 2 - this.y
     if (this.y < -1) this.y = -2 - this.y
     return this.y
