@@ -15,7 +15,7 @@ import {
 import { IDX, MAX_SOURCES, STEM_FILES } from './params.ts'
 
 import type { RecMsg, ToWorklet } from './messages.ts'
-import type { WavSink } from './takeSink.ts'
+import type { Take, WavSink } from './takeSink.ts'
 
 // Animation frames never fire here, so morphs and param posts move only on the
 // engine's timer fallback, and a synchronous test sees a morph still in flight.
@@ -1680,4 +1680,26 @@ test('closing the tab asks first while a take is recording', () => {
   off()
   expect(close()).toBe(false)
   vi.unstubAllGlobals()
+})
+
+test('a take handed to a page stays locked until the next one replaces it or the page lets go', async () => {
+  const { files, chunk, engine } = recorder(false)
+  const take = () => (engine as unknown as { rec: { take: Take } }).rec.take
+  const first = vi.spyOn(take(), 'end')
+  const l = new Float32Array(N).fill(0.5)
+  engine.stopRecording()
+  chunk({ l, r: l, n: N, done: true })
+  await vi.waitFor(() => expect(files).toHaveLength(1))
+  expect(first).not.toHaveBeenCalled()
+
+  engine.startRecording()
+  const second = vi.spyOn(take(), 'end')
+  engine.stopRecording()
+  chunk({ l, r: l, n: N, done: true })
+  await vi.waitFor(() => expect(files).toHaveLength(2))
+  expect(first).toHaveBeenCalledOnce()
+  expect(second).not.toHaveBeenCalled()
+
+  engine.takeTo = null
+  expect(second).toHaveBeenCalledOnce()
 })

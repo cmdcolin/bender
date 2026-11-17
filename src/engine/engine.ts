@@ -1781,15 +1781,33 @@ export class Engine {
       master.discard()
       for (const stem of stems) stem.discard()
     }
-    take.end()
+    if (this.receiver && files.length > 0) {
+      this.handed?.end()
+      this.handed = take
+    } else {
+      take.end()
+    }
   }
 
+  private receiver: ((file: File) => void) | null = null
+  private handed: Take | null = null
+
   /** Where a finished file goes in place of the downloads folder, when a page
-      wants to hand it on itself. */
-  takeTo: ((file: File) => void) | null = null
+      wants to hand it on itself. The page may keep the last take's files for
+      as long as it likes, so that take stays locked against the sweep until
+      the next one replaces it or the page lets go. */
+  get takeTo() {
+    return this.receiver
+  }
+
+  set takeTo(to: ((file: File) => void) | null) {
+    this.handed?.end()
+    this.handed = null
+    this.receiver = to
+  }
 
   private deliver(file: File) {
-    if (this.takeTo) this.takeTo(file)
+    if (this.receiver) this.receiver(file)
     else download(file)
   }
 
