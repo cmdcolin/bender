@@ -1795,6 +1795,7 @@ export class Engine {
   }
 
   private retro: { l: Float32Array; r: Float32Array }[] = []
+  private retroFrames = 0
   private retroWant: 'wav' | 'reel' | null = null
 
   private onRetro(msg: RetroMsg) {
@@ -1804,9 +1805,9 @@ export class Engine {
         l: msg.l.subarray(0, msg.n),
         r: msg.r.subarray(0, msg.n),
       })
-      let frames = this.retro.reduce((n, c) => n + c.l.length, 0)
-      while (frames - this.retro[0]!.l.length >= RETRO_S * sr) {
-        frames -= this.retro.shift()!.l.length
+      this.retroFrames += msg.n
+      while (this.retroFrames - this.retro[0]!.l.length >= RETRO_S * sr) {
+        this.retroFrames -= this.retro.shift()!.l.length
       }
     }
     if (!msg.done || !this.retroWant) return
@@ -1822,8 +1823,7 @@ export class Engine {
       )
       return
     }
-    const frames = this.retro.reduce((n, c) => n + c.l.length, 0)
-    const mono = new Float32Array(frames)
+    const mono = new Float32Array(this.retroFrames)
     let at = 0
     for (const c of this.retro) {
       for (let i = 0; i < c.l.length; i++)
