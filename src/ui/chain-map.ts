@@ -2,7 +2,7 @@ import { arrowhead, route, type Point } from 'skillet-shared/wire-route'
 
 import { type ControlKey, type Controls } from '../controls.ts'
 import { MIC } from '../dsp/micJacks.ts'
-import { DEST } from '../dsp/modbus.ts'
+import { DEST, SRC } from '../dsp/modbus.ts'
 import { CORD_DIV_NAMES } from '../dsp/stages/cord.ts'
 import {
   TAPE_AT_BENDS,
@@ -13,6 +13,7 @@ import { SUPPLIED, SUPPLY as ON } from '../dsp/supplies.ts'
 import { followsGate } from '../dsp/trigbus.ts'
 import { MACHINES } from '../machines.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
+import { WIRES } from './bayWire.ts'
 import {
   AUDIO_TAKERS,
   audioDiv,
@@ -24,7 +25,6 @@ import {
   type Signal,
 } from './connections.ts'
 import {
-  bendAt,
   BENDS,
   GROUPS,
   offValue,
@@ -34,6 +34,7 @@ import {
 } from './controls/index.ts'
 import { intoOf, patchedInto, patchedLabel, UNITS } from './controls/jacks.ts'
 import { MIC_JACKS, wireLabel, wireOn, wiredJacks } from './micWiring.ts'
+import { rackOrder } from './routes.ts'
 import { el, textWidth, type El } from './svg.ts'
 
 // The signal path, laid out and drawn: live bend order, the feedback wire, and
@@ -319,13 +320,13 @@ const SUPPLY = 'Power supply'
 // onto rather than the bay — mod*Src order. The rest (the bay's own LFO, the
 // supply sag, the output envelope) belong to no one stage, so they open the bay.
 const SRC_GROUP: Record<number, string> = {
-  4: 'Mic',
-  5: 'Body contact',
-  6: 'Body contact',
-  7: 'Feedback bus',
-  8: 'Plinky',
-  9: 'Clatter',
-  10: 'Plinky',
+  [SRC.mic]: 'Mic',
+  [SRC.bodyX]: 'Body contact',
+  [SRC.bodyY]: 'Body contact',
+  [SRC.fb]: 'Feedback bus',
+  [SRC.rom]: 'Plinky',
+  [SRC.drum]: 'Clatter',
+  [SRC.key]: 'Plinky',
 }
 
 const MIC_TARGET = MIC_JACKS.map(j => j.stage)
@@ -408,10 +409,10 @@ export function onBoard(c: Controls): Set<string> {
   for (const g of GROUPS)
     if (GATES[g.name] ? gateOpen(g.name, c) : ownTouched(g.name, c))
       on.add(g.name)
-  for (const i of [0, 1, 2, 3] as const) {
-    const src = Math.round(c[`mod${i}Src`])
-    const dest = WIRE_TARGET[Math.round(c[`mod${i}Dest`])]
-    if (src === 0 || c[`mod${i}Depth`] === 0 || !dest) continue
+  for (const wire of WIRES) {
+    const src = Math.round(c[wire.src])
+    const dest = WIRE_TARGET[Math.round(c[wire.dest])]
+    if (src === SRC.off || c[wire.depth] === 0 || !dest) continue
     on.add('Patch bay')
       .add(dest)
       .add(SRC_GROUP[src] ?? 'Patch bay')
@@ -926,7 +927,7 @@ function pickParts(c: Controls, o: Options) {
   // The rack, at the head of the run: the signal walks into it before it walks
   // the slots. Six slots and ten bends, so four are always in none of them —
   // those ride at the head of the path as loose chips, each a door of its own.
-  const slotted = bendOrder(c)
+  const { slotted, order: runOrder } = rackOrder(c)
   const machineOf = (unit: string) => {
     const into = intoOf(unit)
     return into ? patchedLabel(c[into]) : undefined
@@ -956,12 +957,6 @@ function pickParts(c: Controls, o: Options) {
 
   // Units cabled onto one machine, in the order they run there: a column per
   // machine under the band, headed by the machine's name.
-  const pedalNames = pedalOrderAt(c.pedalOrder).map(i => PEDALS[i]!.group)
-  const runOrder = [
-    ...slotted,
-    ...BENDS.map(b => b.group).filter(g => !slotted.includes(g)),
-    ...pedalNames,
-  ]
   const unitWet = (name: string) => {
     const bend = BEND_BY_NAME.get(name)
     const pedal = PEDALS.find(p => p.group === name)
@@ -2305,27 +2300,6 @@ function collectTaps(
     })
   }
   return taps
-}
-
-function bendOrder(c: Controls): string[] {
-  const slots = [
-    c.bendSlot0,
-    c.bendSlot1,
-    c.bendSlot2,
-    c.bendSlot3,
-    c.bendSlot4,
-    c.bendSlot5,
-  ]
-  const seen = new Set<number>()
-  const names: string[] = []
-  for (const slot of slots) {
-    const id = Math.round(slot)
-    const bend = bendAt(id)
-    if (!bend || seen.has(id)) continue
-    seen.add(id)
-    names.push(bend.group)
-  }
-  return names
 }
 
 const BEND_BY_NAME = new Map<string, (typeof BENDS)[number]>(
