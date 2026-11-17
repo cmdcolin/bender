@@ -2937,6 +2937,15 @@ export class ToyDrum implements Stage {
     this.wander.reset()
     this.colPlays = true
     this.lastCond = true
+    this.clipLevel = 0
+    this.clipHold = 0
+    this.clipVoice = 0
+    this.clipLoop = 0
+    this.grit = 0
+    this.scanThrow = 0
+    this.retrigPhase = 0
+    this.humPhase = 0
+    this.romStart = 0
   }
 }
 

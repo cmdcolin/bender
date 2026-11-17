@@ -475,6 +475,7 @@ export class ToyChip implements Stage {
   private stacks = LANE_IDX.slice(1).map(() =>
     Array.from({ length: TUNE_STEPS }, () => REST),
   )
+  private heard: number[] = []
   private poly = false
   private lifted = 0
   private leadOut = 1
@@ -1483,14 +1484,13 @@ export class ToyChip implements Stage {
         // The chord lanes count toward the key: a third somebody stacked on
         // the melody is the note that says major or minor, and reading the
         // melody alone would harmonise against half of what is playing.
-        this.triads = triadsFor(
-          keyOf([
-            ...this.mine.slice(0, this.len),
-            ...(this.poly
-              ? this.stacks.flatMap(l => l.slice(0, this.len))
-              : []),
-          ]),
-        )
+        const heard = this.heard
+        heard.length = 0
+        for (let s = 0; s < this.len; s++) heard.push(this.mine[s]!)
+        if (this.poly)
+          for (const lane of this.stacks)
+            for (let s = 0; s < this.len; s++) heard.push(lane[s]!)
+        this.triads = triadsFor(keyOf(heard))
         this.chord = this.triads[0]!
       }
     } else if (rom !== this.lastRom) {
@@ -2517,5 +2517,12 @@ export class ToyChip implements Stage {
     this.arpUp.length = 0
     this.arpStep = 0
     this.arpClock = 0
+    this.keyPending = false
+    this.keyHeldPending = false
+    this.keyNote = 0
+    this.clockWalk = 0
+    this.gateState = 1
+    this.gateClock = 0
+    this.sfxT = 0
   }
 }
