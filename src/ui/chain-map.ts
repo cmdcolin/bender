@@ -542,7 +542,7 @@ const MARGIN = 2
 
 type Side = 'left' | 'right'
 
-export interface MapNode {
+interface MapNode {
   id: string
   kind: 'stage' | 'inst' | 'frame' | 'label' | 'jack' | 'rack' | 'chip'
   label: string
@@ -573,7 +573,7 @@ export interface MapNode {
   valueKey?: ControlKey
 }
 
-export interface MapWire {
+interface MapWire {
   id: string
   from: string
   to: string
@@ -603,7 +603,7 @@ export interface ChainMap {
   open?: string
 }
 
-export interface Options {
+interface Options {
   palette?: Palette
   /** A live board shows how far each stage is off stock, the feedback amount
       and each wire's depth; the README's copy just names the parts, and takes

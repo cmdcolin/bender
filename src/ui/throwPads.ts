@@ -8,14 +8,14 @@ import { padId, readPad, type PadBinding } from './pads.ts'
 import { omit, parseMap, read, write } from './persist.ts'
 import { THROWS } from './throws.ts'
 
-export type ThrowPadMap = Partial<Record<string, PadBinding>>
+type ThrowPadMap = Partial<Record<string, PadBinding>>
 
 /** A control a pad pushes to `value` while it is down. */
-export interface EffectPad extends PadBinding {
+interface EffectPad extends PadBinding {
   value: number
 }
 
-export type EffectPadMap = Partial<Record<ControlKey, EffectPad>>
+type EffectPadMap = Partial<Record<ControlKey, EffectPad>>
 
 /** An effect waiting for its pad. */
 export interface EffectArm {

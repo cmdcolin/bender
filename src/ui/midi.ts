@@ -41,12 +41,12 @@ export interface Binding {
 
 const SUSTAIN = 64
 
-export type BindingMap = Partial<Record<ControlKey, Binding>>
+type BindingMap = Partial<Record<ControlKey, Binding>>
 
 // Where a knob sits for a control it hasn't caught yet, in control units. Soft
 // takeover makes those knobs inert, and without this the panel gives no sign of
 // it — the control just looks broken.
-export type PickupMap = Partial<Record<ControlKey, number>>
+type PickupMap = Partial<Record<ControlKey, number>>
 
 export type MidiStatus =
   | 'unsupported'
@@ -58,7 +58,7 @@ export type MidiStatus =
 // The last thing to come down the wire, and how many have come down it at all.
 // A controller that looks dead is either not sending or not being understood,
 // and those two look identical from the panel without this.
-export interface Traffic {
+interface Traffic {
   bytes: number[]
   /** What the manager decided the bytes meant, in the panel's words. */
   text: string
@@ -104,7 +104,7 @@ export function describe(bytes: number[]): string {
 
 // Live progress of a "learn in order" sweep: bind each control down the spine
 // to whichever knob turns next. `next` is the one still waiting for a knob.
-export interface LearnState {
+interface LearnState {
   done: number
   total: number
   next: ControlKey | null
@@ -204,7 +204,7 @@ export const SPLITS = [
   learn: string
 }[]
 
-export type KeyRoute = NoteDest | 'layer' | (typeof SPLITS)[number]['route']
+type KeyRoute = NoteDest | 'layer' | (typeof SPLITS)[number]['route']
 
 /** The routes in menu order: each keybed, all of them, then the splits. */
 export const ROUTE_MENU: readonly { route: KeyRoute; label: string }[] = [

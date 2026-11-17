@@ -22,10 +22,10 @@ export interface PadBinding {
   note: number
 }
 
-export type PadMap = Partial<Record<DrumVoiceKey, PadBinding>>
+type PadMap = Partial<Record<DrumVoiceKey, PadBinding>>
 
 // Live progress of a pad sweep: hit a pad for each voice, down the kit.
-export interface PadLearnState {
+interface PadLearnState {
   done: number
   total: number
   next: DrumVoiceKey | null

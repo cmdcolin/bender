@@ -5,8 +5,8 @@ import { bundlesOf, masterRun } from './routes.ts'
 
 import type { Controls } from '../controls.ts'
 
-export const FROM_BUS = 'the mix bus'
-export const TO_OUTPUT = 'the output'
+const FROM_BUS = 'the mix bus'
+const TO_OUTPUT = 'the output'
 
 export interface Run {
   from: string

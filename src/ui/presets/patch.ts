@@ -602,7 +602,7 @@ const bayDests = (c: Controls) =>
     WIRES.filter(w => c[w.src] !== SRC_OFF).map(w => Math.round(c[w.dest])),
   )
 
-export interface CohereOpts {
+interface CohereOpts {
   /** Whether a wire may turn its destination on, rather than move to a stage
       that is already running. The bay's own dice may; the blind board dice may
       not, since a stage they took off the board on purpose would come straight

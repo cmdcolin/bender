@@ -29,7 +29,7 @@ export function rackOrder(c: Controls) {
   }
 }
 
-export const linesOfUnit = (c: Controls, stage: string) => {
+const linesOfUnit = (c: Controls, stage: string) => {
   const into = intoOf(stage)
   return into ? Math.round(c[into]) : 0
 }
