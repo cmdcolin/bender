@@ -101,6 +101,8 @@ export class Echo implements Stage {
   private readonly stampMask: number
   private stampAt = 0
   private stamped = false
+  private stampsWritten = 0
+  private walkedAtRestamp = 0
   private walked = 0
   private reach = 1
   private readonly shiftWindow: number
@@ -339,6 +341,7 @@ export class Echo implements Stage {
           this.walked += speed
           this.stamps[this.stampAt] = this.walked
           this.stampAt = (this.stampAt + 1) & this.stampMask
+          if (this.stampsWritten <= this.stampMask) this.stampsWritten++
         }
       } else {
         wl = Math.min(Math.max(wl, -HEADROOM), HEADROOM)
@@ -351,14 +354,20 @@ export class Echo implements Stage {
     }
   }
 
+  // Stamps older than the restamp read as if the clock had always walked one
+  // bucket a sample, without filling the whole ring in one block.
   private restamp() {
-    for (let k = 0; k <= this.stampMask; k++)
-      this.stamps[(this.stampAt - 1 - k) & this.stampMask] = this.walked - k
+    this.walkedAtRestamp = this.walked
+    this.stampsWritten = 0
     this.reach = 1
   }
 
   private walkedSince(k: number) {
-    return this.walked - this.stamps[(this.stampAt - 1 - k) & this.stampMask]!
+    const stamp =
+      k < this.stampsWritten
+        ? this.stamps[(this.stampAt - 1 - k) & this.stampMask]!
+        : this.walkedAtRestamp - (k - this.stampsWritten)
+    return this.walked - stamp
   }
 
   private brigadeDelay(buckets: number) {
@@ -406,6 +415,7 @@ export class Echo implements Stage {
     this.last = 0
     this.load.reset()
     this.stamped = false
+    this.stampsWritten = 0
     this.walked = 0
     this.reach = 1
   }
