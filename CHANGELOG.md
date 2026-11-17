@@ -2,6 +2,17 @@
 
 All notable changes to bender are documented here.
 
+## [1.29.1](https://github.com/cmdcolin/bender/compare/v1.29.0...v1.29.1) - 2026-11-17
+
+### Features
+- *(ui)* [`21c9c8c`](https://github.com/cmdcolin/bender/commit/21c9c8c492338aefd337e4b102a816d782da5944) write a sign-in marker so the alert names the app
+
+### Refactor
+- *(ui)* [`75de04f`](https://github.com/cmdcolin/bender/commit/75de04f39b094c46ec6436d7cf34277f2903d57b) let skillet-shared write the sign-in marker
+
+### Documentation
+- [`f665180`](https://github.com/cmdcolin/bender/commit/f665180705210dcfa726ecdc7947c6b65a85ee4c) handoffs drop the removed worktree and what the owner has since heard
+
 ## [1.29.0](https://github.com/cmdcolin/bender/compare/v1.28.2...v1.29.0) - 2026-11-17
 
 ### Fixes
