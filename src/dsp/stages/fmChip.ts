@@ -444,6 +444,19 @@ function kitEdge(before: number, now: number, bit: number, op: Op) {
   else if (was && !is && op.stage !== IDLE) op.stage = RELEASE
 }
 
+const wrap = (x: number) => x - Math.floor(x)
+
+// A pitch wire can drive the step negative, and a phase run backwards past zero
+// has crossed it as surely as one run forwards past one.
+const crossed = (was: number, now: number, step: number) =>
+  step < 0 ? now > was : now < was
+
+function turn(op: Op, step: number) {
+  const was = op.phase
+  op.phase = wrap(was + step)
+  return crossed(was, op.phase, step)
+}
+
 function clear(op: Op) {
   op.wraps = 0
   op.unheld = false
@@ -2182,10 +2195,12 @@ export class FmChip implements Stage {
           if (this.skewRng() < skew)
             modStep = n === 0 ? this.lastSlotInc : this.slotInc[2 * n - 1]!
         }
-        const modWas = c.mod.phase
-        if (this.phaseFault) this.advance(c.mod, modStep, 0)
-        else c.mod.phase = (c.mod.phase + modStep) % 1
-        if (c.mod.phase < modWas) c.mod.wraps++
+        if (
+          this.phaseFault
+            ? this.advance(c.mod, modStep, 0)
+            : turn(c.mod, modStep)
+        )
+          c.mod.wraps++
         const self = (c.mod.fb1 + c.mod.fb2) * mod.fb * fbBoost
         this.wavePhase = c.mod.phase + self + ringIn * this.ringLatch + bounce
         if (this.signTap >= 0) this.signNeg = this.signOf(c.mod)
@@ -2197,13 +2212,14 @@ export class FmChip implements Stage {
         c.mod.fb2 = c.mod.fb1
         c.mod.fb1 = m
 
-        const carWas = c.car.phase
-        if (this.phaseFault || wire > 0) this.advance(c.car, carStep, wire * m)
-        else c.car.phase = (c.car.phase + carStep) % 1
+        const carWrapped =
+          this.phaseFault || wire > 0
+            ? this.advance(c.car, carStep, wire * m)
+            : turn(c.car, carStep)
         // A wrap resetting the other channels' phases, and a wrap kicking the
         // next channel's phase, were tried as bass bends: they moved the
         // sakura stem's share under 120 Hz from 0.12 to 0.14 and 0.26.
-        if (c.car.phase < carWas) {
+        if (carWrapped) {
           c.car.wraps++
           if (n === this.latchFrom) this.latchDue = true
         }
@@ -2266,7 +2282,8 @@ export class FmChip implements Stage {
             this.incFault,
             this.busCut,
           ) / PHASE_FULL) + push
-    if (this.carry < 0) op.phase = (op.phase + step) % 1
+    const was = op.phase
+    if (this.carry < 0) op.phase = wrap(was + step)
     else {
       const below = (2 << this.carry) - 1
       const acc = Math.floor(op.phase * PHASE_FULL) & PHASE_TOP
@@ -2276,6 +2293,7 @@ export class FmChip implements Stage {
           (((acc & ~below) + (word & ~below)) & PHASE_TOP)) /
         PHASE_FULL
     }
+    return crossed(was, op.phase, step)
   }
 
   private unclocked(kit: boolean) {
